@@ -34,6 +34,28 @@ write changes, and sync at the end.
 
 > Copies under individual skills are **never edited directly** — the sync script handles them.
 
+### Versioned capability contract (schema version 2)
+
+Every runtime catalog must retain `_meta.schema_version: 2` and include a
+`runtime` block with `runtime_id`, `provider`, `availability`,
+`native_capabilities`, and `effort_modes`. `native_capabilities` declares the
+runtime's support for `planning`, `worktree`, and `subagents` as `native`,
+`portable`, or `unknown`; it describes runtime capability, not model quality.
+The catalog must also include `capability_tiers.low`, `.medium`, and `.high`,
+each listing model `cli_id` values present in `models[]`. These tiers are the
+authoritative candidates for low-, medium-, and high-effort selection.
+Every model entry must retain `context_window_k`, `max_output_k`,
+`pricing_usd_per_1m`, and `tool_support` fields, using `null` or an explicit
+`unknown` value when the provider does not publish a limit or capability.
+
+The CLI router and the control-plane adapter validate this contract and fail
+closed when it is missing or inconsistent. Keep native capability declarations
+honest: do not claim native support merely because a portable fallback exists.
+When refreshing catalogs, preserve withdrawn models with `available: false` or
+an appropriate withdrawn/deprecated status, and update tier membership rather
+than deleting history. Explicit model choices remain caller overrides; tier
+selection applies only when no model is supplied.
+
 ---
 
 ## Step 1 — Fetch current data from official sources

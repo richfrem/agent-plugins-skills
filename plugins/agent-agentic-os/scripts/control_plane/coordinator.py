@@ -15,6 +15,7 @@ Purpose:
     - Presenting structured visible transition report (purpose, checklist, decisions, released/prohibited capabilities).
 """
 
+import hashlib
 import sys
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, TextIO, Tuple
@@ -142,9 +143,10 @@ class TransitionCoordinator:
         self._out.write(f"\nCurrent phase:   {current_state}\n")
         self._out.write(f"Requested phase: {to_state}\n\n")
         self._out.write(f"Purpose:\n{template.purpose}\n\n")
+        self._write_transition_guidance(current_state, to_state, phase="before")
 
         # 5. Evaluate deterministic checks and required artifacts
-        ctx = self._cp._build_transition_policy_ctx(task_id, task)
+        ctx = self._cp._build_transition_policy_ctx(task_id, task, current_state, to_state)
         checklist_status = []
         all_passed = True
         failed_reasons = []
@@ -159,6 +161,19 @@ class TransitionCoordinator:
             if not exists:
                 all_passed = False
                 failed_reasons.append(f"Missing required artifact: {art_rel}")
+
+        if (
+            current_state == "DRAFT_PLAN"
+            and to_state in {"PLAN_REVIEW", "MULTI_AGENT_REVIEW", "AWAITING_APPROVAL"}
+            and all_passed
+        ):
+            staged_revision = self._stage_plan_artifact_submission(
+                task_id=task_id,
+                task=task,
+                template=template,
+            )
+            if staged_revision is not None:
+                staged_receipts.append(staged_revision)
 
         # Check deterministic checklist items or checks
         for chk_item in template.checklist:
@@ -193,16 +208,22 @@ class TransitionCoordinator:
 
         # 6. Collect human questions sequentially
         answers = dict(provided_answers or {})
-        stage_answers = {}
+        persisted_answers = dict(ctx.get("stage_answers", {}))
+        stage_answers = dict(persisted_answers)
         questions_to_ask = []
         for question_id in template.stage_question_ids or []:
+            if question_id in persisted_answers:
+                continue
             question = self._registry.get_stage_question(current_state, question_id)
             if question is None:
                 raise TransitionCoordinatorError(
                     f"Stage question '{question_id}' is not defined for state '{current_state}'."
                 )
             questions_to_ask.append(question)
-        questions_to_ask.extend(template.human_questions)
+        questions_to_ask.extend(
+            question for question in template.human_questions
+            if question.get("question_id") not in persisted_answers
+        )
 
         for q in questions_to_ask:
             qid = q.get("question_id")
@@ -362,6 +383,63 @@ class TransitionCoordinator:
 
         return record
 
+    def _write_transition_guidance(self, current_state: str, to_state: str, phase: str) -> None:
+        """Render advisory guidance from the read-only registry snapshot."""
+        guidance = self._registry.get_transition_guidance(current_state, to_state)
+        self._out.write(f"Advisory transition guidance ({phase}; registry version {guidance['registry_version']}):\n")
+        if not guidance.get("legal", True):
+            self._out.write(f"- DENIED: {guidance['denial_guidance']}\n")
+            self._out.write("- Guidance is advisory only; it cannot authorize this transition.\n\n")
+            return
+        self._out.write(f"- {current_state} -> {to_state}: {guidance['command']}\n")
+        self._out.write(f"- Success: {guidance['success_guidance']}\n")
+        for helper in guidance.get("helper_commands", []):
+            self._out.write(f"- Helper: {helper}\n")
+        self._out.write("- Guidance is advisory only; policy, human gates, and SQLite remain authoritative.\n\n")
+
+    def _stage_plan_artifact_submission(
+        self,
+        task_id: str,
+        task: Dict[str, Any],
+        template: TransitionTemplate,
+    ) -> Optional[Dict[str, Any]]:
+        """Stage an atomic plan-artifact identity receipt and reject unchanged resubmissions."""
+        artifact_identities = []
+        for artifact_pattern in template.required_artifacts:
+            artifact_rel = artifact_pattern.replace("<task-id>", task_id)
+            artifact_path = self._resolve_artifact_path(artifact_rel, task)
+            if artifact_path is None or not artifact_path.is_file():
+                continue
+            digest = hashlib.sha256(artifact_path.read_bytes()).hexdigest()
+            artifact_identities.append(f"{artifact_rel}={digest}")
+
+        identity = "plan-artifacts:v1:" + "|".join(artifact_identities)
+        prior_submissions = [
+            receipt for receipt in self._cp.get_verification_receipts(task_id)
+            if receipt.get("gate_name") == "plan_artifact_submission"
+        ]
+        latest_submission_id = prior_submissions[-1].get("receipt_id") if prior_submissions else 0
+        explicit_revision = any(
+            receipt.get("gate_name") == "plan_artifact_revision"
+            and receipt.get("command_executed") == identity
+            and receipt.get("receipt_id", 0) > latest_submission_id
+            for receipt in self._cp.get_verification_receipts(task_id)
+        )
+        if prior_submissions and prior_submissions[-1].get("command_executed") == identity and not explicit_revision:
+            raise TransitionCoordinatorError(
+                "Plan artifact identities are unchanged since the last rejected review; "
+                "revise an artifact or record a matching plan_artifact_revision receipt before resubmission."
+            )
+
+        raw = f"{task_id}:plan_artifact_submission:{identity}:{self._cp._clock.current_time()}"
+        token = f"EVO-INTEGRITY-{task_id}-{self._cp._crypto.sha256_hex(raw)[:12]}"
+        return {
+            "gate_name": "plan_artifact_submission",
+            "command_executed": identity,
+            "exit_code": 0,
+            "receipt_token": token,
+        }
+
     def _write_next_steps_hint(self, current_state: str) -> None:
         """Prints the legal next edges from current_state (live from the registry, not
         memorized), flagging which require a human-answered question vs. are purely
@@ -369,14 +447,20 @@ class TransitionCoordinator:
         diagrams for full-flow context. Added after a session found repeated mistakes from
         re-deriving 'what's the actual next edge' by hand-reading YAML."""
         next_templates = [t for t in self._registry.get_all_templates() if t.from_state == current_state]
+        snapshot = self._registry.get_transition_guidance(current_state)
         self._out.write(f"Next possible transitions from {current_state}:\n")
+        self._out.write(f"Registry version: {snapshot['registry_version']} (advisory only)\n")
         if not next_templates:
             self._out.write("- (none — terminal state)\n")
         else:
             for t in sorted(next_templates, key=lambda t: t.to_state):
+                edge = self._registry.get_transition_guidance(current_state, t.to_state)
                 gate = "human question required" if t.human_questions else "deterministic only"
-                detail = t.next_steps_hint or t.purpose
-                self._out.write(f"- -> {t.to_state} ({gate}): {detail}\n")
+                self._out.write(f"- -> {t.to_state} ({gate}): {edge['command']}\n")
+                self._out.write(f"  Success: {edge['success_guidance']}\n")
+                self._out.write(f"  Denial recovery: {edge['denial_guidance']}\n")
+                for helper in edge.get("helper_commands", []):
+                    self._out.write(f"  Helper: {helper}\n")
         self._out.write(
             "\nFull pipeline reference: plugins/agent-agentic-os/skills/interview-spec/SKILL.md\n"
             "Diagrams: docs/diagrams/control-plane-architecture.mermaid, "

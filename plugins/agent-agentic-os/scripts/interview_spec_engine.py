@@ -22,22 +22,24 @@ import sys
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 
+from capability_probe import detect_runtime
+
 
 def detect_intake_mode() -> str:
     """
     Detects whether the runtime environment possesses native interactive intake capabilities.
     Checks session environment variables FIRST to avoid false positives from global binaries.
     """
-    # 1. Running in GitHub Copilot CLI session or headless loop -> Fallback Socratic
-    if os.environ.get("GITHUB_COPILOT_CLI") or os.environ.get("COPILOT_CLI"):
+    runtime = detect_runtime()
+
+    # Copilot and Codex currently use the governed Socratic/portable path.
+    if runtime in {"copilot", "codex", "unknown"}:
         return "EXECUTE_SOCRATIC_FALLBACK"
 
-    # 2. Claude Code session marker (active Claude runtime)
-    if os.environ.get("CLAUDE_CODE_ENTRY") or os.environ.get("CLAUDE_PROJECT_DIR"):
+    if runtime == "claude-code":
         return "DEFER_CLAUDE_NATIVE"
 
-    # 3. Antigravity IDE session marker
-    if os.environ.get("ANTIGRAVITY_IDE") or os.environ.get("ANTIGRAVITY_AGENT"):
+    if runtime == "agy":
         return "DEFER_ANTIGRAVITY"
 
     # Default fallback for standalone / headless scripts

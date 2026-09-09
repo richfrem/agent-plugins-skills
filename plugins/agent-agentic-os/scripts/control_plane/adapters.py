@@ -233,6 +233,50 @@ CREATE TABLE IF NOT EXISTS retrospective_follow_ups (
     updated_at REAL NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS delegation_contracts (
+    contract_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    task_id TEXT NOT NULL REFERENCES tasks(task_id) ON DELETE CASCADE,
+    objective TEXT NOT NULL,
+    scope_json TEXT NOT NULL,
+    authority_json TEXT NOT NULL,
+    tool_limits_json TEXT NOT NULL,
+    budget_json TEXT NOT NULL,
+    artifacts_json TEXT NOT NULL,
+    verifier_json TEXT NOT NULL,
+    escalation_json TEXT NOT NULL,
+    fallback_candidates_json TEXT NOT NULL,
+    backend TEXT NOT NULL,
+    model_id TEXT NOT NULL,
+    cost_tier TEXT NOT NULL CHECK(cost_tier IN ('low', 'medium', 'high')),
+    capability_class TEXT NOT NULL,
+    status TEXT NOT NULL CHECK(status IN ('PENDING_APPROVAL', 'APPROVED', 'EXECUTING', 'ACCEPTED', 'REJECTED')),
+    approved_by TEXT,
+    created_at REAL NOT NULL,
+    updated_at REAL NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS delegation_receipts (
+    receipt_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    contract_id INTEGER NOT NULL REFERENCES delegation_contracts(contract_id) ON DELETE CASCADE,
+    task_id TEXT NOT NULL REFERENCES tasks(task_id) ON DELETE CASCADE,
+    backend TEXT NOT NULL,
+    model_id TEXT NOT NULL,
+    cost_tier TEXT NOT NULL CHECK(cost_tier IN ('low', 'medium', 'high')),
+    capability_class TEXT NOT NULL,
+    write_capable INTEGER NOT NULL DEFAULT 0 CHECK(write_capable IN (0, 1)),
+    written_paths_json TEXT NOT NULL DEFAULT '[]',
+    backend_available INTEGER NOT NULL DEFAULT 1 CHECK(backend_available IN (0, 1)),
+    created_at REAL NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS delegation_verifier_receipts (
+    verifier_receipt_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    contract_id INTEGER NOT NULL REFERENCES delegation_contracts(contract_id) ON DELETE CASCADE,
+    command TEXT NOT NULL,
+    exit_code INTEGER NOT NULL,
+    created_at REAL NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS schema_version (
     version INTEGER NOT NULL
 );
@@ -316,7 +360,7 @@ BEGIN
 END;
 """
 
-CURRENT_SCHEMA_VERSION = 7
+CURRENT_SCHEMA_VERSION = 8
 
 # issue-523: the only state ControlPlane.create_task() ever seeds a new task at. Not derived
 # from TransitionRegistry (which only declares state-to-state edges among existing states, not
@@ -332,6 +376,9 @@ CHILD_TABLES = [
     "transition_decisions",
     "retrospective_entries",
     "retrospective_follow_ups",
+    "delegation_contracts",
+    "delegation_receipts",
+    "delegation_verifier_receipts",
 ]
 ALL_REBUILD_TABLES = ["tasks"] + CHILD_TABLES
 
@@ -782,6 +829,140 @@ class SqlitePersistenceAdapter(PersistencePort):
         try:
             row = conn.execute("SELECT * FROM tasks WHERE task_id = ?", (task_id,)).fetchone()
             return dict(row) if row else None
+        finally:
+            conn.close()
+
+    def create_delegation_plan(self, task_id: str, contract: Dict[str, Any]) -> int:
+        """Persist one validated delegation boundary."""
+        self.ensure_schema()
+        conn = self.get_connection()
+        try:
+            now = time.time()
+            with conn:
+                cursor = conn.execute(
+                    """
+                    INSERT INTO delegation_contracts (
+                        task_id, objective, scope_json, authority_json, tool_limits_json,
+                        budget_json, artifacts_json, verifier_json, escalation_json,
+                        fallback_candidates_json, backend, model_id, cost_tier,
+                        capability_class, status, created_at, updated_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        task_id, contract["objective"], json.dumps(contract["scope"]),
+                        json.dumps(contract["authority"]), json.dumps(contract["tool_limits"]),
+                        json.dumps(contract["budget"]), json.dumps(contract["artifacts"]),
+                        json.dumps(contract["verifier"]), json.dumps(contract["escalation"]),
+                        json.dumps(contract["fallback_candidates"]), contract["backend"],
+                        contract["model_id"], contract["cost_tier"], contract["capability_class"],
+                        contract.get("status", "PENDING_APPROVAL"), now, now,
+                    ),
+                )
+                return int(cursor.lastrowid)
+        finally:
+            conn.close()
+
+    def get_delegation_plan(self, contract_id: int) -> Optional[Dict[str, Any]]:
+        """Retrieve one delegation contract with structured JSON fields decoded."""
+        self.ensure_schema()
+        conn = self.get_connection()
+        try:
+            row = conn.execute("SELECT * FROM delegation_contracts WHERE contract_id = ?", (contract_id,)).fetchone()
+            if not row:
+                return None
+            result = dict(row)
+            for field in ("scope", "authority", "tool_limits", "budget", "artifacts", "verifier", "escalation", "fallback_candidates"):
+                result[field] = json.loads(result.pop(f"{field}_json"))
+            return result
+        finally:
+            conn.close()
+
+    def approve_delegation_plan(self, contract_id: int, actor: str) -> None:
+        """Record an explicit human approval."""
+        self.ensure_schema()
+        conn = self.get_connection()
+        try:
+            with conn:
+                latest = conn.execute(
+                    "SELECT backend, model_id, cost_tier, capability_class, write_capable FROM delegation_receipts WHERE contract_id = ? ORDER BY receipt_id DESC LIMIT 1",
+                    (contract_id,),
+                ).fetchone()
+                if latest:
+                    row = conn.execute("SELECT authority_json FROM delegation_contracts WHERE contract_id = ?", (contract_id,)).fetchone()
+                    authority = json.loads(row[0])
+                    authority["write"] = bool(latest["write_capable"])
+                    conn.execute(
+                        "UPDATE delegation_contracts SET backend = ?, model_id = ?, cost_tier = ?, capability_class = ?, authority_json = ? WHERE contract_id = ? AND status = 'PENDING_APPROVAL'",
+                        (latest["backend"], latest["model_id"], latest["cost_tier"], latest["capability_class"], json.dumps(authority), contract_id),
+                    )
+                cursor = conn.execute(
+                    "UPDATE delegation_contracts SET status = 'APPROVED', approved_by = ?, updated_at = ? WHERE contract_id = ? AND status = 'PENDING_APPROVAL'",
+                    (actor, time.time(), contract_id),
+                )
+                if cursor.rowcount != 1:
+                    raise ValueError(f"Delegation contract {contract_id} is not pending approval")
+        finally:
+            conn.close()
+
+    def count_delegation_receipts(self, contract_id: int) -> int:
+        self.ensure_schema()
+        conn = self.get_connection()
+        try:
+            return conn.execute("SELECT COUNT(*) FROM delegation_receipts WHERE contract_id = ?", (contract_id,)).fetchone()[0]
+        finally:
+            conn.close()
+
+    def insert_delegation_receipt(self, contract_id: int, receipt: Dict[str, Any]) -> int:
+        self.ensure_schema()
+        conn = self.get_connection()
+        try:
+            with conn:
+                cursor = conn.execute(
+                    """
+                    INSERT INTO delegation_receipts (
+                        contract_id, task_id, backend, model_id, cost_tier,
+                        capability_class, write_capable, written_paths_json, backend_available, created_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        contract_id, receipt["task_id"], receipt["backend"], receipt["model_id"],
+                        receipt["cost_tier"], receipt["capability_class"], int(receipt.get("write_capable", False)),
+                        json.dumps(receipt.get("written_paths", [])), int(receipt.get("backend_available", True)), time.time(),
+                    ),
+                )
+                return int(cursor.lastrowid)
+        finally:
+            conn.close()
+
+    def insert_delegation_verifier_receipt(self, contract_id: int, command: str, exit_code: int) -> None:
+        self.ensure_schema()
+        conn = self.get_connection()
+        try:
+            with conn:
+                conn.execute(
+                    "INSERT INTO delegation_verifier_receipts (contract_id, command, exit_code, created_at) VALUES (?, ?, ?, ?)",
+                    (contract_id, command, exit_code, time.time()),
+                )
+        finally:
+            conn.close()
+
+    def mark_delegation_status(self, contract_id: int, status: str) -> None:
+        self.ensure_schema()
+        conn = self.get_connection()
+        try:
+            with conn:
+                conn.execute("UPDATE delegation_contracts SET status = ?, updated_at = ? WHERE contract_id = ?", (status, time.time(), contract_id))
+        finally:
+            conn.close()
+
+    def has_delegation_verifier_receipt(self, contract_id: int) -> bool:
+        self.ensure_schema()
+        conn = self.get_connection()
+        try:
+            return conn.execute(
+                "SELECT COUNT(*) FROM delegation_verifier_receipts WHERE contract_id = ? AND exit_code = 0",
+                (contract_id,),
+            ).fetchone()[0] > 0
         finally:
             conn.close()
 
@@ -1712,9 +1893,10 @@ class ModelCatalogAdapter(ModelCatalogPort):
     `except Exception: pass` behavior exactly."""
 
     def resolve_recommended_model(self, runtime_tool: str, tier: str = "low") -> Dict[str, str]:
-        """Resolves a full model recommendation: tool-alias resolution, catalog file lookup,
-        tier-strategy selection, and fallback. Moved verbatim from ControlPlane."""
-        tier = tier.lower() if tier.lower() in ("low", "medium", "high") else "low"
+        """Resolve a catalog-backed recommendation and fail closed on catalog drift."""
+        tier = tier.lower()
+        if tier not in ("low", "medium", "high"):
+            raise ValueError(f"Unsupported capability tier: {tier}")
         repo_root = Path(__file__).resolve().parent.parent.parent.parent.parent
         cli_refs = repo_root / "plugins" / "cli-agents" / "references"
         tool_key, catalog_file = self._resolve_tool_catalog(runtime_tool, cli_refs)
@@ -1722,15 +1904,16 @@ class ModelCatalogAdapter(ModelCatalogPort):
         cheapest_file = cli_refs / "cheapest_models.json"
         cheapest_model = self.load_cheapest(cheapest_file, tool_key)
 
-        selected_model = None
         cat_data = self.load_catalog(catalog_file)
-        if cat_data is not None:
-            selected_model = self._pick_tier_model(cat_data, tier, cheapest_model)
+        if cat_data is None:
+            raise ValueError(f"Model catalog is unavailable: {catalog_file}")
+
+        selected_model = self._pick_tier_model(cat_data, tier, cheapest_model)
 
         return {
             "runtime_tool": runtime_tool,
             "tier": tier,
-            "model_id": selected_model or cheapest_model or "gpt-5.4-nano"
+            "model_id": selected_model,
         }
 
     def _resolve_tool_catalog(self, runtime_tool: str, cli_refs: Path):
@@ -1747,14 +1930,47 @@ class ModelCatalogAdapter(ModelCatalogPort):
         return "copilot", cli_refs / "copilot-models.json"
 
     def _pick_tier_model(self, cat_data: Dict[str, Any], tier: str, cheapest_model: Optional[str]) -> Optional[str]:
-        """Picks a model ID from catalog strategy and cost tiers. Moved verbatim from ControlPlane."""
+        """Pick an available model from the versioned capability tier, preferring strategy hints."""
+        meta = cat_data.get("_meta", {})
+        runtime = cat_data.get("runtime", {})
+        tiers = cat_data.get("capability_tiers", {})
+        if meta.get("schema_version") != 2 or not isinstance(runtime, dict) or not isinstance(tiers, dict):
+            raise ValueError("Model catalog does not satisfy schema version 2 capability contract")
+
+        models = {
+            model.get("cli_id"): model
+            for model in cat_data.get("models", [])
+            if isinstance(model, dict) and model.get("cli_id")
+        }
+        candidate_ids = tiers.get(tier)
+        if not isinstance(candidate_ids, list):
+            raise ValueError(f"Model catalog has no capability tier: {tier}")
+
+        def available(model_id: str) -> bool:
+            model = models.get(model_id, {})
+            return model.get("available") is not False and str(model.get("status", "")).lower() not in {
+                "withdrawn", "deprecated", "unavailable"
+            }
+
+        candidates = [model_id for model_id in candidate_ids if available(model_id)]
+        if not candidates:
+            raise ValueError(f"No compatible model is available for tier '{tier}'")
+
         strategy = cat_data.get("strategy", {})
-        cost_tiers = cat_data.get("cost_tiers", {})
-        if tier == "low":
-            return cheapest_model or strategy.get("heartbeat") or strategy.get("default")
-        if tier == "medium":
-            return strategy.get("default") or (cost_tiers.get("moderate", [None])[0] if "moderate" in cost_tiers else None)
-        return strategy.get("complex_reasoning") or strategy.get("architecture") or strategy.get("default")
+        preferred = cheapest_model if tier == "low" else None
+        if preferred not in candidates:
+            preferred = next(
+                (strategy.get(key) for key in ("complex_reasoning", "architecture", "default") if strategy.get(key) in candidates),
+                None,
+            )
+        if preferred:
+            return preferred
+
+        def cost_key(model_id: str):
+            pricing = models[model_id].get("pricing_usd_per_1m") or {}
+            return (float(pricing.get("input", float("inf"))), float(pricing.get("output", float("inf"))), model_id)
+
+        return min(candidates, key=cost_key)
 
     def load_catalog(self, catalog_path: Path) -> Optional[Dict[str, Any]]:
         """Loads and returns a parsed model-catalog JSON file, or None if missing/unparsable."""

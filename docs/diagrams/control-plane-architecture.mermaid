@@ -4,6 +4,10 @@ flowchart TB
     Coordinator["TransitionCoordinator"]
     Registry["TransitionRegistry"]
     Templates["transition_templates.yaml: edge and stage contracts"]
+    Guidance["Transition guidance: versioned advisory snapshot"]
+    ArtifactGate["Plan artifact identity/revision gate"]
+    Delegation["DelegationContract: scope, authority, budget, receipts"]
+    ReviewDispatch["Review dispatch: required source + canonical verdict"]
 
     State["StateMachine (control_plane/state_machine.py)"]
     Policy["Unified policy engine (control_plane/policy.py)"]
@@ -21,6 +25,7 @@ flowchart TB
     ClockAdapter["ClockAdapter"]
 
     DB[(control_plane.db)]
+    Receipts["verification_receipts: gate and artifact identities"]
     RepoFiles["Repository and verifier files"]
     CatalogFiles["Model catalog JSON files"]
     Clock["Wall clock"]
@@ -31,6 +36,10 @@ flowchart TB
     Facade --> Policy
     Facade --> Coordinator
     Coordinator --> Registry
+    Coordinator --> Guidance
+    Coordinator --> ArtifactGate
+    Facade --> Delegation
+    Callers --> ReviewDispatch
     Facade --> PersistencePort
     Facade --> CryptoPort
     Facade --> FilesystemPort
@@ -47,6 +56,11 @@ flowchart TB
     ClockPort --> ClockAdapter
 
     SQLiteAdapter --> DB
+    Delegation --> PersistencePort
+    ReviewDispatch --> ModelPort
+    ArtifactGate --> FilesystemPort
+    ArtifactGate --> PersistencePort
+    DB -.-> Receipts
     DB -.->|"trigger-enforced required questions: stage, edge, approval"| Coordinator
     CryptoAdapter --> RepoFiles
     FilesystemAdapter --> RepoFiles

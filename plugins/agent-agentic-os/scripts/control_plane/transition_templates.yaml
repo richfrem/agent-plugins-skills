@@ -140,6 +140,11 @@ templates:
   from_state: INTAKE
   to_state: INTERVIEW
   purpose: Begin interactive requirements capture and Socratic defaulting with human user.
+  next_steps_hint: "First satisfy prior_art_scan; use: log-prior-art --task-id <task-id>. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to INTERVIEW."
+  guidance:
+    success: "After prior-art evidence is recorded, enter INTERVIEW to collect the user's requirements one question at a time."
+    helper_commands:
+    - "python3 plugins/agent-agentic-os/scripts/agent_control.py log-prior-art --task-id <task-id> --summary '<summary>'"
   checklist:
   - Current task state is persisted as INTAKE
   - 'Deterministic check satisfied: prior_art_scan'
@@ -167,6 +172,7 @@ templates:
   from_state: INTERVIEW
   to_state: RETROSPECTIVE
   purpose: Fast-track a TRIVIAL-classified task from the interview gate to the mandatory pipeline-close retrospective gate.
+  next_steps_hint: "Answer this edge's YAML questions with --interactive or --answers '<json>'. First satisfy interview_trivial_complete; use: verify-interview-question. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to RETROSPECTIVE."
   checklist:
   - Current task state is persisted as INTERVIEW
   - Human has completed the INTERVIEW stage-entry questions and applicable follow-ups
@@ -207,6 +213,7 @@ templates:
   from_state: INTAKE
   to_state: DRAFT_PLAN
   purpose: Advance lifecycle state from INTAKE to DRAFT_PLAN upon satisfying phase requirements and verifications.
+  next_steps_hint: "Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to DRAFT_PLAN."
   checklist:
   - Current task state is persisted as INTAKE
   - Structural DAG transition from INTAKE to DRAFT_PLAN is legal
@@ -238,6 +245,7 @@ templates:
   from_state: INTAKE
   to_state: PLAN_REVIEW
   purpose: Advance lifecycle state from INTAKE to PLAN_REVIEW upon satisfying phase requirements and verifications.
+  next_steps_hint: "Answer this edge's YAML questions with --interactive or --answers '<json>'. Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to PLAN_REVIEW."
   checklist:
   - Current task state is persisted as INTAKE
   - Structural DAG transition from INTAKE to PLAN_REVIEW is legal
@@ -271,6 +279,7 @@ templates:
   from_state: INTAKE
   to_state: ESCALATED
   purpose: Escalate task from INTAKE due to blocking failure, unresolvable ambiguity, or user intervention.
+  next_steps_hint: "Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to ESCALATED."
   checklist:
   - Current task state is persisted as INTAKE
   - Structural DAG transition from INTAKE to ESCALATED is legal
@@ -293,14 +302,12 @@ templates:
   from_state: INTERVIEW
   to_state: DRAFT_PLAN
   purpose: Synthesize interview requirements into architectural specification and task implementation plan.
+  next_steps_hint: "First satisfy interview_standard_complete; use: verify-interview-question. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to DRAFT_PLAN."
   checklist:
   - Current task state is persisted as INTERVIEW
-  - 'Deterministic check satisfied: plan_mode_or_socratic'
-  required_artifacts:
-  - docs/plans/<task-id>-spec.md
-  - docs/plans/<task-id>-implementation-plan.md
+  - Standard interview questions and acceptance criteria are complete
+  required_artifacts: []
   deterministic_checks:
-  - plan_mode_or_socratic
   - interview_standard_complete
   stage_question_ids:
   - interview_classification
@@ -332,6 +339,7 @@ templates:
   from_state: INTERVIEW
   to_state: PLAN_REVIEW
   purpose: Advance lifecycle state from INTERVIEW to PLAN_REVIEW upon satisfying phase requirements and verifications.
+  next_steps_hint: "Answer this edge's YAML questions with --interactive or --answers '<json>'. First satisfy plan_mode_or_socratic, interview_standard_complete; use: record-plan-mode-entry or record-socratic-intake; verify-interview-question. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to PLAN_REVIEW."
   checklist:
   - Current task state is persisted as INTERVIEW
   - 'Deterministic check satisfied: plan_mode_or_socratic'
@@ -376,6 +384,7 @@ templates:
   from_state: INTERVIEW
   to_state: ESCALATED
   purpose: Escalate task from INTERVIEW due to blocking failure, unresolvable ambiguity, or user intervention.
+  next_steps_hint: "Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to ESCALATED."
   checklist:
   - Current task state is persisted as INTERVIEW
   - Structural DAG transition from INTERVIEW to ESCALATED is legal
@@ -398,10 +407,13 @@ templates:
   from_state: DRAFT_PLAN
   to_state: MULTI_AGENT_REVIEW
   purpose: Submit draft specification and implementation plan for independent multi-agent review.
+  next_steps_hint: "Answer this edge's YAML questions with --interactive or --answers '<json>'. Submit both plan artifacts; the coordinator records their content identity atomically. After a rejected review, revise an artifact or record a matching plan_artifact_revision receipt before resubmitting. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to MULTI_AGENT_REVIEW."
   checklist:
   - Current task state is persisted as DRAFT_PLAN
   - Structural DAG transition from DRAFT_PLAN to MULTI_AGENT_REVIEW is legal
-  required_artifacts: []
+  required_artifacts:
+  - docs/plans/<task-id>-spec.md
+  - docs/plans/<task-id>-implementation-plan.md
   deterministic_checks: []
   human_questions:
   - question_id: submit_for_multi_agent_review
@@ -432,10 +444,13 @@ templates:
   from_state: DRAFT_PLAN
   to_state: PLAN_REVIEW
   purpose: Advance lifecycle state from DRAFT_PLAN to PLAN_REVIEW upon satisfying phase requirements and verifications.
+  next_steps_hint: "Answer this edge's YAML questions with --interactive or --answers '<json>'. Submit both plan artifacts; the coordinator records their content identity atomically. After a rejected review, revise an artifact or record a matching plan_artifact_revision receipt before resubmitting. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to PLAN_REVIEW."
   checklist:
   - Current task state is persisted as DRAFT_PLAN
   - Structural DAG transition from DRAFT_PLAN to PLAN_REVIEW is legal
-  required_artifacts: []
+  required_artifacts:
+  - docs/plans/<task-id>-spec.md
+  - docs/plans/<task-id>-implementation-plan.md
   deterministic_checks: []
   human_questions:
   - question_id: plan_review_submission
@@ -463,6 +478,7 @@ templates:
   from_state: DRAFT_PLAN
   to_state: AWAITING_APPROVAL
   purpose: Advance lifecycle state from DRAFT_PLAN to AWAITING_APPROVAL upon satisfying phase requirements and verifications.
+  next_steps_hint: "Submit both plan artifacts; the coordinator records their content identity atomically. After a rejected review, revise an artifact or record a matching plan_artifact_revision receipt before resubmitting. First satisfy critic_review_or_skip; use: record-critic-review or record-review-skip. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to AWAITING_APPROVAL."
   checklist:
   - Current task state is persisted as DRAFT_PLAN
   - 'Deterministic check satisfied: critic_review_or_skip'
@@ -491,6 +507,7 @@ templates:
   from_state: DRAFT_PLAN
   to_state: INTERVIEW
   purpose: Advance lifecycle state from DRAFT_PLAN to INTERVIEW upon satisfying phase requirements and verifications.
+  next_steps_hint: "Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to INTERVIEW."
   checklist:
   - Current task state is persisted as DRAFT_PLAN
   - Structural DAG transition from DRAFT_PLAN to INTERVIEW is legal
@@ -518,6 +535,7 @@ templates:
   from_state: DRAFT_PLAN
   to_state: ESCALATED
   purpose: Escalate task from DRAFT_PLAN due to blocking failure, unresolvable ambiguity, or user intervention.
+  next_steps_hint: "Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to ESCALATED."
   checklist:
   - Current task state is persisted as DRAFT_PLAN
   - Structural DAG transition from DRAFT_PLAN to ESCALATED is legal
@@ -542,6 +560,7 @@ templates:
   from_state: MULTI_AGENT_REVIEW
   to_state: DRAFT_PLAN
   purpose: Advance lifecycle state from MULTI_AGENT_REVIEW to DRAFT_PLAN upon satisfying phase requirements and verifications.
+  next_steps_hint: "Return to DRAFT_PLAN to revise the plan artifacts. A later review submission must have a changed artifact identity or a matching plan_artifact_revision receipt. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to DRAFT_PLAN."
   checklist:
   - Current task state is persisted as MULTI_AGENT_REVIEW
   - Structural DAG transition from MULTI_AGENT_REVIEW to DRAFT_PLAN is legal
@@ -570,6 +589,7 @@ templates:
   from_state: MULTI_AGENT_REVIEW
   to_state: PLAN_REVIEW
   purpose: Advance lifecycle state from MULTI_AGENT_REVIEW to PLAN_REVIEW upon satisfying phase requirements and verifications.
+  next_steps_hint: "Answer this edge's YAML questions with --interactive or --answers '<json>'. Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to PLAN_REVIEW."
   checklist:
   - Current task state is persisted as MULTI_AGENT_REVIEW
   - Structural DAG transition from MULTI_AGENT_REVIEW to PLAN_REVIEW is legal
@@ -603,6 +623,7 @@ templates:
   from_state: MULTI_AGENT_REVIEW
   to_state: AWAITING_APPROVAL
   purpose: Advance approved plan to awaiting human approval stage gate.
+  next_steps_hint: "First satisfy critic_review_pass; use: record-critic-review. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to AWAITING_APPROVAL."
   checklist:
   - Current task state is persisted as MULTI_AGENT_REVIEW
   - 'Deterministic check satisfied: critic_review_pass'
@@ -630,6 +651,7 @@ templates:
   from_state: MULTI_AGENT_REVIEW
   to_state: ESCALATED
   purpose: Escalate task from MULTI_AGENT_REVIEW due to blocking failure, unresolvable ambiguity, or user intervention.
+  next_steps_hint: "Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to ESCALATED."
   checklist:
   - Current task state is persisted as MULTI_AGENT_REVIEW
   - Structural DAG transition from MULTI_AGENT_REVIEW to ESCALATED is legal
@@ -652,6 +674,7 @@ templates:
   from_state: PLAN_REVIEW
   to_state: MULTI_AGENT_REVIEW
   purpose: Advance lifecycle state from PLAN_REVIEW to MULTI_AGENT_REVIEW upon satisfying phase requirements and verifications.
+  next_steps_hint: "Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to MULTI_AGENT_REVIEW."
   checklist:
   - Current task state is persisted as PLAN_REVIEW
   - Structural DAG transition from PLAN_REVIEW to MULTI_AGENT_REVIEW is legal
@@ -679,6 +702,7 @@ templates:
   from_state: PLAN_REVIEW
   to_state: AWAITING_APPROVAL
   purpose: Advance lifecycle state from PLAN_REVIEW to AWAITING_APPROVAL upon satisfying phase requirements and verifications.
+  next_steps_hint: "First satisfy critic_review_or_skip; use: record-critic-review or record-review-skip. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to AWAITING_APPROVAL."
   checklist:
   - Current task state is persisted as PLAN_REVIEW
   - 'Deterministic check satisfied: critic_review_or_skip'
@@ -705,6 +729,7 @@ templates:
   from_state: PLAN_REVIEW
   to_state: DRAFT_PLAN
   purpose: Advance lifecycle state from PLAN_REVIEW to DRAFT_PLAN upon satisfying phase requirements and verifications.
+  next_steps_hint: "Return to DRAFT_PLAN to revise the plan artifacts. A later review submission must have a changed artifact identity or a matching plan_artifact_revision receipt. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to DRAFT_PLAN."
   checklist:
   - Current task state is persisted as PLAN_REVIEW
   - Structural DAG transition from PLAN_REVIEW to DRAFT_PLAN is legal
@@ -733,6 +758,7 @@ templates:
   from_state: PLAN_REVIEW
   to_state: INTERVIEW
   purpose: Advance lifecycle state from PLAN_REVIEW to INTERVIEW upon satisfying phase requirements and verifications.
+  next_steps_hint: "Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to INTERVIEW."
   checklist:
   - Current task state is persisted as PLAN_REVIEW
   - Structural DAG transition from PLAN_REVIEW to INTERVIEW is legal
@@ -760,6 +786,7 @@ templates:
   from_state: PLAN_REVIEW
   to_state: ESCALATED
   purpose: Escalate task from PLAN_REVIEW due to blocking failure, unresolvable ambiguity, or user intervention.
+  next_steps_hint: "Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to ESCALATED."
   checklist:
   - Current task state is persisted as PLAN_REVIEW
   - Structural DAG transition from PLAN_REVIEW to ESCALATED is legal
@@ -784,6 +811,7 @@ templates:
   from_state: AWAITING_APPROVAL
   to_state: APPROVED
   purpose: Obtain explicit human approval to proceed with task implementation and worktree creation.
+  next_steps_hint: "Answer this edge's YAML questions with --interactive or --answers '<json>'. Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to APPROVED."
   checklist:
   - Current task state is persisted as AWAITING_APPROVAL
   - Structural DAG transition from AWAITING_APPROVAL to APPROVED is legal
@@ -814,6 +842,7 @@ templates:
   from_state: AWAITING_APPROVAL
   to_state: MULTI_AGENT_REVIEW
   purpose: Advance lifecycle state from AWAITING_APPROVAL to MULTI_AGENT_REVIEW upon satisfying phase requirements and verifications.
+  next_steps_hint: "Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to MULTI_AGENT_REVIEW."
   checklist:
   - Current task state is persisted as AWAITING_APPROVAL
   - Structural DAG transition from AWAITING_APPROVAL to MULTI_AGENT_REVIEW is legal
@@ -842,6 +871,7 @@ templates:
   from_state: AWAITING_APPROVAL
   to_state: PLAN_REVIEW
   purpose: Advance lifecycle state from AWAITING_APPROVAL to PLAN_REVIEW upon satisfying phase requirements and verifications.
+  next_steps_hint: "Answer this edge's YAML questions with --interactive or --answers '<json>'. Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to PLAN_REVIEW."
   checklist:
   - Current task state is persisted as AWAITING_APPROVAL
   - Structural DAG transition from AWAITING_APPROVAL to PLAN_REVIEW is legal
@@ -875,6 +905,7 @@ templates:
   from_state: AWAITING_APPROVAL
   to_state: DRAFT_PLAN
   purpose: Advance lifecycle state from AWAITING_APPROVAL to DRAFT_PLAN upon satisfying phase requirements and verifications.
+  next_steps_hint: "Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to DRAFT_PLAN."
   checklist:
   - Current task state is persisted as AWAITING_APPROVAL
   - Structural DAG transition from AWAITING_APPROVAL to DRAFT_PLAN is legal
@@ -903,6 +934,7 @@ templates:
   from_state: AWAITING_APPROVAL
   to_state: ESCALATED
   purpose: Escalate task from AWAITING_APPROVAL due to blocking failure, unresolvable ambiguity, or user intervention.
+  next_steps_hint: "Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to ESCALATED."
   checklist:
   - Current task state is persisted as AWAITING_APPROVAL
   - Structural DAG transition from AWAITING_APPROVAL to ESCALATED is legal
@@ -925,6 +957,7 @@ templates:
   from_state: APPROVED
   to_state: IN_WORKTREE
   purpose: Create isolated git worktree and begin test-first implementation.
+  next_steps_hint: "First satisfy human_approval; use: record-human-approval --task-id <task-id> --approver <approver>. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to IN_WORKTREE."
   checklist:
   - Current task state is persisted as APPROVED
   - 'Deterministic check satisfied: human_approval'
@@ -950,6 +983,7 @@ templates:
   from_state: APPROVED
   to_state: ESCALATED
   purpose: Escalate task from APPROVED due to blocking failure, unresolvable ambiguity, or user intervention.
+  next_steps_hint: "Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to ESCALATED."
   checklist:
   - Current task state is persisted as APPROVED
   - Structural DAG transition from APPROVED to ESCALATED is legal
@@ -972,6 +1006,7 @@ templates:
   from_state: IN_WORKTREE
   to_state: WORKTREE_REVIEW
   purpose: Verify implementation tests pass and enter worktree review.
+  next_steps_hint: "Answer this edge's YAML questions with --interactive or --answers '<json>'. First satisfy test_suite; use: record-verification-receipt for test_suite. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to WORKTREE_REVIEW."
   checklist:
   - Current task state is persisted as IN_WORKTREE
   - 'Deterministic check satisfied: test_suite'
@@ -1010,6 +1045,7 @@ templates:
   from_state: IN_WORKTREE
   to_state: VERIFY_EXIT
   purpose: Advance lifecycle state from IN_WORKTREE to VERIFY_EXIT upon satisfying phase requirements and verifications.
+  next_steps_hint: "Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to VERIFY_EXIT."
   checklist:
   - Current task state is persisted as IN_WORKTREE
   - Structural DAG transition from IN_WORKTREE to VERIFY_EXIT is legal
@@ -1034,6 +1070,7 @@ templates:
   from_state: IN_WORKTREE
   to_state: ROLLED_BACK
   purpose: Roll back worktree changes from IN_WORKTREE to clean baseline.
+  next_steps_hint: "First satisfy rolled_back_guard; use: record the rollback verification receipt. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to ROLLED_BACK."
   checklist:
   - Current task state is persisted as IN_WORKTREE
   - 'Deterministic check satisfied: rolled_back_guard'
@@ -1058,6 +1095,7 @@ templates:
   from_state: IN_WORKTREE
   to_state: ESCALATED
   purpose: Escalate task from IN_WORKTREE due to blocking failure, unresolvable ambiguity, or user intervention.
+  next_steps_hint: "Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to ESCALATED."
   checklist:
   - Current task state is persisted as IN_WORKTREE
   - Structural DAG transition from IN_WORKTREE to ESCALATED is legal
@@ -1081,6 +1119,7 @@ templates:
   from_state: WORKTREE_REVIEW
   to_state: MULTI_AGENT_CODE_REVIEW
   purpose: Submit worktree code diff for independent multi-agent adversarial code review.
+  next_steps_hint: "Answer this edge's YAML questions with --interactive or --answers '<json>'. Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to MULTI_AGENT_CODE_REVIEW."
   checklist:
   - Current task state is persisted as WORKTREE_REVIEW
   - Structural DAG transition from WORKTREE_REVIEW to MULTI_AGENT_CODE_REVIEW is legal
@@ -1117,6 +1156,7 @@ templates:
   from_state: WORKTREE_REVIEW
   to_state: VERIFY_EXIT
   purpose: Advance reviewed code to final exit verification and baseline sovereignty checks.
+  next_steps_hint: "First satisfy code_review_or_skip; use: satisfy the registered code_review_or_skip check. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to VERIFY_EXIT."
   checklist:
   - Current task state is persisted as WORKTREE_REVIEW
   - 'Deterministic check satisfied: code_review_or_skip'
@@ -1142,6 +1182,7 @@ templates:
   from_state: WORKTREE_REVIEW
   to_state: IN_WORKTREE
   purpose: Advance lifecycle state from WORKTREE_REVIEW to IN_WORKTREE upon satisfying phase requirements and verifications.
+  next_steps_hint: "Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to IN_WORKTREE."
   checklist:
   - Current task state is persisted as WORKTREE_REVIEW
   - Structural DAG transition from WORKTREE_REVIEW to IN_WORKTREE is legal
@@ -1167,6 +1208,7 @@ templates:
   from_state: WORKTREE_REVIEW
   to_state: ROLLED_BACK
   purpose: Roll back worktree changes from WORKTREE_REVIEW to clean baseline.
+  next_steps_hint: "First satisfy rolled_back_guard; use: record the rollback verification receipt. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to ROLLED_BACK."
   checklist:
   - Current task state is persisted as WORKTREE_REVIEW
   - 'Deterministic check satisfied: rolled_back_guard'
@@ -1191,6 +1233,7 @@ templates:
   from_state: WORKTREE_REVIEW
   to_state: ESCALATED
   purpose: Escalate task from WORKTREE_REVIEW due to blocking failure, unresolvable ambiguity, or user intervention.
+  next_steps_hint: "Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to ESCALATED."
   checklist:
   - Current task state is persisted as WORKTREE_REVIEW
   - Structural DAG transition from WORKTREE_REVIEW to ESCALATED is legal
@@ -1216,8 +1259,8 @@ templates:
 - transition_id: multi_agent_code_review_to_worktree_review
   from_state: MULTI_AGENT_CODE_REVIEW
   to_state: WORKTREE_REVIEW
-  purpose: Advance lifecycle state from MULTI_AGENT_CODE_REVIEW to WORKTREE_REVIEW upon satisfying phase requirements and
-    verifications.
+  purpose: Advance lifecycle state from MULTI_AGENT_CODE_REVIEW to WORKTREE_REVIEW upon satisfying phase requirements and verifications.
+  next_steps_hint: "Answer this edge's YAML questions with --interactive or --answers '<json>'. Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to WORKTREE_REVIEW."
   checklist:
   - Current task state is persisted as MULTI_AGENT_CODE_REVIEW
   - Structural DAG transition from MULTI_AGENT_CODE_REVIEW to WORKTREE_REVIEW is legal
@@ -1251,12 +1294,14 @@ templates:
   from_state: MULTI_AGENT_CODE_REVIEW
   to_state: VERIFY_EXIT
   purpose: Advance lifecycle state from MULTI_AGENT_CODE_REVIEW to VERIFY_EXIT upon satisfying phase requirements and verifications.
+  next_steps_hint: "First satisfy code_review_or_skip; use: record-critic-review with verdict PASS or record-review-skip with a justification. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to VERIFY_EXIT."
   checklist:
   - Current task state is persisted as MULTI_AGENT_CODE_REVIEW
   - Structural DAG transition from MULTI_AGENT_CODE_REVIEW to VERIFY_EXIT is legal
   required_artifacts:
   - .worktrees/<task-id>
-  deterministic_checks: []
+  deterministic_checks:
+  - code_review_or_skip
   human_questions: []
   approval:
     required: false
@@ -1276,6 +1321,7 @@ templates:
   from_state: MULTI_AGENT_CODE_REVIEW
   to_state: IN_WORKTREE
   purpose: Advance lifecycle state from MULTI_AGENT_CODE_REVIEW to IN_WORKTREE upon satisfying phase requirements and verifications.
+  next_steps_hint: "Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to IN_WORKTREE."
   checklist:
   - Current task state is persisted as MULTI_AGENT_CODE_REVIEW
   - Structural DAG transition from MULTI_AGENT_CODE_REVIEW to IN_WORKTREE is legal
@@ -1302,6 +1348,7 @@ templates:
   from_state: MULTI_AGENT_CODE_REVIEW
   to_state: ROLLED_BACK
   purpose: Roll back worktree changes from MULTI_AGENT_CODE_REVIEW to clean baseline.
+  next_steps_hint: "First satisfy rolled_back_guard; use: record the rollback verification receipt. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to ROLLED_BACK."
   checklist:
   - Current task state is persisted as MULTI_AGENT_CODE_REVIEW
   - 'Deterministic check satisfied: rolled_back_guard'
@@ -1326,6 +1373,7 @@ templates:
   from_state: MULTI_AGENT_CODE_REVIEW
   to_state: ESCALATED
   purpose: Escalate task from MULTI_AGENT_CODE_REVIEW due to blocking failure, unresolvable ambiguity, or user intervention.
+  next_steps_hint: "Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to ESCALATED."
   checklist:
   - Current task state is persisted as MULTI_AGENT_CODE_REVIEW
   - Structural DAG transition from MULTI_AGENT_CODE_REVIEW to ESCALATED is legal
@@ -1349,6 +1397,7 @@ templates:
   from_state: VERIFY_EXIT
   to_state: RETROSPECTIVE
   purpose: Verify clean leak checks and enter the mandatory pipeline-close retrospective gate.
+  next_steps_hint: "First satisfy done_guard; use: verify-exit-verification. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to RETROSPECTIVE."
   checklist:
   - Current task state is persisted as VERIFY_EXIT
   - 'Deterministic checks satisfied: test_suite, leak_check, and asymmetric persistence'
@@ -1373,6 +1422,7 @@ templates:
   from_state: RETROSPECTIVE
   to_state: DONE
   purpose: Complete the task after a completed retrospective or an explicitly reasoned skip.
+  next_steps_hint: "Answer this edge's YAML questions with --interactive or --answers '<json>'. First satisfy retrospective_done_guard; use: record retrospective decisions and satisfy the done guard. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to DONE."
   checklist:
   - Current task state is persisted as RETROSPECTIVE
   - Retrospective survey is complete or explicitly skipped with a reason
@@ -1402,6 +1452,7 @@ templates:
   from_state: RETROSPECTIVE
   to_state: ESCALATED
   purpose: Escalate a retrospective that cannot be completed or whose follow-up issue creation is blocked.
+  next_steps_hint: "Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to ESCALATED."
   checklist:
   - Current task state is persisted as RETROSPECTIVE
   - Human or agent has documented the blocking reason
@@ -1424,6 +1475,7 @@ templates:
   from_state: VERIFY_EXIT
   to_state: IN_WORKTREE
   purpose: Advance lifecycle state from VERIFY_EXIT to IN_WORKTREE upon satisfying phase requirements and verifications.
+  next_steps_hint: "Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to IN_WORKTREE."
   checklist:
   - Current task state is persisted as VERIFY_EXIT
   - Structural DAG transition from VERIFY_EXIT to IN_WORKTREE is legal
@@ -1449,6 +1501,7 @@ templates:
   from_state: VERIFY_EXIT
   to_state: WORKTREE_REVIEW
   purpose: Advance lifecycle state from VERIFY_EXIT to WORKTREE_REVIEW upon satisfying phase requirements and verifications.
+  next_steps_hint: "Answer this edge's YAML questions with --interactive or --answers '<json>'. Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to WORKTREE_REVIEW."
   checklist:
   - Current task state is persisted as VERIFY_EXIT
   - Structural DAG transition from VERIFY_EXIT to WORKTREE_REVIEW is legal
@@ -1482,6 +1535,7 @@ templates:
   from_state: VERIFY_EXIT
   to_state: ROLLED_BACK
   purpose: Roll back worktree changes from VERIFY_EXIT to clean baseline.
+  next_steps_hint: "First satisfy rolled_back_guard; use: record the rollback verification receipt. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to ROLLED_BACK."
   checklist:
   - Current task state is persisted as VERIFY_EXIT
   - 'Deterministic check satisfied: rolled_back_guard'
@@ -1505,6 +1559,7 @@ templates:
   from_state: VERIFY_EXIT
   to_state: ESCALATED
   purpose: Escalate task from VERIFY_EXIT due to blocking failure, unresolvable ambiguity, or user intervention.
+  next_steps_hint: "Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to ESCALATED."
   checklist:
   - Current task state is persisted as VERIFY_EXIT
   - Structural DAG transition from VERIFY_EXIT to ESCALATED is legal
@@ -1527,6 +1582,7 @@ templates:
   from_state: ROLLED_BACK
   to_state: ESCALATED
   purpose: Escalate task from ROLLED_BACK due to blocking failure, unresolvable ambiguity, or user intervention.
+  next_steps_hint: "Answer this edge's YAML questions with --interactive or --answers '<json>'. Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to ESCALATED."
   checklist:
   - Current task state is persisted as ROLLED_BACK
   - Structural DAG transition from ROLLED_BACK to ESCALATED is legal
@@ -1555,6 +1611,7 @@ templates:
   from_state: ROLLED_BACK
   to_state: PLAN_REVIEW
   purpose: Advance lifecycle state from ROLLED_BACK to PLAN_REVIEW upon satisfying phase requirements and verifications.
+  next_steps_hint: "Answer this edge's YAML questions with --interactive or --answers '<json>'. Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to PLAN_REVIEW."
   checklist:
   - Current task state is persisted as ROLLED_BACK
   - Structural DAG transition from ROLLED_BACK to PLAN_REVIEW is legal
@@ -1588,6 +1645,7 @@ templates:
   from_state: ESCALATED
   to_state: INTAKE
   purpose: Advance lifecycle state from ESCALATED to INTAKE upon satisfying phase requirements and verifications.
+  next_steps_hint: "Answer this edge's YAML questions with --interactive or --answers '<json>'. Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to INTAKE."
   checklist:
   - Current task state is persisted as ESCALATED
   - Structural DAG transition from ESCALATED to INTAKE is legal
@@ -1619,6 +1677,7 @@ templates:
   from_state: ESCALATED
   to_state: PLAN_REVIEW
   purpose: Advance lifecycle state from ESCALATED to PLAN_REVIEW upon satisfying phase requirements and verifications.
+  next_steps_hint: "Answer this edge's YAML questions with --interactive or --answers '<json>'. Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to PLAN_REVIEW."
   checklist:
   - Current task state is persisted as ESCALATED
   - Structural DAG transition from ESCALATED to PLAN_REVIEW is legal
@@ -1652,6 +1711,7 @@ templates:
   from_state: "*"
   to_state: INTAKE
   purpose: Recover a task whose control-plane record has drifted or desynced from reality (e.g. a raw write bypassing the normal transition path) by resetting it to INTAKE for a full re-run through every gate.
+  next_steps_hint: "Answer this edge's YAML questions with --interactive or --answers '<json>'. Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to INTAKE."
   checklist:
   - Current task state is not INTAKE
   - Human has provided a genuine, interactive justification for the reset

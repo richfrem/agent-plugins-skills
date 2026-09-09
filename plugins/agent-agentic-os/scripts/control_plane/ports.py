@@ -170,6 +170,38 @@ class PersistencePort(ABC):
         """Retrieves a task dictionary by task_id, or None if not found."""
         raise NotImplementedError
 
+    def create_delegation_plan(self, task_id: str, contract: Dict[str, Any]) -> int:
+        """Persist a governed delegation contract and return its identifier."""
+        raise NotImplementedError
+
+    def get_delegation_plan(self, contract_id: int) -> Optional[Dict[str, Any]]:
+        """Retrieve a delegation contract by identifier."""
+        raise NotImplementedError
+
+    def approve_delegation_plan(self, contract_id: int, actor: str) -> None:
+        """Record the human approval for a contract that requires it."""
+        raise NotImplementedError
+
+    def count_delegation_receipts(self, contract_id: int) -> int:
+        """Count execution attempts against a delegation contract."""
+        raise NotImplementedError
+
+    def insert_delegation_receipt(self, contract_id: int, receipt: Dict[str, Any]) -> int:
+        """Persist one execution receipt."""
+        raise NotImplementedError
+
+    def insert_delegation_verifier_receipt(self, contract_id: int, command: str, exit_code: int) -> None:
+        """Persist the verifier receipt required before accepting a result."""
+        raise NotImplementedError
+
+    def mark_delegation_status(self, contract_id: int, status: str) -> None:
+        """Update the governed contract status."""
+        raise NotImplementedError
+
+    def has_delegation_verifier_receipt(self, contract_id: int) -> bool:
+        """Return whether a passing verifier receipt exists."""
+        raise NotImplementedError
+
     @abstractmethod
     def insert_task(self, task_id: str, title: str, task_type: str, runtime_tool: str,
                      spec_path: Optional[str], model_tier: Optional[str], model_id: Optional[str]) -> None:
@@ -327,4 +359,3 @@ class PersistencePort(ABC):
     def validate_task_pipeline_history(self, task_id: str, task_state: str) -> Optional[str]:
         """Validates transition history and violations for pipeline commit check. Returns error string or None."""
         raise NotImplementedError
-

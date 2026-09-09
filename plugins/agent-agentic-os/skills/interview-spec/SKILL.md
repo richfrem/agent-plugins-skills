@@ -55,6 +55,21 @@ Every compiled specification must satisfy:
 
 ## Usage
 
+### Native capability and worktree boundary
+
+Before selecting a planning or worktree path, run the repository-owned
+`scripts/capability_probe.py` contract through the active runtime. It returns
+explicit runtime identity, native planning/worktree/subagent facilities, tool
+support, and a portable fallback. Do not infer a capability from a model name
+or from a globally installed binary. Codex native worktree handling is allowed
+only when the active session explicitly reports `CODEX_NATIVE_WORKTREE`; in
+that case follow the returned activation guidance. Otherwise use
+`worktree-manager` and keep the portable worktree below `.worktrees/`.
+
+Native facilities change how the selected runtime executes, not the control
+plane's scope, approval, verification, or transition gates. A native path must
+still produce the same governed artifacts and receipts as the portable path.
+
 ### 1. Detect Intake Mode & Start Intake
 ```bash
 python3 scripts/interview_spec_engine.py
@@ -92,3 +107,17 @@ Compile the draft spec and plan using `write_plan_document.py`, then coordinate 
   See `references/multi-round-external-review-protocol.md`.
 - **Path B (Skip)**: transition directly to `AWAITING_APPROVAL`.
 Commands and bundle specifications in `references/detailed-reference.md`.
+
+### Read-only transition guidance
+
+When unsure which edge is legal or what gate remains, query the persisted task state:
+
+```bash
+python3 plugins/agent-agentic-os/scripts/agent_control.py transition-guidance \
+  --task-id <task-id>
+```
+
+The result is advisory only. It is derived from the versioned registry snapshot; SQLite
+triggers, deterministic policy checks, human decisions, and persisted receipts remain the
+authorities. A requested illegal edge returns recovery guidance without an authorizing
+command. Do not infer legality from a stale chat transcript or from the helper command alone.

@@ -36,7 +36,90 @@ Key Input Dependencies:
     - evaluate_operation() — evaluates all rules registered for a given operation name
 """
 
+from fnmatch import fnmatch
 from typing import Any, Dict, List, Optional, Tuple
+
+
+class DelegationContractError(ValueError):
+    """Raised when a delegation contract or receipt violates its approved boundary."""
+
+
+DELEGATION_REQUIRED_FIELDS = (
+    "objective", "scope", "authority", "tool_limits", "budget", "artifacts",
+    "verifier", "escalation", "fallback_candidates", "backend", "model_id",
+    "cost_tier", "capability_class",
+)
+
+
+def validate_delegation_contract(contract: Dict[str, Any]) -> None:
+    """Validate the governance boundary without constraining model reasoning or strategy."""
+    missing = [field for field in DELEGATION_REQUIRED_FIELDS if field not in contract]
+    if missing:
+        raise DelegationContractError("Delegation contract missing: " + ", ".join(missing))
+    if not str(contract["objective"]).strip():
+        raise DelegationContractError("Delegation objective is required")
+    if not isinstance(contract["scope"], list) or not contract["scope"] or not all(isinstance(item, str) and item for item in contract["scope"]):
+        raise DelegationContractError("Delegation scope must contain at least one boundary")
+    if not isinstance(contract["tool_limits"], list):
+        raise DelegationContractError("Delegation tool_limits must be a list")
+    budget = contract["budget"]
+    if not isinstance(budget, dict) or int(budget.get("max_requests", 0)) < 1:
+        raise DelegationContractError("Delegation budget must define max_requests >= 1")
+    if contract["cost_tier"] not in {"low", "medium", "high"}:
+        raise DelegationContractError("Delegation cost_tier must be low, medium, or high")
+    authority = contract["authority"]
+    if not isinstance(authority, dict) or not isinstance(authority.get("read"), bool):
+        raise DelegationContractError("Delegation authority must declare boolean read access")
+    if not isinstance(contract["artifacts"], list):
+        raise DelegationContractError("Delegation artifacts must be a list")
+    if not isinstance(contract["verifier"], dict) or not contract["verifier"].get("command"):
+        raise DelegationContractError("Delegation verifier command is required")
+    if not isinstance(contract["escalation"], dict):
+        raise DelegationContractError("Delegation escalation policy is required")
+    if not isinstance(contract["fallback_candidates"], list):
+        raise DelegationContractError("Delegation fallback_candidates must be a list")
+
+
+def delegation_requires_approval(contract: Dict[str, Any]) -> bool:
+    """High-cost or write-capable delegation requires a human approval receipt."""
+    authority = contract.get("authority", {})
+    return contract.get("cost_tier") == "high" or bool(authority.get("write"))
+
+
+def validate_delegation_receipt(
+    contract: Dict[str, Any],
+    receipt: Dict[str, Any],
+    request_count: int,
+) -> bool:
+    """Validate one execution attempt against the approved contract."""
+    if not receipt.get("backend_available", True):
+        raise DelegationContractError("Delegation backend is unavailable")
+    max_requests = int(contract["budget"].get("max_requests", 0))
+    if request_count >= max_requests:
+        raise DelegationContractError("Delegation budget exhausted")
+    if receipt.get("cost_tier") not in {"low", "medium", "high"}:
+        raise DelegationContractError("Delegation receipt has invalid cost tier")
+    if receipt.get("written_paths"):
+        patterns = contract["scope"]
+        out_of_scope = [path for path in receipt["written_paths"] if not any(fnmatch(path, pattern) for pattern in patterns)]
+        if out_of_scope:
+            raise DelegationContractError(f"Delegation write is outside approved scope: {out_of_scope}")
+    changed_identity = receipt.get("backend") != contract.get("backend") or receipt.get("model_id") != contract.get("model_id")
+    if changed_identity:
+        declared = any(
+            candidate.get("backend") == receipt.get("backend") and candidate.get("model_id") == receipt.get("model_id")
+            for candidate in contract.get("fallback_candidates", [])
+            if isinstance(candidate, dict)
+        )
+        if not declared:
+            raise DelegationContractError("Delegation substitution is not a declared fallback candidate")
+    changed_boundary = any(
+        receipt.get(field) != contract.get(field)
+        for field in ("cost_tier", "capability_class")
+    ) or bool(receipt.get("write_capable")) != bool(contract["authority"].get("write"))
+    if changed_boundary:
+        raise DelegationContractError("Delegation substitution requires renewed approval")
+    return True
 
 
 class PolicyViolation(Exception):

@@ -73,6 +73,9 @@ import sys
 import tempfile
 import urllib.error
 import urllib.request
+from pathlib import Path
+
+from model_catalog import CatalogContractError, load_catalog, select_model
 
 # ── Defaults per CLI ──────────────────────────────────────────────────────────
 def _load_default_models() -> dict[str, str | None]:
@@ -143,7 +146,7 @@ def build_prompt(persona: str, source: str, instruction: str, isolated: bool) ->
     if has_persona:
         parts.append(persona)
     if has_source:
-        parts.append(f"---SOURCE---\n{source}" if has_persona else source)
+        parts.append(f"---SOURCE---\n{source}\n---END SOURCE---")
     if has_instruction:
         label = "---INSTRUCTION---\n" if (has_persona or has_source) else ""
         parts.append(f"{label}{instruction}")
@@ -240,15 +243,42 @@ def _call_llama_direct(
 
 # ── Main orchestrator ─────────────────────────────────────────────────────────
 
-def _resolve_cli_and_model(cli: str, model: str | None) -> tuple:
+def _catalog_key_for_cli(cli: str) -> str:
+    """Map CLI aliases to the authoritative runtime catalog key."""
+    return "agy" if cli == "gemini" else cli
+
+
+def _resolve_catalog_model(cli: str, tier: str) -> str:
+    """Resolve a catalog-backed model, failing closed when the contract is invalid."""
+    if cli == "llama":
+        return _DEFAULT_MODELS[cli] or ""
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+    catalog_path = os.path.join(
+        script_dir, "..", "references", f"{_catalog_key_for_cli(cli)}-models.json"
+    )
+    cheapest = None
+    cheapest_path = os.path.join(script_dir, "..", "references", "cheapest_models.json")
+    try:
+        with open(cheapest_path, "r", encoding="utf-8") as handle:
+            cheapest = json.load(handle).get(_catalog_key_for_cli(cli), {}).get("model")
+        catalog = load_catalog(Path(catalog_path))
+        return select_model(catalog, tier, preferred_model=cheapest if tier == "low" else None)
+    except (OSError, json.JSONDecodeError, CatalogContractError) as exc:
+        raise ValueError(f"Unable to resolve a valid model catalog for {cli}: {exc}") from exc
+
+
+def _resolve_cli_and_model(cli: str, model: str | None, tier: str = "low") -> tuple:
     """Validate/lowercase the cli name, resolve the default model, and inject Homebrew PATH on macOS."""
     cli = cli.lower()
     if cli not in _DEFAULT_MODELS:
         print(f"Error: unknown cli '{cli}'. Choose from: {', '.join(_DEFAULT_MODELS)}")
         sys.exit(1)
 
+    if tier not in ("low", "medium", "high"):
+        raise ValueError(f"Unsupported capability tier: {tier}")
+
     if model is None:
-        model = _DEFAULT_MODELS[cli] or ""
+        model = _resolve_catalog_model(cli, tier)
 
     # Homebrew path injection for macOS
     if os.path.exists("/opt/homebrew/bin") and "/opt/homebrew/bin" not in os.environ.get("PATH", ""):
@@ -310,12 +340,17 @@ def run_agent(
     model: str | None = None,
     isolated: bool = False,
     max_tokens: int = _LLAMA_MAX_TOKENS_DEFAULT,
+    require_input: bool = False,
+    tier: str = "low",
 ) -> None:
     """Assemble the prompt and dispatch it to the selected backend, writing output_file."""
-    cli, model = _resolve_cli_and_model(cli, model)
+    cli, model = _resolve_cli_and_model(cli, model, tier)
 
     persona = read_file_or_empty(resolve_path(persona_file))
-    source = read_file_or_empty(resolve_path(input_file))
+    resolved_input = resolve_path(input_file)
+    source = read_file_or_empty(resolved_input)
+    if require_input and not source.strip():
+        raise ValueError(f"Required input is missing or empty: {input_file}")
     prompt = build_prompt(persona, source, instruction, isolated)
 
     os.makedirs(os.path.dirname(os.path.abspath(output_file)), exist_ok=True)
@@ -389,6 +424,10 @@ if __name__ == "__main__":
         parser.add_argument("--model", "-m", default=None,
                             help="Model identifier (default: per backend)")
         parser.add_argument(
+            "--tier", choices=("low", "medium", "high"), default="low",
+            help="Capability/cost tier used when --model is omitted (default: low)",
+        )
+        parser.add_argument(
             "--max-tokens", type=int, default=_LLAMA_MAX_TOKENS_DEFAULT,
             help=f"Max output tokens for cli=llama (default: {_LLAMA_MAX_TOKENS_DEFAULT})",
         )
@@ -396,6 +435,11 @@ if __name__ == "__main__":
             "--isolated", action="store_true",
             help="Isolation mode: append safety footer; suppress --yolo / dangerous flags",
         )
+        parser.add_argument(
+            "--require-input", action="store_true",
+            help="Fail before dispatch when input_file is missing or empty.",
+        )
         args = parser.parse_args()
         run_agent(args.persona_file, args.input_file, args.output_file, args.instruction,
-                  args.cli, args.model, args.isolated, args.max_tokens)
+                  args.cli, args.model, args.isolated, args.max_tokens, args.require_input,
+                  args.tier)
