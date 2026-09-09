@@ -1059,6 +1059,12 @@ templates:
     - Yes, multi-agent review — sub-agent (internal) [Recommended]
     - Yes, multi-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)
     default: Yes, multi-agent review — sub-agent (internal) [Recommended]
+    accepted_answers:
+    - Yes, proceed to WORKTREE_REVIEW — skip review entirely
+    - Yes, single-agent review — sub-agent (internal)
+    - Yes, single-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)
+    - Yes, multi-agent review — sub-agent (internal) [Recommended]
+    - Yes, multi-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)
   approval:
     required: false
     approver_role: agent_or_human

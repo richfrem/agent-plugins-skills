@@ -1003,6 +1003,56 @@ def test_gate_blocks_worktree_review_entry_without_test_suite_receipt(control_pl
     assert control_plane.get_task(task_id)["state"] == "WORKTREE_REVIEW"
 
 
+def test_worktree_review_question_rejects_negative_answer_before_commit(control_plane, tmp_path):
+    """A negative review-submission answer must not advance the persisted state."""
+    task_id = "task-review-question-answer-001"
+    control_plane.repo_root = tmp_path
+    (tmp_path / "docs" / "plans").mkdir(parents=True)
+    (tmp_path / "docs" / "plans" / f"{task_id}-spec.md").write_text("# spec", encoding="utf-8")
+    (tmp_path / "docs" / "plans" / f"{task_id}-implementation-plan.md").write_text("# plan", encoding="utf-8")
+    (tmp_path / ".worktrees" / task_id).mkdir(parents=True)
+    control_plane.create_task(task_id=task_id, title="Review question answer", runtime_tool="claude")
+    control_plane.record_plan_mode_entry(task_id=task_id, actor="controller")
+    stage_human_decisions(control_plane, task_id, "INTAKE", "PLAN_REVIEW")
+    control_plane.transition(task_id, "PLAN_REVIEW", "controller", "Plan ready")
+    control_plane.record_review_skip(task_id, "multi_agent_review", "user", "Not needed for this test")
+    control_plane.transition(task_id, "AWAITING_APPROVAL", "controller", "Review ready")
+    stage_human_decisions(control_plane, task_id, "AWAITING_APPROVAL", "APPROVED")
+    control_plane.transition(task_id, "APPROVED", "user", "Approved")
+    control_plane.record_human_approval(task_id, "user")
+    control_plane.transition(task_id, "IN_WORKTREE", "controller", "Worktree created")
+    control_plane.record_verification_receipt(task_id, "test_suite", "pytest", 0)
+
+    from control_plane.coordinator import TransitionCoordinator
+
+    negative = TransitionCoordinator(
+        control_plane,
+        input_fn=lambda _prompt: "1",
+    )
+    with pytest.raises(TransitionCoordinatorError, match="does not authorize"):
+        negative.coordinate_transition(
+            task_id=task_id,
+            to_state="WORKTREE_REVIEW",
+            actor="human",
+            reason="User declined submission",
+            interactive=True,
+        )
+    assert control_plane.get_task(task_id)["state"] == "IN_WORKTREE"
+
+    positive = TransitionCoordinator(
+        control_plane,
+        input_fn=lambda _prompt: "2",
+    )
+    record = positive.coordinate_transition(
+        task_id=task_id,
+        to_state="WORKTREE_REVIEW",
+        actor="human",
+        reason="User approved submission",
+        interactive=True,
+    )
+    assert record.to_state == "WORKTREE_REVIEW"
+
+
 def test_transition_race_condition_guarded_by_state_predicate(control_plane, temp_db_path, monkeypatch):
     """Test that a stale internal state read (simulating a concurrent writer changing the
     row between read and write) raises ConcurrentModificationError instead of silently

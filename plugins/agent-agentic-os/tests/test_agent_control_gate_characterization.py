@@ -65,6 +65,8 @@ def _coordinate_transition(cp: ControlPlane, task_id: str, to_state: str, actor=
     from control_plane.registry import TransitionRegistry
     reg = TransitionRegistry.load_default()
     def _answer(prompt):
+        if "confirm_review_in_worktree_to_worktree_review" in prompt:
+            return "2"  # The first option is the explicit negative answer for this gate.
         return "y" if "(y/n)" in prompt else "1"
     coord = TransitionCoordinator(control_plane=cp, registry=reg, input_fn=_answer)
     return coord.coordinate_transition(

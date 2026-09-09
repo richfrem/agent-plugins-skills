@@ -357,6 +357,22 @@ class TransitionRegistry:
                     raise TransitionRegistryError(f"Field 'deterministic_checks' must be a list in template '{item.get('transition_id')}'")
                 if not isinstance(item["human_questions"], list):
                     raise TransitionRegistryError(f"Field 'human_questions' must be a list in template '{item.get('transition_id')}'")
+                for question in item["human_questions"]:
+                    if not isinstance(question, dict):
+                        raise TransitionRegistryError(
+                            f"Human question must be a mapping in template '{item.get('transition_id')}'"
+                        )
+                    accepted_answers = question.get("accepted_answers")
+                    if accepted_answers is not None:
+                        if not isinstance(accepted_answers, list) or not accepted_answers:
+                            raise TransitionRegistryError(
+                                f"Field 'accepted_answers' must be a non-empty list in template '{item.get('transition_id')}'"
+                            )
+                        options = question.get("options", [])
+                        if not isinstance(options, list) or any(answer not in options for answer in accepted_answers):
+                            raise TransitionRegistryError(
+                                f"Field 'accepted_answers' must contain only declared options in template '{item.get('transition_id')}'"
+                            )
                 if not isinstance(item["approval"], dict):
                     raise TransitionRegistryError(f"Field 'approval' must be a dict in template '{item.get('transition_id')}'")
                 if not isinstance(item["skip"], dict):

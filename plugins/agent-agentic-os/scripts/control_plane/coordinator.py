@@ -253,7 +253,7 @@ class TransitionCoordinator:
 
             if interactive:
                 # Sequential presentation: prompt 1 question at a time
-                prompt_str = f"Select option [Recommended: {default_opt}]: "
+                prompt_str = f"{qid}: Select option [Recommended: {default_opt}]: "
                 user_input = self._input_fn(prompt_str).strip()
                 if not user_input:
                     raise TransitionCoordinatorError(
@@ -283,6 +283,12 @@ class TransitionCoordinator:
                 raise TransitionCoordinatorError(
                     f"Invalid undeclared answer option '{chosen_ans}' for question '{qid}'. "
                     f"Valid options: {options}"
+                )
+            accepted_answers = q.get("accepted_answers")
+            if accepted_answers is not None and chosen_ans not in accepted_answers:
+                raise TransitionCoordinatorError(
+                    f"Answer '{chosen_ans}' for question '{qid}' does not authorize this transition. "
+                    f"Accepted answers: {accepted_answers}"
                 )
 
             staged_decisions.append(
