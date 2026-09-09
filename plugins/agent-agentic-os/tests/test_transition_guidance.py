@@ -71,6 +71,35 @@ def test_guidance_cannot_authorize_illegal_requested_edge(control_plane):
     assert guidance["recovery_states"] == ALLOWED_TRANSITIONS["INTAKE"]
 
 
+def test_done_guidance_names_retrospective_recording_protocol(control_plane):
+    task_id = "guidance-retrospective-001"
+    control_plane.create_task(task_id=task_id, title="Retrospective guidance", runtime_tool="codex")
+    registry = TransitionRegistry.load_default()
+    template = registry.get_template("RETROSPECTIVE", "DONE")
+
+    assert template is not None
+    hint = template.next_steps_hint.lower()
+    assert "record_retrospective" in hint
+    assert "before" in hint and "done" in hint
+    assert "defaults are not inferred" in hint
+
+
+def test_standard_path_hints_name_each_operational_handoff(control_plane):
+    registry = TransitionRegistry.load_default()
+    expected = {
+        ("INTERVIEW", "DRAFT_PLAN"): ("record-plan-mode-entry", "verify-interview-question"),
+        ("DRAFT_PLAN", "MULTI_AGENT_REVIEW"): ("plan artifacts", "coordinate-transition"),
+        ("DRAFT_PLAN", "AWAITING_APPROVAL"): ("record-critic-review", "record-review-skip"),
+        ("APPROVED", "IN_WORKTREE"): ("record-human-approval", "worktree"),
+        ("VERIFY_EXIT", "RETROSPECTIVE"): ("test_suite", "leak_check", "references/map-debt.md"),
+    }
+    for edge, markers in expected.items():
+        template = registry.get_template(*edge)
+        assert template is not None
+        hint = template.next_steps_hint.lower()
+        assert all(marker.lower() in hint for marker in markers), (edge, hint)
+
+
 def test_stale_yaml_next_state_claim_is_ignored_for_guidance_legality(control_plane):
     task_id = "guidance-stale-001"
     control_plane.create_task(task_id=task_id, title="Guidance", runtime_tool="codex")
