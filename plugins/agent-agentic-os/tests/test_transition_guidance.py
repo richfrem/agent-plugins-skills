@@ -100,6 +100,18 @@ def test_standard_path_hints_name_each_operational_handoff(control_plane):
         assert all(marker.lower() in hint for marker in markers), (edge, hint)
 
 
+def test_worktree_review_exit_hint_explains_skip_branch_and_human_question_boundary():
+    registry = TransitionRegistry.load_default()
+    template = registry.get_template("WORKTREE_REVIEW", "VERIFY_EXIT")
+
+    assert template is not None
+    hint = template.next_steps_hint.lower()
+    assert "no additional human question is required" in hint
+    assert "--skip-review" in hint
+    assert "--skip-reason" in hint
+    assert "multi_agent_code_review" in hint
+
+
 def test_stale_yaml_next_state_claim_is_ignored_for_guidance_legality(control_plane):
     task_id = "guidance-stale-001"
     control_plane.create_task(task_id=task_id, title="Guidance", runtime_tool="codex")

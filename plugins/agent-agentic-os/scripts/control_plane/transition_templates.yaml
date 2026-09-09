@@ -1194,7 +1194,7 @@ templates:
   from_state: WORKTREE_REVIEW
   to_state: VERIFY_EXIT
   purpose: Advance reviewed code to final exit verification and baseline sovereignty checks.
-  next_steps_hint: "First satisfy code_review_or_skip; use: satisfy the registered code_review_or_skip check. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to VERIFY_EXIT."
+  next_steps_hint: "Direct path after an explicit review skip: no additional human question is required here. Record the skip reason and satisfy code_review_or_skip with: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to VERIFY_EXIT --skip-review --skip-reason '<reason>'. If code review is wanted instead, answer the WORKTREE_REVIEW -> MULTI_AGENT_CODE_REVIEW question first; do not infer a review choice from this deterministic edge."
   checklist:
   - Current task state is persisted as WORKTREE_REVIEW
   - 'Deterministic check satisfied: code_review_or_skip'
