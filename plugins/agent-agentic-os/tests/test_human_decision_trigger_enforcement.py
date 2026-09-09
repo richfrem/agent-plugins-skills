@@ -389,7 +389,7 @@ def test_reproduce_live_self_approval_bypass_rejected(test_env):
     reg = TransitionRegistry.load_default()
     coord = TransitionCoordinator(control_plane=cp, registry=reg)
 
-    with pytest.raises((TransitionCoordinatorError, PersistenceInvariantViolation)):
+    with pytest.raises(TransitionCoordinatorError, match="interactive human provenance"):
         coord.coordinate_transition(
             task_id=task_id,
             to_state="APPROVED",
@@ -752,4 +752,3 @@ def test_recovery_approval_alignment_and_security_guarantees(test_env):
             actor="admin",
             reason="Attempt reusing consumed token from old occupancy"
         )
-

@@ -50,6 +50,7 @@ from agent_control import (
     ConcurrentModificationError,
     CURRENT_SCHEMA_VERSION,
 )
+from control_plane.coordinator import TransitionCoordinatorError
 from interview_spec_engine import (
     detect_intake_mode,
 )
@@ -569,6 +570,47 @@ def test_facade_coordinate_transition_forwards_skip_review_and_skip_reason(contr
             skip_review=True, skip_reason="test skip",
         )
         assert control_plane.get_task(task_id)["state"] == "AWAITING_APPROVAL"
+    finally:
+        spec_path.unlink(missing_ok=True)
+        plan_path.unlink(missing_ok=True)
+
+
+def test_facade_rejects_noninteractive_human_provenance(control_plane):
+    """The public facade must reject programmatic answers labeled as human input.
+
+    This is the RED provenance contract for Task 1.  The interactive path is the
+    only supported source of a human-gated decision; ``--answers --actor human``
+    must fail explicitly before a database-trigger error obscures the cause.
+    """
+    task_id = "task-facade-human-provenance-001"
+    control_plane.create_task(task_id=task_id, title="Human provenance test", runtime_tool="claude")
+    control_plane.record_plan_mode_entry(task_id=task_id, actor="human")
+    stage_interview_answers(control_plane, task_id)
+    control_plane.transition(task_id=task_id, to_state="DRAFT_PLAN", actor="human", reason="test")
+
+    spec_path = Path(f"docs/plans/{task_id}-spec.md")
+    plan_path = Path(f"docs/plans/{task_id}-implementation-plan.md")
+    spec_path.parent.mkdir(parents=True, exist_ok=True)
+    spec_path.write_text("spec")
+    plan_path.write_text("plan")
+    try:
+        control_plane.coordinate_transition(
+            task_id=task_id,
+            to_state="AWAITING_APPROVAL",
+            actor="agent",
+            reason="Review skipped for provenance test setup",
+            skip_review=True,
+            skip_reason="Test isolates the later human approval boundary",
+        )
+        with pytest.raises(TransitionCoordinatorError, match="interactive human provenance"):
+            control_plane.coordinate_transition(
+                task_id=task_id,
+                to_state="APPROVED",
+                actor="human",
+                reason="Programmatic answer must not impersonate human input",
+                provided_answers={"human_implementation_approval": "Yes, approve implementation [Recommended]"},
+                approval_decision="APPROVAL",
+            )
     finally:
         spec_path.unlink(missing_ok=True)
         plan_path.unlink(missing_ok=True)
