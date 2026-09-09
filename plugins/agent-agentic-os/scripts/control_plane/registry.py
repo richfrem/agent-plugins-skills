@@ -44,6 +44,24 @@ REQUIRED_TEMPLATE_FIELDS = [
 ]
 
 TRANSITION_GUIDANCE_SCHEMA_VERSION = "transition-guidance-v1"
+EXECUTION_GUIDANCE_UNITS = (
+    "work_package",
+    "task",
+    "slice",
+    "transition",
+    "execution_step",
+)
+EXECUTION_GUIDANCE_FIELDS = (
+    "objective",
+    "scope_boundary",
+    "prerequisites",
+    "authority",
+    "expected_artifacts",
+    "validation_command",
+    "completion_evidence",
+    "handoff_condition",
+    "failure_recovery",
+)
 
 
 @dataclass(frozen=True)
@@ -97,11 +115,13 @@ class TransitionRegistry:
         self,
         templates: List[TransitionTemplate],
         stage_contracts: Optional[Dict[str, Dict[str, Any]]] = None,
+        execution_guidance: Optional[Dict[str, Dict[str, Any]]] = None,
     ):
         self._templates_by_edge: Dict[Tuple[str, str], TransitionTemplate] = {}
         self._templates_by_id: Dict[str, TransitionTemplate] = {}
         self._capability_to_edges: Dict[str, List[Tuple[str, str]]] = {}
         self._stage_contracts = dict(stage_contracts or {})
+        self._execution_guidance = dict(execution_guidance or {})
 
         for t in templates:
             edge = (t.from_state, t.to_state)
@@ -171,6 +191,10 @@ class TransitionRegistry:
             "current_state": from_state,
             "legal_next_states": legal_next_states,
             "transitions": transitions,
+            "execution_guidance": {
+                unit: dict(self._execution_guidance[unit])
+                for unit in EXECUTION_GUIDANCE_UNITS
+            },
         }
         if to_state is None:
             return result
@@ -270,6 +294,30 @@ class TransitionRegistry:
                     raise TransitionRegistryError(f"Stage '{state}' field '{field}' must be a list")
             stage_contracts[state] = contract
 
+        raw_execution_guidance = data.get("execution_guidance")
+        if not isinstance(raw_execution_guidance, dict):
+            raise TransitionRegistryError("YAML root must contain an 'execution_guidance' mapping")
+        execution_guidance: Dict[str, Dict[str, Any]] = {}
+        for unit in EXECUTION_GUIDANCE_UNITS:
+            contract = raw_execution_guidance.get(unit)
+            if not isinstance(contract, dict):
+                raise TransitionRegistryError(
+                    f"execution_guidance must define mapping for '{unit}'"
+                )
+            if contract.get("advisory") is not True:
+                raise TransitionRegistryError(
+                    f"execution_guidance.{unit}.advisory must be true"
+                )
+            if contract.get("required_fields") != list(EXECUTION_GUIDANCE_FIELDS):
+                raise TransitionRegistryError(
+                    f"execution_guidance.{unit}.required_fields must match the execution guidance contract"
+                )
+            if not isinstance(contract.get("instruction"), str) or not contract["instruction"].strip():
+                raise TransitionRegistryError(
+                    f"execution_guidance.{unit}.instruction must be a non-empty string"
+                )
+            execution_guidance[unit] = contract
+
         parsed: List[TransitionTemplate] = []
         for idx, raw_item in enumerate(raw_templates):
             if not isinstance(raw_item, dict):
@@ -309,6 +357,22 @@ class TransitionRegistry:
                     raise TransitionRegistryError(f"Field 'deterministic_checks' must be a list in template '{item.get('transition_id')}'")
                 if not isinstance(item["human_questions"], list):
                     raise TransitionRegistryError(f"Field 'human_questions' must be a list in template '{item.get('transition_id')}'")
+                for question in item["human_questions"]:
+                    if not isinstance(question, dict):
+                        raise TransitionRegistryError(
+                            f"Human question must be a mapping in template '{item.get('transition_id')}'"
+                        )
+                    accepted_answers = question.get("accepted_answers")
+                    if accepted_answers is not None:
+                        if not isinstance(accepted_answers, list) or not accepted_answers:
+                            raise TransitionRegistryError(
+                                f"Field 'accepted_answers' must be a non-empty list in template '{item.get('transition_id')}'"
+                            )
+                        options = question.get("options", [])
+                        if not isinstance(options, list) or any(answer not in options for answer in accepted_answers):
+                            raise TransitionRegistryError(
+                                f"Field 'accepted_answers' must contain only declared options in template '{item.get('transition_id')}'"
+                            )
                 if not isinstance(item["approval"], dict):
                     raise TransitionRegistryError(f"Field 'approval' must be a dict in template '{item.get('transition_id')}'")
                 if not isinstance(item["skip"], dict):
@@ -362,7 +426,7 @@ class TransitionRegistry:
                 )
                 parsed.append(t)
 
-        return cls(parsed, stage_contracts)
+        return cls(parsed, stage_contracts, execution_guidance)
 
     @classmethod
     def load_default(cls) -> "TransitionRegistry":

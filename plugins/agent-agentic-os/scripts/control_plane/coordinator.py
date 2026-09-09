@@ -90,6 +90,21 @@ class TransitionCoordinator:
                 f"No template registered for transition ({current_state} -> {to_state})."
             )
 
+        # Programmatic answers must never be presented as interactive human
+        # provenance.  The SQLite trigger remains the final authority, but
+        # rejecting this combination here gives callers an explicit, actionable
+        # error instead of leaking a low-level persistence failure.
+        human_gated = bool(template.human_questions or template.stage_question_ids)
+        human_gated = human_gated or (
+            template.approval.get("required")
+            and template.approval.get("approver_role", "human") == "human"
+        )
+        if actor == "human" and not interactive and provided_answers and human_gated:
+            raise TransitionCoordinatorError(
+                "Non-interactive answers cannot claim interactive human provenance; "
+                "use --interactive for a genuine human decision."
+            )
+
         # 3. Read current occupancy ID
         last_trans = self._cp._persistence.get_last_transition(task_id)
         source_occupancy_id = last_trans.transition_id if last_trans else None
@@ -238,7 +253,7 @@ class TransitionCoordinator:
 
             if interactive:
                 # Sequential presentation: prompt 1 question at a time
-                prompt_str = f"Select option [Recommended: {default_opt}]: "
+                prompt_str = f"{qid}: Select option [Recommended: {default_opt}]: "
                 user_input = self._input_fn(prompt_str).strip()
                 if not user_input:
                     raise TransitionCoordinatorError(
@@ -268,6 +283,12 @@ class TransitionCoordinator:
                 raise TransitionCoordinatorError(
                     f"Invalid undeclared answer option '{chosen_ans}' for question '{qid}'. "
                     f"Valid options: {options}"
+                )
+            accepted_answers = q.get("accepted_answers")
+            if accepted_answers is not None and chosen_ans not in accepted_answers:
+                raise TransitionCoordinatorError(
+                    f"Answer '{chosen_ans}' for question '{qid}' does not authorize this transition. "
+                    f"Accepted answers: {accepted_answers}"
                 )
 
             staged_decisions.append(
@@ -395,6 +416,11 @@ class TransitionCoordinator:
         self._out.write(f"- Success: {guidance['success_guidance']}\n")
         for helper in guidance.get("helper_commands", []):
             self._out.write(f"- Helper: {helper}\n")
+        self._out.write("Execution-unit guidance (advisory):\n")
+        for unit, contract in guidance.get("execution_guidance", {}).items():
+            fields = ", ".join(contract.get("required_fields", []))
+            self._out.write(f"- {unit}: {contract.get('instruction', '')}\n")
+            self._out.write(f"  Required evidence fields: {fields}\n")
         self._out.write("- Guidance is advisory only; policy, human gates, and SQLite remain authoritative.\n\n")
 
     def _stage_plan_artifact_submission(

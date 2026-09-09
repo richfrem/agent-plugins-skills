@@ -50,6 +50,7 @@ from agent_control import (
     ConcurrentModificationError,
     CURRENT_SCHEMA_VERSION,
 )
+from control_plane.coordinator import TransitionCoordinatorError
 from interview_spec_engine import (
     detect_intake_mode,
 )
@@ -574,6 +575,47 @@ def test_facade_coordinate_transition_forwards_skip_review_and_skip_reason(contr
         plan_path.unlink(missing_ok=True)
 
 
+def test_facade_rejects_noninteractive_human_provenance(control_plane):
+    """The public facade must reject programmatic answers labeled as human input.
+
+    This is the RED provenance contract for Task 1.  The interactive path is the
+    only supported source of a human-gated decision; ``--answers --actor human``
+    must fail explicitly before a database-trigger error obscures the cause.
+    """
+    task_id = "task-facade-human-provenance-001"
+    control_plane.create_task(task_id=task_id, title="Human provenance test", runtime_tool="claude")
+    control_plane.record_plan_mode_entry(task_id=task_id, actor="human")
+    stage_interview_answers(control_plane, task_id)
+    control_plane.transition(task_id=task_id, to_state="DRAFT_PLAN", actor="human", reason="test")
+
+    spec_path = Path(f"docs/plans/{task_id}-spec.md")
+    plan_path = Path(f"docs/plans/{task_id}-implementation-plan.md")
+    spec_path.parent.mkdir(parents=True, exist_ok=True)
+    spec_path.write_text("spec")
+    plan_path.write_text("plan")
+    try:
+        control_plane.coordinate_transition(
+            task_id=task_id,
+            to_state="AWAITING_APPROVAL",
+            actor="agent",
+            reason="Review skipped for provenance test setup",
+            skip_review=True,
+            skip_reason="Test isolates the later human approval boundary",
+        )
+        with pytest.raises(TransitionCoordinatorError, match="interactive human provenance"):
+            control_plane.coordinate_transition(
+                task_id=task_id,
+                to_state="APPROVED",
+                actor="human",
+                reason="Programmatic answer must not impersonate human input",
+                provided_answers={"human_implementation_approval": "Yes, approve implementation [Recommended]"},
+                approval_decision="APPROVAL",
+            )
+    finally:
+        spec_path.unlink(missing_ok=True)
+        plan_path.unlink(missing_ok=True)
+
+
 def test_cli_transition_parsers_accept_skip_review_flags():
     """Regression test: the 'transition' and 'coordinate-transition' argparse subparsers
     must expose --skip-review/--skip-reason — _dispatch_command() reads them via
@@ -961,6 +1003,56 @@ def test_gate_blocks_worktree_review_entry_without_test_suite_receipt(control_pl
     assert control_plane.get_task(task_id)["state"] == "WORKTREE_REVIEW"
 
 
+def test_worktree_review_question_rejects_negative_answer_before_commit(control_plane, tmp_path):
+    """A negative review-submission answer must not advance the persisted state."""
+    task_id = "task-review-question-answer-001"
+    control_plane.repo_root = tmp_path
+    (tmp_path / "docs" / "plans").mkdir(parents=True)
+    (tmp_path / "docs" / "plans" / f"{task_id}-spec.md").write_text("# spec", encoding="utf-8")
+    (tmp_path / "docs" / "plans" / f"{task_id}-implementation-plan.md").write_text("# plan", encoding="utf-8")
+    (tmp_path / ".worktrees" / task_id).mkdir(parents=True)
+    control_plane.create_task(task_id=task_id, title="Review question answer", runtime_tool="claude")
+    control_plane.record_plan_mode_entry(task_id=task_id, actor="controller")
+    stage_human_decisions(control_plane, task_id, "INTAKE", "PLAN_REVIEW")
+    control_plane.transition(task_id, "PLAN_REVIEW", "controller", "Plan ready")
+    control_plane.record_review_skip(task_id, "multi_agent_review", "user", "Not needed for this test")
+    control_plane.transition(task_id, "AWAITING_APPROVAL", "controller", "Review ready")
+    stage_human_decisions(control_plane, task_id, "AWAITING_APPROVAL", "APPROVED")
+    control_plane.transition(task_id, "APPROVED", "user", "Approved")
+    control_plane.record_human_approval(task_id, "user")
+    control_plane.transition(task_id, "IN_WORKTREE", "controller", "Worktree created")
+    control_plane.record_verification_receipt(task_id, "test_suite", "pytest", 0)
+
+    from control_plane.coordinator import TransitionCoordinator
+
+    negative = TransitionCoordinator(
+        control_plane,
+        input_fn=lambda _prompt: "1",
+    )
+    with pytest.raises(TransitionCoordinatorError, match="does not authorize"):
+        negative.coordinate_transition(
+            task_id=task_id,
+            to_state="WORKTREE_REVIEW",
+            actor="human",
+            reason="User declined submission",
+            interactive=True,
+        )
+    assert control_plane.get_task(task_id)["state"] == "IN_WORKTREE"
+
+    positive = TransitionCoordinator(
+        control_plane,
+        input_fn=lambda _prompt: "2",
+    )
+    record = positive.coordinate_transition(
+        task_id=task_id,
+        to_state="WORKTREE_REVIEW",
+        actor="human",
+        reason="User approved submission",
+        interactive=True,
+    )
+    assert record.to_state == "WORKTREE_REVIEW"
+
+
 def test_transition_race_condition_guarded_by_state_predicate(control_plane, temp_db_path, monkeypatch):
     """Test that a stale internal state read (simulating a concurrent writer changing the
     row between read and write) raises ConcurrentModificationError instead of silently
@@ -1172,15 +1264,29 @@ def test_registry_malformed_field_fails_closed(tmp_path):
     loading malformed YAML or missing required schema fields."""
     from control_plane.registry import TransitionRegistry, TransitionRegistryError
 
+    import yaml
+
     bad_yaml = tmp_path / "bad_templates.yaml"
-    bad_yaml.write_text("""
-templates:
-  - transition_id: "intake_to_interview"
-    from_state: "INTAKE"
-    to_state: "INTERVIEW"
-    purpose: "Begin interview"
-    # Missing required fields
-""", encoding="utf-8")
+    source = yaml.safe_load(
+        (SCRIPTS_DIR / "control_plane" / "transition_templates.yaml").read_text(encoding="utf-8")
+    )
+    bad_yaml.write_text(
+        yaml.safe_dump(
+            {
+                "execution_guidance": source["execution_guidance"],
+                "templates": [
+                    {
+                        "transition_id": "intake_to_interview",
+                        "from_state": "INTAKE",
+                        "to_state": "INTERVIEW",
+                        "purpose": "Begin interview",
+                        # Missing required template fields.
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
 
     with pytest.raises(TransitionRegistryError, match="Missing required field"):
         TransitionRegistry.load_from_file(bad_yaml)

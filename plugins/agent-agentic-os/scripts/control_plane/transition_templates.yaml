@@ -135,6 +135,37 @@ stages:
     - Issue-worthy follow-ups are confirmed and tracked before DONE.
     - The final complete-or-skip decision is asked only after this survey is complete.
 
+execution_guidance:
+  work_package:
+    advisory: true
+    required_fields: &execution_guidance_fields
+    - objective
+    - scope_boundary
+    - prerequisites
+    - authority
+    - expected_artifacts
+    - validation_command
+    - completion_evidence
+    - handoff_condition
+    - failure_recovery
+    instruction: Define the approved work-package outcome, boundaries, delegated authority, artifacts, validation, handoff, and recovery before executing its tasks.
+  task:
+    advisory: true
+    required_fields: *execution_guidance_fields
+    instruction: Execute one bounded task from the work package; preserve its scope, use the approved authority, produce its named artifacts, run its validation, and report completion or recovery evidence.
+  slice:
+    advisory: true
+    required_fields: *execution_guidance_fields
+    instruction: Treat each slice as a small independently verifiable increment; state its prerequisites, implement only its boundary, validate it, and hand off only with the required evidence.
+  transition:
+    advisory: true
+    required_fields: *execution_guidance_fields
+    instruction: Before each lifecycle transition, resolve the edge guidance, satisfy its questions and checks through the supported mechanism, and use the success or denial recovery path without treating advisory text as authority.
+  execution_step:
+    advisory: true
+    required_fields: *execution_guidance_fields
+    instruction: Perform the next concrete command or edit only after confirming its prerequisite; record the expected artifact or test evidence and stop for a gate, failure, or scope change.
+
 templates:
 - transition_id: intake_to_interview
   from_state: INTAKE
@@ -172,9 +203,10 @@ templates:
   from_state: INTERVIEW
   to_state: RETROSPECTIVE
   purpose: Fast-track a TRIVIAL-classified task from the interview gate to the mandatory pipeline-close retrospective gate.
-  next_steps_hint: "Answer this edge's YAML questions with --interactive or --answers '<json>'. First satisfy interview_trivial_complete; use: verify-interview-question. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to RETROSPECTIVE."
+  next_steps_hint: "First record every listed stage_question_id (interview_classification, interview_summary, interview_scope, interview_verification, and interview_trivial_evidence) through the supported interview-question mechanism; defaults are not inferred. Then satisfy interview_trivial_complete with verify-interview-question, answer this edge's confirm_interview_complete question interactively, and run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to RETROSPECTIVE."
   checklist:
   - Current task state is persisted as INTERVIEW
+  - Every listed stage_question_id has a recorded answer for this INTERVIEW occupancy
   - Human has completed the INTERVIEW stage-entry questions and applicable follow-ups
   required_artifacts: []
   deterministic_checks:
@@ -302,7 +334,7 @@ templates:
   from_state: INTERVIEW
   to_state: DRAFT_PLAN
   purpose: Synthesize interview requirements into architectural specification and task implementation plan.
-  next_steps_hint: "First satisfy interview_standard_complete; use: verify-interview-question. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to DRAFT_PLAN."
+  next_steps_hint: "Record the standard interview answers through the supported interview-question mechanism, including acceptance criteria; defaults are not inferred. Then satisfy interview_standard_complete with verify-interview-question, record-plan-mode-entry or record-socratic-intake as applicable, and run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to DRAFT_PLAN."
   checklist:
   - Current task state is persisted as INTERVIEW
   - Standard interview questions and acceptance criteria are complete
@@ -407,7 +439,7 @@ templates:
   from_state: DRAFT_PLAN
   to_state: MULTI_AGENT_REVIEW
   purpose: Submit draft specification and implementation plan for independent multi-agent review.
-  next_steps_hint: "Answer this edge's YAML questions with --interactive or --answers '<json>'. Submit both plan artifacts; the coordinator records their content identity atomically. After a rejected review, revise an artifact or record a matching plan_artifact_revision receipt before resubmitting. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to MULTI_AGENT_REVIEW."
+  next_steps_hint: "Submit both plan artifacts; the coordinator records their content identity atomically. Answer this edge's YAML questions with --interactive or --answers '<json>'. After a rejected review, revise an artifact or record a matching plan_artifact_revision receipt before resubmitting. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to MULTI_AGENT_REVIEW."
   checklist:
   - Current task state is persisted as DRAFT_PLAN
   - Structural DAG transition from DRAFT_PLAN to MULTI_AGENT_REVIEW is legal
@@ -478,7 +510,7 @@ templates:
   from_state: DRAFT_PLAN
   to_state: AWAITING_APPROVAL
   purpose: Advance lifecycle state from DRAFT_PLAN to AWAITING_APPROVAL upon satisfying phase requirements and verifications.
-  next_steps_hint: "Submit both plan artifacts; the coordinator records their content identity atomically. After a rejected review, revise an artifact or record a matching plan_artifact_revision receipt before resubmitting. First satisfy critic_review_or_skip; use: record-critic-review or record-review-skip. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to AWAITING_APPROVAL."
+  next_steps_hint: "Submit both plan artifacts; the coordinator records their content identity atomically. After a rejected review, revise an artifact or record a matching plan_artifact_revision receipt before resubmitting. First satisfy critic_review_or_skip with record-critic-review or record-review-skip and an explicit reason. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to AWAITING_APPROVAL."
   checklist:
   - Current task state is persisted as DRAFT_PLAN
   - 'Deterministic check satisfied: critic_review_or_skip'
@@ -957,7 +989,7 @@ templates:
   from_state: APPROVED
   to_state: IN_WORKTREE
   purpose: Create isolated git worktree and begin test-first implementation.
-  next_steps_hint: "First satisfy human_approval; use: record-human-approval --task-id <task-id> --approver <approver>. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to IN_WORKTREE."
+  next_steps_hint: "First record human approval with record-human-approval --task-id <task-id> --approver <approver>, then create or select the approved isolated worktree and record its path/branch. Run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to IN_WORKTREE."
   checklist:
   - Current task state is persisted as APPROVED
   - 'Deterministic check satisfied: human_approval'
@@ -1027,6 +1059,12 @@ templates:
     - Yes, multi-agent review — sub-agent (internal) [Recommended]
     - Yes, multi-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)
     default: Yes, multi-agent review — sub-agent (internal) [Recommended]
+    accepted_answers:
+    - Yes, proceed to WORKTREE_REVIEW — skip review entirely
+    - Yes, single-agent review — sub-agent (internal)
+    - Yes, single-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)
+    - Yes, multi-agent review — sub-agent (internal) [Recommended]
+    - Yes, multi-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)
   approval:
     required: false
     approver_role: agent_or_human
@@ -1156,7 +1194,7 @@ templates:
   from_state: WORKTREE_REVIEW
   to_state: VERIFY_EXIT
   purpose: Advance reviewed code to final exit verification and baseline sovereignty checks.
-  next_steps_hint: "First satisfy code_review_or_skip; use: satisfy the registered code_review_or_skip check. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to VERIFY_EXIT."
+  next_steps_hint: "Direct path after an explicit review skip: no additional human question is required here. Record the skip reason and satisfy code_review_or_skip with: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to VERIFY_EXIT --skip-review --skip-reason '<reason>'. If code review is wanted instead, answer the WORKTREE_REVIEW -> MULTI_AGENT_CODE_REVIEW question first; do not infer a review choice from this deterministic edge."
   checklist:
   - Current task state is persisted as WORKTREE_REVIEW
   - 'Deterministic check satisfied: code_review_or_skip'
@@ -1397,7 +1435,7 @@ templates:
   from_state: VERIFY_EXIT
   to_state: RETROSPECTIVE
   purpose: Verify clean leak checks and enter the mandatory pipeline-close retrospective gate.
-  next_steps_hint: "First satisfy done_guard; use: verify-exit-verification. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to RETROSPECTIVE."
+  next_steps_hint: "First record passing test_suite and leak_check verification receipts through verify-exit-verification, and record asymmetric persistence evidence with destination wiki/decisions/<task-id>.md or references/map-debt.md (other destinations do not satisfy done_guard). Then satisfy done_guard and run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to RETROSPECTIVE."
   checklist:
   - Current task state is persisted as VERIFY_EXIT
   - 'Deterministic checks satisfied: test_suite, leak_check, and asymmetric persistence'
@@ -1422,7 +1460,7 @@ templates:
   from_state: RETROSPECTIVE
   to_state: DONE
   purpose: Complete the task after a completed retrospective or an explicitly reasoned skip.
-  next_steps_hint: "Answer this edge's YAML questions with --interactive or --answers '<json>'. First satisfy retrospective_done_guard; use: record retrospective decisions and satisfy the done guard. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to DONE."
+  next_steps_hint: "First persist the completed retrospective through the supported record_retrospective wrapper with the required entry fields and resolved follow-ups; do this before requesting DONE. Defaults are not inferred. Then answer this edge's retrospective_decision question one at a time with --interactive, satisfy retrospective_done_guard, and run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to DONE."
   checklist:
   - Current task state is persisted as RETROSPECTIVE
   - Retrospective survey is complete or explicitly skipped with a reason
