@@ -252,6 +252,13 @@ class PipelineSimulator:
         )
         run_exit_verification(
             task_id,
+            verifier_id="pytest_full_suite",
+            command=["python3", "-c", "print('full suite pass')"],
+            cwd=str(worktree),
+            control_plane=self.control_plane,
+        )
+        run_exit_verification(
+            task_id,
             verifier_id="leak_check",
             command=["python3", "-c", "print('clean')"],
             cwd=str(worktree),

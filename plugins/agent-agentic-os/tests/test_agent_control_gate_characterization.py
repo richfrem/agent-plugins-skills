@@ -80,6 +80,7 @@ def _coordinate_transition(cp: ControlPlane, task_id: str, to_state: str, actor=
 
 
 def _complete_retrospective(cp: ControlPlane, task_id: str):
+    cp.record_verification_receipt(task_id, "full_test_suite", "pytest -q", 0)
     cp.transition(task_id, "RETROSPECTIVE", "controller", "Enter retrospective")
     cp.save_retrospective(
         task_id,

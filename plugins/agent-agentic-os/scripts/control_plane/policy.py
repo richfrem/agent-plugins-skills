@@ -403,6 +403,12 @@ CHECK_REGISTRY: Dict[str, Any] = {
             "Call record_verification_receipt(gate_name='test_suite', ...)."
         )
     ),
+    "full_test_suite": lambda ctx: (
+        None if _gate_receipt_exists(ctx, "full_test_suite") else (
+            "Cannot advance: no recorded full_test_suite verification receipt found. "
+            "Run the repository-wide pytest -q suite through the approved verifier."
+        )
+    ),
     "code_review_or_skip": lambda ctx: (
         None if _gate_any_of(ctx, [
             {"type": "critic_review_pass"},

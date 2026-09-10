@@ -92,7 +92,7 @@ def test_standard_path_hints_name_each_operational_handoff(control_plane):
         ("PLAN_REVIEW", "MULTI_AGENT_REVIEW"): ("plan_review_method", "coordinate-transition"),
         ("PLAN_REVIEW", "AWAITING_APPROVAL"): ("record-critic-review", "record-review-skip"),
         ("APPROVED", "IN_WORKTREE"): ("record-human-approval", "worktree"),
-        ("VERIFY_EXIT", "RETROSPECTIVE"): ("test_suite", "leak_check", "references/map-debt.md"),
+        ("VERIFY_EXIT", "RETROSPECTIVE"): ("full_test_suite", "test_suite", "leak_check", "references/map-debt.md"),
     }
     for edge, markers in expected.items():
         template = registry.get_template(*edge)

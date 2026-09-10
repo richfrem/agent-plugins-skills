@@ -269,6 +269,21 @@ def test_evaluate_check_registry_contains_expected_checks():
     assert "plan_mode_or_socratic" in check_ids
     assert "human_approval" in check_ids
     assert "test_suite" in check_ids
+    assert "full_test_suite" in check_ids
+
+
+def test_full_test_suite_check_requires_repository_wide_receipt():
+    from control_plane import policy
+
+    with pytest.raises(policy.PolicyViolation, match="full_test_suite"):
+        policy.evaluate_check("full_test_suite", _base_ctx())
+
+    policy.evaluate_check(
+        "full_test_suite",
+        _base_ctx(
+            has_receipt=lambda gate_name: gate_name == "full_test_suite",
+        ),
+    )
 
 
 def test_unknown_check_type_fails_closed_not_open():

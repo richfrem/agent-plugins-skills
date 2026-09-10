@@ -31,13 +31,17 @@ VERIFIER_CATALOG: Dict[str, Dict[str, Any]] = {
         "command": ["pytest"],
         "gate_name": "test_suite",
     },
+    "pytest_full_suite": {
+        "command": ["pytest", "-q"],
+        "gate_name": "full_test_suite",
+    },
     "leak_check": {
         "command": ["python3", "-c", "print('clean')"],
         "gate_name": "leak_check",
     },
 }
 
-ALLOWED_GATES = {"test_suite", "leak_check", "exit_verification"}
+ALLOWED_GATES = {"test_suite", "full_test_suite", "leak_check", "exit_verification"}
 
 
 def run_exit_verification(

@@ -350,6 +350,7 @@ def test_push_hook_allows_when_done_with_valid_history(tmp_path):
     
     # Advance task to DONE (record test_suite before entering WORKTREE_REVIEW)
     cp.record_verification_receipt(task_id, "test_suite", "pytest", 0)
+    cp.record_verification_receipt(task_id, "full_test_suite", "pytest -q", 0)
     conn = sqlite3.connect(cp.db_path)
     last_trans = conn.execute("SELECT transition_id FROM task_transitions WHERE task_id = ? ORDER BY transition_id DESC LIMIT 1", (task_id,)).fetchone()[0]
     conn.execute(
