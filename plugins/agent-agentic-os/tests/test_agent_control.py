@@ -99,6 +99,16 @@ def stage_human_decisions(cp, task_id, from_state, to_state, actor="human", answ
     conn.close()
 
 
+def stage_worktree_metadata(cp, task_id, path=None, branch=None):
+    """Stage the explicit worktree metadata required before IN_WORKTREE."""
+    cp.update_worktree(
+        task_id,
+        path or f".worktrees/{task_id}",
+        branch or f"feature/{task_id}",
+        "written_in_worktree",
+    )
+
+
 def complete_retrospective(cp, task_id, actor="human"):
     """Move from VERIFY_EXIT through the new retrospective gate to DONE."""
     cp.transition(task_id=task_id, to_state="RETROSPECTIVE", actor="controller", reason="Enter retrospective")
@@ -191,8 +201,11 @@ def test_task_lifecycle_transitions(control_plane):
     control_plane.transition(task_id=task_id, to_state="DRAFT_PLAN", actor="interview-spec", reason="4-Pillar Spec compiled")
     assert control_plane.get_task(task_id)["state"] == "DRAFT_PLAN"
 
-    # 4. Critic review passes, move to AWAITING_APPROVAL
+    # 4. Critic review passes, merge at PLAN_REVIEW, then move to AWAITING_APPROVAL
     control_plane.record_critic_review(task_id=task_id, iteration=1, model="gpt-5-mini", verdict="PASS", findings="Spec is solid")
+    stage_human_decisions(control_plane, task_id, "DRAFT_PLAN", "PLAN_REVIEW", answer="No — accept plan as-is and skip independent review [Recommended]")
+    control_plane.transition(task_id=task_id, to_state="PLAN_REVIEW", actor="critic", reason="Plan disposition")
+    stage_human_decisions(control_plane, task_id, "PLAN_REVIEW", "AWAITING_APPROVAL", answer="Accept plan and proceed to human approval [Recommended]")
     control_plane.transition(task_id=task_id, to_state="AWAITING_APPROVAL", actor="critic", reason="Clean context review passed")
     assert control_plane.get_task(task_id)["state"] == "AWAITING_APPROVAL"
 
@@ -305,7 +318,7 @@ def test_cost_tier_resolution_and_task_columns(control_plane):
     assert rec_low["tier"] == "low"
     
     rec_high = control_plane.resolve_recommended_model(runtime_tool="copilot", tier="high")
-    assert rec_high["model_id"] == "claude-sonnet-5"
+    assert rec_high["model_id"] == "claude-opus-5"
     assert rec_high["tier"] == "high"
 
     # 2. Create task specifying model_tier and model_id
@@ -358,6 +371,7 @@ def test_transition_to_done_blocked_without_persistence_receipt(control_plane):
     stage_human_decisions(control_plane, task_id, "INTAKE", "PLAN_REVIEW")
     control_plane.transition(task_id=task_id, to_state="PLAN_REVIEW", actor="system", reason="Spec ready")
     control_plane.record_critic_review(task_id=task_id, iteration=1, model="gpt-5-mini", verdict="PASS", findings="LGTM")
+    stage_human_decisions(control_plane, task_id, "PLAN_REVIEW", "AWAITING_APPROVAL", answer="Accept plan and proceed to human approval [Recommended]")
     control_plane.transition(task_id=task_id, to_state="AWAITING_APPROVAL", actor="critic", reason="Review passed")
     stage_human_decisions(control_plane, task_id, "AWAITING_APPROVAL", "APPROVED")
     control_plane.transition(task_id=task_id, to_state="APPROVED", actor="human", reason="Proceed")
@@ -408,6 +422,7 @@ def test_transition_to_done_succeeds_with_valid_receipts_and_wiki_log(control_pl
     stage_human_decisions(control_plane, task_id, "INTAKE", "PLAN_REVIEW")
     control_plane.transition(task_id=task_id, to_state="PLAN_REVIEW", actor="system", reason="Spec ready")
     control_plane.record_critic_review(task_id=task_id, iteration=1, model="gpt-5-mini", verdict="PASS", findings="LGTM")
+    stage_human_decisions(control_plane, task_id, "PLAN_REVIEW", "AWAITING_APPROVAL", answer="Accept plan and proceed to human approval [Recommended]")
     control_plane.transition(task_id=task_id, to_state="AWAITING_APPROVAL", actor="critic", reason="Review passed")
     stage_human_decisions(control_plane, task_id, "AWAITING_APPROVAL", "APPROVED")
     control_plane.transition(task_id=task_id, to_state="APPROVED", actor="human", reason="Proceed")
@@ -445,10 +460,12 @@ def test_transition_to_done_blocked_when_locked_verifier_mutated(control_plane, 
     stage_human_decisions(control_plane, task_id, "INTAKE", "PLAN_REVIEW")
     control_plane.transition(task_id=task_id, to_state="PLAN_REVIEW", actor="system", reason="Spec ready")
     control_plane.record_critic_review(task_id=task_id, iteration=1, model="gpt-5-mini", verdict="PASS", findings="LGTM")
+    stage_human_decisions(control_plane, task_id, "PLAN_REVIEW", "AWAITING_APPROVAL", answer="Accept plan and proceed to human approval [Recommended]")
     control_plane.transition(task_id=task_id, to_state="AWAITING_APPROVAL", actor="critic", reason="Review passed")
     stage_human_decisions(control_plane, task_id, "AWAITING_APPROVAL", "APPROVED")
     control_plane.transition(task_id=task_id, to_state="APPROVED", actor="human", reason="Proceed")
     control_plane.record_human_approval(task_id=task_id, approver="human")
+    stage_worktree_metadata(control_plane, task_id)
     control_plane.transition(task_id=task_id, to_state="IN_WORKTREE", actor="controller", reason="Worktree isolated")
     control_plane.transition(task_id=task_id, to_state="VERIFY_EXIT", actor="controller", reason="Verifying")
     control_plane.record_verification_receipt(task_id=task_id, gate_name="test_suite", command_executed="pytest", exit_code=0)
@@ -478,6 +495,7 @@ def test_transition_to_rolled_back_requires_asymmetric_persistence(control_plane
     stage_human_decisions(control_plane, task_id, "INTAKE", "PLAN_REVIEW")
     control_plane.transition(task_id=task_id, to_state="PLAN_REVIEW", actor="system", reason="Spec ready")
     control_plane.record_critic_review(task_id=task_id, iteration=1, model="gpt-5-mini", verdict="PASS", findings="LGTM")
+    stage_human_decisions(control_plane, task_id, "PLAN_REVIEW", "AWAITING_APPROVAL", answer="Accept plan and proceed to human approval [Recommended]")
     control_plane.transition(task_id=task_id, to_state="AWAITING_APPROVAL", actor="critic", reason="Review passed")
     stage_human_decisions(control_plane, task_id, "AWAITING_APPROVAL", "APPROVED")
     control_plane.transition(task_id=task_id, to_state="APPROVED", actor="human", reason="Proceed")
@@ -543,13 +561,8 @@ def test_general_task_advances_without_prior_art_scan(control_plane):
     assert control_plane.get_task(task_id)["state"] == "INTERVIEW"
 
 
-def test_facade_coordinate_transition_forwards_skip_review_and_skip_reason(control_plane):
-    """Regression test: ControlPlane.coordinate_transition() (the public facade, distinct
-    from TransitionCoordinator.coordinate_transition()) must accept and forward
-    skip_review/skip_reason to the underlying TransitionCoordinator — the CLI's
-    _dispatch_command() always passes these two kwargs (defaulting skip_review=False)
-    for both the 'transition' and 'coordinate-transition' subcommands, so a missing
-    parameter here breaks every CLI transition call, not just skip-review ones."""
+def test_facade_coordinate_transition_records_skip_before_plan_acceptance(control_plane):
+    """A review skip is recorded before the PLAN_REVIEW acceptance edge."""
     task_id = "task-facade-skip-review-001"
     control_plane.create_task(task_id=task_id, title="Facade skip_review test", runtime_tool="claude")
     control_plane.record_plan_mode_entry(task_id=task_id, actor="human")
@@ -562,12 +575,24 @@ def test_facade_coordinate_transition_forwards_skip_review_and_skip_reason(contr
     spec_path.write_text("spec")
     plan_path.write_text("plan")
     try:
-        # This is exactly the CLI's own call shape (agent_control.py's _dispatch_command()):
-        # skip_review/skip_reason are always forwarded, and skip_review=True is the path
-        # that previously raised TypeError before the facade accepted these kwargs.
+        stage_human_decisions(
+            control_plane,
+            task_id,
+            "DRAFT_PLAN",
+            "PLAN_REVIEW",
+            answer="No — accept plan as-is and skip independent review [Recommended]",
+        )
+        control_plane.transition(task_id=task_id, to_state="PLAN_REVIEW", actor="human", reason="Plan disposition")
+        control_plane.record_review_skip(task_id, "multi_agent_review", "human", "test skip")
+        stage_human_decisions(
+            control_plane,
+            task_id,
+            "PLAN_REVIEW",
+            "AWAITING_APPROVAL",
+            answer="Accept plan and proceed to human approval [Recommended]",
+        )
         control_plane.coordinate_transition(
             task_id=task_id, to_state="AWAITING_APPROVAL", actor="human", reason="test",
-            skip_review=True, skip_reason="test skip",
         )
         assert control_plane.get_task(task_id)["state"] == "AWAITING_APPROVAL"
     finally:
@@ -594,14 +619,23 @@ def test_facade_rejects_noninteractive_human_provenance(control_plane):
     spec_path.write_text("spec")
     plan_path.write_text("plan")
     try:
-        control_plane.coordinate_transition(
-            task_id=task_id,
-            to_state="AWAITING_APPROVAL",
-            actor="agent",
-            reason="Review skipped for provenance test setup",
-            skip_review=True,
-            skip_reason="Test isolates the later human approval boundary",
+        stage_human_decisions(
+            control_plane,
+            task_id,
+            "DRAFT_PLAN",
+            "PLAN_REVIEW",
+            answer="No — accept plan as-is and skip independent review [Recommended]",
         )
+        control_plane.transition(task_id=task_id, to_state="PLAN_REVIEW", actor="human", reason="Plan disposition")
+        control_plane.record_review_skip(task_id, "multi_agent_review", "human", "Test isolates the later human approval boundary")
+        stage_human_decisions(
+            control_plane,
+            task_id,
+            "PLAN_REVIEW",
+            "AWAITING_APPROVAL",
+            answer="Accept plan and proceed to human approval [Recommended]",
+        )
+        control_plane.transition(task_id=task_id, to_state="AWAITING_APPROVAL", actor="human", reason="Review skipped for provenance test setup")
         with pytest.raises(TransitionCoordinatorError, match="interactive human provenance"):
             control_plane.coordinate_transition(
                 task_id=task_id,
@@ -644,10 +678,12 @@ def test_worktree_post_implementation_review_stage_gate(control_plane):
     stage_human_decisions(control_plane, task_id, "INTAKE", "PLAN_REVIEW")
     control_plane.transition(task_id=task_id, to_state="PLAN_REVIEW", actor="controller", reason="Plan ready")
     control_plane.record_review_skip(task_id=task_id, phase="multi_agent_review", actor="user", reason="Not needed for this test")
+    stage_human_decisions(control_plane, task_id, "PLAN_REVIEW", "AWAITING_APPROVAL", answer="Accept plan and proceed to human approval [Recommended]")
     control_plane.transition(task_id=task_id, to_state="AWAITING_APPROVAL", actor="controller", reason="Review ready")
     stage_human_decisions(control_plane, task_id, "AWAITING_APPROVAL", "APPROVED")
     control_plane.transition(task_id=task_id, to_state="APPROVED", actor="user", reason="Approved")
     control_plane.record_human_approval(task_id=task_id, approver="user")
+    stage_worktree_metadata(control_plane, task_id)
     control_plane.transition(task_id=task_id, to_state="IN_WORKTREE", actor="controller", reason="Worktree created")
 
     # 1. Implementation done -> transition to WORKTREE_REVIEW
@@ -701,10 +737,12 @@ def test_worktree_push_barrier_enforcement(control_plane):
     stage_human_decisions(control_plane, task_id, "INTAKE", "PLAN_REVIEW")
     control_plane.transition(task_id=task_id, to_state="PLAN_REVIEW", actor="controller", reason="Plan ready")
     control_plane.record_review_skip(task_id=task_id, phase="multi_agent_review", actor="user", reason="Not needed for this test")
+    stage_human_decisions(control_plane, task_id, "PLAN_REVIEW", "AWAITING_APPROVAL", answer="Accept plan and proceed to human approval [Recommended]")
     control_plane.transition(task_id=task_id, to_state="AWAITING_APPROVAL", actor="controller", reason="Review ready")
     stage_human_decisions(control_plane, task_id, "AWAITING_APPROVAL", "APPROVED")
     control_plane.transition(task_id=task_id, to_state="APPROVED", actor="user", reason="Approved")
     control_plane.record_human_approval(task_id=task_id, approver="user")
+    stage_worktree_metadata(control_plane, task_id)
     control_plane.transition(task_id=task_id, to_state="IN_WORKTREE", actor="controller", reason="Worktree created")
 
     # Attempting to set pushed_to_origin while in IN_WORKTREE must fail
@@ -943,8 +981,8 @@ def test_gate_any_of_accepts_socratic_receipt_alone(control_plane):
     assert control_plane.get_task(task_id)["state"] == "DRAFT_PLAN"
 
 
-def test_gate_blocks_awaiting_approval_without_critic_review_or_skip(control_plane):
-    """Test DRAFT_PLAN->AWAITING_APPROVAL requires either a critic PASS or an explicit recorded skip."""
+def test_plan_review_is_required_before_awaiting_approval(control_plane):
+    """The plan branch must converge through PLAN_REVIEW before approval."""
     task_id = "task-gate-approval-001"
     control_plane.create_task(task_id=task_id, title="Gate Approval Task", runtime_tool="claude")
     control_plane.transition(task_id=task_id, to_state="INTERVIEW", actor="user", reason="Starting")
@@ -952,13 +990,8 @@ def test_gate_blocks_awaiting_approval_without_critic_review_or_skip(control_pla
     stage_interview_answers(control_plane, task_id)
     control_plane.transition(task_id=task_id, to_state="DRAFT_PLAN", actor="claude", reason="Compiled spec")
 
-    with pytest.raises(PersistenceInvariantViolation, match="critic review|skip"):
+    with pytest.raises(InvalidStateTransition):
         control_plane.transition(task_id=task_id, to_state="AWAITING_APPROVAL", actor="claude", reason="Ready")
-
-    # An explicit recorded skip (not a critic review) satisfies the gate
-    control_plane.record_review_skip(task_id=task_id, phase="multi_agent_review", actor="user", reason="Not needed this time")
-    control_plane.transition(task_id=task_id, to_state="AWAITING_APPROVAL", actor="claude", reason="Ready")
-    assert control_plane.get_task(task_id)["state"] == "AWAITING_APPROVAL"
 
 
 def test_gate_blocks_in_worktree_entry_without_human_approval_receipt(control_plane):
@@ -968,6 +1001,7 @@ def test_gate_blocks_in_worktree_entry_without_human_approval_receipt(control_pl
     stage_human_decisions(control_plane, task_id, "INTAKE", "PLAN_REVIEW")
     control_plane.transition(task_id=task_id, to_state="PLAN_REVIEW", actor="controller", reason="Plan ready")
     control_plane.record_critic_review(task_id=task_id, iteration=1, model="gpt-5-mini", verdict="PASS", findings="LGTM")
+    stage_human_decisions(control_plane, task_id, "PLAN_REVIEW", "AWAITING_APPROVAL", answer="Accept plan and proceed to human approval [Recommended]")
     control_plane.transition(task_id=task_id, to_state="AWAITING_APPROVAL", actor="critic", reason="Reviewed")
     stage_human_decisions(control_plane, task_id, "AWAITING_APPROVAL", "APPROVED")
     control_plane.transition(task_id=task_id, to_state="APPROVED", actor="user", reason="Proceed")
@@ -976,7 +1010,61 @@ def test_gate_blocks_in_worktree_entry_without_human_approval_receipt(control_pl
         control_plane.transition(task_id=task_id, to_state="IN_WORKTREE", actor="controller", reason="Worktree created")
 
     control_plane.record_human_approval(task_id=task_id, approver="user")
+    stage_worktree_metadata(control_plane, task_id)
     control_plane.transition(task_id=task_id, to_state="IN_WORKTREE", actor="controller", reason="Worktree created")
+    assert control_plane.get_task(task_id)["state"] == "IN_WORKTREE"
+
+
+def test_gate_blocks_in_worktree_entry_without_isolated_worktree_metadata(control_plane):
+    """APPROVED->IN_WORKTREE requires an isolated path and non-default branch."""
+    task_id = "task-gate-worktree-isolation-001"
+    control_plane.create_task(task_id=task_id, title="Worktree Isolation Task", runtime_tool="claude")
+    stage_human_decisions(control_plane, task_id, "INTAKE", "PLAN_REVIEW")
+    control_plane.transition(task_id, "PLAN_REVIEW", "controller", "Plan ready")
+    control_plane.record_review_skip(task_id, "multi_agent_review", "user", "Not needed for this test")
+    stage_human_decisions(
+        control_plane,
+        task_id,
+        "PLAN_REVIEW",
+        "AWAITING_APPROVAL",
+        answer="Accept plan and proceed to human approval [Recommended]",
+    )
+    control_plane.transition(task_id, "AWAITING_APPROVAL", "controller", "Review ready")
+    stage_human_decisions(control_plane, task_id, "AWAITING_APPROVAL", "APPROVED")
+    control_plane.transition(task_id, "APPROVED", "user", "Approved")
+    control_plane.record_human_approval(task_id, "user")
+
+    with pytest.raises(PersistenceInvariantViolation, match="worktree|branch|isolation"):
+        control_plane.transition(task_id, "IN_WORKTREE", "controller", "Worktree created")
+
+
+def test_gate_allows_explicit_existing_checkout_exception(control_plane, tmp_path):
+    """An explicitly recorded exception permits an authorized existing checkout."""
+    task_id = "task-gate-worktree-exception-001"
+    control_plane.create_task(task_id=task_id, title="Existing Checkout Exception", runtime_tool="claude")
+    stage_human_decisions(control_plane, task_id, "INTAKE", "PLAN_REVIEW")
+    control_plane.transition(task_id, "PLAN_REVIEW", "controller", "Plan ready")
+    control_plane.record_review_skip(task_id, "multi_agent_review", "user", "Not needed for this test")
+    stage_human_decisions(
+        control_plane,
+        task_id,
+        "PLAN_REVIEW",
+        "AWAITING_APPROVAL",
+        answer="Accept plan and proceed to human approval [Recommended]",
+    )
+    control_plane.transition(task_id, "AWAITING_APPROVAL", "controller", "Review ready")
+    stage_human_decisions(control_plane, task_id, "AWAITING_APPROVAL", "APPROVED")
+    control_plane.transition(task_id, "APPROVED", "user", "Approved")
+    control_plane.record_human_approval(task_id, "user")
+    control_plane.update_worktree(task_id, str(tmp_path), "main", "written_in_worktree")
+    control_plane.record_verification_receipt(
+        task_id,
+        "existing_worktree_exception",
+        "approved-existing-checkout:user",
+        0,
+    )
+
+    control_plane.transition(task_id, "IN_WORKTREE", "controller", "Authorized existing checkout")
     assert control_plane.get_task(task_id)["state"] == "IN_WORKTREE"
 
 
@@ -987,10 +1075,12 @@ def test_gate_blocks_worktree_review_entry_without_test_suite_receipt(control_pl
     stage_human_decisions(control_plane, task_id, "INTAKE", "PLAN_REVIEW")
     control_plane.transition(task_id=task_id, to_state="PLAN_REVIEW", actor="controller", reason="Plan ready")
     control_plane.record_critic_review(task_id=task_id, iteration=1, model="gpt-5-mini", verdict="PASS", findings="LGTM")
+    stage_human_decisions(control_plane, task_id, "PLAN_REVIEW", "AWAITING_APPROVAL", answer="Accept plan and proceed to human approval [Recommended]")
     control_plane.transition(task_id=task_id, to_state="AWAITING_APPROVAL", actor="critic", reason="Reviewed")
     stage_human_decisions(control_plane, task_id, "AWAITING_APPROVAL", "APPROVED")
     control_plane.transition(task_id=task_id, to_state="APPROVED", actor="user", reason="Proceed")
     control_plane.record_human_approval(task_id=task_id, approver="user")
+    stage_worktree_metadata(control_plane, task_id)
     control_plane.transition(task_id=task_id, to_state="IN_WORKTREE", actor="controller", reason="Worktree created")
 
     # Python deterministic check fires first: PersistenceInvariantViolation for missing test_suite
@@ -1016,10 +1106,12 @@ def test_worktree_review_question_rejects_negative_answer_before_commit(control_
     stage_human_decisions(control_plane, task_id, "INTAKE", "PLAN_REVIEW")
     control_plane.transition(task_id, "PLAN_REVIEW", "controller", "Plan ready")
     control_plane.record_review_skip(task_id, "multi_agent_review", "user", "Not needed for this test")
+    stage_human_decisions(control_plane, task_id, "PLAN_REVIEW", "AWAITING_APPROVAL", answer="Accept plan and proceed to human approval [Recommended]")
     control_plane.transition(task_id, "AWAITING_APPROVAL", "controller", "Review ready")
     stage_human_decisions(control_plane, task_id, "AWAITING_APPROVAL", "APPROVED")
     control_plane.transition(task_id, "APPROVED", "user", "Approved")
     control_plane.record_human_approval(task_id, "user")
+    stage_worktree_metadata(control_plane, task_id, path=str(tmp_path / ".worktrees" / task_id), branch=f"worktree-{task_id}")
     control_plane.transition(task_id, "IN_WORKTREE", "controller", "Worktree created")
     control_plane.record_verification_receipt(task_id, "test_suite", "pytest", 0)
 
@@ -1357,9 +1449,7 @@ def test_legacy_policy_migration_parity():
     REQUIRED_EDGE_CHECKS = {
         ("INTAKE", "INTERVIEW"): "prior_art_scan",
         ("INTERVIEW", "PLAN_REVIEW"): "plan_mode_or_socratic",
-        ("DRAFT_PLAN", "AWAITING_APPROVAL"): "critic_review_or_skip",
         ("PLAN_REVIEW", "AWAITING_APPROVAL"): "critic_review_or_skip",
-        ("MULTI_AGENT_REVIEW", "AWAITING_APPROVAL"): "critic_review_pass",
         ("APPROVED", "IN_WORKTREE"): "human_approval",
         ("IN_WORKTREE", "WORKTREE_REVIEW"): "test_suite",
         ("WORKTREE_REVIEW", "VERIFY_EXIT"): "code_review_or_skip",
@@ -1547,9 +1637,9 @@ def test_persistence_structural_inconsistency_rejection(control_plane):
     req_bad_state = TransitionCommitRequest(
         task_id=task_id,
         expected_from_state="DRAFT_PLAN",
-        to_state="MULTI_AGENT_REVIEW",
+        to_state="PLAN_REVIEW",
         source_occupancy_transition_id=occ_id,
-        template_id="draft_plan_to_multi_agent_review",
+        template_id="draft_plan_to_plan_review",
         actor="tester",
         reason="test",
         staged_decisions=[],
@@ -2007,9 +2097,11 @@ def test_wrapper_success_path(control_plane, tmp_path):
     stage_human_decisions(control_plane, task_id, "DRAFT_PLAN", "PLAN_REVIEW")
     control_plane.transition(task_id, "PLAN_REVIEW", "tester", "review")
     control_plane.record_review_skip(task_id, "multi_agent_review", "tester", "skip")
+    stage_human_decisions(control_plane, task_id, "PLAN_REVIEW", "AWAITING_APPROVAL", answer="Accept plan and proceed to human approval [Recommended]")
     control_plane.transition(task_id, "AWAITING_APPROVAL", "tester", "awaiting")
     stage_human_decisions(control_plane, task_id, "AWAITING_APPROVAL", "APPROVED")
     control_plane.transition(task_id, "APPROVED", "approver", "approved")
+    stage_worktree_metadata(control_plane, task_id)
     control_plane.transition(task_id, "IN_WORKTREE", "tester", "created worktree")
     control_plane.transition(task_id, "VERIFY_EXIT", "tester", "running verification")
 
@@ -2308,7 +2400,7 @@ def test_sequential_question_pacing(control_plane, tmp_path):
     control_plane.repo_root = tmp_path
 
     out = io.StringIO()
-    inputs = ["1"]  # answer to question
+    inputs = ["1"]  # review-method answer after entering PLAN_REVIEW
     input_prompts = []
 
     def mock_input(prompt: str) -> str:
@@ -2316,6 +2408,14 @@ def test_sequential_question_pacing(control_plane, tmp_path):
         return inputs.pop(0)
 
     coord = TransitionCoordinator(control_plane=control_plane, input_fn=mock_input, output_stream=out)
+    setup_coord = TransitionCoordinator(control_plane=control_plane, input_fn=lambda _prompt: "1", output_stream=io.StringIO())
+    setup_coord.coordinate_transition(
+        task_id=task_id,
+        to_state="PLAN_REVIEW",
+        actor="human",
+        reason="Plan disposition",
+        interactive=True,
+    )
     rec = coord.coordinate_transition(
         task_id=task_id,
         to_state="MULTI_AGENT_REVIEW",
@@ -2423,7 +2523,7 @@ def test_direct_transition_command_routes_through_coordinator(control_plane):
     assert control_plane._persistence.read_current_state(task_id) == "INTERVIEW"
 
 
-def test_coordinator_refuses_incomplete_request(control_plane):
+def test_coordinator_refuses_incomplete_request(control_plane, tmp_path):
     """Test 17: TransitionCoordinator refuses to construct a commit request when
     required template questions, approvals, or checks are incomplete."""
     from control_plane.coordinator import TransitionCoordinator, TransitionCoordinatorError
@@ -2434,7 +2534,15 @@ def test_coordinator_refuses_incomplete_request(control_plane):
     control_plane.record_plan_mode_entry(task_id, "tester")
     stage_interview_answers(control_plane, task_id)
     control_plane.transition(task_id, "DRAFT_PLAN", "tester", "draft plan")
+    control_plane.repo_root = tmp_path
+    plans = tmp_path / "docs" / "plans"
+    plans.mkdir(parents=True, exist_ok=True)
+    (plans / f"{task_id}-spec.md").write_text("# Spec", encoding="utf-8")
+    (plans / f"{task_id}-implementation-plan.md").write_text("# Plan", encoding="utf-8")
+    stage_human_decisions(control_plane, task_id, "DRAFT_PLAN", "PLAN_REVIEW", answer="No — accept plan as-is and skip independent review [Recommended]")
+    control_plane.transition(task_id, "PLAN_REVIEW", "tester", "plan disposition")
     control_plane.record_review_skip(task_id, "multi_agent_review", "tester", "skip")
+    stage_human_decisions(control_plane, task_id, "PLAN_REVIEW", "AWAITING_APPROVAL", answer="Accept plan and proceed to human approval [Recommended]")
     control_plane.transition(task_id, "AWAITING_APPROVAL", "tester", "awaiting")
 
     coord = TransitionCoordinator(control_plane=control_plane)
@@ -2536,8 +2644,8 @@ def test_rejected_plan_requires_artifact_revision_before_resubmission(control_pl
     plan_path.write_text("# Plan v1", encoding="utf-8")
     control_plane.repo_root = tmp_path
     coord = TransitionCoordinator(control_plane=control_plane, output_stream=io.StringIO())
-    answers = {"plan_review_submission": "Proceed with plan review [Recommended]"}
-    stage_human_decisions(control_plane, task_id, "DRAFT_PLAN", "PLAN_REVIEW", answer=answers["plan_review_submission"])
+    answers = {"plan_review_disposition": "No — accept plan as-is and skip independent review [Recommended]"}
+    stage_human_decisions(control_plane, task_id, "DRAFT_PLAN", "PLAN_REVIEW", answer=answers["plan_review_disposition"])
 
     coord.coordinate_transition(
         task_id=task_id,
@@ -2546,10 +2654,24 @@ def test_rejected_plan_requires_artifact_revision_before_resubmission(control_pl
         reason="Submit v1",
         provided_answers=answers,
     )
-    control_plane.transition(task_id, "DRAFT_PLAN", "reviewer", "Changes requested")
+    revision_answer = "Require further revisions"
+    stage_human_decisions(
+        control_plane,
+        task_id,
+        "PLAN_REVIEW",
+        "DRAFT_PLAN",
+        answer=revision_answer,
+    )
+    coord.coordinate_transition(
+        task_id=task_id,
+        to_state="DRAFT_PLAN",
+        actor="reviewer",
+        reason="Changes requested",
+        provided_answers={"confirm_plan_revision": revision_answer},
+    )
 
     with pytest.raises(TransitionCoordinatorError, match="unchanged|revision"):
-        stage_human_decisions(control_plane, task_id, "DRAFT_PLAN", "PLAN_REVIEW", answer=answers["plan_review_submission"])
+        stage_human_decisions(control_plane, task_id, "DRAFT_PLAN", "PLAN_REVIEW", answer=answers["plan_review_disposition"])
         coord.coordinate_transition(
             task_id=task_id,
             to_state="PLAN_REVIEW",
@@ -2568,7 +2690,7 @@ def test_rejected_plan_requires_artifact_revision_before_resubmission(control_pl
         command_executed=submission["command_executed"],
         exit_code=0,
     )
-    stage_human_decisions(control_plane, task_id, "DRAFT_PLAN", "PLAN_REVIEW", answer=answers["plan_review_submission"])
+    stage_human_decisions(control_plane, task_id, "DRAFT_PLAN", "PLAN_REVIEW", answer=answers["plan_review_disposition"])
     same_identity_record = coord.coordinate_transition(
         task_id=task_id,
         to_state="PLAN_REVIEW",
@@ -2578,9 +2700,22 @@ def test_rejected_plan_requires_artifact_revision_before_resubmission(control_pl
     )
     assert same_identity_record.to_state == "PLAN_REVIEW"
 
-    control_plane.transition(task_id, "DRAFT_PLAN", "reviewer", "Changes requested again")
+    stage_human_decisions(
+        control_plane,
+        task_id,
+        "PLAN_REVIEW",
+        "DRAFT_PLAN",
+        answer=revision_answer,
+    )
+    coord.coordinate_transition(
+        task_id=task_id,
+        to_state="DRAFT_PLAN",
+        actor="reviewer",
+        reason="Changes requested again",
+        provided_answers={"confirm_plan_revision": revision_answer},
+    )
     plan_path.write_text("# Plan v2", encoding="utf-8")
-    stage_human_decisions(control_plane, task_id, "DRAFT_PLAN", "PLAN_REVIEW", answer=answers["plan_review_submission"])
+    stage_human_decisions(control_plane, task_id, "DRAFT_PLAN", "PLAN_REVIEW", answer=answers["plan_review_disposition"])
     record = coord.coordinate_transition(
         task_id=task_id,
         to_state="PLAN_REVIEW",
@@ -2689,7 +2824,7 @@ def test_coordinator_empty_interactive_input_rejected_and_undeclared_option_reje
             actor="tester",
             reason="Undeclared answer option",
             interactive=False,
-            provided_answers={"plan_review_submission": "Completely Bogus Option"},
+            provided_answers={"plan_review_disposition": "Completely Bogus Option"},
         )
 
 
@@ -2709,7 +2844,7 @@ def test_coordinator_skip_review_policy_enforcement_and_justification(control_pl
     coord = TransitionCoordinator(control_plane=control_plane)
 
     # 1. Skip on PLAN_REVIEW -> AWAITING_APPROVAL without justification must fail
-    with pytest.raises(TransitionCoordinatorError, match="justification"):
+    with pytest.raises(TransitionCoordinatorError, match="not allowed|cannot be skipped"):
         coord.coordinate_transition(
             task_id=task_id,
             to_state="AWAITING_APPROVAL",
@@ -2721,7 +2856,19 @@ def test_coordinator_skip_review_policy_enforcement_and_justification(control_pl
 
     # 2. Non-skippable edge (e.g. APPROVED -> IN_WORKTREE) must reject skip
     control_plane.record_review_skip(task_id, "multi_agent_review", "tester", "Valid skip reason")
-    control_plane.transition(task_id, "AWAITING_APPROVAL", "tester", "awaiting")
+    stage_human_decisions(
+        control_plane,
+        task_id,
+        "PLAN_REVIEW",
+        "AWAITING_APPROVAL",
+        answer="Accept plan and proceed to human approval [Recommended]",
+    )
+    coord.coordinate_transition(
+        task_id=task_id,
+        to_state="AWAITING_APPROVAL",
+        actor="tester",
+        reason="Proceed after recorded review skip",
+    )
     stage_human_decisions(control_plane, task_id, "AWAITING_APPROVAL", "APPROVED")
     control_plane.transition(task_id, "APPROVED", "admin", "approved")
 
@@ -2752,13 +2899,13 @@ def test_coordinator_stale_skip_invalidated_after_leave_and_reenter(control_plan
     coord = TransitionCoordinator(control_plane=control_plane)
 
     # Coordinate transition with valid skip
+    control_plane.record_review_skip(task_id, "multi_agent_review", "tester", "Architecture review approved single-agent bypass")
+    stage_human_decisions(control_plane, task_id, "PLAN_REVIEW", "AWAITING_APPROVAL", answer="Accept plan and proceed to human approval [Recommended]")
     rec = coord.coordinate_transition(
         task_id=task_id,
         to_state="AWAITING_APPROVAL",
         actor="tester",
         reason="Valid skip in occupancy 1",
-        skip_review=True,
-        skip_reason="Architecture review approved single-agent bypass",
     )
     assert rec.to_state == "AWAITING_APPROVAL"
 
@@ -2865,11 +3012,20 @@ def test_run_exit_verification_verifier_allowlist_and_worktree_cwd_binding(contr
     control_plane.record_plan_mode_entry(task_id, "tester")
     stage_interview_answers(control_plane, task_id)
     control_plane.transition(task_id, "DRAFT_PLAN", "tester", "draft plan")
+    control_plane.repo_root = tmp_path
+    plans = tmp_path / "docs" / "plans"
+    plans.mkdir(parents=True, exist_ok=True)
+    (plans / f"{task_id}-spec.md").write_text("# Spec", encoding="utf-8")
+    (plans / f"{task_id}-implementation-plan.md").write_text("# Plan", encoding="utf-8")
+    stage_human_decisions(control_plane, task_id, "DRAFT_PLAN", "PLAN_REVIEW", answer="No — accept plan as-is and skip independent review [Recommended]")
+    control_plane.transition(task_id, "PLAN_REVIEW", "tester", "plan disposition")
     control_plane.record_review_skip(task_id, "multi_agent_review", "tester", "skip")
+    stage_human_decisions(control_plane, task_id, "PLAN_REVIEW", "AWAITING_APPROVAL", answer="Accept plan and proceed to human approval [Recommended]")
     control_plane.transition(task_id, "AWAITING_APPROVAL", "tester", "awaiting")
     stage_human_decisions(control_plane, task_id, "AWAITING_APPROVAL", "APPROVED")
     control_plane.transition(task_id, "APPROVED", "admin", "approved")
     control_plane.record_human_approval(task_id, "admin")
+    stage_worktree_metadata(control_plane, task_id, path=str(tmp_path / ".worktrees" / task_id), branch=f"worktree-{task_id}")
     control_plane.transition(task_id, "IN_WORKTREE", "developer", "worktree")
     control_plane.record_verification_receipt(task_id, "test_suite", "pytest", 0)
     stage_human_decisions(control_plane, task_id, "IN_WORKTREE", "WORKTREE_REVIEW")
@@ -2994,6 +3150,10 @@ def test_coordinator_artifact_resolution_inside_registered_worktree(control_plan
     stage_interview_answers(control_plane, task_id)
     control_plane.transition(task_id, "DRAFT_PLAN", "tester", "draft")
     control_plane.record_review_skip(task_id, "multi_agent_review", "tester", "skip")
+    stage_human_decisions(control_plane, task_id, "DRAFT_PLAN", "PLAN_REVIEW", answer="No — accept plan as-is and skip independent review [Recommended]")
+    control_plane.transition(task_id, "PLAN_REVIEW", "tester", "plan disposition")
+    control_plane.record_review_skip(task_id, "multi_agent_review", "tester", "skip")
+    stage_human_decisions(control_plane, task_id, "PLAN_REVIEW", "AWAITING_APPROVAL", answer="Accept plan and proceed to human approval [Recommended]")
     control_plane.transition(task_id, "AWAITING_APPROVAL", "tester", "awaiting")
     control_plane.record_human_approval(task_id, "tester")
     stage_human_decisions(control_plane, task_id, "AWAITING_APPROVAL", "APPROVED")
@@ -3035,7 +3195,17 @@ def test_coordinator_artifact_resolution_inside_registered_worktree(control_plan
     control_plane.record_plan_mode_entry(task_id_missing, "tester")
     stage_interview_answers(control_plane, task_id_missing)
     control_plane.transition(task_id_missing, "DRAFT_PLAN", "tester", "draft")
+    missing_plans = worktree_root / "docs" / "plans"
+    missing_plans.mkdir(parents=True, exist_ok=True)
+    missing_spec = missing_plans / f"{task_id_missing}-spec.md"
+    missing_plan = missing_plans / f"{task_id_missing}-implementation-plan.md"
+    missing_spec.write_text("# temporary setup artifact", encoding="utf-8")
+    missing_plan.write_text("# temporary setup artifact", encoding="utf-8")
+    stage_human_decisions(control_plane, task_id_missing, "DRAFT_PLAN", "PLAN_REVIEW", answer="No — accept plan as-is and skip independent review [Recommended]")
+    control_plane.transition(task_id_missing, "PLAN_REVIEW", "tester", "plan disposition")
     control_plane.record_review_skip(task_id_missing, "multi_agent_review", "tester", "skip")
+    control_plane.record_review_skip(task_id_missing, "multi_agent_review", "tester", "skip")
+    stage_human_decisions(control_plane, task_id_missing, "PLAN_REVIEW", "AWAITING_APPROVAL", answer="Accept plan and proceed to human approval [Recommended]")
     control_plane.transition(task_id_missing, "AWAITING_APPROVAL", "tester", "awaiting")
     control_plane.record_human_approval(task_id_missing, "tester")
     stage_human_decisions(control_plane, task_id_missing, "AWAITING_APPROVAL", "APPROVED")
@@ -3044,6 +3214,8 @@ def test_coordinator_artifact_resolution_inside_registered_worktree(control_plan
     control_plane.record_verification_receipt(task_id_missing, "test_suite", "pytest", 0)
     stage_human_decisions(control_plane, task_id_missing, "IN_WORKTREE", "WORKTREE_REVIEW")
     control_plane.transition(task_id_missing, "WORKTREE_REVIEW", "tester", "to worktree review")
+    missing_spec.unlink()
+    missing_plan.unlink()
 
     with pytest.raises(TransitionCoordinatorError, match="Missing required artifact"):
         coord.coordinate_transition(

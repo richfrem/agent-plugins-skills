@@ -63,5 +63,6 @@ def create_task_in_state(
         control_plane.transition(task_id, "AWAITING_APPROVAL", "tester", "setup awaiting approval")
         control_plane.transition(task_id, "APPROVED", "approver", "setup approved")
         control_plane.record_human_approval(task_id, "approver")
+        control_plane.update_worktree(task_id, f".worktrees/{task_id}", f"feature/{task_id}", "written_in_worktree")
         control_plane.transition(task_id, "IN_WORKTREE", "tester", "setup worktree")
         return

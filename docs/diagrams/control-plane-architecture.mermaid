@@ -8,6 +8,8 @@ flowchart TB
     ArtifactGate["Plan artifact identity/revision gate"]
     Delegation["DelegationContract: scope, authority, budget, receipts"]
     ReviewDispatch["Review dispatch: required source + canonical verdict"]
+    PlanBranch["Plan branch: skip review or request review"]
+    PlanAcceptance["PLAN_REVIEW convergence: accept plan or return to DRAFT_PLAN"]
 
     State["StateMachine (control_plane/state_machine.py)"]
     Policy["Unified policy engine (control_plane/policy.py)"]
@@ -38,6 +40,8 @@ flowchart TB
     Coordinator --> Registry
     Coordinator --> Guidance
     Coordinator --> ArtifactGate
+    Coordinator --> PlanBranch
+    Coordinator --> PlanAcceptance
     Facade --> Delegation
     Callers --> ReviewDispatch
     Facade --> PersistencePort
@@ -58,6 +62,8 @@ flowchart TB
     SQLiteAdapter --> DB
     Delegation --> PersistencePort
     ReviewDispatch --> ModelPort
+    PlanBranch --> PlanAcceptance
+    PlanAcceptance --> ArtifactGate
     ArtifactGate --> FilesystemPort
     ArtifactGate --> PersistencePort
     DB -.-> Receipts

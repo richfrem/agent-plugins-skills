@@ -39,13 +39,23 @@ def test_full_intake_to_approval_lifecycle(tmp_path, monkeypatch):
     (plan_dir / f"{task_id}-spec.md").write_text("# Test specification\n", encoding="utf-8")
     (plan_dir / f"{task_id}-implementation-plan.md").write_text("# Test implementation plan\n", encoding="utf-8")
 
-    # Path A: DRAFT_PLAN -> MULTI_AGENT_REVIEW -> AWAITING_APPROVAL
+    # Path A: DRAFT_PLAN -> PLAN_REVIEW -> MULTI_AGENT_REVIEW -> PLAN_REVIEW
+    # -> AWAITING_APPROVAL. Review outcomes converge before acceptance.
     from control_plane.coordinator import TransitionCoordinator
     from control_plane.registry import TransitionRegistry
     reg = TransitionRegistry.load_default()
-    inputs = iter(["5"])  # Option 5: external bundle
+    inputs = iter(["2", "5", "1"])  # request review, external bundle, accept plan
     coord = TransitionCoordinator(control_plane=cp, registry=reg, input_fn=lambda prompt: next(inputs))
     monkeypatch.setattr(coord, "_resolve_repo_root", lambda: tmp_path)
+    coord.coordinate_transition(
+        task_id=task_id,
+        to_state="PLAN_REVIEW",
+        actor="human",
+        reason="Submit plan for disposition",
+        interactive=True
+    )
+    assert cp.get_task(task_id)["state"] == "PLAN_REVIEW"
+
     coord.coordinate_transition(
         task_id=task_id,
         to_state="MULTI_AGENT_REVIEW",
@@ -56,10 +66,17 @@ def test_full_intake_to_approval_lifecycle(tmp_path, monkeypatch):
     assert cp.get_task(task_id)["state"] == "MULTI_AGENT_REVIEW"
 
     cp.record_critic_review(task_id=task_id, iteration=1, model="gpt-5-mini", verdict="PASS", findings="External review passed")
-    cp.transition(task_id=task_id, to_state="AWAITING_APPROVAL", actor="user", reason="External review iterations complete")
+    cp.transition(task_id=task_id, to_state="PLAN_REVIEW", actor="user", reason="External review iterations complete")
+    coord.coordinate_transition(
+        task_id=task_id,
+        to_state="AWAITING_APPROVAL",
+        actor="human",
+        reason="User accepted reviewed plan",
+        interactive=True
+    )
     assert cp.get_task(task_id)["state"] == "AWAITING_APPROVAL"
 
-def test_skip_multi_agent_review_gate(tmp_path):
+def test_skip_multi_agent_review_gate(tmp_path, monkeypatch):
     db_file = tmp_path / "control_plane.db"
     cp = ControlPlane(db_path=db_file)
     cp.init_db()
@@ -71,8 +88,31 @@ def test_skip_multi_agent_review_gate(tmp_path):
     cp.record_plan_mode_entry(task_id=task_id, actor="agent")
     stage_interview_answers(cp, task_id)
     cp.transition(task_id=task_id, to_state="DRAFT_PLAN", actor="agent", reason="Draft compiled")
+    plan_dir = tmp_path / "docs" / "plans"
+    plan_dir.mkdir(parents=True)
+    (plan_dir / f"{task_id}-spec.md").write_text("# Test specification\n", encoding="utf-8")
+    (plan_dir / f"{task_id}-implementation-plan.md").write_text("# Test implementation plan\n", encoding="utf-8")
 
-    # Path B: User skips directly to AWAITING_APPROVAL
+    # Path B: User skips independent review but still passes PLAN_REVIEW.
+    from control_plane.coordinator import TransitionCoordinator
+    from control_plane.registry import TransitionRegistry
+    reg = TransitionRegistry.load_default()
+    inputs = iter(["1", "1"])  # accept-as-is/skip, accept plan
+    coord = TransitionCoordinator(control_plane=cp, registry=reg, input_fn=lambda prompt: next(inputs))
+    monkeypatch.setattr(coord, "_resolve_repo_root", lambda: tmp_path)
+    coord.coordinate_transition(
+        task_id=task_id,
+        to_state="PLAN_REVIEW",
+        actor="human",
+        reason="User opted to skip independent review",
+        interactive=True
+    )
     cp.record_review_skip(task_id=task_id, phase="multi_agent_review", actor="user", reason="User opted to skip multi-agent review")
-    cp.transition(task_id=task_id, to_state="AWAITING_APPROVAL", actor="user", reason="User opted to skip multi-agent review")
+    coord.coordinate_transition(
+        task_id=task_id,
+        to_state="AWAITING_APPROVAL",
+        actor="human",
+        reason="User accepted unreviewed plan",
+        interactive=True
+    )
     assert cp.get_task(task_id)["state"] == "AWAITING_APPROVAL"

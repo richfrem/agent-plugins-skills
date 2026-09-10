@@ -5,23 +5,23 @@
     "description": "Local inference on port 8089"
   },
   "copilot": {
-    "model": "gpt-5.4-nano",
+    "model": "mai-code-1.1-flash",
     "cost": "Paid (AI Credits)",
-    "description": "Cheapest Copilot model: 20 cr/1M input, 125 cr/1M output"
+    "description": "Cheapest current Copilot model: 20 cr/1M input, 120 cr/1M output"
   },
   "agy": {
-    "model": "gemini-3.5-flash",
+    "model": "gemini-3.8-flash-low",
     "cost": "Paid (Per-token)",
     "description": "Flash: faster, cheaper/token, optimized for agentic/tool-use tasks. Use Low thinking level."
   },
   "claude": {
-    "model": "claude-haiku-4.5",
+    "model": "claude-haiku-4-5",
     "cost": "Paid (Per-token)",
     "description": "Cheapest Anthropic model ($1/$5 per MTok input/output)"
   },
   "codex": {
-    "model": "gpt-5.4-nano",
+    "model": "gpt-5.6-luna",
     "cost": "Paid (Per-token)",
-    "description": "OpenAI-compatible endpoints"
+    "description": "Current cost-sensitive OpenAI model: $0.20/1M input, $1.20/1M output"
   }
 }

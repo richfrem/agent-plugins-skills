@@ -4,7 +4,7 @@ plugin: cli-agents
 description: >
   Antigravity (`agy`) CLI sub-agent system for all Google Gemini models and cross-model
   access (Gemini, Claude, GPT-OSS) via the agy binary. Use when dispatching tasks to
-  Gemini 3.1 Pro (cheapest real-world), Gemini 3.5 Flash, or other agy-hosted models.
+  Gemini 3.1 Pro, Gemini 3.8 Flash, or other agy-hosted models.
   Replaces the deprecated gemini-cli-agent (gemini binary retired June 18 2026).
   Trigger with "use agy", "dispatch to antigravity", "run with agy", "use gemini model",
   "agy sub-agent", or "use cheapest gemini".
@@ -37,10 +37,10 @@ You dispatch tasks to Google Gemini (and other) models via the `agy` binary.
 ```bash
 # Default (Flash — faster, cheaper/token, optimized for agentic/coding tasks)
 python ./scripts/run_agent.py <PERSONA> <INPUT> <OUTPUT> "<INSTR>" --cli agy
-# ↑ run_agent.py loads gemini-3.5-flash from references/cheapest_models.json
+# ↑ run_agent.py loads gemini-3.8-flash-low from references/cheapest_models.json
 
 # Explicit Low thinking (recommended for CLI loops to control Thought Preservation cost)
-python ./scripts/run_agent.py <PERSONA> <INPUT> <OUTPUT> "<INSTR>" --cli agy --model "Gemini 3.5 Flash (Low)"
+python ./scripts/run_agent.py <PERSONA> <INPUT> <OUTPUT> "<INSTR>" --cli agy --model "Gemini 3.8 Flash (Low)"
 
 # Pro — escalate for deep reasoning / architecture decisions
 python ./scripts/run_agent.py <PERSONA> <INPUT> <OUTPUT> "<INSTR>" --cli agy --model gemini-3.1-pro
@@ -48,10 +48,10 @@ python ./scripts/run_agent.py <PERSONA> <INPUT> <OUTPUT> "<INSTR>" --cli agy --m
 
 ### Flash vs Pro: Which to Use
 
-| | **Gemini 3.5 Flash** | **Gemini 3.1 Pro** |
+| | **Gemini 3.8 Flash** | **Gemini 3.1 Pro** |
 |:---|:---:|:---:|
-| Price (in/out per 1M) | $1.50 / $9.00 | $2.00 / $12.00 |
-| Speed | **4× faster** | Baseline |
+| Price (in/out per 1M, through 2026-12-31) | $0.75 / $3.75 | $2.00 / $12.00 |
+| Speed | Not benchmarked | Not benchmarked |
 | Agentic tool use / MCP / terminal | **Best** | Good |
 | Coding (edit-test loops) | **Best** | Better for final review |
 | Deep abstract reasoning | Good | **Best** |
@@ -87,7 +87,7 @@ Do NOT use tools. Do NOT access filesystem." > review.md
 python ./scripts/run_agent.py <PERSONA_FILE> <INPUT_FILE> <OUTPUT_FILE> "<INSTRUCTION>" --cli agy
 ```
 
-`run_agent.py` calls `agy --dangerously-skip-permissions -p` and streams output live to stdout and the output file simultaneously. Loads model from `references/cheapest_models.json` (currently `gemini-3.1-pro`).
+`run_agent.py` calls `agy --dangerously-skip-permissions -p` and streams output live to stdout and the output file simultaneously. Loads model from `references/cheapest_models.json` (currently `gemini-3.8-flash-low`).
 
 ### Health Check
 ```bash
@@ -109,9 +109,9 @@ python ./scripts/run_agent.py agents/security-auditor.md target.py security.md \
 
 | Display Name (agy models) | `--model` ID | Thinking | Rec |
 |:---|:---|:---:|:---|
-| **Gemini 3.5 Flash (Low)** | `gemini-3.5-flash-low` | Low | **Best for CLI loops — cheapest, fastest** |
-| Gemini 3.5 Flash (Medium) | `gemini-3.5-flash` | Medium | **Default** — standard dispatch |
-| Gemini 3.5 Flash (High) | `gemini-3.5-flash-high` | High | Single-shot deep tasks only |
+| **Gemini 3.8 Flash (Low)** | `gemini-3.8-flash-low` | Low | **Best for CLI loops — cheapest, fastest** |
+| Gemini 3.8 Flash (Medium) | `gemini-3.8-flash` | Medium | **Default** — standard dispatch |
+| Gemini 3.8 Flash (High) | `gemini-3.8-flash-high` | High | Single-shot deep tasks only |
 | Gemini 3.1 Pro (Low) | `gemini-3.1-pro` | Low | Deep reasoning, architecture |
 | Gemini 3.1 Pro (High) | `gemini-3.1-pro-high` | High | Most demanding reasoning only |
 | Claude Sonnet 4.6 (Thinking) | `claude-sonnet-4.6-thinking` | — | Anthropic quality via agy |

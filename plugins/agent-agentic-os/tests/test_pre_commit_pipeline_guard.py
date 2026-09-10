@@ -63,8 +63,28 @@ def _advance_task_to_in_worktree(cp, task_id, repo, branch):
     cp.record_plan_mode_entry(task_id, "tester")
     stage_interview_answers(cp, task_id)
     cp.transition(task_id, "DRAFT_PLAN", "tester", "draft")
+    plans = repo / "docs" / "plans"
+    plans.mkdir(parents=True, exist_ok=True)
+    (plans / f"{task_id}-spec.md").write_text("# Spec\n", encoding="utf-8")
+    (plans / f"{task_id}-implementation-plan.md").write_text("# Plan\n", encoding="utf-8")
+    cp.repo_root = repo
+    from control_plane.coordinator import TransitionCoordinator
+    coordinator = TransitionCoordinator(control_plane=cp, input_fn=lambda _prompt: "1")
+    coordinator.coordinate_transition(
+        task_id=task_id,
+        to_state="PLAN_REVIEW",
+        actor="human",
+        reason="Submit plan for disposition",
+        interactive=True,
+    )
     cp.record_review_skip(task_id, "multi_agent_review", "tester", "skip")
-    cp.transition(task_id, "AWAITING_APPROVAL", "tester", "awaiting")
+    coordinator.coordinate_transition(
+        task_id=task_id,
+        to_state="AWAITING_APPROVAL",
+        actor="human",
+        reason="Accept plan after review skip",
+        interactive=True,
+    )
     cp.record_human_approval(task_id, "tester")
     conn = sqlite3.connect(cp.db_path)
     last_trans = conn.execute("SELECT transition_id FROM task_transitions WHERE task_id = ? ORDER BY transition_id DESC LIMIT 1", (task_id,)).fetchone()[0]
@@ -81,8 +101,8 @@ def _advance_task_to_in_worktree(cp, task_id, repo, branch):
     conn.commit()
     conn.close()
     cp.transition(task_id, "APPROVED", "tester", "approved")
-    cp.transition(task_id, "IN_WORKTREE", "tester", "in worktree")
     cp.update_worktree(task_id, str(repo), branch, "written_in_worktree")
+    cp.transition(task_id, "IN_WORKTREE", "tester", "in worktree")
 
 
 def test_hook_bypasses_main_branch(tmp_path):
@@ -266,8 +286,16 @@ def test_control_plane_verify_commit_api(tmp_path):
     cp.record_plan_mode_entry(task_id, "tester")
     stage_interview_answers(cp, task_id)
     cp.transition(task_id, "DRAFT_PLAN", "tester", "draft")
+    plans = repo / "docs" / "plans"
+    plans.mkdir(parents=True, exist_ok=True)
+    (plans / f"{task_id}-spec.md").write_text("# Spec\n", encoding="utf-8")
+    (plans / f"{task_id}-implementation-plan.md").write_text("# Plan\n", encoding="utf-8")
+    cp.repo_root = repo
+    from control_plane.coordinator import TransitionCoordinator
+    coordinator = TransitionCoordinator(control_plane=cp, input_fn=lambda _prompt: "1")
+    coordinator.coordinate_transition(task_id=task_id, to_state="PLAN_REVIEW", actor="human", reason="Submit plan", interactive=True)
     cp.record_review_skip(task_id, "multi_agent_review", "tester", "skip")
-    cp.transition(task_id, "AWAITING_APPROVAL", "tester", "awaiting")
+    coordinator.coordinate_transition(task_id=task_id, to_state="AWAITING_APPROVAL", actor="human", reason="Accept skipped plan", interactive=True)
     cp.record_human_approval(task_id, "tester")
     conn = sqlite3.connect(cp.db_path)
     last_trans = conn.execute("SELECT transition_id FROM task_transitions WHERE task_id = ? ORDER BY transition_id DESC LIMIT 1", (task_id,)).fetchone()[0]
@@ -284,6 +312,7 @@ def test_control_plane_verify_commit_api(tmp_path):
     conn.commit()
     conn.close()
     cp.transition(task_id, "APPROVED", "tester", "approved")
+    cp.update_worktree(task_id, str(repo), branch, "written_in_worktree")
     cp.transition(task_id, "IN_WORKTREE", "tester", "in worktree")
 
     res2 = cp.verify_commit(branch=branch, staged_files=["src/code.py"])

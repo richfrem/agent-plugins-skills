@@ -1,20 +1,41 @@
 {
   "_meta": {
-    "source": "https://openai.com/api/pricing/ + web search July 2026 (OpenAI API blocks direct fetch \u2014 verify periodically)",
+    "source": "https://developers.openai.com/api/docs/models (verified 2026-09-09)",
     "billing_model": "Per-token (direct OpenAI API via codex CLI)",
-    "updated": "2026-07-15",
+    "updated": "2026-09-09",
     "notes": [
       "codex CLI routes to OpenAI-compatible endpoints.",
       "GPT-5 and GPT-5-mini are no longer actively listed in OpenAI primary catalog as of July 2026 \u2014 superseded by GPT-5.6 family.",
       "GPT-5.3-Codex is the dedicated code-focused model, tuned for agentic coding and long code sessions.",
       "GPT-5.4 family (nano/mini/full) remains available and is the cost-efficient mid tier.",
-      "GPT-5.6 family (Luna/Terra/Sol) is the current flagship, released July 2026.",
+      "GPT-6 Astra is the current highest-capability model; GPT-5.6 Luna/Terra/Sol provide low-cost, balanced, and flagship choices.",
       "Batch API offers ~50% discount on standard rates \u2014 not reflected here (standard rates only).",
       "Model IDs match the --model flag passed to the codex CLI binary."
     ],
     "schema_version": 2
   },
   "models": [
+    {
+      "display_name": "GPT-6 Astra",
+      "cli_id": "gpt-6-astra",
+      "provider": "OpenAI",
+      "status": "GA",
+      "category": "Frontier",
+      "context_window_k": 1050,
+      "pricing_usd_per_1m": {
+        "input": 10.0,
+        "cached_input": 1.0,
+        "cache_write": 12.5,
+        "output": 50.0
+      },
+      "recommendation": "highest_capability",
+      "notes": "Frontier model for hardest end-to-end reasoning, coding, computer use, research, and document work. Supports low/medium/high/xhigh/max reasoning effort.",
+      "max_output_k": 128,
+      "tool_support": {
+        "prompt": true,
+        "tools": "runtime_dependent"
+      }
+    },
     {
       "display_name": "GPT-5.4 nano",
       "cli_id": "gpt-5.4-nano",
@@ -154,23 +175,23 @@
       "provider": "OpenAI",
       "status": "GA",
       "category": "Lightweight",
-      "context_window_k": 200,
+      "context_window_k": 1050,
       "pricing_usd_per_1m": {
-        "input": 1.0,
-        "cached_input": 0.1,
+        "input": 0.2,
+        "cached_input": 0.02,
         "cache_write": null,
-        "output": 6.0
+        "output": 1.2
       },
       "long_context_pricing_usd_per_1m": {
-        "input": 2.0,
-        "cached_input": 0.2,
+        "input": 0.4,
+        "cached_input": 0.04,
         "cache_write": null,
-        "output": 9.0,
-        "threshold_note": "Long context tier kicks in >200K input tokens"
+        "output": 1.8,
+        "threshold_note": "Long context tier kicks in >272K input tokens"
       },
       "recommendation": "moderate",
       "notes": "GPT-5.6 lightweight flagship (July 2026). Cheaper than Terra/Sol. Good mid-tier option.",
-      "max_output_k": null,
+      "max_output_k": 128,
       "tool_support": {
         "prompt": true,
         "tools": "runtime_dependent"
@@ -182,23 +203,23 @@
       "provider": "OpenAI",
       "status": "GA",
       "category": "Versatile",
-      "context_window_k": 272,
+      "context_window_k": 1050,
       "pricing_usd_per_1m": {
-        "input": 2.5,
-        "cached_input": 0.25,
+        "input": 2.0,
+        "cached_input": 0.2,
         "cache_write": null,
-        "output": 15.0
+        "output": 12.0
       },
       "long_context_pricing_usd_per_1m": {
-        "input": 5.0,
-        "cached_input": 0.5,
+        "input": 4.0,
+        "cached_input": 0.4,
         "cache_write": null,
-        "output": 22.5,
+        "output": 18.0,
         "threshold_note": "Long context tier kicks in >272K input tokens"
       },
       "recommendation": "high",
       "notes": "GPT-5.6 versatile tier. Same pricing as gpt-5.4 but newer generation.",
-      "max_output_k": null,
+      "max_output_k": 128,
       "tool_support": {
         "prompt": true,
         "tools": "runtime_dependent"
@@ -210,23 +231,23 @@
       "provider": "OpenAI",
       "status": "GA",
       "category": "Powerful",
-      "context_window_k": 272,
+      "context_window_k": 1050,
       "pricing_usd_per_1m": {
-        "input": 5.0,
-        "cached_input": 0.5,
+        "input": 4.0,
+        "cached_input": 0.4,
         "cache_write": null,
-        "output": 30.0
+        "output": 20.0
       },
       "long_context_pricing_usd_per_1m": {
-        "input": 10.0,
-        "cached_input": 1.0,
+        "input": 8.0,
+        "cached_input": 0.8,
         "cache_write": null,
-        "output": 45.0,
+        "output": 30.0,
         "threshold_note": "Long context tier kicks in >272K input tokens"
       },
       "recommendation": "avoid-unless-justified",
       "notes": "GPT-5.6 powerful flagship. Very high output cost ($30/1M). Long context extremely expensive.",
-      "max_output_k": null,
+      "max_output_k": 128,
       "tool_support": {
         "prompt": true,
         "tools": "runtime_dependent"
@@ -235,6 +256,7 @@
   ],
   "cost_tiers": {
     "cheapest": [
+      "gpt-5.6-luna",
       "gpt-5.4-nano",
       "gpt-5-mini"
     ],
@@ -243,26 +265,26 @@
     ],
     "moderate": [
       "gpt-5.3-codex",
-      "gpt-5.6-luna"
+      "gpt-5.6-terra"
     ],
     "high": [
       "gpt-5.4",
-      "gpt-5.6-terra"
+      "gpt-5.6-sol"
     ],
     "very_high": [
       "gpt-5.5",
-      "gpt-5.6-sol"
+      "gpt-6-astra"
     ]
   },
   "strategy": {
-    "heartbeat": "gpt-5.4-nano",
-    "default": "gpt-5-mini",
+    "heartbeat": "gpt-5.6-luna",
+    "default": "gpt-5.6-luna",
     "code_analysis": "gpt-5.3-codex",
-    "complex_reasoning": "gpt-5.4",
-    "long_context": "gpt-5.4 (up to 272K cheap) or gpt-5.6-luna (up to 200K cheap)",
+    "complex_reasoning": "gpt-6-astra",
+    "long_context": "gpt-5.6-luna, gpt-5.6-terra, or gpt-5.6-sol (1.05M context)",
     "avoid": [
-      "gpt-5.5",
-      "gpt-5.6-sol (long context)"
+      "gpt-5.5 (superseded by GPT-5.6 family)",
+      "gpt-5.6-sol for routine tasks"
     ]
   },
   "runtime": {
@@ -282,17 +304,18 @@
   },
   "capability_tiers": {
     "low": [
+      "gpt-5.6-luna",
       "gpt-5.4-nano",
       "gpt-5-mini",
       "gpt-5.4-mini"
     ],
     "medium": [
       "gpt-5.3-codex",
-      "gpt-5.6-luna"
+      "gpt-5.6-terra"
     ],
     "high": [
+      "gpt-6-astra",
       "gpt-5.4",
-      "gpt-5.6-terra",
       "gpt-5.5",
       "gpt-5.6-sol"
     ]

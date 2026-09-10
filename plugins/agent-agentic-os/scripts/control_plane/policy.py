@@ -208,6 +208,27 @@ def _interview_standard_check(ctx: Dict[str, Any]) -> Optional[str]:
     return _interview_route_check(ctx, "STANDARD", "interview_acceptance_criteria")
 
 
+def _worktree_isolation_check(ctx: Dict[str, Any]) -> Optional[str]:
+    """Require isolated worktree metadata unless a human records an exception."""
+    task = ctx.get("task") or {}
+    if ctx["count_receipts"]("existing_worktree_exception", 0) > 0:
+        return None
+
+    worktree_path = str(task.get("worktree_path") or "").strip()
+    worktree_branch = str(task.get("worktree_branch") or "").strip()
+    if not worktree_path or not worktree_branch:
+        return (
+            "Cannot enter IN_WORKTREE: record an isolated worktree path and feature branch "
+            "before implementation, or record an explicit existing_worktree_exception."
+        )
+    if worktree_branch in {"main", "master"}:
+        return (
+            f"Cannot enter IN_WORKTREE on default branch '{worktree_branch}': use an isolated "
+            "feature branch or record an explicit existing_worktree_exception."
+        )
+    return None
+
+
 def _done_check(ctx: Dict[str, Any]) -> Optional[str]:
     """Predicate rule folding in the original _check_done_guard: requires a passing test_suite
     receipt, an asymmetric persistence log entry, a clean leak check, and (if any verifiers
@@ -370,6 +391,7 @@ CHECK_REGISTRY: Dict[str, Any] = {
             "Call record_human_approval() — this gate can never be skipped."
         )
     ),
+    "worktree_isolation_or_exception": _worktree_isolation_check,
     "test_suite": lambda ctx: (
         None if _gate_receipt_exists(ctx, "test_suite") else (
             "Cannot advance: no recorded test_suite verification receipt found. "

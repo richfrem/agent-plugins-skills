@@ -33,11 +33,11 @@ Flags (named-flag mode):
                     codex   → Codex / OpenAI-compatible CLI (prompt via stdin)
                     llama   → optimized local Gemma host (direct HTTP to llama-server :8089)
     --model, -m   Model identifier. Defaults per backend:
-                    copilot → gpt-5-mini
+                    copilot → mai-code-1.1-flash
                     gemini  → gemini-3-flash-preview
-                    claude  → haiku-4.5
-                    agy     → gemini-3.5-flash (loaded from cheapest_models.json)
-                    codex   → gpt-5-codex
+                    claude  → claude-haiku-4-5
+                    agy     → gemini-3.8-flash-low (loaded from cheapest_models.json)
+                    codex   → gpt-5.6-luna
                     llama   → gemma-4-12b
     --max-tokens  Max output tokens for cli=llama (default: 120).
     --isolated    Isolation mode: append safety footer to prompt; suppress dangerous CLI
@@ -81,11 +81,11 @@ from model_catalog import CatalogContractError, load_catalog, select_model
 def _load_default_models() -> dict[str, str | None]:
     """Return hardcoded default models, overridden by cheapest_models.json if present."""
     defaults = {
-        "copilot": "gpt-5-mini",
+        "copilot": "mai-code-1.1-flash",
         "gemini": "gemini-3-flash-preview",
-        "claude": "haiku-4.5",
-        "agy": "gemini-3.5-flash",
-        "codex": "gpt-5-mini",
+        "claude": "claude-haiku-4-5",
+        "agy": "gemini-3.8-flash-low",
+        "codex": "gpt-5.6-luna",
         "llama": "gemma-4-12b",
     }
     try:

@@ -99,29 +99,29 @@ approval gate.
 
 > Full model data (identifiers, per-token costs, context windows): `references/copilot-models.json`
 
-### Default for `run_agent.py`: `gpt-5-mini` (cheapest, best for most tasks)
+### Default for `run_agent.py`: `mai-code-1.1-flash` (lowest current published credit tier)
 
 ```bash
-# No model arg = gpt-5-mini (25 credits/1M input, 200 credits/1M output)
+# No model arg = mai-code-1.1-flash (20 credits/1M input, 120 credits/1M output)
 python ./scripts/run_agent.py agents/security-auditor.md target.py security.md \
   "Find vulnerabilities."
 ```
 
-### Value pick for coding tasks: `mai-code-1-flash` (new Jun 2026)
+### Value pick for coding tasks: `mai-code-1.1-flash`
 
 ```bash
-# Microsoft MAI-Code-1-Flash — Microsoft claims similar quality to claude-sonnet-4.6 at ~4× lower cost
-# Input: 75 credits/1M  Output: 450 credits/1M  (vs Sonnet: 300 input / 1500 output)
+# Microsoft MAI-Code-1.1-Flash — current low-cost code-focused option
+# Input: 20 credits/1M  Output: 120 credits/1M
 python ./scripts/run_agent.py agents/security-auditor.md target.py security.md \
-  "Audit for OWASP Top 10 vulnerabilities." mai-code-1-flash
+  "Audit for OWASP Top 10 vulnerabilities." mai-code-1.1-flash
 ```
 
-### Absolute cheapest: `gpt-5.4-nano`
+### Cheapest documented option: `mai-code-1.1-flash`
 
 ```bash
-# GPT-5.4 nano: 20 credits/1M input, 125 credits/1M output — cheapest in catalog
+# MAI-Code-1.1-Flash: 20 credits/1M input, 120 credits/1M output — lowest current published tier
 python ./scripts/run_agent.py /dev/null /dev/null heartbeat.md \
-  "HEARTBEAT CHECK: Respond HEARTBEAT_OK only." gpt-5.4-nano
+  "HEARTBEAT CHECK: Respond HEARTBEAT_OK only." mai-code-1.1-flash
 ```
 
 ### Complex reasoning / multi-file: `claude-sonnet-4.6`
@@ -136,7 +136,7 @@ python ./scripts/run_agent.py /dev/null /tmp/copilot_prompt.md /tmp/copilot_outp
 ### Model Identifiers & Credit Costs (June 2026 — AI Credits billing)
 
 > [!NOTE]
-> 1 AI Credit = $0.01 USD. All costs are per 1 million tokens. Copilot CLI interactive session default is `claude-sonnet-4.6`; `run_agent.py` defaults to `gpt-5-mini`.
+> 1 AI Credit = $0.01 USD. All costs are per 1 million tokens. Copilot CLI interactive defaults and live credit rates can vary by account; `run_agent.py` uses `mai-code-1.1-flash` unless overridden. Check `models.list` before a paid dispatch.
 
 | Model | Identifier | Input cr/1M | Output cr/1M | Notes |
 |:---|:---|---:|---:|:---|
@@ -144,24 +144,24 @@ python ./scripts/run_agent.py /dev/null /tmp/copilot_prompt.md /tmp/copilot_outp
 | **GPT-5 mini** | `gpt-5-mini` | 25 | 200 | Best default — fast, cheap |
 | Raptor mini | `raptor-mini` | 25 | 200 | GitHub fine-tuned, same cost as gpt-5-mini |
 | Gemini 3 Flash | `gemini-3-flash` | 50 | 300 | Preview |
-| **MAI-Code-1-Flash** | `mai-code-1-flash` | 75 | 450 | **New Jun 2026** — code-focused, 256K ctx, no cache write cost |
+| **MAI-Code-1.1-Flash** | `mai-code-1.1-flash` | 20 | 120 | Current low-cost code-focused option |
 | GPT-5.4 mini | `gpt-5.4-mini` | 75 | 450 | Same price tier as MAI-Code-1-Flash |
 | Claude Haiku 4.5 | `claude-haiku-4.5` | 100 | 500 | Cheapest Anthropic; +125 cr/1M cache write |
 | Gemini 2.5 Pro | `gemini-2.5-pro` | 125 | 1000 | Good reasoning at moderate cost |
-| Gemini 3.5 Flash | `gemini-3.5-flash` | 150 | 900 | Better via agy CLI |
+| Gemini 3.8 Flash | `gemini-3.8-flash` | 150 | 900 | Better via agy CLI |
 | GPT-5.3-Codex | `gpt-5.3-codex` | 175 | 1400 | Code-specialist, high output cost |
 | Gemini 3.1 Pro | `gemini-3.1-pro` | 200 | 1200 | Preview; long ctx doubles cost above 200K |
 | GPT-5.4 | `gpt-5.4` | 250 | 1500 | Long ctx doubles above 272K |
-| **Claude Sonnet 4.6** | `claude-sonnet-4.6` | 300 | 1500 | **Copilot default** — best reasoning; +375 cr/1M cache write |
+| Claude Sonnet 5 | `claude-sonnet-5` | 200 | 1000 | Current high-quality general model |
 | Claude Sonnet 4.5 | `claude-sonnet-4.5` | 300 | 1500 | Prefer 4.6 (same price, newer) |
 | Claude Opus 4.8 | `claude-opus-4.8` | 500 | 2500 | Highest Anthropic quality; +625 cr/1M cache write |
 | Claude Opus 4.7 | `claude-opus-4.7` | 500 | 2500 | Same price as Opus 4.8; prefer 4.8 |
 | Claude Opus 4.6 | `claude-opus-4.6` | 500 | 2500 | Same price as Opus 4.8 |
 | GPT-5.5 | `gpt-5.5` | 500 | 3000 | Very expensive output; avoid unless justified |
-| Claude Fable 5 | `claude-fable-5` | 1000 | 5000 | **UNAVAILABLE** — currently withdrawn |
+| Claude Fable 5.1 | `claude-fable-5.1` | 1000 | 5000 | Highest current Claude tier; verify account access |
 
 > [!WARNING]
-> **Model identifiers use dots not dashes in version numbers** — `claude-sonnet-4.6` not `claude-sonnet-4-6`. Verify current identifiers with `/model` in an interactive session before any expensive run. Deprecated: `gpt-4.1`, `gpt-4o`, `claude-sonnet-4`, `gpt-5.2`/`gpt-5.2-codex`.
+> Copilot model identifiers and display names can differ. Verify the exact identifier with `models.list` or an interactive `/model` command before an expensive run. Static catalog prices are advisory.
 
 ---
 
@@ -214,13 +214,13 @@ To dramatically improve review results, add:
 
 | Use case | Model | Reasoning |
 |:---|:---|:---|
-| Heartbeat / connectivity check | `gpt-5.4-nano` | Cheapest (20 cr/1M in) |
-| Default / high-frequency tasks | `gpt-5-mini` | 25 cr/1M — best routine default |
-| Code analysis / code review | `mai-code-1-flash` | 75 cr/1M — Microsoft claims Sonnet-level quality for code at 4× lower cost |
-| Claude quality, cost-efficient | `claude-haiku-4.5` | 100 cr/1M — best Claude reasoning per credit |
-| Complex reasoning / multi-file generation | `claude-sonnet-4.6` | 300 cr/1M — Copilot's default; best for nuanced work |
-| Critical / highest-quality tasks only | `claude-opus-4.8` | 500 cr/1M — 5× more than Sonnet; justify before using |
-| Avoid | `gpt-5.5` (long ctx), `claude-fable-5` | Extremely expensive; Fable 5 currently unavailable |
+| Heartbeat / connectivity check | `mai-code-1.1-flash` | Lowest current published tier |
+| Default / high-frequency tasks | `mai-code-1.1-flash` | 20/120 credits per 1M input/output |
+| Code analysis / code review | `mai-code-1.1-flash` | Current low-cost code-focused option |
+| Claude quality, cost-efficient | `claude-haiku-4-5` | Cheapest current Claude model; verify Copilot ID |
+| Complex reasoning / multi-file generation | `claude-opus-5` or `claude-sonnet-5` | Select by required quality and budget |
+| Critical / highest-quality tasks only | `claude-fable-5.1` | Highest current Claude tier; justify before use |
+| Avoid | Retired entries in the catalog | Use only models marked available and confirmed by `models.list` |
 
 ### Rules for All Model Calls (not just premium)
 
