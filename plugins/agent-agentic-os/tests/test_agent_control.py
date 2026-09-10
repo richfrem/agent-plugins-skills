@@ -112,6 +112,7 @@ def stage_worktree_metadata(cp, task_id, path=None, branch=None):
 
 def complete_retrospective(cp, task_id, actor="human"):
     """Move from VERIFY_EXIT through the new retrospective gate to DONE."""
+    cp.record_verification_receipt(task_id, "full_test_suite", "pytest -q", 0)
     stage_implementation_ledger(cp, task_id)
     cp.transition(task_id=task_id, to_state="RETROSPECTIVE", actor="controller", reason="Enter retrospective")
     cp.save_retrospective(
@@ -409,6 +410,7 @@ def test_transition_to_done_blocked_without_persistence_receipt(control_plane):
         control_plane.transition(task_id=task_id, to_state="RETROSPECTIVE", actor="controller", reason="Attempt complete")
 
     control_plane.record_verification_receipt(task_id=task_id, gate_name="leak_check", command_executed="git status --short", exit_code=0)
+    control_plane.record_verification_receipt(task_id=task_id, gate_name="full_test_suite", command_executed="pytest -q", exit_code=0)
     stage_implementation_ledger(control_plane, task_id)
     control_plane.transition(task_id=task_id, to_state="RETROSPECTIVE", actor="controller", reason="Exit gates passed")
     stage_human_decisions(control_plane, task_id, "RETROSPECTIVE", "DONE", actor="human", answer="skip")
@@ -472,6 +474,7 @@ def test_transition_to_done_blocked_when_locked_verifier_mutated(control_plane, 
     control_plane.transition(task_id=task_id, to_state="IN_WORKTREE", actor="controller", reason="Worktree isolated")
     control_plane.transition(task_id=task_id, to_state="VERIFY_EXIT", actor="controller", reason="Verifying")
     control_plane.record_verification_receipt(task_id=task_id, gate_name="test_suite", command_executed="pytest", exit_code=0)
+    control_plane.record_verification_receipt(task_id=task_id, gate_name="full_test_suite", command_executed="pytest -q", exit_code=0)
     control_plane.log_asymmetric_persistence(
         task_id=task_id, destination="references/map-debt.md", status="RESOLVED", details="Resolved"
     )

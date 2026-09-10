@@ -1342,14 +1342,15 @@ templates:
   from_state: VERIFY_EXIT
   to_state: RETROSPECTIVE
   purpose: Verify clean leak checks and enter the mandatory pipeline-close retrospective gate.
-  next_steps_hint: "First ensure docs/plans/<task-id>-implementation-plan.md contains the machine-readable Implementation Task Ledger and every planned item is COMPLETE with evidence and existing artifacts. Then record passing test_suite and leak_check verification receipts through verify-exit-verification, and record asymmetric persistence evidence with destination wiki/decisions/<task-id>.md or references/map-debt.md (other destinations do not satisfy done_guard). Satisfy implementation_completeness and done_guard, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to RETROSPECTIVE."
+  next_steps_hint: "First ensure docs/plans/<task-id>-implementation-plan.md contains the machine-readable Implementation Task Ledger and every planned item is COMPLETE with evidence and existing artifacts. Then run the repository-wide pytest -q suite through verify-exit-verification with verifier_id=pytest_full_suite and record its full_test_suite receipt, run the task-scoped test_suite and leak_check verifiers, and record asymmetric persistence evidence with destination wiki/decisions/<task-id>.md or references/map-debt.md (other destinations do not satisfy done_guard). Satisfy implementation_completeness and done_guard, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to RETROSPECTIVE."
   checklist:
   - Current task state is persisted as VERIFY_EXIT
-  - 'Deterministic checks satisfied: test_suite, leak_check, and asymmetric persistence'
+  - 'Deterministic checks satisfied: full_test_suite, test_suite, leak_check, and asymmetric persistence'
   required_artifacts: []
   deterministic_checks:
   - done_guard
   - implementation_completeness
+  - full_test_suite
   human_questions: []
   approval:
     required: false
