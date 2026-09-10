@@ -17,11 +17,11 @@ stateDiagram-v2
     INTAKE --> INTERVIEW
     INTERVIEW --> RETROSPECTIVE : trivial path — baseline<br/>and adaptive questions complete
     INTERVIEW --> DRAFT_PLAN : standard path — interview complete
-    DRAFT_PLAN --> PLAN_REVIEW : submit plan<br/>ask additional review? yes/no
+    DRAFT_PLAN --> PLAN_REVIEW : submit plan<br/>choose additional review - yes or no
     PLAN_REVIEW --> MULTI_AGENT_REVIEW : yes — choose review method
     PLAN_REVIEW --> AWAITING_APPROVAL : no / plan accepted<br/>skip or review outcome recorded
     PLAN_REVIEW --> DRAFT_PLAN : changes requested<br/>revise artifacts and resubmit
-    MULTI_AGENT_REVIEW --> PLAN_REVIEW : review complete<br/>merge outcome; repeat or accept
+    MULTI_AGENT_REVIEW --> PLAN_REVIEW : review complete<br/>merge outcome - repeat or accept
     MULTI_AGENT_REVIEW --> DRAFT_PLAN : changes requested<br/>revise artifacts and resubmit
     AWAITING_APPROVAL --> APPROVED : you say Proceed / Go<br/>(mandatory gate)
     APPROVED --> IN_WORKTREE
