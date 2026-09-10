@@ -45,6 +45,7 @@ context/*.db-shm
 context/*.jsonl
 context/os-state.json
 context/plugin-config.json
+context/agent-capability-profile.json
 context/bundles/
 
 # Added by Spec Kitty CLI (auto-managed)
@@ -114,4 +115,3 @@ context/status.md
 # stay tracked (gitignore doesn't retroactively untrack committed files).
 docs/plans/
 docs/superpowers/
-

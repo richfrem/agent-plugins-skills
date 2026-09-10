@@ -40,6 +40,7 @@ if str(SCRIPTS_DIR) not in sys.path:
 
 from agent_control import ControlPlane, PersistenceInvariantViolation
 from interview_helpers import stage_interview_answers
+from helpers.implementation_ledger import stage_implementation_ledger
 
 
 @pytest.fixture
@@ -98,6 +99,7 @@ def _advance_to_in_worktree(cp: ControlPlane, task_id: str, title: str, tmp_path
     plans_dir.mkdir(parents=True, exist_ok=True)
     (plans_dir / f"{task_id}-spec.md").write_text("# Spec", encoding="utf-8")
     (plans_dir / f"{task_id}-implementation-plan.md").write_text("# Plan", encoding="utf-8")
+    stage_implementation_ledger(control_plane, task_id, tmp_path)
     (tmp_path / ".worktrees" / task_id).mkdir(parents=True, exist_ok=True)
 
     cp.create_task(task_id=task_id, title=title, runtime_tool="claude")
@@ -203,6 +205,7 @@ def test_done_guard_locked_verifier_sovereignty_branch_passes_when_intact(contro
     plans_dir.mkdir(parents=True, exist_ok=True)
     (plans_dir / f"{task_id}-spec.md").write_text("# Spec", encoding="utf-8")
     (plans_dir / f"{task_id}-implementation-plan.md").write_text("# Plan", encoding="utf-8")
+    stage_implementation_ledger(control_plane, task_id, tmp_path)
 
     control_plane.create_task(task_id=task_id, title="Done sovereignty intact", runtime_tool="claude")
 

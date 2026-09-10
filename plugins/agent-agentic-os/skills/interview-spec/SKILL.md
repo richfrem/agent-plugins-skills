@@ -127,6 +127,12 @@ Compile the draft spec and plan using `write_plan_document.py`, then coordinate 
 `DRAFT_PLAN`. Enter `PLAN_REVIEW` and present the disposition gate:
 > *"The plan is drafted. Do you want additional independent review? Yes or no."*
 
+The implementation plan must also contain a machine-readable `## Implementation Task Ledger`
+section with one fenced JSON entry per approved implementation task. Each entry must use
+`status: "COMPLETE"` only after implementation, list existing repository-relative `artifacts`,
+and include non-empty `evidence`. The `VERIFY_EXIT -> RETROSPECTIVE` gate validates this ledger;
+green tests alone cannot substitute for proof that every approved task was implemented.
+
 - **Path A (Request review)**: from `PLAN_REVIEW`, choose the review method, coordinate transition
   to `MULTI_AGENT_REVIEW`, package the bundle via `context-bundler` when applicable, and return
   to `PLAN_REVIEW` after the review outcome is recorded. `PLAN_REVIEW` is the convergence gate:

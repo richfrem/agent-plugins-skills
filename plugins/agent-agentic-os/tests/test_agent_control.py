@@ -54,6 +54,7 @@ from control_plane.coordinator import TransitionCoordinatorError
 from interview_spec_engine import (
     detect_intake_mode,
 )
+from helpers.implementation_ledger import stage_implementation_ledger
 
 
 @pytest.fixture
@@ -111,6 +112,7 @@ def stage_worktree_metadata(cp, task_id, path=None, branch=None):
 
 def complete_retrospective(cp, task_id, actor="human"):
     """Move from VERIFY_EXIT through the new retrospective gate to DONE."""
+    stage_implementation_ledger(cp, task_id)
     cp.transition(task_id=task_id, to_state="RETROSPECTIVE", actor="controller", reason="Enter retrospective")
     cp.save_retrospective(
         task_id,
@@ -407,6 +409,7 @@ def test_transition_to_done_blocked_without_persistence_receipt(control_plane):
         control_plane.transition(task_id=task_id, to_state="RETROSPECTIVE", actor="controller", reason="Attempt complete")
 
     control_plane.record_verification_receipt(task_id=task_id, gate_name="leak_check", command_executed="git status --short", exit_code=0)
+    stage_implementation_ledger(control_plane, task_id)
     control_plane.transition(task_id=task_id, to_state="RETROSPECTIVE", actor="controller", reason="Exit gates passed")
     stage_human_decisions(control_plane, task_id, "RETROSPECTIVE", "DONE", actor="human", answer="skip")
     with pytest.raises(PersistenceInvariantViolation, match="retrospective is incomplete"):
@@ -473,6 +476,7 @@ def test_transition_to_done_blocked_when_locked_verifier_mutated(control_plane, 
         task_id=task_id, destination="references/map-debt.md", status="RESOLVED", details="Resolved"
     )
     control_plane.record_verification_receipt(task_id=task_id, gate_name="leak_check", command_executed="git status --short", exit_code=0)
+    stage_implementation_ledger(control_plane, task_id)
 
     # Mutate the locked verifier after all receipts were stamped
     verifier_file.write_text("def evaluate(): return False  # tampered\n", encoding="utf-8")

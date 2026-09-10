@@ -347,6 +347,32 @@ class ControlPlane:
         get_answers = getattr(self._persistence, "get_unconsumed_transition_answers", None)
         if get_answers and from_state and to_state:
             stage_answers = get_answers(task_id, from_state, to_state)
+
+        def check_implementation_completeness() -> Optional[str]:
+            from control_plane.implementation import validate_implementation_ledger
+
+            repo_root = getattr(self, "repo_root", None)
+            if repo_root is None and self.db_path is not None and self.db_path.parent.name == "context":
+                repo_root = self.db_path.parent.parent
+            if repo_root is None:
+                repo_root = Path.cwd()
+            roots = []
+            task_worktree = task.get("worktree_path")
+            if task_worktree:
+                worktree_root = Path(task_worktree)
+                if not worktree_root.is_absolute():
+                    worktree_root = Path(repo_root) / worktree_root
+                roots.append(worktree_root.resolve())
+            roots.append(Path(repo_root).resolve())
+            for root in roots:
+                plan_path = root / "docs" / "plans" / f"{task_id}-implementation-plan.md"
+                if plan_path.exists():
+                    return validate_implementation_ledger(plan_path, root)
+            return (
+                f"Implementation plan ledger missing for task '{task_id}': "
+                f"expected docs/plans/{task_id}-implementation-plan.md."
+            )
+
         return {
             "task_id": task_id,
             "task": task,
@@ -359,6 +385,7 @@ class ControlPlane:
             "has_complete_retrospective": lambda: self._persistence.has_complete_retrospective(task_id),
             "verify_sovereignty": lambda: self.verify_sovereignty(task_id),
             "stage_answers": stage_answers,
+            "check_implementation_completeness": check_implementation_completeness,
         }
 
     def transition(self, task_id: str, to_state: str, actor: str, reason: str):

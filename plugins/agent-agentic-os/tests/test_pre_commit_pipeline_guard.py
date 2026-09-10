@@ -32,6 +32,7 @@ from control_plane.adapters import SqlitePersistenceAdapter, FilesystemAdapter
 from control_plane.policy import evaluate_operation, PolicyViolation
 from agent_control import ControlPlane, PersistenceInvariantViolation
 from interview_helpers import stage_interview_answers
+from helpers.implementation_ledger import stage_implementation_ledger
 
 HOOK_PATH = SCRIPTS_DIR / "pre-commit-pipeline-guard"
 
@@ -68,6 +69,7 @@ def _advance_task_to_in_worktree(cp, task_id, repo, branch):
     (plans / f"{task_id}-spec.md").write_text("# Spec\n", encoding="utf-8")
     (plans / f"{task_id}-implementation-plan.md").write_text("# Plan\n", encoding="utf-8")
     cp.repo_root = repo
+    stage_implementation_ledger(cp, task_id, repo)
     from control_plane.coordinator import TransitionCoordinator
     coordinator = TransitionCoordinator(control_plane=cp, input_fn=lambda _prompt: "1")
     coordinator.coordinate_transition(
