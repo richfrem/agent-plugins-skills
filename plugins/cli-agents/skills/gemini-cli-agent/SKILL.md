@@ -5,7 +5,7 @@ description: >
   Gemini CLI sub-agent system for cost-efficient analysis using the `gemini` binary.
   Use when piping large contexts to cheaper Google Gemini models (gemini-3-flash-preview,
   gemini-3.1-pro-preview) for security audits, architecture reviews, or QA analysis.
-  For frontier models (Gemini 3.5 Flash and above), use agy-cli-agent instead.
+  For frontier models (Gemini 3.8 Flash and above), use agy-cli-agent instead.
 allowed-tools: Bash, Read, Write
 ---
 
@@ -17,7 +17,7 @@ allowed-tools: Bash, Read, Write
 You dispatch specialized analysis tasks to Gemini CLI sub-agents using the `gemini` binary.
 
 > [!IMPORTANT]
-> Default model: **gemini-3-flash-preview** (cost-efficient). For deep reasoning, use **gemini-3.1-pro-preview**. For frontier models (Gemini 3.5 Flash+), use `agy-cli-agent` instead.
+> Default model: **gemini-3-flash-preview** (cost-efficient). For deep reasoning, use **gemini-3.1-pro-preview**. For frontier models (Gemini 3.8 Flash+), use `agy-cli-agent` instead.
 
 ### Minimal Working Pattern
 

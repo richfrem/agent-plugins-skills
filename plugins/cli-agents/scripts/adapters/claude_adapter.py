@@ -15,7 +15,7 @@ class ClaudeAdapter:
     def __init__(self):
         """Initialize with the adapter name and default model."""
         self.name = "claude"
-        self.default_model = "haiku-4.5"
+        self.default_model = "claude-haiku-4-5"
 
     def heartbeat(self) -> bool:
         """Return True if the claude CLI is installed and responds to a heartbeat prompt."""

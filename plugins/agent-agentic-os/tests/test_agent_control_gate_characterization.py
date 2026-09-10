@@ -104,9 +104,10 @@ def _advance_to_in_worktree(cp: ControlPlane, task_id: str, title: str, tmp_path
     cp.record_plan_mode_entry(task_id=task_id, actor="controller")
     _coordinate_transition(cp, task_id, "PLAN_REVIEW", actor="controller", reason="Plan ready")
     cp.record_review_skip(task_id=task_id, phase="multi_agent_review", actor="user", reason="characterization test")
-    cp.transition(task_id=task_id, to_state="AWAITING_APPROVAL", actor="controller", reason="Review ready")
+    _coordinate_transition(cp, task_id, "AWAITING_APPROVAL", actor="controller", reason="Review ready")
     _coordinate_transition(cp, task_id, "APPROVED", actor="user", reason="Approved")
     cp.record_human_approval(task_id=task_id, approver="user")
+    cp.update_worktree(task_id, f".worktrees/{task_id}", f"feature/{task_id}", "written_in_worktree")
     cp.transition(task_id=task_id, to_state="IN_WORKTREE", actor="controller", reason="Worktree created")
 
 
@@ -212,9 +213,10 @@ def test_done_guard_locked_verifier_sovereignty_branch_passes_when_intact(contro
     control_plane.record_plan_mode_entry(task_id=task_id, actor="controller")
     _coordinate_transition(control_plane, task_id, "PLAN_REVIEW", actor="controller", reason="Plan ready")
     control_plane.record_review_skip(task_id=task_id, phase="multi_agent_review", actor="user", reason="characterization test")
-    control_plane.transition(task_id=task_id, to_state="AWAITING_APPROVAL", actor="controller", reason="Review ready")
+    _coordinate_transition(control_plane, task_id, "AWAITING_APPROVAL", actor="controller", reason="Review ready")
     _coordinate_transition(control_plane, task_id, "APPROVED", actor="user", reason="Approved")
     control_plane.record_human_approval(task_id=task_id, approver="user")
+    control_plane.update_worktree(task_id, f".worktrees/{task_id}", f"feature/{task_id}", "written_in_worktree")
     control_plane.transition(task_id=task_id, to_state="IN_WORKTREE", actor="controller", reason="Worktree created")
     control_plane.transition(task_id=task_id, to_state="VERIFY_EXIT", actor="controller", reason="Verifying")
 

@@ -34,6 +34,33 @@ class TransitionCoordinatorError(Exception):
     pass
 
 
+def _normalize_declared_option(value: str) -> str:
+    """Normalize option text for safe, human-friendly comparison."""
+    normalized = " ".join(value.strip().casefold().split())
+    if normalized.endswith(" [recommended]"):
+        normalized = normalized[: -len(" [recommended]")].rstrip()
+    return normalized
+
+
+def _canonicalize_declared_answer(answer: str, options: List[str]) -> str:
+    """Return the exact YAML option for an unambiguous human answer.
+
+    The stored value must remain the registered option, while comparison accepts
+    case/whitespace differences and an omitted ``[Recommended]`` marker. Similar
+    options fail closed rather than allowing the coordinator to guess.
+    """
+    matches = [option for option in options if _normalize_declared_option(option) == _normalize_declared_option(answer)]
+    if len(matches) > 1:
+        raise TransitionCoordinatorError(
+            f"Answer '{answer}' is ambiguous; matching registered options: {matches}"
+        )
+    if not matches:
+        raise TransitionCoordinatorError(
+            f"Invalid undeclared answer option '{answer}'. Valid options: {options}"
+        )
+    return matches[0]
+
+
 class TransitionCoordinator:
     """Coordinates lifecycle transitions between states."""
 
@@ -279,17 +306,17 @@ class TransitionCoordinator:
                 )
 
             # Validate that chosen_ans matches one of the declared options
-            if options and chosen_ans not in options:
-                raise TransitionCoordinatorError(
-                    f"Invalid undeclared answer option '{chosen_ans}' for question '{qid}'. "
-                    f"Valid options: {options}"
-                )
+            if options:
+                chosen_ans = _canonicalize_declared_answer(chosen_ans, options)
             accepted_answers = q.get("accepted_answers")
-            if accepted_answers is not None and chosen_ans not in accepted_answers:
-                raise TransitionCoordinatorError(
-                    f"Answer '{chosen_ans}' for question '{qid}' does not authorize this transition. "
-                    f"Accepted answers: {accepted_answers}"
-                )
+            if accepted_answers is not None:
+                try:
+                    _canonicalize_declared_answer(chosen_ans, accepted_answers)
+                except TransitionCoordinatorError as exc:
+                    raise TransitionCoordinatorError(
+                        f"Answer '{chosen_ans}' for question '{qid}' does not authorize this transition. "
+                        f"Accepted answers: {accepted_answers}"
+                    ) from exc
 
             staged_decisions.append(
                 TransitionDecision(

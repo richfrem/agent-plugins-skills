@@ -2,8 +2,8 @@ stateDiagram-v2
     state "Step 1: Intake — task registered" as INTAKE
     state "Step 2: Interview — baseline and adaptive questions" as INTERVIEW
     state "Step 3: Draft plan authored" as DRAFT_PLAN
-    state "Step 4: Plan submission/review — artifacts and revision gate" as PLAN_REVIEW
-    state "Step 5: Multi-agent plan review — 1 or N rounds" as MULTI_AGENT_REVIEW
+    state "Step 4: Plan disposition & acceptance gate" as PLAN_REVIEW
+    state "Step 5: Independent plan review — 1 or N rounds" as MULTI_AGENT_REVIEW
     state "Step 6: Awaiting your approval" as AWAITING_APPROVAL
     state "Step 7: Approved — you said go" as APPROVED
     state "Step 8: Implementation (isolated worktree)" as IN_WORKTREE
@@ -17,11 +17,12 @@ stateDiagram-v2
     INTAKE --> INTERVIEW
     INTERVIEW --> RETROSPECTIVE : trivial path — baseline<br/>and adaptive questions complete
     INTERVIEW --> DRAFT_PLAN : standard path — interview complete
-    DRAFT_PLAN --> PLAN_REVIEW : submit spec and implementation plan<br/>artifact identity recorded
-    PLAN_REVIEW --> MULTI_AGENT_REVIEW : you say yes to AI plan review
-    PLAN_REVIEW --> AWAITING_APPROVAL : you say no — skip straight ahead
-    MULTI_AGENT_REVIEW --> AWAITING_APPROVAL : review complete
-    MULTI_AGENT_REVIEW --> DRAFT_PLAN : changes requested; revise artifacts
+    DRAFT_PLAN --> PLAN_REVIEW : submit plan<br/>ask additional review? yes/no
+    PLAN_REVIEW --> MULTI_AGENT_REVIEW : yes — choose review method
+    PLAN_REVIEW --> AWAITING_APPROVAL : no / plan accepted<br/>skip or review outcome recorded
+    PLAN_REVIEW --> DRAFT_PLAN : changes requested<br/>revise artifacts and resubmit
+    MULTI_AGENT_REVIEW --> PLAN_REVIEW : review complete<br/>merge outcome; repeat or accept
+    MULTI_AGENT_REVIEW --> DRAFT_PLAN : changes requested<br/>revise artifacts and resubmit
     AWAITING_APPROVAL --> APPROVED : you say Proceed / Go<br/>(mandatory gate)
     APPROVED --> IN_WORKTREE
     IN_WORKTREE --> WORKTREE_REVIEW : implementation + tests done

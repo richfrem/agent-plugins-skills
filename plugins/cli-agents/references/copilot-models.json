@@ -6,7 +6,7 @@
     "pricing_unit": "per 1 million tokens",
     "credits_formula": "credits_per_1m = ($ per 1M tokens) * 100",
     "cli_version": "1.0.66-1",
-    "updated": "2026-07-15",
+    "updated": "2026-09-09",
     "default_model": "claude-sonnet-5",
     "notes": [
       "THIS FILE IS COPILOT-SPECIFIC. The direct claude CLI (Anthropic API) supports more Claude models than Copilot does. See claude-models.json for the full direct-API catalog.",
@@ -22,6 +22,127 @@
     "schema_version": 2
   },
   "models": [
+    {
+      "display_name": "Claude Fable 5.1",
+      "cli_id": "claude-fable-5.1",
+      "provider": "Anthropic",
+      "status": "GA",
+      "category": "Frontier",
+      "context_window_k": 1000,
+      "max_output_k": 128,
+      "pricing_usd_per_1m": {
+        "input": 10.0,
+        "cached_input": 0.25,
+        "cache_write": 12.5,
+        "output": 50.0
+      },
+      "credits_per_1m": {
+        "input": 1000,
+        "cached_input": 25,
+        "cache_write": 1250,
+        "output": 5000
+      },
+      "recommendation": "highest_capability",
+      "notes": "Supported by Copilot but excluded from enterprise default enablement where provider data-retention policy disallows it. Verify plan and policy availability.",
+      "tool_support": {"prompt": true, "tools": "runtime_dependent"}
+    },
+    {
+      "display_name": "Claude Opus 5",
+      "cli_id": "claude-opus-5",
+      "provider": "Anthropic",
+      "status": "GA",
+      "category": "Powerful",
+      "context_window_k": 1000,
+      "max_output_k": 128,
+      "pricing_usd_per_1m": {
+        "input": 5.0,
+        "cached_input": 0.5,
+        "cache_write": 6.25,
+        "output": 25.0
+      },
+      "credits_per_1m": {
+        "input": 500,
+        "cached_input": 50,
+        "cache_write": 625,
+        "output": 2500
+      },
+      "recommendation": "complex_reasoning",
+      "notes": "Current Copilot frontier choice for complex reasoning and agentic coding.",
+      "tool_support": {"prompt": true, "tools": "runtime_dependent"}
+    },
+    {
+      "display_name": "MAI-Code-1.1-Flash",
+      "cli_id": "mai-code-1.1-flash",
+      "provider": "Microsoft",
+      "status": "GA",
+      "category": "Lightweight",
+      "context_window_k": null,
+      "max_output_k": null,
+      "pricing_usd_per_1m": {
+        "input": 0.2,
+        "cached_input": 0.02,
+        "cache_write": null,
+        "output": 1.2
+      },
+      "credits_per_1m": {
+        "input": 20,
+        "cached_input": 2,
+        "cache_write": null,
+        "output": 120
+      },
+      "recommendation": "cheapest_code",
+      "notes": "Current low-cost Microsoft code model; replacement for MAI-Code-1-Flash, which retires 2026-09-10.",
+      "tool_support": {"prompt": true, "tools": "runtime_dependent"}
+    },
+    {
+      "display_name": "Kimi K3",
+      "cli_id": "kimi-k3",
+      "provider": "Moonshot AI",
+      "status": "GA",
+      "category": "Powerful",
+      "context_window_k": null,
+      "max_output_k": null,
+      "pricing_usd_per_1m": {
+        "input": 3.0,
+        "cached_input": 0.3,
+        "cache_write": null,
+        "output": 15.0
+      },
+      "credits_per_1m": {
+        "input": 300,
+        "cached_input": 30,
+        "cache_write": null,
+        "output": 1500
+      },
+      "recommendation": "powerful_alternative",
+      "notes": "Open-weight model. Availability and enterprise default enablement vary by plan.",
+      "tool_support": {"prompt": true, "tools": "runtime_dependent"}
+    },
+    {
+      "display_name": "Grok 4.6",
+      "cli_id": "grok-4.6",
+      "provider": "xAI",
+      "status": "GA",
+      "category": "Versatile",
+      "context_window_k": 200,
+      "max_output_k": null,
+      "pricing_usd_per_1m": {
+        "input": 2.0,
+        "cached_input": 0.5,
+        "cache_write": null,
+        "output": 6.0
+      },
+      "long_context_pricing_usd_per_1m": {
+        "input": 4.0,
+        "cached_input": 1.0,
+        "cache_write": null,
+        "output": 12.0,
+        "threshold_note": "Long context tier applies above 200K input tokens."
+      },
+      "recommendation": "versatile",
+      "notes": "Current xAI general-purpose choice in Copilot.",
+      "tool_support": {"prompt": true, "tools": "runtime_dependent"}
+    },
     {
       "display_name": "GPT-5 mini",
       "cli_id": "gpt-5-mini",
@@ -107,7 +228,7 @@
       "display_name": "Raptor mini",
       "cli_id": "raptor-mini",
       "provider": "GitHub (fine-tuned)",
-      "status": "GA",
+      "status": "retired",
       "category": "Versatile",
       "context_window_k": null,
       "pricing_usd_per_1m": {
@@ -134,7 +255,7 @@
       "display_name": "MAI-Code-1-Flash",
       "cli_id": "mai-code-1-flash",
       "provider": "Microsoft",
-      "status": "GA",
+      "status": "retired",
       "category": "Lightweight",
       "context_window_k": 256,
       "pricing_usd_per_1m": {
@@ -161,7 +282,7 @@
       "display_name": "Gemini 3 Flash",
       "cli_id": "gemini-3-flash",
       "provider": "Google",
-      "status": "Public preview",
+      "status": "retired",
       "category": "Lightweight",
       "context_window_k": null,
       "pricing_usd_per_1m": {
@@ -242,7 +363,7 @@
       "display_name": "Gemini 2.5 Pro",
       "cli_id": "gemini-2.5-pro",
       "provider": "Google",
-      "status": "GA",
+      "status": "retired",
       "category": "Powerful",
       "context_window_k": null,
       "pricing_usd_per_1m": {
@@ -266,27 +387,27 @@
       }
     },
     {
-      "display_name": "Gemini 3.5 Flash",
-      "cli_id": "gemini-3.5-flash",
+      "display_name": "Gemini 3.8 Flash",
+      "cli_id": "gemini-3.8-flash",
       "provider": "Google",
       "status": "GA",
       "category": "Lightweight",
-      "context_window_k": null,
+      "context_window_k": 1024,
       "pricing_usd_per_1m": {
-        "input": 1.5,
-        "cached_input": 0.15,
+        "input": 0.75,
+        "cached_input": 0.075,
         "cache_write": null,
-        "output": 9.0
+        "output": 3.75
       },
       "credits_per_1m": {
-        "input": 150,
-        "cached_input": 15,
+        "input": 75,
+        "cached_input": 7.5,
         "cache_write": null,
-        "output": 900
+        "output": 375
       },
       "recommendation": "use-via-agy",
       "notes": "Better accessed via agy CLI for frontier Gemini tasks. Relatively high output cost for a 'Flash' model.",
-      "max_output_k": null,
+      "max_output_k": 64,
       "tool_support": {
         "prompt": true,
         "tools": "runtime_dependent"
@@ -296,7 +417,7 @@
       "display_name": "Gemini 3.1 Pro",
       "cli_id": "gemini-3.1-pro",
       "provider": "Google",
-      "status": "Public preview",
+      "status": "retired",
       "category": "Powerful",
       "context_window_k": null,
       "long_context_threshold_k": 200,
@@ -363,7 +484,7 @@
       "display_name": "Claude Sonnet 4.5",
       "cli_id": "claude-sonnet-4.5",
       "provider": "Anthropic",
-      "status": "GA",
+      "status": "retired",
       "category": "Versatile",
       "context_window_k": null,
       "pricing_usd_per_1m": {
@@ -390,7 +511,7 @@
       "display_name": "Claude Sonnet 4.6",
       "cli_id": "claude-sonnet-4.6",
       "provider": "Anthropic",
-      "status": "GA",
+      "status": "retired",
       "category": "Versatile",
       "context_window_k": null,
       "pricing_usd_per_1m": {
@@ -457,7 +578,7 @@
       "display_name": "Claude Opus 4.5",
       "cli_id": "claude-opus-4.5",
       "provider": "Anthropic",
-      "status": "GA",
+      "status": "retired",
       "category": "Powerful",
       "context_window_k": null,
       "pricing_usd_per_1m": {
@@ -484,7 +605,7 @@
       "display_name": "Claude Opus 4.6",
       "cli_id": "claude-opus-4.6",
       "provider": "Anthropic",
-      "status": "GA",
+      "status": "retired",
       "category": "Powerful",
       "context_window_k": null,
       "pricing_usd_per_1m": {
@@ -830,58 +951,50 @@
   ],
   "cost_tiers": {
     "cheapest": [
+      "mai-code-1.1-flash",
       "gpt-5.4-nano",
-      "gpt-5-mini",
-      "raptor-mini"
+      "gpt-5-mini"
     ],
     "low": [
-      "mai-code-1-flash",
+      "mai-code-1.1-flash",
       "gpt-5.4-mini",
-      "gemini-3-flash",
+      "gemini-3.8-flash",
       "kimi-k2.7-code"
     ],
     "moderate": [
       "claude-haiku-4.5",
-      "gemini-2.5-pro",
       "gpt-5.3-codex",
-      "gemini-3.5-flash",
-      "gpt-5.6-luna"
+      "gpt-5.6-luna",
+      "grok-4.6"
     ],
     "high": [
-      "claude-sonnet-4.6",
-      "claude-sonnet-4.5",
       "claude-sonnet-5",
+      "claude-opus-5",
       "gpt-5.4",
-      "gemini-3.1-pro",
-      "gpt-5.6-terra"
+      "gpt-5.6-terra",
+      "kimi-k3"
     ],
     "very_high": [
-      "claude-opus-4.8",
-      "claude-opus-4.7",
-      "claude-opus-4.6",
-      "claude-opus-4.5",
       "gpt-5.5",
       "gpt-5.6-sol"
     ],
     "extreme": [
       "claude-opus-4.8-fast",
-      "claude-fable-5"
+      "claude-fable-5",
+      "claude-fable-5.1"
     ]
   },
   "strategy": {
-    "heartbeat": "gpt-5.4-nano",
-    "bounded_tasks": "gpt-5.4-nano or gpt-5-mini",
-    "code_analysis": "mai-code-1-flash or gpt-5.3-codex or kimi-k2.7-code",
-    "complex_reasoning": "claude-sonnet-5",
+    "heartbeat": "mai-code-1.1-flash",
+    "bounded_tasks": "mai-code-1.1-flash or gpt-5.4-nano",
+    "code_analysis": "mai-code-1.1-flash or gpt-5.3-codex or kimi-k2.7-code",
+    "complex_reasoning": "claude-opus-5",
     "multi_file_generation": "claude-sonnet-5",
-    "long_context": "gemini-3.1-pro (up to 200K cheap) or gpt-5.4 (up to 272K cheap)",
-    "critical_only": "claude-opus-4.8",
+    "long_context": "gemini-3.8-flash or gpt-5.6-terra (1M+ context)",
+    "critical_only": "claude-fable-5.1",
     "avoid": [
-      "gpt-5.5 (long context)",
-      "gpt-5.6-sol (long context)",
-      "claude-opus-4.8-fast",
-      "claude-fable-5",
-      "claude-opus-* (unless sonnet fails)"
+      "retired models listed with status=retired",
+      "claude-opus-4.8-fast unless speed premium is justified"
     ]
   },
   "billing_model_change": {
@@ -1011,13 +1124,13 @@
       "claude-haiku-4.5",
       "gemini-2.5-pro",
       "gpt-5.3-codex",
-      "gemini-3.5-flash",
+      "gemini-3.8-flash",
       "gpt-5.6-luna"
     ],
     "high": [
-      "claude-sonnet-4.6",
-      "claude-sonnet-4.5",
       "claude-sonnet-5",
+      "claude-opus-5",
+      "claude-fable-5.1",
       "gpt-5.4",
       "gemini-3.1-pro",
       "gpt-5.6-terra",

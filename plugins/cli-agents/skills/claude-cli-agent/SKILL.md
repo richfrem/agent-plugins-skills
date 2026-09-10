@@ -17,7 +17,7 @@ You, the Antigravity agent, dispatch specialized analysis tasks to Claude CLI su
 To ensure Claude CLI behaves as a specialized persona rather than a generic responder, **always** embed the persona and source material directly into the prompt flag (`-p`).
 
 ```bash
-claude --model haiku-4.5 -p "$(cat agents/persona.md)
+claude --model claude-haiku-4-5 -p "$(cat agents/persona.md)
 
 ---SOURCE CODE---
 $(cat target.py)
@@ -61,8 +61,8 @@ These personas are mirrored from the Gemini and Copilot plugins to ensure consis
 
 ## ⚠️ CLI Best Practices & Failure Modes
 
-### 1. ⚡ Preferred Model: Haiku 4.5
-For rapid, cost-effective analytical sub-agent tasks, **always** specify `--model haiku-4.5`. It provides the best latency for "Inner Loop" code reviews.
+### 1. ⚡ Preferred Model: Claude Haiku 4.5
+For rapid, cost-effective analytical sub-agent tasks, specify `--model claude-haiku-4-5`. This is the direct Claude CLI model identifier for the lowest-cost current Claude model.
 
 ### 2. ❌ Leading Newline Fix
 If your prompt starts with YAML frontmatter (e.g., `---`), some shell parsers might misinterpret the flag. **Always prepend a newline** to the prompt string when passing it to `-p`. (Note: The `run_agent.py` script handles this automatically).

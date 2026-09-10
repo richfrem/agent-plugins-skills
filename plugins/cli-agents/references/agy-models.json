@@ -1,13 +1,13 @@
 {
   "_meta": {
-    "source": "https://ai.google.dev/pricing (Google AI API pricing \u2014 agy routes to same models)",
+    "source": "https://ai.google.dev/gemini-api/docs/models and https://ai.google.dev/gemini-api/docs/pricing (verified 2026-09-09)",
     "billing_model": "Google AI subscription / per-token via Antigravity",
-    "updated": "2026-07-15",
+    "updated": "2026-09-09",
     "notes": [
       "agy is the sole Gemini CLI since the standalone gemini binary retired June 18 2026.",
-      "Thinking level (Low/Medium/High) is part of the model identity in agy \u2014 see display_name.",
+      "Thinking level (Low/Medium/High) is an agy runtime selection for the same Gemini 3.8 Flash API model; Google exposes the API ID gemini-3.8-flash with tunable thinking_level.",
       "Flash is designed for speed, coding, tool use, and agentic workflows. Pro is for deep reasoning.",
-      "Flash is ~4x faster (tokens/sec) and cheaper per token than Pro.",
+      "Flash is positioned for speed and agentic workflows; relative speed is not recorded without a measured benchmark.",
       "Flash with high thinking levels can inflate tokens via Thought Preservation \u2014 use Low for CLI dispatch.",
       "Gemini 3.1 Flash-Lite not available in agy as of 2026-06-28.",
       "Gemini 3.1 Pro real Google API model ID: gemini-3.1-pro-preview. agy CLI uses display name 'Gemini 3.1 Pro (Low/High)'.",
@@ -17,61 +17,67 @@
   },
   "models": [
     {
-      "display_name": "Gemini 3.5 Flash (Low)",
-      "cli_id": "gemini-3.5-flash-low",
+      "display_name": "Gemini 3.8 Flash (Low)",
+      "cli_id": "gemini-3.8-flash-low",
       "thinking_level": "low",
       "status": "available",
       "pricing_usd_per_1m": {
-        "input": 1.5,
-        "output": 9.0
+        "input": 0.75,
+        "output": 3.75,
+        "cached_input": 0.075,
+        "pricing_note": "Introductory paid-tier pricing through 2026-12-31; standard pricing becomes $1.50/$7.50 on 2027-01-01."
       },
-      "speed_relative": "4x faster than Pro",
+      "speed_relative": null,
       "recommendation": "Default \u2014 cheapest per token, optimized for agentic/coding/tool-use tasks",
       "notes": "Low thinking avoids Thought Preservation token inflation. Best choice for CLI dispatch loops.",
-      "max_output_k": null,
+      "max_output_k": 64,
       "tool_support": {
         "prompt": true,
         "tools": "runtime_dependent"
       },
-      "context_window_k": null
+      "context_window_k": 1024
     },
     {
-      "display_name": "Gemini 3.5 Flash (Medium)",
-      "cli_id": "gemini-3.5-flash",
+      "display_name": "Gemini 3.8 Flash (Medium)",
+      "cli_id": "gemini-3.8-flash",
       "thinking_level": "medium",
       "status": "available",
       "pricing_usd_per_1m": {
-        "input": 1.5,
-        "output": 9.0
+        "input": 0.75,
+        "output": 3.75,
+        "cached_input": 0.075,
+        "pricing_note": "Introductory paid-tier pricing through 2026-12-31; standard pricing becomes $1.50/$7.50 on 2027-01-01."
       },
-      "speed_relative": "4x faster than Pro",
+      "speed_relative": null,
       "recommendation": "Standard dispatch \u2014 good balance of reasoning and cost",
       "notes": "Legacy cheapest_models.json default. Thought Preservation active but manageable. Monitor token spend on long loops.",
-      "max_output_k": null,
+      "max_output_k": 64,
       "tool_support": {
         "prompt": true,
         "tools": "runtime_dependent"
       },
-      "context_window_k": null
+      "context_window_k": 1024
     },
     {
-      "display_name": "Gemini 3.5 Flash (High)",
-      "cli_id": "gemini-3.5-flash-high",
+      "display_name": "Gemini 3.8 Flash (High)",
+      "cli_id": "gemini-3.8-flash-high",
       "thinking_level": "high",
       "status": "available",
       "pricing_usd_per_1m": {
-        "input": 1.5,
-        "output": 9.0
+        "input": 0.75,
+        "output": 3.75,
+        "cached_input": 0.075,
+        "pricing_note": "Introductory paid-tier pricing through 2026-12-31; standard pricing becomes $1.50/$7.50 on 2027-01-01."
       },
-      "speed_relative": "4x faster than Pro",
+      "speed_relative": null,
       "recommendation": "Single-shot deep tasks only \u2014 not for loops",
       "notes": "Maximum Thought Preservation \u2014 token inflation risk. Avoid in high-frequency CLI dispatch.",
-      "max_output_k": null,
+      "max_output_k": 64,
       "tool_support": {
         "prompt": true,
         "tools": "runtime_dependent"
       },
-      "context_window_k": null
+      "context_window_k": 1024
     },
     {
       "display_name": "Gemini 3.1 Pro (Low)",
@@ -81,7 +87,8 @@
       "status": "available",
       "pricing_usd_per_1m": {
         "input": 2.0,
-        "output": 12.0
+        "output": 12.0,
+        "cached_input": 0.2
       },
       "long_context_pricing_usd_per_1m": {
         "input": 4.0,
@@ -91,12 +98,12 @@
       "speed_relative": "1x (baseline)",
       "recommendation": "Deep reasoning, architecture decisions, expert-level analysis",
       "notes": "Heavier flagship model. Superior at abstract reasoning, ARC-AGI, long-context comprehension. Slower and more expensive per token than Flash. Watch for long context tier if prompts exceed 200K tokens.",
-      "max_output_k": null,
+      "max_output_k": 64,
       "tool_support": {
         "prompt": true,
         "tools": "runtime_dependent"
       },
-      "context_window_k": null
+      "context_window_k": 1024
     },
     {
       "display_name": "Gemini 3.1 Pro (High)",
@@ -106,7 +113,8 @@
       "status": "available",
       "pricing_usd_per_1m": {
         "input": 2.0,
-        "output": 12.0
+        "output": 12.0,
+        "cached_input": 0.2
       },
       "long_context_pricing_usd_per_1m": {
         "input": 4.0,
@@ -116,12 +124,12 @@
       "speed_relative": "1x (baseline)",
       "recommendation": "Most demanding reasoning tasks only",
       "notes": "Maximum reasoning depth. High cost. Use for critical architecture reviews or complex novel problems. Long context prompts (>200K) cost $4/1M input, $18/1M output.",
-      "max_output_k": null,
+      "max_output_k": 64,
       "tool_support": {
         "prompt": true,
         "tools": "runtime_dependent"
       },
-      "context_window_k": null
+      "context_window_k": 1024
     },
     {
       "display_name": "Claude Sonnet 4.6 (Thinking)",
@@ -174,7 +182,7 @@
   ],
   "flash_vs_pro": {
     "flash_wins": [
-      "Speed (4x faster tokens/sec)",
+      "Speed relative to Pro is not recorded without a measured benchmark",
       "Per-token cost (cheaper)",
       "Agentic tool use, MCP, terminal tasks",
       "Coding: edit-test loops, Terminal-Bench",
@@ -193,11 +201,10 @@
   },
   "cost_tiers": {
     "cheapest": [
-      "gemini-3.5-flash-low",
-      "gemini-3.5-flash"
+      "gemini-3.8-flash-low",
+      "gemini-3.8-flash"
     ],
     "moderate": [
-      "gemini-3.5-flash-high",
       "gemini-3.1-pro"
     ],
     "expensive": [
@@ -210,8 +217,8 @@
     ]
   },
   "strategy": {
-    "heartbeat": "gemini-3.5-flash",
-    "default": "gemini-3.5-flash",
+    "heartbeat": "gemini-3.8-flash-low",
+    "default": "gemini-3.8-flash-low",
     "reasoning": "gemini-3.1-pro",
     "architecture": "gemini-3.1-pro-high",
     "anthropic_quality": "claude-sonnet-4.6-thinking"
@@ -233,11 +240,11 @@
   },
   "capability_tiers": {
     "low": [
-      "gemini-3.5-flash-low",
-      "gemini-3.5-flash"
+      "gemini-3.8-flash-low",
+      "gemini-3.8-flash"
     ],
     "medium": [
-      "gemini-3.5-flash-high",
+      "gemini-3.8-flash-high",
       "gemini-3.1-pro"
     ],
     "high": [

@@ -129,13 +129,25 @@ class PipelineSimulator:
         TransitionCoordinator(
             self.control_plane,
             registry=self.registry,
+            input_fn=lambda _prompt: "2",
+            output_stream=io.StringIO(),
+        ).coordinate_transition(
+            task_id=task_id,
+            to_state="PLAN_REVIEW",
+            actor="human",
+            reason="simulator requests plan review",
+            interactive=True,
+        )
+        TransitionCoordinator(
+            self.control_plane,
+            registry=self.registry,
             input_fn=lambda _prompt: "4",
             output_stream=io.StringIO(),
         ).coordinate_transition(
             task_id=task_id,
             to_state="MULTI_AGENT_REVIEW",
             actor="human",
-            reason="simulator plan review",
+            reason="simulator selects external plan review",
             interactive=True,
         )
         self.control_plane.record_critic_review(task_id, 1, "simulator", "PASS", "simulated review passed")
@@ -145,9 +157,21 @@ class PipelineSimulator:
             output_stream=io.StringIO(),
         ).coordinate_transition(
             task_id=task_id,
+            to_state="PLAN_REVIEW",
+            actor="simulator",
+            reason="simulator review passed",
+        )
+        TransitionCoordinator(
+            self.control_plane,
+            registry=self.registry,
+            input_fn=lambda _prompt: "1",
+            output_stream=io.StringIO(),
+        ).coordinate_transition(
+            task_id=task_id,
             to_state="AWAITING_APPROVAL",
             actor="simulator",
             reason="simulator review passed",
+            interactive=True,
         )
 
         approval_inputs = iter(["1", "y"])
@@ -264,7 +288,7 @@ class PipelineSimulator:
         return {
             "task_id": task_id,
             "states": [
-                "INTAKE", "INTERVIEW", "DRAFT_PLAN", "MULTI_AGENT_REVIEW",
+                "INTAKE", "INTERVIEW", "DRAFT_PLAN", "PLAN_REVIEW", "MULTI_AGENT_REVIEW",
                 "AWAITING_APPROVAL", "APPROVED", "IN_WORKTREE", "WORKTREE_REVIEW",
                 "VERIFY_EXIT", "RETROSPECTIVE", "DONE",
             ],

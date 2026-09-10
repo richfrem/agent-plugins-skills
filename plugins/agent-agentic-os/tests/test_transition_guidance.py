@@ -88,8 +88,9 @@ def test_standard_path_hints_name_each_operational_handoff(control_plane):
     registry = TransitionRegistry.load_default()
     expected = {
         ("INTERVIEW", "DRAFT_PLAN"): ("record-plan-mode-entry", "verify-interview-question"),
-        ("DRAFT_PLAN", "MULTI_AGENT_REVIEW"): ("plan artifacts", "coordinate-transition"),
-        ("DRAFT_PLAN", "AWAITING_APPROVAL"): ("record-critic-review", "record-review-skip"),
+        ("DRAFT_PLAN", "PLAN_REVIEW"): ("plan artifacts", "coordinate-transition"),
+        ("PLAN_REVIEW", "MULTI_AGENT_REVIEW"): ("plan_review_method", "coordinate-transition"),
+        ("PLAN_REVIEW", "AWAITING_APPROVAL"): ("record-critic-review", "record-review-skip"),
         ("APPROVED", "IN_WORKTREE"): ("record-human-approval", "worktree"),
         ("VERIFY_EXIT", "RETROSPECTIVE"): ("test_suite", "leak_check", "references/map-debt.md"),
     }
@@ -98,6 +99,72 @@ def test_standard_path_hints_name_each_operational_handoff(control_plane):
         assert template is not None
         hint = template.next_steps_hint.lower()
         assert all(marker.lower() in hint for marker in markers), (edge, hint)
+
+
+def test_plan_review_selects_review_then_requires_plan_acceptance():
+    """PLAN_REVIEW selects review or skip, then confirms the resulting plan."""
+    registry = TransitionRegistry.load_default()
+
+    review_edge = registry.get_template("PLAN_REVIEW", "MULTI_AGENT_REVIEW")
+    approval_edge = registry.get_template("PLAN_REVIEW", "AWAITING_APPROVAL")
+
+    assert review_edge is not None
+    assert approval_edge is not None
+
+    review_questions = {question["question_id"]: question for question in review_edge.human_questions}
+    assert "plan_review_method" in review_questions
+    review_options = {
+        option.removesuffix(" [Recommended]")
+        for option in review_questions["plan_review_method"]["options"]
+    }
+    assert review_options >= {
+        "Single-agent review — internal",
+        "Single-agent review — external bundle",
+        "Multi-agent review — internal",
+        "Multi-agent review — external bundle",
+        "Other — specify in chat",
+    }
+
+    approval_questions = {question["question_id"]: question for question in approval_edge.human_questions}
+    assert "confirm_plan_acceptance" in approval_questions
+    acceptance_options = {
+        option.removesuffix(" [Recommended]")
+        for option in approval_questions["confirm_plan_acceptance"]["options"]
+    }
+    assert "Accept plan and proceed to human approval" in acceptance_options
+    assert "Require further revisions" in acceptance_options
+    assert approval_edge.skip["allowed"] is False
+    assert "acceptance" in approval_edge.purpose.lower()
+
+
+def test_implementation_review_offers_other_review_method():
+    """Implementation review must support a user-specified review method."""
+    registry = TransitionRegistry.load_default()
+    review_edge = registry.get_template("WORKTREE_REVIEW", "MULTI_AGENT_CODE_REVIEW")
+
+    assert review_edge is not None
+    questions = {question["question_id"]: question for question in review_edge.human_questions}
+    assert "confirm_review_worktree_review_to_multi_agent_code_review" in questions
+    options = {
+        option.removesuffix(" [Recommended]")
+        for option in questions["confirm_review_worktree_review_to_multi_agent_code_review"]["options"]
+    }
+    assert "Other — specify in chat" in options
+
+
+def test_plan_review_review_method_offers_other_review_method():
+    """The PLAN_REVIEW branch offers an explicit review-method escape hatch."""
+    registry = TransitionRegistry.load_default()
+    review_edge = registry.get_template("PLAN_REVIEW", "MULTI_AGENT_REVIEW")
+
+    assert review_edge is not None
+    questions = {question["question_id"]: question for question in review_edge.human_questions}
+    assert "plan_review_method" in questions
+    options = {
+        option.removesuffix(" [Recommended]")
+        for option in questions["plan_review_method"]["options"]
+    }
+    assert "Other — specify in chat" in options
 
 
 def test_worktree_review_exit_hint_explains_skip_branch_and_human_question_boundary():

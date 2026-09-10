@@ -160,7 +160,7 @@ execution_guidance:
   transition:
     advisory: true
     required_fields: *execution_guidance_fields
-    instruction: Before each lifecycle transition, resolve the edge guidance, satisfy its questions and checks through the supported mechanism, and use the success or denial recovery path without treating advisory text as authority.
+    instruction: Before each lifecycle transition, resolve the edge guidance, satisfy its questions and checks through the supported mechanism, and use the success or denial recovery path without treating advisory text as authority. After a human answer is accepted, immediately persist the decision, complete the requested transition, load the destination state's stage contract, and ask its next question or execute its deterministic handoff; never stop after merely acknowledging an answer.
   execution_step:
     advisory: true
     required_fields: *execution_guidance_fields
@@ -435,48 +435,11 @@ templates:
   authority:
     type: deterministic
     explanation: Transition from INTERVIEW to ESCALATED is deterministically governed by automated checks and artifacts.
-- transition_id: draft_plan_to_multi_agent_review
-  from_state: DRAFT_PLAN
-  to_state: MULTI_AGENT_REVIEW
-  purpose: Submit draft specification and implementation plan for independent multi-agent review.
-  next_steps_hint: "Submit both plan artifacts; the coordinator records their content identity atomically. Answer this edge's YAML questions with --interactive or --answers '<json>'. After a rejected review, revise an artifact or record a matching plan_artifact_revision receipt before resubmitting. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to MULTI_AGENT_REVIEW."
-  checklist:
-  - Current task state is persisted as DRAFT_PLAN
-  - Structural DAG transition from DRAFT_PLAN to MULTI_AGENT_REVIEW is legal
-  required_artifacts:
-  - docs/plans/<task-id>-spec.md
-  - docs/plans/<task-id>-implementation-plan.md
-  deterministic_checks: []
-  human_questions:
-  - question_id: submit_for_multi_agent_review
-    question: Submit plan for independent multi-agent review?
-    options:
-    - No, skip review entirely
-    - Yes, single-agent review — sub-agent (internal)
-    - Yes, single-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)
-    - Yes, multi-agent review — sub-agent (internal) [Recommended]
-    - Yes, multi-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)
-    default: Yes, multi-agent review — sub-agent (internal) [Recommended]
-  approval:
-    required: false
-    approver_role: agent_or_human
-  skip:
-    allowed: false
-    requires_justification: false
-  capabilities_released: []
-  capabilities_prohibited:
-  - modify production code
-  - create implementation worktree
-  - push branch to origin
-  denial_message: 'Transition DRAFT_PLAN -> MULTI_AGENT_REVIEW denied: preconditions or required decisions not satisfied.'
-  authority:
-    type: deterministic
-    explanation: Transition from DRAFT_PLAN to MULTI_AGENT_REVIEW is deterministically governed by automated checks and artifacts.
 - transition_id: draft_plan_to_plan_review
   from_state: DRAFT_PLAN
   to_state: PLAN_REVIEW
-  purpose: Advance lifecycle state from DRAFT_PLAN to PLAN_REVIEW upon satisfying phase requirements and verifications.
-  next_steps_hint: "Answer this edge's YAML questions with --interactive or --answers '<json>'. Submit both plan artifacts; the coordinator records their content identity atomically. After a rejected review, revise an artifact or record a matching plan_artifact_revision receipt before resubmitting. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to PLAN_REVIEW."
+  purpose: Submit the authored plan to the PLAN_REVIEW disposition-and-acceptance gate.
+  next_steps_hint: "Submit both plan artifacts; the coordinator records their content identity atomically. At PLAN_REVIEW, ask the required decision: do you want additional independent review, yes or no? No records the zero-review path and continues to plan acceptance; yes continues to PLAN_REVIEW -> MULTI_AGENT_REVIEW, where the review method is selected. After every review round, return to PLAN_REVIEW and ask whether further plan changes are required; repeat review as needed or accept the plan. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to PLAN_REVIEW."
   checklist:
   - Current task state is persisted as DRAFT_PLAN
   - Structural DAG transition from DRAFT_PLAN to PLAN_REVIEW is legal
@@ -485,12 +448,15 @@ templates:
   - docs/plans/<task-id>-implementation-plan.md
   deterministic_checks: []
   human_questions:
-  - question_id: plan_review_submission
-    question: Submit draft implementation plan for plan review?
+  - question_id: plan_review_disposition
+    question: Do you want additional independent review of the authored plan?
     options:
-    - Proceed with plan review [Recommended]
-    - Revise draft plan
-    default: Proceed with plan review [Recommended]
+    - No — accept plan as-is and skip independent review [Recommended]
+    - Yes — request additional independent review
+    accepted_answers:
+    - No — accept plan as-is and skip independent review [Recommended]
+    - Yes — request additional independent review
+    default: No — accept plan as-is and skip independent review [Recommended]
   approval:
     required: false
     approver_role: agent_or_human
@@ -506,35 +472,6 @@ templates:
   authority:
     type: human_review
     explanation: Entry into PLAN_REVIEW requires human confirmation of review scope and artifacts.
-- transition_id: draft_plan_to_awaiting_approval
-  from_state: DRAFT_PLAN
-  to_state: AWAITING_APPROVAL
-  purpose: Advance lifecycle state from DRAFT_PLAN to AWAITING_APPROVAL upon satisfying phase requirements and verifications.
-  next_steps_hint: "Submit both plan artifacts; the coordinator records their content identity atomically. After a rejected review, revise an artifact or record a matching plan_artifact_revision receipt before resubmitting. First satisfy critic_review_or_skip with record-critic-review or record-review-skip and an explicit reason. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to AWAITING_APPROVAL."
-  checklist:
-  - Current task state is persisted as DRAFT_PLAN
-  - 'Deterministic check satisfied: critic_review_or_skip'
-  required_artifacts:
-  - docs/plans/<task-id>-spec.md
-  - docs/plans/<task-id>-implementation-plan.md
-  deterministic_checks:
-  - critic_review_or_skip
-  human_questions: []
-  approval:
-    required: false
-    approver_role: agent_or_human
-  skip:
-    allowed: true
-    requires_justification: true
-  capabilities_released: []
-  capabilities_prohibited:
-  - modify production code
-  - create implementation worktree
-  - push branch to origin
-  denial_message: 'Transition DRAFT_PLAN -> AWAITING_APPROVAL denied: preconditions or required decisions not satisfied.'
-  authority:
-    type: deterministic
-    explanation: Transition from DRAFT_PLAN to AWAITING_APPROVAL is deterministically governed by automated checks and artifacts.
 - transition_id: draft_plan_to_interview
   from_state: DRAFT_PLAN
   to_state: INTERVIEW
@@ -617,49 +554,20 @@ templates:
   authority:
     type: deterministic
     explanation: Transition from MULTI_AGENT_REVIEW to DRAFT_PLAN is deterministically governed by automated checks and artifacts.
+# Human answer handling: the coordinator canonicalizes unambiguous shorthand (for example,
+# "Proceed with review") to the exact registered option below and persists that canonical
+# value. Ambiguous answers must be clarified; agents must not guess.
 - transition_id: multi_agent_review_to_plan_review
   from_state: MULTI_AGENT_REVIEW
   to_state: PLAN_REVIEW
-  purpose: Advance lifecycle state from MULTI_AGENT_REVIEW to PLAN_REVIEW upon satisfying phase requirements and verifications.
-  next_steps_hint: "Answer this edge's YAML questions with --interactive or --answers '<json>'. Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to PLAN_REVIEW."
+  purpose: Merge completed independent review outcomes back into PLAN_REVIEW for the plan-acceptance decision.
+  next_steps_hint: "Record the passing critic outcome, summarize any revisions, and run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to PLAN_REVIEW. The next PLAN_REVIEW -> AWAITING_APPROVAL edge asks whether the plan is accepted or requires further revisions."
   checklist:
   - Current task state is persisted as MULTI_AGENT_REVIEW
   - Structural DAG transition from MULTI_AGENT_REVIEW to PLAN_REVIEW is legal
   required_artifacts:
   - docs/plans/<task-id>-spec.md
   - docs/plans/<task-id>-implementation-plan.md
-  deterministic_checks: []
-  human_questions:
-  - question_id: confirm_review_multi_agent_review_to_plan_review
-    question: Submit artifacts for review in PLAN_REVIEW?
-    options:
-    - Proceed with review [Recommended]
-    - Continue revising prior stage
-    default: Proceed with review [Recommended]
-  approval:
-    required: false
-    approver_role: agent_or_human
-  skip:
-    allowed: false
-    requires_justification: false
-  capabilities_released: []
-  capabilities_prohibited:
-  - modify production code
-  - create implementation worktree
-  - push branch to origin
-  denial_message: 'Transition MULTI_AGENT_REVIEW -> PLAN_REVIEW denied: preconditions or required decisions not satisfied.'
-  authority:
-    type: human_review
-    explanation: Entry into PLAN_REVIEW requires human confirmation of review scope and artifacts.
-- transition_id: multi_agent_review_to_awaiting_approval
-  from_state: MULTI_AGENT_REVIEW
-  to_state: AWAITING_APPROVAL
-  purpose: Advance approved plan to awaiting human approval stage gate.
-  next_steps_hint: "First satisfy critic_review_pass; use: record-critic-review. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to AWAITING_APPROVAL."
-  checklist:
-  - Current task state is persisted as MULTI_AGENT_REVIEW
-  - 'Deterministic check satisfied: critic_review_pass'
-  required_artifacts: []
   deterministic_checks:
   - critic_review_pass
   human_questions: []
@@ -674,11 +582,10 @@ templates:
   - modify production code
   - create implementation worktree
   - push branch to origin
-  denial_message: 'Transition MULTI_AGENT_REVIEW -> AWAITING_APPROVAL denied: preconditions or required decisions not satisfied.'
+  denial_message: 'Transition MULTI_AGENT_REVIEW -> PLAN_REVIEW denied: preconditions or required decisions not satisfied.'
   authority:
     type: deterministic
-    explanation: Transition from MULTI_AGENT_REVIEW to AWAITING_APPROVAL is deterministically governed by automated checks
-      and artifacts.
+    explanation: A passing recorded critic outcome deterministically returns the completed review to PLAN_REVIEW for acceptance.
 - transition_id: multi_agent_review_to_escalated
   from_state: MULTI_AGENT_REVIEW
   to_state: ESCALATED
@@ -705,8 +612,8 @@ templates:
 - transition_id: plan_review_to_multi_agent_review
   from_state: PLAN_REVIEW
   to_state: MULTI_AGENT_REVIEW
-  purpose: Advance lifecycle state from PLAN_REVIEW to MULTI_AGENT_REVIEW upon satisfying phase requirements and verifications.
-  next_steps_hint: "Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to MULTI_AGENT_REVIEW."
+  purpose: Select the requested independent review method after the plan disposition chose review.
+  next_steps_hint: "Because PLAN_REVIEW requested independent review, answer the plan_review_method YAML question with --interactive or --answers '<json>', then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to MULTI_AGENT_REVIEW."
   checklist:
   - Current task state is persisted as PLAN_REVIEW
   - Structural DAG transition from PLAN_REVIEW to MULTI_AGENT_REVIEW is legal
@@ -714,7 +621,16 @@ templates:
   - docs/plans/<task-id>-spec.md
   - docs/plans/<task-id>-implementation-plan.md
   deterministic_checks: []
-  human_questions: []
+  human_questions:
+  - question_id: plan_review_method
+    question: What type of independent review should be performed?
+    options:
+    - Single-agent review — internal
+    - Single-agent review — external bundle
+    - Multi-agent review — internal [Recommended]
+    - Multi-agent review — external bundle
+    - Other — specify in chat
+    default: Multi-agent review — internal [Recommended]
   approval:
     required: false
     approver_role: agent_or_human
@@ -733,21 +649,29 @@ templates:
 - transition_id: plan_review_to_awaiting_approval
   from_state: PLAN_REVIEW
   to_state: AWAITING_APPROVAL
-  purpose: Advance lifecycle state from PLAN_REVIEW to AWAITING_APPROVAL upon satisfying phase requirements and verifications.
-  next_steps_hint: "First satisfy critic_review_or_skip; use: record-critic-review or record-review-skip. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to AWAITING_APPROVAL."
+  purpose: Confirm plan acceptance after either the skip path or completed independent review, then enter the separate human implementation-approval gate.
+  next_steps_hint: "Review the authored plan or the revised plan returned from independent review. Record the review outcome with record-critic-review, or record an intentional skip with record-review-skip; ensure critic_review_or_skip is satisfied. Then answer whether you accept the plan or require further revisions. If accepted, run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to AWAITING_APPROVAL. Revisions return to DRAFT_PLAN."
   checklist:
   - Current task state is persisted as PLAN_REVIEW
   - 'Deterministic check satisfied: critic_review_or_skip'
   required_artifacts: []
   deterministic_checks:
   - critic_review_or_skip
-  human_questions: []
+  human_questions:
+  - question_id: confirm_plan_acceptance
+    question: Do you accept the plan as it is, or do you require further revisions?
+    options:
+    - Accept plan and proceed to human approval [Recommended]
+    - Require further revisions
+    accepted_answers:
+    - Accept plan and proceed to human approval [Recommended]
+    default: Accept plan and proceed to human approval [Recommended]
   approval:
     required: false
     approver_role: agent_or_human
   skip:
-    allowed: true
-    requires_justification: true
+    allowed: false
+    requires_justification: false
   capabilities_released: []
   capabilities_prohibited:
   - modify production code
@@ -769,7 +693,15 @@ templates:
   - docs/plans/<task-id>-spec.md
   - docs/plans/<task-id>-implementation-plan.md
   deterministic_checks: []
-  human_questions: []
+  human_questions:
+  - question_id: confirm_plan_revision
+    question: Do you accept the plan as it is, or do you require further revisions?
+    options:
+    - Accept plan and proceed to human approval [Recommended]
+    - Require further revisions
+    accepted_answers:
+    - Require further revisions
+    default: Require further revisions
   approval:
     required: false
     approver_role: agent_or_human
@@ -854,6 +786,8 @@ templates:
     question: Approve task implementation and worktree creation?
     options:
     - Yes, approve implementation [Recommended]
+    - No, return to PLAN_REVIEW for plan revisions
+    - No, return to DRAFT_PLAN for plan rewrites
     - No, hold in AWAITING_APPROVAL
     default: Yes, approve implementation [Recommended]
   approval:
@@ -870,35 +804,6 @@ templates:
   authority:
     type: human_decision
     explanation: Advancing to APPROVED requires explicit human review and authorization gate decision.
-- transition_id: awaiting_approval_to_multi_agent_review
-  from_state: AWAITING_APPROVAL
-  to_state: MULTI_AGENT_REVIEW
-  purpose: Advance lifecycle state from AWAITING_APPROVAL to MULTI_AGENT_REVIEW upon satisfying phase requirements and verifications.
-  next_steps_hint: "Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to MULTI_AGENT_REVIEW."
-  checklist:
-  - Current task state is persisted as AWAITING_APPROVAL
-  - Structural DAG transition from AWAITING_APPROVAL to MULTI_AGENT_REVIEW is legal
-  required_artifacts:
-  - docs/plans/<task-id>-spec.md
-  - docs/plans/<task-id>-implementation-plan.md
-  deterministic_checks: []
-  human_questions: []
-  approval:
-    required: false
-    approver_role: agent_or_human
-  skip:
-    allowed: false
-    requires_justification: false
-  capabilities_released: []
-  capabilities_prohibited:
-  - modify production code
-  - create implementation worktree
-  - push branch to origin
-  denial_message: 'Transition AWAITING_APPROVAL -> MULTI_AGENT_REVIEW denied: preconditions or required decisions not satisfied.'
-  authority:
-    type: deterministic
-    explanation: Transition from AWAITING_APPROVAL to MULTI_AGENT_REVIEW is deterministically governed by automated checks
-      and artifacts.
 - transition_id: awaiting_approval_to_plan_review
   from_state: AWAITING_APPROVAL
   to_state: PLAN_REVIEW
@@ -989,13 +894,14 @@ templates:
   from_state: APPROVED
   to_state: IN_WORKTREE
   purpose: Create isolated git worktree and begin test-first implementation.
-  next_steps_hint: "First record human approval with record-human-approval --task-id <task-id> --approver <approver>, then create or select the approved isolated worktree and record its path/branch. Run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to IN_WORKTREE."
+  next_steps_hint: "First record human approval with record-human-approval --task-id <task-id> --approver <approver>. Then create or select an isolated feature worktree and branch, record both with update-worktree, and run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to IN_WORKTREE. If the user explicitly authorizes implementation in the existing checkout, record it with record-receipt --gate existing_worktree_exception --cmd approved-existing-checkout:<approver> --exit-code 0 before transitioning."
   checklist:
   - Current task state is persisted as APPROVED
   - 'Deterministic check satisfied: human_approval'
   required_artifacts: []
   deterministic_checks:
   - human_approval
+  - worktree_isolation_or_exception
   human_questions: []
   approval:
     required: false
@@ -1175,6 +1081,7 @@ templates:
     - Yes, single-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)
     - Yes, multi-agent review — sub-agent (internal) [Recommended]
     - Yes, multi-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)
+    - Other — specify in chat
     default: Yes, multi-agent review — sub-agent (internal) [Recommended]
   approval:
     required: false

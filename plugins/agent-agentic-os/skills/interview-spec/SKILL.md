@@ -36,10 +36,35 @@ When entering a state:
 4. Do not request the next transition until the state's `exit_requirements` are satisfied.
 5. Only then load the destination transition template and ask its `human_questions`.
 
+### Mandatory continuation after every answer
+
+An accepted answer is an instruction to continue the pipeline, not the end of the turn. After
+each answer, immediately:
+
+1. Persist the answer through the supported transition mechanism.
+2. Complete the transition it authorizes.
+3. Load the destination state's stage contract and transition guidance.
+4. Ask the next YAML question, or execute/report the deterministic handoff when no question is
+   required.
+
+Do not merely acknowledge an answer and wait for the user to say “continue.” If the answer does
+not authorize the requested edge, explain the valid next edges and ask the corresponding question.
+
 `TRIVIAL` selects a shorter transition path; it never skips the `INTERVIEW` entry questions or
 the complete `RETROSPECTIVE` survey. Record all answers, including adaptive follow-ups. The
 final `RETROSPECTIVE -> DONE` question is only a completion/skip decision after the survey has
 been captured.
+
+### Human answer canonicalization
+
+Transition questions are defined by YAML, so human answers must be interpreted against the
+registered options rather than compared as brittle literal strings. Accept an unambiguous
+shorthand such as `Proceed with review` for the registered option
+`Proceed with review [Recommended]`, ignoring surrounding whitespace and case. Persist the
+exact registered option, including its `[Recommended]` marker. Do not guess when two options
+normalize to the same answer; display the registered options and ask the human to clarify.
+Free-text questions with no declared options remain free text and must not be normalized into
+an option.
 
 ---
 
@@ -97,15 +122,24 @@ apply to both paths.
 - If classification changes or the interview cannot be completed, use the `ESCALATED` escape
   hatch. Detailed commands are in `references/detailed-reference.md`.
 
-### 3. Transition to Draft Plan & Multi-Agent Review Gate
+### 3. Transition to Draft Plan & Review Disposition Gate
 Compile the draft spec and plan using `write_plan_document.py`, then coordinate transition to
-`DRAFT_PLAN`. Next, present the User Stage Gate:
-> *"Step 3 (draft plan) is done. Do you want to trigger a multi-agent review of this plan (Step 4a — an external AI reviews it before you decide), or proceed straight to Step 5 (asking for your approval)?"*
+`DRAFT_PLAN`. Enter `PLAN_REVIEW` and present the disposition gate:
+> *"The plan is drafted. Do you want additional independent review? Yes or no."*
 
-- **Path A (Review)**: coordinate transition to `MULTI_AGENT_REVIEW`, package bundle via
-  `context-bundler`, ingest external feedback, and align before `AWAITING_APPROVAL`.
+- **Path A (Request review)**: from `PLAN_REVIEW`, choose the review method, coordinate transition
+  to `MULTI_AGENT_REVIEW`, package the bundle via `context-bundler` when applicable, and return
+  to `PLAN_REVIEW` after the review outcome is recorded. `PLAN_REVIEW` is the convergence gate:
+  ask whether the resulting plan is accepted or requires revisions. Revisions return to
+  `DRAFT_PLAN`; acceptance proceeds to `AWAITING_APPROVAL`.
   See `references/multi-round-external-review-protocol.md`.
-- **Path B (Skip)**: transition directly to `AWAITING_APPROVAL`.
+- **Path B (Skip review)**: record the human-authorized no decision, remain in `PLAN_REVIEW`,
+  and use the plan-acceptance question before entering `AWAITING_APPROVAL`.
+
+The review loop is repeatable: `MULTI_AGENT_REVIEW` always returns to `PLAN_REVIEW`. At that
+convergence gate, record whether further plan changes are required. Revisions return to
+`DRAFT_PLAN`; acceptance enters `AWAITING_APPROVAL`. A task may complete zero, one, or multiple
+independent review rounds before human implementation approval.
 Commands and bundle specifications in `references/detailed-reference.md`.
 
 ### Read-only transition guidance
