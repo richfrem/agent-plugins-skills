@@ -238,11 +238,11 @@ Do not add OS infrastructure (evals, memory promotion, kernel calls) to agent-or
 
 ### cli-agents (v2.1.0) — consolidated from claude-cli, copilot-cli, gemini-cli
 
-**Skills (14):** agent-file-synchronization, agt-security, agy-cli-agent, antigravity-project-setup,
-claude-cli-agent, claude-project-setup, codex-cli-agent, copilot-cli-agent, gemini-cli-agent,
+**Skills (11):** agent-file-synchronization, agt-security, agy-cli-agent,
+claude-cli-agent, codex-cli-agent, copilot-cli-agent,
 local-llm-bridge, local-llm-setup, maf-adapter, project-setup, update-cli-models
 
-**Note:** `gemini-cli-agent` — Gemini CLI consumer access ended June 18, 2026 (that date has now passed). Only enterprise Gemini Code Assist licenses retain the `gemini` binary. Use `agy-cli-agent` — it is now the primary path for Gemini model access, not just frontier models.
+**Note:** Gemini CLI consumer access ended June 18, 2026 (that date has now passed). Only enterprise Gemini Code Assist licenses retain the `gemini` binary. Use `agy-cli-agent` — it is now the primary path for Gemini model access, not just frontier models.
 
 **Scripts:** Each skill has its own `scripts/run_agent.py` for its respective CLI tool.
 
@@ -422,10 +422,10 @@ that a blind copy will silently destroy. Check for and re-append these before co
 
 | File | Platform-specific addition to preserve | Corresponding `cli-agents` skill |
 |---|---|---|
-| `GEMINI.md` | `## Gemini CLI Tool Mapping` table at the end of the file (Claude Code tool name → Gemini CLI equivalent) | `gemini-cli-agent` (deprecated, see note above), `agy-cli-agent` |
+| `GEMINI.md` | `## Gemini CLI Tool Mapping` table at the end of the file (Claude Code tool name → Gemini CLI equivalent) | `agy-cli-agent` |
 | `.github/copilot-instructions.md` | Header must be `# Copilot Instructions for <repo-name>` + an "Authoritative... Mirrors CLAUDE.md" blockquote, not a generic title | `copilot-cli-agent` |
 | `AGENTS.md` | Cross-tool convention (Codex and other OpenAI-compatible agents read this file) — currently no required platform-specific section beyond shared content, but verify before assuming that's still true | `codex-cli-agent` |
-| `CLAUDE.md` | Source of truth — no platform section of its own | `claude-cli-agent`, `claude-project-setup` |
+| `CLAUDE.md` | Source of truth — no platform section of its own | `claude-cli-agent`, `project-setup` |
 
 The full canonical rules for what belongs in each file live in `optimize-agent-instructions`
 (`plugins/agent-agentic-os/skills/optimize-agent-instructions/SKILL.md`) — consult it, don't just

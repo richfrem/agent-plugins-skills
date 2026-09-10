@@ -1,0 +1,1 @@
+../../../scripts/capability_profile.py

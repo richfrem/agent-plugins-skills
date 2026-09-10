@@ -20,6 +20,7 @@ import os
 import sys
 import tempfile
 import unittest
+from pathlib import Path
 from unittest.mock import MagicMock, mock_open, patch
 
 sys.path.insert(0, os.path.dirname(__file__))
@@ -34,6 +35,7 @@ from run_agent import (
     _build_cmd_gemini,
     _call_llama_direct,
     _load_default_models,
+    _resolve_catalog_model,
     _resolve_cli_and_model,
     build_prompt,
     run_agent,
@@ -418,6 +420,151 @@ class TestCapabilityTierResolution(unittest.TestCase):
 
     def test_explicit_model_remains_an_override(self):
         self.assertEqual(_resolve_cli_and_model("copilot", "caller-model", "high"), ("copilot", "caller-model"))
+
+    def test_ready_profile_preference_is_used_when_no_explicit_model_exists(self):
+        with tempfile.TemporaryDirectory() as directory:
+            profile = Path(directory) / "profile.json"
+            profile.write_text(json.dumps({
+                "schema_version": 1,
+                "providers": {
+                    "copilot": {
+                        "available": True,
+                        "model_tiers": {"low": "profile-low", "medium": "gpt-5.3-codex", "high": "profile-high"},
+                    }
+                },
+                "constraints": {"workplace_restrictions": [], "network_restricted": False},
+                "fallback_order": ["copilot"],
+                "source": "user-confirmed",
+                "updated_at": "2026-09-10T00:00:00+00:00",
+            }), encoding="utf-8")
+
+            self.assertEqual(
+                _resolve_cli_and_model("copilot", None, "medium", profile_path=str(profile)),
+                ("copilot", "gpt-5.3-codex"),
+            )
+
+    def test_invalid_profile_model_falls_back_to_catalog(self):
+        with tempfile.TemporaryDirectory() as directory:
+            profile = Path(directory) / "profile.json"
+            profile.write_text(json.dumps({
+                "schema_version": 1,
+                "providers": {"copilot": {"available": True, "model_tiers": {"medium": "withdrawn-model"}}},
+                "constraints": {"workplace_restrictions": [], "network_restricted": False},
+                "fallback_order": ["copilot"],
+                "source": "user-confirmed",
+                "updated_at": "2026-09-10T00:00:00+00:00",
+            }), encoding="utf-8")
+
+            cli, model = _resolve_cli_and_model("copilot", None, "medium", profile_path=str(profile))
+
+            self.assertEqual(cli, "copilot")
+            self.assertEqual(model, _resolve_catalog_model("copilot", "medium"))
+
+    def test_profile_catalog_rejection_falls_back_without_raising(self):
+        with tempfile.TemporaryDirectory() as directory:
+            profile = Path(directory) / "profile.json"
+            profile.write_text(json.dumps({
+                "schema_version": 1,
+                "providers": {"copilot": {
+                    "available": True,
+                    "model_tiers": {"medium": "withdrawn-model"},
+                }},
+                "constraints": {},
+                "fallback_order": ["copilot"],
+                "source": "user-confirmed",
+                "updated_at": "2026-09-09T00:00:00+00:00",
+            }), encoding="utf-8")
+
+            with patch("run_agent._resolve_catalog_model", side_effect=[
+                RuntimeError("preferred model rejected"),
+                "catalog-fallback",
+            ]):
+                assert _resolve_cli_and_model(
+                    "copilot", None, "medium", profile_path=str(profile)
+                ) == ("copilot", "catalog-fallback")
+
+    def test_explicit_model_overrides_profile_preference(self):
+        with tempfile.TemporaryDirectory() as directory:
+            profile = Path(directory) / "profile.json"
+            profile.write_text(json.dumps({
+                "schema_version": 1,
+                "providers": {"copilot": {
+                    "available": True,
+                    "model_tiers": {"medium": "profile-model"},
+                }},
+                "constraints": {},
+                "fallback_order": ["copilot"],
+                "source": "user-confirmed",
+                "updated_at": "2026-09-09T00:00:00+00:00",
+            }), encoding="utf-8")
+
+            assert _resolve_cli_and_model(
+                "copilot", "explicit-model", "medium", profile_path=str(profile)
+            ) == ("copilot", "explicit-model")
+
+    def test_missing_provider_profile_uses_catalog_default(self):
+        with tempfile.TemporaryDirectory() as directory:
+            profile = Path(directory) / "profile.json"
+            profile.write_text(json.dumps({
+                "schema_version": 1,
+                "providers": {"codex": {"available": True}},
+                "constraints": {},
+                "fallback_order": ["codex"],
+                "source": "user-confirmed",
+                "updated_at": "2026-09-09T00:00:00+00:00",
+            }), encoding="utf-8")
+
+            cli, model = _resolve_cli_and_model(
+                "copilot", None, "low", profile_path=str(profile)
+            )
+
+            assert cli == "copilot"
+            assert model
+
+    def test_unavailable_profile_provider_uses_explicit_cli_catalog_default(self):
+        with tempfile.TemporaryDirectory() as directory:
+            profile = Path(directory) / "profile.json"
+            profile.write_text(json.dumps({
+                "schema_version": 1,
+                "providers": {"copilot": {
+                    "available": False,
+                    "model_tiers": {"medium": "profile-model"},
+                }},
+                "constraints": {},
+                "fallback_order": ["codex", "copilot"],
+                "source": "user-confirmed",
+                "updated_at": "2026-09-09T00:00:00+00:00",
+            }), encoding="utf-8")
+
+            cli, model = _resolve_cli_and_model(
+                "copilot", None, "medium", profile_path=str(profile)
+            )
+
+            assert cli == "copilot"
+            assert model == _resolve_catalog_model("copilot", "medium")
+
+    def test_snapshot_bearing_profile_is_not_used_without_current_snapshot(self):
+        with tempfile.TemporaryDirectory() as directory:
+            profile = Path(directory) / "profile.json"
+            profile.write_text(json.dumps({
+                "schema_version": 1,
+                "providers": {"copilot": {
+                    "available": True,
+                    "model_tiers": {"medium": "stale-profile-model"},
+                }},
+                "constraints": {},
+                "fallback_order": ["copilot"],
+                "source": "user-confirmed",
+                "updated_at": "2026-09-09T00:00:00+00:00",
+                "plugin_snapshot": "unknown-current-plugin",
+            }), encoding="utf-8")
+
+            cli, model = _resolve_cli_and_model(
+                "copilot", None, "medium", profile_path=str(profile)
+            )
+
+            assert cli == "copilot"
+            assert model == _resolve_catalog_model("copilot", "medium")
 
 
 if __name__ == "__main__":

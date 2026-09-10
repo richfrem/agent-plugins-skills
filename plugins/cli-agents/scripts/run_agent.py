@@ -14,6 +14,9 @@ Usage (preferred — named-flag form):
     python scripts/run_agent.py <PERSONA_FILE> <INPUT_FILE> <OUTPUT_FILE> "<INSTRUCTION>" \\
         --cli llama --model gemma-4-12b --max-tokens 200
 
+    Optional local preferences:
+        --cli codex --tier medium --profile context/agent-capability-profile.json
+
 Usage (legacy — positional form, backward compat):
     python scripts/run_agent.py <PERSONA_FILE> <INPUT_FILE> <OUTPUT_FILE> "<INSTRUCTION>" \\
         [cli=copilot] [model=<default>] [isolated=false]
@@ -42,6 +45,7 @@ Flags (named-flag mode):
     --max-tokens  Max output tokens for cli=llama (default: 120).
     --isolated    Isolation mode: append safety footer to prompt; suppress dangerous CLI
                   permission flags (--yolo, --dangerously-skip-permissions).
+    --profile     Optional validated local capability profile for provider/tier preferences.
 
 Prompt assembly:
     persona + input   →  persona / ---SOURCE--- input / ---INSTRUCTION--- instruction
@@ -50,7 +54,6 @@ Prompt assembly:
 
 Symlink targets (file-level, per plugin-architecture-policy):
     skills/copilot-cli-agent/scripts/run_agent.py → ../../../scripts/run_agent.py
-    skills/gemini-cli-agent/scripts/run_agent.py  → ../../../scripts/run_agent.py
     skills/agy-cli-agent/scripts/run_agent.py     → ../../../scripts/run_agent.py
     skills/claude-cli-agent/scripts/run_agent.py  → ../../../scripts/run_agent.py
 
@@ -76,6 +79,7 @@ import urllib.request
 from pathlib import Path
 
 from model_catalog import CatalogContractError, load_catalog, select_model
+from capability_profile import ProfileStatus, load_profile
 
 # ── Defaults per CLI ──────────────────────────────────────────────────────────
 def _load_default_models() -> dict[str, str | None]:
@@ -248,7 +252,7 @@ def _catalog_key_for_cli(cli: str) -> str:
     return "agy" if cli == "gemini" else cli
 
 
-def _resolve_catalog_model(cli: str, tier: str) -> str:
+def _resolve_catalog_model(cli: str, tier: str, preferred_model: str | None = None) -> str:
     """Resolve a catalog-backed model, failing closed when the contract is invalid."""
     if cli == "llama":
         return _DEFAULT_MODELS[cli] or ""
@@ -262,12 +266,18 @@ def _resolve_catalog_model(cli: str, tier: str) -> str:
         with open(cheapest_path, "r", encoding="utf-8") as handle:
             cheapest = json.load(handle).get(_catalog_key_for_cli(cli), {}).get("model")
         catalog = load_catalog(Path(catalog_path))
-        return select_model(catalog, tier, preferred_model=cheapest if tier == "low" else None)
+        catalog_preference = preferred_model or (cheapest if tier == "low" else None)
+        return select_model(catalog, tier, preferred_model=catalog_preference)
     except (OSError, json.JSONDecodeError, CatalogContractError) as exc:
         raise ValueError(f"Unable to resolve a valid model catalog for {cli}: {exc}") from exc
 
 
-def _resolve_cli_and_model(cli: str, model: str | None, tier: str = "low") -> tuple:
+def _resolve_cli_and_model(
+    cli: str,
+    model: str | None,
+    tier: str = "low",
+    profile_path: str | None = None,
+) -> tuple:
     """Validate/lowercase the cli name, resolve the default model, and inject Homebrew PATH on macOS."""
     cli = cli.lower()
     if cli not in _DEFAULT_MODELS:
@@ -276,6 +286,17 @@ def _resolve_cli_and_model(cli: str, model: str | None, tier: str = "low") -> tu
 
     if tier not in ("low", "medium", "high"):
         raise ValueError(f"Unsupported capability tier: {tier}")
+
+    if model is None and profile_path:
+        profile_result = load_profile(Path(profile_path))
+        provider = profile_result.profile.get("providers", {}).get(cli, {})
+        preferred = provider.get("model_tiers", {}).get(tier) if isinstance(provider, dict) else None
+        if profile_result.status is ProfileStatus.READY and provider.get("available") is True and preferred:
+            try:
+                model = _resolve_catalog_model(cli, tier, preferred_model=preferred)
+            except RuntimeError:
+                # A stale or withdrawn preference must never block dispatch.
+                model = None
 
     if model is None:
         model = _resolve_catalog_model(cli, tier)
@@ -342,9 +363,10 @@ def run_agent(
     max_tokens: int = _LLAMA_MAX_TOKENS_DEFAULT,
     require_input: bool = False,
     tier: str = "low",
+    profile_path: str | None = None,
 ) -> None:
     """Assemble the prompt and dispatch it to the selected backend, writing output_file."""
-    cli, model = _resolve_cli_and_model(cli, model, tier)
+    cli, model = _resolve_cli_and_model(cli, model, tier, profile_path)
 
     persona = read_file_or_empty(resolve_path(persona_file))
     resolved_input = resolve_path(input_file)
@@ -428,6 +450,11 @@ if __name__ == "__main__":
             help="Capability/cost tier used when --model is omitted (default: low)",
         )
         parser.add_argument(
+            "--profile",
+            default=None,
+            help="Optional validated local capability profile for provider/tier preferences.",
+        )
+        parser.add_argument(
             "--max-tokens", type=int, default=_LLAMA_MAX_TOKENS_DEFAULT,
             help=f"Max output tokens for cli=llama (default: {_LLAMA_MAX_TOKENS_DEFAULT})",
         )
@@ -442,4 +469,4 @@ if __name__ == "__main__":
         args = parser.parse_args()
         run_agent(args.persona_file, args.input_file, args.output_file, args.instruction,
                   args.cli, args.model, args.isolated, args.max_tokens, args.require_input,
-                  args.tier)
+                  args.tier, args.profile)

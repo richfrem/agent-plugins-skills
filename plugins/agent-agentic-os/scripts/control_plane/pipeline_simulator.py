@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import io
+import json
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -124,7 +125,22 @@ class PipelineSimulator:
         plan_dir = repo_root / "docs" / "plans"
         plan_dir.mkdir(parents=True, exist_ok=True)
         (plan_dir / f"{task_id}-spec.md").write_text("# simulated specification", encoding="utf-8")
-        (plan_dir / f"{task_id}-implementation-plan.md").write_text("# simulated implementation plan", encoding="utf-8")
+        evidence = repo_root / ".implementation-evidence" / f"{task_id}.txt"
+        evidence.parent.mkdir(parents=True, exist_ok=True)
+        evidence.write_text("simulated implementation completed\n", encoding="utf-8")
+        ledger = [{
+            "id": "simulated-implementation",
+            "status": "COMPLETE",
+            "artifacts": [str(evidence.relative_to(repo_root))],
+            "evidence": "simulator implementation step",
+        }]
+        (plan_dir / f"{task_id}-implementation-plan.md").write_text(
+            "# simulated implementation plan\n\n"
+            "## Implementation Task Ledger\n```json\n"
+            + json.dumps(ledger, indent=2)
+            + "\n```\n",
+            encoding="utf-8",
+        )
 
         TransitionCoordinator(
             self.control_plane,

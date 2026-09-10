@@ -99,15 +99,12 @@ _SKILL_DIRS = [
     ("agent-scaffolders",        "synthesize-learnings"),
     ("agent-scaffolders",        "update-ecosystem-index"),
 
-    # cli-agents (12 skills) — consolidated from deleted claude-cli + copilot-cli + gemini-cli
+    # cli-agents (11 skills) — consolidated from deleted claude-cli + copilot-cli + gemini-cli
     ("cli-agents",               "agt-security"),
     ("cli-agents",               "agy-cli-agent"),
-    ("cli-agents",               "antigravity-project-setup"),
     ("cli-agents",               "claude-cli-agent"),
-    ("cli-agents",               "claude-project-setup"),
     ("cli-agents",               "codex-cli-agent"),
     ("cli-agents",               "copilot-cli-agent"),
-    ("cli-agents",               "gemini-cli-agent"),
     ("cli-agents",               "local-llm-bridge"),
     ("cli-agents",               "local-llm-setup"),
     ("cli-agents",               "maf-adapter"),

@@ -38,7 +38,6 @@ cli-agents/
 │   ├── output-validator.md       # Output guardrail — hallucination, schema, policy checks
 │   ├── self-critic.md            # Reflection loop — task-fit, completeness, assumption check
 │   ├── performance-analyst.md    # Bottleneck analysis — Big-O, I/O amplification, scale
-│   └── local-llm-setup.md        # Cross-platform local LLM setup agent (user-invocable)
 ├── references/
 │   ├── local_llm_debrief.md      # Technical history: optimization battles + architecture
 │   ├── routing_latency_findings.md # Measured timing data: Mode A vs Mode B comparison
@@ -65,7 +64,6 @@ cli-agents/
 └── skills/
     ├── claude-cli-agent/         # cli=claude backend — Claude CLI task delegation
     ├── copilot-cli-agent/        # cli=copilot backend — Copilot CLI task delegation
-    ├── gemini-cli-agent/         # cli=gemini backend — DEPRECATED: consumer access ended June 18, 2026 (enterprise-only now)
     ├── agy-cli-agent/            # cli=agy backend — Antigravity CLI task delegation — primary path for Gemini models now
     ├── codex-cli-agent/          # cli=codex backend — Codex/OpenAI-compatible task delegation
     ├── local-llm-bridge/         # cli=llama backend — direct Gemma 4 12B, no proxy, ~2s

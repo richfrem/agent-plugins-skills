@@ -270,6 +270,11 @@ def _retrospective_done_check(ctx: Dict[str, Any]) -> Optional[str]:
     return None
 
 
+def _implementation_completeness_check(ctx: Dict[str, Any]) -> Optional[str]:
+    """Require the approved implementation ledger to prove every task is complete."""
+    return ctx["check_implementation_completeness"]()
+
+
 def _rolled_back_check(ctx: Dict[str, Any]) -> Optional[str]:
     """Predicate rule folding in the original _check_rolled_back_guard: requires at least one
     asymmetric_persistence_log entry documenting the failure before rollback."""
@@ -409,6 +414,7 @@ CHECK_REGISTRY: Dict[str, Any] = {
     ),
     "done_guard": _done_check,
     "retrospective_done_guard": _retrospective_done_check,
+    "implementation_completeness": _implementation_completeness_check,
     "rolled_back_guard": _rolled_back_check,
 }
 

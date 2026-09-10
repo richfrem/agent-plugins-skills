@@ -1875,12 +1875,6 @@
     },
     {
       "src": "plugins/cli-agents/scripts/run_agent.py",
-      "dst": "plugins/cli-agents/skills/gemini-cli-agent/scripts/run_agent.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/cli-agents/scripts/run_agent.py",
       "dst": "plugins/cli-agents/skills/agy-cli-agent/scripts/run_agent.py",
       "strategy": "symlink",
       "description": ""
@@ -2008,18 +2002,6 @@
     {
       "src": "plugins/cli-agents/references/cheapest_models.json",
       "dst": "plugins/cli-agents/skills/copilot-cli-agent/references/cheapest_models.json",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/cli-agents/references/cheapest_models.md",
-      "dst": "plugins/cli-agents/skills/gemini-cli-agent/references/cheapest_models.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/cli-agents/references/cheapest_models.json",
-      "dst": "plugins/cli-agents/skills/gemini-cli-agent/references/cheapest_models.json",
       "strategy": "symlink",
       "description": ""
     },
@@ -9795,24 +9777,6 @@
     },
     {
       "src": "plugins/cli-agents/references/acceptance-criteria.md",
-      "dst": "plugins/cli-agents/skills/antigravity-project-setup/references/acceptance-criteria.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/cli-agents/references/antigravity-directory-spec.md",
-      "dst": "plugins/cli-agents/skills/antigravity-project-setup/references/antigravity-directory-spec.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/cli-agents/references/gemini-cli-commands.md",
-      "dst": "plugins/cli-agents/skills/antigravity-project-setup/references/gemini-cli-commands.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/cli-agents/references/acceptance-criteria.md",
       "dst": "plugins/cli-agents/skills/claude-cli-agent/references/acceptance-criteria.md",
       "strategy": "symlink",
       "description": ""
@@ -9820,24 +9784,6 @@
     {
       "src": "plugins/cli-agents/references/fallback-tree.md",
       "dst": "plugins/cli-agents/skills/claude-cli-agent/references/fallback-tree.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/cli-agents/references/acceptance-criteria.md",
-      "dst": "plugins/cli-agents/skills/claude-project-setup/references/acceptance-criteria.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/cli-agents/references/claude-directory-spec.md",
-      "dst": "plugins/cli-agents/skills/claude-project-setup/references/claude-directory-spec.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/cli-agents/references/claude-settings-schema.md",
-      "dst": "plugins/cli-agents/skills/claude-project-setup/references/claude-settings-schema.md",
       "strategy": "symlink",
       "description": ""
     },
@@ -9862,36 +9808,6 @@
     {
       "src": "plugins/cli-agents/references/program.md",
       "dst": "plugins/cli-agents/skills/copilot-cli-agent/references/program.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/cli-agents/references/acceptance-criteria.md",
-      "dst": "plugins/cli-agents/skills/gemini-cli-agent/references/acceptance-criteria.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/cli-agents/references/antigravity-directory-spec.md",
-      "dst": "plugins/cli-agents/skills/gemini-cli-agent/references/antigravity-directory-spec.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/cli-agents/references/fallback-tree.md",
-      "dst": "plugins/cli-agents/skills/gemini-cli-agent/references/fallback-tree.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/cli-agents/references/gemini-cli-commands.md",
-      "dst": "plugins/cli-agents/skills/gemini-cli-agent/references/gemini-cli-commands.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/cli-agents/references/program.md",
-      "dst": "plugins/cli-agents/skills/gemini-cli-agent/references/program.md",
       "strategy": "symlink",
       "description": ""
     },
@@ -10761,12 +10677,6 @@
     },
     {
       "src": "plugins/cli-agents/scripts/model_catalog.py",
-      "dst": "plugins/cli-agents/skills/gemini-cli-agent/scripts/model_catalog.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/cli-agents/scripts/model_catalog.py",
       "dst": "plugins/cli-agents/skills/agy-cli-agent/scripts/model_catalog.py",
       "strategy": "symlink",
       "description": ""
@@ -10804,6 +10714,48 @@
     {
       "src": "plugins/agent-agentic-os/references/interview-spec/fallback-tree.md",
       "dst": "plugins/agent-agentic-os/skills/worktree-manager/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/scripts/capability_profile.py",
+      "dst": "plugins/cli-agents/skills/copilot-cli-agent/scripts/capability_profile.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/scripts/capability_profile.py",
+      "dst": "plugins/cli-agents/skills/agy-cli-agent/scripts/capability_profile.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/scripts/capability_profile.py",
+      "dst": "plugins/cli-agents/skills/claude-cli-agent/scripts/capability_profile.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/scripts/capability_profile.py",
+      "dst": "plugins/cli-agents/skills/codex-cli-agent/scripts/capability_profile.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/scripts/capability_profile.py",
+      "dst": "plugins/cli-agents/skills/local-llm-bridge/scripts/capability_profile.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/scripts/capability_profile.py",
+      "dst": "plugins/cli-agents/skills/local-llm-setup/scripts/capability_profile.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/implementation.py",
+      "dst": "plugins/agent-agentic-os/skills/interview-spec/scripts/control_plane/implementation.py",
       "strategy": "symlink",
       "description": ""
     }

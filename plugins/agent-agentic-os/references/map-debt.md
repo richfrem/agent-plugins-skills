@@ -4,6 +4,8 @@ This registry tracks technical debt, process friction, and workarounds.
 Entries must be resolved, aged, or escalated. 
 Do not delete resolved items; set `Status: RESOLVED` to maintain history.
 
+| 2026-09-10 | WP-576 follow-up | Plan-to-diff completeness was previously inferred from green tests and could miss approved but unimplemented plan tasks. | Added the implementation ledger contract and fail-closed `implementation_completeness` gate before retrospective. | Verify every implementation-plan task has COMPLETE status, evidence, and existing artifacts before leaving VERIFY_EXIT. | Tier 1 | 1 | RESOLVED — full suite, simulator paths, audits, and symlink diagnosis pass |
+
 ---
 
 ## Tier 3 (Structural): Controller verifies and commits against the wrong directory
@@ -47,4 +49,3 @@ merge commit `15cd7592`) and a full real ROLLBACK cycle (`live-rollback-17881549
 - Updated `self-evolution-policy.md` across plugin source and downstream repositories with **Hard Gate 15: Single Source of Truth Verification First**.
 - Mandated that analysis skills (`update-stock-analysis`) query canonical CLI utilities (`portfolio_io.py --ticker {TICKER}`) before assigning lifecycle status or actions, strictly forbidding inline Python/SQL.
 - Added `--ticker`, `--pillars`, and `--json` CLI primitives to `portfolio_io.py` to eliminate inline query workarounds.
-

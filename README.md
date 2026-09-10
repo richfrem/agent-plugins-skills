@@ -296,17 +296,16 @@ Interactive creators for exact file hierarchies + structured audit framework for
 
 `run_agent.py` dispatches bounded tasks to 6 backends. **Measured: ~2s wall clock** for `--cli llama` (direct HTTP to llama-server, no proxy, no 29K system prompt overhead).
 
-**Skills (14):**
+**Skills (11):**
 - [`local-llm-bridge`](plugins/cli-agents/skills/local-llm-bridge/SKILL.md) — `--cli llama`: direct Gemma 4 12B, **~2s**, no proxy
 - [`local-llm-setup`](plugins/cli-agents/skills/local-llm-setup/SKILL.md) — cross-platform setup wizard; scripts/ symlinks for Day 1 bootstrap + Mode B config
 - [`codex-cli-agent`](plugins/cli-agents/skills/codex-cli-agent/SKILL.md) — `--cli codex`: Codex/OpenAI-compatible, prompt piped via stdin
 - [`agy-cli-agent`](plugins/cli-agents/skills/agy-cli-agent/SKILL.md) — `--cli agy`: Antigravity CLI, primary path for Gemini models (Gemini CLI consumer access ended June 18, 2026)
 - [`claude-cli-agent`](plugins/cli-agents/skills/claude-cli-agent/SKILL.md) — `--cli claude`: Claude CLI, Haiku 4.5 default
 - [`copilot-cli-agent`](plugins/cli-agents/skills/copilot-cli-agent/SKILL.md) — `--cli copilot`: GitHub Copilot CLI, gpt-5-mini ⚠️ AI Credits June 2026
-- [`gemini-cli-agent`](plugins/cli-agents/skills/gemini-cli-agent/SKILL.md) — `--cli gemini`: Gemini CLI, DEPRECATED for consumer use (enterprise-only since June 18, 2026)
 - [`agent-file-synchronization`](plugins/cli-agents/skills/agent-file-synchronization/SKILL.md) — replicates CLAUDE.md into GEMINI.md/copilot-instructions.md/AGENTS.md, preserving each target's platform-specific section
 - [`update-cli-models`](plugins/cli-agents/skills/update-cli-models/SKILL.md) — model catalog/pricing sync
-- [`claude-project-setup`](plugins/cli-agents/skills/claude-project-setup/SKILL.md) · [`antigravity-project-setup`](plugins/cli-agents/skills/antigravity-project-setup/SKILL.md) · [`project-setup`](plugins/cli-agents/skills/project-setup/SKILL.md) · [`maf-adapter`](plugins/cli-agents/skills/maf-adapter/SKILL.md) · [`agt-security`](plugins/cli-agents/skills/agt-security/SKILL.md)
+- [`project-setup`](plugins/cli-agents/skills/project-setup/SKILL.md) — unified runtime setup dispatcher · [`maf-adapter`](plugins/cli-agents/skills/maf-adapter/SKILL.md) · [`agt-security`](plugins/cli-agents/skills/agt-security/SKILL.md)
 
 **12 Expert Agent Personas** (flat `agents/` directory, shared across all backends):
 

@@ -1342,13 +1342,14 @@ templates:
   from_state: VERIFY_EXIT
   to_state: RETROSPECTIVE
   purpose: Verify clean leak checks and enter the mandatory pipeline-close retrospective gate.
-  next_steps_hint: "First record passing test_suite and leak_check verification receipts through verify-exit-verification, and record asymmetric persistence evidence with destination wiki/decisions/<task-id>.md or references/map-debt.md (other destinations do not satisfy done_guard). Then satisfy done_guard and run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to RETROSPECTIVE."
+  next_steps_hint: "First ensure docs/plans/<task-id>-implementation-plan.md contains the machine-readable Implementation Task Ledger and every planned item is COMPLETE with evidence and existing artifacts. Then record passing test_suite and leak_check verification receipts through verify-exit-verification, and record asymmetric persistence evidence with destination wiki/decisions/<task-id>.md or references/map-debt.md (other destinations do not satisfy done_guard). Satisfy implementation_completeness and done_guard, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to RETROSPECTIVE."
   checklist:
   - Current task state is persisted as VERIFY_EXIT
   - 'Deterministic checks satisfied: test_suite, leak_check, and asymmetric persistence'
   required_artifacts: []
   deterministic_checks:
   - done_guard
+  - implementation_completeness
   human_questions: []
   approval:
     required: false
@@ -1359,7 +1360,7 @@ templates:
   capabilities_released:
   - retrospective_capture
   capabilities_prohibited: []
-  denial_message: 'Transition VERIFY_EXIT -> RETROSPECTIVE denied: preconditions or required decisions not satisfied.'
+  denial_message: 'Transition VERIFY_EXIT -> RETROSPECTIVE denied: verification or implementation completeness requirements are not satisfied.'
   authority:
     type: deterministic
     explanation: Transition from VERIFY_EXIT to RETROSPECTIVE is governed by the existing exit verification receipts and persistence checks.
