@@ -95,7 +95,7 @@ import json
 import os
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional, Any, Tuple
+from typing import Callable, Dict, List, Optional, Any, Tuple
 
 from control_plane.ports import (
     FilesystemPort,
@@ -172,7 +172,8 @@ class ControlPlane:
                  crypto_adapter: Optional["CryptoPort"] = None,
                  model_catalog_adapter: Optional["ModelCatalogPort"] = None,
                  clock_adapter: Optional["ClockPort"] = None,
-                 persistence_adapter: Optional["PersistencePort"] = None):
+                 persistence_adapter: Optional["PersistencePort"] = None,
+                 implementation_controller: Optional[Callable[[str, TransitionRecord], None]] = None):
         """Initializes the ControlPlane instance. All infrastructure is delegated: connection
         management, schema migration, and every task/transition/receipt/review/verifier/log/
         worktree CRUD operation go through a PersistencePort (SqlitePersistenceAdapter by
@@ -192,6 +193,9 @@ class ControlPlane:
         self._crypto = crypto_adapter if crypto_adapter is not None else CryptoAdapter()
         self._clock = clock_adapter if clock_adapter is not None else ClockAdapter()
         self._model_catalog = model_catalog_adapter if model_catalog_adapter is not None else ModelCatalogAdapter()
+        # Optional runtime bridge.  Lifecycle transitions remain authoritative; the
+        # callback is only invoked after a committed APPROVED -> IN_WORKTREE edge.
+        self._implementation_controller = implementation_controller
         self._state_machine = StateMachine()
         if persistence_adapter is not None:
             self._persistence = persistence_adapter
@@ -560,7 +564,30 @@ class ControlPlane:
             self.assert_interview_exit_ready(
                 commit_request.task_id, stage="interview", round_id=None
             )
-        return self._persistence.apply_transition_with_receipts(commit_request)
+        record = self._persistence.apply_transition_with_receipts(commit_request)
+        if record.from_state == "APPROVED" and record.to_state == "IN_WORKTREE":
+            self._kickoff_implementation(record)
+        return record
+
+    def _kickoff_implementation(self, record: TransitionRecord) -> None:
+        """Persist and dispatch the implementation kickoff exactly once.
+
+        The receipt is written before invoking the external controller, making
+        retries/replays idempotent.  A controller failure is intentionally
+        propagated so callers can observe and recover it; the durable receipt
+        prevents an accidental duplicate dispatch.
+        """
+        gate_name = "implementation_kickoff"
+        if self._persistence.has_receipt(record.task_id, gate_name):
+            return
+        self.record_verification_receipt(
+            record.task_id,
+            gate_name=gate_name,
+            command_executed=f"implementation-kickoff:owner={record.actor}",
+            exit_code=0,
+        )
+        if self._implementation_controller is not None:
+            self._implementation_controller(record.task_id, record)
 
     def lock_verifiers(self, task_id: str, file_paths: List[Path]):
         """Calculates and locks baseline SHA256 hashes of verifier files. File-existence
