@@ -5,6 +5,7 @@ flowchart TB
     Registry["TransitionRegistry"]
     Templates["transition_templates.yaml: edge and stage contracts"]
     Guidance["Transition guidance: versioned advisory snapshot"]
+    ForceClose["Force close: any active state to DONE; interactive human authorization required"]
     ArtifactGate["Plan artifact identity/revision gate"]
     Delegation["DelegationContract: scope, authority, budget, receipts"]
     ReviewDispatch["Review dispatch: required source + canonical verdict"]
@@ -39,6 +40,7 @@ flowchart TB
     Facade --> Coordinator
     Coordinator --> Registry
     Coordinator --> Guidance
+    Coordinator --> ForceClose
     Coordinator --> ArtifactGate
     Coordinator --> PlanBranch
     Coordinator --> PlanAcceptance

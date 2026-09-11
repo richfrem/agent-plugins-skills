@@ -58,7 +58,7 @@ def test_simulator_rejects_illegal_edge_through_production_control_plane(tmp_pat
     task_id = simulator.create_task("illegal-001", "Illegal simulator path")
 
     with pytest.raises(InvalidStateTransition):
-        simulator.control_plane.transition(task_id, "DONE", "simulator", "illegal edge")
+        simulator.control_plane.transition(task_id, "WORKTREE_REVIEW", "simulator", "illegal edge")
 
 
 def test_simulator_exercises_reset_wildcard_with_interactive_approval(tmp_path):

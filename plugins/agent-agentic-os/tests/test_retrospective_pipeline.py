@@ -23,8 +23,8 @@ def test_retrospective_is_a_first_class_completion_state():
     assert "RETROSPECTIVE" in CANONICAL_STATES
     assert "RETROSPECTIVE" in ALLOWED_TRANSITIONS["VERIFY_EXIT"]
     assert "INTERVIEW" in ALLOWED_TRANSITIONS["INTAKE"]
-    assert "DONE" not in ALLOWED_TRANSITIONS["VERIFY_EXIT"]
-    assert "DONE" not in ALLOWED_TRANSITIONS["INTAKE"]
+    assert "DONE" in ALLOWED_TRANSITIONS["VERIFY_EXIT"]
+    assert "DONE" in ALLOWED_TRANSITIONS["INTAKE"]
     assert registry.get_template("VERIFY_EXIT", "RETROSPECTIVE") is not None
     assert registry.get_template("INTERVIEW", "RETROSPECTIVE") is not None
     assert registry.get_template("RETROSPECTIVE", "DONE") is not None

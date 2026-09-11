@@ -79,9 +79,40 @@ def test_human_authorized_force_close_is_persisted_from_any_state(tmp_path):
     from agent_control import ControlPlane
     cp = ControlPlane(db_path=tmp_path / "control_plane.db")
     cp.create_task(task_id="force-2", title="Force close", runtime_tool="claude")
-    record = cp.coordinate_transition("force-2", "DONE", "human", "Emergency close", force_close=True, human_authorization="FORCE_CLOSE")
+    from control_plane.coordinator import TransitionCoordinator
+    record = TransitionCoordinator(cp, input_fn=lambda _: "FORCE_CLOSE").coordinate_transition(
+        "force-2", "DONE", "human", "Emergency close", force_close=True,
+        human_authorization="FORCE_CLOSE", interactive=True,
+    )
     assert record.from_state == "INTAKE"
     assert cp.get_task("force-2")["state"] == "DONE"
+
+
+def test_force_close_checks_adjacency_before_authorization(tmp_path):
+    from agent_control import ControlPlane
+    from control_plane.coordinator import TransitionCoordinator
+    cp = ControlPlane(db_path=tmp_path / "control_plane.db")
+    cp.create_task("force-illegal", "Force close", "claude")
+    TransitionCoordinator(cp, input_fn=lambda _: "FORCE_CLOSE").coordinate_transition(
+        "force-illegal", "DONE", "human", "close", force_close=True,
+        human_authorization="FORCE_CLOSE", interactive=True,
+    )
+    with pytest.raises(InvalidStateTransition):
+        cp.coordinate_transition(
+            "force-illegal", "DONE", "human", "close", force_close=True,
+            human_authorization="FORCE_CLOSE", interactive=False,
+        )
+
+
+def test_force_close_rejects_noninteractive_human_spoof(tmp_path):
+    from agent_control import ControlPlane
+    cp = ControlPlane(db_path=tmp_path / "control_plane.db")
+    cp.create_task("force-spoof", "Force close", "claude")
+    with pytest.raises(Exception, match="interactive"):
+        cp.coordinate_transition(
+            "force-spoof", "DONE", "human", "close", force_close=True,
+            human_authorization="FORCE_CLOSE", interactive=False,
+        )
 
 
 def test_control_plane_transition_delegates_to_state_machine(tmp_path, monkeypatch):

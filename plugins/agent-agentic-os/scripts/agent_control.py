@@ -468,6 +468,10 @@ class ControlPlane:
             raise ValueError(f"Task not found: {task_id}")
 
         if to_state == "DONE":
+            # Check edge legality first so callers receive the domain
+            # InvalidStateTransition for illegal edges, including force-close.
+            self._state_machine.validate_adjacency(task_id, current_state, to_state)
+        if to_state == "DONE" and (current_state != "RETROSPECTIVE" or force_close):
             raise PersistenceInvariantViolation(
                 "Transition to DONE requires explicit human authorization FORCE_CLOSE via coordinate_transition."
             )
@@ -531,9 +535,16 @@ class ControlPlane:
     def commit_authorized_transition(self, commit_request: TransitionCommitRequest) -> TransitionRecord:
         """Internal atomic commit gate: passes normalized TransitionCommitRequest to PersistencePort.
         PersistencePort re-validates persistable invariants in SQLite transaction and atomically commits."""
+        if commit_request.to_state == "DONE":
+            self._state_machine.validate_adjacency(
+                commit_request.task_id,
+                commit_request.expected_from_state,
+                commit_request.to_state,
+            )
         if (commit_request.to_state == "DONE" and commit_request.expected_from_state != "RETROSPECTIVE"
             and not (
             commit_request.force_close and commit_request.actor == "human"
+            and commit_request.interactive_human_authorization
             and any(d.question_id == "force_close_authorization" and d.answer == "FORCE_CLOSE"
                     and d.actor == "human" for d in commit_request.staged_decisions)
         )):

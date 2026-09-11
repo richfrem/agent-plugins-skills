@@ -62,7 +62,7 @@ def test_guidance_cannot_authorize_illegal_requested_edge(control_plane):
     task_id = "guidance-denial-001"
     control_plane.create_task(task_id=task_id, title="Guidance", runtime_tool="codex")
 
-    guidance = control_plane.get_transition_guidance(task_id, requested_to_state="DONE")
+    guidance = control_plane.get_transition_guidance(task_id, requested_to_state="WORKTREE_REVIEW")
 
     assert guidance["advisory"] is True
     assert guidance["legal"] is False
@@ -189,7 +189,7 @@ def test_stale_yaml_next_state_claim_is_ignored_for_guidance_legality(control_pl
     guidance = control_plane.get_transition_guidance(task_id)
 
     assert guidance["legal_next_states"] == ALLOWED_TRANSITIONS["INTAKE"]
-    assert "DONE" not in guidance["legal_next_states"]
+    assert "DONE" in guidance["legal_next_states"]
 
 
 def test_coordinator_surfaces_advisory_guidance_before_and_after_transition(control_plane):

@@ -110,15 +110,21 @@ class TransitionCoordinator:
         if current_state is None:
             raise TransitionCoordinatorError(f"Task not found: {task_id}")
 
+        # Validate the requested edge before authorization policy.  This keeps
+        # illegal edges observable as InvalidStateTransition rather than
+        # masking them as an authorization denial.
+        self._cp._state_machine.validate_adjacency(task_id, current_state, to_state)
+
         if to_state == "DONE" and not force_close and current_state != "RETROSPECTIVE":
             raise TransitionCoordinatorError(
                 "Force close denied: explicit human authorization FORCE_CLOSE is required."
             )
-        if force_close and (actor != "human" or human_authorization != "FORCE_CLOSE"):
+        if force_close and (
+            actor != "human" or human_authorization != "FORCE_CLOSE" or not interactive
+        ):
             raise TransitionCoordinatorError(
-                "Force close denied: explicit human authorization FORCE_CLOSE is required."
+                "Force close denied: explicit interactive human authorization FORCE_CLOSE is required."
             )
-        self._cp._state_machine.validate_adjacency(task_id, current_state, to_state)
 
         # 2. Resolve template from registry
         template = self._registry.get_template(current_state, to_state)
@@ -412,6 +418,7 @@ class TransitionCoordinator:
             staged_decisions=staged_decisions,
             staged_receipts=staged_receipts,
             force_close=force_close,
+            interactive_human_authorization=(force_close and interactive and actor == "human"),
         )
 
         # 9. Atomic commit via ControlPlane -> SqlitePersistenceAdapter

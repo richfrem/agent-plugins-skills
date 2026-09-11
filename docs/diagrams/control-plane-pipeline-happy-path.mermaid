@@ -31,4 +31,5 @@ stateDiagram-v2
     MULTI_AGENT_CODE_REVIEW --> VERIFY_EXIT : review passed
     VERIFY_EXIT --> RETROSPECTIVE : all checks passed
     RETROSPECTIVE --> DONE : survey complete or explicitly skipped<br/>with reason
+    INTAKE --> DONE : force close — interactive human authorization<br/>(available from any active state)
     DONE --> [*]

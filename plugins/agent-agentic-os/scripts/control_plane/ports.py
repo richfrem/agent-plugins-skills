@@ -75,6 +75,7 @@ class TransitionCommitRequest:
     staged_decisions: List[TransitionDecision]
     staged_receipts: List[Dict[str, Any]]
     force_close: bool = False
+    interactive_human_authorization: bool = False
 
 
 @dataclass(frozen=True)
