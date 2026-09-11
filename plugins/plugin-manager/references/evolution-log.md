@@ -44,6 +44,7 @@
 | 2026-09-11 | Tier 1 | Task 3 Review Fixes: Test relocation paths & hardened TUI key handling | Verified relative test import paths, added non-blocking ESC, Windows ESC mapping, line count drift tracking, and auto-seeding missing manifest in TUI | Evolution | SUCCESS |
 | 2026-09-11 | Tier 1 | CLI Entry Point: plugin-prune in pyproject.toml & bootstrap.py | Added prune_main entry point to bootstrap.py and project.scripts in pyproject.toml matching INSTALL.md | Evolution | SUCCESS |
 | 2026-09-11 | Tier 1 | Fix: Filter non-existent artifacts during auto-seeding in prune_installed_skills.py | Prevent phantom/stale ownership manifests (e.g. legacy agent-loops.json) from populating retention manifest if artifacts do not exist on disk | Evolution | SUCCESS |
+| 2026-09-11 | Tier 1 | Feature: Complete removal & orphaned artifact cleanup in plugin_remove.py | Added orphaned artifact detection/scrubbing to ensure .agents/ is completely clean on full removal; syncs retention and skills-lock | Evolution | SUCCESS |
 
 
 
