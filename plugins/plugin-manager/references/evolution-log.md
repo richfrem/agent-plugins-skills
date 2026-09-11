@@ -63,3 +63,10 @@ causing empty reads for single-byte keys like Space.
 **Files:** `plugins/plugin-manager/scripts/prune_installed_skills.py`
 
 **Tests:** 45/45 pass
+
+## 2026-09-11 — Remove blocking dependency scan from toggle hot path
+
+**Root cause:** `check_dependency_advisory` scans all `.agents/skills/` SKILL.md files (~4s).
+Called synchronously inside `tty.setraw()` — TUI freezes, user sees no response on `[x]` → Space.
+**Fix:** Removed the advisory scan from the space key handler. Toggle is now instant in both directions.
+**Files:** `prune_installed_skills.py`, `test_prune_interactive_tui.py`

@@ -748,20 +748,11 @@ def tui_process_key(key: str, state: TUIState) -> bool:
         if items and 0 <= state.cursor < len(items):
             item = items[state.cursor]
             if item.get("protected", False):
-                state.advisory = f"[PROTECTED] '{item['name']}' is a protected default and cannot be untoggled."
+                state.advisory = f"[PROTECTED] '{item['name']}' is a protected default and cannot be toggled."
                 return False
 
-            was_retained = item["retained"]
             toggle_component_state(state.manifest, item["plugin"], item["type"], item["name"])
-            item["retained"] = not was_retained
-
-            if was_retained:
-                adv = check_dependency_advisory(
-                    state.root, state.manifest, item["plugin"], item["type"], item["name"]
-                )
-                state.advisory = adv
-            else:
-                state.advisory = None
+            state.advisory = None
         return False
     elif key in ("\r", "\n"):
         if state.plugin_idx < len(state.plugins) - 1:

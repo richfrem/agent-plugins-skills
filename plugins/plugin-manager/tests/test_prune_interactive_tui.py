@@ -187,8 +187,7 @@ def test_tui_space_toggle_and_dependency_warning(tmp_path: Path):
     tui_process_key(" ", state)
     assert state.current_items[1]["retained"] is False
     assert manifest["plugins"]["demo"]["skills"]["companion-skill"] is False
-    assert state.advisory is not None
-    assert "companion-skill" in state.advisory
+    assert state.advisory is None
 
     tui_process_key(" ", state)
     assert state.current_items[1]["retained"] is True
