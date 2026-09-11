@@ -12,6 +12,7 @@ provides_tools:
   - plugin_installer
   - plugin_remove
   - prune_installed_skills
+  - simulate_lifecycle
   - sync_with_inventory
 skills:
   - plugin-installer
