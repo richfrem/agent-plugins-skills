@@ -87,33 +87,33 @@ def _read_key() -> str:
             return "ESC"
         return ch
     else:
-        import tty, termios, select
+        import tty, termios
         fd = sys.stdin.fileno()
         old = termios.tcgetattr(fd)
         try:
             tty.setraw(fd)
-            ch = sys.stdin.read(1)
-            if ch == "\x1b":
-                r, _, _ = select.select([sys.stdin], [], [], 0.15)
-                if r:
-                    c2 = sys.stdin.read(1)
-                    if c2 in ("[", "O"):
-                        r2, _, _ = select.select([sys.stdin], [], [], 0.1)
-                        if r2:
-                            c3 = sys.stdin.read(1)
-                            return {
-                                "[A": "UP",
-                                "OA": "UP",
-                                "[B": "DOWN",
-                                "OB": "DOWN",
-                                "[C": "RIGHT",
-                                "OC": "RIGHT",
-                                "[D": "LEFT",
-                                "OD": "LEFT",
-                            }.get(c2 + c3, "ESC")
-                    return "ESC"
-                return "ESC"
-            return ch
+            # Enforce VMIN=1 so os.read blocks until at least 1 byte arrives.
+            # Without this, macOS raw mode may set VMIN=0 causing empty reads.
+            attrs = termios.tcgetattr(fd)
+            if len(attrs) > 6:
+                attrs[6][termios.VMIN] = 1
+                attrs[6][termios.VTIME] = 0
+                termios.tcsetattr(fd, termios.TCSANOW, attrs)
+            raw = os.read(fd, 8)
+            seq_map = {
+                b"\x1b[A": "UP",
+                b"\x1bOA": "UP",
+                b"\x1b[B": "DOWN",
+                b"\x1bOB": "DOWN",
+                b"\x1b[C": "RIGHT",
+                b"\x1bOC": "RIGHT",
+                b"\x1b[D": "LEFT",
+                b"\x1bOD": "LEFT",
+                b"\x1b": "ESC",
+            }
+            if raw in seq_map:
+                return seq_map[raw]
+            return raw.decode("utf-8", errors="ignore")
         finally:
             termios.tcsetattr(fd, termios.TCSADRAIN, old)
 
@@ -892,17 +892,26 @@ def interactive_prune_tui(
         print(yellow("Warning: Interactive TUI requested in non-interactive terminal; skipping."))
         return manifest
 
-    last_line_count = 0
-    if is_interactive and key_provider is None:
-        last_line_count = _render_tui_page(state, last_line_count=0)
+    if is_interactive and key_provider is None and _ANSI:
+        sys.stdout.write("\033[?25l")
+        sys.stdout.flush()
 
-    while True:
-        key = key_provider() if key_provider is not None else _read_key()
-        done = tui_process_key(key, state)
-        if done:
-            break
+    try:
+        last_line_count = 0
         if is_interactive and key_provider is None:
-            last_line_count = _render_tui_page(state, last_line_count=last_line_count)
+            last_line_count = _render_tui_page(state, last_line_count=0)
+
+        while True:
+            key = key_provider() if key_provider is not None else _read_key()
+            done = tui_process_key(key, state)
+            if done:
+                break
+            if is_interactive and key_provider is None:
+                last_line_count = _render_tui_page(state, last_line_count=last_line_count)
+    finally:
+        if is_interactive and key_provider is None and _ANSI:
+            sys.stdout.write("\033[?25h")
+            sys.stdout.flush()
 
     if is_interactive and key_provider is None:
         print()

@@ -12,11 +12,11 @@
   "plugins": {
     "agent-agentic-os": {
       "skills": {
-        "critical-auditor": true,
+        "critical-auditor": false,
         "interview-spec": true,
         "issue-resolution-reviewer": true,
-        "optimize-agent-instructions": true,
-        "os-architect": true,
+        "optimize-agent-instructions": false,
+        "os-architect": false,
         "os-clean-locks": true,
         "os-environment-probe": true,
         "os-eval-backport": true,
@@ -36,7 +36,7 @@
         "self-evolution": true,
         "todo-check": true,
         "worktree-manager": true,
-        "evo-smoketest": false
+        "evo-smoketest": true
       },
       "rules": {
         "adversarial-reasoning-before-agreement-rule.md": true,
@@ -165,8 +165,8 @@
     },
     "agent-memory": {
       "skills": {
-        "memory-management": true,
-        "rlm-audit": true,
+        "memory-management": false,
+        "rlm-audit": false,
         "rlm-cleanup-agent": true,
         "rlm-curator": true,
         "rlm-distill-agent": true,
@@ -174,7 +174,7 @@
         "rlm-search": true,
         "vector-db-audit": true,
         "vector-db-cleanup": true,
-        "vector-db-ingest": true,
+        "vector-db-ingest": false,
         "vector-db-init": true,
         "vector-db-launch": true,
         "vector-db-search": true
@@ -200,7 +200,7 @@
         "graph-execution": true,
         "learning-loop": true,
         "orchestrator": true,
-        "red-team-review": true,
+        "red-team-review": false,
         "select-loop-strategy": true,
         "triple-loop-learning": true
       },

@@ -473,8 +473,7 @@ def test_read_key_standalone_esc(monkeypatch):
         monkeypatch.setattr("tty.setraw", lambda fd: None)
         monkeypatch.setattr("termios.tcgetattr", lambda fd: [])
         monkeypatch.setattr("termios.tcsetattr", lambda fd, when, old: None)
-        monkeypatch.setattr("sys.stdin.read", lambda n: "\x1b")
-        monkeypatch.setattr("select.select", lambda r, w, x, timeout: ([], [], []))
+        monkeypatch.setattr("os.read", lambda fd, n: b"\x1b")
         assert _read_key() == "ESC"
 
 
@@ -533,26 +532,17 @@ def test_read_key_arrow_sequences(monkeypatch):
         monkeypatch.setattr("tty.setraw", lambda fd: None)
         monkeypatch.setattr("termios.tcgetattr", lambda fd: [])
         monkeypatch.setattr("termios.tcsetattr", lambda fd, when, old: None)
-        monkeypatch.setattr("select.select", lambda r, w, x, timeout: ([sys.stdin], [], []))
 
-        # Test \x1b[A (standard UP)
-        inputs = iter(["\x1b", "[", "A"])
-        monkeypatch.setattr("sys.stdin.read", lambda n: next(inputs))
+        monkeypatch.setattr("os.read", lambda fd, n: b"\x1b[A")
         assert _read_key() == "UP"
 
-        # Test \x1bOA (SS3 application cursor UP)
-        inputs = iter(["\x1b", "O", "A"])
-        monkeypatch.setattr("sys.stdin.read", lambda n: next(inputs))
+        monkeypatch.setattr("os.read", lambda fd, n: b"\x1bOA")
         assert _read_key() == "UP"
 
-        # Test \x1b[B (standard DOWN)
-        inputs = iter(["\x1b", "[", "B"])
-        monkeypatch.setattr("sys.stdin.read", lambda n: next(inputs))
+        monkeypatch.setattr("os.read", lambda fd, n: b"\x1b[B")
         assert _read_key() == "DOWN"
 
-        # Test \x1bOB (SS3 application cursor DOWN)
-        inputs = iter(["\x1b", "O", "B"])
-        monkeypatch.setattr("sys.stdin.read", lambda n: next(inputs))
+        monkeypatch.setattr("os.read", lambda fd, n: b"\x1bOB")
         assert _read_key() == "DOWN"
 
 

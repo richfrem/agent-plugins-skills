@@ -53,3 +53,13 @@
 | 2026-09-11 | Tier 1 | Task 10: Lifecycle Simulator for installer, pruner, and remover | Implemented simulate_lifecycle.py to automate end-to-end sandbox verification (install -> prune -> sync -> remove) across manifests, registries, and central store | Evolution | SUCCESS |
 | 2026-09-11 | Tier 1 | Test relocation, reference cleanup, and fallback tree alignment | Moved misplaced tests from scripts/ to tests/, cleaned stale reference stubs, created authoritative acceptance-criteria.md and fallback-tree.md, aligned marketplace.json and dev-utils/plugin-manager READMEs | Evolution | SUCCESS |
 | 2026-09-11 | Tier 1 | Fix: TUI arrow key parsing and multi-key fallback navigation | Resolved select timeout in _read_key, added SS3 application cursor support (OA/OB), and enabled j/k/h/l navigation in pruner TUI | Evolution | SUCCESS |
+
+## 2026-09-11 — Fix VMIN=1 for spacebar toggle in pruner TUI
+
+**Change:** Enforced `VMIN=1, VTIME=0` in `_read_key()` after `tty.setraw()` to guarantee
+`os.read` blocks until at least 1 byte arrives. Without this, macOS raw mode may set VMIN=0
+causing empty reads for single-byte keys like Space.
+
+**Files:** `plugins/plugin-manager/scripts/prune_installed_skills.py`
+
+**Tests:** 45/45 pass
