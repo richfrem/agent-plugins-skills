@@ -347,19 +347,15 @@ class TransitionRegistry:
             if not isinstance(raw_item, dict):
                 raise TransitionRegistryError(f"Template at index {idx} must be a mapping")
 
-            # Wildcard expansion: from_state: "*" fans out into one literal template
-            # per non-INTAKE canonical state (issue: reset_to_intake recovery edge).
-            # INTAKE is excluded — INTAKE -> INTAKE is a no-op self-loop with no
-            # recovery value.
+            # Wildcard expansion fans out into one literal template per canonical state.
+            # The reset-to-INTAKE wildcard excludes INTAKE's no-op self-loop.
             if raw_item.get("from_state") == "*":
                 base_transition_id = raw_item.get("transition_id", f"wildcard_{idx}")
                 wildcard_to_state = raw_item.get("to_state")
                 existing_edges = {(t.from_state, t.to_state) for t in parsed}
                 expanded_items = []
                 for state in CANONICAL_STATES:
-                    if (state == "DONE" and base_transition_id == "human_force_done") or (
-                        state == "INTAKE" and wildcard_to_state == "INTAKE"
-                    ):
+                    if state == wildcard_to_state:
                         continue
                     if (state, wildcard_to_state) in existing_edges:
                         continue

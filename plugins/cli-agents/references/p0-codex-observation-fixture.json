@@ -1,0 +1,48 @@
+{
+  "artifact_kind": "p0_measurement_observation",
+  "schema_version": "1.0-draft",
+  "capture": {
+    "method": "sanitized contract fixture; not a live baseline",
+    "captured_at_utc": "2026-09-10T00:00:00Z",
+    "source_runtime": "codex_cli",
+    "source_runtime_version": null,
+    "source_runtime_version_unavailable_reason": "Fixture only; no installed runtime was sampled.",
+    "sanitization": "Synthetic IDs, timings, and usage; no prompt, output, stderr, source, path, or secret."
+  },
+  "producer": {
+    "namespace": "io.richfrem.cli-agents.codex",
+    "version": "unobserved",
+    "install_fingerprint": null,
+    "install_fingerprint_unavailable_reason": "Fixture only; no installed artifact was sampled."
+  },
+  "correlation": {
+    "task_id": "task_fixture_p0",
+    "task_generation_id": "generation_fixture_p0",
+    "run_id": "run_fixture_p0",
+    "invocation_id": "invocation_fixture_p0",
+    "attempt_id": "attempt_fixture_p0"
+  },
+  "event": {
+    "event_id": "018f6d42-6b2e-7cc0-8f1b-1234567890ab",
+    "occurred_at_utc": "2026-09-10T00:00:01Z",
+    "coverage_state": "observed",
+    "canonical_digest": null,
+    "canonical_digest_unavailable_reason": "Draft fixture; runtime canonicalization is not implemented."
+  },
+  "execution": {
+    "exit_code": 0,
+    "duration_ms": 1250,
+    "duration_provenance": "synthetic_fixture",
+    "requested_model": "unavailable",
+    "observed_model": null,
+    "observed_model_unavailable_reason": "No live runtime capture was authorized."
+  },
+  "usage": {
+    "input_tokens": null,
+    "output_tokens": null,
+    "cached_tokens": null,
+    "reasoning_tokens": null,
+    "provenance": "unavailable",
+    "unavailable_reason": "No verified structured Codex CLI usage output has been captured."
+  }
+}

@@ -95,7 +95,7 @@ import json
 import os
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional, Any, Tuple
+from typing import Callable, Dict, List, Optional, Any, Tuple
 
 from control_plane.ports import (
     FilesystemPort,
@@ -172,7 +172,8 @@ class ControlPlane:
                  crypto_adapter: Optional["CryptoPort"] = None,
                  model_catalog_adapter: Optional["ModelCatalogPort"] = None,
                  clock_adapter: Optional["ClockPort"] = None,
-                 persistence_adapter: Optional["PersistencePort"] = None):
+                 persistence_adapter: Optional["PersistencePort"] = None,
+                 implementation_controller: Optional[Callable[[str, TransitionRecord], None]] = None):
         """Initializes the ControlPlane instance. All infrastructure is delegated: connection
         management, schema migration, and every task/transition/receipt/review/verifier/log/
         worktree CRUD operation go through a PersistencePort (SqlitePersistenceAdapter by
@@ -192,6 +193,9 @@ class ControlPlane:
         self._crypto = crypto_adapter if crypto_adapter is not None else CryptoAdapter()
         self._clock = clock_adapter if clock_adapter is not None else ClockAdapter()
         self._model_catalog = model_catalog_adapter if model_catalog_adapter is not None else ModelCatalogAdapter()
+        # Optional runtime bridge.  Lifecycle transitions remain authoritative; the
+        # callback is only invoked after a committed APPROVED -> IN_WORKTREE edge.
+        self._implementation_controller = implementation_controller
         self._state_machine = StateMachine()
         if persistence_adapter is not None:
             self._persistence = persistence_adapter
@@ -250,6 +254,56 @@ class ControlPlane:
             model_id = rec["model_id"]
 
         self._persistence.insert_task(task_id, title, task_type, runtime_tool, spec_path, model_tier, model_id)
+
+    def record_premium_consent(
+        self, task_id: str, stage: str, round_id: str, model_id: str, actor: str
+    ) -> int:
+        """Record explicit human consent for a premium model in one exact interview scope."""
+        if actor != "human":
+            raise PersistenceInvariantViolation("Premium consent requires actor='human'")
+        return self._persistence.insert_premium_consent(task_id, stage, round_id, model_id, actor)
+
+    def require_premium_consent(self, task_id: str, stage: str, round_id: str, model_id: str) -> None:
+        """Deny premium use unless human consent matches the exact stage and round."""
+        if not self._persistence.has_premium_consent(task_id, stage, round_id, model_id):
+            raise PersistenceInvariantViolation(
+                "Premium consent missing for "
+                f"task_id='{task_id}', stage='{stage}', round_id='{round_id}', model_id='{model_id}'"
+            )
+
+    def record_source_assisted_answer_candidate(
+        self,
+        task_id: str,
+        stage: str,
+        round_id: str,
+        question_id: str,
+        answer: str,
+        source_path: str,
+        source_authorized: bool = True,
+    ) -> int:
+        """Persist an authorized source answer only as a candidate pending human confirmation."""
+        if not source_authorized:
+            raise PersistenceInvariantViolation("Source-assisted answer candidates require an authorized source")
+        return self._persistence.insert_source_assisted_answer_candidate(
+            task_id, stage, round_id, question_id, answer, source_path, source_authorized
+        )
+
+    def confirm_source_assisted_answer_candidate(self, candidate_id: int, actor: str) -> None:
+        """Confirm one pending source candidate through the human decision boundary."""
+        if actor != "human":
+            raise PersistenceInvariantViolation("Source-assisted answer confirmation requires actor='human'")
+        if not self._persistence.confirm_source_assisted_answer_candidate(candidate_id, actor):
+            raise ValueError(f"Pending source-assisted answer candidate not found: {candidate_id}")
+
+    def assert_interview_exit_ready(
+        self, task_id: str, stage: str, round_id: Optional[str]
+    ) -> None:
+        """Block interview exit while the requested scope has a pending source candidate."""
+        if self._persistence.has_unconfirmed_source_assisted_answer_candidates(task_id, stage, round_id):
+            raise PersistenceInvariantViolation(
+                "Cannot exit interview with unconfirmed source-assisted answer candidate "
+                f"for task_id='{task_id}', stage='{stage}', round_id='{round_id}'"
+            )
 
     def create_delegation_plan(self, task_id: str, contract: Dict[str, Any]) -> int:
         """Create a persisted delegation boundary; native execution strategy remains model-owned."""
@@ -409,7 +463,8 @@ class ControlPlane:
             "check_implementation_completeness": check_implementation_completeness,
         }
 
-    def transition(self, task_id: str, to_state: str, actor: str, reason: str):
+    def transition(self, task_id: str, to_state: str, actor: str, reason: str,
+                   force_close: bool = False, human_authorization: Optional[str] = None):
         """INTERNAL USE ONLY: Validates and applies a deterministic state transition according to the canonical DAG.
 
         DEPRECATION NOTICE: This method is strictly internal and functional ONLY for deterministic transitions
@@ -437,15 +492,18 @@ class ControlPlane:
         if current_state is None:
             raise ValueError(f"Task not found: {task_id}")
 
+        if to_state == "DONE":
+            # Check edge legality first so callers receive the domain
+            # InvalidStateTransition for illegal edges, including force-close.
+            self._state_machine.validate_adjacency(task_id, current_state, to_state)
+        if to_state == "DONE" and (current_state != "RETROSPECTIVE" or force_close):
+            raise PersistenceInvariantViolation(
+                "Transition to DONE requires explicit human authorization FORCE_CLOSE via coordinate_transition."
+            )
         self._state_machine.validate_adjacency(task_id, current_state, to_state)
 
-        # Unauthorized direct transition to DONE from any state other than RETROSPECTIVE
-        # is a force-close attempt that requires explicit human authorization.
-        if to_state == "DONE" and current_state != "RETROSPECTIVE":
-            raise PersistenceInvariantViolation(
-                f"Direct transition to DONE from '{current_state}' is denied: "
-                "force-close requires explicit human authorization."
-            )
+        if current_state == "INTERVIEW" and to_state != "INTERVIEW":
+            self.assert_interview_exit_ready(task_id, stage="interview", round_id=None)
 
         # --- Unified gate policy: deterministic checks from authoritative YAML registry ---
         if not hasattr(self, "_transition_registry"):
@@ -502,7 +560,59 @@ class ControlPlane:
     def commit_authorized_transition(self, commit_request: TransitionCommitRequest) -> TransitionRecord:
         """Internal atomic commit gate: passes normalized TransitionCommitRequest to PersistencePort.
         PersistencePort re-validates persistable invariants in SQLite transaction and atomically commits."""
-        return self._persistence.apply_transition_with_receipts(commit_request)
+        if commit_request.to_state == "DONE":
+            self._state_machine.validate_adjacency(
+                commit_request.task_id,
+                commit_request.expected_from_state,
+                commit_request.to_state,
+            )
+        if (commit_request.to_state == "DONE" and commit_request.expected_from_state != "RETROSPECTIVE"
+            and not (
+            commit_request.force_close and commit_request.actor == "human"
+            and commit_request.interactive_human_authorization
+            and any(
+                d.question_id in {"force_close_authorization", "human_force_done_confirmation"}
+                and d.answer in {"FORCE_CLOSE", "FORCE_DONE"}
+                and d.actor == "human"
+                for d in commit_request.staged_decisions
+            )
+        )):
+            raise PersistenceInvariantViolation(
+                "Transition to DONE requires explicit human authorization FORCE_CLOSE."
+            )
+        if (
+            commit_request.expected_from_state == "INTERVIEW"
+            and commit_request.to_state != "INTERVIEW"
+        ):
+            # This is deliberately immediately before the atomic persistence call so both
+            # deterministic and coordinated transition front-doors share the same gate.
+            self.assert_interview_exit_ready(
+                commit_request.task_id, stage="interview", round_id=None
+            )
+        record = self._persistence.apply_transition_with_receipts(commit_request)
+        if record.from_state == "APPROVED" and record.to_state == "IN_WORKTREE":
+            self._kickoff_implementation(record)
+        return record
+
+    def _kickoff_implementation(self, record: TransitionRecord) -> None:
+        """Persist and dispatch the implementation kickoff exactly once.
+
+        The receipt is written before invoking the external controller, making
+        retries/replays idempotent.  A controller failure is intentionally
+        propagated so callers can observe and recover it; the durable receipt
+        prevents an accidental duplicate dispatch.
+        """
+        gate_name = "implementation_kickoff"
+        if self._persistence.has_receipt(record.task_id, gate_name):
+            return
+        self.record_verification_receipt(
+            record.task_id,
+            gate_name=gate_name,
+            command_executed=f"implementation-kickoff:owner={record.actor}",
+            exit_code=0,
+        )
+        if self._implementation_controller is not None:
+            self._implementation_controller(record.task_id, record)
 
     def lock_verifiers(self, task_id: str, file_paths: List[Path]):
         """Calculates and locks baseline SHA256 hashes of verifier files. File-existence
