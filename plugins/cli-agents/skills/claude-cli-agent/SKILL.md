@@ -12,6 +12,26 @@ allowed-tools: Bash, Read, Write
 
 You, the Antigravity agent, dispatch specialized analysis tasks to Claude CLI sub-agents. 
 
+## Native orchestration facilities (verified September 2026)
+
+Claude Code provides native plan permission mode, native git worktree sessions (`--worktree`),
+and managed background agents (`--bg`, `claude agents`, `attach`, `logs`, `stop`, and `rm`).
+Use its worktree session when Claude Code is the active implementation runtime; otherwise keep
+the portable `git worktree` path as the interoperable fallback. Custom agents can be supplied
+with `--agent`/`--agents`.
+
+```bash
+# Plan before edits
+claude --permission-mode plan "Analyze this change and write an implementation plan."
+
+# Create an isolated Claude Code worktree session
+claude --worktree p0-observability-foundation "Implement the approved plan."
+```
+
+Native autonomy is not approval to bypass governance. `--dangerously-skip-permissions` is
+appropriate only in an externally sandboxed, explicitly authorized execution environment.
+Record the actual agents, model, effort, scope, and start time after dispatch.
+
 ### ✅ Minimal Working Code Review Agent Pattern
 
 To ensure Claude CLI behaves as a specialized persona rather than a generic responder, **always** embed the persona and source material directly into the prompt flag (`-p`).

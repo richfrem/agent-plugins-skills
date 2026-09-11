@@ -1406,6 +1406,17 @@ def test_registry_loads_stage_entry_question_contracts():
         "interview_verification",
     ]
     assert interview["adaptive_follow_up_rules"]
+    planning_question = next(
+        q for rule in interview["adaptive_follow_up_rules"]
+        for q in rule.get("questions", [])
+        if q["question_id"] == "interview_planning_model_effort"
+    )
+    assert planning_question["selection_mode"] == "confirm_or_change"
+    assert planning_question["recommendation_source"] == "model_effort_guidance"
+    assert planning_question["availability_sources"] == ["os-init", "project-setup", "cli-agents"]
+    assert planning_question["complexity_options"]["high"]["recommended_effort"] == "medium"
+    assert interview["progress_display"]["enabled"] is True
+    assert interview["progress_display"]["count_adaptive_questions"] is True
     assert interview["exit_requirements"]
     trivial_edge = registry.get_template("INTERVIEW", "RETROSPECTIVE")
     assert [q["question_id"] for q in trivial_edge.human_questions] == [
@@ -2080,8 +2091,13 @@ def test_wrapper_success_path(control_plane, tmp_path):
         "SELECT COUNT(*) FROM transition_decisions WHERE task_id = ? AND decision_type = 'ANSWER'",
         (task_id,)
     ).fetchone()[0]
-    conn.close()
     assert count == 1
+    stored = conn.execute(
+        "SELECT answer FROM transition_decisions WHERE task_id = ? ORDER BY decision_id DESC LIMIT 1",
+        (task_id,),
+    ).fetchone()[0]
+    assert stored == "A"
+    conn.close()
 
     # Move to DRAFT_PLAN (releases plan_write)
     control_plane.record_plan_mode_entry(task_id, "tester")

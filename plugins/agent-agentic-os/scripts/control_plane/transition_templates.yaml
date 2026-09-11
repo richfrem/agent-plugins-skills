@@ -2,6 +2,11 @@ stages:
   INTERVIEW:
     purpose: Capture the minimum understanding needed before selecting the next lifecycle path.
     question_policy: one_at_a_time
+    progress_display:
+      enabled: true
+      count_adaptive_questions: true
+      format: "Interview question {current} of {total}"
+      include_remaining_summary: true
     entry_questions:
     - question_id: interview_classification
       question: Is this a trivial fix or a standard task?
@@ -40,11 +45,102 @@ stages:
         question: What acceptance criteria and constraints must the implementation satisfy?
         options: []
         default: ''
+      - question_id: interview_planning_model_effort
+        question: >-
+          For the upcoming planning phase, what model and effort level would you
+          like to choose? The interviewer will first classify the planning
+          problem as low, medium or high complexity, inspect your available
+          tools, recommend a cost/effort route, and explain the tradeoff. You
+          may confirm the recommendation or choose another supported option.
+        options: []
+        default: ''
+        selection_mode: confirm_or_change
+        recommendation_source: model_effort_guidance
+        recommendation_phase: plan
+        availability_sources:
+        - os-init
+        - project-setup
+        - cli-agents
+        complexity_options:
+          low:
+            recommended_cost_tier: low
+            recommended_effort: low
+            guidance: Use the cheapest capable available model; premium planning is unnecessary.
+          medium:
+            recommended_cost_tier: medium
+            recommended_effort: medium
+            guidance: Use a competent mid-tier model unless ambiguity or risk warrants more.
+          high:
+            recommended_cost_tier: high
+            recommended_effort: medium
+            guidance: Prefer a highly capable model such as Astra at medium effort; consider capable alternatives available to the user.
+        undersized_choice_guidance: If the user selects a low-tier or low-effort route for a high-complexity plan, advise that it may reduce plan quality and ask whether to continue; defer to the user.
+        premium_confirmation_required: true
     exit_requirements:
     - Every entry question has an answer.
     - Every adaptive rule matching the recorded answers has been evaluated.
     - All generated follow-up questions have an answer or an explicit human refusal.
     - The agent has not inferred an answer on the user's behalf.
+  IN_WORKTREE:
+    purpose: Execute the approved implementation in the registered isolated worktree.
+    question_policy: one_at_a_time
+    entry_questions: []
+    adaptive_follow_up_rules: []
+    status_display:
+      enabled: true
+      lifecycle_states:
+      - queued
+      - in_progress
+      - blocked
+      - complete
+      format: "Implementation status: {status}; agent: {agent}; model: {model}; effort: {effort}; worktree: {worktree}"
+      unknown_value: "unobserved"
+      user_summary_rule: Always tell the user whether implementation has started, which agent/runtime/model/effort is active when known, and the next gate; never imply completion from worktree creation alone.
+    delegation_display:
+      required_after_worktree_entry: true
+      fields:
+      - agent_count
+      - assignments
+      - runtime
+      - model
+      - effort
+      - scope
+      - status
+      - started_at
+      user_summary_template: "Implementation delegation: {agent_count} agent(s); assignments: {assignments}; runtime: {runtime}; model: {model}; effort: {effort}; scope: {scope}; status: {status}; started: {started_at}."
+      dispatch_truth_rule: Do not report implementation as started until at least one authorized agent dispatch is observed; worktree creation alone is queued preparation.
+    implementation_kickoff:
+      mandatory_after_entry: true
+      do_not_wait_for_repeated_user_prompt: true
+      ownership: "After APPROVED -> IN_WORKTREE, the implementation controller owns the work package until exit verification or an explicit blocker."
+      pipeline_gate_policy: "Do not request lifecycle transitions for internal task dispatch, task review, or bounded fix rounds. Return to the pipeline only for exit verification, retrospective, or a human-authorized abort."
+      continuation_loop: "dispatch -> observe -> review -> fix/re-dispatch -> scoped re-review; continue automatically while authorized and within the review bound."
+      idle_rule: "Never leave an authorized work package silently idle: dispatch the next legal internal action, or record BLOCKED with the exact blocker and next action."
+      authorization_scope: "APPROVED -> IN_WORKTREE authorizes the complete bounded implementation loop, including internal dispatches, reviews, and fix rounds, until exit verification or a genuine blocker. Do not ask the user to re-authorize these internal steps."
+      user_prompt_boundary: "Do not pause for routine progress confirmation. Prompt the user only for a new material scope, destructive action, premium-model authorization not already recorded, unresolved blocker, or the post-implementation review/exit gate."
+      required_preflight:
+      - Probe the active runtime's native planning, worktree, and subagent capabilities; use a native facility only when explicitly reported, otherwise use the portable fallback.
+      - Read the approved specification, implementation plan, and task ledger.
+      - Verify the registered worktree contains or can safely access the approved artifacts and required source baseline.
+      - Create or resume a persistent implementation ledger before dispatch.
+      - Select the least costly model and effort that meet each task's complexity and the user's recorded tool availability.
+      required_execution:
+      - Split the approved ledger into bounded implementation tasks.
+      - Dispatch one or more authorized implementer agents when tasks are independently reviewable; otherwise dispatch one integration implementer.
+      - Record each dispatch with agent/runtime/model/effort/scope/start time before telling the user implementation is in_progress.
+      - Review each completed task before dispatching dependent work; these are internal session events, not lifecycle transitions.
+      blocked_behavior: If source baseline, approved artifacts, model authorization, or a security/destructive gate prevents dispatch, report status blocked with the exact blocker and next safe action; do not silently remain queued.
+      model_effort_rule: Reuse an explicitly selected implementation model/effort for the same approved scope. Otherwise recommend and select a proportional supported route; seek confirmation only for a premium model, materially broader scope, or a new review round.
+      cost_control_rule: "Use the least-cost capable route for each bounded task. Do not interrupt an active high-risk slice solely to change models; at the next verified checkpoint, prefer Luna medium (or the user's equivalent mid-tier tool) for independent review and routine fixes. Reserve premium models for high-complexity planning, architecture, or unresolved correctness risk."
+      quota_awareness_rule: "Before dispatch, report the selected model, effort, complexity rationale, and known quota/reset constraint. If the active quota is low, prefer a cheaper capable route or defer non-urgent review until reset; never claim a reset time not observed from the runtime."
+      test_cadence_rule: "For each micro-slice, run only focused tests covering the changed contract. Run the subsystem suite at an integration checkpoint and the full plugin suite only once before the P01 acceptance gate or equivalent release checkpoint; do not repeat long full-suite runs after every small edit unless a focused failure requires it."
+      subagent_review_test_sequence: "Subagents must follow this order: focused tests for the slice; independent agent review after implementation; bounded fix/re-review rounds for findings; then one final full test and parity check before acceptance. A passing slice test is not an acceptance result, and a full-suite run does not replace independent review."
+      simulator_acceptance_rule: "Any new lifecycle or authorization contract must add simulator scenarios before acceptance. The final check must execute the acceptance matrix through production ControlPlane/TransitionCoordinator paths, including every wildcard/override edge, normal-path preservation, authorized success, unauthorized denial, persistence consumption, and error contract; simulator success is required evidence, not optional regression coverage."
+      session_continuity_rule: "Keep the implementing agy or Claude session alive through bounded review-fix rounds whenever the runtime supports continuation. Relay concrete reviewer findings into that same session immediately; do not close and reopen the implementation context for ordinary corrections. Independent reviews must be narrowly targeted to the changed contract and acceptance matrix."
+      user_update_rule: Immediately after entry, report queued preparation. Immediately after the first dispatch, report in_progress with the delegation summary. After each task boundary, report completed/reviewed/blocked work and the next dispatch or gate.
+    exit_requirements:
+    - Implementation evidence and tests are recorded before reporting complete.
+    - Active model and effort are reported from observed runtime metadata, not inferred from task title.
   RETROSPECTIVE:
     purpose: Capture the complete pipeline-close survey before allowing DONE.
     question_policy: one_at_a_time
@@ -165,6 +261,28 @@ execution_guidance:
     advisory: true
     required_fields: *execution_guidance_fields
     instruction: Perform the next concrete command or edit only after confirming its prerequisite; record the expected artifact or test evidence and stop for a gate, failure, or scope change.
+
+model_effort_guidance:
+  interview:
+    recommended_model: current-user-model
+    recommended_effort: low
+    reason: Intake answers are bounded; reuse authorized source answers and ask only unresolved questions.
+    requires_confirmation_for_premium: true
+  plan:
+    recommended_model: user-selected-planning-model
+    recommended_effort: high
+    reason: Planning resolves architecture and acceptance evidence; a premium model may be useful but requires explicit confirmation.
+    requires_confirmation_for_premium: true
+  review:
+    recommended_model: user-selected-review-model
+    recommended_effort: medium
+    reason: Independent review should be proportionate to risk and may use a different model from planning.
+    requires_confirmation_for_premium: true
+  implementation:
+    recommended_model: user-selected-implementation-model
+    recommended_effort: medium
+    reason: Implementation should use the least costly supported route that meets the evidence contract; after a premium checkpoint, use a mid-tier model such as Luna medium for review and routine fixes when risk permits.
+    requires_confirmation_for_premium: true
 
 templates:
 - transition_id: intake_to_interview
@@ -347,6 +465,7 @@ templates:
   - interview_scope
   - interview_verification
   - interview_acceptance_criteria
+  - interview_planning_model_effort
   stage_route:
     question_id: interview_classification
     equals: STANDARD
@@ -387,6 +506,7 @@ templates:
   - interview_scope
   - interview_verification
   - interview_acceptance_criteria
+  - interview_planning_model_effort
   stage_route:
     question_id: interview_classification
     equals: STANDARD
@@ -439,7 +559,7 @@ templates:
   from_state: DRAFT_PLAN
   to_state: PLAN_REVIEW
   purpose: Submit the authored plan to the PLAN_REVIEW disposition-and-acceptance gate.
-  next_steps_hint: "Submit both plan artifacts; the coordinator records their content identity atomically. At PLAN_REVIEW, ask the required decision: do you want additional independent review, yes or no? No records the zero-review path and continues to plan acceptance; yes continues to PLAN_REVIEW -> MULTI_AGENT_REVIEW, where the review method is selected. After every review round, return to PLAN_REVIEW and ask whether further plan changes are required; repeat review as needed or accept the plan. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to PLAN_REVIEW."
+  next_steps_hint: "The plan is drafted. Review the plan artifacts (the two documents), then run coordinate-transition --task-id <task-id> --to PLAN_REVIEW and choose what happens next: request independent review, or skip it and continue to plan acceptance. The review choice does not approve implementation. If you request review, the next question selects the reviewer method; after review, you return to PLAN_REVIEW and decide whether to revise or accept. If you skip review, you continue directly to the plan-acceptance question."
   checklist:
   - Current task state is persisted as DRAFT_PLAN
   - Structural DAG transition from DRAFT_PLAN to PLAN_REVIEW is legal
@@ -449,7 +569,7 @@ templates:
   deterministic_checks: []
   human_questions:
   - question_id: plan_review_disposition
-    question: Do you want additional independent review of the authored plan?
+    question: 'The plan is drafted. What would you like to do next?'
     options:
     - No — accept plan as-is and skip independent review [Recommended]
     - Yes — request additional independent review
@@ -457,6 +577,9 @@ templates:
     - No — accept plan as-is and skip independent review [Recommended]
     - Yes — request additional independent review
     default: No — accept plan as-is and skip independent review [Recommended]
+    user_outcomes:
+      'yes': Select the review method, then run an independent review round.
+      'no': Continue to plan acceptance without independent review.
   approval:
     required: false
     approver_role: agent_or_human
@@ -894,7 +1017,7 @@ templates:
   from_state: APPROVED
   to_state: IN_WORKTREE
   purpose: Create isolated git worktree and begin test-first implementation.
-  next_steps_hint: "First record human approval with record-human-approval --task-id <task-id> --approver <approver>. Then create or select an isolated feature worktree and branch, record both with update-worktree, and run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to IN_WORKTREE. If the user explicitly authorizes implementation in the existing checkout, record it with record-receipt --gate existing_worktree_exception --cmd approved-existing-checkout:<approver> --exit-code 0 before transitioning."
+  next_steps_hint: "First record human approval with record-human-approval --task-id <task-id> --approver <approver>. Then create or select an isolated feature worktree and branch, record both with update-worktree, and run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to IN_WORKTREE. After entry, report the required delegation summary: agent count, assignments, runtime, model, effort, scope, status, and start time. State queued until an authorized agent dispatch is observed; then state in_progress. Worktree creation alone is not implementation completion. If the user explicitly authorizes implementation in the existing checkout, record it with record-receipt --gate existing_worktree_exception --cmd approved-existing-checkout:<approver> --exit-code 0 before transitioning."
   checklist:
   - Current task state is persisted as APPROVED
   - 'Deterministic check satisfied: human_approval'
@@ -917,6 +1040,38 @@ templates:
   authority:
     type: deterministic
     explanation: Transition from APPROVED to IN_WORKTREE is deterministically governed by automated checks and artifacts.
+- transition_id: approved_to_retrospective_planning_only
+  from_state: APPROVED
+  to_state: RETROSPECTIVE
+  purpose: Complete a planning-only work package without creating an implementation worktree.
+  next_steps_hint: "This is an explicit planning-only completion path with no worktree. Record human approval, verify the plan artifacts, then record a planning_only_completion receipt. Run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to RETROSPECTIVE. Implementation, worktree creation, and code claims remain prohibited."
+  checklist:
+  - Current task state is persisted as APPROVED
+  - 'Deterministic check satisfied: human_approval'
+  - 'Deterministic check satisfied: planning_only_completion'
+  required_artifacts:
+  - docs/plans/<task-id>-spec.md
+  - docs/plans/<task-id>-implementation-plan.md
+  deterministic_checks:
+  - human_approval
+  - planning_only_completion
+  human_questions: []
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released: []
+  capabilities_prohibited:
+  - modify production code
+  - create implementation worktree
+  - claim implementation completion
+  - push branch to origin
+  denial_message: 'Transition APPROVED -> RETROSPECTIVE (planning-only) denied: approval, plan evidence, or planning-only completion receipt is missing.'
+  authority:
+    type: deterministic
+    explanation: Planning-only completion requires explicit human approval and a durable receipt distinguishing plan completion from implementation completion.
 - transition_id: approved_to_escalated
   from_state: APPROVED
   to_state: ESCALATED
@@ -1654,6 +1809,41 @@ templates:
   authority:
     type: human_decision
     explanation: Advancing to PLAN_REVIEW requires explicit human review and authorization gate decision.
+- transition_id: human_force_done
+  from_state: "*"
+  to_state: DONE
+  purpose: Allow a human-in-the-loop to terminate any non-DONE task as DONE without claiming implementation occurred.
+  next_steps_hint: "This is an exceptional human-forced completion. Answer FORCE_DONE interactively, provide a reason, and run coordinate-transition --task-id <task-id> --to DONE --interactive. The decision is permanent for this task incarnation and must explain why remaining work is intentionally closed."
+  checklist:
+  - Current task state is not DONE
+  - Human confirmation is provided interactively
+  required_artifacts: []
+  deterministic_checks: []
+  human_questions:
+  - question_id: human_force_done_confirmation
+    question: 'Force this task to DONE now, acknowledging that this does not claim implementation or verification occurred?'
+    options:
+    - FORCE_DONE
+    - CANCEL
+    accepted_answers:
+    - FORCE_DONE
+    default: CANCEL
+  approval:
+    required: false
+    approver_role: human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released: []
+  capabilities_prohibited:
+  - claim implementation completion
+  - claim verification completion
+  - create implementation worktree
+  - push branch to origin
+  denial_message: 'Human-forced DONE denied: interactive FORCE_DONE confirmation is required.'
+  authority:
+    type: human_decision
+    explanation: Only an interactive human confirmation can take this exceptional terminal path; the recorded reason must distinguish administrative closure from implementation completion.
 - transition_id: reset_to_intake
   from_state: "*"
   to_state: INTAKE

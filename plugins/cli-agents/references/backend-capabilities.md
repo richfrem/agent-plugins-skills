@@ -30,6 +30,22 @@ When `run_agent.py --isolated` is set, dangerous flags are suppressed and a safe
 footer is appended. This normalizes isolation across backends — but the underlying
 mechanisms remain different. Do not assume equivalent behavior.
 
+## Native lifecycle facilities (verified September 2026)
+
+Use a CLI's native facility only when that CLI is the active runtime. A model name or a
+different host application's capability does not transfer it.
+
+| CLI | Native planning | Native worktree creation | Native delegated/background agents | Control-plane action |
+|---|---|---|---|---|
+| `claude` | Yes: `--permission-mode plan` | Yes: `--worktree` | Yes: background agents and custom agents | Prefer the native session; still record governed receipts. |
+| `agy` | Yes: `--mode=plan` | No documented CLI facility | Yes: asynchronous subagents and custom agents | Create a portable worktree, then use plan/subagents inside it. |
+| `copilot` | Yes: `--plan` / `--mode plan` | No documented CLI facility | Yes: custom agents and model-selected subsidiary agents | Create a portable worktree; require approval before autopilot. |
+| `codex` | No documented CLI mode | No documented CLI facility | No documented CLI delegation flag | Use portable planning/worktree/delegation; use `exec` or `review` within it. |
+
+All four may expose a different surface in a host application or future release. Check the
+installed CLI help before relying on a newly introduced flag; the portable fallback remains
+the interoperable path.
+
 ## Quality vs Cost Positioning
 
 | Need | Recommended CLI | Reason |

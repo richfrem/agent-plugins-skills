@@ -15,13 +15,41 @@ allowed-tools: Bash, Read, Write, Glob, Grep
 Bootstrap or retrofit the Agentic OS, 3-Layer Memory architecture, and multi-tool instructions in any repository.
 Supports fresh setup as well as retrofitting established projects to comply with autonomous evolution standards.
 
+## Installation-state protocol (run before choosing a mode)
+
+Always perform a read-only preflight against the target before proposing or running setup. Classify
+the target into exactly one state:
+
+```bash
+python3 .agents/skills/os-init/scripts/control_plane/installation_probe.py --target <project-path>
+```
+
+When running from the source checkout, use `plugins/agent-agentic-os/scripts/control_plane/installation_probe.py`.
+The command emits JSON with `state` and diagnostic `missing` entries and never creates or migrates files.
+
+| State | Classification evidence | Action |
+|---|---|---|
+| `FRESH` | No Agentic OS markers, control-plane database, or managed hooks | Propose full initialization. |
+| `COMPLETE` | Required directories/files exist, control-plane schema initializes cleanly, and managed hooks/instruction markers are present | Report already initialized; do not rewrite setup files. Run only requested validation. |
+| `PARTIAL_OR_DRIFTED` | Some markers exist but a required substrate is missing, stale, or fails schema/source parity | Propose idempotent `--retrofit`, showing the missing/drifted items first. |
+| `BLOCKED` | Conflicting ownership, unsafe permissions, unapproved destructive change, or unrecoverable migration failure | Stop and explain the blocker and the smallest safe recovery action. |
+
+The preflight is diagnostic, not an authorization bypass. Never infer permission to overwrite
+customized `CLAUDE.md`, `GEMINI.md`, `AGENTS.md`, rules, hooks, or databases. A `COMPLETE` target
+must not be routed through retrofit merely because the skill was invoked again. A
+`PARTIAL_OR_DRIFTED` target may use retrofit only after presenting the concrete diff/repair scope.
+After setup, repeat the same checks and report the resulting state. If source Python/YAML
+definitions and SQLite transition/schema definitions differ, classify as `PARTIAL_OR_DRIFTED` and
+recommend migration plus a read-only parity check; do not hand-edit SQLite rows.
+
 ---
 
 ## Execution Flow
 
-1. **Discovery & Environment Interview**: Identify project stack, active AI tools (Claude, Copilot, Gemini, Codex), and package manager (uvx, marketplace, local).
-2. **Component & Retrofit Planning**: Present plan (fresh initialization vs. retrofit of existing custom skills).
-3. **Execution**: Run `init_agentic_os.py` with appropriate flags (`--retrofit`, `--sync-instructions`).
+1. **Installation-State Preflight**: Classify the target as `FRESH`, `COMPLETE`, `PARTIAL_OR_DRIFTED`, or `BLOCKED` before any write.
+2. **Discovery & Environment Interview**: Identify project stack, active AI tools (Claude, Copilot, Gemini, Codex), and package manager (uvx, marketplace, local).
+3. **Component & Retrofit Planning**: Present the state-specific plan (fresh initialization, no-op validation, or retrofit repair).
+4. **Execution**: Run `init_agentic_os.py` with appropriate flags (`--retrofit`, `--sync-instructions`).
 4. **Plugin Installation Guidance**: Guide installation based on user's tooling environment.
 5. **Post-Init & Memory Validation**: Verify Layer 2 `wiki/`, `references/map-debt.md`, and instruction mirrors.
 

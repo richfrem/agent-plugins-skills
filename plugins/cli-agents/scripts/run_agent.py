@@ -187,11 +187,15 @@ def _build_cmd_gemini(model: str, prompt: str, isolated: bool = False) -> list[s
     sys.exit(1)
 
 
-def _build_cmd_agy(model: str, prompt_file: str, isolated: bool = False) -> list[str]:
+def _build_cmd_agy(model: str, prompt_file: str, isolated: bool = False, effort: str | None = None) -> list[str]:
     """Agy CLI. --dangerously-skip-permissions is suppressed when isolated=True."""
     cmd = ["agy"]
     if model:
         cmd += ["--model", model]
+    if effort:
+        if effort not in {"low", "medium", "high"}:
+            raise ValueError(f"Unsupported agy effort: {effort}")
+        cmd += ["--effort", effort]
     if not isolated:
         cmd += ["--dangerously-skip-permissions"]
     cmd += ["-p", f"@{prompt_file}"]
@@ -317,14 +321,14 @@ def _maybe_write_prompt_tmp(cli: str, prompt: str) -> str:
         return tf.name
 
 
-def _build_cli_cmd(cli: str, model: str, prompt: str, prompt_tmp: str, isolated: bool) -> list[str]:
+def _build_cli_cmd(cli: str, model: str, prompt: str, prompt_tmp: str, isolated: bool, effort: str | None = None) -> list[str]:
     """Dispatch to the correct command builder for the given backend."""
     if cli == "copilot":
         return _build_cmd_copilot(model, prompt_tmp, isolated)
     if cli == "gemini":
         return _build_cmd_gemini(model, prompt, isolated)
     if cli == "agy":
-        return _build_cmd_agy(model, prompt_tmp, isolated)
+        return _build_cmd_agy(model, prompt_tmp, isolated, effort)
     if cli == "codex":
         return _build_cmd_codex(model)
     return _build_cmd_claude(model, prompt, isolated)  # claude
@@ -364,6 +368,7 @@ def run_agent(
     require_input: bool = False,
     tier: str = "low",
     profile_path: str | None = None,
+    effort: str | None = None,
 ) -> None:
     """Assemble the prompt and dispatch it to the selected backend, writing output_file."""
     cli, model = _resolve_cli_and_model(cli, model, tier, profile_path)
@@ -387,7 +392,7 @@ def run_agent(
     try:
         prompt_tmp = _maybe_write_prompt_tmp(cli, prompt)
 
-        cmd = _build_cli_cmd(cli, model, prompt, prompt_tmp, isolated)
+        cmd = _build_cli_cmd(cli, model, prompt, prompt_tmp, isolated, effort)
         _execute_cli_command(cmd, cli, output_file, prompt_tmp)
 
         print(f"[run_agent] {cli} complete → {output_file}")
@@ -463,10 +468,19 @@ if __name__ == "__main__":
             help="Isolation mode: append safety footer; suppress --yolo / dangerous flags",
         )
         parser.add_argument(
+            "--effort", choices=("low", "medium", "high"), default=None,
+            help="Reasoning effort for agy (low, medium, or high).",
+        )
+        parser.add_argument(
             "--require-input", action="store_true",
             help="Fail before dispatch when input_file is missing or empty.",
         )
         args = parser.parse_args()
+        # Keep the public capability tier and agy reasoning effort aligned when
+        # callers select an explicit model but omit --effort. This prevents an
+        # empty effort value from reaching agy and failing after dispatch starts.
+        if args.cli == "agy" and args.effort is None:
+            args.effort = args.tier
         run_agent(args.persona_file, args.input_file, args.output_file, args.instruction,
                   args.cli, args.model, args.isolated, args.max_tokens, args.require_input,
-                  args.tier, args.profile)
+                  args.tier, args.profile, args.effort)

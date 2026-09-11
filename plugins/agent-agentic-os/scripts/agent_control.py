@@ -418,6 +418,14 @@ class ControlPlane:
 
         self._state_machine.validate_adjacency(task_id, current_state, to_state)
 
+        # Unauthorized direct transition to DONE from any state other than RETROSPECTIVE
+        # is a force-close attempt that requires explicit human authorization.
+        if to_state == "DONE" and current_state != "RETROSPECTIVE":
+            raise PersistenceInvariantViolation(
+                f"Direct transition to DONE from '{current_state}' is denied: "
+                "force-close requires explicit human authorization."
+            )
+
         # --- Unified gate policy: deterministic checks from authoritative YAML registry ---
         if not hasattr(self, "_transition_registry"):
             self._transition_registry = TransitionRegistry.load_default()
@@ -448,6 +456,8 @@ class ControlPlane:
         skip_decision: Optional[Tuple[str, str]] = None,
         skip_review: bool = False,
         skip_reason: Optional[str] = None,
+        force_close: bool = False,
+        human_authorization: Optional[str] = None,
     ) -> TransitionRecord:
         """Public orchestration entry point: coordinates transition via TransitionCoordinator."""
         if not hasattr(self, "_transition_registry"):
@@ -464,6 +474,8 @@ class ControlPlane:
             skip_decision=skip_decision,
             skip_review=skip_review,
             skip_reason=skip_reason,
+            force_close=force_close,
+            human_authorization=human_authorization,
         )
 
     def commit_authorized_transition(self, commit_request: TransitionCommitRequest) -> TransitionRecord:

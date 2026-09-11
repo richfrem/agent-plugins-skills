@@ -29,6 +29,14 @@ _RUNTIME_MARKERS = (
 )
 
 
+def _explicit_capability(values: Mapping[str, str], prefix: str, capability: str, default: bool = False) -> bool:
+    """Return a native capability only when the active runtime advertises it."""
+    raw = values.get(f"{prefix}_NATIVE_{capability}")
+    if raw is None:
+        return default
+    return raw.lower() in {"1", "true", "yes"}
+
+
 def detect_runtime(env: Optional[Mapping[str, str]] = None) -> str:
     """Return the active runtime from session markers, never from model names."""
     values = os.environ if env is None else env
@@ -42,11 +50,10 @@ def probe_runtime(
     runtime_id: Optional[str] = None,
     env: Optional[Mapping[str, str]] = None,
 ) -> RuntimeCapabilities:
-    """Build a capability result from explicit session evidence.
+    """Build a capability result from documented runtime facilities.
 
-    Codex native worktree support is reported only when the runtime explicitly
-    advertises it with ``CODEX_NATIVE_WORKTREE``. A model identifier alone never
-    grants native capability.
+    An explicit ``<RUNTIME>_NATIVE_*`` marker can disable a documented facility
+    or opt into a host-provided extension. Model names never grant capability.
     """
     values = os.environ if env is None else env
     runtime = (runtime_id or detect_runtime(values)).lower()
@@ -62,17 +69,35 @@ def probe_runtime(
         "portable_fallback": fallback,
     }
     if runtime == "claude-code":
-        base.update(native_planning=True, native_subagents=True, tool_support=("plan_mode", "tools"),
-                    worktree_activation="Use Claude Code native plan mode; retain the portable worktree fallback.")
+        native_planning = _explicit_capability(values, "CLAUDE", "PLANNING", default=True)
+        native_worktree = _explicit_capability(values, "CLAUDE", "WORKTREE", default=True)
+        native_subagents = _explicit_capability(values, "CLAUDE", "SUBAGENTS", default=True)
+        base.update(native_planning=native_planning, native_worktree=native_worktree,
+                    native_subagents=native_subagents, tool_support=("plan_mode", "worktree", "subagents", "tools"),
+                    worktree_activation=("Use Claude Code native worktree capability."
+                                         if native_worktree else "Use Claude Code native plan mode; retain the portable worktree fallback."))
     elif runtime == "agy":
-        base.update(native_planning=True, tool_support=("planning", "tools"),
-                    worktree_activation="Use Antigravity native planning when available; retain the portable worktree fallback.")
+        native_planning = _explicit_capability(values, "AGY", "PLANNING", default=True)
+        native_worktree = _explicit_capability(values, "AGY", "WORKTREE")
+        native_subagents = _explicit_capability(values, "AGY", "SUBAGENTS", default=True)
+        base.update(native_planning=native_planning, native_worktree=native_worktree,
+                    native_subagents=native_subagents, tool_support=("plan_mode", "subagents", "tools"),
+                    worktree_activation=("Use Antigravity native worktree capability."
+                                         if native_worktree else "Use Antigravity native planning when available; retain the portable worktree fallback."))
     elif runtime == "copilot":
-        base.update(tool_support=("prompt",),
-                    worktree_activation="Copilot CLI has no confirmed native worktree facility; use the portable fallback.")
+        native_planning = _explicit_capability(values, "COPILOT", "PLANNING", default=True)
+        native_worktree = _explicit_capability(values, "COPILOT", "WORKTREE")
+        native_subagents = _explicit_capability(values, "COPILOT", "SUBAGENTS", default=True)
+        base.update(native_planning=native_planning, native_worktree=native_worktree,
+                    native_subagents=native_subagents, tool_support=("plan_mode", "subagents", "tools"),
+                    worktree_activation=("Use Copilot native worktree capability."
+                                         if native_worktree else "Copilot native worktree capability is not confirmed; use the portable fallback."))
     elif runtime == "codex":
-        native_worktree = values.get("CODEX_NATIVE_WORKTREE", "").lower() in {"1", "true", "yes"}
-        base.update(native_worktree=native_worktree, tool_support=("plan_mode", "tools"),
+        native_planning = _explicit_capability(values, "CODEX", "PLANNING")
+        native_worktree = _explicit_capability(values, "CODEX", "WORKTREE")
+        native_subagents = _explicit_capability(values, "CODEX", "SUBAGENTS")
+        base.update(native_planning=native_planning, native_worktree=native_worktree,
+                    native_subagents=native_subagents, tool_support=("plan_mode", "tools"),
                     worktree_activation=(
                         "Activate Codex native worktree mode before creating files; do not create a portable worktree."
                         if native_worktree else
