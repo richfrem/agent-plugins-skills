@@ -10818,6 +10818,30 @@
       "dst": "plugins/plugin-manager/skills/plugin-pruner/references/acceptance-criteria.md",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "plugins/plugin-manager/references/installer-cli-guide.md",
+      "dst": "plugins/plugin-manager/skills/plugin-installer/references/installer-cli-guide.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/plugin-manager/references/remover-cli-guide.md",
+      "dst": "plugins/plugin-manager/skills/plugin-remover/references/remover-cli-guide.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/plugin-manager/references/syncer-cli-guide.md",
+      "dst": "plugins/plugin-manager/skills/plugin-syncer/references/syncer-cli-guide.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/plugin-manager/references/acceptance-criteria.md",
+      "dst": "plugins/plugin-manager/skills/plugin-remover/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": ""
     }
   ]
 }

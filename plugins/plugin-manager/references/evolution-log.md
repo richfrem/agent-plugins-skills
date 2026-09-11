@@ -49,6 +49,7 @@
 | 2026-09-11 | Tier 1 | Feature: Install-time granular skill selection and retention seeding | Added step-through skill customization TUI (toggle all with 'a', individual with space), --skills flag in installer, --select-skills flag in add, and automatic retention manifest updates | Evolution | SUCCESS |
 | 2026-09-11 | Tier 1 | Task 4: Scaffold plugin-pruner skill and wire symlinks | Created lean progressive disclosure router (35 lines), evals, retention-workflow reference, CLI guide, registered in symlinks.json, and updated plugin.yaml | Evolution | SUCCESS |
 | 2026-09-11 | Tier 1 | Task 6: Enforce retention manifest in sync_with_inventory | Added automatic post-sync pruning enforcement using prune_installed_skills.py when plugin-retention.json exists, with --no-prune bypass | Evolution | SUCCESS |
+| 2026-09-11 | Tier 1 | Task 7: Refactor plugin-manager skills to progressive disclosure routers | Refactored plugin-installer (41 lines), plugin-remover (35 lines), and plugin-syncer (34 lines) to lean routers with CLI guides in references | Evolution | SUCCESS |
 
 
 
