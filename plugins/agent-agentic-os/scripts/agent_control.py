@@ -206,6 +206,25 @@ class ControlPlane:
         which self-heals FK-corrupted or legacy schemas."""
         self._persistence.ensure_schema()
 
+    def create_implementation_controller(
+        self,
+        dispatch,
+        review,
+        fix=None,
+        **kwargs,
+    ):
+        """Return the canonical persistent implementation runtime for this control plane.
+
+        The queue lives beside the control-plane database, so callers no longer need to
+        import the loop primitive or invent a queue location. Execution callbacks remain
+        supplied by the active native/portable runtime.
+        """
+        from control_plane.implementation_loop import create_default_controller
+
+        db_path = self.db_path or (Path.cwd() / "context" / "control_plane.db")
+        queue_path = Path(db_path).parent / "implementation-queue.json"
+        return create_default_controller(queue_path, dispatch, review, fix, **kwargs)
+
     def resolve_recommended_model(self, runtime_tool: str, tier: str = "low") -> Dict[str, str]:
         """Resolves model recommendation and model_id from plugins/cli-agents/references/.
         Full resolution (tool-alias, tier strategy, fallback) is delegated to
@@ -370,7 +389,9 @@ class ControlPlane:
                     return validate_implementation_ledger(plan_path, root)
             return (
                 f"Implementation plan ledger missing for task '{task_id}': "
-                f"expected docs/plans/{task_id}-implementation-plan.md."
+                f"expected docs/plans/{task_id}-implementation-plan.md with a fenced JSON "
+                "Implementation Task Ledger; add COMPLETE entries with evidence and existing "
+                "artifact paths before retrying VERIFY_EXIT -> RETROSPECTIVE."
             )
 
         return {

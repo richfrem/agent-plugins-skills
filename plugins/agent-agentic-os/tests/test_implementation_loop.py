@@ -9,6 +9,8 @@ if str(SCRIPTS_DIR) not in sys.path:
 from control_plane.implementation_loop import (
     ImplementationController,
     PersistentTaskQueue,
+    TestCadence,
+    create_default_controller,
     run_implementation_session,
 )
 
@@ -122,3 +124,60 @@ def test_controller_stops_at_exit_gate_and_never_transitions(tmp_path):
     assert transitions == ["exit"]
     assert [event.kind for event in events].count("EXIT_VERIFICATION") == 1
     assert all("TRANSITION" not in event.kind for event in events)
+
+
+def test_default_controller_factory_uses_persistent_queue(tmp_path):
+    controller = create_default_controller(
+        tmp_path / "queue.json",
+        lambda round_number, task: "artifact",
+        lambda round_number, task, artifact: ("PASS", "clean"),
+    )
+    assert isinstance(controller, ImplementationController)
+    assert controller.queue.path == tmp_path / "queue.json"
+
+
+def test_control_plane_exposes_canonical_implementation_runtime(tmp_path):
+    from agent_control import ControlPlane
+
+    cp = ControlPlane(db_path=tmp_path / "context" / "control_plane.db")
+    controller = cp.create_implementation_controller(
+        lambda round_number, task: "artifact",
+        lambda round_number, task, artifact: ("PASS", "clean"),
+    )
+    assert isinstance(controller, ImplementationController)
+    assert controller.queue.path == tmp_path / "context" / "implementation-queue.json"
+
+
+def test_test_cadence_rejects_duplicate_final_suite_and_micro_final():
+    cadence = TestCadence()
+    cadence.record("focused")
+    cadence.record("integration")
+    cadence.record("full")
+    try:
+        cadence.record("full")
+        assert False, "duplicate final suite must be rejected"
+    except ValueError as exc:
+        assert "only once" in str(exc)
+
+    cadence = TestCadence()
+    try:
+        cadence.record("full")
+        assert False, "final suite before integration must be rejected"
+    except ValueError as exc:
+        assert "integration" in str(exc)
+
+
+def test_controller_verification_api_enforces_cadence(tmp_path):
+    controller = create_default_controller(
+        tmp_path / "queue.json",
+        lambda round_number, task: "artifact",
+        lambda round_number, task, artifact: ("PASS", "clean"),
+    )
+    assert controller.run_verification("focused", lambda: "focused-ok") == "focused-ok"
+    assert controller.run_verification("integration", lambda: "integration-ok") == "integration-ok"
+    assert controller.run_verification("full", lambda: "full-ok") == "full-ok"
+    try:
+        controller.run_verification("full", lambda: "duplicate")
+        assert False, "duplicate full suite must be rejected"
+    except ValueError as exc:
+        assert "only once" in str(exc)
