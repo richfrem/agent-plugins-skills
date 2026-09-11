@@ -438,7 +438,8 @@ class ControlPlane:
             "check_implementation_completeness": check_implementation_completeness,
         }
 
-    def transition(self, task_id: str, to_state: str, actor: str, reason: str):
+    def transition(self, task_id: str, to_state: str, actor: str, reason: str,
+                   force_close: bool = False, human_authorization: Optional[str] = None):
         """INTERNAL USE ONLY: Validates and applies a deterministic state transition according to the canonical DAG.
 
         DEPRECATION NOTICE: This method is strictly internal and functional ONLY for deterministic transitions
@@ -466,6 +467,10 @@ class ControlPlane:
         if current_state is None:
             raise ValueError(f"Task not found: {task_id}")
 
+        if to_state == "DONE":
+            raise PersistenceInvariantViolation(
+                "Transition to DONE requires explicit human authorization FORCE_CLOSE via coordinate_transition."
+            )
         self._state_machine.validate_adjacency(task_id, current_state, to_state)
 
         if current_state == "INTERVIEW" and to_state != "INTERVIEW":
@@ -501,6 +506,8 @@ class ControlPlane:
         skip_decision: Optional[Tuple[str, str]] = None,
         skip_review: bool = False,
         skip_reason: Optional[str] = None,
+        force_close: bool = False,
+        human_authorization: Optional[str] = None,
     ) -> TransitionRecord:
         """Public orchestration entry point: coordinates transition via TransitionCoordinator."""
         if not hasattr(self, "_transition_registry"):
@@ -517,11 +524,22 @@ class ControlPlane:
             skip_decision=skip_decision,
             skip_review=skip_review,
             skip_reason=skip_reason,
+            force_close=force_close,
+            human_authorization=human_authorization,
         )
 
     def commit_authorized_transition(self, commit_request: TransitionCommitRequest) -> TransitionRecord:
         """Internal atomic commit gate: passes normalized TransitionCommitRequest to PersistencePort.
         PersistencePort re-validates persistable invariants in SQLite transaction and atomically commits."""
+        if (commit_request.to_state == "DONE" and commit_request.expected_from_state != "RETROSPECTIVE"
+            and not (
+            commit_request.force_close and commit_request.actor == "human"
+            and any(d.question_id == "force_close_authorization" and d.answer == "FORCE_CLOSE"
+                    and d.actor == "human" for d in commit_request.staged_decisions)
+        )):
+            raise PersistenceInvariantViolation(
+                "Transition to DONE requires explicit human authorization FORCE_CLOSE."
+            )
         if (
             commit_request.expected_from_state == "INTERVIEW"
             and commit_request.to_state != "INTERVIEW"

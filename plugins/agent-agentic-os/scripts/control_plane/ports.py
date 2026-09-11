@@ -74,6 +74,7 @@ class TransitionCommitRequest:
     reason: str
     staged_decisions: List[TransitionDecision]
     staged_receipts: List[Dict[str, Any]]
+    force_close: bool = False
 
 
 @dataclass(frozen=True)

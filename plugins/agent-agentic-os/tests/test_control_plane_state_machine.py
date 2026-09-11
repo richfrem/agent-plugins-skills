@@ -62,6 +62,27 @@ def test_validate_adjacency_accepts_every_legal_edge():
         for to_state in to_states:
             sm.validate_adjacency("t1", from_state, to_state)  # must not raise
 
+def test_every_non_done_state_has_human_force_close_edge():
+    for state in CANONICAL_STATES:
+        if state != "DONE":
+            assert "DONE" in ALLOWED_TRANSITIONS[state]
+
+def test_direct_force_close_requires_explicit_human_authorization(tmp_path):
+    from agent_control import ControlPlane
+    from control_plane.ports import PersistenceInvariantViolation
+    cp = ControlPlane(db_path=tmp_path / "control_plane.db")
+    cp.create_task(task_id="force-1", title="Force close", runtime_tool="claude")
+    with pytest.raises(PersistenceInvariantViolation, match="explicit human authorization"):
+        cp.transition("force-1", "DONE", "agent", "close now")
+
+def test_human_authorized_force_close_is_persisted_from_any_state(tmp_path):
+    from agent_control import ControlPlane
+    cp = ControlPlane(db_path=tmp_path / "control_plane.db")
+    cp.create_task(task_id="force-2", title="Force close", runtime_tool="claude")
+    record = cp.coordinate_transition("force-2", "DONE", "human", "Emergency close", force_close=True, human_authorization="FORCE_CLOSE")
+    assert record.from_state == "INTAKE"
+    assert cp.get_task("force-2")["state"] == "DONE"
+
 
 def test_control_plane_transition_delegates_to_state_machine(tmp_path, monkeypatch):
     """Integration: ControlPlane.transition() calls self._state_machine.validate_known_state()

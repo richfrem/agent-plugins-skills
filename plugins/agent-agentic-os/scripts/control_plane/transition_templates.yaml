@@ -1709,3 +1709,33 @@ templates:
   authority:
     type: human_decision
     explanation: A human must provide a genuine, interactive justification before a drifted task record can be reset to INTAKE.
+- transition_id: force_close_to_done
+  from_state: "*"
+  to_state: DONE
+  purpose: Close a task from any active lifecycle state when a human explicitly authorizes force closure.
+  next_steps_hint: "Provide the exact human authorization FORCE_CLOSE interactively, then commit this transition."
+  checklist:
+  - Current task state is persisted and matches the requested source occupancy
+  - Explicit human force-close authorization is recorded
+  required_artifacts: []
+  deterministic_checks: []
+  human_questions:
+  - question_id: force_close_authorization
+    question: Type FORCE_CLOSE to authorize closing this task immediately.
+    options:
+    - FORCE_CLOSE
+    default: ''
+    accepted_answers:
+    - FORCE_CLOSE
+  approval:
+    required: false
+    approver_role: human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released: []
+  capabilities_prohibited: []
+  denial_message: 'Force close denied: explicit human authorization FORCE_CLOSE is required.'
+  authority:
+    type: human_decision
+    explanation: Force closure is available from any non-DONE state only after an interactive human authorization.

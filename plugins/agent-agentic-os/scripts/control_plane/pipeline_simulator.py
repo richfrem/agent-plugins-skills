@@ -9,6 +9,7 @@ from typing import Any, Dict, Optional
 
 from agent_control import ControlPlane
 from control_plane.coordinator import TransitionCoordinator, TransitionCoordinatorError
+from control_plane.ports import PersistenceInvariantViolation
 from control_plane.registry import TransitionRegistry
 from control_plane.state_machine import ALLOWED_TRANSITIONS, CANONICAL_STATES, InvalidStateTransition
 from control_plane.wrappers.record_retrospective import record_retrospective
@@ -86,6 +87,17 @@ class PipelineSimulator:
             to_state=to_state,
             actor="simulator",
             reason=f"simulator {classification.lower()} interview route",
+        )
+
+    def force_close(self, task_id: str, *, authorized: bool = False):
+        """Exercise the explicit human force-close boundary."""
+        return self.control_plane.coordinate_transition(
+            task_id=task_id,
+            to_state="DONE",
+            actor="human" if authorized else "simulator",
+            reason="simulator force close",
+            force_close=authorized,
+            human_authorization="FORCE_CLOSE" if authorized else None,
         )
 
     def run_trivial_interview_fast_track(self, task_id: str) -> Dict[str, Any]:
@@ -457,7 +469,7 @@ class PipelineSimulator:
         before_receipts = len(self.control_plane.get_verification_receipts(task_id))
         try:
             self.control_plane.transition(task_id, "DONE", "simulator", "illegal edge round")
-        except InvalidStateTransition:
+        except (InvalidStateTransition, PersistenceInvariantViolation):
             pass
         after_state = self.control_plane._persistence.read_current_state(task_id)
         rounds.append({

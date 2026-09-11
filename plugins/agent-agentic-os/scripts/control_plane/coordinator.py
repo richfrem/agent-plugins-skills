@@ -95,6 +95,8 @@ class TransitionCoordinator:
         skip_decision: Optional[Tuple[str, str]] = None,  # (skip_chosen, reason)
         skip_review: bool = False,
         skip_reason: Optional[str] = None,
+        force_close: bool = False,
+        human_authorization: Optional[str] = None,
     ) -> TransitionRecord:
         """Coordinates and commits a transition according to the template contract."""
         # 1. State machine validation
@@ -108,6 +110,14 @@ class TransitionCoordinator:
         if current_state is None:
             raise TransitionCoordinatorError(f"Task not found: {task_id}")
 
+        if to_state == "DONE" and not force_close and current_state != "RETROSPECTIVE":
+            raise TransitionCoordinatorError(
+                "Force close denied: explicit human authorization FORCE_CLOSE is required."
+            )
+        if force_close and (actor != "human" or human_authorization != "FORCE_CLOSE"):
+            raise TransitionCoordinatorError(
+                "Force close denied: explicit human authorization FORCE_CLOSE is required."
+            )
         self._cp._state_machine.validate_adjacency(task_id, current_state, to_state)
 
         # 2. Resolve template from registry
@@ -250,6 +260,8 @@ class TransitionCoordinator:
 
         # 6. Collect human questions sequentially
         answers = dict(provided_answers or {})
+        if force_close:
+            answers["force_close_authorization"] = "FORCE_CLOSE"
         persisted_answers = dict(ctx.get("stage_answers", {}))
         stage_answers = dict(persisted_answers)
         questions_to_ask = []
@@ -297,7 +309,7 @@ class TransitionCoordinator:
                 chosen_ans = answers[qid]
                 # Non-interactive provided_answers are supplied programmatically by an agent,
                 # not by a human at an interactive prompt.
-                decision_actor = "agent"
+                decision_actor = "human" if force_close and qid == "force_close_authorization" else "agent"
             else:
                 # Non-interactive without provided answer -> must fail closed despite default
                 raise TransitionCoordinatorError(
@@ -399,6 +411,7 @@ class TransitionCoordinator:
             reason=reason,
             staged_decisions=staged_decisions,
             staged_receipts=staged_receipts,
+            force_close=force_close,
         )
 
         # 9. Atomic commit via ControlPlane -> SqlitePersistenceAdapter
