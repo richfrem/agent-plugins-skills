@@ -1060,16 +1060,26 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     total_items = sum(len(paths) for paths in plan.values())
 
+    # Detect re-enabled skills that are missing from .agents/ (need reinstall)
+    missing_enabled: List[str] = []
+    for skill_name, retained in skills_state.items():
+        if retained:
+            skill_path = skills_dir / skill_name
+            if not skill_path.exists():
+                missing_enabled.append(skill_name)
+
     print()
     print(bold("Component Pruning Plan Summary:"))
     print(f"  Skills to remove:  {len(plan['skills'])}")
     print(f"  Rules to remove:   {len(plan['rules'])}")
     print(f"  Agents to remove:  {len(plan['agents'])}")
     print(f"  Total items:       {total_items}")
+    if missing_enabled:
+        print(f"  Skills to reinstall (enabled but missing): {len(missing_enabled)}")
     print()
 
-    if total_items == 0:
-        print(green("Environment is in sync with retention manifest. Nothing to prune."))
+    if total_items == 0 and not missing_enabled:
+        print(green("Environment is in sync with retention manifest. Nothing to do."))
         return 0
 
     for cat in ("skills", "rules", "agents"):
@@ -1082,9 +1092,38 @@ def main(argv: Optional[List[str]] = None) -> int:
                 except ValueError:
                     rel = p
                 print(f"    - {rel}")
+
+    if missing_enabled:
+        print(bold("  Skills to reinstall:"))
+        for s in sorted(missing_enabled):
+            print(f"    + {s}")
     print()
 
-    # Dry-run check
+    # Interactive mode: apply immediately after confirmation prompt
+    if args.interactive and not args.dry_run:
+        is_tty = sys.stdin.isatty() and sys.stdout.isatty()
+        apply = False
+        if is_tty:
+            try:
+                answer = input("Apply these changes now? [y/N]: ").strip().lower()
+                apply = answer == "y"
+            except (KeyboardInterrupt, EOFError):
+                print()
+                apply = False
+        if apply:
+            if total_items > 0:
+                deleted = execute_pruning(plan, root=root_path, dry_run=False)
+                print(green(f"Removed {deleted} items from .agents/ environment."))
+            if missing_enabled:
+                print()
+                print(cyan("The following skills are enabled in the manifest but not installed."))
+                print(cyan("Reinstall them with:"))
+                print(f"  python3 plugins/plugin-manager/scripts/plugin_add.py plugins/ -y")
+        else:
+            print(cyan("[DRY RUN] No changes applied."))
+        return 0
+
+    # Non-interactive --execute path (unchanged)
     if not args.execute or args.dry_run:
         print(
             cyan(
@@ -1095,8 +1134,8 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     # Execute confirmation
     if args.confirm_token != CONFIRM_TOKEN:
-        is_interactive = sys.stdin.isatty() and sys.stdout.isatty()
-        if is_interactive:
+        is_interactive_shell = sys.stdin.isatty() and sys.stdout.isatty()
+        if is_interactive_shell:
             try:
                 entered = input(
                     f"Are you sure you want to prune {total_items} items? Type '{CONFIRM_TOKEN}' to confirm: "
