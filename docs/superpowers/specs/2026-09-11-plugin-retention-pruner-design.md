@@ -92,19 +92,25 @@ The manifest lives at the repository root and is tracked in version control:
 
 ### 3.1 Deterministic Script (`prune_installed_skills.py`)
 Located canonically at `plugins/plugin-manager/scripts/prune_installed_skills.py`:
-1. **Safety Confirmation**: Requires `--confirm-token PRUNE-INSTALLED-SKILLS` when `--execute` is specified; otherwise operates strictly in dry-run mode.
-2. **Protected Defaults**: Protects core management tools (`plugin-installer`, `plugin-remover`, `plugin-syncer`, `plugin-pruner`, `symlink-manager`, `worktree-manager`) from deletion.
-3. **Dependency Advisory Engine**:
+1. **Interactive Multiselect TUI (Plugin-by-Plugin / Grouped)**:
+   - Uses the established zero-dependency terminal TUI (`_read_key`, ANSI rendering, arrow keys, space-to-toggle, `/` search, `a` toggle-all, `Enter` confirm) mirroring `plugin_add.py` and `plugin_remove.py`.
+   - Iterates plugin by plugin (or presents a grouped view):
+     - Displays all skills, rules, and agents owned by that plugin (sourced from `.agents/ownership/<plugin>.json`).
+     - Pre-checks checkboxes (`[x]`) for components currently marked as retained in `plugin-retention.json`.
+     - The user navigates with arrow keys and hits `Space` to untoggle skills or rules they no longer need.
+2. **Safety Confirmation & Execution Token**: Requires `--confirm-token PRUNE-INSTALLED-SKILLS` when `--execute` is specified; otherwise operates in dry-run mode or prompts for interactive confirmation.
+3. **Protected Defaults**: Protects core management tools (`plugin-installer`, `plugin-remover`, `plugin-syncer`, `plugin-pruner`, `symlink-manager`, `worktree-manager`) from deletion.
+4. **Dependency Advisory Engine**:
    - Parses `SKILL.md` content and frontmatter of all retained skills.
    - Identifies referenced rules in `.agent/rules/` or `rules/`.
    - Identifies companion skills referenced in prompts or instructions.
-   - Interactive Mode: Prompts the user when a selected removal breaks an active reference:
+   - When a user untoggles a component that another retained component references, the TUI renders an inline advisory:
      `[ADVISORY] Rule 'plugin-architecture-policy.md' is referenced by retained skill 'plugin-pruner'. Retain this rule? [Y/n]`
-4. **Physical Pruning**:
+5. **Physical Pruning & Lock Cleanup**:
    - Deletes unselected directories in `.agents/skills/`.
    - Deletes unselected markdown files in `.agent/rules/`.
    - Deletes unselected agent manifests in `.agents/agents/`.
-   - Updates `skills-lock.json` to keep tracking clean.
+   - Updates `skills-lock.json` and `plugin-retention.json`.
 
 ### 3.2 Hub-and-Spoke & Symlink Layout
 Per ADR-002 and ADR-003:
