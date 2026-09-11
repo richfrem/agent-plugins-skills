@@ -125,9 +125,9 @@ permission by itself.
 | ROLLED_BACK | ESCALATED |
 | ROLLED_BACK | PLAN_REVIEW |
 | ROLLED_BACK | INTAKE |
-| ESCALATED | DONE |
 | ESCALATED | INTAKE |
 | ESCALATED | PLAN_REVIEW |
+| ESCALATED | DONE |
 
 The canonical diagrams provide visual views of this same inventory:
 

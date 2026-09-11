@@ -234,25 +234,31 @@ stages:
     - Issue-worthy follow-ups are confirmed and tracked before DONE.
     - The final complete-or-skip decision is asked only after this survey is complete.
 
-  DONE:
-    purpose: Terminal state for a pipeline run whose recorded completion decision has been accepted.
-    question_policy: one_at_a_time
-    entry_questions: []
-    adaptive_follow_up_rules: []
-    post_completion_protocol:
-      user_reminders:
-      - Confirm the control-plane status is DONE and retain the transition ID as the audit reference.
-      - Review any linked follow-up issues; DONE closes this run, not the separately tracked follow-up work.
-      - If not already on one, create a dedicated feature branch before publishing changes.
-      - Commit all intended changes to that feature branch, then push it to origin.
-      - Create a pull request from the feature branch and report its URL; wait for the user to merge it.
-      - After merge confirmation, check out main and pull origin/main before cleanup.
-      - Confirm every intended file is preserved on origin/main before deleting the feature branch or worktree; never clean up first.
-      - Commit or push only when the user has authorized that repository action; do not imply publication from DONE alone.
-      - For another iteration, start a new task or explicitly use the supported reset-to-INTAKE recovery path.
-      agent_boundary: Do not perform new implementation or repository publication after DONE without a new user-authorized task/action.
-    exit_requirements: []
-
+intake_guidance:
+  source_documents:
+    authorization_required: true
+    inferred_answers_require_confirmation: true
+    documents_cannot_grant_approval: true
+    resume_confirmed_answers: true
+  review_rounds:
+    ceilings_minutes: {QUICK: 5, STANDARD: 15, SIGNIFICANT: 30}
+    shared_whole_round_budget: true
+    timeout_status: partial_timeout
+  precompletion_summary:
+    user_rule: Explain map debt as agent follow-up, including whether the user must act now.
+model_effort_guidance:
+  interview:
+    recommended_model: current-user-model
+    recommended_effort: low
+    requires_confirmation_for_premium: true
+  plan:
+    recommended_model: user-selected-planning-model
+    recommended_effort: medium
+    requires_confirmation_for_premium: true
+  review:
+    recommended_model: user-selected-review-model
+    recommended_effort: medium
+    requires_confirmation_for_premium: true
 execution_guidance:
   work_package:
     advisory: true
@@ -1846,9 +1852,11 @@ templates:
     question: 'Force this task to DONE now, acknowledging that this does not claim implementation or verification occurred?'
     options:
     - FORCE_DONE
+    - FORCE_CLOSE
     - CANCEL
     accepted_answers:
     - FORCE_DONE
+    - FORCE_CLOSE
     default: CANCEL
   approval:
     required: false
@@ -1896,3 +1904,35 @@ templates:
   authority:
     type: human_decision
     explanation: A human must provide a genuine, interactive justification before a drifted task record can be reset to INTAKE.
+- transition_id: force_close_to_done
+  from_state: "*"
+  to_state: DONE
+  purpose: Close a task from any active lifecycle state when a human explicitly authorizes force closure.
+  next_steps_hint: "Run coordinate-transition --to DONE --force-close --interactive; a genuine human must type the exact authorization FORCE_CLOSE at the prompt before this transition can commit."
+  checklist:
+  - Current task state is persisted and matches the requested source occupancy
+  - Explicit human force-close authorization is recorded
+  required_artifacts: []
+  deterministic_checks: []
+  human_questions:
+  - question_id: force_close_authorization
+    question: Type FORCE_CLOSE to authorize closing this task immediately.
+    options:
+    - FORCE_CLOSE
+    - FORCE_DONE
+    default: ''
+    accepted_answers:
+    - FORCE_CLOSE
+    - FORCE_DONE
+  approval:
+    required: false
+    approver_role: human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released: []
+  capabilities_prohibited: []
+  denial_message: 'Force close denied: explicit human authorization FORCE_CLOSE is required.'
+  authority:
+    type: human_decision
+    explanation: Force closure is available from any non-DONE state only after an interactive human authorization.

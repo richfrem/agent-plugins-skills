@@ -25,6 +25,64 @@ from typing import Dict, Any, List, Optional
 from capability_probe import detect_runtime
 
 
+def prepare_source_assisted_answers(
+    question_ids: List[str],
+    sources: List[Dict[str, Any]],
+    confirmed_answers: Optional[Dict[str, str]] = None,
+    approval_question_ids: Optional[set[str]] = None,
+) -> Dict[str, Any]:
+    """Return document-derived candidates without treating documents as consent."""
+    confirmed = dict(confirmed_answers or {})
+    approvals = set(approval_question_ids or set())
+    candidates: Dict[str, Dict[str, Any]] = {}
+    conflicts: Dict[str, List[str]] = {}
+    rejected_authority: Dict[str, str] = {}
+    ignored_sources: List[str] = []
+    values: Dict[str, List[tuple[str, bool, str]]] = {qid: [] for qid in question_ids}
+    for source in sources:
+        path = str(source.get("path", "<unknown>"))
+        if not source.get("authorized", False):
+            ignored_sources.append(path)
+            continue
+        for qid, answer in (source.get("answers") or {}).items():
+            if qid not in values or not str(answer).strip():
+                continue
+            if qid in approvals:
+                rejected_authority[qid] = "document_cannot_grant_approval"
+                continue
+            values[qid].append((str(answer), bool(source.get("stale", False)), path))
+    for qid, entries in values.items():
+        if qid in confirmed:
+            continue
+        unique = {answer for answer, _, _ in entries}
+        if len(unique) > 1:
+            conflicts[qid] = sorted(unique)
+        elif len(unique) == 1:
+            answer, stale, path = entries[0]
+            candidates[qid] = {"answer": answer, "source": path, "stale": stale,
+                               "requires_human_confirmation": True}
+    unresolved = [qid for qid in question_ids if qid not in confirmed and qid not in candidates]
+    return {"candidates": candidates, "conflicts": conflicts, "unresolved": unresolved,
+            "confirmed_answers": confirmed, "ignored_sources": ignored_sources,
+            "rejected_authority": rejected_authority}
+
+
+def review_round_budget(complexity: str, elapsed_minutes: float, reviewer_count: int) -> Dict[str, Any]:
+    ceilings = {"QUICK": 5, "STANDARD": 15, "SIGNIFICANT": 30}
+    ceiling = ceilings[complexity.upper()]
+    return {"ceiling_minutes": ceiling, "scope": "whole_round", "reviewer_count": reviewer_count,
+            "status": "partial_timeout" if elapsed_minutes > ceiling else "within_budget"}
+
+
+def summarize_precompletion_gate(gate: Dict[str, bool]) -> Dict[str, Any]:
+    map_debt = any((gate.get("existing_capability_failed_or_bypassed"), gate.get("next_agent_friction_found")))
+    summary = "The machine compatibility check found no follow-up action for you."
+    if map_debt:
+        summary = ("The machine compatibility check recorded map debt for future agents; this is not a request for you to do anything now. "
+                   "It means the team should preserve the finding and address it in a later improvement package.")
+    return {"machine_gate": {"MAP_DEBT": map_debt}, "user_summary": summary}
+
+
 def detect_intake_mode() -> str:
     """
     Detects whether the runtime environment possesses native interactive intake capabilities.

@@ -17,6 +17,7 @@ Purpose:
 
 import hashlib
 import sys
+from dataclasses import replace
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, TextIO, Tuple
 from control_plane.registry import TransitionRegistry, TransitionTemplate, TransitionRegistryError
@@ -110,10 +111,44 @@ class TransitionCoordinator:
         if current_state is None:
             raise TransitionCoordinatorError(f"Task not found: {task_id}")
 
+        # Validate the requested edge before authorization policy.  This keeps
+        # illegal edges observable as InvalidStateTransition rather than
+        # masking them as an authorization denial.
         self._cp._state_machine.validate_adjacency(task_id, current_state, to_state)
 
+        if to_state == "DONE" and not force_close and current_state != "RETROSPECTIVE":
+            raise TransitionCoordinatorError(
+                "Force close denied: explicit human authorization FORCE_CLOSE is required."
+            )
+        if force_close and (
+            actor != "human" or human_authorization not in ("FORCE_CLOSE", "FORCE_DONE") or not interactive
+        ):
+            raise TransitionCoordinatorError(
+                "Force close denied: explicit interactive human authorization FORCE_CLOSE is required."
+            )
+
         # 2. Resolve template from registry
+        # Force-close is an explicit authorization override. Resolve its
+        # wildcard contract deliberately so an exact ordinary DONE template
+        # (notably RETROSPECTIVE -> DONE) cannot shadow the override.
         template = self._registry.get_template(current_state, to_state)
+        if force_close and to_state == "DONE":
+            template = (
+                self._registry.get_template_by_id(f"force_close_to_done__from_{current_state}")
+                or self._registry.get_template_by_id(f"human_force_done__from_{current_state}")
+            )
+            if template is None:
+                prototype = next(
+                    (candidate for candidate in self._registry.get_all_templates()
+                     if candidate.transition_id.startswith(("force_close_to_done__from_", "human_force_done__from_"))),
+                    None,
+                )
+                if prototype is not None:
+                    template = replace(
+                        prototype,
+                        from_state=current_state,
+                        transition_id=f"human_force_done__from_{current_state}",
+                    )
         if not template:
             raise TransitionCoordinatorError(
                 f"No template registered for transition ({current_state} -> {to_state})."
@@ -234,6 +269,10 @@ class TransitionCoordinator:
             checklist_status.append((True, chk_item))
 
         for check_id in template.deterministic_checks:
+            if force_close:
+                # A validated force-close bypasses ordinary completion gates;
+                # adjacency and explicit human authorization remain enforced.
+                continue
             if check_id in ("interview_trivial_complete", "interview_standard_complete"):
                 deferred_checks.append(check_id)
                 continue
@@ -262,6 +301,8 @@ class TransitionCoordinator:
 
         # 6. Collect human questions sequentially
         answers = dict(provided_answers or {})
+        if force_close:
+            answers["force_close_authorization"] = "FORCE_CLOSE"
         persisted_answers = dict(ctx.get("stage_answers", {}))
         stage_answers = dict(persisted_answers)
         questions_to_ask = []
@@ -308,8 +349,8 @@ class TransitionCoordinator:
             elif qid in answers:
                 chosen_ans = answers[qid]
                 # Non-interactive provided_answers are supplied programmatically by an agent,
-                # not by a human at an interactive prompt, unless explicitly authorized as human force_close.
-                decision_actor = "human" if (force_close and actor == "human") else "agent"
+                # not by a human at an interactive prompt.
+                decision_actor = "human" if force_close and qid == "force_close_authorization" else "agent"
             else:
                 # Non-interactive without provided answer -> must fail closed despite default
                 raise TransitionCoordinatorError(
@@ -411,6 +452,8 @@ class TransitionCoordinator:
             reason=reason,
             staged_decisions=staged_decisions,
             staged_receipts=staged_receipts,
+            force_close=force_close,
+            interactive_human_authorization=(force_close and interactive and actor == "human"),
         )
 
         # 9. Atomic commit via ControlPlane -> SqlitePersistenceAdapter

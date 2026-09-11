@@ -277,6 +277,37 @@ CREATE TABLE IF NOT EXISTS delegation_verifier_receipts (
     created_at REAL NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS premium_consents (
+    consent_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    task_id TEXT NOT NULL REFERENCES tasks(task_id) ON DELETE CASCADE,
+    stage TEXT NOT NULL,
+    round_id TEXT NOT NULL,
+    model_id TEXT NOT NULL,
+    actor TEXT NOT NULL CHECK(actor = 'human'),
+    consented_at REAL NOT NULL,
+    UNIQUE(task_id, stage, round_id, model_id)
+);
+
+CREATE TABLE IF NOT EXISTS source_assisted_answer_candidates (
+    candidate_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    task_id TEXT NOT NULL REFERENCES tasks(task_id) ON DELETE CASCADE,
+    stage TEXT NOT NULL,
+    round_id TEXT NOT NULL,
+    question_id TEXT NOT NULL,
+    answer TEXT NOT NULL,
+    source_path TEXT NOT NULL,
+    source_authorized INTEGER NOT NULL CHECK(source_authorized IN (0, 1)),
+    confirmation_status TEXT NOT NULL DEFAULT 'pending'
+        CHECK(confirmation_status IN ('pending', 'confirmed')),
+    confirmed_by TEXT,
+    confirmed_at REAL,
+    created_at REAL NOT NULL,
+    CHECK(
+        (confirmation_status = 'pending' AND confirmed_by IS NULL AND confirmed_at IS NULL)
+        OR (confirmation_status = 'confirmed' AND confirmed_by = 'human' AND confirmed_at IS NOT NULL)
+    )
+);
+
 CREATE TABLE IF NOT EXISTS schema_version (
     version INTEGER NOT NULL
 );
@@ -306,6 +337,8 @@ CREATE INDEX IF NOT EXISTS idx_tasks_state ON tasks(state);
 CREATE INDEX IF NOT EXISTS idx_transitions_task ON task_transitions(task_id);
 CREATE INDEX IF NOT EXISTS idx_decisions_lookup ON transition_decisions(task_id, source_occupancy_transition_id);
 CREATE INDEX IF NOT EXISTS idx_retrospective_follow_ups_entry ON retrospective_follow_ups(retrospective_id);
+CREATE INDEX IF NOT EXISTS idx_source_answer_candidates_scope
+    ON source_assisted_answer_candidates(task_id, stage, round_id, confirmation_status);
 
 -- issue-523 & pipeline-guard: DB-level backstop enforcing legal state transitions and
 -- required human decisions on state transitions. Checks both adjacency-legality (valid_transitions)
@@ -331,6 +364,16 @@ WHEN NEW.state != OLD.state
                 AND trim(td.answer) != ''
                 AND (td.actor = 'human' OR (rq.question_id = 'retrospective_decision' AND td.actor = 'agent'))
                 AND td.consumed_at IS NULL
+          )
+          AND NOT EXISTS (
+              SELECT 1 FROM transition_decisions force_td
+              WHERE force_td.task_id = OLD.task_id
+                AND force_td.from_state = OLD.state
+                AND force_td.to_state = NEW.state
+                AND force_td.question_id IN ('force_close_authorization', 'human_force_done_confirmation')
+                AND force_td.answer IN ('FORCE_CLOSE', 'FORCE_DONE')
+                AND force_td.actor = 'human'
+                AND force_td.consumed_at IS NULL
           )
     )
  )
@@ -360,7 +403,7 @@ BEGIN
 END;
 """
 
-CURRENT_SCHEMA_VERSION = 8
+CURRENT_SCHEMA_VERSION = 9
 
 # issue-523: the only state ControlPlane.create_task() ever seeds a new task at. Not derived
 # from TransitionRegistry (which only declares state-to-state edges among existing states, not
@@ -379,6 +422,8 @@ CHILD_TABLES = [
     "delegation_contracts",
     "delegation_receipts",
     "delegation_verifier_receipts",
+    "premium_consents",
+    "source_assisted_answer_candidates",
 ]
 ALL_REBUILD_TABLES = ["tasks"] + CHILD_TABLES
 
@@ -772,8 +817,18 @@ class SqlitePersistenceAdapter(PersistencePort):
                                 AND td.question_id = rq.question_id
                                 AND td.answer IS NOT NULL
                                 AND trim(td.answer) != ''
-                              AND (td.actor = 'human' OR (rq.question_id = 'retrospective_decision' AND td.actor = 'agent'))
+                                AND (td.actor = 'human' OR (rq.question_id = 'retrospective_decision' AND td.actor = 'agent'))
                                 AND td.consumed_at IS NULL
+                          )
+                          AND NOT EXISTS (
+                              SELECT 1 FROM transition_decisions force_td
+                              WHERE force_td.task_id = OLD.task_id
+                                AND force_td.from_state = OLD.state
+                                AND force_td.to_state = NEW.state
+                                AND force_td.question_id IN ('force_close_authorization', 'human_force_done_confirmation')
+                                AND force_td.answer IN ('FORCE_CLOSE', 'FORCE_DONE')
+                                AND force_td.actor = 'human'
+                                AND force_td.consumed_at IS NULL
                           )
                     )
                  )
@@ -821,6 +876,137 @@ class SqlitePersistenceAdapter(PersistencePort):
                 warnings.warn(f"schema rebuild succeeded but map-debt logging failed: {e}")
 
     # --- PersistencePort CRUD implementation (moved verbatim from ControlPlane) ---
+
+    def insert_premium_consent(
+        self, task_id: str, stage: str, round_id: str, model_id: str, actor: str
+    ) -> int:
+        """Store human premium consent for one exact stage/round/model scope."""
+        self.ensure_schema()
+        conn = self.get_connection()
+        try:
+            conn.execute(
+                """
+                INSERT INTO premium_consents (task_id, stage, round_id, model_id, actor, consented_at)
+                VALUES (?, ?, ?, ?, ?, ?)
+                ON CONFLICT(task_id, stage, round_id, model_id) DO UPDATE SET
+                    actor = excluded.actor,
+                    consented_at = excluded.consented_at
+                """,
+                (task_id, stage, round_id, model_id, actor, self._clock.current_time()),
+            )
+            row = conn.execute(
+                """
+                SELECT consent_id FROM premium_consents
+                WHERE task_id = ? AND stage = ? AND round_id = ? AND model_id = ?
+                """,
+                (task_id, stage, round_id, model_id),
+            ).fetchone()
+            conn.commit()
+            return row["consent_id"]
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
+
+    def has_premium_consent(self, task_id: str, stage: str, round_id: str, model_id: str) -> bool:
+        """Check premium consent without widening the approved stage or round scope."""
+        self.ensure_schema()
+        conn = self.get_connection()
+        try:
+            return conn.execute(
+                """
+                SELECT 1 FROM premium_consents
+                WHERE task_id = ? AND stage = ? AND round_id = ? AND model_id = ? AND actor = 'human'
+                """,
+                (task_id, stage, round_id, model_id),
+            ).fetchone() is not None
+        finally:
+            conn.close()
+
+    def insert_source_assisted_answer_candidate(
+        self,
+        task_id: str,
+        stage: str,
+        round_id: str,
+        question_id: str,
+        answer: str,
+        source_path: str,
+        source_authorized: bool,
+    ) -> int:
+        """Persist a candidate answer as unconfirmed provenance, never as a user decision."""
+        self.ensure_schema()
+        conn = self.get_connection()
+        try:
+            cursor = conn.execute(
+                """
+                INSERT INTO source_assisted_answer_candidates (
+                    task_id, stage, round_id, question_id, answer, source_path,
+                    source_authorized, created_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    task_id,
+                    stage,
+                    round_id,
+                    question_id,
+                    answer,
+                    source_path,
+                    int(source_authorized),
+                    self._clock.current_time(),
+                ),
+            )
+            conn.commit()
+            return cursor.lastrowid
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
+
+    def confirm_source_assisted_answer_candidate(self, candidate_id: int, actor: str) -> bool:
+        """Confirm a pending candidate with explicit human provenance."""
+        self.ensure_schema()
+        conn = self.get_connection()
+        try:
+            cursor = conn.execute(
+                """
+                UPDATE source_assisted_answer_candidates
+                SET confirmation_status = 'confirmed', confirmed_by = ?, confirmed_at = ?
+                WHERE candidate_id = ? AND confirmation_status = 'pending'
+                """,
+                (actor, self._clock.current_time(), candidate_id),
+            )
+            conn.commit()
+            return cursor.rowcount == 1
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
+
+    def has_unconfirmed_source_assisted_answer_candidates(
+        self, task_id: str, stage: str, round_id: Optional[str]
+    ) -> bool:
+        """Check the requested stage/round scope for pending source candidates."""
+        self.ensure_schema()
+        conn = self.get_connection()
+        try:
+            if round_id is None:
+                query = """
+                    SELECT 1 FROM source_assisted_answer_candidates
+                    WHERE task_id = ? AND stage = ? AND confirmation_status = 'pending'
+                """
+                params = (task_id, stage)
+            else:
+                query = """
+                    SELECT 1 FROM source_assisted_answer_candidates
+                    WHERE task_id = ? AND stage = ? AND round_id = ? AND confirmation_status = 'pending'
+                """
+                params = (task_id, stage, round_id)
+            return conn.execute(query, params).fetchone() is not None
+        finally:
+            conn.close()
 
     def get_task(self, task_id: str) -> Optional[Dict[str, Any]]:
         """Retrieves a task dictionary by task_id."""

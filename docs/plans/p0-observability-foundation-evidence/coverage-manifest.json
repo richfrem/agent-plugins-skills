@@ -1,0 +1,54 @@
+{
+  "schema_version": "1.0-draft",
+  "status": "PENDING_REVIEW",
+  "scope": "P0 Codex-first observability vertical slice",
+  "coverage": [
+    {
+      "path": "plugins/cli-agents/scripts/run_agent.py Codex wrapper invocation",
+      "owner": "CLI Agents maintainer",
+      "status": "planned",
+      "expected_observations": [
+        "expected attempt",
+        "process start or pre-dispatch failure",
+        "versioned metadata artifact or metadata failure"
+      ],
+      "limits": "Does not observe native parent-agent or builtin-subagent work outside the wrapper."
+    },
+    {
+      "path": "Agentic OS explicit artifact ingestion entry point",
+      "owner": "Agentic OS control-plane maintainer",
+      "status": "planned",
+      "expected_observations": [
+        "validation result",
+        "canonical observation or conflict",
+        "ingest pending/failure context"
+      ],
+      "limits": "No artifact exists until optional producer output is deliberately enabled."
+    },
+    {
+      "path": "Existing control-plane transition boundary",
+      "owner": "Agentic OS control-plane maintainer",
+      "status": "planned",
+      "expected_observations": [
+        "transition attempt",
+        "committed receipt link when available",
+        "coverage-incomplete failure"
+      ],
+      "limits": "Denied and uncommitted attempts never claim a committed transition."
+    },
+    {
+      "path": "Native host orchestration and builtin subagents",
+      "owner": "runtime host",
+      "status": "unobserved",
+      "expected_observations": [],
+      "limits": "Outside the Codex wrapper and never inferred from requested model or host settings."
+    }
+  ],
+  "acceptance": {
+    "required_before_claiming_coverage": [
+      "Every planned path has a deterministic test or explicit unobserved status.",
+      "Reports disclose missing expected observations and unavailable usage.",
+      "A live baseline is separately authorized; this manifest is not live-run evidence."
+    ]
+  }
+}

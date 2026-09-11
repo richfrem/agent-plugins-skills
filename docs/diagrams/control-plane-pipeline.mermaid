@@ -20,14 +20,14 @@ stateDiagram-v2
     INTAKE --> DRAFT_PLAN : skip straight to planning
     INTAKE --> PLAN_REVIEW : skip straight to planning
     INTAKE --> ESCALATED
-    INTAKE --> DONE : human-authorized force close
+    INTAKE --> DONE : force close — interactive human authorization
 
     INTERVIEW --> DRAFT_PLAN : interview complete<br/>no plan artifacts required yet
     INTERVIEW --> PLAN_REVIEW : legacy/direct plan submission path<br/>(artifacts required)
     INTERVIEW --> RETROSPECTIVE : trivial path — interview baseline<br/>and adaptive follow-ups complete
     INTERVIEW --> ESCALATED
     INTERVIEW --> INTAKE : human-approved recovery reset
-    INTERVIEW --> DONE : human-authorized force close
+    INTERVIEW --> DONE : force close — interactive human authorization
 
     DRAFT_PLAN --> PLAN_REVIEW : submit plan<br/>ask additional review? yes/no
     PLAN_REVIEW --> DRAFT_PLAN : changes requested<br/>revise artifact identity
@@ -38,36 +38,36 @@ stateDiagram-v2
     PLAN_REVIEW --> AWAITING_APPROVAL : no / plan accepted<br/>continue to human approval
     DRAFT_PLAN --> ESCALATED
     DRAFT_PLAN --> INTAKE : human-approved recovery reset
-    DRAFT_PLAN --> DONE : human-authorized force close
+    DRAFT_PLAN --> DONE : force close — interactive human authorization
     PLAN_REVIEW --> ESCALATED
     PLAN_REVIEW --> INTAKE : human-approved recovery reset
-    PLAN_REVIEW --> DONE : human-authorized force close
+    PLAN_REVIEW --> DONE : force close — interactive human authorization
 
     MULTI_AGENT_REVIEW --> PLAN_REVIEW : review complete<br/>merge outcomes for plan acceptance
     MULTI_AGENT_REVIEW --> DRAFT_PLAN : reviewer requested changes<br/>new identity required before resubmission
     MULTI_AGENT_REVIEW --> ESCALATED
     MULTI_AGENT_REVIEW --> INTAKE : human-approved recovery reset
-    MULTI_AGENT_REVIEW --> DONE : human-authorized force close
+    MULTI_AGENT_REVIEW --> DONE : force close — interactive human authorization
 
     AWAITING_APPROVAL --> APPROVED : you say Proceed / Go<br/>(this step can never be skipped)
     AWAITING_APPROVAL --> DRAFT_PLAN : needs more work
     AWAITING_APPROVAL --> PLAN_REVIEW : needs more work
     AWAITING_APPROVAL --> ESCALATED
     AWAITING_APPROVAL --> INTAKE : human-approved recovery reset
-    AWAITING_APPROVAL --> DONE : human-authorized force close
+    AWAITING_APPROVAL --> DONE : force close — interactive human authorization
 
     APPROVED --> IN_WORKTREE
     APPROVED --> RETROSPECTIVE : human-approved skip implementation
-    APPROVED --> DONE : human-authorized force close
     APPROVED --> ESCALATED
     APPROVED --> INTAKE : human-approved recovery reset
+    APPROVED --> DONE : force close — interactive human authorization
 
     IN_WORKTREE --> WORKTREE_REVIEW : implementation + tests done
     IN_WORKTREE --> VERIFY_EXIT
     IN_WORKTREE --> ROLLED_BACK
     IN_WORKTREE --> ESCALATED
     IN_WORKTREE --> INTAKE : human-approved recovery reset
-    IN_WORKTREE --> DONE : human-authorized force close
+    IN_WORKTREE --> DONE : force close — interactive human authorization
 
     WORKTREE_REVIEW --> MULTI_AGENT_CODE_REVIEW : Want a second AI review<br/>of this code? Yes
     WORKTREE_REVIEW --> VERIFY_EXIT : Proceed straight<br/>to verification? Yes<br/>(skip recorded, never silent)
@@ -75,7 +75,7 @@ stateDiagram-v2
     WORKTREE_REVIEW --> ROLLED_BACK
     WORKTREE_REVIEW --> ESCALATED
     WORKTREE_REVIEW --> INTAKE : human-approved recovery reset
-    WORKTREE_REVIEW --> DONE : human-authorized force close
+    WORKTREE_REVIEW --> DONE : force close — interactive human authorization
 
     MULTI_AGENT_CODE_REVIEW --> WORKTREE_REVIEW
     MULTI_AGENT_CODE_REVIEW --> VERIFY_EXIT
@@ -83,7 +83,7 @@ stateDiagram-v2
     MULTI_AGENT_CODE_REVIEW --> ROLLED_BACK
     MULTI_AGENT_CODE_REVIEW --> ESCALATED
     MULTI_AGENT_CODE_REVIEW --> INTAKE : human-approved recovery reset
-    MULTI_AGENT_CODE_REVIEW --> DONE : human-authorized force close
+    MULTI_AGENT_CODE_REVIEW --> DONE : force close — interactive human authorization
 
     VERIFY_EXIT --> RETROSPECTIVE : all checks passed
     VERIFY_EXIT --> IN_WORKTREE : verification failed
@@ -91,7 +91,7 @@ stateDiagram-v2
     VERIFY_EXIT --> ROLLED_BACK
     VERIFY_EXIT --> ESCALATED
     VERIFY_EXIT --> INTAKE : human-approved recovery reset
-    VERIFY_EXIT --> DONE : human-authorized force close
+    VERIFY_EXIT --> DONE : force close — interactive human authorization
 
     RETROSPECTIVE --> DONE : survey complete or explicitly skipped<br/>with reason<br/>follow-ups resolved
     RETROSPECTIVE --> ESCALATED : retrospective blocked
@@ -99,11 +99,11 @@ stateDiagram-v2
     ROLLED_BACK --> ESCALATED
     ROLLED_BACK --> PLAN_REVIEW : restart planning
     ROLLED_BACK --> INTAKE : human-approved recovery reset
-    ROLLED_BACK --> DONE : human-authorized force close
+    ROLLED_BACK --> DONE : force close — interactive human authorization
 
     ESCALATED --> INTAKE : start over
     ESCALATED --> PLAN_REVIEW : restart planning
-    ESCALATED --> DONE : human-authorized force close
+    ESCALATED --> DONE : force close — interactive human authorization
 
     DONE --> INTAKE : human-approved recovery reset
     DONE --> [*]
