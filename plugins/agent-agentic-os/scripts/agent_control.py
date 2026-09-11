@@ -272,8 +272,10 @@ class ControlPlane:
         if not self._persistence.confirm_source_assisted_answer_candidate(candidate_id, actor):
             raise ValueError(f"Pending source-assisted answer candidate not found: {candidate_id}")
 
-    def assert_interview_exit_ready(self, task_id: str, stage: str, round_id: str) -> None:
-        """Block interview exit while the exact scope has an unconfirmed source candidate."""
+    def assert_interview_exit_ready(
+        self, task_id: str, stage: str, round_id: Optional[str]
+    ) -> None:
+        """Block interview exit while the requested scope has a pending source candidate."""
         if self._persistence.has_unconfirmed_source_assisted_answer_candidates(task_id, stage, round_id):
             raise PersistenceInvariantViolation(
                 "Cannot exit interview with unconfirmed source-assisted answer candidate "
@@ -466,6 +468,9 @@ class ControlPlane:
 
         self._state_machine.validate_adjacency(task_id, current_state, to_state)
 
+        if current_state == "INTERVIEW" and to_state != "INTERVIEW":
+            self.assert_interview_exit_ready(task_id, stage="interview", round_id=None)
+
         # --- Unified gate policy: deterministic checks from authoritative YAML registry ---
         if not hasattr(self, "_transition_registry"):
             self._transition_registry = TransitionRegistry.load_default()
@@ -517,6 +522,15 @@ class ControlPlane:
     def commit_authorized_transition(self, commit_request: TransitionCommitRequest) -> TransitionRecord:
         """Internal atomic commit gate: passes normalized TransitionCommitRequest to PersistencePort.
         PersistencePort re-validates persistable invariants in SQLite transaction and atomically commits."""
+        if (
+            commit_request.expected_from_state == "INTERVIEW"
+            and commit_request.to_state != "INTERVIEW"
+        ):
+            # This is deliberately immediately before the atomic persistence call so both
+            # deterministic and coordinated transition front-doors share the same gate.
+            self.assert_interview_exit_ready(
+                commit_request.task_id, stage="interview", round_id=None
+            )
         return self._persistence.apply_transition_with_receipts(commit_request)
 
     def lock_verifiers(self, task_id: str, file_paths: List[Path]):

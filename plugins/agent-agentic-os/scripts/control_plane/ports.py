@@ -203,9 +203,13 @@ class PersistencePort(ABC):
 
     @abstractmethod
     def has_unconfirmed_source_assisted_answer_candidates(
-        self, task_id: str, stage: str, round_id: str
+        self, task_id: str, stage: str, round_id: Optional[str]
     ) -> bool:
-        """Return whether the exact interview scope still has unconfirmed candidates."""
+        """Return whether the requested scope still has unconfirmed candidates.
+
+        ``round_id=None`` checks every round in the stage, which is used by the
+        authoritative lifecycle exit gate.
+        """
         raise NotImplementedError
 
     def create_delegation_plan(self, task_id: str, contract: Dict[str, Any]) -> int:

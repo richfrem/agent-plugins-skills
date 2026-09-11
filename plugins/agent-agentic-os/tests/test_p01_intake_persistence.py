@@ -13,6 +13,7 @@ if str(SCRIPTS_DIR) not in sys.path:
 from agent_control import ControlPlane
 from control_plane.adapters import CURRENT_SCHEMA_VERSION
 from control_plane.ports import PersistenceInvariantViolation
+from interview_helpers import stage_interview_answers
 
 
 def _control_plane_with_task(tmp_path):
@@ -101,3 +102,54 @@ def test_unconfirmed_source_candidate_blocks_interview_exit_until_human_confirme
     control_plane.confirm_source_assisted_answer_candidate(candidate_id, actor="human")
 
     control_plane.assert_interview_exit_ready("p01-task", "interview", "round-1")
+
+
+def test_transition_blocks_pending_source_candidate_on_interview_exit(tmp_path):
+    control_plane = _control_plane_with_task(tmp_path)
+    control_plane.transition("p01-task", "INTERVIEW", "human", "start interview")
+    stage_interview_answers(control_plane, "p01-task")
+    candidate_id = control_plane.record_source_assisted_answer_candidate(
+        "p01-task", "interview", "round-1", "scope", "P01 only", "docs/brief.md"
+    )
+
+    with pytest.raises(PersistenceInvariantViolation, match="unconfirmed source-assisted"):
+        control_plane.transition("p01-task", "DRAFT_PLAN", "agent", "interview complete")
+    assert control_plane.get_task("p01-task")["state"] == "INTERVIEW"
+
+    control_plane.confirm_source_assisted_answer_candidate(candidate_id, actor="human")
+    control_plane.transition("p01-task", "DRAFT_PLAN", "agent", "interview complete")
+    assert control_plane.get_task("p01-task")["state"] == "DRAFT_PLAN"
+
+
+def test_coordinate_transition_blocks_pending_source_candidate_on_interview_exit(tmp_path):
+    control_plane = _control_plane_with_task(tmp_path)
+    control_plane.transition("p01-task", "INTERVIEW", "human", "start interview")
+    stage_interview_answers(control_plane, "p01-task")
+    candidate_id = control_plane.record_source_assisted_answer_candidate(
+        "p01-task", "interview", "round-7", "scope", "P01 only", "docs/brief.md"
+    )
+
+    with pytest.raises(PersistenceInvariantViolation, match="unconfirmed source-assisted"):
+        control_plane.coordinate_transition(
+            "p01-task", "DRAFT_PLAN", "agent", "interview complete"
+        )
+    assert control_plane.get_task("p01-task")["state"] == "INTERVIEW"
+
+    control_plane.confirm_source_assisted_answer_candidate(candidate_id, actor="human")
+    control_plane.coordinate_transition("p01-task", "DRAFT_PLAN", "agent", "interview complete")
+    assert control_plane.get_task("p01-task")["state"] == "DRAFT_PLAN"
+
+
+def test_source_candidate_requires_authorized_source_and_human_confirmation(tmp_path):
+    control_plane = _control_plane_with_task(tmp_path)
+    with pytest.raises(PersistenceInvariantViolation, match="authorized source"):
+        control_plane.record_source_assisted_answer_candidate(
+            "p01-task", "interview", "round-1", "scope", "P01 only", "docs/brief.md",
+            source_authorized=False,
+        )
+
+    candidate_id = control_plane.record_source_assisted_answer_candidate(
+        "p01-task", "interview", "round-1", "scope", "P01 only", "docs/brief.md"
+    )
+    with pytest.raises(PersistenceInvariantViolation, match="actor='human'"):
+        control_plane.confirm_source_assisted_answer_candidate(candidate_id, actor="agent")

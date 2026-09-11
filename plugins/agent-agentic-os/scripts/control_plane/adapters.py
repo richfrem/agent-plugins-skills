@@ -966,19 +966,25 @@ class SqlitePersistenceAdapter(PersistencePort):
             conn.close()
 
     def has_unconfirmed_source_assisted_answer_candidates(
-        self, task_id: str, stage: str, round_id: str
+        self, task_id: str, stage: str, round_id: Optional[str]
     ) -> bool:
-        """Check only the requested interview scope for pending source candidates."""
+        """Check the requested stage/round scope for pending source candidates."""
         self.ensure_schema()
         conn = self.get_connection()
         try:
-            return conn.execute(
+            if round_id is None:
+                query = """
+                    SELECT 1 FROM source_assisted_answer_candidates
+                    WHERE task_id = ? AND stage = ? AND confirmation_status = 'pending'
                 """
-                SELECT 1 FROM source_assisted_answer_candidates
-                WHERE task_id = ? AND stage = ? AND round_id = ? AND confirmation_status = 'pending'
-                """,
-                (task_id, stage, round_id),
-            ).fetchone() is not None
+                params = (task_id, stage)
+            else:
+                query = """
+                    SELECT 1 FROM source_assisted_answer_candidates
+                    WHERE task_id = ? AND stage = ? AND round_id = ? AND confirmation_status = 'pending'
+                """
+                params = (task_id, stage, round_id)
+            return conn.execute(query, params).fetchone() is not None
         finally:
             conn.close()
 
