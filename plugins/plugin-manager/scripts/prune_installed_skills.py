@@ -69,6 +69,47 @@ def red(t: str) -> str:
     return _col("91", t)
 
 # ---------------------------------------------------------------------------
+# Terminal raw-mode helpers
+# ---------------------------------------------------------------------------
+def _read_key() -> str:
+    """Read one raw keypress from stdin and return a string token.
+
+    Returns 'UP', 'DOWN', 'LEFT', 'RIGHT' for arrow keys, character for printable keys,
+    or special tokens like ESC. Works on both Windows (msvcrt) and Unix (termios).
+    """
+    if sys.platform == "win32":
+        import msvcrt
+        ch = msvcrt.getwch()
+        if ch in ("\x00", "\xe0"):
+            ch2 = msvcrt.getwch()
+            return {"\x48": "UP", "\x50": "DOWN", "\x4b": "LEFT", "\x4d": "RIGHT"}.get(ch2, "")
+        return ch
+    else:
+        import tty, termios
+        fd = sys.stdin.fileno()
+        old = termios.tcgetattr(fd)
+        try:
+            tty.setraw(fd)
+            ch = sys.stdin.read(1)
+            if ch == "\x1b":
+                ch += sys.stdin.read(2)
+                return {
+                    "[A": "UP",
+                    "[B": "DOWN",
+                    "[C": "RIGHT",
+                    "[D": "LEFT",
+                }.get(ch[1:], "ESC")
+            return ch
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old)
+
+def _clear_lines(n: int) -> None:
+    """Rewind the terminal cursor N lines up and clear to end-of-screen."""
+    if _ANSI:
+        sys.stdout.write(f"\033[{n}A\033[J")
+        sys.stdout.flush()
+
+# ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
 CONFIRM_TOKEN = "PRUNE-INSTALLED-SKILLS"
@@ -253,15 +294,86 @@ def scan_dependencies(skills_dir: Path, retained_skills: Set[str]) -> Dict[str, 
             deps["agents"].add(dest)
 
         for match in re.findall(
-            r"\bagent\s+[`'\"]([a-zA-Z0-9_-]+(?:\.md)?)[`'\"]",
+            r"\bagent\s+[`'\"]?([a-zA-Z0-9_-]+(?:\.md)?)[`'\"]?",
             combined_text,
             re.IGNORECASE,
         ):
             clean_match = match.rstrip(".")
-            dest = clean_match if clean_match.endswith(".md") else f"{clean_match}.md"
-            deps["agents"].add(dest)
+            if clean_match and clean_match.lower() not in _STOPWORDS:
+                dest = clean_match if clean_match.endswith(".md") else f"{clean_match}.md"
+                deps["agents"].add(dest)
 
     return deps
+
+
+def check_dependency_advisory(
+    root: Path,
+    manifest: Dict[str, Any],
+    plugin_name: str,
+    component_type: str,
+    component_name: str,
+) -> Optional[str]:
+    """Checks if untoggling a component triggers a dependency warning from any retained skills.
+
+    Args:
+        root: Repository root path.
+        manifest: Current manifest dictionary.
+        plugin_name: Plugin owning the component.
+        component_type: One of 'skills', 'rules', 'agents'.
+        component_name: Name of the component.
+
+    Returns:
+        Advisory warning string if referenced by another retained skill, or None.
+    """
+    root_path = Path(root)
+    skills_dir = root_path / ".agents" / "skills"
+    if not skills_dir.exists():
+        return None
+
+    ctype = component_type.lower()
+    if not ctype.endswith("s"):
+        ctype += "s"
+
+    skills_state, _, _ = get_component_states(manifest)
+    retained_skills = {k for k, v in skills_state.items() if v}
+    # If checking a skill being untoggled, exclude it so we see if other retained skills need it
+    if ctype == "skills":
+        retained_skills.discard(component_name)
+
+    deps = scan_dependencies(skills_dir, retained_skills)
+
+    if ctype == "skills":
+        if component_name in deps["skills"]:
+            return (
+                f"[ADVISORY] Companion skill '{component_name}' is referenced by retained skill. "
+                f"Consider retaining this skill."
+            )
+    elif ctype == "rules":
+        candidates = [component_name]
+        if component_name.endswith(".md"):
+            candidates.append(component_name[:-3])
+        else:
+            candidates.append(f"{component_name}.md")
+        for c in candidates:
+            if c in deps["rules"]:
+                return (
+                    f"[ADVISORY] Rule '{component_name}' is referenced by retained skill. "
+                    f"Consider retaining this rule."
+                )
+    elif ctype == "agents":
+        candidates = [component_name]
+        if component_name.endswith(".md"):
+            candidates.append(component_name[:-3])
+        else:
+            candidates.append(f"{component_name}.md")
+        for c in candidates:
+            if c in deps["agents"]:
+                return (
+                    f"[ADVISORY] Agent '{component_name}' is referenced by retained skill. "
+                    f"Consider retaining this agent."
+                )
+
+    return None
 
 
 # ---------------------------------------------------------------------------
@@ -304,20 +416,29 @@ def plan_pruning(root: Path, manifest: Dict[str, Any]) -> Dict[str, List[Path]]:
     # 2. Rules
     for rule_name, retained in rules_state.items():
         if not retained and rule_name not in protected:
-            for candidate in [
-                root_path / ".agent" / "rules" / rule_name,
-                root_path / ".agents" / "rules" / rule_name,
-                root_path / "rules" / rule_name,
-            ]:
-                if candidate.exists() and candidate not in seen_paths:
-                    plan["rules"].append(candidate)
-                    seen_paths.add(candidate)
+            candidate_rule_names = [rule_name]
+            if rule_name.endswith(".md"):
+                candidate_rule_names.append(rule_name[:-3])
+            else:
+                candidate_rule_names.append(f"{rule_name}.md")
+
+            for r_name in candidate_rule_names:
+                for candidate in [
+                    root_path / ".agent" / "rules" / r_name,
+                    root_path / ".agents" / "rules" / r_name,
+                    root_path / "rules" / r_name,
+                ]:
+                    if candidate.exists() and candidate not in seen_paths:
+                        plan["rules"].append(candidate)
+                        seen_paths.add(candidate)
 
     # 3. Agents
     for agent_name, retained in agents_state.items():
         if not retained and agent_name not in protected:
             candidates_names = [agent_name]
-            if not agent_name.endswith(".md"):
+            if agent_name.endswith(".md"):
+                candidates_names.append(agent_name[:-3])
+            else:
                 candidates_names.append(f"{agent_name}.md")
             for c_name in candidates_names:
                 for candidate in [
@@ -344,9 +465,19 @@ def plan_pruning(root: Path, manifest: Dict[str, Any]) -> Dict[str, List[Path]]:
                     if ctype == "skills":
                         is_retained = skills_state.get(cname, True)
                     elif ctype == "rules":
-                        is_retained = rules_state.get(cname, True)
+                        is_retained = rules_state.get(cname, None)
+                        if is_retained is None:
+                            if cname.endswith(".md"):
+                                is_retained = rules_state.get(cname[:-3], True)
+                            else:
+                                is_retained = rules_state.get(f"{cname}.md", True)
                     elif ctype == "agents":
-                        is_retained = agents_state.get(cname, True)
+                        is_retained = agents_state.get(cname, None)
+                        if is_retained is None:
+                            if cname.endswith(".md"):
+                                is_retained = agents_state.get(cname[:-3], True)
+                            else:
+                                is_retained = agents_state.get(f"{cname}.md", True)
 
                     if not is_retained:
                         art_path = root_path / art
@@ -390,14 +521,17 @@ def execute_pruning(
         for p in paths:
             if not p.exists() and not p.is_symlink():
                 continue
-            deleted_count += 1
-            all_removed_paths.append(p)
-            if not dry_run:
+            if dry_run:
+                deleted_count += 1
+                all_removed_paths.append(p)
+            else:
                 try:
                     if p.is_dir() and not p.is_symlink():
                         shutil.rmtree(p)
                     else:
                         p.unlink()
+                    deleted_count += 1
+                    all_removed_paths.append(p)
                 except Exception as e:
                     print(yellow(f"Warning: Failed to delete {p}: {e}"))
 
@@ -450,12 +584,13 @@ def execute_pruning(
 
 
 # ---------------------------------------------------------------------------
-# State Helper (Forward Compatible for Task 3 Interactive TUI)
+# State Helper & Interactive Multiselect TUI
 # ---------------------------------------------------------------------------
 def toggle_component_state(
     manifest: Dict[str, Any], plugin_name: str, component_type: str, component_name: str
 ) -> Dict[str, Any]:
     """Toggles the boolean retention state of a specific component in the manifest.
+    Handles rule and agent names with or without '.md' extension.
 
     Args:
         manifest: Parsed manifest dictionary.
@@ -468,11 +603,295 @@ def toggle_component_state(
     """
     if "plugins" in manifest and plugin_name in manifest["plugins"]:
         plugin_entry = manifest["plugins"][plugin_name]
-        if component_type in plugin_entry and component_name in plugin_entry[component_type]:
-            plugin_entry[component_type][component_name] = not plugin_entry[component_type][
-                component_name
-            ]
+        ctype = component_type.lower()
+        if not ctype.endswith("s"):
+            ctype += "s"
+
+        if ctype in plugin_entry and isinstance(plugin_entry[ctype], dict):
+            comp_dict = plugin_entry[ctype]
+            if component_name in comp_dict:
+                comp_dict[component_name] = not comp_dict[component_name]
+            elif ctype in ("rules", "agents"):
+                if component_name.endswith(".md") and component_name[:-3] in comp_dict:
+                    comp_dict[component_name[:-3]] = not comp_dict[component_name[:-3]]
+                elif not component_name.endswith(".md") and f"{component_name}.md" in comp_dict:
+                    comp_dict[f"{component_name}.md"] = not comp_dict[f"{component_name}.md"]
     return manifest
+
+
+class TUIState:
+    """Encapsulates interactive TUI navigation, selection, and advisory state."""
+
+    def __init__(self, manifest: Dict[str, Any], root: Path):
+        self.root = Path(root)
+        self.manifest = manifest
+        self.plugins: List[str] = sorted(manifest.get("plugins", {}).keys())
+        self.plugin_idx: int = 0
+        self.cursor: int = 0
+        self.search: str = ""
+        self.search_mode: bool = False
+        self.advisory: Optional[str] = None
+        self.protected: Set[str] = set(manifest.get("protected_defaults", DEFAULT_PROTECTED))
+
+    @property
+    def current_plugin_name(self) -> str:
+        if not self.plugins or self.plugin_idx >= len(self.plugins):
+            return ""
+        return self.plugins[self.plugin_idx]
+
+    @property
+    def raw_items(self) -> List[Dict[str, Any]]:
+        """Returns all components for the current plugin."""
+        plugin_name = self.current_plugin_name
+        if not plugin_name:
+            return []
+        plugin_data = self.manifest.get("plugins", {}).get(plugin_name, {})
+        items = []
+        for ctype in ("skills", "rules", "agents"):
+            for comp_name, retained in sorted(plugin_data.get(ctype, {}).items()):
+                items.append({
+                    "plugin": plugin_name,
+                    "type": ctype,
+                    "name": comp_name,
+                    "retained": bool(retained),
+                    "protected": comp_name in self.protected,
+                })
+        return items
+
+    @property
+    def current_items(self) -> List[Dict[str, Any]]:
+        """Returns filtered components based on search query."""
+        items = self.raw_items
+        if not self.search:
+            return items
+        q = self.search.lower()
+        return [i for i in items if q in i["name"].lower() or q in i["type"].lower()]
+
+
+def tui_process_key(key: str, state: TUIState) -> bool:
+    """Handles one keypress in the multiselect TUI.
+
+    Args:
+        key: String key token (e.g. 'UP', 'DOWN', ' ', 'n', 'p', '\\r', 'q').
+        state: Active TUIState object.
+
+    Returns:
+        True if the user finished or quit, False otherwise.
+    """
+    if state.search_mode:
+        if key == "ESC":
+            state.search_mode = False
+            state.search = ""
+            state.cursor = 0
+            return False
+        elif key in ("\r", "\n"):
+            state.search_mode = False
+            state.cursor = 0
+            return False
+        elif key == "\x7f":
+            if state.search:
+                state.search = state.search[:-1]
+            else:
+                state.search_mode = False
+            state.cursor = 0
+            return False
+        elif key in ("UP", "DOWN"):
+            state.search_mode = False
+            # proceed to cursor move below
+        elif len(key) == 1 and key.isprintable():
+            state.search += key
+            state.cursor = 0
+            return False
+
+    if key == "UP":
+        state.cursor = max(0, state.cursor - 1)
+        return False
+    elif key == "DOWN":
+        items = state.current_items
+        if items:
+            state.cursor = min(len(items) - 1, state.cursor + 1)
+        return False
+    elif key in ("RIGHT", "n", "N"):
+        if state.plugin_idx < len(state.plugins) - 1:
+            state.plugin_idx += 1
+            state.cursor = 0
+            state.search = ""
+            state.search_mode = False
+            state.advisory = None
+        return False
+    elif key in ("LEFT", "p", "P"):
+        if state.plugin_idx > 0:
+            state.plugin_idx -= 1
+            state.cursor = 0
+            state.search = ""
+            state.search_mode = False
+            state.advisory = None
+        return False
+    elif key == " ":
+        items = state.current_items
+        if items and 0 <= state.cursor < len(items):
+            item = items[state.cursor]
+            if item.get("protected", False):
+                state.advisory = f"[PROTECTED] '{item['name']}' is a protected default and cannot be untoggled."
+                return False
+
+            was_retained = item["retained"]
+            toggle_component_state(state.manifest, item["plugin"], item["type"], item["name"])
+            item["retained"] = not was_retained
+
+            if was_retained:
+                adv = check_dependency_advisory(
+                    state.root, state.manifest, item["plugin"], item["type"], item["name"]
+                )
+                state.advisory = adv
+            else:
+                state.advisory = None
+        return False
+    elif key in ("\r", "\n"):
+        if state.plugin_idx < len(state.plugins) - 1:
+            state.plugin_idx += 1
+            state.cursor = 0
+            state.search = ""
+            state.search_mode = False
+            state.advisory = None
+            return False
+        else:
+            return True
+    elif key in ("q", "Q", "\x03", "c", "C"):
+        return True
+    elif key == "a":
+        items = state.current_items
+        if items:
+            selectable = [i for i in items if not i.get("protected", False)]
+            all_retained = all(i["retained"] for i in selectable) if selectable else True
+            target = not all_retained
+            plugin_data = state.manifest.get("plugins", {}).get(state.current_plugin_name, {})
+            for ctype in ("skills", "rules", "agents"):
+                for comp_name in plugin_data.get(ctype, {}):
+                    if comp_name not in state.protected:
+                        plugin_data[ctype][comp_name] = target
+            state.advisory = None
+        return False
+    elif key == "/":
+        state.search = ""
+        state.search_mode = True
+        state.cursor = 0
+        return False
+    elif key == "\x7f":
+        if state.search:
+            state.search = state.search[:-1]
+            state.cursor = 0
+        return False
+    elif key == "ESC":
+        state.search = ""
+        state.search_mode = False
+        state.cursor = 0
+        return False
+
+    return False
+
+
+def _render_tui_page(state: TUIState, first_render: bool = False) -> int:
+    """Renders the current plugin review page in the terminal."""
+    PAGE = 18
+    lines = []
+
+    total_plugins = len(state.plugins)
+    curr_idx = state.plugin_idx + 1 if total_plugins > 0 else 0
+    plugin_name = state.current_plugin_name
+
+    lines.append(bold(f"Plugin Retention Pruner — Reviewing [{curr_idx}/{total_plugins}]: {cyan(plugin_name)}"))
+    lines.append(dim("  ↑↓ move  |  space toggle  |  ←/p prev  |  →/n next  |  a all  |  enter next/confirm  |  q quit"))
+
+    if state.search:
+        lines.append(f"  {dim('Search:')} {cyan(state.search)}_")
+    else:
+        lines.append(dim("  Type / to search"))
+
+    items = state.current_items
+    visible = items[max(0, state.cursor - PAGE // 2) : state.cursor + PAGE]
+    offset = max(0, state.cursor - PAGE // 2)
+    last_type = None
+
+    for idx, item in enumerate(visible):
+        abs_idx = offset + idx
+        ctype = item["type"]
+        if ctype != last_type:
+            lines.append(f"  {dim('─── ' + ctype.capitalize() + ' ───')}")
+            last_type = ctype
+        is_cursor = abs_idx == state.cursor
+        is_retained = item["retained"]
+        is_protected = item.get("protected", False)
+
+        if is_protected:
+            check = green("[x]")
+            name = dim(item["name"] + " (protected)")
+        elif is_retained:
+            check = green("[x]")
+            name = cyan(item["name"]) if is_cursor else item["name"]
+        else:
+            check = red("[ ]")
+            name = dim(item["name"])
+
+        arrow = ">" if is_cursor else " "
+        lines.append(f"  {arrow} {check} {name}")
+
+    if state.advisory:
+        lines.append("")
+        lines.append(f"  {yellow(state.advisory)}")
+
+    retained_count = sum(1 for i in items if i["retained"])
+    lines.append("")
+    lines.append(f"  {green(str(retained_count))} of {len(items)} components retained in {plugin_name}")
+
+    if not first_render:
+        _clear_lines(len(lines))
+    print("\n".join(lines), flush=True)
+    return len(lines)
+
+
+def interactive_prune_tui(
+    root: Path,
+    manifest: Dict[str, Any],
+    key_provider: Optional[Any] = None,
+) -> Dict[str, Any]:
+    """Runs interactive arrow-key multiselect TUI for reviewing and toggling retained components.
+
+    Args:
+        root: Path to repository root.
+        manifest: Loaded manifest dictionary.
+        key_provider: Optional callable returning key strings (used for testing).
+
+    Returns:
+        Updated manifest dictionary.
+    """
+    state = TUIState(manifest=manifest, root=root)
+    if not state.plugins:
+        return manifest
+
+    is_interactive = sys.stdin.isatty() and sys.stdout.isatty() if key_provider is None else True
+    if not is_interactive and key_provider is None:
+        print(yellow("Warning: Interactive TUI requested in non-interactive terminal; skipping."))
+        return manifest
+
+    first_render = True
+    if is_interactive and key_provider is None:
+        _render_tui_page(state, first_render=True)
+        first_render = False
+
+    while True:
+        key = key_provider() if key_provider is not None else _read_key()
+        done = tui_process_key(key, state)
+        if done:
+            break
+        if is_interactive and key_provider is None:
+            _render_tui_page(state, first_render=False)
+
+    if is_interactive and key_provider is None:
+        print()
+        print(green("Interactive review complete. Updated retention manifest in memory."))
+
+    return state.manifest
 
 
 # ---------------------------------------------------------------------------
@@ -541,6 +960,15 @@ def main(argv: Optional[List[str]] = None) -> int:
         print(red(f"Error reading manifest: {e}"))
         return 1
 
+    if args.interactive:
+        manifest = interactive_prune_tui(root_path, manifest)
+        save_manifest(manifest_file, manifest)
+        try:
+            rel_path = manifest_file.relative_to(root_path)
+        except ValueError:
+            rel_path = manifest_file
+        print(green(f"Saved updated retention settings to {rel_path}"))
+
     skills_state, rules_state, agents_state = get_component_states(manifest)
     retained_skills = {k for k, v in skills_state.items() if v}
     skills_dir = root_path / ".agents" / "skills"
@@ -551,10 +979,11 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     pruned_skills = {p.name for p in plan["skills"]}
     pruned_rules = {p.name for p in plan["rules"]}
+    pruned_agents = {p.name for p in plan["agents"]}
 
     advisories = []
     for r in sorted(deps["rules"]):
-        if r in pruned_rules:
+        if r in pruned_rules or (r.endswith(".md") and r[:-3] in pruned_rules) or (f"{r}.md" in pruned_rules):
             advisories.append(
                 f"[ADVISORY] Rule '{r}' is referenced by retained skill. Consider retaining this rule."
             )
@@ -562,6 +991,11 @@ def main(argv: Optional[List[str]] = None) -> int:
         if s in pruned_skills:
             advisories.append(
                 f"[ADVISORY] Companion skill '{s}' is referenced by retained skill. Consider retaining this skill."
+            )
+    for a in sorted(deps["agents"]):
+        if a in pruned_agents or (a.endswith(".md") and a[:-3] in pruned_agents) or (f"{a}.md" in pruned_agents):
+            advisories.append(
+                f"[ADVISORY] Agent '{a}' is referenced by retained skill. Consider retaining this agent."
             )
 
     for adv in advisories:

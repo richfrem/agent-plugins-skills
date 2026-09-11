@@ -748,21 +748,21 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-08-31T14:38:09.085052Z",
-      "updatedAt": "2026-09-11T09:10:04.999746Z"
+      "updatedAt": "2026-09-11T16:20:10.450762Z"
     },
     "plugin-remover": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-08-31T14:38:09.085052Z",
-      "updatedAt": "2026-09-11T09:10:04.999746Z"
+      "updatedAt": "2026-09-11T16:20:10.450762Z"
     },
     "plugin-syncer": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-08-31T14:38:09.085052Z",
-      "updatedAt": "2026-09-11T09:10:04.999746Z"
+      "updatedAt": "2026-09-11T16:20:10.450762Z"
     },
     "project-setup": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
