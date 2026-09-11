@@ -431,11 +431,13 @@ git commit -m "refactor(plugin-manager): convert skills to progressive disclosur
 - Create: `plugins/agent-scaffolders/references/platform-primitives.md`
 - Modify: `plugins/agent-scaffolders/scripts/create_skill.py` (ensure generated `SKILL.md` defaults to progressive disclosure)
 - Modify: `plugins/agent-scaffolders/skills/audit-skill/SKILL.md`
-- Modify: `plugins/agent-scaffolders/scripts/audit_skill.py` (add progressive disclosure line/structure audit)
+- Create: `plugins/agent-scaffolders/references/review-rubric.md` (Crow-inspired 4-tier severity: Blocking/High/Medium/Low, token/context efficiency, knowledge vs execution separation)
+- Modify: `plugins/agent-scaffolders/scripts/audit_skill.py` (add progressive disclosure line/structure audit, trigger boundary validation, and rubric compliance)
 - Create: `tests/agent_scaffolders/test_audit_skill_progressive.py`
 
 **Interfaces:**
-- `create-skill`: Lean router ($\le 60$ lines) that links to interview and platform references.
+- `create-skill`: Lean router ($\le 60$ lines) linking to interview and platform references.
+- `audit-skill`: Adopts the 4-tier severity rubric (`Blocking`, `High`, `Medium`, `Low`) and checks knowledge/execution separation.
 - `audit_skill.py`: Flags `SKILL.md` $> 80$ lines and verifies progressive disclosure links, while preserving all 6 invariants and `--fix`.
 
 - [ ] **Step 1: Write test for progressive disclosure audit in `audit_skill.py`**
