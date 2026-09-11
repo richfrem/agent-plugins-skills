@@ -41,7 +41,7 @@ flowchart TD
 ```
 
 ### 2.1 Manifest Schema (`plugin-retention.json`)
-The manifest lives at the repository root and is tracked in version control:
+The manifest lives at the repository root and is tracked in version control. It stores the full roster of components per installed plugin, using a clean boolean state (`true` = retained/installed, `false` = pruned/skipped):
 
 ```json
 {
@@ -55,23 +55,40 @@ The manifest lives at the repository root and is tracked in version control:
     "symlink-manager",
     "worktree-manager"
   ],
-  "retained": {
-    "skills": [
-      "plugin-installer",
-      "plugin-remover",
-      "plugin-syncer",
-      "plugin-pruner",
-      "symlink-manager",
-      "worktree-manager"
-    ],
-    "rules": [
-      "plugin-architecture-policy.md",
-      "test-driven-development.md"
-    ],
-    "agents": []
+  "plugins": {
+    "plugin-manager": {
+      "skills": {
+        "plugin-installer": true,
+        "plugin-remover": true,
+        "plugin-syncer": true,
+        "plugin-pruner": true
+      },
+      "rules": {
+        "plugin-architecture-policy.md": true
+      },
+      "agents": {}
+    },
+    "agent-agentic-os": {
+      "skills": {
+        "os-architect": true,
+        "critical-auditor": false,
+        "evo-smoketest": false
+      },
+      "rules": {
+        "self-evolution-policy.md": true
+      },
+      "agents": {
+        "agent-agentic-os-os-architect-agent": true
+      }
+    }
   }
 }
 ```
+
+Benefits of the boolean map:
+- **Full Discovery**: Pruned components remain listed as `false`, so users never lose visibility of what capabilities are available to re-enable.
+- **Direct TUI Mapping**: The multiselect TUI reads each plugin's dictionary directly, displaying `[x]` for `true` and `[ ]` for `false`.
+- **Bidirectional Lifecycle**: Changing `true` $\to$ `false` prunes the component; changing `false` $\to$ `true` and running `sync_with_inventory.py` restores it.
 
 ### 2.2 Installer Integration (`plugin_add.py` / `plugin_installer.py`)
 - Reads the generated `.agents/ownership/<plugin>.json`.
