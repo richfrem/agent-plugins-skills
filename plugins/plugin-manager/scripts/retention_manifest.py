@@ -22,6 +22,15 @@ import types
 from pathlib import Path
 from typing import Optional, Tuple, Dict, List, Any
 
+DEFAULT_PROTECTED = [
+    "plugin-installer",
+    "plugin-remover",
+    "plugin-syncer",
+    "plugin-pruner",
+    "symlink-manager",
+    "worktree-manager",
+]
+
 
 def parse_artifact(artifact: str) -> Tuple[Optional[str], Optional[str]]:
     """Identifies the component type ('skills', 'rules', 'agents') and its name from an artifact path.

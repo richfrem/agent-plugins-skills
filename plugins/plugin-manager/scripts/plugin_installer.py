@@ -754,7 +754,8 @@ def merge_mcp_config(plugin_path: Path, root: Path, dry_run: bool = False) -> No
 
 
 def _provision_skills(plugin_path: Path, plugin_name: str, agents_root: Path,
-                      targets: list, dry_run: bool, root: Path) -> tuple[list, list]:
+                      targets: list, dry_run: bool, root: Path,
+                      skills_filter: str | None = None) -> tuple[list, list]:
     """Copy plugin skills into .agents/skills/ and symlink to IDE targets.
 
     Args:
@@ -764,6 +765,7 @@ def _provision_skills(plugin_path: Path, plugin_name: str, agents_root: Path,
         targets: List of detected IDE target directory names.
         dry_run: If True, print actions without writing files.
         root: Repository root path context.
+        skills_filter: Optional comma-separated list of skill names to install.
 
     Returns:
         Tuple of (installed_skill_names, deployed_paths).
@@ -776,8 +778,11 @@ def _provision_skills(plugin_path: Path, plugin_name: str, agents_root: Path,
         return installed_skills, deployed_paths
     if not dry_run:
         central_skills.mkdir(exist_ok=True)
-    for item in skills_dir.iterdir():
+    allowed_skills = set(s.strip() for s in skills_filter.split(",") if s.strip()) if skills_filter is not None else None
+    for item in sorted(skills_dir.iterdir()):
         if not item.is_dir():
+            continue
+        if allowed_skills is not None and item.name not in allowed_skills:
             continue
         dest = central_skills / item.name
         if not dry_run:
@@ -855,9 +860,37 @@ def _provision_hooks(plugin_path: Path, plugin_name: str, agents_root: Path,
     return deployed_paths
 
 
+def _update_retention_manifest_on_install(plugin_name: str, deployed_paths: list, root: Path, dry_run: bool) -> None:
+    """Seed or update plugin-retention.json with newly installed components."""
+    try:
+        import retention_manifest
+        ret_file = root / "plugin-retention.json"
+        if not ret_file.exists():
+            template_path = Path(__file__).resolve().parent.parent / "assets" / "templates" / "plugin-retention.template.json"
+            if template_path.exists():
+                m = retention_manifest.load_manifest(template_path)
+            else:
+                m = {"version": 1, "protected_defaults": retention_manifest.DEFAULT_PROTECTED, "plugins": {}}
+        else:
+            m = retention_manifest.load_manifest(ret_file)
+
+        rel_paths = []
+        for p in deployed_paths:
+            try:
+                rel_paths.append(str(p.relative_to(root)).replace("\\", "/"))
+            except ValueError:
+                pass
+        retention_manifest.merge_installed_components(m, plugin_name, rel_paths)
+        if not dry_run:
+            retention_manifest.save_manifest(ret_file, m)
+    except Exception:
+        pass
+
+
 def provision_central_and_symlink(plugin_path: Path, metadata: dict, targets: list,
                                   dry_run: bool = False, install_rules: bool = True,
-                                  append_rules_to_ide_files: bool = True) -> list:
+                                  append_rules_to_ide_files: bool = True,
+                                  skills_filter: str | None = None) -> list:
     """Orchestrate full plugin installation into .agents/ and linked IDE directories.
 
     Copies skills, hooks, commands, agents, rules, and MCP config from the
@@ -879,6 +912,7 @@ def provision_central_and_symlink(plugin_path: Path, metadata: dict, targets: li
             the central .agent/rules/ copy. For repos that treat AGENTS.md /
             .agent/rules/ as sole source of truth and don't want CLAUDE.md
             auto-populated.
+        skills_filter: Optional comma-separated list of skill names to install.
 
     Returns:
         List of installed skill slug names.
@@ -890,7 +924,7 @@ def provision_central_and_symlink(plugin_path: Path, metadata: dict, targets: li
         agents_root.mkdir(exist_ok=True)
 
     installed_skills, deployed_paths = _provision_skills(
-        plugin_path, plugin_name, agents_root, targets, dry_run, root
+        plugin_path, plugin_name, agents_root, targets, dry_run, root, skills_filter=skills_filter
     )
     deployed_paths.extend(_provision_hooks(
         plugin_path, plugin_name, agents_root, targets, dry_run, root
@@ -902,6 +936,7 @@ def provision_central_and_symlink(plugin_path: Path, metadata: dict, targets: li
     deployed_paths.extend(deploy_agents(plugin_path, plugin_name, targets, root, dry_run))
     merge_mcp_config(plugin_path, root, dry_run)
     write_ownership_manifest(plugin_name, root, deployed_paths, dry_run)
+    _update_retention_manifest_on_install(plugin_name, deployed_paths, root, dry_run)
     return installed_skills
 
 
@@ -983,6 +1018,8 @@ def main() -> None:
                         action="store_false",
                         help="Skip injecting rule content into 'append' mode IDE files "
                              "(e.g. CLAUDE.md); .agent/rules/ is still written (on by default)")
+    parser.add_argument("--skills", type=str, default=None,
+                        help="Comma-separated subset of skills to install from this plugin")
     parser.set_defaults(install_rules=True, append_rules_to_ide_files=True)
     args = parser.parse_args()
 
@@ -1002,7 +1039,8 @@ def main() -> None:
 
     try:
         installed_skills = provision_central_and_symlink(plugin_path, metadata, targets, args.dry_run,
-                                                          args.install_rules, args.append_rules_to_ide_files)
+                                                          args.install_rules, args.append_rules_to_ide_files,
+                                                          skills_filter=args.skills)
         write_project_lock(plugin_path, metadata, installed_skills, root, args.dry_run)
     except Exception as e:
         import traceback
