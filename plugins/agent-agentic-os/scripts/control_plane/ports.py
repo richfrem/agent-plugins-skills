@@ -170,6 +170,44 @@ class PersistencePort(ABC):
         """Retrieves a task dictionary by task_id, or None if not found."""
         raise NotImplementedError
 
+    @abstractmethod
+    def insert_premium_consent(
+        self, task_id: str, stage: str, round_id: str, model_id: str, actor: str
+    ) -> int:
+        """Persist human consent for one exact task/stage/round/model scope."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def has_premium_consent(self, task_id: str, stage: str, round_id: str, model_id: str) -> bool:
+        """Return whether an exact task/stage/round/model consent scope exists."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def insert_source_assisted_answer_candidate(
+        self,
+        task_id: str,
+        stage: str,
+        round_id: str,
+        question_id: str,
+        answer: str,
+        source_path: str,
+        source_authorized: bool,
+    ) -> int:
+        """Persist one source-derived answer candidate and its provenance."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def confirm_source_assisted_answer_candidate(self, candidate_id: int, actor: str) -> bool:
+        """Mark one pending source-derived answer candidate as human-confirmed."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def has_unconfirmed_source_assisted_answer_candidates(
+        self, task_id: str, stage: str, round_id: str
+    ) -> bool:
+        """Return whether the exact interview scope still has unconfirmed candidates."""
+        raise NotImplementedError
+
     def create_delegation_plan(self, task_id: str, contract: Dict[str, Any]) -> int:
         """Persist a governed delegation contract and return its identifier."""
         raise NotImplementedError

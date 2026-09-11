@@ -232,6 +232,54 @@ class ControlPlane:
 
         self._persistence.insert_task(task_id, title, task_type, runtime_tool, spec_path, model_tier, model_id)
 
+    def record_premium_consent(
+        self, task_id: str, stage: str, round_id: str, model_id: str, actor: str
+    ) -> int:
+        """Record explicit human consent for a premium model in one exact interview scope."""
+        if actor != "human":
+            raise PersistenceInvariantViolation("Premium consent requires actor='human'")
+        return self._persistence.insert_premium_consent(task_id, stage, round_id, model_id, actor)
+
+    def require_premium_consent(self, task_id: str, stage: str, round_id: str, model_id: str) -> None:
+        """Deny premium use unless human consent matches the exact stage and round."""
+        if not self._persistence.has_premium_consent(task_id, stage, round_id, model_id):
+            raise PersistenceInvariantViolation(
+                "Premium consent missing for "
+                f"task_id='{task_id}', stage='{stage}', round_id='{round_id}', model_id='{model_id}'"
+            )
+
+    def record_source_assisted_answer_candidate(
+        self,
+        task_id: str,
+        stage: str,
+        round_id: str,
+        question_id: str,
+        answer: str,
+        source_path: str,
+        source_authorized: bool = True,
+    ) -> int:
+        """Persist an authorized source answer only as a candidate pending human confirmation."""
+        if not source_authorized:
+            raise PersistenceInvariantViolation("Source-assisted answer candidates require an authorized source")
+        return self._persistence.insert_source_assisted_answer_candidate(
+            task_id, stage, round_id, question_id, answer, source_path, source_authorized
+        )
+
+    def confirm_source_assisted_answer_candidate(self, candidate_id: int, actor: str) -> None:
+        """Confirm one pending source candidate through the human decision boundary."""
+        if actor != "human":
+            raise PersistenceInvariantViolation("Source-assisted answer confirmation requires actor='human'")
+        if not self._persistence.confirm_source_assisted_answer_candidate(candidate_id, actor):
+            raise ValueError(f"Pending source-assisted answer candidate not found: {candidate_id}")
+
+    def assert_interview_exit_ready(self, task_id: str, stage: str, round_id: str) -> None:
+        """Block interview exit while the exact scope has an unconfirmed source candidate."""
+        if self._persistence.has_unconfirmed_source_assisted_answer_candidates(task_id, stage, round_id):
+            raise PersistenceInvariantViolation(
+                "Cannot exit interview with unconfirmed source-assisted answer candidate "
+                f"for task_id='{task_id}', stage='{stage}', round_id='{round_id}'"
+            )
+
     def create_delegation_plan(self, task_id: str, contract: Dict[str, Any]) -> int:
         """Create a persisted delegation boundary; native execution strategy remains model-owned."""
         if not self.get_task(task_id):

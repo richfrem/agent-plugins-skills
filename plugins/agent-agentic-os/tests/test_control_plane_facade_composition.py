@@ -95,6 +95,31 @@ class _FakePersistencePort(PersistencePort):
         self.calls.append(("get_task", task_id))
         return self._tasks.get(task_id)
 
+    def insert_premium_consent(self, task_id, stage, round_id, model_id, actor) -> int:
+        self.calls.append(("insert_premium_consent", task_id, stage, round_id, model_id, actor))
+        return 1
+
+    def has_premium_consent(self, task_id, stage, round_id, model_id) -> bool:
+        self.calls.append(("has_premium_consent", task_id, stage, round_id, model_id))
+        return True
+
+    def insert_source_assisted_answer_candidate(
+        self, task_id, stage, round_id, question_id, answer, source_path, source_authorized
+    ) -> int:
+        self.calls.append((
+            "insert_source_assisted_answer_candidate", task_id, stage, round_id,
+            question_id, answer, source_path, source_authorized,
+        ))
+        return 1
+
+    def confirm_source_assisted_answer_candidate(self, candidate_id, actor) -> bool:
+        self.calls.append(("confirm_source_assisted_answer_candidate", candidate_id, actor))
+        return True
+
+    def has_unconfirmed_source_assisted_answer_candidates(self, task_id, stage, round_id) -> bool:
+        self.calls.append(("has_unconfirmed_source_assisted_answer_candidates", task_id, stage, round_id))
+        return False
+
     def insert_task(self, task_id, title, task_type, runtime_tool, spec_path, model_tier, model_id) -> None:
         self.calls.append(("insert_task", task_id, title, task_type, runtime_tool, spec_path, model_tier, model_id))
         self._tasks[task_id] = {
@@ -225,6 +250,19 @@ def test_fake_persistence_port_proves_full_delegation():
     cp.create_task(task_id="t1", title="Fake Persistence Task", runtime_tool="claude")
     assert ("insert_task", "t1", "Fake Persistence Task", "GENERAL", "claude", None, None, None) in fake.calls
     assert cp.get_task("t1") == fake._tasks["t1"]
+
+    cp.record_premium_consent("t1", "interview", "round-1", "premium-model", "human")
+    cp.require_premium_consent("t1", "interview", "round-1", "premium-model")
+    candidate_id = cp.record_source_assisted_answer_candidate(
+        "t1", "interview", "round-1", "scope", "P01 only", "docs/brief.md"
+    )
+    cp.confirm_source_assisted_answer_candidate(candidate_id, "human")
+    cp.assert_interview_exit_ready("t1", "interview", "round-1")
+    assert ("insert_premium_consent", "t1", "interview", "round-1", "premium-model", "human") in fake.calls
+    assert ("has_premium_consent", "t1", "interview", "round-1", "premium-model") in fake.calls
+    assert any(call[0] == "insert_source_assisted_answer_candidate" for call in fake.calls)
+    assert ("confirm_source_assisted_answer_candidate", candidate_id, "human") in fake.calls
+    assert ("has_unconfirmed_source_assisted_answer_candidates", "t1", "interview", "round-1") in fake.calls
 
     cp.transition(task_id="t1", to_state="INTERVIEW", actor="user", reason="test")
     assert ("apply_transition", "t1", "INTAKE", "INTERVIEW", "user", "test") in fake.calls
