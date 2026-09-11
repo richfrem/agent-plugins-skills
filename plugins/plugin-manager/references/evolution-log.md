@@ -70,3 +70,17 @@ causing empty reads for single-byte keys like Space.
 Called synchronously inside `tty.setraw()` — TUI freezes, user sees no response on `[x]` → Space.
 **Fix:** Removed the advisory scan from the space key handler. Toggle is now instant in both directions.
 **Files:** `prune_installed_skills.py`, `test_prune_interactive_tui.py`
+
+## 2026-09-11 — Wire interactive TUI to apply removals immediately
+
+**Change:** After the TUI exits, interactive mode now:
+1. Computes the pruning plan and detects re-enabled-but-missing skills
+2. Shows a summary of removals and reinstalls needed
+3. Prompts `Apply these changes now? [y/N]`
+4. On `y`: calls `execute_pruning` to remove disabled items from `.agents/`,
+   then prints the `plugin_add.py` reinstall command for any re-enabled skills.
+
+Previously, interactive mode only saved the manifest — files were never touched
+without a separate `--execute` invocation.
+
+**Files:** `prune_installed_skills.py`
