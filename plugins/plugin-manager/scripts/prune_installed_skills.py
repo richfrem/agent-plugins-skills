@@ -978,8 +978,12 @@ def main(argv: Optional[List[str]] = None) -> int:
                         p_name = own_file.stem
                         data = json.loads(own_file.read_text(encoding="utf-8"))
                         artifacts = data.get("artifacts", [])
-                        merge_installed_components(manifest, p_name, artifacts)
-                        seeded_any = True
+                        existing_artifacts = [
+                            a for a in artifacts if (root_path / a).exists()
+                        ]
+                        if existing_artifacts:
+                            merge_installed_components(manifest, p_name, existing_artifacts)
+                            seeded_any = True
                     except Exception:
                         pass
 
