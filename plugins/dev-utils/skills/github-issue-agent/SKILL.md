@@ -4,7 +4,7 @@ plugin: dev-utils
 description: >
   Agent skill for safe, dry-run-first, deduplicated, root-cause-consolidated, evidence-validated, and secret-redacted logging of repository execution friction into GitHub Issues.
   USE ONLY for durable repository bugs, execution friction (T1-T3), map debt, and architectural improvements.
-  DO NOT USE for temporary intra-session checklists (use task-agent instead).
+  DO NOT USE for managing git worktrees (use `github-issue-worktree-agent`) or full PR lifecycles (use `github-issue-pr-lifecycle-agent`).
 allowed_tools:
   - run_command
   - view_file
@@ -17,84 +17,41 @@ allowed_tools:
 
 # GitHub Issue Agent (`github-issue-agent`)
 
-> **Routing Directive:** USE ONLY for durable repository bugs, execution friction (T1-T3), map debt, and architectural improvements. DO NOT USE for temporary intra-session checklists (use `task-agent` instead).
+> **Routing Directive:** USE ONLY for durable repository bugs, execution friction (T1-T3), map debt, and architectural improvements. DO NOT USE for isolated worktree setup (use `github-issue-worktree-agent` instead) or PR lifecycle flows (use `github-issue-pr-lifecycle-agent` instead).
 
 The `github-issue-agent` skill provides a safe, standardized interface for querying, searching, creating, commenting on, and validating GitHub Issues stemming from agent execution friction, map debt, bugs, and system improvements.
 
 ---
 
-## Dry-Run Default Execution Contract
+## Safety & Validation Gates
 
-> [!IMPORTANT]
-> **Safety First:** By default, all issue-modifying operations (issue creation, commenting, label edits) execute in **dry-run / payload-generation mode** (`execute=False`).
-> No live mutation occurs unless `execute=True` is explicitly passed and all safety gates pass.
-
-Before any GitHub issue is created or updated, the request passes through three mandatory security and quality gates:
-1. **Secret Redaction Gate** (`redaction_gate.py`): Scans titles and bodies for tokens, API keys, private keys, or credentials. Blocks execution if detected.
-2. **Taxonomy Validation Gate** (`gh_issue_taxonomy_validate.py`): Enforces `issue-taxonomy.json` constraints. Requires `type:*`, `tier:*`, `source:*`, `risk:*`, AND location (`area:*` OR `plugin:*`). `gh_issue_create.py` auto-appends `status:needs-triage` if the caller didn't already include a `status:*` label — every created issue gets a sequencing signal (`status:needs-triage`/`ready`/`blocked`/`needs-spec`/`accepted-debt`/`duplicate`), not just tier/risk categorization, so open issues can be sequenced without manually re-deriving priority later.
-3. **Evidence Quality Body Validation Gate** (`body_validator.py`): Requires standard structured markdown sections (`## Summary`, `## Observed Behavior`, `## Expected Behavior`, `## Evidence`, `## Impact`).
+1. **Dry-Run by Default:** All issue operations execute in payload generation mode unless `--execute` is specified.
+2. **Secret Redaction Gate:** Blocks submission if credentials or tokens are detected in title or body.
+3. **Taxonomy Validation Gate:** Enforces required taxonomy dimensions (`type:*`, `tier:*`, `source:*`, `risk:*`, and `area:*`/`plugin:*`).
+4. **Body Structure Gate:** Requires structured Markdown sections (`## Summary`, `## Observed Behavior`, `## Expected Behavior`, `## Evidence`, `## Impact`).
 
 ---
 
-## Operation Catalog
+## Quick Start & Operations
 
-### 1. `create-friction-issue`
-Scaffolds and submits (or outputs payload for) a friction issue resulting from agent execution friction or tool failure.
-
-- **Helper Script:** `plugins/dev-utils/skills/github-issue-agent/scripts/gh_issue_create.py`
-- **Default Labels Required:** `type:friction`, `tier:1-friction` (or `tier:2-structural` / `tier:3-architecture`), `source:agent`, `risk:low` (or appropriate risk level), plus location (`area:*` or `plugin:*`).
-- **Input Parameters:**
-  - `title`: Short, clear summary of root-cause friction.
-  - `body`: Markdown content conforming to required sections.
-  - `labels`: List of taxonomy labels matching `issue-taxonomy.json`.
-  - `execute`: Boolean (`False` for dry-run payload generation, `True` for live creation via `gh`).
-
-### 2. `create-map-debt-issue`
-Converts an entry from `map-debt.md` into a formal tracked GitHub issue.
-
-- **Helper Script:** `plugins/dev-utils/skills/github-issue-agent/scripts/gh_issue_create.py`
-- **Default Labels Required:** `type:map-debt`, `tier:*`, `source:agent`, `risk:*`, location (`area:*` or `plugin:*`).
-
-### 3. `create-bug-issue`
-Logs a verified bug or code defect identified during execution or test failure.
-
-- **Helper Script:** `plugins/dev-utils/skills/github-issue-agent/scripts/gh_issue_create.py`
-- **Default Labels Required:** `type:bug`, `tier:*`, `source:agent`, `risk:*`, location (`area:*` or `plugin:*`).
-
-### 4. `search-related-issues`
-Searches open and closed issues for existing root-cause items to prevent duplicate issues.
-
-- **Helper Script:** `plugins/dev-utils/skills/github-issue-agent/scripts/gh_issue_search.py`
-- **Input Parameters:**
-  - `title`: Proposed issue title or keyword.
-  - `area_label`: Location label (`area:*` or `plugin:*`).
-  - `file_paths`: List of affected file paths.
-- **Output:** Returns JSON object indicating if an existing root cause exists (`has_existing_root_cause`), target issue number (`target_issue_number`), and action recommendation (`comment_and_append_evidence` vs `create_new_issue`).
-
-### 5. `comment-on-existing-issue`
-Appends additional empirical evidence, stack traces, or context to an existing issue rather than opening a duplicate.
-
-- **Helper Script:** `plugins/dev-utils/skills/github-issue-agent/scripts/gh_issue_comment.py`
-- **Input Parameters:**
-  - `issue_number`: GitHub issue ID.
-  - `comment_body`: Markdown comment text (must pass secret redaction scan).
-  - `execute`: Boolean (`False` for dry-run payload generation, `True` for live comment posting).
-
-### 6. `validate-issue-taxonomy`
-Validates a list of labels against `issue-taxonomy.json`.
-
-- **Helper Script:** `plugins/dev-utils/skills/github-issue-agent/scripts/gh_issue_taxonomy_validate.py`
-- **Usage:** Run CLI or import `validate_taxonomy(labels: list[str])`.
+- **Create Friction Issue:**
+  ```bash
+  python3 plugins/dev-utils/skills/github-issue-agent/scripts/gh_issue_create.py --title "Bug summary" --body "..." --labels "type:friction,tier:1-friction,source:agent,risk:low,area:dev-utils"
+  ```
+- **Search Related Issues (Deduplication):**
+  ```bash
+  python3 plugins/dev-utils/skills/github-issue-agent/scripts/gh_issue_search.py --title "Bug summary" --area-label "area:dev-utils"
+  ```
+- **Comment on Existing Issue:**
+  ```bash
+  python3 plugins/dev-utils/skills/github-issue-agent/scripts/gh_issue_comment.py --issue 42 --comment "Additional evidence..."
+  ```
 
 ---
 
-## Taxonomy Reference
+## Progressive Disclosure & References
 
-Taxonomy labels and rules are defined in `plugins/dev-utils/skills/github-issue-agent/issue-taxonomy.json`.
-
-Mandatory dimensions for every issue:
-- `type`: `type:bug`, `type:friction`, `type:map-debt`, `type:enhancement`, `type:documentation`, `type:security`, `type:architecture`, `type:test-gap`
-- `tier`: `tier:0-quickfix`, `tier:1-friction`, `tier:2-structural`, `tier:3-architecture`
-- `source`: `source:agent`, `source:human`, `source:script`, `source:test`, `source:review`, `source:migration`
-- `risk`: `risk:low`, `risk:medium`, `risk:high`, `risk:security-sensitive`, `risk:destructive-operation`
-- `location`: Must have at least one `area:*` label or one `plugin:*` label.
+- **Operation Catalog**: [references/operation-catalog.md](references/operation-catalog.md) — complete CLI parameters and scripts.
+- **Taxonomy Guide**: [references/taxonomy-guide.md](references/taxonomy-guide.md) — label schemas and taxonomy reference.
+- **Acceptance Criteria**: [references/acceptance-criteria.md](references/acceptance-criteria.md) — verification contracts and test requirements.
+- **Fallback Protocol**: [references/fallback-tree.md](references/fallback-tree.md) — failure recovery and offline workarounds.

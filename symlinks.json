@@ -1820,54 +1820,6 @@
       "description": ""
     },
     {
-      "src": "plugins/dev-utils/references/acceptance-criteria.md",
-      "dst": "plugins/dev-utils/skills/task-agent/references/acceptance-criteria.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/references/assistant_preferences.md",
-      "dst": "plugins/dev-utils/skills/task-agent/references/assistant_preferences.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/references/per-user-tasks-default.md",
-      "dst": "plugins/dev-utils/skills/task-agent/references/per-user-tasks-default.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/references/user-hermes-tasks-root.md",
-      "dst": "plugins/dev-utils/skills/task-agent/references/user-hermes-tasks-root.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/references/terminal-backgrounding.md",
-      "dst": "plugins/dev-utils/skills/task-agent/references/terminal-backgrounding.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/scripts/task_manager.py",
-      "dst": "plugins/dev-utils/skills/task-agent/scripts/task_manager.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/scripts/next_number.py",
-      "dst": "plugins/dev-utils/skills/task-agent/scripts/next_number.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/assets/templates/task-template.md",
-      "dst": "plugins/dev-utils/skills/task-agent/assets/templates/task-template.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
       "src": "plugins/cli-agents/scripts/run_agent.py",
       "dst": "plugins/cli-agents/skills/copilot-cli-agent/scripts/run_agent.py",
       "strategy": "symlink",
@@ -2164,12 +2116,6 @@
     {
       "src": "plugins/agent-agentic-os/rules/destructive-action-guard.md",
       "dst": "plugins/agent-agentic-os/skills/self-evolution/references/destructive-action-guard.md",
-      "strategy": "symlink",
-      "description": "Plugin reference \u2192 Skill reference"
-    },
-    {
-      "src": "plugins/dev-utils/rules/git-operations.md",
-      "dst": "plugins/dev-utils/skills/task-agent/references/git-operations.md",
       "strategy": "symlink",
       "description": "Plugin reference \u2192 Skill reference"
     },
@@ -9878,10 +9824,10 @@
       "description": ""
     },
     {
-      "src": "plugins/dev-utils/references/acceptance-criteria.md",
+      "src": "plugins/dev-utils/references/optimize-context-acceptance-criteria.md",
       "dst": "plugins/dev-utils/skills/optimize-context/references/acceptance-criteria.md",
       "strategy": "symlink",
-      "description": ""
+      "description": "optimize-context acceptance criteria"
     },
     {
       "src": "plugins/plugin-manager/references/acceptance-criteria.md",
@@ -9933,13 +9879,13 @@
     },
     {
       "src": "plugins/dev-utils/scripts/issue_worktree_manage.py",
-      "dst": "plugins/dev-utils/skills/issue-worktree-agent/scripts/issue_worktree_manage.py",
+      "dst": "plugins/dev-utils/skills/github-issue-worktree-agent/scripts/issue_worktree_manage.py",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/dev-utils/scripts/issue_pr_orchestrate.py",
-      "dst": "plugins/dev-utils/skills/issue-pr-lifecycle-agent/scripts/issue_pr_orchestrate.py",
+      "dst": "plugins/dev-utils/skills/github-issue-pr-lifecycle-agent/scripts/issue_pr_orchestrate.py",
       "strategy": "symlink",
       "description": ""
     },
@@ -10365,7 +10311,7 @@
     },
     {
       "src": "plugins/dev-utils/scripts/issue_worktree_manage.py",
-      "dst": "plugins/dev-utils/skills/issue-pr-lifecycle-agent/scripts/issue_worktree_manage.py",
+      "dst": "plugins/dev-utils/skills/github-issue-pr-lifecycle-agent/scripts/issue_worktree_manage.py",
       "strategy": "symlink",
       "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
     },
@@ -10860,6 +10806,144 @@
       "dst": "plugins/agent-scaffolders/skills/audit-skill/references/review-rubric.md",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/scripts/body_validator.py",
+      "dst": "plugins/dev-utils/skills/github-issue-backlog-agent/scripts/body_validator.py",
+      "strategy": "symlink",
+      "description": "Body validator for github-issue-backlog-agent"
+    },
+    {
+      "src": "plugins/dev-utils/scripts/gh_issue_taxonomy_validate.py",
+      "dst": "plugins/dev-utils/skills/github-issue-backlog-agent/scripts/gh_issue_taxonomy_validate.py",
+      "strategy": "symlink",
+      "description": "Taxonomy validator for github-issue-backlog-agent"
+    },
+    {
+      "src": "plugins/dev-utils/scripts/redaction_gate.py",
+      "dst": "plugins/dev-utils/skills/github-issue-backlog-agent/scripts/redaction_gate.py",
+      "strategy": "symlink",
+      "description": "Redaction gate for github-issue-backlog-agent"
+    },
+    {
+      "src": "plugins/dev-utils/references/github-issue-agent-acceptance-criteria.md",
+      "dst": "plugins/dev-utils/skills/github-issue-agent/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": "github-issue-agent acceptance-criteria.md reference"
+    },
+    {
+      "src": "plugins/dev-utils/references/github-issue-agent-fallback-tree.md",
+      "dst": "plugins/dev-utils/skills/github-issue-agent/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": "github-issue-agent fallback-tree.md reference"
+    },
+    {
+      "src": "plugins/dev-utils/references/github-issue-agent-operation-catalog.md",
+      "dst": "plugins/dev-utils/skills/github-issue-agent/references/operation-catalog.md",
+      "strategy": "symlink",
+      "description": "github-issue-agent operation-catalog.md reference"
+    },
+    {
+      "src": "plugins/dev-utils/references/github-issue-agent-taxonomy-guide.md",
+      "dst": "plugins/dev-utils/skills/github-issue-agent/references/taxonomy-guide.md",
+      "strategy": "symlink",
+      "description": "github-issue-agent taxonomy-guide.md reference"
+    },
+    {
+      "src": "plugins/dev-utils/references/github-issue-backlog-agent-acceptance-criteria.md",
+      "dst": "plugins/dev-utils/skills/github-issue-backlog-agent/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": "github-issue-backlog-agent acceptance-criteria.md reference"
+    },
+    {
+      "src": "plugins/dev-utils/references/github-issue-backlog-agent-bridge-guide.md",
+      "dst": "plugins/dev-utils/skills/github-issue-backlog-agent/references/bridge-guide.md",
+      "strategy": "symlink",
+      "description": "github-issue-backlog-agent bridge-guide.md reference"
+    },
+    {
+      "src": "plugins/dev-utils/references/github-issue-backlog-agent-fallback-tree.md",
+      "dst": "plugins/dev-utils/skills/github-issue-backlog-agent/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": "github-issue-backlog-agent fallback-tree.md reference"
+    },
+    {
+      "src": "plugins/dev-utils/references/github-issue-pr-lifecycle-agent-acceptance-criteria.md",
+      "dst": "plugins/dev-utils/skills/github-issue-pr-lifecycle-agent/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": "github-issue-pr-lifecycle-agent acceptance-criteria.md reference"
+    },
+    {
+      "src": "plugins/dev-utils/references/github-issue-pr-lifecycle-agent-fallback-tree.md",
+      "dst": "plugins/dev-utils/skills/github-issue-pr-lifecycle-agent/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": "github-issue-pr-lifecycle-agent fallback-tree.md reference"
+    },
+    {
+      "src": "plugins/dev-utils/references/github-issue-pr-lifecycle-agent-lifecycle-guide.md",
+      "dst": "plugins/dev-utils/skills/github-issue-pr-lifecycle-agent/references/lifecycle-guide.md",
+      "strategy": "symlink",
+      "description": "github-issue-pr-lifecycle-agent lifecycle-guide.md reference"
+    },
+    {
+      "src": "plugins/dev-utils/references/github-issue-prioritizer-acceptance-criteria.md",
+      "dst": "plugins/dev-utils/skills/github-issue-prioritizer/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": "github-issue-prioritizer acceptance-criteria.md reference"
+    },
+    {
+      "src": "plugins/dev-utils/references/github-issue-prioritizer-fallback-tree.md",
+      "dst": "plugins/dev-utils/skills/github-issue-prioritizer/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": "github-issue-prioritizer fallback-tree.md reference"
+    },
+    {
+      "src": "plugins/dev-utils/references/github-issue-prioritizer-priority-matrix.md",
+      "dst": "plugins/dev-utils/skills/github-issue-prioritizer/references/priority-matrix.md",
+      "strategy": "symlink",
+      "description": "github-issue-prioritizer priority-matrix.md reference"
+    },
+    {
+      "src": "plugins/dev-utils/references/github-issue-worktree-agent-acceptance-criteria.md",
+      "dst": "plugins/dev-utils/skills/github-issue-worktree-agent/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": "github-issue-worktree-agent acceptance-criteria.md reference"
+    },
+    {
+      "src": "plugins/dev-utils/references/github-issue-worktree-agent-fallback-tree.md",
+      "dst": "plugins/dev-utils/skills/github-issue-worktree-agent/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": "github-issue-worktree-agent fallback-tree.md reference"
+    },
+    {
+      "src": "plugins/dev-utils/references/github-issue-worktree-agent-worktree-guide.md",
+      "dst": "plugins/dev-utils/skills/github-issue-worktree-agent/references/worktree-guide.md",
+      "strategy": "symlink",
+      "description": "github-issue-worktree-agent worktree-guide.md reference"
+    },
+    {
+      "src": "plugins/dev-utils/references/optimize-context-deduplication-topology.md",
+      "dst": "plugins/dev-utils/skills/optimize-context/references/deduplication-topology.md",
+      "strategy": "symlink",
+      "description": "optimize-context deduplication-topology.md reference"
+    },
+    {
+      "src": "plugins/dev-utils/references/optimize-context-fallback-tree.md",
+      "dst": "plugins/dev-utils/skills/optimize-context/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": "optimize-context fallback-tree.md reference"
+    },
+    {
+      "src": "plugins/dev-utils/references/optimize-context-instruction-optimization.md",
+      "dst": "plugins/dev-utils/skills/optimize-context/references/instruction-optimization.md",
+      "strategy": "symlink",
+      "description": "optimize-context instruction-optimization.md reference"
+    },
+    {
+      "src": "plugins/dev-utils/references/optimize-context-session-efficiency.md",
+      "dst": "plugins/dev-utils/skills/optimize-context/references/session-efficiency.md",
+      "strategy": "symlink",
+      "description": "optimize-context session-efficiency.md reference"
     }
   ]
 }

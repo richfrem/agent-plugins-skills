@@ -1,1 +1,1 @@
-../../../references/acceptance-criteria.md
+../../../references/optimize-context-acceptance-criteria.md
