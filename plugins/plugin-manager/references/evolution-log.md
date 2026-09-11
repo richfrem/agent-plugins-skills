@@ -47,6 +47,7 @@
 | 2026-09-11 | Tier 1 | Feature: Complete removal & orphaned artifact cleanup in plugin_remove.py | Added orphaned artifact detection/scrubbing to ensure .agents/ is completely clean on full removal; syncs retention and skills-lock | Evolution | SUCCESS |
 | 2026-09-11 | Tier 1 | Feature: Marketplace-style source prompt & --source flag in plugin_add.py | Added Step 1 source prompt matching Claude Code /marketplace UX when no source is passed, plus explicit --source / -s flag support | Evolution | SUCCESS |
 | 2026-09-11 | Tier 1 | Feature: Install-time granular skill selection and retention seeding | Added step-through skill customization TUI (toggle all with 'a', individual with space), --skills flag in installer, --select-skills flag in add, and automatic retention manifest updates | Evolution | SUCCESS |
+| 2026-09-11 | Tier 1 | Task 4: Scaffold plugin-pruner skill and wire symlinks | Created lean progressive disclosure router (35 lines), evals, retention-workflow reference, CLI guide, registered in symlinks.json, and updated plugin.yaml | Evolution | SUCCESS |
 
 
 

@@ -10788,6 +10788,36 @@
       "dst": "plugins/agent-agentic-os/skills/os-init/scripts/control_plane/adapters.py",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "plugins/plugin-manager/scripts/prune_installed_skills.py",
+      "dst": "plugins/plugin-manager/skills/plugin-pruner/scripts/prune_installed_skills.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/plugin-manager/assets/templates/plugin-retention.template.json",
+      "dst": "plugins/plugin-manager/skills/plugin-pruner/assets/templates/plugin-retention.template.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/plugin-manager/references/retention-workflow.md",
+      "dst": "plugins/plugin-manager/skills/plugin-pruner/references/retention-workflow.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/plugin-manager/references/pruner-cli-guide.md",
+      "dst": "plugins/plugin-manager/skills/plugin-pruner/references/pruner-cli-guide.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/plugin-manager/references/acceptance-criteria.md",
+      "dst": "plugins/plugin-manager/skills/plugin-pruner/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": ""
     }
   ]
 }

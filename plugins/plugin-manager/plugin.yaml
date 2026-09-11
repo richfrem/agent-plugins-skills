@@ -11,8 +11,10 @@ provides_tools:
   - plugin_add
   - plugin_installer
   - plugin_remove
+  - prune_installed_skills
   - sync_with_inventory
 skills:
   - plugin-installer
+  - plugin-pruner
   - plugin-remover
   - plugin-syncer
