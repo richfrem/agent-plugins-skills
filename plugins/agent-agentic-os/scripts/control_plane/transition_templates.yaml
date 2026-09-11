@@ -135,6 +135,31 @@ stages:
     - Issue-worthy follow-ups are confirmed and tracked before DONE.
     - The final complete-or-skip decision is asked only after this survey is complete.
 
+intake_guidance:
+  source_documents:
+    authorization_required: true
+    inferred_answers_require_confirmation: true
+    documents_cannot_grant_approval: true
+    resume_confirmed_answers: true
+  review_rounds:
+    ceilings_minutes: {QUICK: 5, STANDARD: 15, SIGNIFICANT: 30}
+    shared_whole_round_budget: true
+    timeout_status: partial_timeout
+  precompletion_summary:
+    user_rule: Explain map debt as agent follow-up, including whether the user must act now.
+model_effort_guidance:
+  interview:
+    recommended_model: current-user-model
+    recommended_effort: low
+    requires_confirmation_for_premium: true
+  plan:
+    recommended_model: user-selected-planning-model
+    recommended_effort: medium
+    requires_confirmation_for_premium: true
+  review:
+    recommended_model: user-selected-review-model
+    recommended_effort: medium
+    requires_confirmation_for_premium: true
 execution_guidance:
   work_package:
     advisory: true
