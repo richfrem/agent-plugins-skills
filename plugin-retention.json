@@ -1,0 +1,284 @@
+{
+  "version": 1,
+  "updated_at": "2026-09-11T00:00:00Z",
+  "protected_defaults": [
+    "plugin-installer",
+    "plugin-remover",
+    "plugin-syncer",
+    "plugin-pruner",
+    "symlink-manager",
+    "worktree-manager"
+  ],
+  "plugins": {
+    "agent-agentic-os": {
+      "skills": {
+        "critical-auditor": true,
+        "interview-spec": true,
+        "issue-resolution-reviewer": true,
+        "optimize-agent-instructions": true,
+        "os-architect": true,
+        "os-clean-locks": true,
+        "os-environment-probe": true,
+        "os-eval-backport": true,
+        "os-eval-lab-setup": true,
+        "os-eval-runner": true,
+        "os-evolution-planner": true,
+        "os-evolution-verifier": true,
+        "os-experiment-log": true,
+        "os-guide": true,
+        "os-health-check": true,
+        "os-improvement-loop": true,
+        "os-improvement-report": true,
+        "os-init": true,
+        "os-memory-manager": true,
+        "os-skill-improvement": true,
+        "repository-improvement": true,
+        "self-evolution": true,
+        "todo-check": true,
+        "worktree-manager": true,
+        "evo-smoketest": false
+      },
+      "rules": {
+        "adversarial-reasoning-before-agreement-rule.md": true,
+        "destructive-action-guard.md": true,
+        "github-issue-logging-policy.md": true,
+        "self-evolution-policy.md": true,
+        "test-driven-development.md": true,
+        "worktree-lifecycle-management.md": true,
+        "worktree-subagent-leak-detection.md": true
+      },
+      "agents": {
+        "agent-agentic-os-agentic-os-setup.md": true,
+        "agent-agentic-os-improvement-intake-agent.md": true,
+        "agent-agentic-os-os-architect-agent.md": true,
+        "agent-agentic-os-os-architect-tester-agent.md": true
+      }
+    },
+    "agent-scaffolders": {
+      "skills": {
+        "analyze-plugin": true,
+        "audit-plugin": true,
+        "audit-skill": true,
+        "create-agentic-workflow": true,
+        "create-command": true,
+        "create-github-action": true,
+        "create-hook": true,
+        "create-mcp-integration": true,
+        "create-plugin": true,
+        "create-rule": true,
+        "create-skill": true,
+        "create-stateful-skill": true,
+        "create-sub-agent": true,
+        "eval-autoresearch-fit": true,
+        "fix-plugin-paths": true,
+        "l5-red-team-auditor": true,
+        "manage-marketplace": true,
+        "path-reference-auditor": true,
+        "self-audit": true,
+        "synthesize-learnings": true,
+        "update-ecosystem-index": true,
+        "audit-plugin-l5": false,
+        "compile-apm-package": false,
+        "convert-plugin-to-apm": false,
+        "create-apm-package": false,
+        "create-azure-agent": false,
+        "create-docker-skill": false,
+        "ecosystem-authoritative-sources": false,
+        "ecosystem-standards": false,
+        "install-apm-package": false,
+        "mine-plugins": false,
+        "mine-skill": false
+      },
+      "rules": {
+        "plugin-architecture-policy.md": true
+      },
+      "agents": {}
+    },
+    "cli-agents": {
+      "skills": {
+        "agent-file-synchronization": true,
+        "agy-cli-agent": true,
+        "claude-cli-agent": true,
+        "codex-cli-agent": true,
+        "copilot-cli-agent": true,
+        "project-setup": true,
+        "update-cli-models": true,
+        "agt-security": false,
+        "local-llm-bridge": false,
+        "local-llm-setup": false,
+        "maf-adapter": false
+      },
+      "rules": {},
+      "agents": {
+        "cli-agents-architect-review.md": true,
+        "cli-agents-compliance-reviewer.md": true,
+        "cli-agents-debate-synthesizer.md": true,
+        "cli-agents-output-validator.md": true,
+        "cli-agents-performance-analyst.md": true,
+        "cli-agents-pr-reviewer.md": true,
+        "cli-agents-red-team-reviewer.md": true,
+        "cli-agents-refactor-expert.md": true,
+        "cli-agents-security-auditor.md": true,
+        "cli-agents-self-critic.md": true,
+        "cli-agents-tdd-contract-reviewer.md": true,
+        "cli-agents-test-writer.md": true
+      }
+    },
+    "dev-utils": {
+      "skills": {
+        "adr-management": true,
+        "coding-conventions-agent": true,
+        "context-bundler": true,
+        "convert-mermaid": true,
+        "github-issue-agent": true,
+        "github-issue-backlog-agent": true,
+        "github-issue-prioritizer": true,
+        "hf-download": true,
+        "hf-init": true,
+        "hf-upload": true,
+        "humanize": true,
+        "github-issue-pr-lifecycle-agent": true,
+        "github-issue-worktree-agent": true,
+        "link-checker-agent": true,
+        "optimize-context": true,
+        "symlink-manager": true
+      },
+      "rules": {
+        "coding-conventions.md": true,
+        "git-operations.md": true,
+        "graph-planning-superpowers-policy.md": true
+      },
+      "agents": {
+        "dev-utils-coding-conventions-agent.md": true,
+        "dev-utils-link-checker-agent.md": true
+      }
+    },
+    "plugin-manager": {
+      "skills": {
+        "plugin-installer": true,
+        "plugin-pruner": true,
+        "plugin-remover": true,
+        "plugin-syncer": true
+      },
+      "rules": {},
+      "agents": {}
+    },
+    "agent-memory": {
+      "skills": {
+        "memory-management": true,
+        "rlm-audit": true,
+        "rlm-cleanup-agent": true,
+        "rlm-curator": true,
+        "rlm-distill-agent": true,
+        "rlm-init": true,
+        "rlm-search": true,
+        "vector-db-audit": true,
+        "vector-db-cleanup": true,
+        "vector-db-ingest": true,
+        "vector-db-init": true,
+        "vector-db-launch": true,
+        "vector-db-search": true
+      },
+      "rules": {},
+      "agents": {
+        "agent-memory-rlm-cleanup-agent.md": true,
+        "agent-memory-rlm-curator.md": true,
+        "agent-memory-rlm-distill-agent.md": true,
+        "agent-memory-rlm-factory-init-agent.md": true,
+        "agent-memory-rlm-init.md": true,
+        "agent-memory-rlm-search.md": true,
+        "agent-memory-vector-db-cleanup.md": true,
+        "agent-memory-vector-db-ingest.md": true,
+        "agent-memory-vector-db-init-agent.md": true
+      }
+    },
+    "agent-orchestration": {
+      "skills": {
+        "agent-swarm": true,
+        "co-pilot-loop": true,
+        "dual-loop": true,
+        "graph-execution": true,
+        "learning-loop": true,
+        "orchestrator": true,
+        "red-team-review": true,
+        "select-loop-strategy": true,
+        "triple-loop-learning": true
+      },
+      "rules": {},
+      "agents": {
+        "agent-orchestration-orchestrator.md": true
+      }
+    },
+    "dependency-management": {
+      "skills": {
+        "dependency-management": true
+      },
+      "rules": {
+        "dependency-management.md": true
+      },
+      "agents": {}
+    },
+    "exploration-cycle-plugin": {
+      "skills": {
+        "business-requirements-capture": true,
+        "business-workflow-doc": true,
+        "discovery-planning": true,
+        "exploration-handoff": true,
+        "exploration-optimizer": true,
+        "exploration-session-brief": true,
+        "exploration-workflow": true,
+        "prototype-builder": true,
+        "subagent-driven-prototyping": true,
+        "user-story-capture": true,
+        "using-exploration-cycle": true,
+        "vibe-behavioral-test-capture": true,
+        "vibe-browser-audit": true,
+        "vibe-domain-extractor": true,
+        "vibe-reengineer": true,
+        "vibe-slice-migrator": true,
+        "vibe-spec-packager": true,
+        "vibe-to-speckit-superpowers": true,
+        "vibe-togaf-architect": true,
+        "visual-companion": true
+      },
+      "rules": {},
+      "agents": {
+        "exploration-cycle-plugin-business-rule-audit-agent.md": true,
+        "exploration-cycle-plugin-certification-verifier.md": true,
+        "exploration-cycle-plugin-discovery-planning-agent.md": true,
+        "exploration-cycle-plugin-domain-purity-auditor.md": true,
+        "exploration-cycle-plugin-exploration-cycle-orchestrator-agent.md": true,
+        "exploration-cycle-plugin-handoff-preparer-agent.md": true,
+        "exploration-cycle-plugin-intake-agent.md": true,
+        "exploration-cycle-plugin-planning-doc-agent.md": true,
+        "exploration-cycle-plugin-problem-framing-agent.md": true,
+        "exploration-cycle-plugin-prototype-builder-agent.md": true,
+        "exploration-cycle-plugin-prototype-companion-agent.md": true,
+        "exploration-cycle-plugin-requirements-doc-agent.md": true,
+        "exploration-cycle-plugin-runtime-observer-agent.md": true,
+        "exploration-cycle-plugin-semantic-drift-auditor.md": true,
+        "exploration-cycle-plugin-vibe-orchestrator-agent.md": true
+      }
+    },
+    "obsidian-wiki-engine": {
+      "skills": {
+        "obsidian-bases-manager": true,
+        "obsidian-canvas-architect": true,
+        "obsidian-graph-traversal": true,
+        "obsidian-init": true,
+        "obsidian-markdown-mastery": true,
+        "obsidian-query-agent": true,
+        "obsidian-rlm-distiller": true,
+        "obsidian-vault-crud": true,
+        "obsidian-wiki-builder": true,
+        "obsidian-wiki-linter": true
+      },
+      "rules": {},
+      "agents": {
+        "obsidian-wiki-engine-README.md": true,
+        "obsidian-wiki-engine-super-rag-setup-agent.md": true,
+        "obsidian-wiki-engine-wiki-init-agent.md": true
+      }
+    }
+  }
+}
