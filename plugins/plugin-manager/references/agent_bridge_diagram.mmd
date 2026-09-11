@@ -1,1 +1,6 @@
-../../../assets/diagrams/agent_bridge_diagram.mmd
+graph TD
+    Repo[Monorepo plugins/] --> Engine[plugin_installer.py]
+    Engine --> CentralStore[.agents/ Central Store]
+    CentralStore --> Claude[.claude/ Environment]
+    CentralStore --> Gemini[.gemini/ Environment]
+    CentralStore --> Azure[.azure/ Environment]

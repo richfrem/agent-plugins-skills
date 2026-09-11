@@ -431,11 +431,13 @@ git commit -m "refactor(plugin-manager): convert skills to progressive disclosur
 - Create: `plugins/agent-scaffolders/references/platform-primitives.md`
 - Modify: `plugins/agent-scaffolders/scripts/create_skill.py` (ensure generated `SKILL.md` defaults to progressive disclosure)
 - Modify: `plugins/agent-scaffolders/skills/audit-skill/SKILL.md`
-- Modify: `plugins/agent-scaffolders/scripts/audit_skill.py` (add progressive disclosure line/structure audit)
+- Create: `plugins/agent-scaffolders/references/review-rubric.md` (Crow-inspired 4-tier severity: Blocking/High/Medium/Low, token/context efficiency, knowledge vs execution separation)
+- Modify: `plugins/agent-scaffolders/scripts/audit_skill.py` (add progressive disclosure line/structure audit, trigger boundary validation, and rubric compliance)
 - Create: `tests/agent_scaffolders/test_audit_skill_progressive.py`
 
 **Interfaces:**
-- `create-skill`: Lean router ($\le 60$ lines) that links to interview and platform references.
+- `create-skill`: Lean router ($\le 60$ lines) linking to interview and platform references.
+- `audit-skill`: Adopts the 4-tier severity rubric (`Blocking`, `High`, `Medium`, `Low`) and checks knowledge/execution separation.
 - `audit_skill.py`: Flags `SKILL.md` $> 80$ lines and verifies progressive disclosure links, while preserving all 6 invariants and `--fix`.
 
 - [ ] **Step 1: Write test for progressive disclosure audit in `audit_skill.py`**
@@ -520,10 +522,49 @@ python3 plugins/plugin-manager/scripts/plugin_add.py plugins/agent-scaffolders -
 ```
 Verify `.agents/skills/plugin-pruner` exists and is functional.
 
-- [ ] **Step 4: Final verification dry-run**
+### Task 10: Lifecycle Simulator for Installer, Pruner, and Remover
 
-Run:
-```bash
-python3 plugins/plugin-manager/scripts/prune_installed_skills.py --dry-run
+**Files:**
+- Create: `plugins/plugin-manager/scripts/simulate_lifecycle.py`
+- Create: `tests/plugin_manager/test_simulate_lifecycle.py`
+- Modify: `symlinks.json`
+- Modify: `plugins/plugin-manager/plugin.yaml`
+
+**Interfaces:**
+- CLI: `python3 plugins/plugin-manager/scripts/simulate_lifecycle.py [--scenario full|install|prune|remove] [--temp-dir DIR]`
+- Awareness: Inspects repository root `plugin.yaml` (`skills_dirs`) and individual `plugins/*/plugin.yaml`.
+- Automated test driver: Exercises the three TUIs/headless modes (installer -> pruner -> remover -> syncer) against a mock `.agents/` environment, verifying that `plugin-retention.json`, `plugin-sources.json`, `skills-lock.json`, and `.agents/ownership/*.json` stay in exact lockstep.
+
+- [ ] **Step 1: Write test for simulator engine**
+
+```python
+# tests/plugin_manager/test_simulate_lifecycle.py
+from pathlib import Path
+from plugins.plugin_manager.scripts.simulate_lifecycle import run_lifecycle_simulation
+
+def test_lifecycle_simulation_end_to_end(tmp_path: Path):
+    result = run_lifecycle_simulation(target_root=tmp_path, scenario="full")
+    assert result["success"] is True
+    assert result["stages_completed"] == ["install", "prune", "sync", "remove"]
 ```
-Expected: Clean exit code 0, displaying selected and removable component summary.
+
+- [ ] **Step 2: Run test to verify it fails**
+
+Run: `pytest tests/plugin_manager/test_simulate_lifecycle.py -v`
+
+- [ ] **Step 3: Implement `simulate_lifecycle.py`**
+
+Build the simulator that reads repo root `plugin.yaml` and executes mock runs of `plugin_add`, `prune_installed_skills`, `sync_with_inventory`, and `plugin_remove` against a sandbox directory.
+
+- [ ] **Step 4: Run test to verify it passes**
+
+Run: `pytest tests/plugin_manager/test_simulate_lifecycle.py -v`  
+Expected: PASS
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add plugins/plugin-manager/scripts/simulate_lifecycle.py tests/plugin_manager/test_simulate_lifecycle.py symlinks.json plugins/plugin-manager/plugin.yaml
+git commit -m "feat(plugin-manager): add unified lifecycle simulator for installer, pruner, and remover"
+```
+

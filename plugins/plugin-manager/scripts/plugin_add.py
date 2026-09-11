@@ -275,6 +275,141 @@ def _multiselect(title: str, items: list) -> list:
 
 
 # ---------------------------------------------------------------------------
+# Install-time granular skill selection
+# ---------------------------------------------------------------------------
+class SkillSelectionState:
+    """Encapsulates skill toggles for a single plugin during install-time customization."""
+
+    def __init__(self, plugin_name: str, skills: list[str]):
+        self.plugin_name = plugin_name
+        self.skills = sorted(skills)
+        self.selected = set(self.skills)
+        self.cursor = 0
+
+    def all_selected(self) -> bool:
+        return len(self.selected) == len(self.skills)
+
+    def any_selected(self) -> bool:
+        return len(self.selected) > 0
+
+
+def skill_selection_process_key(key: str, state: SkillSelectionState) -> bool:
+    """Handle one keypress in the skill customization TUI.
+
+    Returns True when done (Enter/confirm), False otherwise.
+    """
+    n = len(state.skills)
+    if key == "UP":
+        state.cursor = max(0, state.cursor - 1)
+    elif key == "DOWN":
+        state.cursor = min(n - 1, state.cursor + 1)
+    elif key == " ":
+        if 0 <= state.cursor < n:
+            s_name = state.skills[state.cursor]
+            if s_name in state.selected:
+                state.selected.remove(s_name)
+            else:
+                state.selected.add(s_name)
+    elif key == "a":
+        if state.all_selected():
+            state.selected = set()
+        else:
+            state.selected = set(state.skills)
+    elif key in ("\r", "\n", ""):
+        return True
+    elif key in ("q", "Q", "\x03"):
+        print(red("\nCancelled."))
+        sys.exit(0)
+    return False
+
+
+def _render_skill_selection(state: SkillSelectionState, plugin_idx: int, total_plugins: int,
+                            first_render: bool = False) -> int:
+    """Render the skill selection TUI for a single plugin."""
+    PAGE = 18
+    lines = []
+    lines.append(bold(f"  Customize Skills — [{plugin_idx}/{total_plugins}]: {cyan(state.plugin_name)}"))
+    lines.append(dim("  ↑↓ move  |  space toggle  |  a all  |  enter next/confirm  |  q quit"))
+    lines.append("")
+
+    visible = state.skills[max(0, state.cursor - PAGE // 2): state.cursor + PAGE]
+    offset = max(0, state.cursor - PAGE // 2)
+
+    for idx, s_name in enumerate(visible):
+        abs_idx = offset + idx
+        is_cursor = abs_idx == state.cursor
+        is_selected = s_name in state.selected
+        check = green("[x]") if is_selected else dim("[ ]")
+        name = cyan(s_name) if is_cursor else s_name
+        arrow = ">" if is_cursor else " "
+        lines.append(f"  {arrow} {check} {name}")
+
+    lines.append("")
+    lines.append(f"  {green(str(len(state.selected)))} of {len(state.skills)} skills selected")
+
+    if not first_render:
+        _clear_lines(len(lines))
+    print("\n".join(lines), flush=True)
+    return len(lines)
+
+
+def _customize_plugin_skills_tui(selected_plugins: list) -> dict[str, dict[str, bool]]:
+    """Prompt user to review and customize skills for each selected plugin.
+
+    Returns mapping: {plugin_name: {skill_name: True/False}}
+    """
+    results: dict[str, dict[str, bool]] = {}
+    multi_skill_plugins = []
+    for p in selected_plugins:
+        p_path = Path(p["path"])
+        skills_dir = p_path / "skills"
+        if skills_dir.is_dir():
+            s_list = [item.name for item in sorted(skills_dir.iterdir())
+                      if item.is_dir() and not item.name.startswith(".")]
+            if s_list:
+                multi_skill_plugins.append((p, s_list))
+
+    if not multi_skill_plugins:
+        return results
+
+    total = len(multi_skill_plugins)
+    for idx, (plugin, skills) in enumerate(multi_skill_plugins, start=1):
+        state = SkillSelectionState(plugin["name"], skills)
+        _render_skill_selection(state, idx, total, first_render=True)
+        while True:
+            key = _read_key()
+            done = skill_selection_process_key(key, state)
+            if done:
+                break
+            _render_skill_selection(state, idx, total, first_render=False)
+        print()
+        results[plugin["name"]] = {s: (s in state.selected) for s in skills}
+    return results
+
+
+def _record_install_retention_states(plugin_skills_map: dict, root: Path, dry_run: bool) -> None:
+    """Update plugin-retention.json with user-customized skill retention boolean states."""
+    if not plugin_skills_map or dry_run:
+        return
+    try:
+        from retention_manifest import load_manifest, save_manifest, DEFAULT_PROTECTED
+        ret_file = root / "plugin-retention.json"
+        if not ret_file.exists():
+            template_path = Path(__file__).resolve().parent.parent / "assets" / "templates" / "plugin-retention.template.json"
+            m = load_manifest(template_path) if template_path.exists() else {"version": 1, "protected_defaults": DEFAULT_PROTECTED, "plugins": {}}
+        else:
+            m = load_manifest(ret_file)
+        plugins_dict = m.setdefault("plugins", {})
+        for pname, skills_dict in plugin_skills_map.items():
+            p_entry = plugins_dict.setdefault(pname, {"skills": {}, "rules": {}, "agents": {}})
+            p_entry.setdefault("skills", {}).update(skills_dict)
+        save_manifest(ret_file, m)
+    except Exception:
+        pass
+
+
+
+# ---------------------------------------------------------------------------
 # GitHub clone helpers
 # ---------------------------------------------------------------------------
 def _is_github_source(source: str) -> bool:
@@ -547,6 +682,31 @@ def _print_banner(source_label: str) -> None:
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
+def _prompt_source_interactive(default_candidate: Path) -> str:
+    """Prompt user for plugin source like the marketplace GUI."""
+    default_str = "plugins" if (default_candidate / "plugins").is_dir() else str(default_candidate.name or "./")
+    print()
+    print(bold("  ┌──────────────────────────────────────────────────────────────────┐"))
+    print(bold("  │ Add Plugin Source                                                │"))
+    print(bold("  │                                                                  │"))
+    print(bold("  │ Enter plugin source repository or directory:                     │"))
+    print(bold("  │ Examples:                                                        │"))
+    print(dim( "  │   • owner/repo (GitHub, e.g. richfrem/agent-plugins-skills)       │"))
+    print(dim( "  │   • git@github.com:owner/repo.git (SSH)                          │"))
+    print(dim( "  │   • https://github.com/owner/repo                                │"))
+    print(dim(f"  │   • [Enter] for local repository: (./{default_str})                 │"))
+    print(bold("  └──────────────────────────────────────────────────────────────────┘"))
+    print()
+    try:
+        raw = input(f"  {bold('Source')} [{dim(f'./{default_str}')}]: ").strip()
+    except (EOFError, KeyboardInterrupt):
+        print(yellow("\n  Cancelled."))
+        sys.exit(0)
+    if not raw:
+        return str(default_candidate / "plugins" if (default_candidate / "plugins").is_dir() else default_candidate)
+    return raw
+
+
 def _resolve_source(args) -> tuple[Path, Path | None]:
     """Resolve the plugin source to a local directory, cloning if GitHub.
 
@@ -557,22 +717,33 @@ def _resolve_source(args) -> tuple[Path, Path | None]:
         Tuple of (plugins_root, temp_dir). temp_dir is set if a clone was
         performed and must be removed by the caller after installation.
     """
-    if args.source and _is_github_source(args.source):
-        owner_repo, subpath = _parse_github_source(args.source)
-        _print_banner(f"{owner_repo}" + (f"/{subpath}" if subpath else ""))
-        temp_dir = Path(tempfile.mkdtemp(prefix="plugin_add_"))
-        repo_root = _clone_repo(owner_repo, temp_dir / owner_repo.replace("/", "_"))
-        return (repo_root / subpath if subpath else repo_root), temp_dir
-    if args.source:
-        source_path = Path(args.source).resolve()
-        _print_banner(str(source_path))
-        return source_path, None
+    source = args.source or getattr(args, "source_opt", None)
+
     cwd = Path.cwd()
     candidate = cwd
     for _ in range(4):
         if (candidate / "plugins").is_dir() or (candidate / ".claude-plugin").is_dir():
             break
         candidate = candidate.parent
+
+    # If no source provided and running interactively, prompt user like marketplace
+    if not source and sys.stdin.isatty() and not (args.all or args.yes or args.plugins):
+        source = _prompt_source_interactive(candidate)
+
+    if source and _is_github_source(source):
+        args.source = source
+        owner_repo, subpath = _parse_github_source(source)
+        _print_banner(f"{owner_repo}" + (f"/{subpath}" if subpath else ""))
+        temp_dir = Path(tempfile.mkdtemp(prefix="plugin_add_"))
+        repo_root = _clone_repo(owner_repo, temp_dir / owner_repo.replace("/", "_"))
+        return (repo_root / subpath if subpath else repo_root), temp_dir
+
+    if source:
+        args.source = source
+        source_path = Path(source).resolve()
+        _print_banner(str(source_path))
+        return source_path, None
+
     _print_banner(str(candidate))
     return candidate, None
 
@@ -598,16 +769,8 @@ def _select_plugins(all_plugins: list, args) -> list:
     return _multiselect("  Select plugins to install", all_plugins)
 
 
-def _confirm_install(selected_plugins: list, args, temp_dir: Path | None) -> None:
-    """Print installation summary and prompt for confirmation unless --yes.
-
-    Exits the process with code 0 if the user declines.
-
-    Args:
-        selected_plugins: List of plugin dicts about to be installed.
-        args: Parsed argparse namespace (--dry_run, --yes).
-        temp_dir: Temp directory to clean up on cancellation, or None.
-    """
+def _confirm_install(selected_plugins: list, args, temp_dir: Path | None) -> dict[str, dict[str, bool]]:
+    """Print installation summary, optionally customize skills, and prompt for confirmation."""
     tag = " [DRY RUN]" if args.dry_run else ""
     print()
     print(bold(f"  Installation Plan{tag}"))
@@ -619,10 +782,25 @@ def _confirm_install(selected_plugins: list, args, temp_dir: Path | None) -> Non
     print(f"  {dim('─' * 48)}")
     print(f"  {green(str(len(selected_plugins)))} plugin(s) -> {dim('.agents/')} (skills + agents + commands + hooks)")
     print()
+
+    plugin_skills_map: dict[str, dict[str, bool]] = {}
+    if getattr(args, "select_skills", False):
+        plugin_skills_map = _customize_plugin_skills_tui(selected_plugins)
+    elif sys.stdin.isatty() and not args.yes and not args.dry_run:
+        has_any_skills = any((Path(p["path"]) / "skills").is_dir() for p in selected_plugins)
+        if has_any_skills:
+            try:
+                ans = input(f"  Customize skills within selected plugins? [y/{green('N')}]: ").strip().lower()
+            except (EOFError, KeyboardInterrupt):
+                ans = "n"
+            if ans in ("y", "yes"):
+                plugin_skills_map = _customize_plugin_skills_tui(selected_plugins)
+
     if args.yes or args.dry_run:
-        return
+        return plugin_skills_map
+
     try:
-        answer = input(f"  Proceed? [{green('y')}/n] ").strip().lower()
+        answer = input(f"  Proceed with installation? [{green('y')}/n] ").strip().lower()
     except (EOFError, KeyboardInterrupt):
         print(red("\n  Cancelled."))
         if temp_dir:
@@ -633,14 +811,16 @@ def _confirm_install(selected_plugins: list, args, temp_dir: Path | None) -> Non
         if temp_dir:
             shutil.rmtree(temp_dir, ignore_errors=True)
         sys.exit(0)
+    return plugin_skills_map
 
 
-def _install_plugins(selected_plugins: list, args) -> tuple[int, int]:
+def _install_plugins(selected_plugins: list, args, plugin_skills_map: dict | None = None) -> tuple[int, int]:
     """Run plugin_installer.py for each selected plugin and return counts.
 
     Args:
         selected_plugins: List of plugin metadata dicts with 'path' and 'name'.
         args: Parsed argparse namespace (--dry_run, --install_rules).
+        plugin_skills_map: Optional mapping of plugin_name -> {skill_name: bool}
 
     Returns:
         Tuple of (success_count, fail_count).
@@ -663,6 +843,9 @@ def _install_plugins(selected_plugins: list, args) -> tuple[int, int]:
             cmd.append("--no-install-rules")
         if not args.append_rules_to_ide_files:
             cmd.append("--no-append-rules-to-ide-files")
+        if plugin_skills_map and plugin["name"] in plugin_skills_map:
+            retained = [s for s, en in plugin_skills_map[plugin["name"]].items() if en]
+            cmd.extend(["--skills", ",".join(sorted(retained))])
         result = subprocess.run(cmd, text=True)
         if result.returncode == 0:
             print(f"    {green('✓')} Done")
@@ -671,6 +854,7 @@ def _install_plugins(selected_plugins: list, args) -> tuple[int, int]:
             print(f"    {red('✗')} Failed (exit {result.returncode})")
             fail_count += 1
     return success_count, fail_count
+
 
 
 def _read_and_migrate_sources(sources_file: Path) -> dict:
@@ -789,7 +973,11 @@ def _build_arg_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "source", nargs="?", default=None,
-        help="owner/repo (GitHub) or local path to a repo root (default: current directory)",
+        help="owner/repo (GitHub) or local path to a repo root (default: interactive prompt or current directory)",
+    )
+    parser.add_argument(
+        "--source", "-s", dest="source_opt", default=None,
+        help="Explicit source argument: owner/repo (GitHub) or local path to a repo root",
     )
     parser.add_argument("--all", "-a", action="store_true", help="Select all plugins without prompting")
     parser.add_argument("--yes", "-y", action="store_true", help="Skip confirmation prompts")
@@ -802,6 +990,10 @@ def _build_arg_parser() -> argparse.ArgumentParser:
                              "(e.g. CLAUDE.md); .agent/rules/ is still written (on by default)")
     parser.set_defaults(install_rules=True, append_rules_to_ide_files=True)
     parser.add_argument("--plugins", type=str, help="Comma-separated list of plugins to install (headless filtering)")
+    parser.add_argument(
+        "--select-skills", action="store_true",
+        help="Interactively select and toggle specific skills within each plugin",
+    )
     return parser
 
 
@@ -844,10 +1036,11 @@ def main() -> None:
     if not selected_plugins:
         _abort(yellow("  No plugins selected. Exiting."), temp_dir, 0)
 
-    _confirm_install(selected_plugins, args, temp_dir)
-    success_count, fail_count = _install_plugins(selected_plugins, args)
+    plugin_skills_map = _confirm_install(selected_plugins, args, temp_dir)
+    success_count, fail_count = _install_plugins(selected_plugins, args, plugin_skills_map)
 
     if not args.dry_run and success_count:
+        _record_install_retention_states(plugin_skills_map, project_root, args.dry_run)
         _update_sources_registry(selected_plugins, args, plugins_root, project_root)
 
     if temp_dir and temp_dir.exists():
