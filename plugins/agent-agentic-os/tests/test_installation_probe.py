@@ -7,9 +7,10 @@ if str(SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_DIR))
 
 from control_plane.installation_probe import classify_target
+from control_plane.adapters import CURRENT_SCHEMA_VERSION
 
 
-def _scaffold(target: Path, *, version: int = 8, transitions: bool = True) -> None:
+def _scaffold(target: Path, *, version: int = CURRENT_SCHEMA_VERSION, transitions: bool = True) -> None:
     for rel in (".claude/hooks/hooks.json", ".git/hooks/pre-commit-evolution-guard",
                 ".github/workflows/verify-evolution-integrity.yml"):
         path = target / rel
@@ -44,7 +45,7 @@ def test_complete_target_requires_schema_and_transition_parity(tmp_path):
 
 
 def test_stale_schema_or_transition_rows_are_drifted(tmp_path):
-    _scaffold(tmp_path, version=7, transitions=False)
+    _scaffold(tmp_path, version=CURRENT_SCHEMA_VERSION - 1, transitions=False)
     result = classify_target(tmp_path)
     assert result.state == "PARTIAL_OR_DRIFTED"
     assert any("schema" in item or "transition" in item for item in result.missing)
