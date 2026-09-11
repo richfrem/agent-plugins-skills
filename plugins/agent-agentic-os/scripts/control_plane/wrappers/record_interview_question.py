@@ -58,7 +58,8 @@ def record_interview_question(
     # - recorded_at: wall clock timestamp via ClockPort
     # Rejection contract: Duplicate question_id within the same task occupancy is rejected.
     chosen_answer = answer if answer is not None else recommended
-    formatted_answer = f"Option {chosen_answer}: {options.get(chosen_answer, '')}"
+    # Keep the persisted answer canonical so transition gates can compare it
+    # with the option keys and free-text values supplied by the user.
 
     decision_id = cp.record_decision(
         task_id=task_id,
@@ -66,7 +67,7 @@ def record_interview_question(
         from_state=cap.releasing_edge[0],
         to_state=cap.releasing_edge[1],
         question_id=question,
-        answer=formatted_answer,
+        answer=chosen_answer,
         decision_type="ANSWER",
         actor=actor,
     )

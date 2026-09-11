@@ -25,6 +25,7 @@ stateDiagram-v2
     MULTI_AGENT_REVIEW --> DRAFT_PLAN : changes requested<br/>revise artifacts and resubmit
     AWAITING_APPROVAL --> APPROVED : you say Proceed / Go<br/>(mandatory gate)
     APPROVED --> IN_WORKTREE
+    APPROVED --> RETROSPECTIVE : approved plan — human skips implementation
     IN_WORKTREE --> WORKTREE_REVIEW : implementation + tests done
     WORKTREE_REVIEW --> MULTI_AGENT_CODE_REVIEW : you say yes to AI code review
     WORKTREE_REVIEW --> VERIFY_EXIT : you say no — skip straight ahead
@@ -32,3 +33,14 @@ stateDiagram-v2
     VERIFY_EXIT --> RETROSPECTIVE : all checks passed
     RETROSPECTIVE --> DONE : survey complete or explicitly skipped<br/>with reason
     DONE --> [*]
+
+    note right of DONE
+        Any-state force-close is available only
+        with explicit human authorization.
+    end note
+
+    note right of IN_WORKTREE
+        Implementation dispatch, review, and bounded
+        fixes continue under controller ownership;
+        the pipeline resumes at exit verification.
+    end note

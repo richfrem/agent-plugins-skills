@@ -30,6 +30,26 @@ You dispatch tasks to Google Gemini (and other) models via the `agy` binary.
 > `agy` is the **sole Gemini CLI** since the standalone `gemini` binary retired June 18 2026.
 > All Gemini model work — including cost-efficient older models — routes through `agy`.
 
+## Native orchestration facilities (verified September 2026)
+
+`agy` has a native `--mode=plan` that investigates with read-only tools and presents an
+outline before edits. It also has asynchronous background subagents, custom agent profiles,
+and a `/agents` panel. Use them for genuinely independent work; keep a single agent for a
+small, coupled edit. The CLI does **not** document a flag that creates or manages Git
+worktrees, so create the governed portable worktree first and invoke `agy` inside it.
+
+```bash
+# Plan without editing
+agy --mode=plan -p "Inspect this repository and propose an implementation plan."
+
+# Inspect locally installed custom agents before selecting one
+agy agents
+```
+
+Do not treat `--dangerously-skip-permissions` as isolation: it approves tool requests. Use
+`--sandbox` for terminal restrictions, and retain the control plane's approval and receipt
+requirements even when agy delegates work.
+
 ### Model Strategy: Flash by Default, Pro for Deep Reasoning
 
 > **See `references/agy-models.json`** for the full model catalog, cost tiers, and strategy field.
@@ -86,6 +106,26 @@ Do NOT use tools. Do NOT access filesystem." > review.md
 ```bash
 python ./scripts/run_agent.py <PERSONA_FILE> <INPUT_FILE> <OUTPUT_FILE> "<INSTRUCTION>" --cli agy
 ```
+
+For medium or high reasoning, pass the effort explicitly (the wrapper also maps
+`--tier` to effort for agy when `--effort` is omitted):
+
+```bash
+python ./scripts/run_agent.py agents/architect-review.md plan.md output.md "Review the plan." \
+  --cli agy --model gemini-3.8-flash --tier medium --effort medium --isolated
+```
+
+The shared router validates `low|medium|high` and forwards a non-empty `--effort` to `agy`.
+When `--model` is explicit and `--effort` is omitted, it derives effort from `--tier`.
+Verify the assembled command or run a heartbeat before an expensive dispatch.
+
+### Print-mode timeout
+
+`agy --print` defaults to a **5-minute** wait (`--print-timeout 5m0s`). Set the timeout
+explicitly for bounded implementation work; for example, use `--print-timeout 15m0s` when
+the approved task allows up to 15 minutes. This controls the CLI wait window, not model
+quality or quota. If the timeout is omitted, a valid long-running task may be terminated
+before it reports a commit.
 
 `run_agent.py` calls `agy --dangerously-skip-permissions -p` and streams output live to stdout and the output file simultaneously. Loads model from `references/cheapest_models.json` (currently `gemini-3.8-flash-low`).
 

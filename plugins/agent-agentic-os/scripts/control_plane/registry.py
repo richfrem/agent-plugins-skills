@@ -116,12 +116,14 @@ class TransitionRegistry:
         templates: List[TransitionTemplate],
         stage_contracts: Optional[Dict[str, Dict[str, Any]]] = None,
         execution_guidance: Optional[Dict[str, Dict[str, Any]]] = None,
+        model_effort_guidance: Optional[Dict[str, Dict[str, Any]]] = None,
     ):
         self._templates_by_edge: Dict[Tuple[str, str], TransitionTemplate] = {}
         self._templates_by_id: Dict[str, TransitionTemplate] = {}
         self._capability_to_edges: Dict[str, List[Tuple[str, str]]] = {}
         self._stage_contracts = dict(stage_contracts or {})
         self._execution_guidance = dict(execution_guidance or {})
+        self._model_effort_guidance = dict(model_effort_guidance or {})
 
         for t in templates:
             edge = (t.from_state, t.to_state)
@@ -194,6 +196,10 @@ class TransitionRegistry:
             "execution_guidance": {
                 unit: dict(self._execution_guidance[unit])
                 for unit in EXECUTION_GUIDANCE_UNITS
+            },
+            "model_effort_guidance": {
+                phase: dict(settings)
+                for phase, settings in self._model_effort_guidance.items()
             },
         }
         if to_state is None:
@@ -318,6 +324,24 @@ class TransitionRegistry:
                 )
             execution_guidance[unit] = contract
 
+        raw_model_effort_guidance = data.get("model_effort_guidance", {})
+        if not isinstance(raw_model_effort_guidance, dict):
+            raise TransitionRegistryError("'model_effort_guidance' must be a mapping")
+        model_effort_guidance: Dict[str, Dict[str, Any]] = {}
+        for phase, settings in raw_model_effort_guidance.items():
+            if not isinstance(settings, dict):
+                raise TransitionRegistryError(f"model_effort_guidance.{phase} must be a mapping")
+            for field in ("recommended_model", "recommended_effort", "reason"):
+                if not isinstance(settings.get(field), str) or not settings[field].strip():
+                    raise TransitionRegistryError(
+                        f"model_effort_guidance.{phase}.{field} must be a non-empty string"
+                    )
+            if settings.get("requires_confirmation_for_premium") is not True:
+                raise TransitionRegistryError(
+                    f"model_effort_guidance.{phase}.requires_confirmation_for_premium must be true"
+                )
+            model_effort_guidance[phase] = settings
+
         parsed: List[TransitionTemplate] = []
         for idx, raw_item in enumerate(raw_templates):
             if not isinstance(raw_item, dict):
@@ -333,7 +357,9 @@ class TransitionRegistry:
                 existing_edges = {(t.from_state, t.to_state) for t in parsed}
                 expanded_items = []
                 for state in CANONICAL_STATES:
-                    if state == "INTAKE":
+                    if (state == "DONE" and base_transition_id == "human_force_done") or (
+                        state == "INTAKE" and wildcard_to_state == "INTAKE"
+                    ):
                         continue
                     if (state, wildcard_to_state) in existing_edges:
                         continue
@@ -426,7 +452,7 @@ class TransitionRegistry:
                 )
                 parsed.append(t)
 
-        return cls(parsed, stage_contracts, execution_guidance)
+        return cls(parsed, stage_contracts, execution_guidance, model_effort_guidance)
 
     @classmethod
     def load_default(cls) -> "TransitionRegistry":

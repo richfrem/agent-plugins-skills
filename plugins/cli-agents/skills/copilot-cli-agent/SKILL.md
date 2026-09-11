@@ -26,6 +26,26 @@ You, the Antigravity agent, dispatch specialized analysis tasks to Copilot CLI s
 > [!IMPORTANT]
 > **Billing model: AI Credits (token-based, effective June 1 2026).** All models consume AI credits at per-token rates — there are no longer "included" or "free" models for chat/agent interactions. Code completions and Next Edit Suggestions remain unlimited for paid plans. Copilot CLI interactive default is `claude-sonnet-4.6`; `run_agent.py` defaults to `gpt-5-mini` for cost efficiency. See [💰 AI Credits & Cost Discipline](#-ai-credits--cost-discipline) and `references/copilot-models.json` for full pricing.
 
+## Native orchestration facilities (verified September 2026)
+
+Copilot CLI has native plan mode (`--plan` or `--mode plan`), autopilot for executing an
+accepted plan, custom agents, and model-initiated subsidiary agents. Use native delegation only
+for independent workstreams; the model may choose to work directly. The CLI can resume a
+session from an existing worktree but does **not** document a command to create or manage a Git
+worktree. Create the control-plane portable worktree before launching Copilot.
+
+```bash
+# Create a plan interactively; keep user approval before autopilot
+copilot --plan
+
+# Start with a named custom agent when it is the correct specialist
+copilot --agent code-review
+```
+
+`--autopilot`, `--allow-all`, and `--yolo` increase autonomy or permissions; none substitutes
+for user approval, a bounded scope, or control-plane receipts. Set `--max-ai-credits` for a
+paid session where a hard cost ceiling is required.
+
 ### ✅ Minimal Working Code Review Agent Pattern
 
 To ensure Copilot CLI behaves as a specialized persona rather than a generic responder, **always** embed the persona and source material directly into the prompt flag (`-p`).

@@ -206,6 +206,25 @@ class ControlPlane:
         which self-heals FK-corrupted or legacy schemas."""
         self._persistence.ensure_schema()
 
+    def create_implementation_controller(
+        self,
+        dispatch,
+        review,
+        fix=None,
+        **kwargs,
+    ):
+        """Return the canonical persistent implementation runtime for this control plane.
+
+        The queue lives beside the control-plane database, so callers no longer need to
+        import the loop primitive or invent a queue location. Execution callbacks remain
+        supplied by the active native/portable runtime.
+        """
+        from control_plane.implementation_loop import create_default_controller
+
+        db_path = self.db_path or (Path.cwd() / "context" / "control_plane.db")
+        queue_path = Path(db_path).parent / "implementation-queue.json"
+        return create_default_controller(queue_path, dispatch, review, fix, **kwargs)
+
     def resolve_recommended_model(self, runtime_tool: str, tier: str = "low") -> Dict[str, str]:
         """Resolves model recommendation and model_id from plugins/cli-agents/references/.
         Full resolution (tool-alias, tier strategy, fallback) is delegated to
@@ -370,7 +389,9 @@ class ControlPlane:
                     return validate_implementation_ledger(plan_path, root)
             return (
                 f"Implementation plan ledger missing for task '{task_id}': "
-                f"expected docs/plans/{task_id}-implementation-plan.md."
+                f"expected docs/plans/{task_id}-implementation-plan.md with a fenced JSON "
+                "Implementation Task Ledger; add COMPLETE entries with evidence and existing "
+                "artifact paths before retrying VERIFY_EXIT -> RETROSPECTIVE."
             )
 
         return {
@@ -418,6 +439,14 @@ class ControlPlane:
 
         self._state_machine.validate_adjacency(task_id, current_state, to_state)
 
+        # Unauthorized direct transition to DONE from any state other than RETROSPECTIVE
+        # is a force-close attempt that requires explicit human authorization.
+        if to_state == "DONE" and current_state != "RETROSPECTIVE":
+            raise PersistenceInvariantViolation(
+                f"Direct transition to DONE from '{current_state}' is denied: "
+                "force-close requires explicit human authorization."
+            )
+
         # --- Unified gate policy: deterministic checks from authoritative YAML registry ---
         if not hasattr(self, "_transition_registry"):
             self._transition_registry = TransitionRegistry.load_default()
@@ -448,6 +477,8 @@ class ControlPlane:
         skip_decision: Optional[Tuple[str, str]] = None,
         skip_review: bool = False,
         skip_reason: Optional[str] = None,
+        force_close: bool = False,
+        human_authorization: Optional[str] = None,
     ) -> TransitionRecord:
         """Public orchestration entry point: coordinates transition via TransitionCoordinator."""
         if not hasattr(self, "_transition_registry"):
@@ -464,6 +495,8 @@ class ControlPlane:
             skip_decision=skip_decision,
             skip_review=skip_review,
             skip_reason=skip_reason,
+            force_close=force_close,
+            human_authorization=human_authorization,
         )
 
     def commit_authorized_transition(self, commit_request: TransitionCommitRequest) -> TransitionRecord:

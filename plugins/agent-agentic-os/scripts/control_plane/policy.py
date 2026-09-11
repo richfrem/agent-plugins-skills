@@ -236,10 +236,12 @@ def _done_check(ctx: Dict[str, Any]) -> Optional[str]:
     Raises whatever ctx['verify_sovereignty']() raises (VerifierSovereigntyViolation) — that
     exception type and message are preserved exactly, unrelated to PolicyViolation."""
     task_id = ctx["task_id"]
-    if ctx["count_receipts"](gate_name="test_suite", exit_code=0) == 0:
+    planning_only = ctx["count_receipts"](gate_name="planning_only_completion", exit_code=0) > 0
+    required_test_gate = "plan_validation" if planning_only else "test_suite"
+    if ctx["count_receipts"](gate_name=required_test_gate, exit_code=0) == 0:
         return (
-            f"Cannot complete task '{task_id}': No passing test_suite verification receipt "
-            "(gate_name='test_suite', exit_code == 0) found."
+            f"Cannot complete task '{task_id}': No passing {required_test_gate} verification receipt "
+            f"(gate_name='{required_test_gate}', exit_code == 0) found."
         )
 
     if ctx["count_locked_verifiers"]() > 0:
@@ -394,6 +396,12 @@ CHECK_REGISTRY: Dict[str, Any] = {
         None if _gate_receipt_exists(ctx, "human_approval") else (
             "Cannot advance: no recorded human_approval receipt found. "
             "Call record_human_approval() — this gate can never be skipped."
+        )
+    ),
+    "planning_only_completion": lambda ctx: (
+        None if _gate_receipt_exists(ctx, "planning_only_completion") else (
+            "Cannot advance: no planning_only_completion receipt found. "
+            "Record explicit approval that implementation is intentionally skipped."
         )
     ),
     "worktree_isolation_or_exception": _worktree_isolation_check,

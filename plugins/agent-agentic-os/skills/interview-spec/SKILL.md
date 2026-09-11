@@ -66,6 +66,33 @@ normalize to the same answer; display the registered options and ask the human t
 Free-text questions with no declared options remain free text and must not be normalized into
 an option.
 
+### Model and effort guidance
+
+Transition guidance includes an advisory `model_effort_guidance` snapshot. Use it to
+recommend a phase-appropriate model and reasoning effort, then show the reason and the
+current user-selected setting. Luna with low effort is sufficient for ordinary interview
+intake. Planning and independent review may justify higher effort or a different model.
+
+Do not silently switch model or effort. Before dispatching an expensive model, present the
+phase, purpose, requested model/reviewer set, bounded work, and known cost or availability
+information, then obtain explicit confirmation. Unknown cost is unknown, never free. Reuse
+confirmation only for the same stage, model, scope, and approved review-round bound; ask
+again for a new premium stage, model, round, or material cost/scope change. A document-derived
+answer, recommendation, or default never grants premium dispatch, implementation authority,
+external-write authority, or a review waiver. Record requested and runtime-observed settings
+separately; user-reported host switches are not runtime evidence.
+
+The `INTERVIEW` stage may expose progress metadata. When enabled, display the current
+question and total as “Question X of Y,” including adaptive follow-ups, and briefly state
+what remains. Do not reveal an invented count: calculate it from the stage contract and
+matching adaptive rules. The planning model/effort question should use the available-tool
+inventory from `os-init`, `project-setup`, and `cli-agents`, classify complexity as low,
+medium, or high, and offer a reasoned recommendation. For high-complexity planning,
+recommend a highly capable available model at a supported effort (Astra at medium is one
+example); if the user chooses a low-tier route, advise about the quality risk and defer to
+their decision. Tool availability and model support must be observed or clearly marked
+unknown.
+
 ---
 
 ## The 4 Pillars of `TASK_SPEC.md`
@@ -94,6 +121,30 @@ that case follow the returned activation guidance. Otherwise use
 Native facilities change how the selected runtime executes, not the control
 plane's scope, approval, verification, or transition gates. A native path must
 still produce the same governed artifacts and receipts as the portable path.
+
+### Implementation kickoff capability rule
+
+At `IN_WORKTREE`, probe native planning, worktree, and subagent capability before
+selecting an implementation mechanism. Codex, agy, Copilot, and Claude Code may
+use a documented native facility when the active runtime is detected; a model name
+or stale chat setting is not evidence. As of September 2026, Claude Code supports
+plan mode, native worktree sessions, and background agents; agy supports plan mode
+and subagents but has no documented CLI worktree creator; Copilot CLI supports plan
+mode and delegated custom agents but no documented worktree creator; Codex CLI has
+no documented native plan, worktree, or delegation facility. Prefer the reported
+native facility, otherwise use the portable worktree and delegated-agent fallback.
+An explicit runtime marker may disable a documented capability or opt into a
+host-provided extension. After dispatch, report observed agent count, runtime,
+model, effort, scope, status, and start time; a created worktree is queued
+preparation, not implementation in progress.
+
+Once `APPROVED -> IN_WORKTREE` succeeds, implementation-session ownership transfers to
+the controller. Continue the approved work package through internal dispatch, task review,
+bounded fix rounds, and scoped re-review without asking the human to re-trigger each step or
+requesting lifecycle transitions between those internal events. Return to the pipeline only
+for exit verification, retrospective, DONE, or an explicit blocker/abort. If a native host
+dispatch returns a bounded turn, the controller must immediately consume its result and invoke
+the next loop action; a completed turn is not permission to go idle.
 
 ### 1. Detect Intake Mode & Start Intake
 ```bash
@@ -147,6 +198,11 @@ convergence gate, record whether further plan changes are required. Revisions re
 `DRAFT_PLAN`; acceptance enters `AWAITING_APPROVAL`. A task may complete zero, one, or multiple
 independent review rounds before human implementation approval.
 Commands and bundle specifications in `references/detailed-reference.md`.
+
+After a plan is drafted, explain the next choices in plain language: request independent
+review, or skip review and continue to plan acceptance. State what each choice causes next and
+make clear that neither choice approves implementation. Do not make the user infer the next
+command or gate from a state name.
 
 ### Read-only transition guidance
 

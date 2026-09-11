@@ -13,6 +13,7 @@ flowchart TB
 
     State["StateMachine (control_plane/state_machine.py)"]
     Policy["Unified policy engine (control_plane/policy.py)"]
+    HumanClose["Human-authorized force close\n(any state → DONE; agent forbidden)"]
 
     PersistencePort["PersistencePort"]
     CryptoPort["CryptoPort"]
@@ -68,6 +69,8 @@ flowchart TB
     ArtifactGate --> PersistencePort
     DB -.-> Receipts
     DB -.->|"trigger-enforced required questions: stage, edge, approval"| Coordinator
+    HumanClose --> State
+    HumanClose -.->|"explicit HITL approval recorded"| Receipts
     CryptoAdapter --> RepoFiles
     FilesystemAdapter --> RepoFiles
     ModelAdapter --> CatalogFiles

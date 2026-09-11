@@ -5,6 +5,7 @@ Entries must be resolved, aged, or escalated.
 Do not delete resolved items; set `Status: RESOLVED` to maintain history.
 
 | 2026-09-10 | WP-576 follow-up | Plan-to-diff completeness was previously inferred from green tests and could miss approved but unimplemented plan tasks. | Added the implementation ledger contract and fail-closed `implementation_completeness` gate before retrospective. | Verify every implementation-plan task has COMPLETE status, evidence, and existing artifacts before leaving VERIFY_EXIT. | Tier 1 | 1 | RESOLVED — full suite, simulator paths, audits, and symlink diagnosis pass |
+| 2026-09-10 | autonomous implementation controller | Authorized work packages had no persistent bounded queue or watchdog-backed continuation owner after worktree entry. | Added JSON-backed queue/controller around the existing lifecycle-independent implementation loop, with heartbeat persistence, stale-runner blocking, and explicit exit-verification stop. | Add cross-process locking if multiple controller processes are ever supported. | Tier 1 | 1 | OPEN follow-up — single-writer controller only |
 
 ---
 

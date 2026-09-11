@@ -95,6 +95,8 @@ class TransitionCoordinator:
         skip_decision: Optional[Tuple[str, str]] = None,  # (skip_chosen, reason)
         skip_review: bool = False,
         skip_reason: Optional[str] = None,
+        force_close: bool = False,
+        human_authorization: Optional[str] = None,
     ) -> TransitionRecord:
         """Coordinates and commits a transition according to the template contract."""
         # 1. State machine validation
@@ -117,6 +119,16 @@ class TransitionCoordinator:
                 f"No template registered for transition ({current_state} -> {to_state})."
             )
 
+        if force_close:
+            if to_state != "DONE":
+                raise TransitionCoordinatorError("force_close is only valid for transitions to DONE.")
+            if actor != "human" or not human_authorization:
+                raise TransitionCoordinatorError("Force-close requires explicit human authorization.")
+            if human_authorization not in ("FORCE_CLOSE", "FORCE_DONE"):
+                raise TransitionCoordinatorError(f"Invalid force_close authorization: {human_authorization}")
+            provided_answers = dict(provided_answers or {})
+            provided_answers.setdefault("human_force_done_confirmation", "FORCE_DONE")
+
         # Programmatic answers must never be presented as interactive human
         # provenance.  The SQLite trigger remains the final authority, but
         # rejecting this combination here gives callers an explicit, actionable
@@ -126,7 +138,7 @@ class TransitionCoordinator:
             template.approval.get("required")
             and template.approval.get("approver_role", "human") == "human"
         )
-        if actor == "human" and not interactive and provided_answers and human_gated:
+        if actor == "human" and not interactive and provided_answers and human_gated and not force_close:
             raise TransitionCoordinatorError(
                 "Non-interactive answers cannot claim interactive human provenance; "
                 "use --interactive for a genuine human decision."
@@ -296,8 +308,8 @@ class TransitionCoordinator:
             elif qid in answers:
                 chosen_ans = answers[qid]
                 # Non-interactive provided_answers are supplied programmatically by an agent,
-                # not by a human at an interactive prompt.
-                decision_actor = "agent"
+                # not by a human at an interactive prompt, unless explicitly authorized as human force_close.
+                decision_actor = "human" if (force_close and actor == "human") else "agent"
             else:
                 # Non-interactive without provided answer -> must fail closed despite default
                 raise TransitionCoordinatorError(
@@ -326,7 +338,7 @@ class TransitionCoordinator:
                     to_state=to_state,
                     question_id=qid,
                     answer=chosen_ans,
-                    decision_type="RESET" if template.transition_id.startswith("reset_to_intake") else "ANSWER",
+                    decision_type="CONFIRMATION" if force_close else ("RESET" if template.transition_id.startswith("reset_to_intake") else "ANSWER"),
                     actor=decision_actor,
                     recorded_at=self._cp._clock.current_time(),
                 )
