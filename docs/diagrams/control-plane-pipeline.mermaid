@@ -57,6 +57,8 @@ stateDiagram-v2
     AWAITING_APPROVAL --> DONE : force close — interactive human authorization
 
     APPROVED --> IN_WORKTREE
+    APPROVED --> RETROSPECTIVE : human-approved skip implementation
+    APPROVED --> DONE : human-authorized force close
     APPROVED --> ESCALATED
     APPROVED --> INTAKE : human-approved recovery reset
     APPROVED --> DONE : force close — interactive human authorization
@@ -95,7 +97,6 @@ stateDiagram-v2
     RETROSPECTIVE --> DONE : survey complete or explicitly skipped<br/>with reason<br/>follow-ups resolved
     RETROSPECTIVE --> ESCALATED : retrospective blocked
     RETROSPECTIVE --> INTAKE : human-approved recovery reset
-
     ROLLED_BACK --> ESCALATED
     ROLLED_BACK --> PLAN_REVIEW : restart planning
     ROLLED_BACK --> INTAKE : human-approved recovery reset
@@ -107,3 +108,18 @@ stateDiagram-v2
 
     DONE --> INTAKE : human-approved recovery reset
     DONE --> [*]
+
+    note right of DONE
+        Force-close from any state requires
+        explicit human authorization.
+        Agents cannot invoke this bypass.
+    end note
+
+    note right of IN_WORKTREE
+        After APPROVED → IN_WORKTREE, the
+        implementation controller runs dispatch,
+        review, and bounded fixes without asking
+        for lifecycle transitions. Re-enter only
+        for exit verification, retrospective, or
+        a human-authorized abort.
+    end note

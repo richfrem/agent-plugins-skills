@@ -62,6 +62,7 @@ class PipelineSimulator:
             "interview_scope": "Only the temporary simulator database and production APIs.",
             "interview_verification": "Focused simulator tests pass.",
             "interview_acceptance_criteria": "The requested route is enforced and recorded.",
+            "interview_planning_model_effort": "Use a capable mid-tier model at medium effort for the simulated planning phase.",
             "interview_trivial_evidence": "The focused simulator test proves the smallest route.",
         }
         template = self.registry.get_template("INTERVIEW", to_state)
@@ -470,7 +471,7 @@ class PipelineSimulator:
         before_state = self.control_plane._persistence.read_current_state(task_id)
         before_decisions = len(
             self.control_plane._persistence.get_unconsumed_transition_answers(
-                task_id, "INTAKE", "DONE"
+                task_id, "INTAKE", "VERIFY_EXIT"
             )
         )
         before_receipts = len(self.control_plane.get_verification_receipts(task_id))
@@ -488,7 +489,7 @@ class PipelineSimulator:
             "no_orphan_transition": before_id == last_transition_id(task_id),
             "no_orphan_decision": before_decisions == len(
                 self.control_plane._persistence.get_unconsumed_transition_answers(
-                    task_id, "INTAKE", "DONE"
+                    task_id, "INTAKE", "VERIFY_EXIT"
                 )
             ),
             "no_orphan_receipt": before_receipts == len(self.control_plane.get_verification_receipts(task_id)),

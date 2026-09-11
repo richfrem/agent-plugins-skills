@@ -32,6 +32,7 @@ if str(SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_DIR))
 
 from control_plane.state_machine import StateMachine, CANONICAL_STATES, ALLOWED_TRANSITIONS, InvalidStateTransition
+from control_plane.registry import TransitionRegistry
 
 
 def test_validate_known_state_rejects_unknown_state():
@@ -113,6 +114,51 @@ def test_force_close_rejects_noninteractive_human_spoof(tmp_path):
             "force-spoof", "DONE", "human", "close", force_close=True,
             human_authorization="FORCE_CLOSE", interactive=False,
         )
+
+
+def test_every_non_done_state_has_human_force_close_edge():
+    for state in CANONICAL_STATES:
+        if state != "DONE":
+            assert "DONE" in ALLOWED_TRANSITIONS[state]
+
+
+def test_direct_force_close_requires_explicit_human_authorization(tmp_path):
+    from agent_control import ControlPlane
+    from control_plane.ports import PersistenceInvariantViolation
+
+    cp = ControlPlane(db_path=tmp_path / "control_plane.db")
+    cp.create_task(task_id="force-1", title="Force close", runtime_tool="claude")
+    with pytest.raises(PersistenceInvariantViolation, match="explicit human authorization"):
+        cp.transition("force-1", "DONE", "agent", "close now")
+
+
+def test_human_authorized_force_close_is_persisted_from_any_state(tmp_path):
+    from agent_control import ControlPlane
+
+    cp = ControlPlane(db_path=tmp_path / "control_plane.db")
+    cp.create_task(task_id="force-2", title="Force close", runtime_tool="claude")
+    record = cp.coordinate_transition(
+        "force-2", "DONE", "human", "Emergency close",
+        force_close=True, human_authorization="FORCE_CLOSE",
+    )
+    assert record.from_state == "INTAKE"
+    assert cp.get_task("force-2")["state"] == "DONE"
+    assert cp._persistence.get_last_transition("force-2").to_state == "DONE"
+
+
+def test_every_non_done_state_exposes_human_force_done_edge():
+    """HITL force completion is legal from every non-terminal state."""
+    registry = TransitionRegistry.load_default()
+    for state in CANONICAL_STATES:
+        if state == "DONE":
+            continue
+        if state == "RETROSPECTIVE":
+            continue  # Existing retrospective completion edge remains governed separately.
+        assert "DONE" in ALLOWED_TRANSITIONS[state]
+        template = registry.get_template(state, "DONE")
+        assert template is not None
+        assert template.authority.get("type") == "human_decision"
+        assert template.human_questions[0]["accepted_answers"] == ["FORCE_DONE"]
 
 
 def test_control_plane_transition_delegates_to_state_machine(tmp_path, monkeypatch):

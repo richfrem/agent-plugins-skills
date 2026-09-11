@@ -2,6 +2,19 @@
 
 Persistent tracking of architectural friction, structural anomalies, and unclosed loops across sessions.
 
+## DEBT-20260910-P0-INTAKE-INSTALL
+
+- Logged date: 2026-09-10
+- Cycle/Session ID: p0-observability-foundation
+- Artifact affected: .agents/skills/interview-spec/scripts/ and references/detailed-reference.md
+- Friction observed: installed interview_spec_engine.py cannot import capability_probe; installed interview question wrapper is absent. The detailed reference still describes obsolete trivial/review edges. Host session exposes no tool to activate native Plan Mode.
+- Why not fixed now: this session authorizes foundation documents and planning; plugin repair is a separate implementation change.
+- Recommended fix: restore self-contained installed intake helpers and align detailed reference with the canonical registry; test the installed entry points. Use the supported source helpers for missing installed helpers during this intake, preserving all gates and document-derived actor identity. Use the documented Codex Socratic fallback, not a claimed native Plan Mode entry.
+- Evidence/repro: installed intake command raises ModuleNotFoundError for capability_probe; source helper and registry inspected 2026-09-10. Existing installed agent_control.py remains callable.
+- Severity: M
+- Repeat: NO
+- Status: OPEN
+
 | ID | Title | Status | Severity | Repeat | First Seen | Description | Resolution Commit |
 |---|---|---|---|---|---|---|---|
 | DEBT-20260910-P01-INTAKE | Intake guidance did not provide a bounded, testable way to reuse authorized source answers without treating them as consent. | RESOLVED | Tier 1 | 1 | 2026-09-10 | Agents either re-asked known information or risked treating source text as a user decision. | Added candidate-only source assistance, conflict/authorization handling, review-budget and user-summary helpers, YAML policy, and behavioral tests. |

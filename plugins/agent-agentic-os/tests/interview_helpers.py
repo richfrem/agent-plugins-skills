@@ -16,6 +16,7 @@ def stage_interview_answers(
         "interview_scope": "The files covered by the current task and its tests.",
         "interview_verification": "The focused and full test suites pass.",
         "interview_acceptance_criteria": "Preserve existing gates and enforce the new contract.",
+        "interview_planning_model_effort": "Confirm current model and medium effort for planning.",
         "interview_trivial_evidence": "The focused tests and diff identify the smallest verified change.",
     }
     registry = TransitionRegistry.load_default()

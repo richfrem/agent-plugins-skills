@@ -10758,6 +10758,36 @@
       "dst": "plugins/agent-agentic-os/skills/interview-spec/scripts/control_plane/implementation.py",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/installation_probe.py",
+      "dst": "plugins/agent-agentic-os/skills/os-init/scripts/control_plane/installation_probe.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/__init__.py",
+      "dst": "plugins/agent-agentic-os/skills/os-init/scripts/control_plane/__init__.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/ports.py",
+      "dst": "plugins/agent-agentic-os/skills/os-init/scripts/control_plane/ports.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/state_machine.py",
+      "dst": "plugins/agent-agentic-os/skills/os-init/scripts/control_plane/state_machine.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/adapters.py",
+      "dst": "plugins/agent-agentic-os/skills/os-init/scripts/control_plane/adapters.py",
+      "strategy": "symlink",
+      "description": ""
     }
   ]
 }

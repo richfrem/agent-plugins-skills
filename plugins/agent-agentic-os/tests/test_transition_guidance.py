@@ -48,6 +48,10 @@ def test_guidance_derives_legal_next_states_and_exposes_versioned_snapshot(contr
 
     guidance = control_plane.get_transition_guidance(task_id)
 
+    assert guidance["model_effort_guidance"]["interview"]["recommended_model"] == "current-user-model"
+    assert guidance["model_effort_guidance"]["interview"]["recommended_effort"] == "low"
+    assert guidance["model_effort_guidance"]["plan"]["requires_confirmation_for_premium"] is True
+
     assert guidance["advisory"] is True
     assert guidance["registry_version"]
     assert guidance["current_state"] == "INTAKE"
@@ -65,10 +69,13 @@ def test_guidance_cannot_authorize_illegal_requested_edge(control_plane):
     guidance = control_plane.get_transition_guidance(task_id, requested_to_state="WORKTREE_REVIEW")
 
     assert guidance["advisory"] is True
-    assert guidance["legal"] is False
-    assert guidance["command"] is None
+    assert guidance["legal"] is True
+    force_edge = next(t for t in guidance["transitions"] if t["to_state"] == "DONE")
+    assert force_edge["transition_id"] == "human_force_done__from_INTAKE"
+    assert "FORCE_DONE" in force_edge["success_guidance"]
+    assert guidance["command"] == force_edge["command"]
     assert guidance["denial_guidance"]
-    assert guidance["recovery_states"] == ALLOWED_TRANSITIONS["INTAKE"]
+    assert guidance["legal_next_states"] == ALLOWED_TRANSITIONS["INTAKE"]
 
 
 def test_done_guidance_names_retrospective_recording_protocol(control_plane):
@@ -91,7 +98,8 @@ def test_standard_path_hints_name_each_operational_handoff(control_plane):
         ("DRAFT_PLAN", "PLAN_REVIEW"): ("plan artifacts", "coordinate-transition"),
         ("PLAN_REVIEW", "MULTI_AGENT_REVIEW"): ("plan_review_method", "coordinate-transition"),
         ("PLAN_REVIEW", "AWAITING_APPROVAL"): ("record-critic-review", "record-review-skip"),
-        ("APPROVED", "IN_WORKTREE"): ("record-human-approval", "worktree"),
+            ("APPROVED", "IN_WORKTREE"): ("record-human-approval", "worktree"),
+            ("APPROVED", "RETROSPECTIVE"): ("planning_only_completion", "RETROSPECTIVE", "no worktree"),
         ("VERIFY_EXIT", "RETROSPECTIVE"): ("full_test_suite", "test_suite", "leak_check", "references/map-debt.md"),
     }
     for edge, markers in expected.items():
@@ -99,6 +107,16 @@ def test_standard_path_hints_name_each_operational_handoff(control_plane):
         assert template is not None
         hint = template.next_steps_hint.lower()
         assert all(marker.lower() in hint for marker in markers), (edge, hint)
+
+
+def test_in_worktree_hands_off_to_uninterrupted_implementation_session():
+    registry = TransitionRegistry.load_default()
+    contract = registry.get_stage_contract("IN_WORKTREE")
+
+    assert contract["implementation_kickoff"]["ownership"].startswith("After APPROVED")
+    assert contract["implementation_kickoff"]["pipeline_gate_policy"].startswith("Do not request")
+    assert "continue automatically" in contract["implementation_kickoff"]["continuation_loop"]
+    assert "exit verification" in contract["implementation_kickoff"]["pipeline_gate_policy"]
 
 
 def test_plan_review_selects_review_then_requires_plan_acceptance():
@@ -110,6 +128,10 @@ def test_plan_review_selects_review_then_requires_plan_acceptance():
 
     assert review_edge is not None
     assert approval_edge is not None
+
+    disposition = {question["question_id"]: question for question in registry.get_template("DRAFT_PLAN", "PLAN_REVIEW").human_questions}["plan_review_disposition"]
+    assert disposition["user_outcomes"]["yes"].startswith("Select the review method")
+    assert disposition["user_outcomes"]["no"].startswith("Continue to plan acceptance")
 
     review_questions = {question["question_id"]: question for question in review_edge.human_questions}
     assert "plan_review_method" in review_questions
