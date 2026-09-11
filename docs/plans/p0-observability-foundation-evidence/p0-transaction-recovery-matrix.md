@@ -14,7 +14,7 @@ correlation tuple. No row authorizes automatic provider re-execution.
 | Spawn request fails before child creation | dispatch coordinator | `spawn_failed` error linked to expectation | `spawn_failed` | no provider retry without user/policy decision |
 | Spawn is issued, but start record is not durably recorded | dispatch coordinator + producer | `dispatch_intent` plus caller-visible launch context | `spawn_status_unknown` | on restart discover final artifact; if none, record `start_unconfirmed_no_artifact` and require authorization before any retry |
 | Child start is durably recorded, no artifact | producer + adapter | `started` row with artifact destination | `artifact_missing` | restart records `started_no_artifact`; no automatic rerun |
-| Producer interruption while writing temporary artifact | producer | unique temporary-name/reference and interruption context when available | `artifact_partial` | consumer ignores temp; never publishes/ingests it; cleanup/retry needs authorization |
+| Producer interruption while writing temporary artifact | producer | unique temporary-name/reference and `producer_temp_interrupted` recovery cause when available | `artifact_missing` | consumer ignores temp; never publishes/ingests it; cleanup/retry needs authorization |
 | Artifact malformed/schema-invalid | ingest validator | digest/path-safe reference + validation error | `artifact_invalid` | quarantine; never rerun provider automatically |
 | Process exits during final publish | producer/caller | process outcome, destination, and publish phase | `publish_outcome_unknown` | on restart validate an existing final artifact; otherwise record metadata missing; never overwrite/re-run automatically |
 | Process succeeds, metadata write fails | producer/caller | process outcome + write-failure context | `artifact_missing` | never report complete usage |
@@ -24,7 +24,7 @@ correlation tuple. No row authorizes automatic provider re-execution.
 | Staging commits, receipt fails | transition owner | uncommitted staged observation | `transition_uncommitted` | do not fabricate a receipt |
 | Same digest redelivery | ingest adapter | original + duplicate receipt/count | `observed` | idempotent |
 | Different digest redelivery | ingest adapter | both references + conflict | `ambiguous` | quarantine and review |
-| Restart discovery | recovery reconciler | immutable ledger/artifact scan result and classification time | one of `dispatch_not_started`, `start_unconfirmed_no_artifact`, `started_no_artifact`, `artifact_partial`, `artifact_invalid`, `ingest_pending`, or `observed` | classify only from recorded rows and safe final artifacts; never infer execution success |
+| Restart discovery | recovery reconciler | immutable ledger/artifact scan result and classification time | `artifact_missing`, `artifact_invalid`, `ingest_pending`, `ambiguous`, or `observed`, with a separate recovery cause such as `dispatch_not_started`, `start_unconfirmed_no_artifact`, `started_no_artifact`, or `producer_temp_interrupted` | classify only from recorded rows and safe final artifacts; never infer execution success |
 | Reset/disk-full/corruption/identity error | generation owner/failing caller | snapshot or original error/context | generation-specific/`measurement_failure` | preserve; pause dependent work |
 
 Reconciliation may mark a started attempt incomplete or pending. It cannot infer

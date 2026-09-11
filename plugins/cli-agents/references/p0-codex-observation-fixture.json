@@ -6,6 +6,7 @@
     "captured_at_utc": "2026-09-10T00:00:00Z",
     "source_runtime": "codex_cli",
     "source_runtime_version": null,
+    "source_runtime_version_unavailable_reason": "Fixture only; no installed runtime was sampled.",
     "sanitization": "Synthetic IDs, timings, and usage; no prompt, output, stderr, source, path, or secret."
   },
   "producer": {

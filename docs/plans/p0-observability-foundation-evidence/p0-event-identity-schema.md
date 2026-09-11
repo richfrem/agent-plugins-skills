@@ -36,13 +36,19 @@ validating a digest:
    leading plus or zero (except `0`).
 3. Normalize exactly these producer timestamps: `capture.captured_at_utc` and
    `event.occurred_at_utc`. Parse RFC 3339 with an explicit `Z` or numeric UTC
-   offset; reject leap seconds and parse failures. Convert to UTC and serialize
-   as `YYYY-MM-DDTHH:MM:SS.ffffffZ`, with exactly six fractional digits. The
-   consumer-created `ingested_at_utc` is outside the digest input.
+   offset; reject leap seconds, parse failures, and fractional seconds with more
+   than six digits (do not round or truncate). Convert to UTC and serialize as
+   `YYYY-MM-DDTHH:MM:SS.ffffffZ`, with exactly six fractional digits, padding a
+   shorter accepted fraction with zeroes. The consumer-created `ingested_at_utc`
+   is outside the digest input.
 4. Remove `event.canonical_digest`; preserve `null`, booleans, strings, arrays,
    and objects otherwise. Sort every object by Unicode code-point order of its
-   keys. Emit compact UTF-8 JSON using `,` and `:` separators, JSON escaping for
-   control characters/quotes/backslashes, and no insignificant whitespace.
+   keys. Decode input escapes into Unicode scalar values and reject unpaired
+   UTF-16 surrogates. Emit compact UTF-8 JSON using `,` and `:` separators and
+   no insignificant whitespace. Escape only `U+0022` as `\"`, `U+005C` as
+   `\\`, and each `U+0000`–`U+001F` control character as lowercase `\u00xx`;
+   emit every other Unicode scalar as its UTF-8 bytes (including `/`, non-ASCII,
+   and `U+2028`/`U+2029`).
 5. SHA-256 the emitted bytes and write 64 lowercase hex characters into
    `event.canonical_digest`. Validation repeats steps 1–4 and compares the
    resulting digest in constant time. Any parse, type, timestamp, or digest
