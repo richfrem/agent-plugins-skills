@@ -111,6 +111,8 @@ stages:
       dispatch_truth_rule: Do not report implementation as started until at least one authorized agent dispatch is observed; worktree creation alone is queued preparation.
     implementation_kickoff:
       mandatory_after_entry: true
+      runtime_entrypoint: "ControlPlane.create_implementation_controller(...).run()"
+      runtime_enforcement: "Use ImplementationController.run_verification() for focused, integration, and final-suite commands; the cadence guard rejects out-of-order or duplicate final-suite runs."
       do_not_wait_for_repeated_user_prompt: true
       ownership: "After APPROVED -> IN_WORKTREE, the implementation controller owns the work package until exit verification or an explicit blocker."
       pipeline_gate_policy: "Do not request lifecycle transitions for internal task dispatch, task review, or bounded fix rounds. Return to the pipeline only for exit verification, retrospective, or a human-authorized abort."
@@ -140,6 +142,7 @@ stages:
       user_update_rule: Immediately after entry, report queued preparation. Immediately after the first dispatch, report in_progress with the delegation summary. After each task boundary, report completed/reviewed/blocked work and the next dispatch or gate.
     exit_requirements:
     - Implementation evidence and tests are recorded before reporting complete.
+    - The implementation plan contains a fenced JSON Implementation Task Ledger with every in-scope task COMPLETE, evidence, and existing artifact paths before exit verification.
     - Active model and effort are reported from observed runtime metadata, not inferred from task title.
   RETROSPECTIVE:
     purpose: Capture the complete pipeline-close survey before allowing DONE.
@@ -230,6 +233,25 @@ stages:
     - Every adaptive rule matching the recorded answers has been evaluated.
     - Issue-worthy follow-ups are confirmed and tracked before DONE.
     - The final complete-or-skip decision is asked only after this survey is complete.
+
+  DONE:
+    purpose: Terminal state for a pipeline run whose recorded completion decision has been accepted.
+    question_policy: one_at_a_time
+    entry_questions: []
+    adaptive_follow_up_rules: []
+    post_completion_protocol:
+      user_reminders:
+      - Confirm the control-plane status is DONE and retain the transition ID as the audit reference.
+      - Review any linked follow-up issues; DONE closes this run, not the separately tracked follow-up work.
+      - If not already on one, create a dedicated feature branch before publishing changes.
+      - Commit all intended changes to that feature branch, then push it to origin.
+      - Create a pull request from the feature branch and report its URL; wait for the user to merge it.
+      - After merge confirmation, check out main and pull origin/main before cleanup.
+      - Confirm every intended file is preserved on origin/main before deleting the feature branch or worktree; never clean up first.
+      - Commit or push only when the user has authorized that repository action; do not imply publication from DONE alone.
+      - For another iteration, start a new task or explicitly use the supported reset-to-INTAKE recovery path.
+      agent_boundary: Do not perform new implementation or repository publication after DONE without a new user-authorized task/action.
+    exit_requirements: []
 
 execution_guidance:
   work_package:

@@ -16,6 +16,40 @@ class ImplementationEvent:
     detail: str = ""
 
 
+class TestCadence:
+    """Enforce the implementation-session test order and one final-suite run."""
+
+    __test__ = False
+
+    def __init__(self) -> None:
+        self._seen: list[str] = []
+
+    def record(self, test_kind: str) -> None:
+        if test_kind not in {"focused", "integration", "full"}:
+            raise ValueError("test kind must be focused, integration, or full")
+        if test_kind == "integration" and "focused" not in self._seen:
+            raise ValueError("integration tests require focused tests first")
+        if test_kind == "full":
+            if "integration" not in self._seen:
+                raise ValueError("full suite requires an integration checkpoint first")
+            if "full" in self._seen:
+                raise ValueError("full suite is permitted only once per implementation session")
+        self._seen.append(test_kind)
+
+
+def create_default_controller(
+    queue_path: Path,
+    dispatch: Callable[[int, dict], str],
+    review: Callable[[int, dict, str], tuple[str, str]],
+    fix: Optional[Callable[[int, dict, str, str], str]] = None,
+    **kwargs: object,
+) -> "ImplementationController":
+    """Construct the canonical persistent implementation controller runtime."""
+    return ImplementationController(
+        PersistentTaskQueue(queue_path), dispatch, review, fix, **kwargs
+    )
+
+
 class PersistentTaskQueue:
     """Small JSON-backed queue for bounded implementation work packages."""
 
@@ -84,6 +118,12 @@ class ImplementationController:
         self.heartbeat_path = Path(heartbeat_path) if heartbeat_path else None
         self.watchdog_timeout, self.clock = watchdog_timeout, clock
         self.exit_verification, self.on_event = exit_verification, on_event
+        self.cadence = TestCadence()
+
+    def run_verification(self, test_kind: str, runner: Callable[[], object]) -> object:
+        """Run a verification command only when its cadence position is legal."""
+        self.cadence.record(test_kind)
+        return runner()
 
     def heartbeat(self, event: str = "HEARTBEAT") -> None:
         if self.heartbeat_path:
