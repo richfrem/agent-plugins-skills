@@ -94,15 +94,24 @@ def _read_key() -> str:
             tty.setraw(fd)
             ch = sys.stdin.read(1)
             if ch == "\x1b":
-                r, _, _ = select.select([sys.stdin], [], [], 0.05)
+                r, _, _ = select.select([sys.stdin], [], [], 0.15)
                 if r:
-                    seq = sys.stdin.read(2)
-                    return {
-                        "[A": "UP",
-                        "[B": "DOWN",
-                        "[C": "RIGHT",
-                        "[D": "LEFT",
-                    }.get(seq, "ESC")
+                    c2 = sys.stdin.read(1)
+                    if c2 in ("[", "O"):
+                        r2, _, _ = select.select([sys.stdin], [], [], 0.1)
+                        if r2:
+                            c3 = sys.stdin.read(1)
+                            return {
+                                "[A": "UP",
+                                "OA": "UP",
+                                "[B": "DOWN",
+                                "OB": "DOWN",
+                                "[C": "RIGHT",
+                                "OC": "RIGHT",
+                                "[D": "LEFT",
+                                "OD": "LEFT",
+                            }.get(c2 + c3, "ESC")
+                    return "ESC"
                 return "ESC"
             return ch
         finally:
@@ -710,15 +719,15 @@ def tui_process_key(key: str, state: TUIState) -> bool:
             state.cursor = 0
             return False
 
-    if key == "UP":
+    if key in ("UP", "k", "K"):
         state.cursor = max(0, state.cursor - 1)
         return False
-    elif key == "DOWN":
+    elif key in ("DOWN", "j", "J"):
         items = state.current_items
         if items:
             state.cursor = min(len(items) - 1, state.cursor + 1)
         return False
-    elif key in ("RIGHT", "n", "N"):
+    elif key in ("RIGHT", "n", "N", "l", "L"):
         if state.plugin_idx < len(state.plugins) - 1:
             state.plugin_idx += 1
             state.cursor = 0
@@ -726,7 +735,7 @@ def tui_process_key(key: str, state: TUIState) -> bool:
             state.search_mode = False
             state.advisory = None
         return False
-    elif key in ("LEFT", "p", "P"):
+    elif key in ("LEFT", "p", "P", "h", "H"):
         if state.plugin_idx > 0:
             state.plugin_idx -= 1
             state.cursor = 0
@@ -808,7 +817,7 @@ def _render_tui_page(state: TUIState, last_line_count: int = 0) -> int:
     plugin_name = state.current_plugin_name
 
     lines.append(bold(f"Plugin Retention Pruner — Reviewing [{curr_idx}/{total_plugins}]: {cyan(plugin_name)}"))
-    lines.append(dim("  ↑↓ move  |  space toggle  |  ←/p prev  |  →/n next  |  a all  |  enter next/confirm  |  q quit"))
+    lines.append(dim("  ↑↓/jk move  |  space toggle  |  ←/p prev  |  →/n next  |  a all  |  enter next/confirm  |  q quit"))
 
     if state.search_mode:
         lines.append(f"  {dim('Search:')} {cyan(state.search)}_")

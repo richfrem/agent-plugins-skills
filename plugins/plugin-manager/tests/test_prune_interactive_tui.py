@@ -525,4 +525,50 @@ def test_cli_interactive_missing_manifest_auto_seeds(tmp_path: Path, monkeypatch
     assert saved["plugins"]["demo-plugin"]["skills"]["my-skill"] is True
 
 
+def test_read_key_arrow_sequences(monkeypatch):
+    from prune_installed_skills import _read_key
 
+    if sys.platform != "win32":
+        monkeypatch.setattr(sys.stdin, "fileno", lambda: 0)
+        monkeypatch.setattr("tty.setraw", lambda fd: None)
+        monkeypatch.setattr("termios.tcgetattr", lambda fd: [])
+        monkeypatch.setattr("termios.tcsetattr", lambda fd, when, old: None)
+        monkeypatch.setattr("select.select", lambda r, w, x, timeout: ([sys.stdin], [], []))
+
+        # Test \x1b[A (standard UP)
+        inputs = iter(["\x1b", "[", "A"])
+        monkeypatch.setattr("sys.stdin.read", lambda n: next(inputs))
+        assert _read_key() == "UP"
+
+        # Test \x1bOA (SS3 application cursor UP)
+        inputs = iter(["\x1b", "O", "A"])
+        monkeypatch.setattr("sys.stdin.read", lambda n: next(inputs))
+        assert _read_key() == "UP"
+
+        # Test \x1b[B (standard DOWN)
+        inputs = iter(["\x1b", "[", "B"])
+        monkeypatch.setattr("sys.stdin.read", lambda n: next(inputs))
+        assert _read_key() == "DOWN"
+
+        # Test \x1bOB (SS3 application cursor DOWN)
+        inputs = iter(["\x1b", "O", "B"])
+        monkeypatch.setattr("sys.stdin.read", lambda n: next(inputs))
+        assert _read_key() == "DOWN"
+
+
+def test_tui_process_key_jk_navigation():
+    manifest = {
+        "plugins": {
+            "p1": {"skills": {"s1": True, "s2": True, "s3": True}, "rules": {}, "agents": {}}
+        }
+    }
+    state = TUIState(manifest=manifest, root=Path("."))
+    assert state.cursor == 0
+    tui_process_key("j", state)
+    assert state.cursor == 1
+    tui_process_key("j", state)
+    assert state.cursor == 2
+    tui_process_key("k", state)
+    assert state.cursor == 1
+    tui_process_key("k", state)
+    assert state.cursor == 0

@@ -52,4 +52,4 @@
 | 2026-09-11 | Tier 1 | Task 7: Refactor plugin-manager skills to progressive disclosure routers | Refactored plugin-installer (41 lines), plugin-remover (35 lines), and plugin-syncer (34 lines) to lean routers with CLI guides in references | Evolution | SUCCESS |
 | 2026-09-11 | Tier 1 | Task 10: Lifecycle Simulator for installer, pruner, and remover | Implemented simulate_lifecycle.py to automate end-to-end sandbox verification (install -> prune -> sync -> remove) across manifests, registries, and central store | Evolution | SUCCESS |
 | 2026-09-11 | Tier 1 | Test relocation, reference cleanup, and fallback tree alignment | Moved misplaced tests from scripts/ to tests/, cleaned stale reference stubs, created authoritative acceptance-criteria.md and fallback-tree.md, aligned marketplace.json and dev-utils/plugin-manager READMEs | Evolution | SUCCESS |
-
+| 2026-09-11 | Tier 1 | Fix: TUI arrow key parsing and multi-key fallback navigation | Resolved select timeout in _read_key, added SS3 application cursor support (OA/OB), and enabled j/k/h/l navigation in pruner TUI | Evolution | SUCCESS |
