@@ -547,6 +547,31 @@ def _print_banner(source_label: str) -> None:
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
+def _prompt_source_interactive(default_candidate: Path) -> str:
+    """Prompt user for plugin source like the marketplace GUI."""
+    default_str = "plugins" if (default_candidate / "plugins").is_dir() else str(default_candidate.name or "./")
+    print()
+    print(bold("  ┌──────────────────────────────────────────────────────────────────┐"))
+    print(bold("  │ Add Plugin Source                                                │"))
+    print(bold("  │                                                                  │"))
+    print(bold("  │ Enter plugin source repository or directory:                     │"))
+    print(bold("  │ Examples:                                                        │"))
+    print(dim( "  │   • owner/repo (GitHub, e.g. richfrem/agent-plugins-skills)       │"))
+    print(dim( "  │   • git@github.com:owner/repo.git (SSH)                          │"))
+    print(dim( "  │   • https://github.com/owner/repo                                │"))
+    print(dim(f"  │   • [Enter] for local repository: (./{default_str})                 │"))
+    print(bold("  └──────────────────────────────────────────────────────────────────┘"))
+    print()
+    try:
+        raw = input(f"  {bold('Source')} [{dim(f'./{default_str}')}]: ").strip()
+    except (EOFError, KeyboardInterrupt):
+        print(yellow("\n  Cancelled."))
+        sys.exit(0)
+    if not raw:
+        return str(default_candidate / "plugins" if (default_candidate / "plugins").is_dir() else default_candidate)
+    return raw
+
+
 def _resolve_source(args) -> tuple[Path, Path | None]:
     """Resolve the plugin source to a local directory, cloning if GitHub.
 
@@ -557,22 +582,33 @@ def _resolve_source(args) -> tuple[Path, Path | None]:
         Tuple of (plugins_root, temp_dir). temp_dir is set if a clone was
         performed and must be removed by the caller after installation.
     """
-    if args.source and _is_github_source(args.source):
-        owner_repo, subpath = _parse_github_source(args.source)
-        _print_banner(f"{owner_repo}" + (f"/{subpath}" if subpath else ""))
-        temp_dir = Path(tempfile.mkdtemp(prefix="plugin_add_"))
-        repo_root = _clone_repo(owner_repo, temp_dir / owner_repo.replace("/", "_"))
-        return (repo_root / subpath if subpath else repo_root), temp_dir
-    if args.source:
-        source_path = Path(args.source).resolve()
-        _print_banner(str(source_path))
-        return source_path, None
+    source = args.source or getattr(args, "source_opt", None)
+
     cwd = Path.cwd()
     candidate = cwd
     for _ in range(4):
         if (candidate / "plugins").is_dir() or (candidate / ".claude-plugin").is_dir():
             break
         candidate = candidate.parent
+
+    # If no source provided and running interactively, prompt user like marketplace
+    if not source and sys.stdin.isatty() and not (args.all or args.yes or args.plugins):
+        source = _prompt_source_interactive(candidate)
+
+    if source and _is_github_source(source):
+        args.source = source
+        owner_repo, subpath = _parse_github_source(source)
+        _print_banner(f"{owner_repo}" + (f"/{subpath}" if subpath else ""))
+        temp_dir = Path(tempfile.mkdtemp(prefix="plugin_add_"))
+        repo_root = _clone_repo(owner_repo, temp_dir / owner_repo.replace("/", "_"))
+        return (repo_root / subpath if subpath else repo_root), temp_dir
+
+    if source:
+        args.source = source
+        source_path = Path(source).resolve()
+        _print_banner(str(source_path))
+        return source_path, None
+
     _print_banner(str(candidate))
     return candidate, None
 
@@ -789,7 +825,11 @@ def _build_arg_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "source", nargs="?", default=None,
-        help="owner/repo (GitHub) or local path to a repo root (default: current directory)",
+        help="owner/repo (GitHub) or local path to a repo root (default: interactive prompt or current directory)",
+    )
+    parser.add_argument(
+        "--source", "-s", dest="source_opt", default=None,
+        help="Explicit source argument: owner/repo (GitHub) or local path to a repo root",
     )
     parser.add_argument("--all", "-a", action="store_true", help="Select all plugins without prompting")
     parser.add_argument("--yes", "-y", action="store_true", help="Skip confirmation prompts")
