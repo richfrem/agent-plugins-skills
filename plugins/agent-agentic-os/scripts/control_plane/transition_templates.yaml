@@ -1852,9 +1852,11 @@ templates:
     question: 'Force this task to DONE now, acknowledging that this does not claim implementation or verification occurred?'
     options:
     - FORCE_DONE
+    - FORCE_CLOSE
     - CANCEL
     accepted_answers:
     - FORCE_DONE
+    - FORCE_CLOSE
     default: CANCEL
   approval:
     required: false
@@ -1917,9 +1919,11 @@ templates:
     question: Type FORCE_CLOSE to authorize closing this task immediately.
     options:
     - FORCE_CLOSE
+    - FORCE_DONE
     default: ''
     accepted_answers:
     - FORCE_CLOSE
+    - FORCE_DONE
   approval:
     required: false
     approver_role: human

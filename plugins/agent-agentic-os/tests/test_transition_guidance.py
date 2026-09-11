@@ -66,7 +66,7 @@ def test_guidance_cannot_authorize_illegal_requested_edge(control_plane):
     task_id = "guidance-denial-001"
     control_plane.create_task(task_id=task_id, title="Guidance", runtime_tool="codex")
 
-    guidance = control_plane.get_transition_guidance(task_id, requested_to_state="WORKTREE_REVIEW")
+    guidance = control_plane.get_transition_guidance(task_id, requested_to_state="DONE")
 
     assert guidance["advisory"] is True
     assert guidance["legal"] is True

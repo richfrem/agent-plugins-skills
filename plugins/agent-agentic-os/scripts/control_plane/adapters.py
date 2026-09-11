@@ -370,8 +370,8 @@ WHEN NEW.state != OLD.state
               WHERE force_td.task_id = OLD.task_id
                 AND force_td.from_state = OLD.state
                 AND force_td.to_state = NEW.state
-                AND force_td.question_id = 'force_close_authorization'
-                AND force_td.answer = 'FORCE_CLOSE'
+                AND force_td.question_id IN ('force_close_authorization', 'human_force_done_confirmation')
+                AND force_td.answer IN ('FORCE_CLOSE', 'FORCE_DONE')
                 AND force_td.actor = 'human'
                 AND force_td.consumed_at IS NULL
           )
@@ -825,8 +825,8 @@ class SqlitePersistenceAdapter(PersistencePort):
                               WHERE force_td.task_id = OLD.task_id
                                 AND force_td.from_state = OLD.state
                                 AND force_td.to_state = NEW.state
-                                AND force_td.question_id = 'force_close_authorization'
-                                AND force_td.answer = 'FORCE_CLOSE'
+                                AND force_td.question_id IN ('force_close_authorization', 'human_force_done_confirmation')
+                                AND force_td.answer IN ('FORCE_CLOSE', 'FORCE_DONE')
                                 AND force_td.actor = 'human'
                                 AND force_td.consumed_at IS NULL
                           )

@@ -17,6 +17,7 @@ Purpose:
 
 import hashlib
 import sys
+from dataclasses import replace
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, TextIO, Tuple
 from control_plane.registry import TransitionRegistry, TransitionTemplate, TransitionRegistryError
@@ -120,7 +121,7 @@ class TransitionCoordinator:
                 "Force close denied: explicit human authorization FORCE_CLOSE is required."
             )
         if force_close and (
-            actor != "human" or human_authorization != "FORCE_CLOSE" or not interactive
+            actor != "human" or human_authorization not in ("FORCE_CLOSE", "FORCE_DONE") or not interactive
         ):
             raise TransitionCoordinatorError(
                 "Force close denied: explicit interactive human authorization FORCE_CLOSE is required."
@@ -132,13 +133,22 @@ class TransitionCoordinator:
         # (notably RETROSPECTIVE -> DONE) cannot shadow the override.
         template = self._registry.get_template(current_state, to_state)
         if force_close and to_state == "DONE":
-            template = self._registry.get_template_by_id(
-                f"force_close_to_done__from_{current_state}"
-            ) or next(
-                (candidate for candidate in self._registry.get_all_templates()
-                 if candidate.transition_id.startswith("force_close_to_done__from_")),
-                template,
+            template = (
+                self._registry.get_template_by_id(f"force_close_to_done__from_{current_state}")
+                or self._registry.get_template_by_id(f"human_force_done__from_{current_state}")
             )
+            if template is None:
+                prototype = next(
+                    (candidate for candidate in self._registry.get_all_templates()
+                     if candidate.transition_id.startswith(("force_close_to_done__from_", "human_force_done__from_"))),
+                    None,
+                )
+                if prototype is not None:
+                    template = replace(
+                        prototype,
+                        from_state=current_state,
+                        transition_id=f"human_force_done__from_{current_state}",
+                    )
         if not template:
             raise TransitionCoordinatorError(
                 f"No template registered for transition ({current_state} -> {to_state})."

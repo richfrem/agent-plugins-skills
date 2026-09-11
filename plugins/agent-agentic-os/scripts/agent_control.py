@@ -570,8 +570,12 @@ class ControlPlane:
             and not (
             commit_request.force_close and commit_request.actor == "human"
             and commit_request.interactive_human_authorization
-            and any(d.question_id == "force_close_authorization" and d.answer == "FORCE_CLOSE"
-                    and d.actor == "human" for d in commit_request.staged_decisions)
+            and any(
+                d.question_id in {"force_close_authorization", "human_force_done_confirmation"}
+                and d.answer in {"FORCE_CLOSE", "FORCE_DONE"}
+                and d.actor == "human"
+                for d in commit_request.staged_decisions
+            )
         )):
             raise PersistenceInvariantViolation(
                 "Transition to DONE requires explicit human authorization FORCE_CLOSE."
