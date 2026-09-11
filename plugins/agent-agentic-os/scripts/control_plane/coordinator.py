@@ -127,7 +127,18 @@ class TransitionCoordinator:
             )
 
         # 2. Resolve template from registry
+        # Force-close is an explicit authorization override. Resolve its
+        # wildcard contract deliberately so an exact ordinary DONE template
+        # (notably RETROSPECTIVE -> DONE) cannot shadow the override.
         template = self._registry.get_template(current_state, to_state)
+        if force_close and to_state == "DONE":
+            template = self._registry.get_template_by_id(
+                f"force_close_to_done__from_{current_state}"
+            ) or next(
+                (candidate for candidate in self._registry.get_all_templates()
+                 if candidate.transition_id.startswith("force_close_to_done__from_")),
+                template,
+            )
         if not template:
             raise TransitionCoordinatorError(
                 f"No template registered for transition ({current_state} -> {to_state})."
@@ -238,6 +249,10 @@ class TransitionCoordinator:
             checklist_status.append((True, chk_item))
 
         for check_id in template.deterministic_checks:
+            if force_close:
+                # A validated force-close bypasses ordinary completion gates;
+                # adjacency and explicit human authorization remain enforced.
+                continue
             if check_id in ("interview_trivial_complete", "interview_standard_complete"):
                 deferred_checks.append(check_id)
                 continue

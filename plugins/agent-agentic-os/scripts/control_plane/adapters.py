@@ -365,6 +365,16 @@ WHEN NEW.state != OLD.state
                 AND (td.actor = 'human' OR (rq.question_id = 'retrospective_decision' AND td.actor = 'agent'))
                 AND td.consumed_at IS NULL
           )
+          AND NOT EXISTS (
+              SELECT 1 FROM transition_decisions force_td
+              WHERE force_td.task_id = OLD.task_id
+                AND force_td.from_state = OLD.state
+                AND force_td.to_state = NEW.state
+                AND force_td.question_id = 'force_close_authorization'
+                AND force_td.answer = 'FORCE_CLOSE'
+                AND force_td.actor = 'human'
+                AND force_td.consumed_at IS NULL
+          )
     )
  )
 BEGIN
@@ -807,8 +817,18 @@ class SqlitePersistenceAdapter(PersistencePort):
                                 AND td.question_id = rq.question_id
                                 AND td.answer IS NOT NULL
                                 AND trim(td.answer) != ''
-                              AND (td.actor = 'human' OR (rq.question_id = 'retrospective_decision' AND td.actor = 'agent'))
+                                AND (td.actor = 'human' OR (rq.question_id = 'retrospective_decision' AND td.actor = 'agent'))
                                 AND td.consumed_at IS NULL
+                          )
+                          AND NOT EXISTS (
+                              SELECT 1 FROM transition_decisions force_td
+                              WHERE force_td.task_id = OLD.task_id
+                                AND force_td.from_state = OLD.state
+                                AND force_td.to_state = NEW.state
+                                AND force_td.question_id = 'force_close_authorization'
+                                AND force_td.answer = 'FORCE_CLOSE'
+                                AND force_td.actor = 'human'
+                                AND force_td.consumed_at IS NULL
                           )
                     )
                  )

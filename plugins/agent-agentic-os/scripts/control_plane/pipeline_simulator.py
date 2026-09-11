@@ -91,13 +91,20 @@ class PipelineSimulator:
 
     def force_close(self, task_id: str, *, authorized: bool = False):
         """Exercise the explicit human force-close boundary."""
-        return self.control_plane.coordinate_transition(
+        coordinator = TransitionCoordinator(
+            self.control_plane,
+            registry=self.registry,
+            input_fn=lambda _prompt: "FORCE_CLOSE",
+            output_stream=io.StringIO(),
+        )
+        return coordinator.coordinate_transition(
             task_id=task_id,
             to_state="DONE",
             actor="human" if authorized else "simulator",
             reason="simulator force close",
             force_close=authorized,
             human_authorization="FORCE_CLOSE" if authorized else None,
+            interactive=authorized,
         )
 
     def run_trivial_interview_fast_track(self, task_id: str) -> Dict[str, Any]:
