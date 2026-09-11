@@ -11,10 +11,11 @@
 As the plugin ecosystem grows across platforms, installing full plugins can introduce dozens of skills, sub-agents, and rules into the target repository's `.agents/` environment, substantially increasing model context size, token consumption, and cognitive load.
 
 This specification introduces:
-1. **Component Retention Lifecycle**: A unified manifest (`plugin-retention.json`) and template (`assets/templates/plugin-retention.template.json`) enabling users to select and retain only the exact skills, rules, and agents they need.
-2. **`plugin-pruner` Skill & Tool**: A deterministic Python engine (`prune_installed_skills.py`) in `plugins/plugin-manager/` that performs interactive selection, dependency-aware advisory warnings, and safe physical pruning.
-3. **Installer & Syncer Integration**: Seeding `plugin-retention.json` on `plugin_add.py` installation, and automatically enforcing retention boundaries during `sync_with_inventory.py`.
-4. **Progressive Disclosure & Deterministic-First Refactoring**: Applying the Crow architecture patterns (`crow-agent-skill-authoring`) to create ultra-lean `SKILL.md` routers ($\le 60$ lines) with conditional module loading across `plugin-manager` and `agent-scaffolders` (`create-skill`, `audit-skill`), while preserving all self-healing, TDD gates, and evolution invariants.
+1. **Granular Install-Time Selection (Day 1)**: `plugin_add.py` interactive prompt allows users to check/uncheck specific skills within each selected plugin (defaulting all checked), avoiding installing unwanted components in the first place.
+2. **Component Retention Lifecycle**: A unified manifest (`plugin-retention.json`) and template (`assets/templates/plugin-retention.template.json`) enabling users to track, version, and enforce exact retained skills, rules, and agents.
+3. **`plugin-pruner` Skill & Tool (Day 2+)**: A deterministic Python engine (`prune_installed_skills.py`) in `plugins/plugin-manager/` that performs interactive selection, dependency-aware advisory warnings, and safe physical pruning on an already-populated environment.
+4. **Installer & Syncer Integration**: Seeding `plugin-retention.json` from installation choices, and automatically enforcing retention boundaries during `sync_with_inventory.py`.
+5. **Progressive Disclosure & Deterministic-First Refactoring**: Applying the Crow architecture patterns (`crow-agent-skill-authoring`) to create ultra-lean `SKILL.md` routers ($\le 60$ lines) with conditional module loading across `plugin-manager` and `agent-scaffolders` (`create-skill`, `audit-skill`), while preserving all self-healing, TDD gates, and evolution invariants.
 
 ---
 
@@ -22,22 +23,21 @@ This specification introduces:
 
 ```mermaid
 flowchart TD
-    A["plugin_add.py (Install Plugin)"] --> B["Deploy Artifacts to .agents/"]
-    B --> C["Write/Update .agents/ownership/{plugin}.json"]
-    C --> D{"plugin-retention.json exists?"}
-    D -- No --> E["Initialize from Template with all installed components"]
-    D -- Yes --> F["Merge newly installed components into retained lists"]
+    A["plugin_add.py (Interactive Install)"] --> B["Select Plugins + Optional Granular Skill Toggles"]
+    B --> C["Deploy Selected Artifacts to .agents/"]
+    C --> D["Write/Update .agents/ownership/{plugin}.json"]
+    D --> E["Seed plugin-retention.json with exact selected components"]
     
-    G["sync_with_inventory.py (Sync Repo)"] --> H["Re-run Installer for Tracked Plugins"]
-    H --> I["Post-Sync Retention Pass"]
-    I --> J["prune_installed_skills.py --execute"]
+    F["sync_with_inventory.py (Sync Repo)"] --> G["Re-run Installer for Tracked Plugins"]
+    G --> H["Post-Sync Retention Pass"]
+    H --> I["prune_installed_skills.py --execute"]
     
-    K["User / plugin-pruner Skill"] --> L["prune_installed_skills.py --interactive"]
-    L --> M["Dependency Scanner: Check cross-skill and rule references"]
-    M --> N["Interactive Advisory: Prompt user on missing dependencies"]
-    N --> O["Save updated plugin-retention.json"]
-    O --> J
-    J --> P["Pruned, Context-Minimal .agents/ Environment"]
+    J["User / plugin-pruner Skill (Day 2+)"] --> K["prune_installed_skills.py --interactive"]
+    K --> L["Dependency Scanner: Check cross-skill and rule references"]
+    L --> M["Interactive Advisory: Prompt user on missing dependencies"]
+    M --> N["Save updated plugin-retention.json"]
+    N --> I
+    I --> O["Pruned, Context-Minimal .agents/ Environment"]
 ```
 
 ### 2.1 Manifest Schema (`plugin-retention.json`)
