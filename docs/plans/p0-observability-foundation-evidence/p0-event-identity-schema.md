@@ -14,12 +14,43 @@ Every observation owns immutable `producer_namespace`, `producer_version`,
 event_id)`. `event_id` is a UUIDv7 unique within that key namespace; every retry
 gets a new `attempt_id` and never reuses an execution identity.
 
-The digest is lowercase SHA-256 over the payload excluding the digest itself,
-local ingest time, local file name, and local database row ID. It uses UTF-8
-JSON with recursively sorted object keys, no insignificant whitespace, native
-JSON booleans/null, and normalized RFC 3339 UTC timestamps. Schema/version and
-producer identity are included in the payload. SHA-256 detects accidental local
-corruption/collision; it is not a signature or tamper-proof provenance claim.
+The digest is lowercase SHA-256 over the producer artifact after removing only
+`event.canonical_digest`. Local ingest time, file name, and database row ID are
+not producer-artifact fields and therefore never enter this input. No other
+field is silently removed. Schema/version and producer identity are included.
+SHA-256 detects accidental local corruption/collision; it is not a signature or
+tamper-proof provenance claim.
+
+## Deterministic canonicalization procedure
+
+The producer and consumer implement this exact procedure before calculating or
+validating a digest:
+
+1. Decode bytes as strict UTF-8 and parse one JSON object. Reject duplicate
+   object keys, non-finite numbers, trailing non-whitespace bytes, and fields
+   outside the closed producer schema.
+2. Require the P00 typed schema. All P00 counters and durations are integers;
+   a JSON number must be an integer in `[-9007199254740991, 9007199254740991]`.
+   Decimal, exponent, `-0`, `NaN`, and `Infinity` representations are rejected.
+   Thus each accepted number serializes as its shortest base-10 integer with no
+   leading plus or zero (except `0`).
+3. Normalize exactly these producer timestamps: `capture.captured_at_utc` and
+   `event.occurred_at_utc`. Parse RFC 3339 with an explicit `Z` or numeric UTC
+   offset; reject leap seconds and parse failures. Convert to UTC and serialize
+   as `YYYY-MM-DDTHH:MM:SS.ffffffZ`, with exactly six fractional digits. The
+   consumer-created `ingested_at_utc` is outside the digest input.
+4. Remove `event.canonical_digest`; preserve `null`, booleans, strings, arrays,
+   and objects otherwise. Sort every object by Unicode code-point order of its
+   keys. Emit compact UTF-8 JSON using `,` and `:` separators, JSON escaping for
+   control characters/quotes/backslashes, and no insignificant whitespace.
+5. SHA-256 the emitted bytes and write 64 lowercase hex characters into
+   `event.canonical_digest`. Validation repeats steps 1–4 and compares the
+   resulting digest in constant time. Any parse, type, timestamp, or digest
+   failure is `artifact_invalid`, never a guessed normalization.
+
+The fixture's explicit `null` digest is permitted only because it is labelled a
+draft contract fixture, not a publishable producer artifact. A production
+artifact must carry a computed digest.
 
 Same-key/same-digest redelivery is idempotent. Same-key/different-digest is an
 integrity conflict: retain both payload references, mark `ambiguous`, and never
