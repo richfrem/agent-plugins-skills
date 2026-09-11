@@ -478,3 +478,51 @@ def test_read_key_standalone_esc(monkeypatch):
         assert _read_key() == "ESC"
 
 
+def test_cli_interactive_missing_manifest_auto_seeds(tmp_path: Path, monkeypatch, capsys):
+    root = tmp_path
+    skills_dir = root / ".agents" / "skills"
+    ownership_dir = root / ".agents" / "ownership"
+    skills_dir.mkdir(parents=True)
+    ownership_dir.mkdir(parents=True)
+
+    (skills_dir / "my-skill").mkdir()
+    own_file = ownership_dir / "demo-plugin.json"
+    own_file.write_text(
+        json.dumps({
+            "plugin": "demo-plugin",
+            "artifacts": [".agents/skills/my-skill"],
+        }),
+        encoding="utf-8",
+    )
+
+    manifest_file = root / "plugin-retention.json"
+    assert not manifest_file.exists()
+
+    def mock_tui(r, m, key_provider=None):
+        assert "demo-plugin" in m.get("plugins", {})
+        assert "my-skill" in m["plugins"]["demo-plugin"]["skills"]
+        return m
+
+    monkeypatch.setattr("prune_installed_skills.interactive_prune_tui", mock_tui)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "prune_installed_skills.py",
+            "--manifest",
+            str(manifest_file),
+            "--root",
+            str(root),
+            "--interactive",
+            "--dry-run",
+        ],
+    )
+    exit_code = main()
+    assert exit_code == 0
+    assert manifest_file.exists()
+    saved = json.loads(manifest_file.read_text(encoding="utf-8"))
+    assert "demo-plugin" in saved["plugins"]
+    assert saved["plugins"]["demo-plugin"]["skills"]["my-skill"] is True
+
+
+

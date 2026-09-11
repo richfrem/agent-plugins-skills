@@ -83,22 +83,27 @@ def _read_key() -> str:
         if ch in ("\x00", "\xe0"):
             ch2 = msvcrt.getwch()
             return {"\x48": "UP", "\x50": "DOWN", "\x4b": "LEFT", "\x4d": "RIGHT"}.get(ch2, "")
+        if ch == "\x1b":
+            return "ESC"
         return ch
     else:
-        import tty, termios
+        import tty, termios, select
         fd = sys.stdin.fileno()
         old = termios.tcgetattr(fd)
         try:
             tty.setraw(fd)
             ch = sys.stdin.read(1)
             if ch == "\x1b":
-                ch += sys.stdin.read(2)
-                return {
-                    "[A": "UP",
-                    "[B": "DOWN",
-                    "[C": "RIGHT",
-                    "[D": "LEFT",
-                }.get(ch[1:], "ESC")
+                r, _, _ = select.select([sys.stdin], [], [], 0.05)
+                if r:
+                    seq = sys.stdin.read(2)
+                    return {
+                        "[A": "UP",
+                        "[B": "DOWN",
+                        "[C": "RIGHT",
+                        "[D": "LEFT",
+                    }.get(seq, "ESC")
+                return "ESC"
             return ch
         finally:
             termios.tcsetattr(fd, termios.TCSADRAIN, old)
@@ -144,6 +149,7 @@ try:
         save_manifest,
         get_component_states,
         parse_artifact,
+        merge_installed_components,
     )
 except ImportError:
     from plugins.plugin_manager.scripts.retention_manifest import (
@@ -151,6 +157,7 @@ except ImportError:
         save_manifest,
         get_component_states,
         parse_artifact,
+        merge_installed_components,
     )
 
 if "plugins.plugin_manager" not in sys.modules:
@@ -791,7 +798,7 @@ def tui_process_key(key: str, state: TUIState) -> bool:
     return False
 
 
-def _render_tui_page(state: TUIState, first_render: bool = False) -> int:
+def _render_tui_page(state: TUIState, last_line_count: int = 0) -> int:
     """Renders the current plugin review page in the terminal."""
     PAGE = 18
     lines = []
@@ -803,8 +810,10 @@ def _render_tui_page(state: TUIState, first_render: bool = False) -> int:
     lines.append(bold(f"Plugin Retention Pruner — Reviewing [{curr_idx}/{total_plugins}]: {cyan(plugin_name)}"))
     lines.append(dim("  ↑↓ move  |  space toggle  |  ←/p prev  |  →/n next  |  a all  |  enter next/confirm  |  q quit"))
 
-    if state.search:
+    if state.search_mode:
         lines.append(f"  {dim('Search:')} {cyan(state.search)}_")
+    elif state.search:
+        lines.append(f"  {dim('Filtered:')} {cyan(state.search)} {dim('(ESC to clear)')}")
     else:
         lines.append(dim("  Type / to search"))
 
@@ -844,8 +853,8 @@ def _render_tui_page(state: TUIState, first_render: bool = False) -> int:
     lines.append("")
     lines.append(f"  {green(str(retained_count))} of {len(items)} components retained in {plugin_name}")
 
-    if not first_render:
-        _clear_lines(len(lines))
+    if last_line_count > 0:
+        _clear_lines(last_line_count)
     print("\n".join(lines), flush=True)
     return len(lines)
 
@@ -874,10 +883,9 @@ def interactive_prune_tui(
         print(yellow("Warning: Interactive TUI requested in non-interactive terminal; skipping."))
         return manifest
 
-    first_render = True
+    last_line_count = 0
     if is_interactive and key_provider is None:
-        _render_tui_page(state, first_render=True)
-        first_render = False
+        last_line_count = _render_tui_page(state, last_line_count=0)
 
     while True:
         key = key_provider() if key_provider is not None else _read_key()
@@ -885,7 +893,7 @@ def interactive_prune_tui(
         if done:
             break
         if is_interactive and key_provider is None:
-            _render_tui_page(state, first_render=False)
+            last_line_count = _render_tui_page(state, last_line_count=last_line_count)
 
     if is_interactive and key_provider is None:
         print()
@@ -951,14 +959,50 @@ def main(argv: Optional[List[str]] = None) -> int:
             manifest_file = root_path / manifest_arg
 
     if not manifest_file.exists():
-        print(red(f"Error: Manifest not found at {manifest_file}"))
-        return 1
+        if args.interactive:
+            template_path = _SCRIPT_DIR.parent / "assets" / "templates" / "plugin-retention.template.json"
+            if template_path.exists():
+                try:
+                    manifest = load_manifest(template_path)
+                except Exception:
+                    manifest = {"version": 1, "protected_defaults": DEFAULT_PROTECTED, "plugins": {}}
+            else:
+                manifest = {"version": 1, "protected_defaults": DEFAULT_PROTECTED, "plugins": {}}
 
-    try:
-        manifest = load_manifest(manifest_file)
-    except Exception as e:
-        print(red(f"Error reading manifest: {e}"))
-        return 1
+            # Seed from .agents/ownership/*.json
+            ownership_dir = root_path / ".agents" / "ownership"
+            seeded_any = False
+            if ownership_dir.is_dir():
+                for own_file in sorted(ownership_dir.glob("*.json")):
+                    try:
+                        p_name = own_file.stem
+                        data = json.loads(own_file.read_text(encoding="utf-8"))
+                        artifacts = data.get("artifacts", [])
+                        merge_installed_components(manifest, p_name, artifacts)
+                        seeded_any = True
+                    except Exception:
+                        pass
+
+            # Fallback: scan .agents/skills if no ownership manifests found
+            if not seeded_any:
+                skills_dir = root_path / ".agents" / "skills"
+                if skills_dir.is_dir():
+                    for s_dir in sorted(skills_dir.iterdir()):
+                        if s_dir.is_dir() and not s_dir.name.startswith("."):
+                            merge_installed_components(
+                                manifest, "installed-skills", [f".agents/skills/{s_dir.name}"]
+                            )
+
+            print(cyan(f"Initialized retention manifest from installed components: {manifest_file.name}"))
+        else:
+            print(red(f"Error: Manifest not found at {manifest_file}"))
+            return 1
+    else:
+        try:
+            manifest = load_manifest(manifest_file)
+        except Exception as e:
+            print(red(f"Error reading manifest: {e}"))
+            return 1
 
     if args.interactive:
         manifest = interactive_prune_tui(root_path, manifest)

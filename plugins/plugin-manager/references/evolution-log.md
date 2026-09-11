@@ -41,5 +41,7 @@
 | 2026-09-11 | Tier 1 | Task 2: Core Pruning & Dependency Scanner Engine | Added prune_installed_skills.py and test_prune_installed_skills.py with dependency scanning and confirmation token gates | Evolution | SUCCESS |
 | 2026-09-11 | Tier 1 | Task 3: Interactive Plugin-by-Plugin Multiselect TUI | Added interactive multiselect TUI with ANSI key reader, dependency advisory warning checks, paging, and Task 2 deferred items | Evolution | SUCCESS |
 | 2026-09-11 | Tier 1 | Monorepo Test Isolation (ADR-004) | Relocated all plugin-manager tests to plugins/plugin-manager/tests/ and removed project root tests/ | Evolution | SUCCESS |
+| 2026-09-11 | Tier 1 | Task 3 Review Fixes: Test relocation paths & hardened TUI key handling | Verified relative test import paths, added non-blocking ESC, Windows ESC mapping, line count drift tracking, and auto-seeding missing manifest in TUI | Evolution | SUCCESS |
+
 
 
