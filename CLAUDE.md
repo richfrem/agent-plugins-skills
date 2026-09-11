@@ -262,10 +262,10 @@ vector-db-cleanup, vector-db-audit, memory-management
 
 ### dev-utils (v1.4.0) — consolidated from 9 standalone plugins
 
-**Skills (17):** adr-management, coding-conventions-agent, context-bundler, convert-mermaid,
-github-issue-agent, github-issue-backlog-agent, github-issue-prioritizer, hf-init, hf-upload,
-hf-download, humanize, issue-pr-lifecycle-agent, issue-worktree-agent, link-checker-agent,
-optimize-context, symlink-manager, task-agent
+**Skills (16):** adr-management, coding-conventions-agent, context-bundler, convert-mermaid,
+github-issue-agent, github-issue-backlog-agent, github-issue-prioritizer, github-issue-pr-lifecycle-agent,
+github-issue-worktree-agent, hf-init, hf-upload, hf-download, humanize, link-checker-agent,
+optimize-context, symlink-manager
 
 **Do not reference:** `plugins/adr-manager`, `plugins/coding-conventions`, `plugins/context-bundler`,
 `plugins/huggingface-utils`, `plugins/link-checker`, `plugins/mermaid-to-png`,
@@ -457,13 +457,13 @@ known copy before editing to avoid either double-editing a symlink target or mis
   (Phase 3). Applies whenever `spec-driven-development-policy.md` used to apply — that file no longer exists.
 
 ### GitHub Issue Lifecycle Skills (dev-utils)
-Local task scratchpad (`task-agent`) is ephemeral and gitignored — durable backlog lives as GitHub Issues:
+Local task scratchpad is ephemeral and gitignored — durable backlog lives as GitHub Issues:
 ```
-github-issue-agent          ← create/search/comment/close issues; friction_cluster_agent for hotspot synthesis
-github-issue-backlog-agent  ← bridge: promote tasks/*.md → GitHub Issue (dry-run default, --execute for live)
-github-issue-prioritizer    ← rank issues, sync GitHub Projects v2
-issue-worktree-agent        ← isolated git worktree per issue
-issue-pr-lifecycle-agent    ← full issue → worktree → PR → close orchestration
+github-issue-agent              ← create/search/comment/close issues; friction_cluster_agent for hotspot synthesis
+github-issue-backlog-agent      ← bridge: promote tasks/*.md → GitHub Issue (dry-run default, --execute for live)
+github-issue-prioritizer        ← rank issues, sync GitHub Projects v2
+github-issue-worktree-agent     ← isolated git worktree per issue
+github-issue-pr-lifecycle-agent ← full issue → worktree → PR → close orchestration
 ```
 `issue-resolution-reviewer` (agent-agentic-os) — post-closure quality audit skill.
 `gh_issue_create.py` auto-creates missing taxonomy labels (`type:*`/`tier:*`/`area:*`/etc.)
