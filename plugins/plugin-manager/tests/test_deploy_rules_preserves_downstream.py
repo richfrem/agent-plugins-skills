@@ -34,7 +34,10 @@ import shutil
 import tempfile
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+_SCRIPTS_DIR = Path(__file__).resolve().parent.parent / "scripts"
+if str(_SCRIPTS_DIR) not in sys.path:
+    sys.path.insert(0, str(_SCRIPTS_DIR))
+
 from plugin_installer import deploy_rules  # noqa: E402
 
 
@@ -158,6 +161,13 @@ def run_orphan_cleanup_for_removed_rule() -> None:
         print("PASS: deploy_rules() cleaned up orphans for rules removed entirely from the plugin")
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
+
+
+def test_deploy_rules_preserves_downstream() -> None:
+    """Pytest entrypoint for deploy_rules regression suite."""
+    run()
+    run_legacy_prefix_migration()
+    run_orphan_cleanup_for_removed_rule()
 
 
 if __name__ == "__main__":

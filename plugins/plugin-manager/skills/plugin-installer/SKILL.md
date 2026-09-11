@@ -37,5 +37,6 @@ python3 scripts/plugin_add.py plugins/ --all -y
 ## Progressive Disclosure & References
 
 - **CLI Reference & Flags**: See `references/installer-cli-guide.md` for full parameter options and multi-IDE mappings.
-- **Architecture & Ecosystem**: See `references/agent_bridge_overview.md` for the bridge pattern and central repository design.
+- **Architecture & Ecosystem**: See `references/plugin_installer_overview.md` for the bridge pattern and central repository design.
 - **Acceptance Criteria**: See `references/acceptance-criteria.md` for structural invariants.
+- **Fallback Procedures**: See `references/fallback-tree.md` for environmental and network recovery trees.

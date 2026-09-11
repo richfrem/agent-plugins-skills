@@ -9860,12 +9860,6 @@
       "description": ""
     },
     {
-      "src": "plugins/plugin-manager/references/plugin_installer.py",
-      "dst": "plugins/plugin-manager/skills/plugin-installer/references/plugin_installer.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
       "src": "plugins/plugin-manager/references/acceptance-criteria.md",
       "dst": "plugins/plugin-manager/skills/plugin-syncer/references/acceptance-criteria.md",
       "strategy": "symlink",
@@ -10944,6 +10938,36 @@
       "dst": "plugins/dev-utils/skills/optimize-context/references/session-efficiency.md",
       "strategy": "symlink",
       "description": "optimize-context session-efficiency.md reference"
+    },
+    {
+      "src": "plugins/plugin-manager/references/fallback-tree.md",
+      "dst": "plugins/plugin-manager/skills/plugin-installer/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/plugin-manager/references/fallback-tree.md",
+      "dst": "plugins/plugin-manager/skills/plugin-pruner/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/plugin-manager/references/fallback-tree.md",
+      "dst": "plugins/plugin-manager/skills/plugin-remover/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/plugin-manager/references/fallback-tree.md",
+      "dst": "plugins/plugin-manager/skills/plugin-syncer/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/plugin-manager/references/plugin_installer_overview.md",
+      "dst": "plugins/plugin-manager/skills/plugin-installer/references/plugin_installer_overview.md",
+      "strategy": "symlink",
+      "description": ""
     }
   ]
 }

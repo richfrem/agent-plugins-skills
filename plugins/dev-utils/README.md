@@ -1,6 +1,6 @@
 # dev-utils
 
-Unified Developer Utilities Suite. Collection of stateless tools for context bundling, diagram rendering, Kanban board task management, ADR auditing, and markdown link verification.
+Unified Developer Utilities Suite. Collection of stateless tools for context bundling, GitHub issue lifecycle automation (logging, backlog escalation, prioritization, worktrees, PR orchestration), diagram rendering, ADR auditing, and markdown link verification.
 
 ## Plugin Structure
 

@@ -33,3 +33,4 @@ python3 scripts/prune_installed_skills.py --execute --confirm-token PRUNE-INSTAL
 - **Architecture & Lifecycle**: See `references/retention-workflow.md` for the full lifecycle diagram and state engine rules.
 - **CLI Options & TUI Controls**: See `references/pruner-cli-guide.md` for keyboard shortcuts and automation flags.
 - **Verification Standards**: See `references/acceptance-criteria.md` for quality criteria and invariants.
+- **Fallback Procedures**: See `references/fallback-tree.md` for fallback and recovery trees.

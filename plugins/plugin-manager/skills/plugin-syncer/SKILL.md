@@ -32,3 +32,4 @@ python3 scripts/sync_with_inventory.py --cleanup-only
 
 - **CLI Reference & Rules Merge Safety**: See `references/syncer-cli-guide.md` for rules merging, retention enforcement, and validation details.
 - **Acceptance Criteria**: See `references/acceptance-criteria.md` for synchronization invariants.
+- **Fallback Procedures**: See `references/fallback-tree.md` for fallback and recovery trees.

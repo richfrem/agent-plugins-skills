@@ -33,3 +33,4 @@ python3 scripts/plugin_remove.py --all --yes
 
 - **CLI Reference & Cleanup Protocol**: See `references/remover-cli-guide.md` for registry scrubbing rules and orphan cleanup behavior.
 - **Acceptance Criteria**: See `references/acceptance-criteria.md` for structural invariants.
+- **Fallback Procedures**: See `references/fallback-tree.md` for fallback and recovery trees.
