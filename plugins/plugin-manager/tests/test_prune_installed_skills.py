@@ -7,8 +7,7 @@ import pytest
 
 # Add plugins/plugin-manager/scripts to sys.path so retention_manifest and
 # prune_installed_skills can be imported cleanly despite the hyphen in plugin-manager
-REPO_ROOT = Path(__file__).resolve().parent.parent.parent
-plugin_scripts = REPO_ROOT / "plugins" / "plugin-manager" / "scripts"
+plugin_scripts = Path(__file__).resolve().parent.parent / "scripts"
 if str(plugin_scripts) not in sys.path:
     sys.path.insert(0, str(plugin_scripts))
 

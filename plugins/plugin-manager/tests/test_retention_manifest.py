@@ -6,8 +6,7 @@ from pathlib import Path
 import pytest
 
 # Add plugins/plugin-manager/scripts to sys.path so retention_manifest can be imported cleanly
-REPO_ROOT = Path(__file__).resolve().parent.parent.parent
-plugin_scripts = REPO_ROOT / "plugins" / "plugin-manager" / "scripts"
+plugin_scripts = Path(__file__).resolve().parent.parent / "scripts"
 if str(plugin_scripts) not in sys.path:
     sys.path.insert(0, str(plugin_scripts))
 
@@ -129,7 +128,7 @@ def test_merge_ignores_non_component_artifacts():
 
 
 def test_canonical_template_file():
-    template_path = REPO_ROOT / "plugins" / "plugin-manager" / "assets" / "templates" / "plugin-retention.template.json"
+    template_path = Path(__file__).resolve().parent.parent / "assets" / "templates" / "plugin-retention.template.json"
     assert template_path.exists(), "Template file must exist"
     data = load_manifest(template_path)
     assert data["version"] == 1

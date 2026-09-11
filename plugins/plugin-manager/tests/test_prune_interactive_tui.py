@@ -7,8 +7,7 @@ from unittest.mock import patch
 import pytest
 
 # Add plugins/plugin-manager/scripts to sys.path
-REPO_ROOT = Path(__file__).resolve().parent.parent.parent
-plugin_scripts = REPO_ROOT / "plugins" / "plugin-manager" / "scripts"
+plugin_scripts = Path(__file__).resolve().parent.parent / "scripts"
 if str(plugin_scripts) not in sys.path:
     sys.path.insert(0, str(plugin_scripts))
 
@@ -435,4 +434,47 @@ def test_cli_interactive_flag(tmp_path: Path, monkeypatch, capsys):
     # Verify manifest was updated on disk
     updated = json.loads(manifest_file.read_text(encoding="utf-8"))
     assert updated["plugins"]["demo"]["skills"]["unwanted-skill"] is False
+
+
+def test_render_tui_page_last_line_count(tmp_path: Path):
+    from prune_installed_skills import _render_tui_page, _clear_lines
+
+    manifest = {
+        "plugins": {
+            "demo": {
+                "skills": {"skill-1": True},
+                "rules": {},
+                "agents": {},
+            }
+        }
+    }
+    state = TUIState(manifest=manifest, root=tmp_path)
+    # First render (last_line_count = 0)
+    lines_count_1 = _render_tui_page(state, last_line_count=0)
+    assert lines_count_1 > 0
+
+    # Second render passing last_line_count
+    with patch("prune_installed_skills._clear_lines") as mock_clear:
+        lines_count_2 = _render_tui_page(state, last_line_count=lines_count_1)
+        mock_clear.assert_called_once_with(lines_count_1)
+        assert lines_count_2 == lines_count_1
+
+
+def test_read_key_standalone_esc(monkeypatch):
+    import prune_installed_skills
+    from prune_installed_skills import _read_key
+
+    if sys.platform == "win32":
+        monkeypatch.setattr("msvcrt.getwch", lambda: "\x1b")
+        assert _read_key() == "ESC"
+    else:
+        # Mock sys.stdin.fileno and termios to test select escape logic
+        monkeypatch.setattr(sys.stdin, "fileno", lambda: 0)
+        monkeypatch.setattr("tty.setraw", lambda fd: None)
+        monkeypatch.setattr("termios.tcgetattr", lambda fd: [])
+        monkeypatch.setattr("termios.tcsetattr", lambda fd, when, old: None)
+        monkeypatch.setattr("sys.stdin.read", lambda n: "\x1b")
+        monkeypatch.setattr("select.select", lambda r, w, x, timeout: ([], [], []))
+        assert _read_key() == "ESC"
+
 
