@@ -113,21 +113,23 @@ _SKILL_DIRS = [
     # dependency-management (1 skill)
     ("dependency-management",    "dependency-management"),
 
-    # dev-utils (14 skills)
+    # dev-utils (16 skills)
     ("dev-utils",                "adr-management"),
-    ("dev-utils",                "bundle-context-full"),
     ("dev-utils",                "coding-conventions-agent"),
     ("dev-utils",                "context-bundler"),
     ("dev-utils",                "convert-mermaid"),
+    ("dev-utils",                "github-issue-agent"),
+    ("dev-utils",                "github-issue-backlog-agent"),
+    ("dev-utils",                "github-issue-pr-lifecycle-agent"),
+    ("dev-utils",                "github-issue-prioritizer"),
+    ("dev-utils",                "github-issue-worktree-agent"),
     ("dev-utils",                "hf-download"),
     ("dev-utils",                "hf-init"),
     ("dev-utils",                "hf-upload"),
     ("dev-utils",                "humanize"),
     ("dev-utils",                "link-checker-agent"),
     ("dev-utils",                "optimize-context"),
-    ("dev-utils",                "red-team-bundler"),
     ("dev-utils",                "symlink-manager"),
-    ("dev-utils",                "task-agent"),
 
     # exploration-cycle-plugin (20 skills)
     ("exploration-cycle-plugin", "business-requirements-capture"),
@@ -163,8 +165,9 @@ _SKILL_DIRS = [
     ("obsidian-wiki-engine",     "obsidian-wiki-builder"),
     ("obsidian-wiki-engine",     "obsidian-wiki-linter"),
 
-    # plugin-manager (3 skills)
+    # plugin-manager (4 skills)
     ("plugin-manager",           "plugin-installer"),
+    ("plugin-manager",           "plugin-pruner"),
     ("plugin-manager",           "plugin-remover"),
     ("plugin-manager",           "plugin-syncer"),
 

@@ -63,19 +63,19 @@
     },
     {
       "name": "dev-utils",
-      "description": "Unified Developer Utilities Suite — 17 skills covering ADR management, coding conventions, context bundling, Mermaid diagrams, GitHub issue logging & friction management, GitHub issue backlog bridge, issue prioritizer & Projects v2 sync, issue worktree manager, issue PR lifecycle orchestrator, HuggingFace integration, text humanization, link validation, task tracking, symlink management, and agent context hygiene.",
+      "description": "Unified Developer Utilities Suite — 16 skills covering ADR management, coding conventions, context bundling, Mermaid diagrams, GitHub issue logging & friction management, GitHub issue backlog bridge, issue prioritizer & Projects v2 sync, GitHub issue worktree manager, GitHub issue PR lifecycle orchestrator, HuggingFace integration, text humanization, link validation, symlink management, and agent context hygiene.",
       "source": "./plugins/dev-utils",
       "strict": true,
       "category": "workflow",
-      "tags": ["adr", "bundler", "mermaid", "tasks", "github-issues", "worktree", "pr-lifecycle", "huggingface", "links", "conventions", "writing", "optimize-context"]
+      "tags": ["adr", "bundler", "mermaid", "github-issues", "worktree", "pr-lifecycle", "huggingface", "links", "conventions", "writing", "optimize-context"]
     },
     {
       "name": "plugin-manager",
-      "description": "Orchestration hub for the plugin ecosystem. Manages canonical source-keyed installations, unified package removal, and synchronized updates across all agent environments.",
+      "description": "Orchestration hub for the plugin ecosystem. Manages canonical source-keyed installations, component retention pruning, unified package removal, and synchronized updates across all agent environments.",
       "source": "./plugins/plugin-manager",
       "strict": true,
       "category": "agent-infrastructure",
-      "tags": ["orchestration", "sync", "installer", "package-manager", "deployment"]
+      "tags": ["orchestration", "sync", "installer", "pruner", "package-manager", "deployment"]
     },
     {
       "name": "dependency-management",

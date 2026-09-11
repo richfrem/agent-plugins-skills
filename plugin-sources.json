@@ -9,6 +9,7 @@
     {
       "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
       "plugins": [
+        "agent-agentic-os",
         "agent-memory",
         "agent-orchestration",
         "agent-scaffolders",
@@ -18,12 +19,6 @@
         "exploration-cycle-plugin",
         "obsidian-wiki-engine",
         "plugin-manager"
-      ]
-    },
-    {
-      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/.worktrees/p0-observability-foundation/plugins",
-      "plugins": [
-        "agent-agentic-os"
       ]
     }
   ]

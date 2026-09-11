@@ -97,9 +97,10 @@ The Plugin Manager deploys to `.agents/` as the universal canonical store, then 
 
 | Skill | Purpose | Key Scripts |
 | :--- | :--- | :--- |
-| **[plugin-installer](skills/plugin-installer/SKILL.md)** | Interactive TUI installer; `--all -y` for headless CI installs | `plugin_add.py`, `plugin_installer.py` |
+| **[plugin-installer](skills/plugin-installer/SKILL.md)** | Interactive TUI installer; `--all -y` for headless CI installs, `--select-skills` for granular skill control | `plugin_add.py`, `plugin_installer.py` |
+| **[plugin-pruner](skills/plugin-pruner/SKILL.md)** | Interactive TUI component pruner; audits dependencies & trims unneeded skills/rules/agents | `prune_installed_skills.py` |
 | **[plugin-remover](skills/plugin-remover/SKILL.md)** | Interactive TUI uninstaller grouped by source; `--plugins --yes` for headless removal | `plugin_remove.py` |
-| **[plugin-syncer](skills/plugin-syncer/SKILL.md)** | Reinstalls registered plugins from sources & cleans orphans | `sync_with_inventory.py` |
+| **[plugin-syncer](skills/plugin-syncer/SKILL.md)** | Reinstalls registered plugins from sources, enforces retention & cleans orphans | `sync_with_inventory.py` |
 
 ---
 
@@ -108,6 +109,7 @@ The Plugin Manager deploys to `.agents/` as the universal canonical store, then 
 | Command | Purpose |
 | :--- | :--- |
 | `/plugin-manager:install` | Install a specific plugin from GitHub or local path |
+| `/plugin-manager:prune` | Interactively prune unneeded skills/rules/agents while preserving dependencies |
 | `/plugin-manager:remove` | Safely remove a plugin and scrub its registry entry |
 | `/plugin-manager:sync` | Sync all plugins to local environments based on `plugin-sources.json` |
 | `/plugin-manager:cleanup` | Remove orphaned artifacts completely from `.agents/` |
@@ -164,21 +166,27 @@ plugin-manager/
 ├── .claude-plugin/
 │   └── plugin.json
 ├── README.md
+├── plugin.yaml
 ├── assets/
 │   └── templates/
-│       └── plugin-sources.template.json   <- Starter template for new projects
+│       ├── plugin-sources.template.json   <- Starter template for new projects
+│       └── plugin-retention.template.json <- Baseline component retention template
 ├── commands/
 │   ├── update.md       <- Sync all plugins to local agent environments
 │   ├── cleanup.md      <- Clean orphaned agent artifacts
 │   └── install.md      <- Install a plugin from GitHub or local path
 ├── scripts/
-│   ├── plugin_add.py          <- Interactive TUI installer (GitHub-native)
-│   ├── plugin_remove.py       <- Interactive TUI uninstaller (source-grouped)
-│   ├── plugin_installer.py    <- Core deploy logic (single plugin, called by plugin_add)
-│   ├── sync_with_inventory.py <- Agent env sync + orphan cleanup via plugin-sources.json
-│   └── test_plugin_lifecycle.py <- Full add/remove lifecycle test harness
+│   ├── plugin_add.py              <- Interactive TUI installer (source-selector & skill checkboxes)
+│   ├── plugin_remove.py           <- Interactive TUI uninstaller (source-grouped + orphan cleanup)
+│   ├── prune_installed_skills.py  <- Interactive TUI component retention pruner
+│   ├── plugin_installer.py        <- Core deploy logic (single plugin, called by plugin_add)
+│   ├── sync_with_inventory.py     <- Agent env sync + retention enforcement via plugin-sources.json
+│   ├── retention_manifest.py      <- Manifest loader, saver, and merger
+│   └── simulate_lifecycle.py      <- Fast hermetic integration lifecycle simulator
+├── tests/                         <- Isolated pytest test suites
 └── skills/
     ├── plugin-installer/
+    ├── plugin-pruner/
     ├── plugin-remover/
     └── plugin-syncer/
 ```

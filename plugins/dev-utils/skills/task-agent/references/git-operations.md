@@ -1,1 +1,0 @@
-../../../rules/git-operations.md

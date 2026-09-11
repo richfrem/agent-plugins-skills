@@ -14,6 +14,7 @@ dependencies = []
 plugin-add = "bootstrap:add_main"
 plugin-remove = "bootstrap:remove_main"
 plugin-sync = "bootstrap:sync_main"
+plugin-prune = "bootstrap:prune_main"
 
 [tool.setuptools]
 py-modules = ["bootstrap"]

@@ -1,1 +1,0 @@
-../../../references/assistant_preferences.md
