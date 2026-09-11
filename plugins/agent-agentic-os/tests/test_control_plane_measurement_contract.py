@@ -518,3 +518,160 @@ def test_privacy_rejects_oversized_payload():
     raw = json.dumps(base).encode("utf-8")
     with pytest.raises(MeasurementPrivacyViolation, match="size limit|1 MiB"):
         validate_observation_json(raw)
+
+
+# =========================================================================
+# 10. Finding 4: UUIDv7 event_id identity contract
+# =========================================================================
+
+
+def test_event_id_valid_uuidv7_accepted():
+    """A valid UUIDv7 event_id passes validation."""
+    base = _valid_observation_dict()
+    # Already uses a UUIDv7: 018f6d42-6b2e-7cc0-8f1b-1234567890ab
+    obs = validate_observation_dict(base)
+    assert obs.event.event_id == "018f6d42-6b2e-7cc0-8f1b-1234567890ab"
+
+
+def test_event_id_non_uuid_rejected():
+    """A plain string that is not a UUID is rejected."""
+    base = _valid_observation_dict()
+    base["event"]["event_id"] = "not-a-uuid"
+    base["event"]["canonical_digest"] = compute_canonical_digest(json.dumps(base))
+    with pytest.raises(MeasurementValidationError, match="UUIDv7|identity contract"):
+        validate_observation_dict(base)
+
+
+def test_event_id_uuidv4_rejected():
+    """A UUIDv4 (version bit 4 not 7) is rejected by the UUIDv7 contract."""
+    base = _valid_observation_dict()
+    base["event"]["event_id"] = "550e8400-e29b-41d4-a716-446655440000"  # UUIDv4
+    base["event"]["canonical_digest"] = compute_canonical_digest(json.dumps(base))
+    with pytest.raises(MeasurementValidationError, match="UUIDv7|identity contract"):
+        validate_observation_dict(base)
+
+
+def test_event_id_uuidv7_wrong_variant_rejected():
+    """Version 7 but wrong variant nibble ([89ab] required) is rejected."""
+    base = _valid_observation_dict()
+    # variant nibble is '0' here — not in [89ab]
+    base["event"]["event_id"] = "018f6d42-6b2e-7cc0-0f1b-1234567890ab"
+    base["event"]["canonical_digest"] = compute_canonical_digest(json.dumps(base))
+    with pytest.raises(MeasurementValidationError, match="UUIDv7|identity contract"):
+        validate_observation_dict(base)
+
+
+# =========================================================================
+# 11. Finding 1: typed scope validation and settle_observations scope enforcement
+# =========================================================================
+
+
+def test_usage_scope_invalid_value_rejected():
+    """An unrecognized usage.scope string is rejected at parse time."""
+    base = _valid_observation_dict()
+    base["usage"]["scope"] = "NOT_A_SCOPE"
+    base["event"]["canonical_digest"] = compute_canonical_digest(json.dumps(base))
+    with pytest.raises(MeasurementValidationError, match="scope"):
+        validate_observation_dict(base)
+
+
+def test_settle_scope_enforced_incompatible_obs_scope():
+    """settle_observations(scope=DELTA) rejects an observation with scope='snapshot'."""
+    base = _valid_observation_dict()
+    base["usage"]["scope"] = "snapshot"
+    base["event"]["canonical_digest"] = compute_canonical_digest(json.dumps(base))
+    obs = validate_observation_dict(base)
+
+    result = settle_observations([obs], scope=ObservationScope.DELTA)
+    assert result.is_settled is False
+    assert "incompatible" in result.unsettled_reason.lower()
+
+
+def test_settle_scope_compatible_obs_passes():
+    """settle_observations(scope=CUMULATIVE) accepts a 'final'-scoped observation."""
+    base = _valid_observation_dict()
+    base["usage"]["scope"] = "final"
+    base["event"]["canonical_digest"] = compute_canonical_digest(json.dumps(base))
+    obs = validate_observation_dict(base)
+
+    result = settle_observations([obs], scope=ObservationScope.CUMULATIVE)
+    assert result.is_settled is True
+
+
+# =========================================================================
+# 12. Finding 2: null tokens preserved as unavailable, not aggregated as zero
+# =========================================================================
+
+
+def test_null_input_token_in_active_obs_yields_none_total_not_partial_sum():
+    """When any active observation has null input_tokens, the settled total is None (not a partial sum)."""
+    base_a = _valid_observation_dict()
+    base_a["event"]["event_id"] = "018f6d42-6b2e-7cc0-8f1b-000000000001"
+    base_a["usage"]["input_tokens"] = 50
+    base_a["event"]["canonical_digest"] = compute_canonical_digest(json.dumps(base_a))
+    obs_a = validate_observation_dict(base_a)
+
+    base_b = _valid_observation_dict()
+    base_b["event"]["event_id"] = "018f6d42-6b2e-7cc0-8f1b-000000000002"
+    base_b["usage"]["input_tokens"] = None
+    base_b["usage"]["unavailable_reason"] = "Provider withheld input count"
+    base_b["event"]["canonical_digest"] = compute_canonical_digest(json.dumps(base_b))
+    obs_b = validate_observation_dict(base_b)
+
+    result = settle_observations([obs_a, obs_b])
+    # Must not report 50 as if null == 0; the partial sum is misleading
+    assert result.total_input_tokens is None, (
+        f"Expected None for partial sum, got {result.total_input_tokens}"
+    )
+
+
+def test_null_output_token_in_active_obs_yields_none_total():
+    """When any active observation has null output_tokens, total_output_tokens is None."""
+    base_a = _valid_observation_dict()
+    base_a["event"]["event_id"] = "018f6d42-6b2e-7cc0-8f1b-000000000003"
+    base_a["usage"]["output_tokens"] = 30
+    base_a["event"]["canonical_digest"] = compute_canonical_digest(json.dumps(base_a))
+    obs_a = validate_observation_dict(base_a)
+
+    base_b = _valid_observation_dict()
+    base_b["event"]["event_id"] = "018f6d42-6b2e-7cc0-8f1b-000000000004"
+    base_b["usage"]["output_tokens"] = None
+    base_b["usage"]["unavailable_reason"] = "Provider withheld output count"
+    base_b["event"]["canonical_digest"] = compute_canonical_digest(json.dumps(base_b))
+    obs_b = validate_observation_dict(base_b)
+
+    result = settle_observations([obs_a, obs_b])
+    assert result.total_output_tokens is None
+
+
+# =========================================================================
+# 13. Finding 3: deterministic correction-chain / supersession semantics
+# =========================================================================
+
+
+def test_multiple_corrections_to_same_parent_raises_conflict():
+    """Two corrections targeting the same parent event_id create an ambiguous supersession chain."""
+    base_orig = _valid_observation_dict()
+    base_orig["event"]["event_id"] = "018f6d42-6b2e-7cc0-8f1b-aaaaaaaaaaaa"
+    base_orig["usage"]["input_tokens"] = 100
+    base_orig["event"]["canonical_digest"] = compute_canonical_digest(json.dumps(base_orig))
+    obs_orig = validate_observation_dict(base_orig)
+
+    base_c1 = _valid_observation_dict()
+    base_c1["event"]["event_id"] = "018f6d42-6b2e-7cc0-8f1b-bbbbbbbbbbbb"
+    base_c1["event"]["causal_parent_event_id"] = "018f6d42-6b2e-7cc0-8f1b-aaaaaaaaaaaa"
+    base_c1["usage"]["scope"] = "correction"
+    base_c1["usage"]["input_tokens"] = 110
+    base_c1["event"]["canonical_digest"] = compute_canonical_digest(json.dumps(base_c1))
+    obs_c1 = validate_observation_dict(base_c1)
+
+    base_c2 = _valid_observation_dict()
+    base_c2["event"]["event_id"] = "018f6d42-6b2e-7cc0-8f1b-cccccccccccc"
+    base_c2["event"]["causal_parent_event_id"] = "018f6d42-6b2e-7cc0-8f1b-aaaaaaaaaaaa"  # same parent
+    base_c2["usage"]["scope"] = "correction"
+    base_c2["usage"]["input_tokens"] = 115
+    base_c2["event"]["canonical_digest"] = compute_canonical_digest(json.dumps(base_c2))
+    obs_c2 = validate_observation_dict(base_c2)
+
+    with pytest.raises(MeasurementSettlementConflict, match="Multiple corrections|ambiguous"):
+        settle_observations([obs_orig, obs_c1, obs_c2])

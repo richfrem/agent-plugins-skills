@@ -125,6 +125,12 @@ ALLOWED_USAGE_KEYS = frozenset({
     "scope",
 })
 
+# UUIDv7: time_high(8)-time_mid(4)-7xxx(4)-[89ab]xxx(4)-node(12)
+_UUIDV7_REGEX = re.compile(
+    r"^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+    re.IGNORECASE,
+)
+
 
 # =========================================================================
 # Enums
@@ -632,6 +638,13 @@ def validate_observation_dict(
         if req not in event_data or not isinstance(event_data[req], str) or not event_data[req].strip():
             raise MeasurementValidationError(f"Field 'event.{req}' must be a non-empty string")
 
+    event_id = event_data["event_id"]
+    if not _UUIDV7_REGEX.match(event_id):
+        raise MeasurementValidationError(
+            f"event_id '{event_id}' does not conform to P00 UUIDv7 identity contract "
+            f"(expected xxxxxxxx-xxxx-7xxx-[89ab]xxx-xxxxxxxxxxxx)"
+        )
+
     cov_state = event_data["coverage_state"]
     valid_states = {s.value for s in CoverageState}
     if cov_state not in valid_states:
@@ -775,6 +788,14 @@ def validate_observation_dict(
                     "unavailable_reason is prohibited when all token fields are recorded integers"
                 )
 
+    raw_scope = usage_data.get("scope")
+    if raw_scope is not None:
+        valid_scopes = {s.value for s in ObservationScope}
+        if not isinstance(raw_scope, str) or raw_scope not in valid_scopes:
+            raise MeasurementValidationError(
+                f"Invalid usage.scope '{raw_scope}', allowed: {sorted(valid_scopes)}"
+            )
+
     usage = ObservationUsage(
         provenance=usage_prov,
         input_tokens=token_vals["input_tokens"],
@@ -782,7 +803,7 @@ def validate_observation_dict(
         cached_tokens=token_vals["cached_tokens"],
         reasoning_tokens=token_vals["reasoning_tokens"],
         unavailable_reason=usage_reason,
-        scope=usage_data.get("scope"),
+        scope=raw_scope,
     )
 
     # Digest integrity check comes after all content validations so content errors take precedence
@@ -885,7 +906,31 @@ def settle_observations(
         seen_keys[k] = obs
         retained_observations.append(obs)
 
-    # Check scope compatibility
+    # Finding 1: enforce declared scope against each observation's usage.scope
+    if scope is not None:
+        compatible_per_scope: Dict[ObservationScope, frozenset] = {
+            ObservationScope.CUMULATIVE: frozenset({"snapshot", "final", "correction", None}),
+            ObservationScope.DELTA: frozenset({"delta", None}),
+            ObservationScope.SNAPSHOT: frozenset({"snapshot", None}),
+            ObservationScope.FINAL: frozenset({"final", None}),
+            ObservationScope.CORRECTION: frozenset({"correction", None}),
+        }
+        allowed = compatible_per_scope.get(scope, frozenset())
+        for obs in retained_observations:
+            obs_scope = obs.usage.scope
+            if obs_scope not in allowed:
+                return SettlementResult(
+                    status="unsettled",
+                    observations=retained_observations,
+                    duplicate_count=duplicate_count,
+                    is_settled=False,
+                    unsettled_reason=(
+                        f"Observation scope '{obs_scope}' is incompatible with "
+                        f"declared settle scope '{scope.value}'"
+                    ),
+                )
+
+    # Check scope compatibility among observations themselves
     if len(scopes_present) > 1:
         if scopes_present - {"snapshot", "final", "correction"} != set():
             # Incompatible combination like cumulative + delta
@@ -897,13 +942,20 @@ def settle_observations(
                 unsettled_reason=f"Incompatible measurement scopes: {' vs '.join(sorted(scopes_present))}",
             )
 
-    # Apply precedence and corrections
+    # Finding 3: deterministic correction supersession — reject multiple corrections for same parent
+    corrections: Dict[str, MeasurementObservation] = {}
+    for o in retained_observations:
+        if o.usage.scope == "correction" and o.event.causal_parent_event_id:
+            parent_id = o.event.causal_parent_event_id
+            if parent_id in corrections:
+                raise MeasurementSettlementConflict(
+                    f"Multiple corrections target the same parent event_id '{parent_id}': "
+                    f"ambiguous supersession chain; at most one correction per parent is permitted"
+                )
+            corrections[parent_id] = o
+
+    # Apply precedence: final supersedes all; corrections supersede their targets
     final_obs = next((o for o in retained_observations if o.usage.scope == "final"), None)
-    corrections = {
-        o.event.causal_parent_event_id: o
-        for o in retained_observations
-        if o.usage.scope == "correction" and o.event.causal_parent_event_id
-    }
 
     if final_obs is not None:
         active_obs = [final_obs]
@@ -941,11 +993,13 @@ def settle_observations(
         if o.usage.reasoning_tokens is not None:
             reasoning_subset += o.usage.reasoning_tokens
 
+    # Finding 2: any null token in active observations means the total is unavailable,
+    # not a misleading partial sum. Return None rather than aggregating as zero.
     return SettlementResult(
         status="observed",
         observations=retained_observations,
-        total_input_tokens=None if any_input_null and not active_obs else total_input,
-        total_output_tokens=None if any_output_null and not active_obs else total_output,
+        total_input_tokens=None if any_input_null else (total_input if active_obs else None),
+        total_output_tokens=None if any_output_null else (total_output if active_obs else None),
         cached_tokens_subset=cached_subset,
         reasoning_tokens_subset=reasoning_subset,
         invented_aggregate_tokens=None,  # Never invent additive totals of subsets
