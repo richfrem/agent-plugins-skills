@@ -545,73 +545,6 @@ class ControlPlane:
         """Retrieves a task dictionary by task_id."""
         return self._persistence.get_task(task_id)
 
-    def record_recovery_approval(
-        self,
-        task_id: str,
-        destination_state: str,
-        approver: str,
-        reason: str,
-    ) -> str:
-        """Record human approval for an explicit recovery target."""
-        task = self.get_task(task_id)
-        if not task:
-            raise ValueError(f"Task not found: {task_id}")
-        source_state = str(task["state"])
-        self._state_machine.validate_recovery_target(task_id, source_state, destination_state)
-        if not approver.strip() or not reason.strip():
-            raise ValueError("Recovery approval requires a non-empty approver and reason.")
-        latest = self._persistence.get_last_transition(task_id)
-        if latest is None:
-            raise ValueError(f"Task '{task_id}' has no current occupancy transition.")
-        return self._persistence.record_recovery_approval(
-            task_id=task_id,
-            expected_source_state=source_state,
-            destination_state=destination_state,
-            source_occupancy_transition_id=latest.transition_id,
-            approver=approver,
-            decision="APPROVAL",
-            reason=reason,
-        )
-
-    def apply_recovery_transition(
-        self,
-        task_id: str,
-        destination_state: str,
-        approval_receipt_token: str,
-        actor: str,
-        reason: str,
-    ):
-        """Apply a previously approved recovery transition through the persistence port."""
-        task = self.get_task(task_id)
-        if not task:
-            raise ValueError(f"Task not found: {task_id}")
-        source_state = str(task["state"])
-        self._state_machine.validate_recovery_target(task_id, source_state, destination_state)
-        latest = self._persistence.get_last_transition(task_id)
-        if latest is None:
-            raise ValueError(f"Task '{task_id}' has no current occupancy transition.")
-        return self._persistence.apply_recovery_transition(
-            task_id=task_id,
-            expected_source_state=source_state,
-            destination_state=destination_state,
-            source_occupancy_transition_id=latest.transition_id,
-            approval_receipt_token=approval_receipt_token,
-            actor=actor,
-            reason=reason,
-        )
-
-    def get_last_transition(self, task_id: str):
-        """Retrieves the latest persisted transition through the public facade."""
-        return self._persistence.get_last_transition(task_id)
-
-    def get_unconsumed_transition_answers(
-        self, task_id: str, from_state: str, to_state: str
-    ) -> Dict[str, str]:
-        """Retrieves unconsumed transition answers through the public facade."""
-        return self._persistence.get_unconsumed_transition_answers(
-            task_id, from_state, to_state
-        )
-
     def get_transition_guidance(
         self, task_id: str, requested_to_state: Optional[str] = None
     ) -> Dict[str, Any]:
@@ -632,6 +565,55 @@ class ControlPlane:
         return self._transition_registry.get_transition_guidance(
             current_state, requested_to_state
         )
+
+    def _reconcile_main_into_worktree(self, repo_root: Path, worktree_path: Path) -> Dict[str, List[str]]:
+        """Force-copies dirty (modified/untracked) files from the source checkout into the
+        registered worktree so pre-worktree edits are never silently left behind (github
+        issue #609: an agent's self-report that this happened is not evidence it happened).
+        Never overwrites a worktree file that has independently diverged from the same
+        committed base in a different way — those are reported as conflicts and left
+        untouched on both sides for a human to resolve."""
+        import subprocess
+
+        repo_root = Path(repo_root).resolve()
+        worktree_path = Path(worktree_path).resolve()
+        result = subprocess.run(
+            ["git", "-C", str(repo_root), "status", "--porcelain=v1", "--untracked-files=all"],
+            capture_output=True, text=True, check=True,
+        )
+        reconciled: List[str] = []
+        conflicts: List[str] = []
+        deleted_on_main: List[str] = []
+        for line in result.stdout.splitlines():
+            if not line.strip():
+                continue
+            status, rel_path = line[:2], line[3:].strip()
+            if " -> " in rel_path:
+                rel_path = rel_path.split(" -> ", 1)[1]
+            src = repo_root / rel_path
+            dst = worktree_path / rel_path
+            if status.strip().startswith("D") or not src.exists():
+                deleted_on_main.append(rel_path)
+                continue
+            src_bytes = src.read_bytes()
+            if dst.exists():
+                dst_bytes = dst.read_bytes()
+                if dst_bytes == src_bytes:
+                    continue
+                base_bytes: Optional[bytes] = None
+                base_result = subprocess.run(
+                    ["git", "-C", str(repo_root), "show", f"HEAD:{rel_path}"],
+                    capture_output=True, check=False,
+                )
+                if base_result.returncode == 0:
+                    base_bytes = base_result.stdout
+                if base_bytes is not None and dst_bytes != base_bytes:
+                    conflicts.append(rel_path)
+                    continue
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            dst.write_bytes(src_bytes)
+            reconciled.append(rel_path)
+        return {"reconciled": reconciled, "conflicts": conflicts, "deleted_on_main": deleted_on_main}
 
     def _build_transition_policy_ctx(
         self,
@@ -675,9 +657,24 @@ class ControlPlane:
                 "artifact paths before retrying VERIFY_EXIT -> RETROSPECTIVE."
             )
 
+        def reconcile_main_into_worktree() -> Dict[str, List[str]]:
+            repo_root = getattr(self, "repo_root", None)
+            if repo_root is None and self.db_path is not None and self.db_path.parent.name == "context":
+                repo_root = self.db_path.parent.parent
+            if repo_root is None:
+                repo_root = Path.cwd()
+            worktree = task.get("worktree_path")
+            if not worktree:
+                return {"reconciled": [], "conflicts": [], "deleted_on_main": []}
+            worktree_root = Path(worktree)
+            if not worktree_root.is_absolute():
+                worktree_root = Path(repo_root) / worktree_root
+            return self._reconcile_main_into_worktree(Path(repo_root), worktree_root)
+
         return {
             "task_id": task_id,
             "task": task,
+            "reconcile_main_into_worktree": reconcile_main_into_worktree,
             "has_receipt": lambda gate_name: self._persistence.has_receipt(task_id, gate_name),
             "has_passing_critic_review": lambda: self._persistence.has_passing_critic_review(task_id),
             "count_receipts": lambda gate_name, exit_code=None: self._persistence.count_receipts(task_id, gate_name, exit_code),
@@ -956,49 +953,6 @@ class ControlPlane:
 
         self._persistence.update_worktree_fields(task_id, worktree_path, worktree_branch, worktree_state)
 
-    def record_done_closeout_decision(
-        self, task_id: str, question_id: str, answer: str, actor: str = "human"
-    ) -> int:
-        """Persist one exact human answer to the post-DONE Git closeout contract."""
-        if actor != "human":
-            raise PersistenceInvariantViolation("DONE closeout decisions require actor='human'.")
-        task = self.get_task(task_id)
-        if not task:
-            raise ValueError(f"Task not found: {task_id}")
-        if task["state"] != "DONE":
-            raise PersistenceInvariantViolation(
-                f"DONE closeout decisions require task '{task_id}' to be in DONE; "
-                f"current state is '{task['state']}'."
-            )
-        if not hasattr(self, "_transition_registry"):
-            self._transition_registry = TransitionRegistry.load_default()
-        question = self._transition_registry.get_stage_question("DONE", question_id)
-        if question is None:
-            raise ValueError(f"Unknown DONE closeout question: {question_id}")
-        accepted_answers = question.get("accepted_answers", question.get("options", []))
-        if accepted_answers and answer not in accepted_answers:
-            raise ValueError(
-                f"Answer '{answer}' is not registered for '{question_id}'. "
-                f"Accepted answers: {accepted_answers}"
-            )
-        occupancy = self._persistence.get_last_transition(task_id, to_state="DONE")
-        if occupancy is None:
-            raise PersistenceInvariantViolation(
-                f"Task '{task_id}' has no persisted DONE occupancy for closeout decision."
-            )
-        return self._persistence.record_done_closeout_decision(
-            task_id=task_id,
-            source_occupancy_transition_id=occupancy.transition_id,
-            question_id=question_id,
-            answer=answer,
-            actor=actor,
-            recorded_at=self._clock.current_time(),
-        )
-
-    def get_done_closeout_decisions(self, task_id: str) -> List[Dict[str, Any]]:
-        """Return persisted human decisions for post-DONE Git closeout."""
-        return self._persistence.get_done_closeout_decisions(task_id)
-
     def verify_commit(self, branch: str, staged_files: Optional[List[str]] = None) -> Dict[str, Any]:
         """Verifies whether git commit is authorized on `branch` given `staged_files`.
         
@@ -1197,12 +1151,6 @@ def _build_parser() -> argparse.ArgumentParser:
     p_wt.add_argument("--branch", required=True)
     p_wt.add_argument("--state", required=True)
 
-    p_dcd = sub.add_parser("record-done-closeout")
-    p_dcd.add_argument("--task-id", required=True)
-    p_dcd.add_argument("--question-id", required=True)
-    p_dcd.add_argument("--answer", required=True)
-    p_dcd.add_argument("--actor", default="human")
-
     p_st = sub.add_parser("status")
     p_st.add_argument("--task-id", required=True)
 
@@ -1259,13 +1207,6 @@ def _build_parser() -> argparse.ArgumentParser:
     p_rra.add_argument("--decision", default="APPROVAL")
     p_rra.add_argument("--reason", required=True)
 
-    p_hr = sub.add_parser("recover-transition")
-    p_hr.add_argument("--task-id", required=True)
-    p_hr.add_argument("--to", required=True, help="Different canonical recovery target state")
-    p_hr.add_argument("--approver", required=True)
-    p_hr.add_argument("--reason", required=True)
-    p_hr.add_argument("--interactive", action="store_true", help="Require explicit human RECOVER confirmation")
-
     p_vc = sub.add_parser("verify-commit")
     p_vc.add_argument("--branch", required=True, help="Git branch to verify commit authorization for")
     p_vc.add_argument("--staged-files", nargs="*", default=[], help="List of staged files")
@@ -1311,14 +1252,6 @@ def _dispatch_command(cp: ControlPlane, args: argparse.Namespace):
     elif args.subcommand == "update-worktree":
         cp.update_worktree(args.task_id, args.path, args.branch, args.state)
         print(f"Task {args.task_id} worktree state set to {args.state}.")
-    elif args.subcommand == "record-done-closeout":
-        decision_id = cp.record_done_closeout_decision(
-            task_id=args.task_id,
-            question_id=args.question_id,
-            answer=args.answer,
-            actor=args.actor,
-        )
-        print(f"DONE closeout decision recorded: {decision_id}")
     elif args.subcommand == "status":
         print(json.dumps(cp.get_task(args.task_id), indent=2, default=str))
     elif args.subcommand == "transition-guidance":
@@ -1357,31 +1290,6 @@ def _dispatch_command(cp: ControlPlane, args: argparse.Namespace):
             reason=args.reason,
         )
         print(f"Recovery approval recorded: {token}")
-    elif args.subcommand == "recover-transition":
-        if not args.interactive:
-            raise ValueError("Human recovery requires --interactive confirmation.")
-        confirmation = input(
-            f"Authorize human recovery from the current state to {args.to}? Type RECOVER to continue: "
-        ).strip()
-        if confirmation != "RECOVER":
-            raise ValueError("Human recovery denied: exact RECOVER confirmation is required.")
-        token = cp.record_recovery_approval(
-            task_id=args.task_id,
-            destination_state=args.to,
-            approver=args.approver,
-            reason=args.reason,
-        )
-        record = cp.apply_recovery_transition(
-            task_id=args.task_id,
-            destination_state=args.to,
-            approval_receipt_token=token,
-            actor="human",
-            reason=args.reason,
-        )
-        print(
-            f"Human recovery applied: {record.from_state} -> {record.to_state} "
-            f"(transition_id={record.transition_id})"
-        )
     elif args.subcommand == "verify-commit":
         res = cp.verify_commit(args.branch, args.staged_files)
         print(f"Commit check: {res['status']} ({res['message']})")

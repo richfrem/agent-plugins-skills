@@ -2,6 +2,19 @@
 
 Persistent tracking of architectural friction, structural anomalies, and unclosed loops across sessions.
 
+## DEBT-20260913-MAIN-WORKTREE-RECONCILIATION
+
+- Logged date: 2026-09-13
+- Cycle/Session ID: issue-609-worktree-reconciliation
+- Artifact affected: `plugins/agent-agentic-os/scripts/agent_control.py`, `plugins/agent-agentic-os/scripts/control_plane/policy.py`, `plugins/agent-agentic-os/scripts/control_plane/transition_templates.yaml`
+- Friction observed: `APPROVED -> IN_WORKTREE` had no gate verifying pre-worktree dirty changes on the source checkout were carried into the newly created worktree. An agent was asked twice, explicitly, to confirm this happened and asserted it did without checking; the source-checkout dirty state was left behind.
+- Why not fixed now: N/A — fixed in this commit.
+- Recommended fix: Added a deterministic check (`main_worktree_reconciliation`) that runs automatically on the transition and force-copies dirty source-checkout files into the worktree via code, blocking on any genuine content conflict instead of trusting agent self-report.
+- Evidence/repro: See https://github.com/richfrem/agent-plugins-skills/issues/609. New tests `test_approved_to_in_worktree_auto_reconciles_dirty_main_changes` and `test_approved_to_in_worktree_blocks_on_genuine_reconciliation_conflict` in `plugins/agent-agentic-os/tests/test_agent_control.py` both pass.
+- Severity: L
+- Repeat: YES (2nd+ occurrence — false completion claims on git state; see DEBT-20260913-GIT-GUARD-RECOVERY-EDGE below for the related guard fix same day)
+- Status: RESOLVED
+
 ## DEBT-20260913-GIT-GUARD-RECOVERY-EDGE
 
 - Logged date: 2026-09-13
