@@ -94,7 +94,7 @@ Is the exploration narrowed enough for a downstream spec or planning update?
   └─ YES -> Dispatch handoff-preparer-agent via CLI
 
 Is this exploration focused on technical codebase discovery, architecture boundaries, or coupling surfaces?
-  └─ YES -> Run technical_diagnostic_engine.py in read-only mode -> emit DIAGNOSTIC_BRIEF.md -> sync context/control_plane.db (INTAKE -> INTERVIEW) -> hand off to interview-spec. Stop.
+  └─ YES -> Run technical_diagnostic_engine.py in read-only mode -> emit DIAGNOSTIC_BRIEF.md -> sync context/control_plane.db (INTAKE -> INTERVIEW) -> hand off to work-intake. Stop.
 
 [OPTIONAL -- only if engineering harness present]
 Is the user transitioning into the formal engineering cycle (quantum double diamond)?
@@ -116,7 +116,7 @@ When dispatched for technical exploration or code refactoring:
      --sync-db context/control_plane.db \
      --task-id "<task_id>"
    ```
-3. **Control Plane Transition:** Verify the task state in `context/control_plane.db` transitions to `INTERVIEW` before handing off to `interview-spec`.
+3. **Control Plane Transition:** Verify the task state in `context/control_plane.db` transitions to `INTERVIEW` before handing off to `work-intake`.
 
 **Routing decision tree** (machine-readable digraph):
 

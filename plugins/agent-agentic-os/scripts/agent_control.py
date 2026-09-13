@@ -690,9 +690,16 @@ class ControlPlane:
                 worktree_root = Path(repo_root) / worktree_root
             return self._reconcile_main_into_worktree(Path(repo_root), worktree_root)
 
+        ctx_repo_root = getattr(self, "repo_root", None)
+        if ctx_repo_root is None and self.db_path is not None and self.db_path.parent.name == "context":
+            ctx_repo_root = self.db_path.parent.parent
+        if ctx_repo_root is None:
+            ctx_repo_root = Path.cwd()
+
         return {
             "task_id": task_id,
             "task": task,
+            "repo_root": str(Path(ctx_repo_root).resolve()),
             "reconcile_main_into_worktree": reconcile_main_into_worktree,
             "has_receipt": lambda gate_name: self._persistence.has_receipt(task_id, gate_name),
             "has_passing_critic_review": lambda: self._persistence.has_passing_critic_review(task_id),

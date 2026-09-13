@@ -79,7 +79,7 @@ issue's own framing tests the wrong lever.
 
 ### Directly observable confirmation in this repo
 
-During this task's own interview-spec session, the same duplication pattern
+During this task's own work-intake session, the same duplication pattern
 predicted by source 2 was directly observed: the project's own
 `/Users/richardfremmerlid/Projects/CLAUDE.md` and
 `/Users/richardfremmerlid/Projects/agent-plugins-skills/CLAUDE.md` both load,

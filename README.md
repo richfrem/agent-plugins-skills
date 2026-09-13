@@ -23,7 +23,7 @@ for the maintained distinction and thanks to the Superpowers maintainers and con
 For governed work, the control plane persists task state in local SQLite and permits only valid,
 evidenced transitions. It makes the important decisions visible and durable:
 
-- **Understand first:** intake and adaptive interview questions establish scope, acceptance criteria,
+- **Understand first:** work intake which is interactive interview process to establish scope, acceptance criteria,
   verification, and whether a request is trivial or standard.
 - **Plan deliberately:** plan artifacts have a recorded identity; review is either performed or
   explicitly skipped with a reason.
@@ -69,7 +69,7 @@ uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richf
 ```
 
 Then ask your agent to set up Agentic OS for the repository, or use `os-init`, followed by
-`os-health-check`. Start a governed task through `interview-spec` when the work needs a
+`os-health-check`. Start a governed task through `work-intake` when the work needs a
 plan-to-completion lifecycle. [Installation and onboarding](INSTALL.md) has platform-specific and
 local-development instructions.
 

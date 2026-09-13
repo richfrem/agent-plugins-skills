@@ -13,7 +13,7 @@
     "agent-agentic-os": {
       "skills": {
         "critical-auditor": true,
-        "interview-spec": true,
+        "work-intake": true,
         "issue-resolution-reviewer": true,
         "optimize-agent-instructions": true,
         "os-architect": true,

@@ -1,5 +1,5 @@
 ---
-name: interview-spec
+name: work-intake
 plugin: agent-agentic-os
 version: 1.3.0
 description: >
@@ -16,7 +16,7 @@ description: >
 allowed-tools: Bash, Read, Write
 ---
 
-# Interview Spec (`interview-spec`)
+# Interview Spec (`work-intake`)
 
 ## Purpose
 Acts as the universal front-door intake for non-trivial engineering tasks across all supported AI agent runtimes. Enforces Proposal Mode (strictly read-only) before code implementation:

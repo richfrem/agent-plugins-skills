@@ -62,7 +62,7 @@ def test_render_diagnostic_brief_contract():
     assert "## 3. Candidate Architectural Forks" in brief
     assert "Fork 1: In-Memory Adapter" in brief
     assert "Fork 2: SQLite Control Plane" in brief
-    assert "## 4. Handoff Contract to `interview-spec`" in brief
+    assert "## 4. Handoff Contract to `work-intake`" in brief
     assert "INTAKE` -> `INTERVIEW" in brief
 
 

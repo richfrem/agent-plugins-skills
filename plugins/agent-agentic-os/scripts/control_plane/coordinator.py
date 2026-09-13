@@ -566,7 +566,7 @@ class TransitionCoordinator:
     def _write_next_steps_hint(self, current_state: str) -> None:
         """Prints the legal next edges from current_state (live from the registry, not
         memorized), flagging which require a human-answered question vs. are purely
-        deterministic, plus a pointer to interview-spec/SKILL.md and the control-plane
+        deterministic, plus a pointer to work-intake/SKILL.md and the control-plane
         diagrams for full-flow context. Added after a session found repeated mistakes from
         re-deriving 'what's the actual next edge' by hand-reading YAML."""
         next_templates = [t for t in self._registry.get_all_templates() if t.from_state == current_state]
@@ -585,7 +585,7 @@ class TransitionCoordinator:
                 for helper in edge.get("helper_commands", []):
                     self._out.write(f"  Helper: {helper}\n")
         self._out.write(
-            "\nFull pipeline reference: plugins/agent-agentic-os/skills/interview-spec/SKILL.md\n"
+            "\nFull pipeline reference: plugins/agent-agentic-os/skills/work-intake/SKILL.md\n"
             "Diagrams: docs/diagrams/control-plane-architecture.mermaid, "
             "control-plane-pipeline-happy-path.mermaid, control-plane-pipeline.mermaid\n"
         )

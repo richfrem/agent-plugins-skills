@@ -48,7 +48,7 @@ def test_architecture_diagram_names_governed_delegation_and_advisory_guidance():
 
 
 def test_runtime_skills_expose_final_dispatch_contracts():
-    interview = (REPO_ROOT / "plugins/agent-agentic-os/skills/interview-spec/SKILL.md").read_text()
+    interview = (REPO_ROOT / "plugins/agent-agentic-os/skills/work-intake/SKILL.md").read_text()
     for marker in ("transition-guidance", "advisory", "SQLite"):
         assert marker.lower() in interview.lower()
 

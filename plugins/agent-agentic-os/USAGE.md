@@ -122,7 +122,7 @@ On initial installation (before any agent-discovered skills or gotchas have accu
 
 ## 5. Day-to-Day Operation Summary
 
-**Step 1:** Start with `/os-architect` or `interview-spec` and describe the desired outcome.
+**Step 1:** Start with `/os-architect` or `work-intake` and describe the desired outcome.
 **Step 2:** Answer the adaptive interview; after each answer, the agent updates the visible plan outline and asks the next necessary question.
 **Step 3:** Review the draft plan and any independent review results; approve before implementation.
 **Step 4:** Implement in the governed worktree, recording evidence as work proceeds.
