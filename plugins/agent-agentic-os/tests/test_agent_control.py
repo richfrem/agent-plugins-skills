@@ -1076,6 +1076,46 @@ def test_gate_allows_explicit_existing_checkout_exception(control_plane, tmp_pat
     assert control_plane.get_task(task_id)["state"] == "IN_WORKTREE"
 
 
+def test_create_task_reports_main_dirty_advisory(control_plane, tmp_path):
+    """create_task surfaces a non-blocking advisory naming dirty source-checkout paths at
+    INIT time, so interim main work can be committed before it accumulates through the
+    whole planning phase (github issue #609 follow-up)."""
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    subprocess.run(["git", "init"], cwd=repo_root, check=True, capture_output=True)
+    subprocess.run(["git", "config", "user.email", "t@example.com"], cwd=repo_root, check=True, capture_output=True)
+    subprocess.run(["git", "config", "user.name", "Test"], cwd=repo_root, check=True, capture_output=True)
+    tracked = repo_root / "tracked.py"
+    tracked.write_text("original\n", encoding="utf-8")
+    subprocess.run(["git", "add", "tracked.py"], cwd=repo_root, check=True, capture_output=True)
+    subprocess.run(["git", "commit", "-m", "init"], cwd=repo_root, check=True, capture_output=True)
+    tracked.write_text("dirty at task creation time\n", encoding="utf-8")
+
+    control_plane.repo_root = repo_root
+    result = control_plane.create_task(task_id="task-advisory-001", title="Advisory Task", runtime_tool="claude")
+
+    assert result["main_dirty_advisory"]["dirty_count"] == 1
+    assert "tracked.py" in result["main_dirty_advisory"]["dirty_paths"]
+
+
+def test_create_task_reports_clean_main_advisory(control_plane, tmp_path):
+    """A clean source checkout at task creation reports zero dirty paths."""
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    subprocess.run(["git", "init"], cwd=repo_root, check=True, capture_output=True)
+    subprocess.run(["git", "config", "user.email", "t@example.com"], cwd=repo_root, check=True, capture_output=True)
+    subprocess.run(["git", "config", "user.name", "Test"], cwd=repo_root, check=True, capture_output=True)
+    (repo_root / "tracked.py").write_text("original\n", encoding="utf-8")
+    subprocess.run(["git", "add", "tracked.py"], cwd=repo_root, check=True, capture_output=True)
+    subprocess.run(["git", "commit", "-m", "init"], cwd=repo_root, check=True, capture_output=True)
+
+    control_plane.repo_root = repo_root
+    result = control_plane.create_task(task_id="task-advisory-002", title="Clean Task", runtime_tool="claude")
+
+    assert result["main_dirty_advisory"]["dirty_count"] == 0
+    assert result["main_dirty_advisory"]["dirty_paths"] == []
+
+
 def test_approved_to_in_worktree_auto_reconciles_dirty_main_changes(control_plane, tmp_path):
     """APPROVED->IN_WORKTREE must copy dirty source-checkout changes into the worktree via
     deterministic code, not via an agent's self-reported claim (github issue #609)."""

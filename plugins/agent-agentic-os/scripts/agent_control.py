@@ -255,6 +255,25 @@ class ControlPlane:
             model_id = rec["model_id"]
 
         self._persistence.insert_task(task_id, title, task_type, runtime_tool, spec_path, model_tier, model_id)
+        return {"task_id": task_id, "main_dirty_advisory": self._get_main_dirty_advisory()}
+
+    def _get_main_dirty_advisory(self) -> Dict[str, Any]:
+        """Non-blocking report of dirty source-checkout paths at task-creation time, so
+        interim work isn't left uncommitted through the whole planning phase (github
+        issue #609 follow-up). Read-only: never copies or modifies files."""
+        import subprocess
+
+        repo_root = getattr(self, "repo_root", None)
+        if repo_root is None and self.db_path is not None and self.db_path.parent.name == "context":
+            repo_root = self.db_path.parent.parent
+        if repo_root is None:
+            repo_root = Path.cwd()
+        result = subprocess.run(
+            ["git", "-C", str(repo_root), "status", "--porcelain=v1", "--untracked-files=all"],
+            capture_output=True, text=True, check=False,
+        )
+        paths = [line[3:].strip() for line in result.stdout.splitlines() if line.strip()]
+        return {"dirty_count": len(paths), "dirty_paths": paths}
 
     def record_premium_consent(
         self, task_id: str, stage: str, round_id: str, model_id: str, actor: str
