@@ -9092,18 +9092,6 @@
       "description": ""
     },
     {
-      "src": "plugins/agent-scaffolders/references/reference/research/azure_foundry_integration_plan.md",
-      "dst": "plugins/agent-scaffolders/skills/ecosystem-authoritative-sources/references/reference/research/azure_foundry_integration_plan.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/reference/research/skills_vision_analysis.md",
-      "dst": "plugins/agent-scaffolders/skills/ecosystem-authoritative-sources/references/reference/research/skills_vision_analysis.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
       "src": "plugins/agent-scaffolders/references/reference/skill-evaluation-and-testing.md",
       "dst": "plugins/agent-scaffolders/skills/ecosystem-authoritative-sources/references/reference/skill-evaluation-and-testing.md",
       "strategy": "symlink",
@@ -9148,18 +9136,6 @@
     {
       "src": "plugins/agent-scaffolders/references/research/azure-foundry-agents.md",
       "dst": "plugins/agent-scaffolders/skills/ecosystem-authoritative-sources/references/research/azure-foundry-agents.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/research/azure_foundry_integration_plan.md",
-      "dst": "plugins/agent-scaffolders/skills/ecosystem-authoritative-sources/references/research/azure_foundry_integration_plan.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/research/skills_vision_analysis.md",
-      "dst": "plugins/agent-scaffolders/skills/ecosystem-authoritative-sources/references/research/skills_vision_analysis.md",
       "strategy": "symlink",
       "description": ""
     },

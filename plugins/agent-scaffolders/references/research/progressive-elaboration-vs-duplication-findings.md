@@ -29,6 +29,15 @@ September 2026 research rather than assuming it.
 7. arXiv 2602.20867 — SoK: Agentic Skills — Beyond Tool Use in LLM Agents
 8. arXiv 2605.27760 — SkillGrad: Optimizing Agent Skills Like Gradient
    Descent
+9. arXiv 2603.22447 — SkillClone: Multi-Modal Clone Detection and Clone
+   Propagation Analysis in the Agent Skill Ecosystem (Mar 2026) — added after
+   the initial 8-source pass, per this task's explicit authorization to
+   branch out to additional research the original sources surfaced. Found by
+   directly checking whether Sept-2026-era work exists on duplicate/clone
+   detection across skill corpora, since source 4 (2607.17598) cited none.
+10. arXiv 2607.07676 — SkillCenter: A Large-Scale Source-Grounded Skill
+    Library for Autonomous AI Agents — found alongside source 9, documents a
+    concrete methodological pitfall relevant to recommendation A below.
 
 Plus 3 `crow`-repo skill-authoring examples (`crow-agent-skill-authoring`,
 `crow-agent-skill-review`, `crow-simplification-review`) and this repo's own
@@ -92,6 +101,39 @@ Tier 0-3 friction taxonomy, the 4-Box Qualification Gate, and
 RED-GREEN-REFACTOR language are each independently restated across
 `os-skill-improvement`, `self-evolution`, and `os-guide`'s SKILL.md/reference
 files rather than defined once and referenced.
+
+## Follow-up finding: duplicate/clone detection at scale is an active, solvable research area
+
+Source 4 (2607.17598) cited no Sept-2026 work on duplicate-content detection
+across corpora — checking directly whether such work exists (per this task's
+explicit authorization to branch out) surfaced two directly relevant papers:
+
+- **SkillClone (2603.22447)** ran clone detection across 20K real published
+  skills and found **258K clone pairs, involving 75% of all skills, 40%
+  crossing author boundaries** — empirical confirmation, at far larger scale
+  than this repo, that the duplication problem this document identifies is
+  not a one-off or repo-specific issue but a systemic property of how skills
+  get authored and reused. Their method: fuse flat TF-IDF similarity with
+  per-channel decomposition (YAML frontmatter, natural-language body, and
+  embedded code scored separately), achieving F1=0.939 and 4.2x higher
+  semantic (Type-4, meaning-preserving-but-reworded) recall than plain
+  MinHash.
+- **SkillCenter (2607.07676)** documents a concrete methodological trap:
+  they found a skill body byte-for-byte identical across 41 copies in 35
+  repositories, but because each copy's YAML frontmatter differed, **exact
+  content-hash deduplication treated all 41 as unrelated** — only a
+  near-duplicate method (MinHash Jaccard = 1.0 on the body alone) revealed
+  the duplication.
+
+**Implication for recommendation A (candidate `audit-skill` invariant,
+below):** a naive "diff two files and see if they match" check would miss
+exactly the kind of duplication this repo already has — e.g. this repo's own
+`CLAUDE.md` files share large blocks of near-identical rule text, but likely
+not byte-for-byte identical given differing surrounding context. Any new
+`audit-skill` duplication check should compare body content
+separately from frontmatter/surrounding structure (per SkillCenter's
+finding) and use similarity scoring, not exact match (per SkillClone's
+approach), or it will silently miss most of what it's meant to catch.
 
 ## Cross-reference: effect on the 4 originally-named skills
 
