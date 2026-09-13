@@ -5,7 +5,12 @@ version: 1.3.0
 description: >
   CRITICAL INTAKE GATEWAY: Use at the very start of ANY non-trivial engineering task,
   feature request, architectural refactor, or multi-file bugfix before entering plan mode
-  or modifying code. Enforces read-only discovery, Socratic Defaulting (1-3 structured
+  or modifying code. Also the right starting point when someone wants to start a new
+  work package, task, or piece of work without knowing this skill's name or using the
+  word "interview" — natural phrasings like "I have an idea," "let's explore this,"
+  "help me think through X," "I want to build/fix/change Y," "new task," or a request to
+  brainstorm about a problem all belong here first, before any freeform brainstorming or
+  planning happens. Enforces read-only discovery, Socratic Defaulting (1-3 structured
   questions with recommended defaults), control plane registration in control_plane.db,
   and compilation of the immutable 4-Pillar TASK_SPEC.md.
 allowed-tools: Bash, Read, Write
