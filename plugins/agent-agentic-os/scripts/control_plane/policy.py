@@ -412,9 +412,9 @@ CHECK_REGISTRY: Dict[str, Any] = {
         )
     ),
     "full_test_suite": lambda ctx: (
-        None if _gate_receipt_exists(ctx, "full_test_suite") else (
+        None if ctx["count_receipts"]("full_test_suite", 0) > 0 else (
             "Cannot advance: no recorded full_test_suite verification receipt found. "
-            "Run the repository-wide pytest -q suite through the approved verifier."
+            "Run the repository-wide pytest -q suite through the approved verifier and record a passing receipt."
         )
     ),
     "code_review_or_skip": lambda ctx: (

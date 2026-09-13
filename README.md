@@ -11,6 +11,13 @@ and continuous improvement.
 It is not just a skills catalog. It is a portable system for making agent-driven engineering work
 more reliable without attempting to replace the model's reasoning.
 
+The control plane is native to this repository and has no hard runtime dependency on
+[`obra/superpowers`](https://github.com/obra/superpowers). It adopts compatible ideas from
+Superpowers—intent-first brainstorming, right-sized plans, TDD, review, and worktree discipline—
+and may use those workflows only as an optional fallback where the host runtime lacks an
+equivalent capability. See the [Agentic OS boundary and attribution reference](plugins/agent-agentic-os/references/superpowers-boundary-and-attribution.md)
+for the maintained distinction and thanks to the Superpowers maintainers and contributors.
+
 ## What the control plane does
 
 For governed work, the control plane persists task state in local SQLite and permits only valid,

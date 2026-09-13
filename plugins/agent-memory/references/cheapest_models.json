@@ -5,14 +5,14 @@
     "description": "Local inference on port 8089"
   },
   "copilot": {
-    "model": "mai-code-1.1-flash",
+    "model": "gpt-5.6-luna",
     "cost": "Paid (AI Credits)",
-    "description": "Cheapest current Copilot model: 20 cr/1M input, 120 cr/1M output"
+    "description": "Lowest verified current Copilot cost: 20 cr/1M input, 120 cr/1M output; MAI-Code-1.1-Flash is 25/200."
   },
   "agy": {
-    "model": "gemini-3.8-flash-low",
+    "model": "gemini-3.8-flash",
     "cost": "Paid (Per-token)",
-    "description": "Flash: faster, cheaper/token, optimized for agentic/tool-use tasks. Use Low thinking level."
+    "description": "Gemini 3.8 Flash; select Low effort separately for cost-sensitive dispatch."
   },
   "claude": {
     "model": "claude-haiku-4-5",

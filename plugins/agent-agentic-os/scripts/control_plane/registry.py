@@ -81,6 +81,7 @@ class TransitionTemplate:
     capabilities_prohibited: List[str]
     denial_message: str
     next_steps_hint: str = ""
+    failure_recovery: str = ""
     stage_question_ids: List[str] = None
     stage_route: Optional[Dict[str, Any]] = None
     guidance: Optional[Dict[str, Any]] = None
@@ -102,6 +103,7 @@ class TransitionTemplate:
             "capabilities_prohibited": list(self.capabilities_prohibited),
             "denial_message": self.denial_message,
             "next_steps_hint": self.next_steps_hint,
+            "failure_recovery": self.failure_recovery,
             "stage_question_ids": list(self.stage_question_ids or []),
             "stage_route": dict(self.stage_route or {}),
             "guidance": dict(self.guidance or {}),
@@ -191,6 +193,7 @@ class TransitionRegistry:
             "advisory": True,
             "registry_version": TRANSITION_GUIDANCE_SCHEMA_VERSION,
             "current_state": from_state,
+            "stage_contract": self.get_stage_contract(from_state),
             "legal_next_states": legal_next_states,
             "transitions": transitions,
             "execution_guidance": {
@@ -245,6 +248,7 @@ class TransitionRegistry:
             "helper_commands": helpers,
             "success_guidance": configured.get("success", template.next_steps_hint),
             "denial_guidance": configured.get("denial", template.denial_message),
+            "failure_recovery": template.failure_recovery,
         }
 
     def get_stage_contract(self, state: str) -> Optional[Dict[str, Any]]:
@@ -409,6 +413,8 @@ class TransitionRegistry:
                     raise TransitionRegistryError(f"Field 'denial_message' must be a non-empty string in template '{item.get('transition_id')}'")
                 if not isinstance(item.get("next_steps_hint"), str) or len(item["next_steps_hint"].strip()) == 0:
                     raise TransitionRegistryError(f"Field 'next_steps_hint' must be a non-empty string in template '{item.get('transition_id')}'")
+                if not isinstance(item.get("failure_recovery", ""), str):
+                    raise TransitionRegistryError(f"Field 'failure_recovery' must be a string in template '{item.get('transition_id')}'")
                 if not isinstance(item.get("stage_question_ids", []), list):
                     raise TransitionRegistryError(f"Field 'stage_question_ids' must be a list in template '{item.get('transition_id')}'")
                 if item.get("stage_route") is not None and not isinstance(item["stage_route"], dict):
@@ -442,6 +448,7 @@ class TransitionRegistry:
                     capabilities_prohibited=item["capabilities_prohibited"],
                     denial_message=item["denial_message"],
                     next_steps_hint=item.get("next_steps_hint", ""),
+                    failure_recovery=item.get("failure_recovery", ""),
                     stage_question_ids=item.get("stage_question_ids", []),
                     stage_route=item.get("stage_route"),
                     guidance=item.get("guidance", {}),

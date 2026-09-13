@@ -282,8 +282,26 @@ def test_full_test_suite_check_requires_repository_wide_receipt():
         "full_test_suite",
         _base_ctx(
             has_receipt=lambda gate_name: gate_name == "full_test_suite",
+            count_receipts=lambda gate_name, exit_code=None: (
+                1 if gate_name == "full_test_suite" and exit_code == 0 else 0
+            ),
         ),
     )
+
+
+def test_full_test_suite_check_rejects_failed_receipt():
+    from control_plane import policy
+
+    with pytest.raises(policy.PolicyViolation, match="full_test_suite"):
+        policy.evaluate_check(
+            "full_test_suite",
+            _base_ctx(
+                has_receipt=lambda gate_name: gate_name == "full_test_suite",
+                count_receipts=lambda gate_name, exit_code=None: (
+                    1 if gate_name == "full_test_suite" and exit_code is None else 0
+                ),
+            ),
+        )
 
 
 def test_unknown_check_type_fails_closed_not_open():

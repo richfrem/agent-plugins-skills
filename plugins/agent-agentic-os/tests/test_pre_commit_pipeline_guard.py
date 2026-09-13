@@ -382,3 +382,29 @@ def test_push_hook_allows_when_done_with_valid_history(tmp_path):
 
     res = subprocess.run([str(PUSH_HOOK_PATH)], cwd=str(repo), capture_output=True, text=True)
     assert res.returncode == 0
+
+
+def test_git_guards_allow_exact_human_approved_recovery_edge(tmp_path):
+    """Allow a non-DAG edge only when its exact recovery approval is persisted and consumed."""
+    repo, db_path = _setup_git_repo_with_db(tmp_path)
+    task_id = "task-approved-recovery-010"
+    branch = "feat/approved-recovery"
+    subprocess.run(["git", "checkout", "-b", branch], cwd=str(repo), check=True, capture_output=True)
+
+    cp = ControlPlane(db_path=db_path)
+    _advance_task_to_in_worktree(cp, task_id, repo, branch)
+    token = cp.record_recovery_approval(
+        task_id, "DONE", "human-reviewer", "Reopen only through the explicitly approved recovery edge."
+    )
+    cp.apply_recovery_transition(
+        task_id, "DONE", token, "human", "Apply the approved recovery edge for closeout verification."
+    )
+
+    code_file = repo / "feature.py"
+    code_file.write_text("def run(): pass\n", encoding="utf-8")
+    subprocess.run(["git", "add", "feature.py"], cwd=str(repo), check=True)
+
+    commit_check = subprocess.run([str(HOOK_PATH)], cwd=str(repo), capture_output=True, text=True)
+    push_check = subprocess.run([str(PUSH_HOOK_PATH)], cwd=str(repo), capture_output=True, text=True)
+    assert commit_check.returncode == 0, commit_check.stdout + commit_check.stderr
+    assert push_check.returncode == 0, push_check.stdout + push_check.stderr

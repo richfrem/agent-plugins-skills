@@ -230,6 +230,16 @@ class TestCommandBuilders(unittest.TestCase):
         cmd = _build_cmd_agy("agy-3.5-sonnet", "/tmp/prompt.txt", isolated=True)
         self.assertNotIn("--dangerously-skip-permissions", cmd)
 
+    def test_agy_passes_explicit_print_timeout(self):
+        """Verify bounded Agy dispatches pass the requested print timeout."""
+        cmd = _build_cmd_agy(
+            "gemini-3.8-flash",
+            "/tmp/prompt.txt",
+            print_timeout="15m0s",
+        )
+        self.assertIn("--print-timeout", cmd)
+        self.assertIn("15m0s", cmd)
+
     def test_claude_includes_model_and_prompt(self):
         """Verify the claude command includes the binary name, model, and prompt text."""
         cmd = _build_cmd_claude("haiku-4.5", "Review this.")

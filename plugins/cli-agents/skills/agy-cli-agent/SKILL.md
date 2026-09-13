@@ -57,10 +57,10 @@ requirements even when agy delegates work.
 ```bash
 # Default (Flash — faster, cheaper/token, optimized for agentic/coding tasks)
 python ./scripts/run_agent.py <PERSONA> <INPUT> <OUTPUT> "<INSTR>" --cli agy
-# ↑ run_agent.py loads gemini-3.8-flash-low from references/cheapest_models.json
+# ↑ run_agent.py loads the current Flash model from references/cheapest_models.json
 
-# Explicit Low thinking (recommended for CLI loops to control Thought Preservation cost)
-python ./scripts/run_agent.py <PERSONA> <INPUT> <OUTPUT> "<INSTR>" --cli agy --model "Gemini 3.8 Flash (Low)"
+# Explicit Low effort (recommended for CLI loops to control Thought Preservation cost)
+python ./scripts/run_agent.py <PERSONA> <INPUT> <OUTPUT> "<INSTR>" --cli agy --model gemini-3.8-flash --effort low
 
 # Pro — escalate for deep reasoning / architecture decisions
 python ./scripts/run_agent.py <PERSONA> <INPUT> <OUTPUT> "<INSTR>" --cli agy --model gemini-3.1-pro
@@ -147,16 +147,12 @@ python ./scripts/run_agent.py agents/security-auditor.md target.py security.md \
 
 ## Available Models
 
-| Display Name (agy models) | `--model` ID | Thinking | Rec |
-|:---|:---|:---:|:---|
-| **Gemini 3.8 Flash (Low)** | `gemini-3.8-flash-low` | Low | **Best for CLI loops — cheapest, fastest** |
-| Gemini 3.8 Flash (Medium) | `gemini-3.8-flash` | Medium | **Default** — standard dispatch |
-| Gemini 3.8 Flash (High) | `gemini-3.8-flash-high` | High | Single-shot deep tasks only |
-| Gemini 3.1 Pro (Low) | `gemini-3.1-pro` | Low | Deep reasoning, architecture |
-| Gemini 3.1 Pro (High) | `gemini-3.1-pro-high` | High | Most demanding reasoning only |
-| Claude Sonnet 4.6 (Thinking) | `claude-sonnet-4.6-thinking` | — | Anthropic quality via agy |
-| Claude Opus 4.6 (Thinking) | `claude-opus-4.6-thinking` | — | Critical tasks only |
-| GPT-OSS 120B (Medium) | `gpt-oss-120b` | Medium | OpenAI OSS via agy |
+`update-cli-models` is the sole authority for current Agy model IDs, picker
+availability, pricing, and synchronized catalog copies. Read
+`references/agy-models.json` through that authority before selecting a model;
+effort is selected separately from the model. The current picker choices are
+represented in that catalog, including Gemini 3.8/3.7/3.6 Flash, Gemini 3.1
+Pro, Claude Sonnet/Opus 4.6 Thinking, and GPT-OSS 120B.
 
 > Full pricing data and strategy field: `references/agy-models.json`
 

@@ -10968,6 +10968,12 @@
       "dst": "plugins/plugin-manager/skills/plugin-installer/references/plugin_installer_overview.md",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/wrappers/record_interview_question.py",
+      "dst": "plugins/agent-agentic-os/skills/interview-spec/scripts/control_plane/wrappers/record_interview_question.py",
+      "strategy": "symlink",
+      "description": "Fixed-identity interview answer recorder"
     }
   ]
 }

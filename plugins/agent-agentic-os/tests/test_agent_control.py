@@ -317,7 +317,7 @@ def test_cost_tier_resolution_and_task_columns(control_plane):
     
     # 1. Resolve recommendation from cheapest_models.json
     rec_low = control_plane.resolve_recommended_model(runtime_tool="copilot", tier="low")
-    assert rec_low["model_id"] == "gpt-5.4-nano"
+    assert rec_low["model_id"] == "gpt-5.6-luna"
     assert rec_low["tier"] == "low"
     
     rec_high = control_plane.resolve_recommended_model(runtime_tool="copilot", tier="high")
@@ -335,7 +335,7 @@ def test_cost_tier_resolution_and_task_columns(control_plane):
     
     task = control_plane.get_task(task_id)
     assert task["model_tier"] == "low"
-    assert task["model_id"] == "gpt-5.4-nano"
+    assert task["model_id"] == "gpt-5.6-luna"
 
 
 def test_diagnostic_brief_auto_locate(tmp_path):
@@ -1100,8 +1100,8 @@ def test_gate_blocks_worktree_review_entry_without_test_suite_receipt(control_pl
     assert control_plane.get_task(task_id)["state"] == "WORKTREE_REVIEW"
 
 
-def test_worktree_review_question_rejects_negative_answer_before_commit(control_plane, tmp_path):
-    """A negative review-submission answer must not advance the persisted state."""
+def test_worktree_review_question_rejects_non_proceed_answer_before_review(control_plane, tmp_path):
+    """Only the explicit proceed answer may advance the persisted state."""
     task_id = "task-review-question-answer-001"
     control_plane.repo_root = tmp_path
     (tmp_path / "docs" / "plans").mkdir(parents=True)
@@ -1126,9 +1126,9 @@ def test_worktree_review_question_rejects_negative_answer_before_commit(control_
 
     negative = TransitionCoordinator(
         control_plane,
-        input_fn=lambda _prompt: "1",
+        input_fn=lambda _prompt: "No",
     )
-    with pytest.raises(TransitionCoordinatorError, match="does not authorize"):
+    with pytest.raises(TransitionCoordinatorError, match="Invalid undeclared answer option"):
         negative.coordinate_transition(
             task_id=task_id,
             to_state="WORKTREE_REVIEW",
@@ -1140,7 +1140,7 @@ def test_worktree_review_question_rejects_negative_answer_before_commit(control_
 
     positive = TransitionCoordinator(
         control_plane,
-        input_fn=lambda _prompt: "2",
+        input_fn=lambda _prompt: "1",
     )
     record = positive.coordinate_transition(
         task_id=task_id,
@@ -2079,9 +2079,11 @@ def test_wrapper_success_path(control_plane, tmp_path):
     control_plane.transition(task_id, "INTERVIEW", "tester", "Begin interview")
     rec_result = record_interview_question(
         task_id=task_id,
-        question="What is the objective?",
+        question="interview_summary",
         options={"A": "Feature", "B": "Refactor"},
         recommended="A",
+        answer="A",
+        target_state="DRAFT_PLAN",
         control_plane=control_plane
     )
     assert rec_result["status"] == "RECORDED"
@@ -2423,7 +2425,7 @@ def test_sequential_question_pacing(control_plane, tmp_path):
     control_plane.repo_root = tmp_path
 
     out = io.StringIO()
-    inputs = ["1"]  # review-method answer after entering PLAN_REVIEW
+    inputs = ["1", "1"]  # review decision, then review-method answer
     input_prompts = []
 
     def mock_input(prompt: str) -> str:
@@ -2447,9 +2449,10 @@ def test_sequential_question_pacing(control_plane, tmp_path):
         interactive=True,
     )
     assert rec.to_state == "MULTI_AGENT_REVIEW"
-    # Verify input prompt was invoked individually
-    assert len(input_prompts) == 1
-    assert "Select option" in input_prompts[0]
+    # Verify each question was invoked individually in YAML order.
+    assert len(input_prompts) == 2
+    assert "plan_review_agent_review_decision" in input_prompts[0]
+    assert "plan_review_method" in input_prompts[1]
 
 
 def test_coordinator_rejection_on_failed_check_no_orphan_receipts(control_plane):
@@ -2847,7 +2850,9 @@ def test_coordinator_empty_interactive_input_rejected_and_undeclared_option_reje
             actor="tester",
             reason="Undeclared answer option",
             interactive=False,
-            provided_answers={"plan_review_disposition": "Completely Bogus Option"},
+            provided_answers={
+                "confirm_review_draft_plan_to_plan_review": "Completely Bogus Option"
+            },
         )
 
 
@@ -3187,10 +3192,14 @@ def test_coordinator_artifact_resolution_inside_registered_worktree(control_plan
     control_plane.transition(task_id, "WORKTREE_REVIEW", "tester", "to worktree review")
 
     out = io.StringIO()
+    review_inputs = iter([
+        "Yes — continue to review method selection [Recommended]",
+        "Multi-agent review — internal [Recommended]",
+    ])
     coord = TransitionCoordinator(
         control_plane=control_plane,
         output_stream=out,
-        input_fn=lambda prompt: "Yes, multi-agent review — sub-agent (internal) [Recommended]",
+        input_fn=lambda prompt: next(review_inputs),
     )
 
     # 1. Successful transition: plan files and worktree directory resolved.
@@ -3246,7 +3255,10 @@ def test_coordinator_artifact_resolution_inside_registered_worktree(control_plan
             to_state="MULTI_AGENT_CODE_REVIEW",
             actor="tester",
             reason="Attempt with missing spec/plan",
-            provided_answers={"confirm_review_worktree_review_to_multi_agent_code_review": "Yes, multi-agent review — sub-agent (internal) [Recommended]"},
+            provided_answers={
+                "confirm_review_worktree_review_to_multi_agent_code_review":
+                "Yes — continue to review method selection [Recommended]"
+            },
         )
 
     # 3. Path traversal / outside authorized roots rejected
@@ -3328,6 +3340,9 @@ def test_trivial_fast_track_enters_retrospective_and_completes(control_plane):
         task_id,
         {"decision": "skip", "completion_mode": "skipped", "actor": "human", "skip_reason": "one-line typo"},
         [],
+    )
+    control_plane.record_verification_receipt(
+        task_id, "full_test_suite", "pytest -q (test fixture receipt)", 0
     )
     done_coord = TransitionCoordinator(control_plane=control_plane, input_fn=lambda prompt: "skip")
     done_record = done_coord.coordinate_transition(

@@ -192,6 +192,16 @@ class _FakePersistencePort(PersistencePort):
         self.calls.append(("update_worktree_fields", task_id, worktree_path, worktree_branch, worktree_state))
         self._tasks[task_id]["worktree_state"] = worktree_state
 
+    def record_done_closeout_decision(self, task_id, source_occupancy_transition_id,
+                                      question_id, answer, actor, recorded_at) -> int:
+        self.calls.append(("record_done_closeout_decision", task_id, source_occupancy_transition_id,
+                           question_id, answer, actor, recorded_at))
+        return 1
+
+    def get_done_closeout_decisions(self, task_id) -> List[Dict[str, Any]]:
+        self.calls.append(("get_done_closeout_decisions", task_id))
+        return []
+
     def ensure_schema(self) -> None:
         self.schema_ensured = True
 
