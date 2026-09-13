@@ -44,10 +44,22 @@ fi
 QUERY_SQL="SELECT task_id, state FROM tasks WHERE worktree_branch = '$CURRENT_BRANCH' ORDER BY created_at DESC LIMIT 1;"
 TASK_ROW="$(sqlite3 "$DB_PATH" "$QUERY_SQL" 2>/dev/null || true)"
 
-# If no task associated with this branch, permit push with warning
+# If no task associated with this branch, DENY. Fail-open here previously let any
+# unregistered branch push regardless of pipeline state (see map-debt entry for
+# this fix). A push on a non-main branch must be traceable to a control-plane task.
 if [ -z "$TASK_ROW" ]; then
-    echo "⚠️  WARNING: pre-push-review-guard found no task registered for branch '$CURRENT_BRANCH' — push is ungated." >&2
-    exit 0
+    echo ""
+    echo "❌ GIT PUSH BLOCKED: No Task Registered For This Branch!"
+    echo ""
+    echo "   Branch: $CURRENT_BRANCH"
+    echo ""
+    echo "   This branch has no task in the SQLite control plane (tasks.worktree_branch)."
+    echo "   Register it first, e.g.:"
+    echo "     python3 plugins/agent-agentic-os/scripts/agent_control.py init --task-id <task-id> --title <title> --runtime <runtime> --spec-path <path>"
+    echo "     python3 plugins/agent-agentic-os/scripts/agent_control.py update-worktree --task-id <task-id> --branch $CURRENT_BRANCH ..."
+    echo "   then drive the task to DONE before pushing."
+    echo ""
+    exit 1
 fi
 
 TASK_ID="$(echo "$TASK_ROW" | cut -d'|' -f1)"
