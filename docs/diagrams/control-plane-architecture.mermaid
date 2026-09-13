@@ -17,6 +17,7 @@ flowchart TB
     InterviewOutline["Atomic interview answer + revisioned outline projection"]
     Inventory["Session-wide change inventory + reconciliation manifest"]
     Worktree["Registered implementation worktree"]
+    MainReconciliation["main_worktree_reconciliation: force-copies dirty source-checkout files into worktree; blocks on conflict (issue #609)"]
     Lifecycle["Canonical lifecycle states: [INTAKE] → [INTERVIEW] → [DRAFT_PLAN] → [PLAN_REVIEW] → [MULTI_AGENT_REVIEW] → [AWAITING_APPROVAL] → [APPROVED] → [IN_WORKTREE] → [WORKTREE_REVIEW] → [MULTI_AGENT_CODE_REVIEW] → [VERIFY_EXIT] → [RETROSPECTIVE] → [DONE]"]
 
     State["StateMachine (control_plane/state_machine.py)"]
@@ -60,6 +61,8 @@ flowchart TB
     ReviewReports --> ReviewSynthesis
     ReviewSynthesis --> PlanAcceptance
     ReviewSynthesis --> Worktree
+    Policy -->|"enforces at APPROVED -> IN_WORKTREE"| MainReconciliation
+    MainReconciliation --> Worktree
     Facade --> PersistencePort
     Facade --> CryptoPort
     Facade --> FilesystemPort
