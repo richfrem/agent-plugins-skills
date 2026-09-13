@@ -387,6 +387,17 @@ class TransitionCoordinator:
             if qid in (template.stage_question_ids or []):
                 stage_answers[qid] = chosen_ans
 
+        if current_state == "INTERVIEW" and to_state == "DRAFT_PLAN":
+            # Project each newly-collected interview answer into the plan-outline
+            # artifact before the commit path's assert_interview_plan_outline_ready
+            # check runs -- otherwise every interactive DRAFT_PLAN transition fails
+            # with "interview plan outline is missing" despite complete answers.
+            for question_id in (template.stage_question_ids or []):
+                if question_id in stage_answers and question_id not in persisted_answers:
+                    self._cp.update_interview_plan_outline(
+                        task_id, question_id, stage_answers[question_id], actor=actor
+                    )
+
         if template.stage_route:
             route_question = template.stage_route.get("question_id")
             expected_answer = template.stage_route.get("equals")
@@ -498,11 +509,15 @@ class TransitionCoordinator:
         self._out.write(f"- Success: {guidance['success_guidance']}\n")
         for helper in guidance.get("helper_commands", []):
             self._out.write(f"- Helper: {helper}\n")
-        self._out.write("Execution-unit guidance (advisory):\n")
-        for unit, contract in guidance.get("execution_guidance", {}).items():
-            fields = ", ".join(contract.get("required_fields", []))
-            self._out.write(f"- {unit}: {contract.get('instruction', '')}\n")
-            self._out.write(f"  Required evidence fields: {fields}\n")
+        # Execution-unit guidance is identical boilerplate on every single transition
+        # attempt regardless of edge -- printing it in full each time trained an agent
+        # to pattern-match/skim the whole advisory block rather than read the
+        # edge-specific delta above it (2026-09-13 retrospective finding). Print it once
+        # per unit names only; full instructions/fields remain in transition_templates.yaml.
+        units = ", ".join(guidance.get("execution_guidance", {}).keys())
+        if units:
+            self._out.write(f"Execution-unit guidance (advisory; unchanged across edges): {units}\n")
+            self._out.write("  See plugins/agent-agentic-os/scripts/control_plane/transition_templates.yaml for full field contracts.\n")
         self._out.write("- Guidance is advisory only; policy, human gates, and SQLite remain authoritative.\n\n")
 
     def _stage_plan_artifact_submission(

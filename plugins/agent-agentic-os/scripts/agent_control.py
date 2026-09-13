@@ -825,12 +825,21 @@ class ControlPlane:
             raise PersistenceInvariantViolation(
                 "Transition to DONE requires explicit human authorization FORCE_CLOSE."
             )
+        force_retrospective = any(
+            d.question_id == "force_retrospective_authorization"
+            and d.answer == "FORCE_RETROSPECTIVE"
+            and d.actor == "human"
+            for d in commit_request.staged_decisions
+        )
         if (
             commit_request.expected_from_state == "INTERVIEW"
             and commit_request.to_state != "INTERVIEW"
+            and not force_retrospective
         ):
             # This is deliberately immediately before the atomic persistence call so both
             # deterministic and coordinated transition front-doors share the same gate.
+            # Skipped only for an explicit human-authorized FORCE_RETROSPECTIVE emergency
+            # close, which intentionally bypasses the normal interview-completeness gate.
             self.assert_interview_exit_ready(
                 commit_request.task_id, stage="interview", round_id=None
             )

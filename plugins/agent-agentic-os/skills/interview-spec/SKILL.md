@@ -1,7 +1,7 @@
 ---
 name: interview-spec
 plugin: agent-agentic-os
-version: 1.2.0
+version: 1.3.0
 description: >
   CRITICAL INTAKE GATEWAY: Use at the very start of ANY non-trivial engineering task,
   feature request, architectural refactor, or multi-file bugfix before entering plan mode
@@ -19,6 +19,7 @@ Acts as the universal front-door intake for non-trivial engineering tasks across
 1. **Native-First Deferral:** Detects active host runtime capabilities and defers to native environments while strictly enforcing conversational cadence.
 2. **Main Dirty-State Advisory (non-blocking):** Immediately after `create_task()`, report its `main_dirty_advisory` field to the user if `dirty_count > 0` — name the exact dirty paths and recommend committing them to a small branch/PR before `APPROVED`, so interim work doesn't accumulate uncommitted through the whole planning phase (github issue #609). This is advisory only; it never blocks INTAKE. The hard, code-enforced gate is `main_worktree_reconciliation` at `APPROVED -> IN_WORKTREE` — see `plugins/agent-agentic-os/references/worktree-reconciliation-and-multi-worktree-practices.md`.
 3. **Intent-first Socratic Pacing (ONE Question at a Time):** When clarification is needed, ask only ONE high-value question per turn with a useful recommendation where a choice is required. Treat the YAML questions as an internal coverage checklist, not a script to follow literally. Adapt wording to the user's context; combine coverage when one answer resolves multiple areas; skip irrelevant questions with a recorded rationale; and add focused follow-ups when ambiguity or hidden scope appears. Never invent an answer, approval, or intent on the user's behalf.
+3a. **Mandatory Source-Assisted Answering (do this BEFORE asking any live question):** If the user's opening message references, pastes, or points to a background document — a prompt file, an issue body, a prior spec, a handoff doc — read that document FIRST and check every one of the 5 stage-entry questions (`interview_summary`, `interview_scope`, `interview_verification`, `interview_acceptance_criteria`, `interview_classification`) against it before asking the human anything. For each question the document already answers, call `record_source_assisted_answer_candidate(source_path=..., source_authorized=True, ...)` immediately — do not paraphrase the document into a live question the human then has to re-answer, and do not silently type an answer yourself without recording it as a candidate. Only ask a live question for what the document genuinely leaves open or ambiguous. Failing to do this is the single most common way this skill wastes the human's time: making them re-answer, live, one question at a time, something they already wrote down for you.
 4. **Draft Spec & Implementation Plan Compilation:** Compiles the agreed requirements into a draft `TASK_SPEC.md` and `implementation_plan.md` in state `DRAFT_PLAN`.
 5. **Multi-Agent Review Stage Gate (User-Controlled):** After draft spec compilation, explicitly asks the user whether they want to generate an external review bundle (via `context-bundler`) for multi-model critique in browser, or skip directly to approval.
 
