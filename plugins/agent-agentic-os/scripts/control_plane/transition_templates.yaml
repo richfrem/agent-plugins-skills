@@ -1,7 +1,158 @@
+human_recovery:
+  enabled: true
+  purpose: "Allow an explicit human-in-the-loop recovery return when the persisted stage no longer matches the work, including reopening DONE for missed fixes."
+  source_states: "Any canonical state"
+  target_states: "Any different canonical state"
+  authorization: "A human must explicitly name the target, provide a non-empty reason and approver identity, and approve the recovery while the source occupancy is current."
+  command_contract: "Use the recovery approval/apply API or `agent_control.py recover-transition --interactive`; never use ordinary coordinate-transition for an edge absent from the normal DAG."
+  reentry_rule: "Recovery changes occupancy and records a recovery_approval receipt, but it does not grant downstream capability or waive the destination state's gates. The agent must load the destination contract and continue from that state."
+  evidence: "Persist source state, target state, source occupancy transition ID, approver, reason, approval token, actor, and resulting transition in SQLite."
+  safety_boundary: "Human recovery is not an arbitrary silent jump: unknown states, self-targets, missing evidence, stale occupancy, non-human approval, and unconsumed/duplicate tokens are denied."
+
+session_change_control:
+  applies_from: task_creation
+  owner: controller
+  worktree_first_invariant: "From the first task/session mutation, the registered worktree is the authoritative location for all session-owned changes. Do not make direct main-checkout edits after the session baseline unless they are explicitly classified, reconciled, and copied into the worktree."
+  session_baseline: "Record the main checkout and registered worktree status before the first mutation, then preserve the baseline reference for the entire task."
+  observation_loop:
+    trigger: "Any user or agent observation about execution friction, a contract defect, missing evidence, or a pipeline improvement, including observations made before implementation tasks formally begin."
+    sequence:
+    - record_observation
+    - classify_observation
+    - decide_immediate_fix_or_defer
+    - update_ledger_and_plan_if_in_scope
+    - apply_in_registered_worktree
+    - run_focused_verification
+    - record_evidence_and_resume_current_stage
+    classifications:
+    - in_scope_immediate_pipeline_fix
+    - deferred_map_debt
+    - material_scope_expansion
+    - blocker
+    immediate_fix_rule: "An in-scope, non-destructive pipeline fix may be handled before formal implementation begins, but it must be recorded as a bounded task/plan delta, applied in the registered worktree, focused-tested, and included in the session-wide change inventory."
+    approval_boundary: "Material scope expansion, destructive action, authority change, or implementation outside the approved boundary requires human approval before action."
+    status_reporting: "Report pre-implementation fixes as pipeline observations handled; do not report implementation as started or complete solely because an observation was addressed."
+    failure_recovery: "If the observation cannot be classified or its worktree/ledger/evidence update cannot complete, record the exact blocker and recovery action, preserve the current lifecycle state, and do not silently continue."
+  review_gate: "Before any review submission, verify every session-owned change is present and content-matched in the registered worktree; classify generated metadata separately and fail closed on missing, mismatched, or unclassified implementation changes."
+
+review_selection_contract:
+  id: review-selection-v1
+  applies_to:
+  - plan_review_to_multi_agent_review
+  - worktree_review_to_multi_agent_code_review
+  canonical_profile_path: context/agent-capability-profile.json
+  environment_summary_fallback: context/memory/environment.md
+  profile_owner: project-setup
+  profile_lifecycle:
+    establish: "Run the interactive project-setup capability baseline once during project setup."
+    consume: "Pipeline review and implementation stages read the profile and current catalog references; they do not repeat deep environment analysis."
+    refresh: "If the profile is missing, partial, invalid, stale, or the user reports an environment change, route back to project-setup for the provider and model questions."
+  availability_rule: "Offer only runtimes and providers whose installation probe succeeds, whose subscription/account/license access is explicitly confirmed by the user, and whose project-use authorization is explicitly confirmed when applicable; never infer availability from the host agent, repository author, or a static option list."
+  question_sequence:
+  - review_decision
+  - review_method
+  - internal_runtime_model_effort
+  internal_runtime_model_effort:
+    applies_when: "The selected review method is single-agent internal or multi-agent internal."
+    question_policy: one_at_a_time
+    sequence:
+    - internal_cli_runtime
+    - internal_model
+    - internal_effort
+    cli_runtime_question: "Which available CLI/runtime should run the internal reviewers?"
+    model_question: "Which model should the internal reviewers use?"
+    effort_question: "Which effort level should the internal reviewers use?"
+    option_resolution:
+      cli_runtime: "Render only providers with available=true in context/agent-capability-profile.json; do not infer availability from installed binaries, the host agent, or a static option list."
+      model: "After the runtime is selected, render only model IDs and capability tiers from update-cli-models for that runtime."
+      effort: "Render only effort levels supported by the selected runtime/model and current catalog."
+    persistence: "Persist the runtime, model, and effort answers before dispatch; never dispatch an internal reviewer with an inferred or default route."
+  user_must_choose_internal_route: true
+  human_answer_provenance:
+    chat_answer: "A user answer received in chat is a human decision. Persist it through coordinate-transition --interactive so SQLite records actor=human."
+    answers_flag: "Do not use --answers to represent a human-gated answer; it records agent provenance and will be rejected by the SQLite human-decision trigger."
+    scripted_use: "Use --answers only for non-human scripted tests or explicitly agent-authored decisions on edges that permit them."
+  internal_selection_rule: "After the user selects an internal method, inspect the confirmed environment and current catalogs, recommend a proportional runtime/model/effort route, and ask the user to choose or confirm it. Do not dispatch an internal reviewer until that explicit user selection is recorded."
+  premium_rule: "A premium model or high-effort route requires explicit user confirmation even when recommended."
+  catalog_authority_skill: update-cli-models
+  catalog_resolution:
+    authority: update-cli-models
+    do_not_duplicate_catalogs: true
+    instruction: "Read update-cli-models for current model IDs, capability tiers, pricing, master and installed-copy resolution, and synchronization rules."
+    missing_catalog_rule: "If the profile or required catalog cannot be resolved, report the exact missing path and route back to project-setup for refresh; do not invent model choices or dispatch."
+  feedback_handoff:
+    applies_to:
+    - MULTI_AGENT_REVIEW
+    - MULTI_AGENT_CODE_REVIEW
+    sequence:
+    - collect_each_reviewer_report
+    - synthesize_one_canonical_round_brief
+    - persist_raw_reports_and_synthesis
+    - record_critic_outcome_and_exact_return_edge
+    - if_changes_requested_transition_to_worktree_and_pass_revision_brief
+    storage:
+      raw_reports: "Store each report under the task-scoped temp review directory, with reviewer, runtime, model, effort, and round in the filename or manifest."
+      synthesis: "Store one task-scoped synthesis/revision brief beside the raw reports; it is the implementer's only consolidated review input."
+      durable_outcome: "Persist the canonical PASS, REVISE, or REVIEW_FAILURE outcome and concise findings through the control-plane critic-review receipt, linked to the review iteration and report manifest."
+    synthesis_rule: "The orchestrator, not an individual reviewer, reconciles duplicate findings, preserves dissent, assigns severity, separates in-scope fixes from follow-up debt, and names the exact acceptance checks required before re-review."
+    implementation_handoff: "For REVISE or REQUEST_CHANGES, do not ask the reviewer to edit code and do not feed raw reports directly into an unrelated model. Transition to IN_WORKTREE and pass the canonical revision brief to the already-authorized implementation controller as a bounded fix prompt."
+    re_review_rule: "After the bounded fix prompt is completed, run focused verification and the session-wide change inventory, return through WORKTREE_REVIEW, and start a new review iteration with the same selection contract unless the user explicitly changes it."
+    review_type_isolation:
+      plan_review: "MULTI_AGENT_REVIEW receipts concern the draft plan only. They may authorize a return to DRAFT_PLAN, but they never authorize implementation rework, satisfy code_review_or_skip, or count as an implementation-review round."
+      implementation_review: "MULTI_AGENT_CODE_REVIEW receipts concern the implementation in the registered worktree only. They may authorize the existing return to IN_WORKTREE for bounded fixes or the exit path after PASS."
+      round_numbering: "Maintain separate plan-review and implementation-review iteration counters; do not call an implementation review round 2 merely because plan review reached iteration 2."
+      rework_gate: "Do not transition MULTI_AGENT_CODE_REVIEW to IN_WORKTREE without a current implementation-review receipt whose verdict is REQUEST_CHANGES, REVISE, or REVIEW_FAILURE with bounded recovery."
+      human_transition_gate: "After the current implementation-review synthesis and revision brief are recorded, ask the human whether to transition back to IN_WORKTREE. Do not begin fixes or treat the rework transition as implicitly approved."
+
 stages:
   INTERVIEW:
     purpose: Capture the minimum understanding needed before selecting the next lifecycle path.
     question_policy: one_at_a_time
+    intent_first: true
+    canonical_questions_are_coverage_prompts: true
+    adaptation_guidance:
+      principle: Understand the desired work; do not conduct a literal questionnaire.
+      ask_only_unresolved: true
+      allow_combined_answers: true
+      allow_rephrased_questions: true
+      allow_not_applicable_with_rationale: true
+      allow_contextual_follow_ups: true
+      preserve_canonical_ids: true
+      no_inferred_answers: true
+      approval_and_authority_are_always_explicit: true
+    plan_outline:
+      enabled: true
+      purpose: Capture the plan-ready bullets discovered during the interview before drafting the full plan.
+      update_after_each_answer: true
+      user_visibility: Show a concise outline summary or a link to the current outline; do not make the user reconstruct it from chat.
+      artifact_path: docs/plans/<task-id>-plan-outline.md
+      link_rule: When the outline artifact exists, provide its repository-relative clickable path in the response.
+      bullet_types:
+      - purpose
+      - desired_user_outcome
+      - scope_boundary
+      - success_evidence
+      - constraint_or_authority
+      - risk_or_open_question
+      - decision
+      outline_is_not_approval: true
+      draft_plan_source: The completed outline is the primary interview input for the initial draft plan.
+    intent_coverage:
+    - intent_id: classification
+      canonical_question_id: interview_classification
+      purpose: Choose the proportionate lifecycle route.
+    - intent_id: problem
+      canonical_question_id: interview_summary
+      purpose: Understand the desired outcome and why it matters.
+    - intent_id: scope
+      canonical_question_id: interview_scope
+      purpose: Define included behavior, boundaries, and exclusions.
+    - intent_id: verification
+      canonical_question_id: interview_verification
+      purpose: Define observable evidence of correctness.
+    - intent_id: acceptance
+      canonical_question_id: interview_acceptance_criteria
+      purpose: Define constraints and acceptance conditions for standard work.
     progress_display:
       enabled: true
       count_adaptive_questions: true
@@ -77,10 +228,59 @@ stages:
         undersized_choice_guidance: If the user selects a low-tier or low-effort route for a high-complexity plan, advise that it may reduce plan quality and ask whether to continue; defer to the user.
         premium_confirmation_required: true
     exit_requirements:
-    - Every entry question has an answer.
+    - A concise plan outline is persisted and reviewable before the initial draft plan is compiled.
+    - Every required intent area has a recorded coverage disposition: direct answer, combined answer, authorized source answer, explicit not-applicable rationale, or focused adaptive follow-up.
+    - Canonical question IDs remain traceable in the coverage record; the user is not required to hear redundant literal wording.
     - Every adaptive rule matching the recorded answers has been evaluated.
     - All generated follow-up questions have an answer or an explicit human refusal.
     - The agent has not inferred an answer on the user's behalf.
+  MULTI_AGENT_REVIEW:
+    purpose: Execute the selected independent review of the current plan before returning to plan acceptance.
+    question_policy: one_at_a_time
+    entry_questions: []
+    adaptive_follow_up_rules: []
+    kickoff:
+      mandatory_after_entry: true
+      do_not_stop_after_transition: true
+      runtime_entrypoint: "Use the selected review skill/runtime; for internal multi-agent review, bundle the current artifacts, dispatch the configured reviewer set, collect every report, and record the critic outcome before any return transition."
+      internal_multi_agent_reviewer_set:
+      - architecture reviewer
+      - security auditor
+      - TDD contract reviewer
+      required_receipt_fields:
+      - task_id
+      - review_iteration
+      - method
+      - reviewer
+      - runtime
+      - model
+      - effort
+      - report_path_or_external_receipt
+      - verdict
+      - findings
+      outcome_vocabulary:
+      - PASS
+      - REQUEST_CHANGES
+      - REVIEW_FAILURE
+      required_sequence:
+      - Verify the selected review method and the current plan artifacts.
+      - Create the bounded review bundle or load the approved internal review context.
+      - Dispatch every selected reviewer with the recorded model, effort, and scope.
+      - Collect each reviewer result and preserve its artifact path or external receipt.
+      - Synthesize the collected reports into the canonical round brief before choosing the return edge.
+      - Record one critic-review outcome linked to the raw-report manifest and synthesis brief.
+      - Return to DRAFT_PLAN for requested changes, or return to PLAN_REVIEW for acceptance.
+      continuation_rule: After entering MULTI_AGENT_REVIEW, continue through kickoff, dispatch, collection, and outcome recording in the same run; do not wait for another user prompt for routine internal work.
+      failure_rule: If dispatch or collection cannot complete, record the exact blocker, affected reviewer or artifact, and the concrete recovery action; do not report the review as complete.
+      approval_boundary: Reviewers may critique the plan but may not approve implementation, expand scope, modify production code, create a worktree, or push changes.
+    evidence_requirements:
+    - The review method and model/effort choice are persisted.
+    - Every selected reviewer has a completed result or an explicit failure receipt.
+    - Raw reports and one canonical synthesis/revision brief are persisted for the implementer or plan author.
+    - A critic-review or review-skip receipt is persisted before leaving this stage.
+    exit_requirements:
+    - The recorded outcome names the exact return edge and any required plan changes.
+    - No implementation capability is released by this review stage.
   IN_WORKTREE:
     purpose: Execute the approved implementation in the registered isolated worktree.
     question_policy: one_at_a_time
@@ -144,9 +344,84 @@ stages:
     - Implementation evidence and tests are recorded before reporting complete.
     - The implementation plan contains a fenced JSON Implementation Task Ledger with every in-scope task COMPLETE, evidence, and existing artifact paths before exit verification.
     - Active model and effort are reported from observed runtime metadata, not inferred from task title.
+    completion_contract:
+      definition: "Implementation is complete when the approved bounded work package is written in the registered worktree, the focused acceptance checks pass, and the implementation ledger records the evidence. This status does not mean committed, pushed, merged, or DONE."
+      authority: "The registered worktree is the review source of truth. The main checkout is not an independent implementation authority and may contain pre-existing or mirrored task changes."
+      session_change_inventory:
+        mandatory: true
+        run_on_every_session: true
+        run_before_every_review_submission: true
+        run_after_every_internal_fix_round: true
+        reminder: "At every implementation checkpoint, compare the session-start baseline, main checkout, and registered worktree path by path. Ensure every file created or modified by this session is present with the intended content in the registered worktree before reporting implementation complete or requesting WORKTREE_REVIEW."
+        ownership_rule: "A path changed after the session baseline is session-owned unless it is explicitly recorded as pre-existing. A session-owned main-only path is a blocker; it must not be classified as main_only_preexisting."
+        required_fields:
+        - session_baseline_reference
+        - path
+        - session_owned
+        - main_status
+        - worktree_status
+        - content_match
+        - disposition
+        failure_rule: "Do not report completion or enter WORKTREE_REVIEW while any session-owned change is absent or mismatched in the registered worktree."
+        recovery: "Synchronize the missing session-owned change into the registered worktree using the approved file/symlink workflow, rerun focused verification, and repeat the inventory until it passes. Preserve unrelated main changes."
+        comparison_policy:
+          implementation_files: "Require byte-identical intended content between main and the registered worktree."
+          generated_metadata: "Allow regenerated installer metadata to differ only in expected timestamps or source-location bookkeeping; verify semantic entries and record the difference."
+          missing_or_unclassified: "Always fail closed."
+      reconciliation_manifest:
+        required_before_integration: true
+        purpose: "Reconcile the common base, task baseline, registered worktree, and main checkout before applying any reviewed patch."
+        classifications:
+        - worktree_only
+        - main_only_preexisting
+        - shared_task_change
+        - generated_metadata
+        - untracked
+        required_fields:
+        - path
+        - common_base_blob_or_status
+        - task_baseline_status
+        - worktree_status
+        - main_status
+        - classification
+        - disposition
+      integration_contract:
+        review_source: registered_worktree
+        apply_reviewed_patch_once: true
+        preserve_main_only_preexisting_changes: true
+        commit_policy: "After WORKTREE_REVIEW, final verification, and the DONE operation gate, integrate the reviewed worktree patch once into the authorized integration checkout and create one commit. Do not commit both the worktree branch and main independently."
+        push_policy: "Push only the verified integration commit after explicit human authorization at the push/DONE boundary; never push from IN_WORKTREE or WORKTREE_REVIEW."
+      recovery: "If reconciliation finds conflicting task changes, missing worktree artifacts, or unclassified files, remain in the current gate, record the exact paths and classification failure, and resolve or explicitly exclude them before integration."
   RETROSPECTIVE:
     purpose: Capture the complete pipeline-close survey before allowing DONE.
     question_policy: one_at_a_time
+    closeout_change_control:
+      purpose: Classify retrospective findings before the final DONE decision without bypassing implementation authority or review.
+      mandatory_before_done: true
+      classifications:
+      - already_resolved_in_current_package
+      - bounded_fix_requires_rework_loop
+      - larger_follow_up_requires_issue_or_new_work_package
+      already_resolved_rule: Record the change and evidence in the retrospective; do not reopen completed work solely to restate it.
+      bounded_fix_rule: A behavior-changing fix is never applied directly from RETROSPECTIVE. If it remains within the approved scope, use a legal implementation/review return edge, pass the canonical revision brief, rerun focused verification and inventory, and complete review before returning to closeout.
+      no_legal_return_rule: If the current state exposes no legal implementation return edge, preserve the finding as map debt and report that a follow-up control-plane transition or new bounded work package is required; do not reset to INTAKE or edit implementation files merely to avoid the closeout gate.
+      larger_follow_up_rule: A scope expansion, authority change, destructive change, cross-plugin repair, or unresolved baseline failure is a follow-up candidate. Record it in map debt, run the required duplicate search, and request user authorization before creating a new GitHub issue or work package.
+      closeout_evidence:
+      - finding
+      - classification
+      - scope_decision
+      - evidence_or_issue_reference
+      - recovery_or_next_action
+      agent_self_assessment:
+        mandatory_before_done: true
+        question: 'For each retrospective finding, can I implement a safe bounded fix now before commit or push, or is it larger follow-up work?'
+        response_policy: Answer this question for every finding in the closeout report. Mark already-resolved findings as complete, identify bounded fixes that require the legal implementation/review loop, and identify larger work that needs map debt and a user-authorized issue or new work package.
+        no_silent_action: Do not implement a behavior-changing fix merely because the self-assessment calls it quick; the current lifecycle state and legal transition edges still govern whether action is authorized.
+        response_fields:
+        - finding
+        - answer
+        - rationale
+        - immediate_action_or_deferred_artifact
     entry_questions:
     - question_id: retrospective_workflow_complete
       question: Did the run complete the full intended workflow end to end?
@@ -233,6 +508,59 @@ stages:
     - Every adaptive rule matching the recorded answers has been evaluated.
     - Issue-worthy follow-ups are confirmed and tracked before DONE.
     - The final complete-or-skip decision is asked only after this survey is complete.
+  DONE:
+    purpose: "The governed implementation and verification path is complete; Git integration is a separate closeout operation and is not implied by DONE."
+    question_policy: one_at_a_time
+    entry_questions:
+    - question_id: done_git_integration_authorization
+      question: "The verified implementation is DONE. Do you want to begin Git integration using the existing registered feature branch and worktree?"
+      options:
+      - "Yes, begin Git integration [Recommended]"
+      - "No, leave the verified changes in the current worktree"
+      accepted_answers:
+      - "Yes, begin Git integration [Recommended]"
+      - "No, leave the verified changes in the current worktree"
+      default: "Yes, begin Git integration [Recommended]"
+    adaptive_follow_up_rules:
+    - rule_id: done_git_integration_authorized
+      when:
+        question_id: done_git_integration_authorization
+        equals: "Yes, begin Git integration [Recommended]"
+      questions:
+      - question_id: done_commit_authorization
+        question: "After the reconciliation manifest passes, do you authorize exactly one commit on the existing feature branch?"
+        options:
+        - "Yes, authorize one feature-branch commit [Recommended]"
+        - "No, leave the changes uncommitted"
+        accepted_answers:
+        - "Yes, authorize one feature-branch commit [Recommended]"
+        - "No, leave the changes uncommitted"
+        default: "Yes, authorize one feature-branch commit [Recommended]"
+    exit_requirements:
+    - "Report DONE separately from the Git worktree lifecycle state; DONE does not mean committed, pushed, merged, or visible on origin/main."
+    - "Use the existing registered worktree and feature branch when present; do not create a duplicate worktree or branch without explicit human authorization."
+    - "Before any Git mutation, compare the common base, task baseline, registered worktree, and integration checkout in a reconciliation manifest."
+    - "Apply the reviewed worktree patch exactly once and preserve main-only pre-existing changes."
+    - "Ask separately before committing, pushing to origin, opening a PR, or merging; never infer authorization from DONE or from an earlier approval."
+    closeout_contract:
+      feature_branch_policy: "Reuse the registered task feature branch created during worktree setup; create a branch only when none exists and the human explicitly authorizes creation."
+      worktree_policy: "Reuse the registered worktree path; do not create a new worktree during closeout unless the human explicitly authorizes recovery."
+      reconciliation_policy: "Create and pass the reconciliation manifest before applying any reviewed patch; classify worktree-only, main-only-preexisting, shared-task, generated metadata, and untracked paths."
+      commit_policy: "Create exactly one commit containing the reviewed task changes on the authorized feature branch; never independently commit both the worktree branch and main."
+      push_policy: "Ask separately for explicit push authorization, push only the verified feature-branch commit, and report the exact pushed_to_origin result and branch."
+      pull_request_policy: "Ask separately before opening or merging a pull request; neither DONE nor a push authorizes either action."
+      merge_verification_policy: "After an authorized merge, fetch origin/main and verify the actual origin/main commit before reporting merged_into_origin_main."
+      closeout_states:
+      - written_in_worktree
+      - committed_in_worktree
+      - pushed_to_origin
+      - merged_into_origin_main
+      - local_branch_ref_updated
+      - checked_out_on_disk
+    failure_recovery:
+      missing_branch_or_worktree: "Stop and report the exact missing registration; ask whether to recover the existing task or explicitly authorize creation."
+      reconciliation_failure: "Remain in closeout, preserve the manifest and exact conflicting paths, and resolve or explicitly exclude them before integration."
+      authorization_missing: "Do not commit, push, open a PR, or merge; report the next required human authorization and retain the current Git state."
 
 intake_guidance:
   source_documents:
@@ -245,20 +573,21 @@ intake_guidance:
     shared_whole_round_budget: true
     timeout_status: partial_timeout
   precompletion_summary:
-    user_rule: Explain map debt as agent follow-up, including whether the user must act now.
-model_effort_guidance:
-  interview:
-    recommended_model: current-user-model
-    recommended_effort: low
-    requires_confirmation_for_premium: true
-  plan:
-    recommended_model: user-selected-planning-model
-    recommended_effort: medium
-    requires_confirmation_for_premium: true
-  review:
-    recommended_model: user-selected-review-model
-    recommended_effort: medium
-    requires_confirmation_for_premium: true
+    machine_gate:
+      audience: internal
+      preserve_fields: true
+      evaluate_all_checks: true
+    user_summary:
+      audience: user
+      plain_language: true
+      hide_machine_gate_details: true
+      explain_map_debt_as: "a follow-up the agents recorded for later improvement"
+      say_whether_user_action_is_needed: true
+      ask_one_question_at_a_time: true
+      ask_only_if_human_decision_is_required: true
+      user_rule: Tell the user what was checked, whether anything blocks the next step, and the single next question or action in plain language.
+    internal_follow_up:
+      if_any_check_is_yes: "Handle the result internally as FIX, MAP_DEBT, or ESCALATE; do not turn the machine checklist into a user questionnaire."
 execution_guidance:
   work_package:
     advisory: true
@@ -284,7 +613,7 @@ execution_guidance:
   transition:
     advisory: true
     required_fields: *execution_guidance_fields
-    instruction: Before each lifecycle transition, resolve the edge guidance, satisfy its questions and checks through the supported mechanism, and use the success or denial recovery path without treating advisory text as authority. After a human answer is accepted, immediately persist the decision, complete the requested transition, load the destination state's stage contract, and ask its next question or execute its deterministic handoff; never stop after merely acknowledging an answer.
+    instruction: "Before each lifecycle transition, resolve the edge guidance, satisfy its questions and checks through the supported mechanism, and use the success or denial recovery path without treating advisory text as authority. A human answer received in chat must be persisted through --interactive, never --answers, so SQLite records actor=human. After a human answer is accepted, immediately persist the decision, complete the requested transition, load the destination state's stage contract, and ask its next question or execute its deterministic handoff; never stop after merely acknowledging an answer."
   execution_step:
     advisory: true
     required_fields: *execution_guidance_fields
@@ -415,10 +744,9 @@ templates:
   authority:
     type: deterministic
     explanation: Transition from INTAKE to DRAFT_PLAN is deterministically governed by automated checks and artifacts.
-# Plan-review entry edges intentionally use a binary submit/revise question:
-# they decide whether the current artifacts are ready for that review state.
-# The 5-way review-method questions belong only to edges that select a review
-# method or permit an explicit review skip, not to plan-review entry.
+# Review-state entry edges use a binary submit/revise question: they decide
+# whether the current artifacts are ready for that destination. Review-method
+# selection and explicit review skips are separate target-specific edges.
 - transition_id: intake_to_plan_review
   from_state: INTAKE
   to_state: PLAN_REVIEW
@@ -437,6 +765,8 @@ templates:
     options:
     - Proceed with review [Recommended]
     - Continue revising prior stage
+    accepted_answers:
+    - Proceed with review [Recommended]
     default: Proceed with review [Recommended]
   approval:
     required: false
@@ -479,11 +809,12 @@ templates:
 - transition_id: interview_to_draft_plan
   from_state: INTERVIEW
   to_state: DRAFT_PLAN
-  purpose: Synthesize interview requirements into architectural specification and task implementation plan.
-  next_steps_hint: "Record the standard interview answers through the supported interview-question mechanism, including acceptance criteria; defaults are not inferred. Then satisfy interview_standard_complete with verify-interview-question, record-plan-mode-entry or record-socratic-intake as applicable, and run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to DRAFT_PLAN."
+  purpose: Confirm the interview outline is complete and hand it to DRAFT_PLAN, where the full architectural specification and implementation plan are compiled.
+  next_steps_hint: "Record each standard interview answer through the supported interview-question mechanism; each answer updates docs/plans/<task-id>-plan-outline.md. Then review the outline, satisfy interview_standard_complete with verify-interview-question, record-plan-mode-entry or record-socratic-intake as applicable, and run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to DRAFT_PLAN. DRAFT_PLAN then compiles the full specification and implementation plan from the outline."
   checklist:
   - Current task state is persisted as INTERVIEW
   - Standard interview questions and acceptance criteria are complete
+  - Interview plan outline is persisted and reviewable
   required_artifacts: []
   deterministic_checks:
   - interview_standard_complete
@@ -544,6 +875,8 @@ templates:
     options:
     - Proceed with review [Recommended]
     - Continue revising prior stage
+    accepted_answers:
+    - Proceed with review [Recommended]
     default: Proceed with review [Recommended]
   approval:
     required: false
@@ -587,7 +920,7 @@ templates:
   from_state: DRAFT_PLAN
   to_state: PLAN_REVIEW
   purpose: Submit the authored plan to the PLAN_REVIEW disposition-and-acceptance gate.
-  next_steps_hint: "The plan is drafted. Review the plan artifacts (the two documents), then run coordinate-transition --task-id <task-id> --to PLAN_REVIEW and choose what happens next: request independent review, or skip it and continue to plan acceptance. The review choice does not approve implementation. If you request review, the next question selects the reviewer method; after review, you return to PLAN_REVIEW and decide whether to revise or accept. If you skip review, you continue directly to the plan-acceptance question."
+  next_steps_hint: "The plan is drafted. Answer whether to submit the current artifacts to PLAN_REVIEW or continue revising, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to PLAN_REVIEW. If submitted, PLAN_REVIEW separately asks whether agents should review the draft and, when requested, which supported review method to use. Explicit review skips and plan revisions use their own target-specific transitions. No plan-review choice approves implementation."
   checklist:
   - Current task state is persisted as DRAFT_PLAN
   - Structural DAG transition from DRAFT_PLAN to PLAN_REVIEW is legal
@@ -596,18 +929,14 @@ templates:
   - docs/plans/<task-id>-implementation-plan.md
   deterministic_checks: []
   human_questions:
-  - question_id: plan_review_disposition
-    question: 'The plan is drafted. What would you like to do next?'
+  - question_id: confirm_review_draft_plan_to_plan_review
+    question: 'Would you like to submit the drafted plan for review?'
     options:
-    - No — accept plan as-is and skip independent review [Recommended]
-    - Yes — request additional independent review
+    - Proceed with review [Recommended]
+    - Continue revising prior stage
     accepted_answers:
-    - No — accept plan as-is and skip independent review [Recommended]
-    - Yes — request additional independent review
-    default: No — accept plan as-is and skip independent review [Recommended]
-    user_outcomes:
-      'yes': Select the review method, then run an independent review round.
-      'no': Continue to plan acceptance without independent review.
+    - Proceed with review [Recommended]
+    default: Proceed with review [Recommended]
   approval:
     required: false
     approver_role: agent_or_human
@@ -763,8 +1092,14 @@ templates:
 - transition_id: plan_review_to_multi_agent_review
   from_state: PLAN_REVIEW
   to_state: MULTI_AGENT_REVIEW
-  purpose: Select the requested independent review method after the plan disposition chose review.
-  next_steps_hint: "Because PLAN_REVIEW requested independent review, answer the plan_review_method YAML question with --interactive or --answers '<json>', then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to MULTI_AGENT_REVIEW."
+  purpose: Select the requested independent review method after the plan was submitted for review.
+  next_steps_hint: "PLAN_REVIEW uses review-selection-v1. Ask one question at a time using the same sequence as implementation review: (1) ask whether the user wants agents to review the draft plan; (2) only after Yes, show all four review methods together—single-agent internal, single-agent external bundle, multi-agent internal, and multi-agent external bundle; (3) only for an internal method, ask separately for the CLI/runtime, model, and effort, resolving each from the confirmed profile and update-cli-models catalog. Do not dispatch an internal reviewer before all three explicit selections are recorded. Persist chat answers through --interactive so SQLite records actor=human. If No, record the explicit skip receipt and use PLAN_REVIEW -> AWAITING_APPROVAL. For an accepted review choice, run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to MULTI_AGENT_REVIEW, then immediately execute the MULTI_AGENT_REVIEW.kickoff.required_sequence through outcome recording; do not stop after acknowledging the transition."
+  review_selection_contract: review-selection-v1
+  review_selection:
+    scope: draft_plan
+    user_choice_required_for_internal: true
+    recommendation_source: model_effort_guidance.review
+    catalog_source: review_selection_contract.catalog_resolution
   checklist:
   - Current task state is persisted as PLAN_REVIEW
   - Structural DAG transition from PLAN_REVIEW to MULTI_AGENT_REVIEW is legal
@@ -773,14 +1108,26 @@ templates:
   - docs/plans/<task-id>-implementation-plan.md
   deterministic_checks: []
   human_questions:
+  - question_id: plan_review_agent_review_decision
+    question: 'Would you like agents to review the draft plan?'
+    options:
+    - Yes — continue to review method selection [Recommended]
+    - No — skip agent review and continue to plan acceptance
+    accepted_answers:
+    - Yes — continue to review method selection [Recommended]
+    default: Yes — continue to review method selection [Recommended]
   - question_id: plan_review_method
-    question: What type of independent review should be performed?
+    question: 'Which review method would you like?'
     options:
     - Single-agent review — internal
-    - Single-agent review — external bundle
+    - Single-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)
     - Multi-agent review — internal [Recommended]
-    - Multi-agent review — external bundle
-    - Other — specify in chat
+    - Multi-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)
+    accepted_answers:
+    - Single-agent review — internal
+    - Single-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)
+    - Multi-agent review — internal [Recommended]
+    - Multi-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)
     default: Multi-agent review — internal [Recommended]
   approval:
     required: false
@@ -846,13 +1193,12 @@ templates:
   deterministic_checks: []
   human_questions:
   - question_id: confirm_plan_revision
-    question: Do you accept the plan as it is, or do you require further revisions?
+    question: Would you like to make any changes to the plan?
     options:
-    - Accept plan and proceed to human approval [Recommended]
-    - Require further revisions
+    - Yes — return to DRAFT_PLAN to make changes [Recommended]
     accepted_answers:
-    - Require further revisions
-    default: Require further revisions
+    - Yes — return to DRAFT_PLAN to make changes [Recommended]
+    default: Yes — return to DRAFT_PLAN to make changes [Recommended]
   approval:
     required: false
     approver_role: agent_or_human
@@ -937,9 +1283,8 @@ templates:
     question: Approve task implementation and worktree creation?
     options:
     - Yes, approve implementation [Recommended]
-    - No, return to PLAN_REVIEW for plan revisions
-    - No, return to DRAFT_PLAN for plan rewrites
-    - No, hold in AWAITING_APPROVAL
+    accepted_answers:
+    - Yes, approve implementation [Recommended]
     default: Yes, approve implementation [Recommended]
   approval:
     required: true
@@ -973,6 +1318,8 @@ templates:
     options:
     - Proceed with review [Recommended]
     - Continue revising prior stage
+    accepted_answers:
+    - Proceed with review [Recommended]
     default: Proceed with review [Recommended]
   approval:
     required: false
@@ -1126,8 +1473,8 @@ templates:
 - transition_id: in_worktree_to_worktree_review
   from_state: IN_WORKTREE
   to_state: WORKTREE_REVIEW
-  purpose: Verify implementation tests pass and enter worktree review.
-  next_steps_hint: "Answer this edge's YAML questions with --interactive or --answers '<json>'. First satisfy test_suite; use: record-verification-receipt for test_suite. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to WORKTREE_REVIEW."
+  purpose: "Implementation is complete in the registered worktree; submit the bounded, verified worktree diff to WORKTREE_REVIEW."
+  next_steps_hint: "Implementation is complete only after the approved work package is written and focused verification passes; it is not committed, pushed, merged, or DONE. Before every review submission and after every internal fix round, run the session-wide change inventory and ensure every session-owned file is present and content-matched in the registered worktree. Answer this edge's one question with --interactive or --answers '<json>'. First satisfy test_suite; use: record-verification-receipt for test_suite. Before integration, create the reconciliation manifest required by the IN_WORKTREE completion contract, classify worktree-only, main-only-preexisting, shared-task, and untracked paths, then apply the reviewed worktree patch once. After review and final verification, run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to WORKTREE_REVIEW."
   checklist:
   - Current task state is persisted as IN_WORKTREE
   - 'Deterministic check satisfied: test_suite'
@@ -1139,21 +1486,12 @@ templates:
   - test_suite
   human_questions:
   - question_id: confirm_review_in_worktree_to_worktree_review
-    question: Submit artifacts for review in WORKTREE_REVIEW?
+    question: Implementation is complete in the registered worktree. Do you wish to proceed to WORKTREE_REVIEW?
     options:
-    - No, continue revising prior stage
-    - Yes, proceed to WORKTREE_REVIEW — skip review entirely
-    - Yes, single-agent review — sub-agent (internal)
-    - Yes, single-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)
-    - Yes, multi-agent review — sub-agent (internal) [Recommended]
-    - Yes, multi-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)
-    default: Yes, multi-agent review — sub-agent (internal) [Recommended]
+    - Proceed to WORKTREE_REVIEW [Recommended]
     accepted_answers:
-    - Yes, proceed to WORKTREE_REVIEW — skip review entirely
-    - Yes, single-agent review — sub-agent (internal)
-    - Yes, single-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)
-    - Yes, multi-agent review — sub-agent (internal) [Recommended]
-    - Yes, multi-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)
+    - Proceed to WORKTREE_REVIEW [Recommended]
+    default: Proceed to WORKTREE_REVIEW [Recommended]
   approval:
     required: false
     approver_role: agent_or_human
@@ -1246,7 +1584,13 @@ templates:
   from_state: WORKTREE_REVIEW
   to_state: MULTI_AGENT_CODE_REVIEW
   purpose: Submit worktree code diff for independent multi-agent adversarial code review.
-  next_steps_hint: "Answer this edge's YAML questions with --interactive or --answers '<json>'. Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to MULTI_AGENT_CODE_REVIEW."
+  next_steps_hint: "WORKTREE_REVIEW uses review-selection-v1. Ask one question at a time: (1) ask whether the user wants agents to review the implementation; (2) only after Yes, show all four review methods together—single-agent internal, single-agent external bundle, multi-agent internal, and multi-agent external bundle; (3) only for an internal method, ask separately for the CLI/runtime, model, and effort, resolving each from the confirmed profile and update-cli-models catalog. Do not dispatch an internal reviewer before all three explicit selections are recorded. Persist chat answers through --interactive so SQLite records actor=human. Then complete this edge's checklist and run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to MULTI_AGENT_CODE_REVIEW."
+  review_selection_contract: review-selection-v1
+  review_selection:
+    scope: implementation
+    user_choice_required_for_internal: true
+    recommendation_source: model_effort_guidance.review
+    catalog_source: review_selection_contract.catalog_resolution
   checklist:
   - Current task state is persisted as WORKTREE_REVIEW
   - Structural DAG transition from WORKTREE_REVIEW to MULTI_AGENT_CODE_REVIEW is legal
@@ -1257,15 +1601,25 @@ templates:
   deterministic_checks: []
   human_questions:
   - question_id: confirm_review_worktree_review_to_multi_agent_code_review
-    question: Submit implementation for independent code review?
+    question: 'Would you like agents to review the implementation?'
     options:
-    - No, skip review entirely
-    - Yes, single-agent review — sub-agent (internal)
-    - Yes, single-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)
-    - Yes, multi-agent review — sub-agent (internal) [Recommended]
-    - Yes, multi-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)
-    - Other — specify in chat
-    default: Yes, multi-agent review — sub-agent (internal) [Recommended]
+    - Yes — continue to review method selection [Recommended]
+    - No — skip agent review and continue to exit verification
+    accepted_answers:
+    - Yes — continue to review method selection [Recommended]
+  - question_id: implementation_review_method
+    question: 'Which review method would you like?'
+    options:
+    - Single-agent review — internal
+    - Single-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)
+    - Multi-agent review — internal [Recommended]
+    - Multi-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)
+    accepted_answers:
+    - Single-agent review — internal
+    - Single-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)
+    - Multi-agent review — internal [Recommended]
+    - Multi-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)
+    default: Multi-agent review — internal [Recommended]
   approval:
     required: false
     approver_role: agent_or_human
@@ -1381,14 +1735,14 @@ templates:
   authority:
     type: deterministic
     explanation: Transition from WORKTREE_REVIEW to ESCALATED is deterministically governed by automated checks and artifacts.
-# Return-to-review edges also intentionally use the binary submit/revise
-# question. The 5-way structure is reserved for choosing a review method or
-# explicitly skipping a discretionary review, not for resubmitting artifacts.
+# Return-to-review edges also use the binary submit/revise question. Review
+# method selection belongs only to the edge that enters the review state, and
+# explicit skips use the deterministic exit edge with a recorded skip receipt.
 - transition_id: multi_agent_code_review_to_worktree_review
   from_state: MULTI_AGENT_CODE_REVIEW
   to_state: WORKTREE_REVIEW
-  purpose: Advance lifecycle state from MULTI_AGENT_CODE_REVIEW to WORKTREE_REVIEW upon satisfying phase requirements and verifications.
-  next_steps_hint: "Answer this edge's YAML questions with --interactive or --answers '<json>'. Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to WORKTREE_REVIEW."
+  purpose: Return a completed or re-submitted review package to WORKTREE_REVIEW for artifact and scope confirmation.
+  next_steps_hint: "Use this edge only after the review outcome is recorded and the package is ready for artifact review. For a requested change or failed review requiring edits, use MULTI_AGENT_CODE_REVIEW -> IN_WORKTREE instead; do not edit while in the review state. After any bounded fix, rerun focused verification and the session-wide change inventory, then submit through WORKTREE_REVIEW and re-enter MULTI_AGENT_CODE_REVIEW. Answer this edge's human question with --interactive so SQLite records actor=human, complete its checklist, and run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to WORKTREE_REVIEW."
   checklist:
   - Current task state is persisted as MULTI_AGENT_CODE_REVIEW
   - Structural DAG transition from MULTI_AGENT_CODE_REVIEW to WORKTREE_REVIEW is legal
@@ -1403,6 +1757,8 @@ templates:
     options:
     - Proceed with review [Recommended]
     - Continue revising prior stage
+    accepted_answers:
+    - Proceed with review [Recommended]
     default: Proceed with review [Recommended]
   approval:
     required: false
@@ -1448,15 +1804,23 @@ templates:
 - transition_id: multi_agent_code_review_to_in_worktree
   from_state: MULTI_AGENT_CODE_REVIEW
   to_state: IN_WORKTREE
-  purpose: Advance lifecycle state from MULTI_AGENT_CODE_REVIEW to IN_WORKTREE upon satisfying phase requirements and verifications.
-  next_steps_hint: "Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to IN_WORKTREE."
+  purpose: Return a review package requiring bounded changes to the implementation worktree.
+  next_steps_hint: "Use this existing rework edge only after the current implementation-review reports have been synthesized, the outcome is REQUEST_CHANGES, REVISE, or REVIEW_FAILURE with bounded recovery, the revision brief is recorded, and the human approves this question. Do not edit in MULTI_AGENT_CODE_REVIEW. After entry, make only the approved bounded fixes in the registered worktree, rerun focused verification and the session-wide change inventory, then submit via IN_WORKTREE -> WORKTREE_REVIEW -> MULTI_AGENT_CODE_REVIEW for another review round. Do not create a new transition type for this loop. Run: python3 plugins/agent-agentic-os/scripts/control_plane/agent_control.py coordinate-transition --task-id <task-id> --to IN_WORKTREE."
   checklist:
   - Current task state is persisted as MULTI_AGENT_CODE_REVIEW
   - Structural DAG transition from MULTI_AGENT_CODE_REVIEW to IN_WORKTREE is legal
   required_artifacts:
   - .worktrees/<task-id>
   deterministic_checks: []
-  human_questions: []
+  human_questions:
+  - question_id: confirm_rework_multi_agent_code_review_to_in_worktree
+    question: "The implementation review identified bounded changes. Do you wish to transition back to IN_WORKTREE so the authorized implementer can apply the revision brief?"
+    options:
+    - Yes — transition to IN_WORKTREE and begin bounded fixes [Recommended]
+    - No — remain in MULTI_AGENT_CODE_REVIEW
+    accepted_answers:
+    - Yes — transition to IN_WORKTREE and begin bounded fixes [Recommended]
+    default: Yes — transition to IN_WORKTREE and begin bounded fixes [Recommended]
   approval:
     required: false
     approver_role: agent_or_human
@@ -1469,9 +1833,8 @@ templates:
   - merge into origin/main directly
   denial_message: 'Transition MULTI_AGENT_CODE_REVIEW -> IN_WORKTREE denied: preconditions or required decisions not satisfied.'
   authority:
-    type: deterministic
-    explanation: Transition from MULTI_AGENT_CODE_REVIEW to IN_WORKTREE is deterministically governed by automated checks
-      and artifacts.
+    type: human_review
+    explanation: Returning to IN_WORKTREE after implementation review requires the recorded review outcome, bounded revision brief, and explicit human authorization.
 - transition_id: multi_agent_code_review_to_rolled_back
   from_state: MULTI_AGENT_CODE_REVIEW
   to_state: ROLLED_BACK
@@ -1552,13 +1915,14 @@ templates:
   from_state: RETROSPECTIVE
   to_state: DONE
   purpose: Complete the task after a completed retrospective or an explicitly reasoned skip.
-  next_steps_hint: "First persist the completed retrospective through the supported record_retrospective wrapper with the required entry fields and resolved follow-ups; do this before requesting DONE. Defaults are not inferred. Then answer this edge's retrospective_decision question one at a time with --interactive, satisfy retrospective_done_guard, and run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to DONE."
+  next_steps_hint: "Before asking the final retrospective_decision or requesting DONE, run the repository-wide pytest -q suite through the approved verifier with verifier_id=pytest_full_suite, inspect the result, and require a recorded full_test_suite receipt with exit_code=0. If the suite fails or no passing receipt exists, remain in RETROSPECTIVE, report the exact failing tests and recovery action, and do not close out. Then persist the completed retrospective through the supported record_retrospective wrapper with the required entry fields and resolved follow-ups; defaults are not inferred. Complete the agent self-assessment for every finding, then answer this edge's retrospective_decision question one at a time with --interactive, satisfy retrospective_done_guard and full_test_suite, and run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to DONE."
   checklist:
   - Current task state is persisted as RETROSPECTIVE
   - Retrospective survey is complete or explicitly skipped with a reason
   required_artifacts: []
   deterministic_checks:
   - retrospective_done_guard
+  - full_test_suite
   human_questions:
   - question_id: retrospective_decision
     question: 'Choose the pipeline-close retrospective outcome: complete the survey or skip it with a recorded reason.'
@@ -1604,8 +1968,9 @@ templates:
 - transition_id: verify_exit_to_in_worktree
   from_state: VERIFY_EXIT
   to_state: IN_WORKTREE
-  purpose: Advance lifecycle state from VERIFY_EXIT to IN_WORKTREE upon satisfying phase requirements and verifications.
-  next_steps_hint: "Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to IN_WORKTREE."
+  purpose: Return failed verification to the existing implementation worktree for a bounded fix and re-verification.
+  next_steps_hint: "If any VERIFY_EXIT check fails, including full_test_suite, do not transition to RETROSPECTIVE or DONE. Report the exact failed command/tests and recovery action, keep using the existing registered worktree, and do not create another worktree. Implement the bounded fix in IN_WORKTREE, rerun focused verification and the session-wide change inventory, submit through WORKTREE_REVIEW, then return to VERIFY_EXIT. Run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to IN_WORKTREE."
+  failure_recovery: "A failed VERIFY_EXIT check returns to the current registered IN_WORKTREE for bounded implementation fixes. Preserve the failed receipt and exact findings, do not repeat the failed closeout path, do not reset to INTAKE unless the human explicitly authorizes that recovery, and do not create a new worktree."
   checklist:
   - Current task state is persisted as VERIFY_EXIT
   - Structural DAG transition from VERIFY_EXIT to IN_WORKTREE is legal
@@ -1646,6 +2011,8 @@ templates:
     options:
     - Proceed with review [Recommended]
     - Continue revising prior stage
+    accepted_answers:
+    - Proceed with review [Recommended]
     default: Proceed with review [Recommended]
   approval:
     required: false
@@ -1878,7 +2245,7 @@ templates:
   from_state: "*"
   to_state: INTAKE
   purpose: Recover a task whose control-plane record has drifted or desynced from reality (e.g. a raw write bypassing the normal transition path) by resetting it to INTAKE for a full re-run through every gate.
-  next_steps_hint: "Answer this edge's YAML questions with --interactive or --answers '<json>'. Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to INTAKE."
+  next_steps_hint: "For the standard recovery route, answer this edge's YAML questions with --interactive or --answers '<json>' and run coordinate-transition --task-id <task-id> --to INTAKE for a full pipeline rerun. If the human must reopen to another canonical stage (including DONE -> IN_WORKTREE or DONE -> WORKTREE_REVIEW), use the human_recovery contract's approval/apply API instead; preserve the current occupancy binding and execute the destination state's gates."
   checklist:
   - Current task state is not INTAKE
   - Human has provided a genuine, interactive justification for the reset

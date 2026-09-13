@@ -13,6 +13,7 @@ from control_plane.ports import PersistenceInvariantViolation
 from control_plane.registry import TransitionRegistry
 from control_plane.state_machine import ALLOWED_TRANSITIONS, CANONICAL_STATES, InvalidStateTransition
 from control_plane.wrappers.record_retrospective import record_retrospective
+from control_plane.wrappers.record_interview_question import record_interview_question
 from control_plane.wrappers.run_exit_verification import run_exit_verification
 
 
@@ -68,6 +69,19 @@ class PipelineSimulator:
         template = self.registry.get_template("INTERVIEW", to_state)
         if template is None:
             raise ValueError(f"No interview template for INTERVIEW -> {to_state}")
+        if to_state == "DRAFT_PLAN":
+            for question_id in template.stage_question_ids or []:
+                record_interview_question(
+                    task_id=task_id,
+                    question=question_id,
+                    options={},
+                    recommended="",
+                    answer=answers[question_id],
+                    actor="human",
+                    target_state="DRAFT_PLAN",
+                    control_plane=self.control_plane,
+                )
+            return
         capability = self.control_plane.verify_phase_capability(task_id, "interview_question")
         for question_id in template.stage_question_ids or []:
             self.control_plane.record_decision(
@@ -78,6 +92,9 @@ class PipelineSimulator:
                 question_id=question_id,
                 answer=answers[question_id],
                 actor="human",
+            )
+            self.control_plane.update_interview_plan_outline(
+                task_id, question_id, answers[question_id], actor="human"
             )
 
     def transition_from_interview(self, task_id: str, to_state: str, *, classification: str):
@@ -165,7 +182,7 @@ class PipelineSimulator:
         TransitionCoordinator(
             self.control_plane,
             registry=self.registry,
-            input_fn=lambda _prompt: "2",
+            input_fn=lambda _prompt: "1",
             output_stream=io.StringIO(),
         ).coordinate_transition(
             task_id=task_id,
@@ -174,16 +191,17 @@ class PipelineSimulator:
             reason="simulator requests plan review",
             interactive=True,
         )
+        review_answers = iter(["1", "3"])
         TransitionCoordinator(
             self.control_plane,
             registry=self.registry,
-            input_fn=lambda _prompt: "4",
+            input_fn=lambda _prompt: next(review_answers),
             output_stream=io.StringIO(),
         ).coordinate_transition(
             task_id=task_id,
             to_state="MULTI_AGENT_REVIEW",
             actor="human",
-            reason="simulator selects external plan review",
+            reason="simulator selects internal plan review",
             interactive=True,
         )
         self.control_plane.record_critic_review(task_id, 1, "simulator", "PASS", "simulated review passed")
@@ -242,7 +260,7 @@ class PipelineSimulator:
         TransitionCoordinator(
             self.control_plane,
             registry=self.registry,
-            input_fn=lambda _prompt: "2",
+            input_fn=lambda _prompt: "1",
             output_stream=io.StringIO(),
         ).coordinate_transition(
             task_id=task_id,

@@ -66,6 +66,7 @@ from control_plane.ports import (
     ClockPort,
     TransitionRecord,
     TransitionDecision,
+    InterviewAnswerRecord,
     TransitionCommitRequest,
     PhaseCapability,
     PersistenceInvariantViolation,
@@ -203,6 +204,17 @@ CREATE TABLE IF NOT EXISTS transition_decisions (
     bound_transition_id INTEGER REFERENCES task_transitions(transition_id)
 );
 
+CREATE TABLE IF NOT EXISTS done_closeout_decisions (
+    closeout_decision_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    task_id TEXT NOT NULL REFERENCES tasks(task_id) ON DELETE CASCADE,
+    source_occupancy_transition_id INTEGER NOT NULL REFERENCES task_transitions(transition_id),
+    question_id TEXT NOT NULL,
+    answer TEXT NOT NULL,
+    actor TEXT NOT NULL CHECK(actor = 'human'),
+    recorded_at REAL NOT NULL,
+    UNIQUE(task_id, source_occupancy_transition_id, question_id)
+);
+
 CREATE TABLE IF NOT EXISTS retrospective_entries (
     retrospective_id INTEGER PRIMARY KEY AUTOINCREMENT,
     task_id TEXT NOT NULL UNIQUE REFERENCES tasks(task_id) ON DELETE CASCADE,
@@ -308,6 +320,15 @@ CREATE TABLE IF NOT EXISTS source_assisted_answer_candidates (
     )
 );
 
+CREATE TABLE IF NOT EXISTS interview_plan_outlines (
+    task_id TEXT PRIMARY KEY REFERENCES tasks(task_id) ON DELETE CASCADE,
+    outline_json TEXT NOT NULL,
+    artifact_path TEXT NOT NULL,
+    revision INTEGER NOT NULL CHECK(revision >= 1),
+    created_at REAL NOT NULL,
+    updated_at REAL NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS schema_version (
     version INTEGER NOT NULL
 );
@@ -336,9 +357,13 @@ CREATE TABLE IF NOT EXISTS transition_violations (
 CREATE INDEX IF NOT EXISTS idx_tasks_state ON tasks(state);
 CREATE INDEX IF NOT EXISTS idx_transitions_task ON task_transitions(task_id);
 CREATE INDEX IF NOT EXISTS idx_decisions_lookup ON transition_decisions(task_id, source_occupancy_transition_id);
+CREATE INDEX IF NOT EXISTS idx_done_closeout_decisions_lookup
+    ON done_closeout_decisions(task_id, source_occupancy_transition_id);
 CREATE INDEX IF NOT EXISTS idx_retrospective_follow_ups_entry ON retrospective_follow_ups(retrospective_id);
 CREATE INDEX IF NOT EXISTS idx_source_answer_candidates_scope
     ON source_assisted_answer_candidates(task_id, stage, round_id, confirmation_status);
+CREATE INDEX IF NOT EXISTS idx_interview_plan_outlines_artifact
+    ON interview_plan_outlines(artifact_path);
 
 -- issue-523 & pipeline-guard: DB-level backstop enforcing legal state transitions and
 -- required human decisions on state transitions. Checks both adjacency-legality (valid_transitions)
@@ -349,32 +374,50 @@ AFTER UPDATE ON tasks
 WHEN NEW.state != OLD.state
  AND (
     NOT EXISTS (
-        SELECT 1 FROM valid_transitions WHERE from_state = OLD.state AND to_state = NEW.state
+        SELECT 1 FROM transition_decisions recovery_td
+        WHERE recovery_td.task_id = OLD.task_id
+          AND recovery_td.source_occupancy_transition_id = (
+              SELECT MAX(current_td.transition_id)
+              FROM task_transitions current_td
+              WHERE current_td.task_id = OLD.task_id
+          )
+          AND recovery_td.from_state = OLD.state
+          AND recovery_td.to_state = NEW.state
+          AND recovery_td.decision_type = 'APPROVAL'
+          AND recovery_td.actor = 'human'
+          AND recovery_td.answer IS NOT NULL
+          AND trim(recovery_td.answer) != ''
+          AND recovery_td.consumed_at IS NULL
     )
-    OR EXISTS (
-        SELECT 1 FROM required_transition_questions rq
-        WHERE rq.from_state = OLD.state AND rq.to_state = NEW.state
-          AND NOT EXISTS (
-              SELECT 1 FROM transition_decisions td
-              WHERE td.task_id = OLD.task_id
-                AND td.from_state = OLD.state
-                AND td.to_state = NEW.state
-                AND td.question_id = rq.question_id
-                AND td.answer IS NOT NULL
-                AND trim(td.answer) != ''
-                AND (td.actor = 'human' OR (rq.question_id = 'retrospective_decision' AND td.actor = 'agent'))
-                AND td.consumed_at IS NULL
-          )
-          AND NOT EXISTS (
-              SELECT 1 FROM transition_decisions force_td
-              WHERE force_td.task_id = OLD.task_id
-                AND force_td.from_state = OLD.state
-                AND force_td.to_state = NEW.state
-                AND force_td.question_id IN ('force_close_authorization', 'human_force_done_confirmation')
-                AND force_td.answer IN ('FORCE_CLOSE', 'FORCE_DONE')
-                AND force_td.actor = 'human'
-                AND force_td.consumed_at IS NULL
-          )
+    AND (
+        NOT EXISTS (
+            SELECT 1 FROM valid_transitions WHERE from_state = OLD.state AND to_state = NEW.state
+        )
+        OR EXISTS (
+            SELECT 1 FROM required_transition_questions rq
+            WHERE rq.from_state = OLD.state AND rq.to_state = NEW.state
+              AND NOT EXISTS (
+                  SELECT 1 FROM transition_decisions td
+                  WHERE td.task_id = OLD.task_id
+                    AND td.from_state = OLD.state
+                    AND td.to_state = NEW.state
+                    AND td.question_id = rq.question_id
+                    AND td.answer IS NOT NULL
+                    AND trim(td.answer) != ''
+                    AND (td.actor = 'human' OR (rq.question_id = 'retrospective_decision' AND td.actor = 'agent'))
+                    AND td.consumed_at IS NULL
+              )
+              AND NOT EXISTS (
+                  SELECT 1 FROM transition_decisions force_td
+                  WHERE force_td.task_id = OLD.task_id
+                    AND force_td.from_state = OLD.state
+                    AND force_td.to_state = NEW.state
+                    AND force_td.question_id IN ('force_close_authorization', 'human_force_done_confirmation')
+                    AND force_td.answer IN ('FORCE_CLOSE', 'FORCE_DONE')
+                    AND force_td.actor = 'human'
+                    AND force_td.consumed_at IS NULL
+              )
+        )
     )
  )
 BEGIN
@@ -403,7 +446,7 @@ BEGIN
 END;
 """
 
-CURRENT_SCHEMA_VERSION = 9
+CURRENT_SCHEMA_VERSION = 12
 
 # issue-523: the only state ControlPlane.create_task() ever seeds a new task at. Not derived
 # from TransitionRegistry (which only declares state-to-state edges among existing states, not
@@ -417,6 +460,7 @@ CHILD_TABLES = [
     "verification_receipts",
     "asymmetric_persistence_log",
     "transition_decisions",
+    "done_closeout_decisions",
     "retrospective_entries",
     "retrospective_follow_ups",
     "delegation_contracts",
@@ -424,10 +468,32 @@ CHILD_TABLES = [
     "delegation_verifier_receipts",
     "premium_consents",
     "source_assisted_answer_candidates",
+    "interview_plan_outlines",
 ]
 ALL_REBUILD_TABLES = ["tasks"] + CHILD_TABLES
 
 SCHEMA_MIGRATIONS = [
+    # Migration: persist the canonical interview plan outline and its Markdown projection (v10)
+    """CREATE TABLE IF NOT EXISTS interview_plan_outlines (
+        task_id TEXT PRIMARY KEY REFERENCES tasks(task_id) ON DELETE CASCADE,
+        outline_json TEXT NOT NULL,
+        artifact_path TEXT NOT NULL,
+        revision INTEGER NOT NULL CHECK(revision >= 1),
+        created_at REAL NOT NULL,
+        updated_at REAL NOT NULL
+    );""",
+    "CREATE INDEX IF NOT EXISTS idx_interview_plan_outlines_artifact ON interview_plan_outlines(artifact_path);",
+    """CREATE TABLE IF NOT EXISTS done_closeout_decisions (
+        closeout_decision_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        task_id TEXT NOT NULL REFERENCES tasks(task_id) ON DELETE CASCADE,
+        source_occupancy_transition_id INTEGER NOT NULL REFERENCES task_transitions(transition_id),
+        question_id TEXT NOT NULL,
+        answer TEXT NOT NULL,
+        actor TEXT NOT NULL CHECK(actor = 'human'),
+        recorded_at REAL NOT NULL,
+        UNIQUE(task_id, source_occupancy_transition_id, question_id)
+    );""",
+    "CREATE INDEX IF NOT EXISTS idx_done_closeout_decisions_lookup ON done_closeout_decisions(task_id, source_occupancy_transition_id);",
     # Migration: add task_type column if not present (for existing DBs)
     "ALTER TABLE tasks ADD COLUMN task_type TEXT NOT NULL DEFAULT 'GENERAL' CHECK (task_type IN ('GENERAL', 'EVOLUTION'));",
     # Migration: add transition_decisions table if not present (v4)
@@ -838,6 +904,14 @@ class SqlitePersistenceAdapter(PersistencePort):
                     UPDATE tasks SET state = OLD.state, updated_at = OLD.updated_at WHERE task_id = NEW.task_id;
                 END;
             """)
+            # Recreate the trigger from the canonical schema so recovery approvals
+            # are honored after a schema rebuild as well as on a fresh database.
+            conn.execute("DROP TRIGGER IF EXISTS enforce_valid_transition;")
+            recovery_trigger = next(
+                statement for statement in _split_schema_sql_statements(SCHEMA_SQL)
+                if "CREATE TRIGGER IF NOT EXISTS enforce_valid_transition" in statement
+            )
+            conn.execute(recovery_trigger)
             conn.execute("""
                 CREATE TRIGGER IF NOT EXISTS enforce_valid_initial_state
                 AFTER INSERT ON tasks
@@ -982,6 +1056,56 @@ class SqlitePersistenceAdapter(PersistencePort):
         except Exception:
             conn.rollback()
             raise
+        finally:
+            conn.close()
+
+    def upsert_interview_plan_outline(
+        self, task_id: str, bullets: List[Dict[str, Any]], artifact_path: str
+    ) -> int:
+        """Persist one canonical, revisioned interview outline for a task."""
+        self.ensure_schema()
+        conn = self.get_connection()
+        try:
+            now = self._clock.current_time()
+            encoded = json.dumps(bullets, ensure_ascii=False, sort_keys=True)
+            with conn:
+                row = conn.execute(
+                    "SELECT revision FROM interview_plan_outlines WHERE task_id = ?",
+                    (task_id,),
+                ).fetchone()
+                revision = int(row[0]) + 1 if row else 1
+                conn.execute(
+                    """
+                    INSERT INTO interview_plan_outlines (
+                        task_id, outline_json, artifact_path, revision, created_at, updated_at
+                    ) VALUES (?, ?, ?, ?, ?, ?)
+                    ON CONFLICT(task_id) DO UPDATE SET
+                        outline_json = excluded.outline_json,
+                        artifact_path = excluded.artifact_path,
+                        revision = excluded.revision,
+                        updated_at = excluded.updated_at
+                    """,
+                    (task_id, encoded, artifact_path, revision, now, now),
+                )
+            return revision
+        finally:
+            conn.close()
+
+    def get_interview_plan_outline(self, task_id: str) -> Optional[Dict[str, Any]]:
+        """Retrieve the canonical interview outline and decoded bullet list."""
+        self.ensure_schema()
+        conn = self.get_connection()
+        try:
+            row = conn.execute(
+                "SELECT task_id, outline_json, artifact_path, revision, created_at, updated_at "
+                "FROM interview_plan_outlines WHERE task_id = ?",
+                (task_id,),
+            ).fetchone()
+            if row is None:
+                return None
+            result = dict(row)
+            result["bullets"] = json.loads(result.pop("outline_json"))
+            return result
         finally:
             conn.close()
 
@@ -1504,6 +1628,62 @@ class SqlitePersistenceAdapter(PersistencePort):
         finally:
             conn.close()
 
+    def record_done_closeout_decision(
+        self, task_id: str, source_occupancy_transition_id: int, question_id: str,
+        answer: str, actor: str, recorded_at: float,
+    ) -> int:
+        """Persist one human decision for the post-DONE Git closeout gate."""
+        self.ensure_schema()
+        conn = self.get_connection()
+        try:
+            conn.execute("BEGIN IMMEDIATE;")
+            task = conn.execute(
+                "SELECT state FROM tasks WHERE task_id = ?", (task_id,)
+            ).fetchone()
+            if task is None:
+                raise ValueError(f"Task not found: {task_id}")
+            if task["state"] != "DONE":
+                raise PersistenceInvariantViolation(
+                    f"DONE closeout decisions require task '{task_id}' to be in DONE; "
+                    f"current state is '{task['state']}'."
+                )
+            latest = conn.execute(
+                "SELECT transition_id, to_state FROM task_transitions "
+                "WHERE task_id = ? ORDER BY transition_id DESC LIMIT 1",
+                (task_id,),
+            ).fetchone()
+            if latest is None or latest["transition_id"] != source_occupancy_transition_id or latest["to_state"] != "DONE":
+                raise PersistenceInvariantViolation(
+                    f"DONE closeout decision for '{task_id}' is stale; expected current DONE "
+                    f"occupancy {latest['transition_id'] if latest else None}."
+                )
+            cursor = conn.execute(
+                "INSERT INTO done_closeout_decisions "
+                "(task_id, source_occupancy_transition_id, question_id, answer, actor, recorded_at) "
+                "VALUES (?, ?, ?, ?, ?, ?)",
+                (task_id, source_occupancy_transition_id, question_id, answer, actor, recorded_at),
+            )
+            conn.commit()
+            return int(cursor.lastrowid)
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
+
+    def get_done_closeout_decisions(self, task_id: str) -> List[Dict[str, Any]]:
+        """Return post-DONE Git closeout decisions in recording order."""
+        self.ensure_schema()
+        conn = self.get_connection()
+        try:
+            rows = conn.execute(
+                "SELECT * FROM done_closeout_decisions WHERE task_id = ? "
+                "ORDER BY closeout_decision_id", (task_id,)
+            ).fetchall()
+            return [dict(row) for row in rows]
+        finally:
+            conn.close()
+
     def get_last_transition(
 
         self,
@@ -1685,8 +1865,26 @@ class SqlitePersistenceAdapter(PersistencePort):
                     "rejected by database trigger (violation logged in transition_violations)."
                 )
 
-            # Mark all staged decisions bound to new_trans_id consumed upon state change commit
+            # Bind previously recorded occupancy answers to the transition that consumes them.
             now = self._clock.current_time()
+            conn.execute(
+                """
+                UPDATE transition_decisions
+                SET bound_transition_id = ?
+                WHERE task_id = ?
+                  AND source_occupancy_transition_id = ?
+                  AND from_state = ?
+                  AND to_state = ?
+                  AND consumed_at IS NULL
+                  AND bound_transition_id IS NULL
+                """,
+                (
+                    new_trans_id, request.task_id,
+                    request.source_occupancy_transition_id,
+                    request.expected_from_state, request.to_state,
+                ),
+            )
+            # Mark all staged decisions bound to new_trans_id consumed upon state change commit
             conn.execute(
                 "UPDATE transition_decisions SET consumed_at = ? WHERE bound_transition_id = ?",
                 (now, new_trans_id)
@@ -1972,6 +2170,97 @@ class SqlitePersistenceAdapter(PersistencePort):
             decision_id = cursor.lastrowid
             conn.commit()
             return decision_id
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
+
+    def record_interview_answer(
+        self,
+        decision: TransitionDecision,
+        bullets: List[Dict[str, Any]],
+        artifact_path: str,
+    ) -> InterviewAnswerRecord:
+        """Atomically persist an interview decision and its outline projection."""
+        self.ensure_schema()
+        conn = self.get_connection()
+        try:
+            conn.execute("BEGIN IMMEDIATE;")
+            task_row = conn.execute(
+                "SELECT state FROM tasks WHERE task_id = ?", (decision.task_id,)
+            ).fetchone()
+            if not task_row:
+                raise ValueError(f"Task '{decision.task_id}' not found in tasks table.")
+            if task_row["state"] != decision.from_state:
+                raise ValueError(
+                    f"Interview answer requires current state '{decision.from_state}', "
+                    f"observed '{task_row['state']}'."
+                )
+            latest = conn.execute(
+                "SELECT transition_id, to_state, task_id FROM task_transitions "
+                "WHERE task_id = ? ORDER BY transition_id DESC LIMIT 1",
+                (decision.task_id,),
+            ).fetchone()
+            if (
+                not latest
+                or latest["transition_id"] != decision.source_occupancy_transition_id
+                or latest["task_id"] != decision.task_id
+                or latest["to_state"] != decision.from_state
+            ):
+                raise ValueError(
+                    "Interview answer occupancy is stale: "
+                    f"observed {latest['transition_id'] if latest else None}, "
+                    f"provided {decision.source_occupancy_transition_id}."
+                )
+            duplicate = conn.execute(
+                "SELECT 1 FROM transition_decisions "
+                "WHERE task_id = ? AND source_occupancy_transition_id = ? AND question_id = ?",
+                (decision.task_id, decision.source_occupancy_transition_id, decision.question_id),
+            ).fetchone()
+            if duplicate:
+                raise ValueError(
+                    f"Duplicate decision for question '{decision.question_id}' already recorded "
+                    f"in occupancy {decision.source_occupancy_transition_id} for task '{decision.task_id}'."
+                )
+
+            cursor = conn.execute(
+                """
+                INSERT INTO transition_decisions (
+                    task_id, source_occupancy_transition_id, from_state, to_state,
+                    question_id, answer, decision_type, actor, recorded_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    decision.task_id, decision.source_occupancy_transition_id,
+                    decision.from_state, decision.to_state, decision.question_id,
+                    decision.answer, decision.decision_type, decision.actor,
+                    decision.recorded_at,
+                ),
+            )
+            decision_id = int(cursor.lastrowid)
+            encoded = json.dumps(bullets, ensure_ascii=False, sort_keys=True)
+            row = conn.execute(
+                "SELECT revision FROM interview_plan_outlines WHERE task_id = ?",
+                (decision.task_id,),
+            ).fetchone()
+            revision = int(row["revision"]) + 1 if row else 1
+            now = self._clock.current_time()
+            conn.execute(
+                """
+                INSERT INTO interview_plan_outlines (
+                    task_id, outline_json, artifact_path, revision, created_at, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?)
+                ON CONFLICT(task_id) DO UPDATE SET
+                    outline_json = excluded.outline_json,
+                    artifact_path = excluded.artifact_path,
+                    revision = excluded.revision,
+                    updated_at = excluded.updated_at
+                """,
+                (decision.task_id, encoded, artifact_path, revision, now, now),
+            )
+            conn.commit()
+            return InterviewAnswerRecord(decision_id=decision_id, outline_revision=revision)
         except Exception:
             conn.rollback()
             raise

@@ -17,7 +17,7 @@ allowed-tools: Bash, Read, Write
 Acts as the universal front-door intake for non-trivial engineering tasks across all supported AI agent runtimes. Enforces Proposal Mode (strictly read-only) before code implementation:
 
 1. **Native-First Deferral:** Detects active host runtime capabilities and defers to native environments while strictly enforcing conversational cadence.
-2. **Socratic Pacing (ONE Question at a Time):** When interrogating requirements, the agent MUST ask only ONE question per turn with structured options and an explicit `[Recommended]` default. Never dump multiple questions simultaneously or answer on behalf of the user.
+2. **Intent-first Socratic Pacing (ONE Question at a Time):** When clarification is needed, ask only ONE high-value question per turn with a useful recommendation where a choice is required. Treat the YAML questions as an internal coverage checklist, not a script to follow literally. Adapt wording to the user's context; combine coverage when one answer resolves multiple areas; skip irrelevant questions with a recorded rationale; and add focused follow-ups when ambiguity or hidden scope appears. Never invent an answer, approval, or intent on the user's behalf.
 3. **Draft Spec & Implementation Plan Compilation:** Compiles the agreed requirements into a draft `TASK_SPEC.md` and `implementation_plan.md` in state `DRAFT_PLAN`.
 4. **Multi-Agent Review Stage Gate (User-Controlled):** After draft spec compilation, explicitly asks the user whether they want to generate an external review bundle (via `context-bundler`) for multi-model critique in browser, or skip directly to approval.
 
@@ -30,11 +30,35 @@ do not replace the questions for the state being entered.
 When entering a state:
 
 1. Load that state's `stages.<STATE>` contract before asking anything.
-2. Ask every `entry_questions` item in order, exactly one per turn.
-3. After each answer, evaluate matching `adaptive_follow_up_rules` and ask generated follow-ups
-   one at a time. Never invent an answer or silently skip a required question.
-4. Do not request the next transition until the state's `exit_requirements` are satisfied.
-5. Only then load the destination transition template and ask its `human_questions`.
+2. Identify which intent areas are already covered by the user's request, authorized
+   sources, or prior confirmed answers.
+3. Ask one question at a time only for the next unresolved or materially ambiguous
+   intent area. Rephrase, combine, skip as not applicable with a reason, or add a
+   focused follow-up when the context warrants it.
+4. Persist the coverage mapping: direct answer, combined answer, authorized source,
+   explicit not-applicable rationale, or adaptive follow-up. Preserve canonical IDs
+   for machine checks without forcing the user through redundant wording.
+5. Do not request the next transition until the required intent areas and all
+   transition-specific approval/authority gates are satisfied.
+6. Only then load the destination transition template and ask its human questions.
+
+### Interview plan outline
+
+Treat the interview like the outline stage of writing: capture concise,
+plan-ready bullets as the user and agent clarify the work. After each accepted
+answer, update the outline and show a compact summary or provide a link to the
+current outline when one exists. Persist the outline at
+`docs/plans/<task-id>-plan-outline.md` and provide that repository-relative
+clickable path when available. Use bullets for purpose, desired user outcome,
+scope boundaries, success evidence, constraints/authority, risks/open
+questions, and decisions. Do not make the user reconstruct the outline from
+the conversation.
+
+The outline is an input to the initial draft plan, not implementation approval.
+When interview coverage is complete, compile the draft plan from the outline,
+state what remains uncertain, and make the next review step explicit. The user
+reviews the draft plan separately; optional independent agent review happens
+after that user review and returns findings to plan convergence.
 
 ### Authorized source assistance
 
@@ -50,16 +74,19 @@ An accepted answer is an instruction to continue the pipeline, not the end of th
 each answer, immediately:
 
 1. Persist the answer through the supported transition mechanism.
-2. Complete the transition it authorizes.
-3. Load the destination state's stage contract and transition guidance.
-4. Ask the next YAML question, or execute/report the deterministic handoff when no question is
+2. Add or revise the corresponding plan-outline bullet(s), then show the concise updated outline
+   or its link.
+3. Complete the transition it authorizes.
+4. Load the destination state's stage contract and transition guidance.
+5. Ask the next YAML question, or execute/report the deterministic handoff when no question is
    required.
 
 Do not merely acknowledge an answer and wait for the user to say “continue.” If the answer does
 not authorize the requested edge, explain the valid next edges and ask the corresponding question.
 
-`TRIVIAL` selects a shorter transition path; it never skips the `INTERVIEW` entry questions or
-the complete `RETROSPECTIVE` survey. Record all answers, including adaptive follow-ups. The
+`TRIVIAL` selects a shorter transition path; it does not waive intent coverage or the complete
+`RETROSPECTIVE` survey. Record the coverage decision for each canonical intent area, including
+combined, not-applicable, and adaptive follow-up outcomes. The
 final `RETROSPECTIVE -> DONE` question is only a completion/skip decision after the survey has
 been captured.
 
@@ -173,8 +200,9 @@ On entering `INTERVIEW`, follow the stage-entry question contract. The first que
 the task as `TRIVIAL` or `STANDARD`; the remaining baseline and context-driven questions still
 apply to both paths.
 
-- **If STANDARD**: complete the adaptive interview, compile the spec and plan, and continue
-  through the standard review gates.
+- **If STANDARD**: complete the adaptive interview and its plan-ready outline, then hand that
+  outline to `DRAFT_PLAN`, where the full specification and implementation plan are compiled before
+  the standard review gates.
 - **If TRIVIAL**: complete the baseline interview and applicable evidence follow-up, then use
   the `INTERVIEW -> RETROSPECTIVE` transition. Do not fast-track directly from `INTAKE` to
   `DONE`; the retrospective remains mandatory.
@@ -182,8 +210,8 @@ apply to both paths.
   hatch. Detailed commands are in `references/detailed-reference.md`.
 
 ### 3. Transition to Draft Plan & Review Disposition Gate
-Compile the draft spec and plan using `write_plan_document.py`, then coordinate transition to
-`DRAFT_PLAN`. Enter `PLAN_REVIEW` and present the disposition gate:
+After the interview outline is complete, enter `DRAFT_PLAN` and compile the draft specification and
+plan using `write_plan_document.py`. Then enter `PLAN_REVIEW` and present the disposition gate:
 > *"The plan is drafted. Do you want additional independent review? Yes or no."*
 
 The implementation plan must also contain a machine-readable `## Implementation Task Ledger`

@@ -4,10 +4,13 @@ Status: DRAFT — protocol only. No live baseline is authorized or represented.
 
 ## Objective
 
-Run one bounded local Codex-wrapper task using a frozen sanitized fixture and
-produce evidence that distinguishes available measurements from unavailable ones.
-It tests instrumentation feasibility only; it does not prove productivity or a
-model/workflow comparison.
+Run one bounded local task to test whether the pipeline can guide a user through
+contract validation, gap resolution, informed confirmation, and the next legal
+transition without unnecessary friction. Use a frozen sanitized fixture and
+produce machine-readable evidence plus a plain-language summary. The evidence
+distinguishes available measurements from unavailable ones and exposes where
+the pipeline makes the user guess, repeats itself, or cannot recover cleanly.
+It does not prove productivity or a model/workflow comparison.
 
 ## Preconditions
 
@@ -32,7 +35,19 @@ retry, and provider/money bounds; this document does not invent them.
 5. Later authorized A21/A22/A23 reports record coverage, unavailable fields,
    timing, verification, and degradation honestly.
 
-Acceptance means retained observations support a report that lists coverage gaps;
+Acceptance means the retained observations support a report that lists contract
+coverage, validation results, evidence, user confirmation, and any friction or
+recovery gaps. Human acceptance is the final check for each transition summary;
+each transition must also demonstrate that the user was told the next question,
+action, or gate without having to guess it;
+after each user answer or authorized agent action, the run must either continue
+automatically or report a concrete blocker and recovery action; unexplained
+idle time requiring a user reminder is a failed baseline case;
+every user-facing response must state the current objective or phase, what just
+happened, and what happens next;
+the coverage manifest must record that continuity result and any friction;
+revisions must re-enter the governed pipeline and be revalidated rather than
+being applied as undocumented side-channel fixes;
 it does not accept/verify task output or complete a native-runtime comparison.
 
 ## Future native comparison

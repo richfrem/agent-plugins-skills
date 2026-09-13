@@ -45,3 +45,7 @@ def stage_interview_answers(
         conn.commit()
     finally:
         conn.close()
+
+    if cp.get_task(task_id)["state"] == "INTERVIEW":
+        for question_id in question_ids:
+            cp.update_interview_plan_outline(task_id, question_id, answers[question_id], actor="human")

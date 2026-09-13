@@ -2,10 +2,10 @@
   "_meta": {
     "source": "https://ai.google.dev/gemini-api/docs/models and https://ai.google.dev/gemini-api/docs/pricing (verified 2026-09-09)",
     "billing_model": "Google AI subscription / per-token via Antigravity",
-    "updated": "2026-09-09",
+    "updated": "2026-09-13",
     "notes": [
       "agy is the sole Gemini CLI since the standalone gemini binary retired June 18 2026.",
-      "Thinking level (Low/Medium/High) is an agy runtime selection for the same Gemini 3.8 Flash API model; Google exposes the API ID gemini-3.8-flash with tunable thinking_level.",
+      "The current agy model picker exposes Gemini 3.8 Flash, Gemini 3.7 Flash, Gemini 3.6 Flash, Gemini 3.1 Pro, Claude Sonnet 4.6 Thinking, Claude Opus 4.6 Thinking, and GPT-OSS 120B; effort is a separate Low/Medium/High control.",
       "Flash is designed for speed, coding, tool use, and agentic workflows. Pro is for deep reasoning.",
       "Flash is positioned for speed and agentic workflows; relative speed is not recorded without a measured benchmark.",
       "Flash with high thinking levels can inflate tokens via Thought Preservation \u2014 use Low for CLI dispatch.",
@@ -16,6 +16,44 @@
     "schema_version": 2
   },
   "models": [
+    {
+      "display_name": "Gemini 3.7 Flash",
+      "cli_id": "gemini-3.7-flash",
+      "status": "available",
+      "pricing_usd_per_1m": {
+        "input": null,
+        "output": null,
+        "cached_input": null
+      },
+      "speed_relative": null,
+      "recommendation": "Available picker model; verify pricing before cost-sensitive dispatch",
+      "notes": "Current agy picker model. Effort is selected separately.",
+      "max_output_k": null,
+      "tool_support": {
+        "prompt": true,
+        "tools": "runtime_dependent"
+      },
+      "context_window_k": null
+    },
+    {
+      "display_name": "Gemini 3.6 Flash",
+      "cli_id": "gemini-3.6-flash",
+      "status": "available",
+      "pricing_usd_per_1m": {
+        "input": null,
+        "output": null,
+        "cached_input": null
+      },
+      "speed_relative": null,
+      "recommendation": "Available picker model; verify pricing before cost-sensitive dispatch",
+      "notes": "Current agy picker model. Effort is selected separately.",
+      "max_output_k": null,
+      "tool_support": {
+        "prompt": true,
+        "tools": "runtime_dependent"
+      },
+      "context_window_k": null
+    },
     {
       "display_name": "Gemini 3.8 Flash (Low)",
       "cli_id": "gemini-3.8-flash-low",
@@ -217,8 +255,8 @@
     ]
   },
   "strategy": {
-    "heartbeat": "gemini-3.8-flash-low",
-    "default": "gemini-3.8-flash-low",
+    "heartbeat": "gemini-3.8-flash",
+    "default": "gemini-3.8-flash",
     "reasoning": "gemini-3.1-pro",
     "architecture": "gemini-3.1-pro-high",
     "anthropic_quality": "claude-sonnet-4.6-thinking"
@@ -239,19 +277,8 @@
     ]
   },
   "capability_tiers": {
-    "low": [
-      "gemini-3.8-flash-low",
-      "gemini-3.8-flash"
-    ],
-    "medium": [
-      "gemini-3.8-flash-high",
-      "gemini-3.1-pro"
-    ],
-    "high": [
-      "gemini-3.1-pro-high",
-      "claude-sonnet-4.6-thinking",
-      "claude-opus-4.6-thinking",
-      "gpt-oss-120b"
-    ]
+    "low": ["gemini-3.8-flash", "gemini-3.7-flash", "gemini-3.6-flash"],
+    "medium": ["gemini-3.1-pro", "gpt-oss-120b"],
+    "high": ["claude-sonnet-4.6-thinking", "claude-opus-4.6-thinking"]
   }
 }

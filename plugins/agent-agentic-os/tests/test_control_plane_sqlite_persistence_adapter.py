@@ -56,7 +56,7 @@ def test_adapter_ensure_schema_creates_all_tables(tmp_path):
     tables = {row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table';").fetchall()}
     for expected in ("tasks", "task_transitions", "locked_verifier_baselines",
                      "critic_reviews", "verification_receipts", "asymmetric_persistence_log",
-                     "schema_version"):
+                     "done_closeout_decisions", "schema_version"):
         assert expected in tables
 
     version = conn.execute("SELECT version FROM schema_version").fetchone()[0]

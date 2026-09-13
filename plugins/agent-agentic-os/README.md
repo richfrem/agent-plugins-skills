@@ -1,16 +1,18 @@
-# Agent Harness & Learning Layer
+# Agentic OS Control Plane
 
-Persistent memory and continuous self-improvement for long-horizon AI agent workflows.
-Structured memory survives and scales across hundreds of sessions; an eval-gated improvement
-loop evolves your skills and agents automatically — no subjective "mental" testing.
+Agentic OS is a governed execution control plane for long-horizon AI agent workflows. It records
+task state, human decisions, transition evidence, verification receipts, worktree status, and
+retrospective learning in a local, portable runtime.
 
-Runs in Claude Code but orchestrates across whatever AI environments you have available:
-Copilot CLI (free GPT-4o-mini tier), Gemini CLI, Cursor — using the cheapest model for
-brainstorming and the right model for each job. A discipline layer, not a replacement.
+It works around the host agent rather than replacing it: native planning, coding, delegation, and
+test capabilities remain available while Agentic OS supplies the boundaries and evidence needed
+for reliable execution.
 
 > **Scope:** Designed and tested primarily with Claude Code on macOS/Linux, but the
 > delegation layer works with any CLI-accessible AI. File-system only, no external services.
-> See [SUMMARY.md](./SUMMARY.md) for scope, known limitations, and enterprise roadmap.
+> See [SUMMARY.md](./SUMMARY.md) for architecture and limits. See the
+> [Superpowers boundary and attribution](./references/superpowers-boundary-and-attribution.md)
+> for the optional relationship to `obra/superpowers`.
 
 ---
 
@@ -225,12 +227,31 @@ gated by objective evaluation — outperforms hand-designed harnesses across ben
 
 ---
 
+## Governed task lifecycle
+
+The normal path is:
+
+```text
+Intake → Interview → Draft plan → Plan review / optional independent review
+→ Human approval → Worktree implementation → Code review / recorded skip
+→ Verification → Retrospective → Done
+```
+
+The interview captures plan-ready bullets and maintains a plan-outline artifact before the draft
+plan is written. Every legal transition is checked against its contract and persisted in SQLite.
+When evidence is incomplete, the task returns to the state that can repair the gap rather than
+silently bypassing the gate.
+
+The control plane is native to this plugin. Superpowers is optional; the exact boundary and
+attribution are documented in [the companion reference](./references/superpowers-boundary-and-attribution.md).
+
 ## References
 
 | Document | Contents |
 |---------|---------|
 | [USAGE.md](./USAGE.md) | Day-to-day workflow, experiment log close steps, append commands |
 | [SUMMARY.md](./SUMMARY.md) | Full architecture, OS analogy, three-tier lazy loading, scope and limitations |
+| [references/superpowers-boundary-and-attribution.md](./references/superpowers-boundary-and-attribution.md) | Runtime boundary, optional fallback conditions, adapted practices, and attribution |
 | [references/architecture/](./references/architecture/) | Canonical file structure, CLAUDE.md hierarchy, context folder patterns |
 | [references/operations/](./references/operations/) | Triple-loop strategy, operating protocols, loop scheduler, skill optimization guide |
 | [references/memory/](./references/memory/) | Memory specs, hygiene guide, promotion guide, metrics |

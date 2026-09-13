@@ -1,6 +1,6 @@
-# Agentic OS — Operational Guide & Usage
+# Agentic OS — Control-Plane Usage Guide
 
-> While the architectural blueprints define the *Why* (the control-plane guarantees, state machines, and learning invariants), this document dictates the *How*. It maps out how a human or external caller interacts with the system to start the full improvement lifecycle.
+> The architectural references define the *Why* (control-plane guarantees, state machines, and learning invariants); this guide describes the *How* for a governed task from intake through retrospective.
 
 ---
 
@@ -14,7 +14,7 @@ The practical entry point for any evolution activity is:
 /os-architect
 ```
 
-Describe what you want in plain language. The os-architect agent classifies your intent into one of 5 categories, audits what capabilities already exist, proposes the right evolution path (orchestrate existing / update existing / create new), and dispatches implementation work via your available CLI tools. You do not need to know which sub-agent to invoke, whether a capability exists, or how to configure a run.
+Describe what you want in plain language. The os-architect agent classifies your intent, audits existing capabilities, proposes an evolution path, and keeps the work inside the control-plane lifecycle. You do not need to know which internal state, contract, or helper to invoke.
 
 **Intent categories os-architect handles:**
 1. Pattern Abstraction — applying a new way of working to existing skills/agents
@@ -30,12 +30,6 @@ For users who know exactly what they want, sub-agents can be invoked directly:
 ```bash
 # Configure a skill improvement run directly
 # → improvement-intake-agent
-
-# Set up a full triple-loop eval lab
-# → triple-loop-architect agent
-
-# Run unattended overnight iterations
-# → triple-loop-orchestrator agent
 
 # Verify that os-architect actually caused evolution (post-run)
 # → os-evolution-verifier skill
@@ -95,23 +89,20 @@ python3 plugins/agent-agentic-os/scripts/experiment_log.py query FAIL
 
 ---
 
-## 3. The Skill as the Unit of Work (Lifecycle)
+## 3. The Task as the Unit of Work (Lifecycle)
 
-The "Skill" is the atomic unit the improvement lifecycle operates on. It is the durable knowledge artifact that a run both consumes as prior context, and produces as output.
+The governed task is the unit of work. A skill-improvement run is one kind of task, not the control
+plane's only lifecycle:
 
-The lifecycle for a single submitted skill run is entirely governed by the State Machine:
+1. **Intake:** register the task and classify its scope.
+2. **Interview:** gather intent, constraints, acceptance criteria, verification, and plan-ready bullets.
+3. **Draft plan:** write and persist the plan-outline-backed draft.
+4. **Plan review and approval:** record review outcomes and obtain human approval before implementation.
+5. **Implementation:** work in the governed worktree and record the implementation ledger.
+6. **Verification:** collect deterministic receipts and check completeness.
+7. **Retrospective:** record friction, map debt, follow-ups, and the improvement decision before `DONE`.
 
-1. **Submission:** `submit(skill, hypothesis)`
-2. **Start:** Kernel acquires lease → State: `RUNNING`
-3. **Execution:** `os-eval-runner` executes the hypothesis against the skill.
-4. **[Success Path]** → State: `VALIDATING`
-    - `os-eval-backport` executes clean-room isolation + cross-persona validation check.
-    - If validated → State: `PROMOTING`
-    - Skill updated in target directory → State: `RUNNING/IDLE`
-5. **[Failure Path]** → State: `CIRCUIT_BREAK`
-    - **Invariant 6 enforces learning:** The agent natively outputs a `write-gotcha` or a new handler skill artifact.
-    - The search space is mutated (e.g., *invert assumption*).
-    - State: `RECOVERY` → `RUNNING` (system automatically retries with the new mutated hypothesis).
+If a contract fails, the transition is rejected and the task returns to the state that can repair the missing evidence.
 
 ---
 
@@ -131,10 +122,12 @@ On initial installation (before any agent-discovered skills or gotchas have accu
 
 ## 5. Day-to-Day Operation Summary
 
-**Step 1:** Start with `/os-architect` — describe what you want to evolve.
-**Step 2:** Approve the proposed path (A / B / C) and dispatch via Copilot CLI.
-**Step 3:** After dispatch completes, run `os-evolution-verifier` to confirm artifacts were created.
-**Step 4:** Run `os-experiment-log append` to persist the results before `temp/` is cleared.
-**Step 5:** Check `context/experiment-log/index.md` — numeric entries feed os-improvement-report charting; qualitative entries feed the next os-architect session's gap analysis.
+**Step 1:** Start with `/os-architect` or `interview-spec` and describe the desired outcome.
+**Step 2:** Answer the adaptive interview; after each answer, the agent updates the visible plan outline and asks the next necessary question.
+**Step 3:** Review the draft plan and any independent review results; approve before implementation.
+**Step 4:** Implement in the governed worktree, recording evidence as work proceeds.
+**Step 5:** Run verification and retrospective gates; unresolved friction becomes a follow-up or mapped debt item.
+
+The control plane may use native host planning and testing. Superpowers is an optional fallback, not a required installation. See [the boundary and attribution reference](./references/superpowers-boundary-and-attribution.md).
 
 > **TL;DR:** Start with `/os-architect`. End with `os-experiment-log append`. Everything in between is logged, gated, and traceable.

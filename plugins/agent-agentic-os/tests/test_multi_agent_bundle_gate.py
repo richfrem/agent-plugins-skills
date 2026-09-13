@@ -44,7 +44,7 @@ def test_full_intake_to_approval_lifecycle(tmp_path, monkeypatch):
     from control_plane.coordinator import TransitionCoordinator
     from control_plane.registry import TransitionRegistry
     reg = TransitionRegistry.load_default()
-    inputs = iter(["2", "5", "1"])  # request review, external bundle, accept plan
+    inputs = iter(["1", "1", "4", "1"])  # submit, request review, external bundle, accept
     coord = TransitionCoordinator(control_plane=cp, registry=reg, input_fn=lambda prompt: next(inputs))
     monkeypatch.setattr(coord, "_resolve_repo_root", lambda: tmp_path)
     coord.coordinate_transition(

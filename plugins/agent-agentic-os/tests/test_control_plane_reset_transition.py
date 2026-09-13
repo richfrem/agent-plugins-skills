@@ -301,6 +301,9 @@ def test_reset_then_walk_forward_unblocks_hooks(control_plane):
         {"decision": "skip", "completion_mode": "skipped", "actor": "human", "skip_reason": "re-verified typo"},
         [],
     )
+    control_plane.record_verification_receipt(
+        task_id, "full_test_suite", "pytest -q (test fixture receipt)", 0
+    )
     coord3 = TransitionCoordinator(control_plane=control_plane, input_fn=lambda prompt: "skip")
     coord3.coordinate_transition(
         task_id=task_id, to_state="DONE", actor="human", reason="Retrospective skipped", interactive=True,

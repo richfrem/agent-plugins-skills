@@ -134,6 +134,94 @@ def test_unavailable_provider_profile_remains_ready_but_is_not_authorized(tmp_pa
     assert result.profile["providers"]["codex"]["available"] is False
 
 
+def test_installed_provider_without_subscription_is_recorded_but_unavailable(tmp_path):
+    path = _write_profile(
+        tmp_path,
+        {
+            "schema_version": 1,
+            "providers": {
+                "codex": {
+                    "installed": True,
+                    "access_confirmed": False,
+                    "access_status": "no_subscription",
+                    "project_authorized": False,
+                    "available": False,
+                }
+            },
+            "constraints": {},
+            "fallback_order": [],
+            "source": "project-setup-user-confirmed",
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        },
+    )
+
+    result = load_profile(path)
+
+    assert result.status is ProfileStatus.READY
+    provider = result.profile["providers"]["codex"]
+    assert provider["installed"] is True
+    assert provider["access_confirmed"] is False
+    assert provider["access_status"] == "no_subscription"
+    assert provider["project_authorized"] is False
+    assert provider["available"] is False
+
+
+def test_subscribed_provider_without_project_authorization_is_unavailable(tmp_path):
+    path = _write_profile(
+        tmp_path,
+        {
+            "schema_version": 1,
+            "providers": {
+                "copilot": {
+                    "installed": True,
+                    "access_confirmed": True,
+                    "access_status": "confirmed",
+                    "project_authorized": False,
+                    "available": False,
+                }
+            },
+            "constraints": {},
+            "fallback_order": [],
+            "source": "project-setup-user-confirmed",
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        },
+    )
+
+    result = load_profile(path)
+
+    assert result.status is ProfileStatus.READY
+    provider = result.profile["providers"]["copilot"]
+    assert provider["access_confirmed"] is True
+    assert provider["project_authorized"] is False
+    assert provider["available"] is False
+
+
+def test_provider_access_status_must_use_known_non_secret_state(tmp_path):
+    path = _write_profile(
+        tmp_path,
+        {
+            "schema_version": 1,
+            "providers": {
+                "codex": {
+                    "installed": True,
+                    "access_confirmed": True,
+                    "access_status": "secret_token_value",
+                    "available": True,
+                }
+            },
+            "constraints": {},
+            "fallback_order": ["codex"],
+            "source": "project-setup-user-confirmed",
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        },
+    )
+
+    result = load_profile(path)
+
+    assert result.status is ProfileStatus.INVALID
+    assert any("access_status" in error for error in result.errors)
+
+
 def test_profile_is_stale_when_schema_or_catalog_snapshot_changes(tmp_path):
     path = _write_profile(
         tmp_path,

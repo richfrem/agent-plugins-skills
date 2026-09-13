@@ -81,6 +81,12 @@ import time
 import webbrowser
 from pathlib import Path
 
+# The report builder is shared by the plugin's script hub. Add that hub to the
+# import path so this direct CLI entry point works from any current directory.
+_PLUGIN_SCRIPTS_DIR = Path(__file__).resolve().parent.parent
+if str(_PLUGIN_SCRIPTS_DIR) not in sys.path:
+    sys.path.insert(0, str(_PLUGIN_SCRIPTS_DIR))
+
 from generate_report import generate_html
 from improve_description import improve_description
 from run_eval import find_project_root, run_eval

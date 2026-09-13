@@ -74,6 +74,7 @@ def test_run_containerized_splits_mounts(monkeypatch):
     the actual container launch, so we search all captured calls for the volume mount args.
     """
     calls = []
+    monkeypatch.setattr(SR, "_detect_container_runtime", lambda: "docker")
     monkeypatch.setattr(subprocess, "Popen", lambda cmd, **kw: calls.append(cmd) or
                         type("P", (), {"communicate": lambda s, **k: (b"", b""),
                                        "returncode": 0, "poll": lambda s: 0})())

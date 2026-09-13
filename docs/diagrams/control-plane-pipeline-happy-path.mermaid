@@ -1,17 +1,17 @@
 stateDiagram-v2
-    state "Step 1: Intake — task registered" as INTAKE
-    state "Step 2: Interview — baseline and adaptive questions" as INTERVIEW
-    state "Step 3: Draft plan authored" as DRAFT_PLAN
-    state "Step 4: Plan disposition & acceptance gate" as PLAN_REVIEW
-    state "Step 5: Independent plan review — 1 or N rounds" as MULTI_AGENT_REVIEW
-    state "Step 6: Awaiting your approval" as AWAITING_APPROVAL
-    state "Step 7: Approved — you said go" as APPROVED
-    state "Step 8: Implementation (isolated worktree)" as IN_WORKTREE
-    state "Step 9: Here's what changed — initial review" as WORKTREE_REVIEW
-    state "Step 10: Multi-agent code review — 1 or N rounds" as MULTI_AGENT_CODE_REVIEW
-    state "Step 11: Verifying (tests, checks)" as VERIFY_EXIT
-    state "Step 12: Retrospective — survey questions" as RETROSPECTIVE
-    state "Step 13: Done" as DONE
+    state "Step 1: Intake — task registered [INTAKE]" as INTAKE
+    state "Step 2: Interview — baseline and adaptive questions [INTERVIEW]" as INTERVIEW
+    state "Step 3: Draft plan authored [DRAFT_PLAN]" as DRAFT_PLAN
+    state "Step 4: Plan disposition & acceptance gate [PLAN_REVIEW]" as PLAN_REVIEW
+    state "Step 5: Independent plan review — 1 or N rounds [MULTI_AGENT_REVIEW]" as MULTI_AGENT_REVIEW
+    state "Step 6: Awaiting your approval [AWAITING_APPROVAL]" as AWAITING_APPROVAL
+    state "Step 7: Approved — you said go [APPROVED]" as APPROVED
+    state "Step 8: Implementation (isolated worktree) [IN_WORKTREE]" as IN_WORKTREE
+    state "Step 9: Here's what changed — initial review [WORKTREE_REVIEW]" as WORKTREE_REVIEW
+    state "Step 10: Multi-agent code review — 1 or N rounds [MULTI_AGENT_CODE_REVIEW]" as MULTI_AGENT_CODE_REVIEW
+    state "Step 11: Verifying (tests, checks) [VERIFY_EXIT]" as VERIFY_EXIT
+    state "Step 12: Retrospective — survey questions [RETROSPECTIVE]" as RETROSPECTIVE
+    state "Step 13: Done [DONE]" as DONE
 
     [*] --> INTAKE
     INTAKE --> INTERVIEW
@@ -26,11 +26,13 @@ stateDiagram-v2
     AWAITING_APPROVAL --> APPROVED : you say Proceed / Go<br/>(mandatory gate)
     APPROVED --> IN_WORKTREE
     APPROVED --> RETROSPECTIVE : approved plan — human skips implementation
-    IN_WORKTREE --> WORKTREE_REVIEW : implementation + tests done
-    WORKTREE_REVIEW --> MULTI_AGENT_CODE_REVIEW : you say yes to AI code review
+    IN_WORKTREE --> WORKTREE_REVIEW : implementation + focused tests + inventory done
+    WORKTREE_REVIEW --> MULTI_AGENT_CODE_REVIEW : you say yes<br/>then choose method/runtime/model/effort
     WORKTREE_REVIEW --> VERIFY_EXIT : you say no — skip straight ahead
-    MULTI_AGENT_CODE_REVIEW --> VERIFY_EXIT : review passed
-    VERIFY_EXIT --> RETROSPECTIVE : all checks passed
+    MULTI_AGENT_CODE_REVIEW --> WORKTREE_REVIEW : review package ready for re-submission
+    MULTI_AGENT_CODE_REVIEW --> IN_WORKTREE : bounded changes<br/>synthesis + human approval
+    MULTI_AGENT_CODE_REVIEW --> VERIFY_EXIT : review passed or explicitly skipped
+    VERIFY_EXIT --> RETROSPECTIVE : ledger + full/task tests + leak check + map-debt pass
     RETROSPECTIVE --> DONE : survey complete or explicitly skipped<br/>with reason
     INTAKE --> DONE : force close — interactive human authorization<br/>(available from any active state)
     DONE --> [*]
@@ -41,7 +43,8 @@ stateDiagram-v2
     end note
 
     note right of IN_WORKTREE
-        Implementation dispatch, review, and bounded
-        fixes continue under controller ownership;
-        the pipeline resumes at exit verification.
+        Implementation dispatch, review, synthesis, and
+        bounded fixes continue under controller ownership.
+        Rework returns through IN_WORKTREE and review;
+        no commit, push, or merge is implied.
     end note

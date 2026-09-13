@@ -2,12 +2,11 @@
   "_meta": {
     "source": "https://developers.openai.com/api/docs/models (verified 2026-09-09)",
     "billing_model": "Per-token (direct OpenAI API via codex CLI)",
-    "updated": "2026-09-09",
+    "updated": "2026-09-13",
     "notes": [
       "codex CLI routes to OpenAI-compatible endpoints.",
-      "GPT-5 and GPT-5-mini are no longer actively listed in OpenAI primary catalog as of July 2026 \u2014 superseded by GPT-5.6 family.",
-      "GPT-5.3-Codex is the dedicated code-focused model, tuned for agentic coding and long code sessions.",
-      "GPT-5.4 family (nano/mini/full) remains available and is the cost-efficient mid tier.",
+      "Codex CLI's current interactive model picker exposes GPT-6 Astra, GPT-5.6 Luna/Terra/Sol, and GPT-5.5.",
+      "Older IDs remain in the catalog as withdrawn history and are excluded from capability tiers.",
       "GPT-6 Astra is the current highest-capability model; GPT-5.6 Luna/Terra/Sol provide low-cost, balanced, and flagship choices.",
       "Batch API offers ~50% discount on standard rates \u2014 not reflected here (standard rates only).",
       "Model IDs match the --model flag passed to the codex CLI binary."
@@ -40,7 +39,8 @@
       "display_name": "GPT-5.4 nano",
       "cli_id": "gpt-5.4-nano",
       "provider": "OpenAI",
-      "status": "GA",
+      "status": "withdrawn",
+      "available": false,
       "category": "Lightweight",
       "context_window_k": null,
       "pricing_usd_per_1m": {
@@ -50,7 +50,7 @@
         "output": 1.25
       },
       "recommendation": "cheapest",
-      "notes": "Cheapest OpenAI model available. Use for heartbeats, health checks, high-frequency bounded tasks.",
+      "notes": "Withdrawn from the current Codex interactive model picker; retained for catalog history.",
       "max_output_k": null,
       "tool_support": {
         "prompt": true,
@@ -61,7 +61,8 @@
       "display_name": "GPT-5 mini",
       "cli_id": "gpt-5-mini",
       "provider": "OpenAI",
-      "status": "GA",
+      "status": "withdrawn",
+      "available": false,
       "category": "Lightweight",
       "context_window_k": null,
       "pricing_usd_per_1m": {
@@ -71,7 +72,7 @@
         "output": 2.0
       },
       "recommendation": "cheapest",
-      "notes": "Slightly pricier than gpt-5.4-nano but better quality. Good default for routine codex tasks.",
+      "notes": "Withdrawn from the current Codex interactive model picker; retained for catalog history.",
       "max_output_k": null,
       "tool_support": {
         "prompt": true,
@@ -82,7 +83,8 @@
       "display_name": "GPT-5.4 mini",
       "cli_id": "gpt-5.4-mini",
       "provider": "OpenAI",
-      "status": "GA",
+      "status": "withdrawn",
+      "available": false,
       "category": "Lightweight",
       "context_window_k": null,
       "pricing_usd_per_1m": {
@@ -92,7 +94,7 @@
         "output": 4.5
       },
       "recommendation": "moderate",
-      "notes": "Mid-tier lightweight. Higher quality than gpt-5-mini at 3x the input cost.",
+      "notes": "Withdrawn from the current Codex interactive model picker; retained for catalog history.",
       "max_output_k": null,
       "tool_support": {
         "prompt": true,
@@ -103,7 +105,8 @@
       "display_name": "GPT-5.3 Codex",
       "cli_id": "gpt-5.3-codex",
       "provider": "OpenAI",
-      "status": "GA",
+      "status": "withdrawn",
+      "available": false,
       "category": "Versatile",
       "context_window_k": null,
       "pricing_usd_per_1m": {
@@ -113,7 +116,7 @@
         "output": 14.0
       },
       "recommendation": "code_analysis",
-      "notes": "Dedicated code model. Tuned for agentic coding and long code sessions. Best OpenAI option for complex code transformation.",
+      "notes": "Withdrawn from the current Codex interactive model picker; retained for catalog history.",
       "max_output_k": null,
       "tool_support": {
         "prompt": true,
@@ -124,7 +127,8 @@
       "display_name": "GPT-5.4",
       "cli_id": "gpt-5.4",
       "provider": "OpenAI",
-      "status": "GA",
+      "status": "withdrawn",
+      "available": false,
       "category": "Versatile",
       "context_window_k": 272,
       "pricing_usd_per_1m": {
@@ -141,7 +145,7 @@
         "threshold_note": "Long context tier kicks in >272K input tokens"
       },
       "recommendation": "high",
-      "notes": "Versatile mid-high tier. Long context tier doubles input cost above 272K tokens.",
+      "notes": "Withdrawn from the current Codex interactive model picker; retained for catalog history.",
       "max_output_k": null,
       "tool_support": {
         "prompt": true,
@@ -255,22 +259,10 @@
     }
   ],
   "cost_tiers": {
-    "cheapest": [
-      "gpt-5.6-luna",
-      "gpt-5.4-nano",
-      "gpt-5-mini"
-    ],
-    "low": [
-      "gpt-5.4-mini"
-    ],
-    "moderate": [
-      "gpt-5.3-codex",
-      "gpt-5.6-terra"
-    ],
-    "high": [
-      "gpt-5.4",
-      "gpt-5.6-sol"
-    ],
+    "cheapest": ["gpt-5.6-luna"],
+    "low": ["gpt-5.6-luna"],
+    "moderate": ["gpt-5.6-terra"],
+    "high": ["gpt-5.6-sol", "gpt-6-astra"],
     "very_high": [
       "gpt-5.5",
       "gpt-6-astra"
@@ -279,11 +271,10 @@
   "strategy": {
     "heartbeat": "gpt-5.6-luna",
     "default": "gpt-5.6-luna",
-    "code_analysis": "gpt-5.3-codex",
+    "code_analysis": "gpt-5.6-terra",
     "complex_reasoning": "gpt-6-astra",
     "long_context": "gpt-5.6-luna, gpt-5.6-terra, or gpt-5.6-sol (1.05M context)",
     "avoid": [
-      "gpt-5.5 (superseded by GPT-5.6 family)",
       "gpt-5.6-sol for routine tasks"
     ]
   },
@@ -303,21 +294,8 @@
     ]
   },
   "capability_tiers": {
-    "low": [
-      "gpt-5.6-luna",
-      "gpt-5.4-nano",
-      "gpt-5-mini",
-      "gpt-5.4-mini"
-    ],
-    "medium": [
-      "gpt-5.3-codex",
-      "gpt-5.6-terra"
-    ],
-    "high": [
-      "gpt-6-astra",
-      "gpt-5.4",
-      "gpt-5.5",
-      "gpt-5.6-sol"
-    ]
+    "low": ["gpt-5.6-luna"],
+    "medium": ["gpt-5.6-terra"],
+    "high": ["gpt-5.5", "gpt-5.6-sol", "gpt-6-astra"]
   }
 }

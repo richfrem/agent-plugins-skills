@@ -86,3 +86,12 @@ class StateMachine:
             raise InvalidStateTransition(
                 f"Cannot transition task '{task_id}' from '{current_state}' to '{to_state}'. Allowed: {allowed}"
             )
+
+    def validate_recovery_target(self, task_id: str, current_state: str, to_state: str) -> None:
+        """Validate a human-authorized recovery target without changing the normal DAG."""
+        self.validate_known_state(current_state)
+        self.validate_known_state(to_state)
+        if current_state == to_state:
+            raise InvalidStateTransition(
+                f"Recovery target for task '{task_id}' must differ from '{current_state}'."
+            )

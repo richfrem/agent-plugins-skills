@@ -2,6 +2,123 @@
 
 Persistent tracking of architectural friction, structural anomalies, and unclosed loops across sessions.
 
+## DEBT-20260913-GIT-GUARD-RECOVERY-EDGE
+
+- Logged date: 2026-09-13
+- Cycle/Session ID: p0-live-baseline-20260912
+- Artifact affected: `plugins/agent-agentic-os/scripts/pre-commit-pipeline-guard` and `pre-push-review-guard`
+- Friction observed: Git guards treated a human-approved recovery transition such as `DONE -> IN_WORKTREE` as an illegal normal-DAG edge and blocked commit/push despite the persisted recovery approval.
+- Why not fixed now: Fixed in scope by validating the exact transition ID against a consumed human recovery-approval receipt; ordinary unapproved non-DAG edges remain blocked.
+- Recommended fix: Keep guard tests paired with every future human-recovery schema or lifecycle change.
+- Evidence/repro: The live task had recovery approval bound to transition 217; the original commit gate rejected it. The new exact-receipt regression test passes for both pre-commit and pre-push guards.
+- Severity: M
+- Repeat: NO
+- Status: RESOLVED
+
+## DEBT-20260912-OS-INIT-INSTALL
+
+- Logged date: 2026-09-12
+- Cycle/Session ID: p0-live-baseline-20260912
+- Artifact affected: `.agents/skills/os-init/SKILL.md`
+- Friction observed: The live skill loader reported the installed `os-init` skill as missing even though the canonical source file existed.
+- Why not fixed now: Fixed in scope by reinstalling `agent-agentic-os` and verifying the installed file against the canonical source.
+- Recommended fix: If the warning recurs, inspect the plugin install transaction and manifest before editing skill content.
+- Evidence/repro: `plugins/agent-agentic-os/skills/os-init/SKILL.md` and `.agents/skills/os-init/SKILL.md` both exist at 7,860 bytes and compare identical after reinstall; source/plugin audits pass.
+- Severity: S
+- Repeat: NO
+- Status: RESOLVED
+
+## DEBT-20260912-PLAN-EFFORT-PERSISTENCE
+
+- Logged date: 2026-09-12
+- Cycle/Session ID: p0-live-baseline-20260912
+- Artifact affected: `context/control_plane.db` task planning metadata
+- Friction observed: The approved planning choice is `gpt-5.6-luna` at high effort, but the current `tasks` schema stores `model_tier` and `model_id` only; exact effort is preserved in the interview decision and scoped premium-consent row rather than in task metadata.
+- Why not fixed now: This turn is planning-only; adding or migrating task metadata would be implementation work and could widen the P00 slice before review.
+- Recommended fix: During the bounded P00 implementation preflight, decide whether a minimal stage-scoped planning model/effort receipt is required for truthful status reporting. Add it only with a focused migration and persistence test; do not build a general model-routing schema.
+- Evidence/repro: `agent_control.py status --task-id p0-live-baseline-20260912` reports `model_tier=medium`, `model_id=gpt-5.6-luna`; `transition_decisions` records `effort: high`; `premium_consents` records `stage=plan`, `round_id=round-1`, `model_id=gpt-5.6-luna`.
+- Severity: M
+- Repeat: NO
+- Status: OPEN
+
+## DEBT-20260912-REVIEW-MENU-CONTRACT
+
+- Logged date: 2026-09-12
+- Cycle/Session ID: p0-live-baseline-20260912
+- Artifact affected: `plugins/agent-agentic-os/scripts/control_plane/transition_templates.yaml` and focused transition-guidance tests
+- Friction observed: Review questions mixed revision, skip, and reviewer-method choices on transitions whose fixed destination could not honor every option. Plan review used a separate disposition question, while implementation review used a six-option mixed menu; several options therefore did not correspond to the edge target. The YAML correction exposed four focused tests still encoding the old question ID and mixed menus.
+- Why not fixed now: This turn was scoped to the YAML contract and live plugin reinstall; changing the runtime to route one question dynamically to multiple lifecycle states is a larger follow-up.
+- Recommended fix: Add explicit route-aware branching only if the control plane needs a single prompt to choose multiple destination states. Until then, keep edge questions target-specific and update the affected focused tests in the next bounded contract slice.
+- Evidence/repro: `test_transition_guidance.py` reported 4 failures after the YAML update; registry validation confirmed the corrected defaults and accepted answers are target-valid, and source/live YAML copies match.
+- Severity: M
+- Repeat: NO
+- Status: OPEN
+
+## DEBT-20260912-MULTI-AGENT-KICKOFF-SCHEMA
+
+- Logged date: 2026-09-12
+- Cycle/Session ID: p0-live-baseline-20260912
+- Artifact affected: `plugins/agent-agentic-os/scripts/control_plane/transition_templates.yaml` stage registry
+- Friction observed: The new `MULTI_AGENT_REVIEW` stage contract initially omitted the required `adaptive_follow_up_rules` field, so the authorized plan writer rejected both revised documents before writing them.
+- Why not fixed now: Fixed in scope by adding the required empty field, reinstalling the plugin, and retrying through the authorized writer.
+- Recommended fix: When adding a stage contract, validate it through the plan writer or registry schema before relying on the live transition path.
+- Evidence/repro: The first `write_plan_document.py` attempt returned `Stage 'MULTI_AGENT_REVIEW' missing required field 'adaptive_follow_up_rules'`; the retry wrote both documents after reinstall.
+- Severity: S
+- Repeat: NO
+- Status: RESOLVED
+
+## DEBT-20260912-PLAN-REVIEW-ROUND2
+
+- Logged date: 2026-09-12
+- Cycle/Session ID: p0-live-baseline-20260912
+- Artifact affected: `docs/plans/p0-live-baseline-20260912-spec.md`, `docs/plans/p0-live-baseline-20260912-implementation-plan.md`, and the `MULTI_AGENT_REVIEW` handoff
+- Friction observed: The second independent review found the draft still leaves answer-versus-transition transaction scope, exact API/output/receipt schemas, answer-to-edge semantics, artifact identity, and reviewer kickoff interfaces partly prose-level. The security review also identified existing wildcard force-close and approval/occupancy-binding risks that must not be silently treated as preserved boundaries.
+- Why not fixed now: Fixing runtime authorization or building an executable reviewer coordinator would expand beyond the current planning-only P00 package. The task was returned to `DRAFT_PLAN` with implementation and worktree capabilities still prohibited.
+- Recommended fix: Revise the plan to either define the remaining contracts with current source signatures and focused tests, or explicitly remove/defer the review-dispatch/runtime-security work with named follow-up ownership and evidence. Do not approve implementation while these blockers remain unresolved.
+- Evidence/repro: Internal architecture, security, and TDD reports in `temp/context-bundle-p0-live-baseline/responses/` all returned `REQUEST_CHANGES`; critic review iteration 2 was recorded before transition `MULTI_AGENT_REVIEW -> DRAFT_PLAN` (SQLite transition ID `203`).
+- Severity: M
+- Repeat: NO
+- Status: OPEN
+
+## DEBT-20260913-INTERVIEW-ANSWER-REVISION
+
+- Logged date: 2026-09-13
+- Cycle/Session ID: p0-live-baseline-20260912
+- Artifact affected: control-plane transition_decisions / INTERVIEW answer recording
+- Friction observed: After the human clarified the acceptance criteria, the supported recorder rejected a second answer for the canonical `interview_acceptance_criteria` question as a duplicate. There is no supported revision or append-clarification path.
+- Why not fixed now: Editing SQLite directly would bypass the control plane and violate the authority boundary. The current recorded answer remains intact; the clarification is preserved in the session context.
+- Recommended fix: Add an explicit human-authorized answer revision or clarification mechanism that preserves the original answer, revised answer, actor, timestamp, and reason without duplicate-question ambiguity.
+- Evidence/repro: `ControlPlane.record_decision(... question_id='interview_acceptance_criteria' ...)` raised `ValueError: Duplicate decision ... occupancy 196` on 2026-09-13.
+- Severity: M
+- Repeat: NO
+- Status: OPEN
+
+## DEBT-20260912-BACKLOG-SIZING
+
+- Logged date: 2026-09-12
+- Cycle/Session ID: backlog-review-20260912
+- Artifact affected: temp/agent-vision/vision.md; GitHub #585 and #595–#601
+- Friction observed: owner reports P00–P02 took over a day and explicitly abandoned P03–P09; the old plan and broad PR title could incorrectly trigger continuation.
+- Why not fixed now: runtime task-sizing enforcement is separate implementation work under #586; this review changes the roadmap and backlog only.
+- Recommended fix: select one independently useful 20–60 minute slice; review its outcome before selecting another. Keep P03–P09 abandoned and #585 deferred.
+- Evidence/repro: owner correction on 2026-09-12; ranked-backlog-2026-09-12.md documents all 31 issues and current-source evidence.
+- Severity: M
+- Repeat: NO
+- Status: RESOLVED
+
+## DEBT-20260912-BACKLOG-HELPERS
+
+- Logged date: 2026-09-12
+- Cycle/Session ID: backlog-review-20260912
+- Artifact affected: plugins/dev-utils/scripts/gh_issue_prioritize.py and gh_issue_close.py
+- Friction observed: tier:3 architecture labels become automatic P0 even for deferred designs; closure helper has no not-planned reason and defaults to completed. One inspection also guessed a nonexistent gh_issue_promote.py path; corrected by inspecting existing helpers.
+- Why not fixed now: user requested backlog/vision updates, not helper code changes. No new issue created.
+- Recommended fix: prioritize using the documented manual evidence override for this review; use native GitHub not_planned state reason for abandoned work. Consider helper behavior separately with #546.
+- Evidence/repro: prioritize_issue returns P0 for #519 despite its blocked consumer-dependent scope; close_issue invokes gh issue close without --reason. Native gh issue close supports not planned. Mutation payloads preserved under temp/agent-vision/backlog-updates/.
+- Severity: S
+- Repeat: NO
+- Status: OPEN
+
 ## DEBT-20260910-P0-INTAKE-INSTALL
 
 - Logged date: 2026-09-10
@@ -80,3 +197,5 @@ Persistent tracking of architectural friction, structural anomalies, and unclose
 | DEBT-20260908-INTERVIEW-CONTRACT-01 | The control-plane registry had transition questions but no machine-readable stage-entry question contract; the agent conflated `TRIVIAL` path selection with permission to skip interview and retrospective questions. | RESOLVED | Tier 1 | 0 | 2026-09-08 | fix/remove-nested-skill-reference | Reproduced live while rerunning the trivial path: `INTAKE -> INTERVIEW` exposed no entry questions, and the agent immediately used the destination transition question instead of the `INTERVIEW` stage questions. | Added `stages.INTERVIEW` and `stages.RETROSPECTIVE` YAML contracts, registry/coordinator policy wiring, SQLite required-question synchronization including all 13 reset approvals, one-at-a-time/adaptive follow-up instructions, parity tests, and aligned the three control-plane diagrams. | M | NO | RESOLVED |
 | DEBT-20260910-P02-MEASUREMENT-01 | P02 measurement schema lacked canonical_digest integrity verification in validate_observation_dict | RESOLVED | Tier 1 | NO | 2026-09-10 | feature/p0-observability-foundation | validate_observation_dict accepted any 64-char hex string as canonical_digest without verifying it against the computed SHA-256 over canonical bytes. The test test_canonical_digest_mismatch_raises_artifact_invalid failed because the check was absent. Digest verification was added at the end of validate_observation_dict (after content checks) so content errors take precedence over digest mismatch. | Verified by 33-pass A12 test suite; all 36 existing P01 regression tests remain green. | python3 -m pytest plugins/agent-agentic-os/tests/test_control_plane_measurement_contract.py -v | S | NO | RESOLVED |
 | DEBT-20260910-P02-REVIEW-01 | P02 measurement had five contract gaps found in independent review: untyped scopes, null totals reported as partial sums, non-deterministic correction supersession, missing UUIDv7 enforcement, and unenforced settle scope | RESOLVED | Tier 1 | NO | 2026-09-10 | feature/p0-observability-foundation | (1) usage.scope accepted arbitrary strings; (2) settle returned partial sum when any active obs had null tokens; (3) dict comprehension allowed last-writer-wins for multiple corrections to same parent; (4) event_id accepted non-UUID strings; (5) settle_observations(scope=...) parameter was silently ignored. | Added UUIDv7 regex validation, ObservationScope enum check for usage.scope, None-returning null-aware aggregation, conflict raise for duplicate correction targets, and scope-enforcement loop in settle_observations. Added 10 regression tests; all 33 P01 tests preserved. | python3 -m pytest plugins/agent-agentic-os/tests/test_control_plane_measurement_contract.py -q | S | NO | RESOLVED |
+| DEBT-20260913-P0-RETRO-RUNTIME | Exit verification was invoked from the main checkout while task-owned policy changes were only in the registered worktree, allowing stale runtime logic to accept a failed full-suite receipt. | OPEN | Tier 1 | NO | 2026-09-13 | p0-live-baseline-20260912 | The worktree policy correctly requires `full_test_suite` with `exit_code=0`; the main-checkout invocation used the older presence-only check and committed VERIFY_EXIT -> RETROSPECTIVE despite receipt exit code 1. | Keep source/runtime parity checks mandatory, reinstall from the registered worktree, and add a governed transition test proving failed receipts cannot advance. | Transition 215; failed receipt `EVO-INTEGRITY-p0-live-baseline-20260912-908da7ad1f28`; source/live parity verified after reinstall. | M | NO | OPEN |
+| DEBT-20260913-P0-FULL-SUITE-BASELINE | Repository-wide pytest currently has pre-existing failures outside the bounded P0 slice. | OPEN | Tier 2 | NO | 2026-09-13 | p0-live-baseline-20260912 | The full suite collected 883 tests but failed in stale control-plane fixtures, agent-memory consumers expecting an older cheapest-models schema, and benchmarking run_loop import resolution. | Triage and repair those baseline failures in separate bounded work packages; do not widen P0 or treat focused acceptance tests as a clean repository-wide receipt. | Governed `full_test_suite` receipt exit code 1; `pytest --lf -q` isolated 9 failures after the pacing fixture was corrected. | M | NO | OPEN |

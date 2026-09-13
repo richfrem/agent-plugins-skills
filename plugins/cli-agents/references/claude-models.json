@@ -2,11 +2,11 @@
   "_meta": {
     "source": "https://platform.claude.com/docs/en/models/overview and https://platform.claude.com/docs/en/about-claude/pricing (verified 2026-09-09)",
     "billing_model": "Per-token (direct Anthropic API via claude CLI)",
-    "updated": "2026-09-09",
+    "updated": "2026-09-13",
     "notes": [
       "Claude API model IDs use DASHES not dots: claude-opus-4-8, not claude-opus-4.8.",
       "Copilot CLI uses dot notation (claude-sonnet-4.6) \u2014 that is a different routing layer.",
-      "Claude Fable 5.1 and Claude Opus 5 are active direct Claude API models as of September 2026.",
+      "The current Claude CLI model picker exposes Sonnet 5, Fable 5.1, Opus 5, and Haiku 4.5; Default is a picker alias for Sonnet 5.",
       "claude-fable-5 is marked unavailable on Copilot specifically \u2014 not on direct API.",
       "claude-mythos-5 is invitation-only via Project Glasswing \u2014 not self-serve.",
       "Current direct Claude API pricing is Haiku $1/$5, Sonnet $2/$10, Opus $5/$25, and Fable $10/$50 per million input/output tokens.",
@@ -129,7 +129,8 @@
       "display_name": "Claude Opus 4.8",
       "cli_id": "claude-opus-4-8",
       "provider": "Anthropic",
-      "status": "GA",
+      "status": "withdrawn",
+      "available": false,
       "category": "Powerful",
       "context_window_k": 1000,
       "max_output_k": 128,
@@ -145,7 +146,7 @@
         "adaptive_thinking": true
       },
       "recommendation": "critical_only",
-      "notes": "For complex agentic coding and enterprise work. Adaptive thinking defaults to 'high' effort. Recommended by Anthropic as default for complex tasks. 1M context window, 128K output.",
+      "notes": "Withdrawn from the current Claude CLI interactive model picker; retained for catalog history.",
       "tool_support": {
         "prompt": true,
         "tools": "runtime_dependent"
@@ -155,7 +156,8 @@
       "display_name": "Claude Fable 5",
       "cli_id": "claude-fable-5",
       "provider": "Anthropic",
-      "status": "GA",
+      "status": "withdrawn",
+      "available": false,
       "category": "Powerful",
       "context_window_k": 1000,
       "max_output_k": 128,
@@ -171,7 +173,7 @@
         "adaptive_thinking": true
       },
       "recommendation": "avoid-unless-justified",
-      "notes": "Most capable widely released Claude model. GA on direct API since June 9 2026. NOTE: currently unavailable on Copilot CLI specifically. For highest capability workloads only. Uses new tokenizer \u2014 same text produces ~30% more tokens vs pre-4.7 models.",
+      "notes": "Withdrawn from the current Claude CLI interactive model picker; retained for catalog history.",
       "copilot_available": false,
       "tool_support": {
         "prompt": true,
@@ -209,7 +211,8 @@
       "display_name": "Claude Opus 4.7",
       "cli_id": "claude-opus-4-7",
       "provider": "Anthropic",
-      "status": "legacy",
+      "status": "withdrawn",
+      "available": false,
       "category": "Powerful",
       "context_window_k": 1000,
       "max_output_k": 128,
@@ -225,7 +228,7 @@
         "adaptive_thinking": true
       },
       "recommendation": "migrate-to-opus-4-8",
-      "notes": "Legacy. Same price as Opus 4.8. Uses new tokenizer (~30% more tokens vs pre-4.7). Migrate to claude-opus-4-8.",
+      "notes": "Withdrawn from the current Claude CLI interactive model picker; retained for catalog history.",
       "tool_support": {
         "prompt": true,
         "tools": "runtime_dependent"
@@ -235,7 +238,8 @@
       "display_name": "Claude Opus 4.6",
       "cli_id": "claude-opus-4-6",
       "provider": "Anthropic",
-      "status": "legacy",
+      "status": "withdrawn",
+      "available": false,
       "category": "Powerful",
       "context_window_k": 1000,
       "max_output_k": 128,
@@ -251,7 +255,7 @@
         "adaptive_thinking": true
       },
       "recommendation": "migrate-to-opus-4-8",
-      "notes": "Legacy. Extended thinking available. Migrate to claude-opus-4-8.",
+      "notes": "Withdrawn from the current Claude CLI interactive model picker; retained for catalog history.",
       "tool_support": {
         "prompt": true,
         "tools": "runtime_dependent"
@@ -261,7 +265,8 @@
       "display_name": "Claude Sonnet 4.6",
       "cli_id": "claude-sonnet-4-6",
       "provider": "Anthropic",
-      "status": "legacy",
+      "status": "withdrawn",
+      "available": false,
       "category": "Versatile",
       "context_window_k": 1000,
       "max_output_k": 128,
@@ -277,7 +282,7 @@
         "adaptive_thinking": true
       },
       "recommendation": "migrate-to-sonnet-5",
-      "notes": "Legacy. Extended and adaptive thinking available. Migrate to claude-sonnet-5 (cheaper at promo pricing).",
+      "notes": "Withdrawn from the current Claude CLI interactive model picker; retained for catalog history.",
       "tool_support": {
         "prompt": true,
         "tools": "runtime_dependent"
@@ -287,7 +292,8 @@
       "display_name": "Claude Sonnet 4.5",
       "cli_id": "claude-sonnet-4-5",
       "provider": "Anthropic",
-      "status": "legacy",
+      "status": "withdrawn",
+      "available": false,
       "category": "Versatile",
       "context_window_k": 200,
       "max_output_k": 64,
@@ -303,7 +309,7 @@
         "adaptive_thinking": false
       },
       "recommendation": "migrate-to-sonnet-5",
-      "notes": "Legacy. 200K context window only. Migrate to claude-sonnet-5.",
+      "notes": "Withdrawn from the current Claude CLI interactive model picker; retained for catalog history.",
       "tool_support": {
         "prompt": true,
         "tools": "runtime_dependent"
@@ -313,7 +319,8 @@
       "display_name": "Claude Opus 4.5",
       "cli_id": "claude-opus-4-5",
       "provider": "Anthropic",
-      "status": "legacy",
+      "status": "withdrawn",
+      "available": false,
       "category": "Powerful",
       "context_window_k": 200,
       "max_output_k": 64,
@@ -329,7 +336,7 @@
         "adaptive_thinking": false
       },
       "recommendation": "migrate-to-opus-4-8",
-      "notes": "Legacy. 200K context, 64K output. Migrate to claude-opus-4-8.",
+      "notes": "Withdrawn from the current Claude CLI interactive model picker; retained for catalog history.",
       "tool_support": {
         "prompt": true,
         "tools": "runtime_dependent"
@@ -414,22 +421,8 @@
     ]
   },
   "capability_tiers": {
-    "low": [
-      "claude-haiku-4-5"
-    ],
-    "medium": [
-      "claude-sonnet-5",
-      "claude-sonnet-4-6",
-      "claude-sonnet-4-5"
-    ],
-    "high": [
-      "claude-opus-5",
-      "claude-opus-4-8",
-      "claude-opus-4-7",
-      "claude-opus-4-6",
-      "claude-opus-4-5",
-      "claude-fable-5",
-      "claude-fable-5-1"
-    ]
+    "low": ["claude-haiku-4-5"],
+    "medium": ["claude-sonnet-5"],
+    "high": ["claude-opus-5", "claude-fable-5-1"]
   }
 }

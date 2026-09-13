@@ -52,8 +52,8 @@ def test_v9_migration_persists_scoped_consent_and_candidate_provenance(tmp_path)
 
     conn = sqlite3.connect(str(db_path))
     try:
-        assert conn.execute("SELECT version FROM schema_version").fetchone()[0] == 9
-        assert CURRENT_SCHEMA_VERSION == 9
+        assert conn.execute("SELECT version FROM schema_version").fetchone()[0] == CURRENT_SCHEMA_VERSION
+        assert CURRENT_SCHEMA_VERSION == 12
         assert conn.execute(
             "SELECT stage, round_id, model_id, actor FROM premium_consents"
         ).fetchone() == ("interview", "round-1", "premium-model", "human")

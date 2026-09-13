@@ -8,10 +8,22 @@ Store it at `context/agent-capability-profile.json`; the path is gitignored by
 default.
 
 The profile is JSON and must validate against schema version `1`. It records
-only provider availability, user-selected low/medium/high model IDs, fallback
-order, non-secret constraints, source, and an update timestamp. It must never
+only installation status, user-confirmed access status, derived provider
+availability, user-selected low/medium/high model IDs, fallback order,
+non-secret constraints, source, and an update timestamp. It must never
 contain credentials, API keys, access tokens, private prompts, or raw provider
 output.
+
+For each provider, `installed` records the deterministic CLI probe result,
+`access_confirmed` records the user's explicit subscription/account answer,
+`access_status` records a non-secret state such as `confirmed`,
+`no_subscription`, `not_authenticated`, `not_confirmed`, or `unknown`, and
+`project_authorized` records the user's explicit authorization to use the
+provider for this project. `available` may be true only when the user confirms
+access, the user confirms project authorization, and the CLI probe succeeds.
+An installed CLI without a subscription is therefore recorded as installed but
+unavailable; a work account without project authorization is also unavailable.
+Installation alone never authorizes use.
 
 Use `scripts/capability_profile.py` to classify the profile as:
 

@@ -64,6 +64,14 @@ class TransitionDecision:
 
 
 @dataclass(frozen=True)
+class InterviewAnswerRecord:
+    """Identifiers returned by the atomic answer-and-outline persistence operation."""
+
+    decision_id: int
+    outline_revision: int
+
+
+@dataclass(frozen=True)
 class TransitionCommitRequest:
     task_id: str
     expected_from_state: str
@@ -214,6 +222,25 @@ class PersistencePort(ABC):
         """
         raise NotImplementedError
 
+    def upsert_interview_plan_outline(
+        self, task_id: str, bullets: List[Dict[str, Any]], artifact_path: str
+    ) -> int:
+        """Persist the canonical interview outline and return its revision."""
+        raise NotImplementedError
+
+    def record_interview_answer(
+        self,
+        decision: TransitionDecision,
+        bullets: List[Dict[str, Any]],
+        artifact_path: str,
+    ) -> InterviewAnswerRecord:
+        """Atomically persist one answer decision and its revisioned outline."""
+        raise NotImplementedError
+
+    def get_interview_plan_outline(self, task_id: str) -> Optional[Dict[str, Any]]:
+        """Retrieve the canonical interview outline, or None when not yet created."""
+        raise NotImplementedError
+
     def create_delegation_plan(self, task_id: str, contract: Dict[str, Any]) -> int:
         """Persist a governed delegation contract and return its identifier."""
         raise NotImplementedError
@@ -336,6 +363,19 @@ class PersistencePort(ABC):
     @abstractmethod
     def update_worktree_fields(self, task_id: str, worktree_path: str, worktree_branch: str, worktree_state: str) -> None:
         """Updates a task's worktree_path/worktree_branch/worktree_state columns."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def record_done_closeout_decision(
+        self, task_id: str, source_occupancy_transition_id: int, question_id: str,
+        answer: str, actor: str, recorded_at: float,
+    ) -> int:
+        """Persists one human decision made while the task is in DONE closeout."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_done_closeout_decisions(self, task_id: str) -> List[Dict[str, Any]]:
+        """Returns persisted DONE closeout decisions for a task."""
         raise NotImplementedError
 
     @abstractmethod

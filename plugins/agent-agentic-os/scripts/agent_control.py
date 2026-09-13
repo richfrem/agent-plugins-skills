@@ -106,6 +106,7 @@ from control_plane.ports import (
     PhaseCapability,
     TransitionRecord,
     TransitionDecision,
+    InterviewAnswerRecord,
     TransitionCommitRequest,
 )
 from control_plane.adapters import (
@@ -305,6 +306,165 @@ class ControlPlane:
                 f"for task_id='{task_id}', stage='{stage}', round_id='{round_id}'"
             )
 
+    def assert_interview_plan_outline_ready(self, task_id: str) -> None:
+        """Require a persisted, non-empty interview outline before drafting a plan."""
+        outline = self._persistence.get_interview_plan_outline(task_id)
+        if not outline or not outline.get("bullets"):
+            raise PersistenceInvariantViolation(
+                f"Cannot enter DRAFT_PLAN for task_id='{task_id}': interview plan outline is missing."
+            )
+        artifact_path = self._resolve_plan_outline_path(outline["artifact_path"])
+        if not artifact_path.is_file() or not artifact_path.read_text(encoding="utf-8").strip():
+            raise PersistenceInvariantViolation(
+                f"Cannot enter DRAFT_PLAN for task_id='{task_id}': interview plan outline artifact is missing or empty."
+            )
+
+    def update_interview_plan_outline(
+        self, task_id: str, question_id: str, answer: str, actor: str = "interviewer"
+    ) -> Dict[str, Any]:
+        """Update the canonical outline and project its Markdown review artifact."""
+        task = self.get_task(task_id)
+        if not task:
+            raise ValueError(f"Task not found: {task_id}")
+        if self._read_current_state_for_update(task_id) != "INTERVIEW":
+            raise PersistenceInvariantViolation(
+                f"Interview outline updates require current state INTERVIEW for task_id='{task_id}'."
+            )
+        if not answer or not answer.strip():
+            raise ValueError("Interview outline answers must be non-empty.")
+
+        outline = self._persistence.get_interview_plan_outline(task_id)
+        bullets = list(outline.get("bullets", [])) if outline else []
+        bullet_types = {
+            "interview_classification": "decision",
+            "interview_summary": "desired_user_outcome",
+            "interview_scope": "scope_boundary",
+            "interview_verification": "success_evidence",
+            "interview_acceptance_criteria": "constraint_or_authority",
+            "interview_planning_model_effort": "constraint_or_authority",
+            "interview_trivial_evidence": "success_evidence",
+        }
+        bullet = {
+            "question_id": question_id,
+            "bullet_type": bullet_types.get(question_id, "open_question"),
+            "text": answer.strip(),
+            "actor": actor,
+        }
+        for index, existing in enumerate(bullets):
+            if existing.get("question_id") == question_id:
+                bullets[index] = bullet
+                break
+        else:
+            bullets.append(bullet)
+
+        artifact_rel = f"docs/plans/{task_id}-plan-outline.md"
+        revision = self._persistence.upsert_interview_plan_outline(task_id, bullets, artifact_rel)
+        artifact_path = self._resolve_plan_outline_path(artifact_rel)
+        artifact_path.parent.mkdir(parents=True, exist_ok=True)
+        lines = [
+            f"# Plan Outline — {task.get('title', task_id)}", "", f"Task: `{task_id}`",
+            f"Revision: {revision}", "",
+            "These bullets are the interview input to the initial draft plan. They are not implementation approval.", "",
+        ]
+        lines.extend(
+            f"- **{item['bullet_type']}** (`{item['question_id']}`): {item['text']}"
+            for item in bullets
+        )
+        temporary = artifact_path.with_name(f".{artifact_path.name}.{os.getpid()}.tmp")
+        try:
+            temporary.write_text("\n".join(lines) + "\n", encoding="utf-8")
+            os.replace(temporary, artifact_path)
+        finally:
+            if temporary.exists():
+                temporary.unlink()
+        return {"revision": revision, "artifact_path": artifact_rel, "bullets": bullets}
+
+    def record_interview_answer(
+        self,
+        task_id: str,
+        source_occupancy_transition_id: int,
+        from_state: str,
+        to_state: str,
+        question_id: str,
+        answer: str,
+        actor: str = "interviewer",
+    ) -> Dict[str, Any]:
+        """Persist one interview answer and outline revision in one SQLite transaction."""
+        task = self.get_task(task_id)
+        if not task:
+            raise ValueError(f"Task not found: {task_id}")
+        if from_state != "INTERVIEW" or self._read_current_state_for_update(task_id) != from_state:
+            raise PersistenceInvariantViolation(
+                f"Interview answer updates require current state INTERVIEW for task_id='{task_id}'."
+            )
+        if not answer or not answer.strip():
+            raise ValueError("Interview answers must be non-empty.")
+
+        outline = self._persistence.get_interview_plan_outline(task_id)
+        bullets = list(outline.get("bullets", [])) if outline else []
+        bullet_types = {
+            "interview_classification": "decision",
+            "interview_summary": "desired_user_outcome",
+            "interview_scope": "scope_boundary",
+            "interview_verification": "success_evidence",
+            "interview_acceptance_criteria": "constraint_or_authority",
+            "interview_planning_model_effort": "constraint_or_authority",
+        }
+        bullets.append({
+            "question_id": question_id,
+            "bullet_type": bullet_types.get(question_id, "open_question"),
+            "text": answer.strip(),
+            "actor": actor,
+        })
+        artifact_rel = f"docs/plans/{task_id}-plan-outline.md"
+        decision = TransitionDecision(
+            task_id=task_id,
+            source_occupancy_transition_id=source_occupancy_transition_id,
+            from_state=from_state,
+            to_state=to_state,
+            question_id=question_id,
+            answer=answer.strip(),
+            decision_type="ANSWER",
+            actor=actor,
+            recorded_at=self._clock.current_time(),
+        )
+        persisted = self._persistence.record_interview_answer(decision, bullets, artifact_rel)
+
+        artifact_path = self._resolve_plan_outline_path(artifact_rel)
+        artifact_path.parent.mkdir(parents=True, exist_ok=True)
+        lines = [
+            f"# Plan Outline — {task.get('title', task_id)}", "", f"Task: `{task_id}`",
+            f"Revision: {persisted.outline_revision}", "",
+            "These bullets are the interview input to the initial draft plan. They are not implementation approval.", "",
+        ]
+        lines.extend(
+            f"- **{item['bullet_type']}** (`{item['question_id']}`): {item['text']}"
+            for item in bullets
+        )
+        temporary = artifact_path.with_name(f".{artifact_path.name}.{os.getpid()}.tmp")
+        try:
+            temporary.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
+            os.replace(temporary, artifact_path)
+        finally:
+            if temporary.exists():
+                temporary.unlink()
+        return {
+            "decision_id": persisted.decision_id,
+            "outline_revision": persisted.outline_revision,
+            "artifact_path": artifact_rel,
+            "bullets": bullets,
+        }
+
+    def _resolve_plan_outline_path(self, artifact_rel: str) -> Path:
+        """Resolve a plan-outline path inside the active repository root."""
+        repo_root = getattr(self, "repo_root", None)
+        if repo_root is None and self.db_path is not None and self.db_path.parent.name == "context":
+            repo_root = self.db_path.parent.parent
+        root = Path(repo_root or Path.cwd()).resolve()
+        path = (root / artifact_rel).resolve()
+        path.relative_to(root)
+        return path
+
     def create_delegation_plan(self, task_id: str, contract: Dict[str, Any]) -> int:
         """Create a persisted delegation boundary; native execution strategy remains model-owned."""
         if not self.get_task(task_id):
@@ -384,6 +544,73 @@ class ControlPlane:
     def get_task(self, task_id: str) -> Optional[Dict[str, Any]]:
         """Retrieves a task dictionary by task_id."""
         return self._persistence.get_task(task_id)
+
+    def record_recovery_approval(
+        self,
+        task_id: str,
+        destination_state: str,
+        approver: str,
+        reason: str,
+    ) -> str:
+        """Record human approval for an explicit recovery target."""
+        task = self.get_task(task_id)
+        if not task:
+            raise ValueError(f"Task not found: {task_id}")
+        source_state = str(task["state"])
+        self._state_machine.validate_recovery_target(task_id, source_state, destination_state)
+        if not approver.strip() or not reason.strip():
+            raise ValueError("Recovery approval requires a non-empty approver and reason.")
+        latest = self._persistence.get_last_transition(task_id)
+        if latest is None:
+            raise ValueError(f"Task '{task_id}' has no current occupancy transition.")
+        return self._persistence.record_recovery_approval(
+            task_id=task_id,
+            expected_source_state=source_state,
+            destination_state=destination_state,
+            source_occupancy_transition_id=latest.transition_id,
+            approver=approver,
+            decision="APPROVAL",
+            reason=reason,
+        )
+
+    def apply_recovery_transition(
+        self,
+        task_id: str,
+        destination_state: str,
+        approval_receipt_token: str,
+        actor: str,
+        reason: str,
+    ):
+        """Apply a previously approved recovery transition through the persistence port."""
+        task = self.get_task(task_id)
+        if not task:
+            raise ValueError(f"Task not found: {task_id}")
+        source_state = str(task["state"])
+        self._state_machine.validate_recovery_target(task_id, source_state, destination_state)
+        latest = self._persistence.get_last_transition(task_id)
+        if latest is None:
+            raise ValueError(f"Task '{task_id}' has no current occupancy transition.")
+        return self._persistence.apply_recovery_transition(
+            task_id=task_id,
+            expected_source_state=source_state,
+            destination_state=destination_state,
+            source_occupancy_transition_id=latest.transition_id,
+            approval_receipt_token=approval_receipt_token,
+            actor=actor,
+            reason=reason,
+        )
+
+    def get_last_transition(self, task_id: str):
+        """Retrieves the latest persisted transition through the public facade."""
+        return self._persistence.get_last_transition(task_id)
+
+    def get_unconsumed_transition_answers(
+        self, task_id: str, from_state: str, to_state: str
+    ) -> Dict[str, str]:
+        """Retrieves unconsumed transition answers through the public facade."""
+        return self._persistence.get_unconsumed_transition_answers(
+            task_id, from_state, to_state
+        )
 
     def get_transition_guidance(
         self, task_id: str, requested_to_state: Optional[str] = None
@@ -504,6 +731,8 @@ class ControlPlane:
 
         if current_state == "INTERVIEW" and to_state != "INTERVIEW":
             self.assert_interview_exit_ready(task_id, stage="interview", round_id=None)
+        if current_state == "INTERVIEW" and to_state == "DRAFT_PLAN":
+            self.assert_interview_plan_outline_ready(task_id)
 
         # --- Unified gate policy: deterministic checks from authoritative YAML registry ---
         if not hasattr(self, "_transition_registry"):
@@ -589,6 +818,11 @@ class ControlPlane:
             self.assert_interview_exit_ready(
                 commit_request.task_id, stage="interview", round_id=None
             )
+        if (
+            commit_request.expected_from_state == "INTERVIEW"
+            and commit_request.to_state == "DRAFT_PLAN"
+        ):
+            self.assert_interview_plan_outline_ready(commit_request.task_id)
         record = self._persistence.apply_transition_with_receipts(commit_request)
         if record.from_state == "APPROVED" and record.to_state == "IN_WORKTREE":
             self._kickoff_implementation(record)
@@ -721,6 +955,49 @@ class ControlPlane:
                 raise PersistenceInvariantViolation(str(e)) from e
 
         self._persistence.update_worktree_fields(task_id, worktree_path, worktree_branch, worktree_state)
+
+    def record_done_closeout_decision(
+        self, task_id: str, question_id: str, answer: str, actor: str = "human"
+    ) -> int:
+        """Persist one exact human answer to the post-DONE Git closeout contract."""
+        if actor != "human":
+            raise PersistenceInvariantViolation("DONE closeout decisions require actor='human'.")
+        task = self.get_task(task_id)
+        if not task:
+            raise ValueError(f"Task not found: {task_id}")
+        if task["state"] != "DONE":
+            raise PersistenceInvariantViolation(
+                f"DONE closeout decisions require task '{task_id}' to be in DONE; "
+                f"current state is '{task['state']}'."
+            )
+        if not hasattr(self, "_transition_registry"):
+            self._transition_registry = TransitionRegistry.load_default()
+        question = self._transition_registry.get_stage_question("DONE", question_id)
+        if question is None:
+            raise ValueError(f"Unknown DONE closeout question: {question_id}")
+        accepted_answers = question.get("accepted_answers", question.get("options", []))
+        if accepted_answers and answer not in accepted_answers:
+            raise ValueError(
+                f"Answer '{answer}' is not registered for '{question_id}'. "
+                f"Accepted answers: {accepted_answers}"
+            )
+        occupancy = self._persistence.get_last_transition(task_id, to_state="DONE")
+        if occupancy is None:
+            raise PersistenceInvariantViolation(
+                f"Task '{task_id}' has no persisted DONE occupancy for closeout decision."
+            )
+        return self._persistence.record_done_closeout_decision(
+            task_id=task_id,
+            source_occupancy_transition_id=occupancy.transition_id,
+            question_id=question_id,
+            answer=answer,
+            actor=actor,
+            recorded_at=self._clock.current_time(),
+        )
+
+    def get_done_closeout_decisions(self, task_id: str) -> List[Dict[str, Any]]:
+        """Return persisted human decisions for post-DONE Git closeout."""
+        return self._persistence.get_done_closeout_decisions(task_id)
 
     def verify_commit(self, branch: str, staged_files: Optional[List[str]] = None) -> Dict[str, Any]:
         """Verifies whether git commit is authorized on `branch` given `staged_files`.
@@ -920,6 +1197,12 @@ def _build_parser() -> argparse.ArgumentParser:
     p_wt.add_argument("--branch", required=True)
     p_wt.add_argument("--state", required=True)
 
+    p_dcd = sub.add_parser("record-done-closeout")
+    p_dcd.add_argument("--task-id", required=True)
+    p_dcd.add_argument("--question-id", required=True)
+    p_dcd.add_argument("--answer", required=True)
+    p_dcd.add_argument("--actor", default="human")
+
     p_st = sub.add_parser("status")
     p_st.add_argument("--task-id", required=True)
 
@@ -976,6 +1259,13 @@ def _build_parser() -> argparse.ArgumentParser:
     p_rra.add_argument("--decision", default="APPROVAL")
     p_rra.add_argument("--reason", required=True)
 
+    p_hr = sub.add_parser("recover-transition")
+    p_hr.add_argument("--task-id", required=True)
+    p_hr.add_argument("--to", required=True, help="Different canonical recovery target state")
+    p_hr.add_argument("--approver", required=True)
+    p_hr.add_argument("--reason", required=True)
+    p_hr.add_argument("--interactive", action="store_true", help="Require explicit human RECOVER confirmation")
+
     p_vc = sub.add_parser("verify-commit")
     p_vc.add_argument("--branch", required=True, help="Git branch to verify commit authorization for")
     p_vc.add_argument("--staged-files", nargs="*", default=[], help="List of staged files")
@@ -1021,6 +1311,14 @@ def _dispatch_command(cp: ControlPlane, args: argparse.Namespace):
     elif args.subcommand == "update-worktree":
         cp.update_worktree(args.task_id, args.path, args.branch, args.state)
         print(f"Task {args.task_id} worktree state set to {args.state}.")
+    elif args.subcommand == "record-done-closeout":
+        decision_id = cp.record_done_closeout_decision(
+            task_id=args.task_id,
+            question_id=args.question_id,
+            answer=args.answer,
+            actor=args.actor,
+        )
+        print(f"DONE closeout decision recorded: {decision_id}")
     elif args.subcommand == "status":
         print(json.dumps(cp.get_task(args.task_id), indent=2, default=str))
     elif args.subcommand == "transition-guidance":
@@ -1059,6 +1357,31 @@ def _dispatch_command(cp: ControlPlane, args: argparse.Namespace):
             reason=args.reason,
         )
         print(f"Recovery approval recorded: {token}")
+    elif args.subcommand == "recover-transition":
+        if not args.interactive:
+            raise ValueError("Human recovery requires --interactive confirmation.")
+        confirmation = input(
+            f"Authorize human recovery from the current state to {args.to}? Type RECOVER to continue: "
+        ).strip()
+        if confirmation != "RECOVER":
+            raise ValueError("Human recovery denied: exact RECOVER confirmation is required.")
+        token = cp.record_recovery_approval(
+            task_id=args.task_id,
+            destination_state=args.to,
+            approver=args.approver,
+            reason=args.reason,
+        )
+        record = cp.apply_recovery_transition(
+            task_id=args.task_id,
+            destination_state=args.to,
+            approval_receipt_token=token,
+            actor="human",
+            reason=args.reason,
+        )
+        print(
+            f"Human recovery applied: {record.from_state} -> {record.to_state} "
+            f"(transition_id={record.transition_id})"
+        )
     elif args.subcommand == "verify-commit":
         res = cp.verify_commit(args.branch, args.staged_files)
         print(f"Commit check: {res['status']} ({res['message']})")

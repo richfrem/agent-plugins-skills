@@ -9,8 +9,15 @@ flowchart TB
     ArtifactGate["Plan artifact identity/revision gate"]
     Delegation["DelegationContract: scope, authority, budget, receipts"]
     ReviewDispatch["Review dispatch: required source + canonical verdict"]
+    ReviewSelection["review-selection-v1: decision → method → internal runtime/model/effort"]
+    ReviewReports["Task-scoped raw reviewer reports + receipts"]
+    ReviewSynthesis["Canonical review synthesis / revision brief"]
     PlanBranch["Plan branch: skip review or request review"]
     PlanAcceptance["PLAN_REVIEW convergence: accept plan or return to DRAFT_PLAN"]
+    InterviewOutline["Atomic interview answer + revisioned outline projection"]
+    Inventory["Session-wide change inventory + reconciliation manifest"]
+    Worktree["Registered implementation worktree"]
+    Lifecycle["Canonical lifecycle states: [INTAKE] → [INTERVIEW] → [DRAFT_PLAN] → [PLAN_REVIEW] → [MULTI_AGENT_REVIEW] → [AWAITING_APPROVAL] → [APPROVED] → [IN_WORKTREE] → [WORKTREE_REVIEW] → [MULTI_AGENT_CODE_REVIEW] → [VERIFY_EXIT] → [RETROSPECTIVE] → [DONE]"]
 
     State["StateMachine (control_plane/state_machine.py)"]
     Policy["Unified policy engine (control_plane/policy.py)"]
@@ -35,18 +42,24 @@ flowchart TB
     Clock["Wall clock"]
 
     Callers --> Facade
+    Facade --> Lifecycle
 
     Facade --> State
     Facade --> Policy
     Facade --> Coordinator
     Coordinator --> Registry
     Coordinator --> Guidance
+    Coordinator --> ReviewSelection
     Coordinator --> ForceClose
     Coordinator --> ArtifactGate
     Coordinator --> PlanBranch
     Coordinator --> PlanAcceptance
     Facade --> Delegation
-    Callers --> ReviewDispatch
+    Coordinator --> ReviewDispatch
+    ReviewDispatch --> ReviewReports
+    ReviewReports --> ReviewSynthesis
+    ReviewSynthesis --> PlanAcceptance
+    ReviewSynthesis --> Worktree
     Facade --> PersistencePort
     Facade --> CryptoPort
     Facade --> FilesystemPort
@@ -69,6 +82,11 @@ flowchart TB
     PlanAcceptance --> ArtifactGate
     ArtifactGate --> FilesystemPort
     ArtifactGate --> PersistencePort
+    InterviewOutline --> PersistencePort
+    InterviewOutline --> FilesystemPort
+    Worktree --> Inventory
+    Inventory --> ReviewDispatch
+    Inventory --> PersistencePort
     DB -.-> Receipts
     DB -.->|"trigger-enforced required questions: stage, edge, approval"| Coordinator
     HumanClose --> State

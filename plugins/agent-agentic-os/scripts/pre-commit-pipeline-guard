@@ -105,7 +105,7 @@ case "$TASK_STATE" in
         fi
 
         # Check all transitions against valid_transitions
-        TRANSITIONS_ROWS="$(sqlite3 "$DB_PATH" "SELECT from_state, to_state FROM task_transitions WHERE task_id = '$TASK_ID' ORDER BY transition_id ASC;" 2>/dev/null || true)"
+        TRANSITIONS_ROWS="$(sqlite3 "$DB_PATH" "SELECT transition_id, from_state, to_state FROM task_transitions WHERE task_id = '$TASK_ID' ORDER BY transition_id ASC;" 2>/dev/null || true)"
         if [ -z "$TRANSITIONS_ROWS" ]; then
             echo ""
             echo "❌ GIT COMMIT BLOCKED: No Transition History Found!"
@@ -117,24 +117,28 @@ case "$TASK_STATE" in
         fi
 
         LAST_TO=""
-        while IFS='|' read -r from_st to_st; do
+        while IFS='|' read -r transition_id from_st to_st; do
             [ -z "$from_st" ] && continue
             if [ "$from_st" = "NONE" ] && [ "$to_st" = "INTAKE" ]; then
                 LAST_TO="INTAKE"
                 continue
             fi
 
-            # Check validity in valid_transitions
+            # Normal edges must be in valid_transitions. A non-DAG edge is valid only when
+            # this exact persisted transition has a consumed, human recovery approval.
             IS_VALID="$(sqlite3 "$DB_PATH" "SELECT COUNT(*) FROM valid_transitions WHERE from_state = '$from_st' AND to_state = '$to_st';" 2>/dev/null || echo "0")"
             if [ "$IS_VALID" -eq 0 ]; then
-                echo ""
-                echo "❌ GIT COMMIT BLOCKED: Invalid State Transition Detected!"
-                echo ""
-                echo "   Task ID:     $TASK_ID"
-                echo "   Edge:        $from_st -> $to_st"
-                echo "   This transition is not present in the valid_transitions table."
-                echo ""
-                exit 1
+                RECOVERY_VALID="$(sqlite3 "$DB_PATH" "SELECT COUNT(*) FROM transition_decisions WHERE task_id = '$TASK_ID' AND bound_transition_id = '$transition_id' AND from_state = '$from_st' AND to_state = '$to_st' AND decision_type = 'APPROVAL' AND actor = 'human' AND question_id LIKE 'recovery_approval_%' AND consumed_at IS NOT NULL;" 2>/dev/null || echo "0")"
+                if [ "$RECOVERY_VALID" -eq 0 ]; then
+                    echo ""
+                    echo "❌ GIT COMMIT BLOCKED: Invalid State Transition Detected!"
+                    echo ""
+                    echo "   Task ID:     $TASK_ID"
+                    echo "   Edge:        $from_st -> $to_st"
+                    echo "   This transition is not in valid_transitions and has no exact human recovery approval."
+                    echo ""
+                    exit 1
+                fi
             fi
 
             # Check continuity

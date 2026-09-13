@@ -156,12 +156,21 @@ class TestDistillOneLoadEngineDefaults(unittest.TestCase):
         with open(ref) as f:
             json_models = json.load(f)
         result = _load_engine_defaults(ref_path=ref)
-        for engine, info in json_models.items():
-            if "model" in info and engine in result:
-                self.assertEqual(
-                    result[engine], info["model"],
-                    f"{engine} should match cheapest_models.json"
-                )
+        if isinstance(json_models.get("engines"), list):
+            expected = {
+                item["cli"]: item["model"]
+                for item in json_models["engines"]
+                if item.get("cli") and item.get("model")
+            }
+        else:
+            expected = {
+                engine: info["model"]
+                for engine, info in json_models.items()
+                if isinstance(info, dict) and "model" in info
+            }
+        for engine, model in expected.items():
+            if engine in result:
+                self.assertEqual(result[engine], model, f"{engine} should match cheapest_models.json")
 
 
 # ── distill_one.py --mock subprocess tests ────────────────────────────────────
@@ -200,8 +209,10 @@ class TestDistillOneMockFlag(unittest.TestCase):
         ref = PLUGIN_REFS / "cheapest_models.json"
         if not ref.exists():
             self.skipTest("cheapest_models.json not present")
-        engines = json.loads(ref.read_text()).get("engines", [])
-        expected = next(e["model"] for e in engines if e["cli"] == "copilot")
+        catalog = json.loads(ref.read_text())
+        expected = catalog["copilot"]["model"] if "engines" not in catalog else next(
+            e["model"] for e in catalog["engines"] if e["cli"] == "copilot"
+        )
         result = self._run_mock(["--engine", "copilot"])
         self.assertEqual(result.returncode, 0, msg=result.stderr)
         data = json.loads(result.stdout)
@@ -212,8 +223,10 @@ class TestDistillOneMockFlag(unittest.TestCase):
         ref = PLUGIN_REFS / "cheapest_models.json"
         if not ref.exists():
             self.skipTest("cheapest_models.json not present")
-        engines = json.loads(ref.read_text()).get("engines", [])
-        expected = next(e["model"] for e in engines if e["cli"] == "claude")
+        catalog = json.loads(ref.read_text())
+        expected = catalog["claude"]["model"] if "engines" not in catalog else next(
+            e["model"] for e in catalog["engines"] if e["cli"] == "claude"
+        )
         result = self._run_mock(["--engine", "claude"])
         self.assertEqual(result.returncode, 0, msg=result.stderr)
         data = json.loads(result.stdout)

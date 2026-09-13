@@ -41,8 +41,22 @@ _REQUIRED_FIELDS = (
     "updated_at",
 )
 _ALLOWED_TOP_LEVEL_FIELDS = set(_REQUIRED_FIELDS) | {"plugin_snapshot", "catalog_snapshot"}
-_ALLOWED_PROVIDER_FIELDS = {"available", "model_tiers"}
+_ALLOWED_PROVIDER_FIELDS = {
+    "available",
+    "installed",
+    "access_confirmed",
+    "access_status",
+    "project_authorized",
+    "model_tiers",
+}
 _ALLOWED_MODEL_TIERS = {"low", "medium", "high"}
+_ALLOWED_ACCESS_STATUSES = {
+    "confirmed",
+    "no_subscription",
+    "not_authenticated",
+    "not_confirmed",
+    "unknown",
+}
 _FORBIDDEN_KEYS = {
     "api_key",
     "apikey",
@@ -158,6 +172,14 @@ def _validate_profile(raw: Any, expected_schema_version: int) -> list[str]:
             continue
         if "available" in data and not isinstance(data["available"], bool):
             errors.append(f"providers.{provider}.available must be boolean")
+        for field in ("installed", "access_confirmed", "project_authorized"):
+            if field in data and not isinstance(data[field], bool):
+                errors.append(f"providers.{provider}.{field} must be boolean")
+        if "access_status" in data and data["access_status"] not in _ALLOWED_ACCESS_STATUSES:
+            errors.append(
+                f"providers.{provider}.access_status must be one of "
+                f"{sorted(_ALLOWED_ACCESS_STATUSES)}"
+            )
         if "model_tiers" in data and not isinstance(data["model_tiers"], dict):
             errors.append(f"providers.{provider}.model_tiers must be an object")
         elif isinstance(data.get("model_tiers"), dict):

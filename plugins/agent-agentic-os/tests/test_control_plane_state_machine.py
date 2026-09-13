@@ -64,6 +64,36 @@ def test_validate_adjacency_accepts_every_legal_edge():
         for to_state in to_states:
             sm.validate_adjacency("t1", from_state, to_state)  # must not raise
 
+
+def test_human_recovery_target_is_not_limited_by_normal_dag():
+    sm = StateMachine()
+    sm.validate_recovery_target("t1", "DONE", "IN_WORKTREE")
+    with pytest.raises(InvalidStateTransition, match="must differ"):
+        sm.validate_recovery_target("t1", "DONE", "DONE")
+
+
+def test_human_recovery_from_done_to_worktree_requires_and_consumes_approval(tmp_path):
+    from agent_control import ControlPlane
+
+    cp = ControlPlane(db_path=tmp_path / "control_plane.db")
+    cp.create_task(task_id="recovery-done-1", title="Reopen", runtime_tool="claude")
+    from control_plane.coordinator import TransitionCoordinator
+    TransitionCoordinator(cp, input_fn=lambda _: "FORCE_CLOSE").coordinate_transition(
+        "recovery-done-1", "DONE", "human", "Close fixture", force_close=True,
+        human_authorization="FORCE_CLOSE", interactive=True,
+    )
+
+    token = cp.record_recovery_approval(
+        "recovery-done-1", "IN_WORKTREE", "human", "Missed implementation fix requires rework"
+    )
+    record = cp.apply_recovery_transition(
+        "recovery-done-1", "IN_WORKTREE", token, "human", "Reopen for bounded rework"
+    )
+
+    assert record.from_state == "DONE"
+    assert record.to_state == "IN_WORKTREE"
+    assert cp.get_task("recovery-done-1")["state"] == "IN_WORKTREE"
+
 def test_every_non_done_state_has_human_force_close_edge():
     for state in CANONICAL_STATES:
         if state != "DONE":

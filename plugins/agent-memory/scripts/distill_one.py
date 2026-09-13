@@ -120,10 +120,19 @@ def _load_engine_defaults(ref_path: "Path | None" = None) -> dict:
             ref_path = script_dir.parent / "references" / "cheapest_models.json"
         if ref_path.exists():
             data = json.loads(ref_path.read_text())
-            engines = data.get("engines", [])
-            for item in engines:
-                engine = item.get("cli")
-                model = item.get("model")
+            if isinstance(data.get("engines"), list):
+                entries = (
+                    (item.get("cli"), item.get("model"))
+                    for item in data["engines"]
+                    if isinstance(item, dict)
+                )
+            else:
+                entries = (
+                    (engine, info.get("model"))
+                    for engine, info in data.items()
+                    if isinstance(info, dict)
+                )
+            for engine, model in entries:
                 if engine and model and engine in fallbacks:
                     fallbacks[engine] = model
     except Exception:
