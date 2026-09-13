@@ -251,6 +251,43 @@ def _worktree_isolation_check(ctx: Dict[str, Any]) -> Optional[str]:
     return None
 
 
+def _main_clean_before_approval_check(ctx: Dict[str, Any]) -> Optional[str]:
+    """Enforce the documented-but-previously-unenforced practice from
+    references/worktree-reconciliation-and-multi-worktree-practices.md Section 1:
+    commit interim INTAKE/INTERVIEW/DRAFT_PLAN work to a small branch and get it
+    merged BEFORE APPROVED, so main is clean before a worktree is ever created.
+    main_worktree_reconciliation (a later check, at APPROVED -> IN_WORKTREE) is a
+    safety net for what slips through, not a substitute for keeping main clean in
+    the first place -- this check closes that gap at the earlier edge.
+
+    Found live (2026-09-13): an agent accumulated substantial uncommitted/committed
+    work directly on the task's own branch through INTERVIEW/DRAFT_PLAN, entered
+    APPROVED/IN_WORKTREE without a clean-foundation commit+PR cycle, then could not
+    push the branch at all once IN_WORKTREE (pre-push-review-guard correctly denies
+    task-branch pushes before DONE) -- a real conflict between two individually
+    correct rules, caused by skipping this earlier gate."""
+    if ctx["count_receipts"]("main_dirty_before_approval_exception", 0) > 0:
+        return None
+    get_advisory = ctx.get("get_main_dirty_advisory")
+    if get_advisory is None:
+        return None
+    advisory = get_advisory()
+    dirty_count = advisory.get("dirty_count", 0) if isinstance(advisory, dict) else 0
+    if dirty_count > 0:
+        dirty_paths = advisory.get("dirty_paths", []) if isinstance(advisory, dict) else []
+        joined = ", ".join(dirty_paths[:10])
+        more = f" (+{len(dirty_paths) - 10} more)" if len(dirty_paths) > 10 else ""
+        return (
+            f"Cannot enter APPROVED: {dirty_count} dirty path(s) on the source checkout "
+            f"({joined}{more}). Commit this interim work to a small branch and get it "
+            "reviewed/merged before a worktree is created, per "
+            "references/worktree-reconciliation-and-multi-worktree-practices.md Section 1, "
+            "or record an explicit human main_dirty_before_approval_exception receipt with "
+            "the reason if the human has authorized proceeding with dirty state."
+        )
+    return None
+
+
 def _main_worktree_reconciliation_check(ctx: Dict[str, Any]) -> Optional[str]:
     """Force pre-worktree dirty source-checkout changes into the newly registered worktree
     at transition time via code (ctx['reconcile_main_into_worktree']), never by trusting an
@@ -452,6 +489,7 @@ CHECK_REGISTRY: Dict[str, Any] = {
     ),
     "worktree_isolation_or_exception": _worktree_isolation_check,
     "main_worktree_reconciliation": _main_worktree_reconciliation_check,
+    "main_clean_before_approval": _main_clean_before_approval_check,
     "test_suite": lambda ctx: (
         None if _gate_receipt_exists(ctx, "test_suite") else (
             "Cannot advance: no recorded test_suite verification receipt found. "

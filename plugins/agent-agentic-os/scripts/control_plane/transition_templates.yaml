@@ -1172,12 +1172,14 @@ templates:
   from_state: AWAITING_APPROVAL
   to_state: APPROVED
   purpose: Obtain explicit human approval to proceed with task implementation and worktree creation.
-  next_steps_hint: "Answer this edge's YAML questions with --interactive or --answers '<json>'. Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to APPROVED."
+  next_steps_hint: "Commit any interim work made during INTAKE/INTERVIEW/DRAFT_PLAN to a small branch and get it reviewed/merged BEFORE this transition, so main is clean before a worktree is created (references/worktree-reconciliation-and-multi-worktree-practices.md Section 1 -- this is now enforced by the main_clean_before_approval check below, not just documented practice). If main is dirty, either commit/push it first or record an explicit human main_dirty_before_approval_exception receipt with the reason. Then answer this edge's YAML questions with --interactive or --answers '<json>'. Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to APPROVED."
   checklist:
   - Current task state is persisted as AWAITING_APPROVAL
   - Structural DAG transition from AWAITING_APPROVAL to APPROVED is legal
+  - 'Deterministic check satisfied: main_clean_before_approval'
   required_artifacts: []
-  deterministic_checks: []
+  deterministic_checks:
+  - main_clean_before_approval
   human_questions:
   - question_id: human_implementation_approval
     question: Approve task implementation and worktree creation?

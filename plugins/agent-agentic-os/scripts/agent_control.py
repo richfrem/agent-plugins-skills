@@ -711,6 +711,7 @@ class ControlPlane:
             "verify_sovereignty": lambda: self.verify_sovereignty(task_id),
             "stage_answers": stage_answers,
             "check_implementation_completeness": check_implementation_completeness,
+            "get_main_dirty_advisory": self._get_main_dirty_advisory,
         }
 
     def transition(self, task_id: str, to_state: str, actor: str, reason: str,
