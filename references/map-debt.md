@@ -2,6 +2,19 @@
 
 Persistent tracking of architectural friction, structural anomalies, and unclosed loops across sessions.
 
+## DEBT-20260913-WORKTREE-BASE-BRANCH-DEFAULT
+
+- Logged date: 2026-09-13
+- Cycle/Session ID: worktree-docs-alignment
+- Artifact affected: `plugins/dev-utils/skills/github-issue-worktree-agent/scripts/issue_worktree_manage.py::create_worktree`
+- Friction observed: `create_worktree()` defaults `base_branch` to local `main` rather than a freshly-fetched `origin/main`, which the multi-worktree research documented in #611 identifies as a source of stale-base worktree drift.
+- Why not fixed now: Documentation-only alignment pass (docs/diagrams + reference guide); changing the function default is a code behavior change requiring its own TDD cycle, deferred pending explicit scope confirmation.
+- Recommended fix: Change the default to fetch and use `origin/main`, or require the caller to pass it explicitly; add a regression test asserting the branch point matches `origin/main` at call time.
+- Evidence/repro: See `plugins/dev-utils/references/github-issue-worktree-agent-worktree-guide.md`, updated this commit to flag the gap inline.
+- Severity: S
+- Repeat: NO
+- Status: OPEN
+
 ## DEBT-20260913-WORKTREE-BEST-PRACTICES-DOCS
 
 - Logged date: 2026-09-13
