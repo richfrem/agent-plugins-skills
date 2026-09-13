@@ -30,6 +30,7 @@ import sqlite3
 import tempfile
 import time
 import pytest
+import subprocess
 import sys
 from pathlib import Path
 
@@ -317,7 +318,7 @@ def test_cost_tier_resolution_and_task_columns(control_plane):
     
     # 1. Resolve recommendation from cheapest_models.json
     rec_low = control_plane.resolve_recommended_model(runtime_tool="copilot", tier="low")
-    assert rec_low["model_id"] == "gpt-5.6-luna"
+    assert rec_low["model_id"] == "gpt-5.4-nano"
     assert rec_low["tier"] == "low"
     
     rec_high = control_plane.resolve_recommended_model(runtime_tool="copilot", tier="high")
@@ -335,7 +336,7 @@ def test_cost_tier_resolution_and_task_columns(control_plane):
     
     task = control_plane.get_task(task_id)
     assert task["model_tier"] == "low"
-    assert task["model_id"] == "gpt-5.6-luna"
+    assert task["model_id"] == "gpt-5.4-nano"
 
 
 def test_diagnostic_brief_auto_locate(tmp_path):
@@ -1073,6 +1074,93 @@ def test_gate_allows_explicit_existing_checkout_exception(control_plane, tmp_pat
 
     control_plane.transition(task_id, "IN_WORKTREE", "controller", "Authorized existing checkout")
     assert control_plane.get_task(task_id)["state"] == "IN_WORKTREE"
+
+
+def test_approved_to_in_worktree_auto_reconciles_dirty_main_changes(control_plane, tmp_path):
+    """APPROVED->IN_WORKTREE must copy dirty source-checkout changes into the worktree via
+    deterministic code, not via an agent's self-reported claim (github issue #609)."""
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    subprocess.run(["git", "init"], cwd=repo_root, check=True, capture_output=True)
+    subprocess.run(["git", "config", "user.email", "t@example.com"], cwd=repo_root, check=True, capture_output=True)
+    subprocess.run(["git", "config", "user.name", "Test"], cwd=repo_root, check=True, capture_output=True)
+    tracked = repo_root / "tracked.py"
+    tracked.write_text("original\n", encoding="utf-8")
+    subprocess.run(["git", "add", "tracked.py"], cwd=repo_root, check=True, capture_output=True)
+    subprocess.run(["git", "commit", "-m", "init"], cwd=repo_root, check=True, capture_output=True)
+
+    # Dirty pre-worktree edits made on the source checkout before APPROVED -> IN_WORKTREE.
+    tracked.write_text("dirty edit made before worktree creation\n", encoding="utf-8")
+    new_file = repo_root / "new_untracked.py"
+    new_file.write_text("brand new pre-worktree file\n", encoding="utf-8")
+
+    worktree_root = repo_root / ".worktrees" / "task-recon-001"
+    worktree_root.mkdir(parents=True)
+    # Simulate `git worktree add`: only committed content is present, not the dirty edits.
+    (worktree_root / "tracked.py").write_text("original\n", encoding="utf-8")
+
+    control_plane.repo_root = repo_root
+    task_id = "task-recon-001"
+    control_plane.create_task(task_id=task_id, title="Reconciliation Task", runtime_tool="claude")
+    stage_human_decisions(control_plane, task_id, "INTAKE", "PLAN_REVIEW")
+    control_plane.transition(task_id, "PLAN_REVIEW", "controller", "Plan ready")
+    control_plane.record_review_skip(task_id, "multi_agent_review", "user", "Not needed for this test")
+    stage_human_decisions(
+        control_plane, task_id, "PLAN_REVIEW", "AWAITING_APPROVAL",
+        answer="Accept plan and proceed to human approval [Recommended]",
+    )
+    control_plane.transition(task_id, "AWAITING_APPROVAL", "controller", "Review ready")
+    stage_human_decisions(control_plane, task_id, "AWAITING_APPROVAL", "APPROVED")
+    control_plane.transition(task_id, "APPROVED", "user", "Approved")
+    control_plane.record_human_approval(task_id, "user")
+    control_plane.update_worktree(task_id, str(worktree_root), "feature/recon-001", "written_in_worktree")
+
+    control_plane.transition(task_id, "IN_WORKTREE", "controller", "Worktree created")
+
+    assert (worktree_root / "tracked.py").read_text(encoding="utf-8") == "dirty edit made before worktree creation\n"
+    assert (worktree_root / "new_untracked.py").read_text(encoding="utf-8") == "brand new pre-worktree file\n"
+
+
+def test_approved_to_in_worktree_blocks_on_genuine_reconciliation_conflict(control_plane, tmp_path):
+    """If the worktree already has its own independent edit to the same file the source
+    checkout also modified, auto-reconciliation must refuse to silently overwrite either side."""
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    subprocess.run(["git", "init"], cwd=repo_root, check=True, capture_output=True)
+    subprocess.run(["git", "config", "user.email", "t@example.com"], cwd=repo_root, check=True, capture_output=True)
+    subprocess.run(["git", "config", "user.name", "Test"], cwd=repo_root, check=True, capture_output=True)
+    tracked = repo_root / "tracked.py"
+    tracked.write_text("original\n", encoding="utf-8")
+    subprocess.run(["git", "add", "tracked.py"], cwd=repo_root, check=True, capture_output=True)
+    subprocess.run(["git", "commit", "-m", "init"], cwd=repo_root, check=True, capture_output=True)
+
+    tracked.write_text("main-side dirty edit\n", encoding="utf-8")
+
+    worktree_root = repo_root / ".worktrees" / "task-recon-002"
+    worktree_root.mkdir(parents=True)
+    (worktree_root / "tracked.py").write_text("worktree-side independent edit\n", encoding="utf-8")
+
+    control_plane.repo_root = repo_root
+    task_id = "task-recon-002"
+    control_plane.create_task(task_id=task_id, title="Reconciliation Conflict Task", runtime_tool="claude")
+    stage_human_decisions(control_plane, task_id, "INTAKE", "PLAN_REVIEW")
+    control_plane.transition(task_id, "PLAN_REVIEW", "controller", "Plan ready")
+    control_plane.record_review_skip(task_id, "multi_agent_review", "user", "Not needed for this test")
+    stage_human_decisions(
+        control_plane, task_id, "PLAN_REVIEW", "AWAITING_APPROVAL",
+        answer="Accept plan and proceed to human approval [Recommended]",
+    )
+    control_plane.transition(task_id, "AWAITING_APPROVAL", "controller", "Review ready")
+    stage_human_decisions(control_plane, task_id, "AWAITING_APPROVAL", "APPROVED")
+    control_plane.transition(task_id, "APPROVED", "user", "Approved")
+    control_plane.record_human_approval(task_id, "user")
+    control_plane.update_worktree(task_id, str(worktree_root), "feature/recon-002", "written_in_worktree")
+
+    with pytest.raises(PersistenceInvariantViolation, match="conflict"):
+        control_plane.transition(task_id, "IN_WORKTREE", "controller", "Worktree created")
+
+    # Neither side was silently overwritten.
+    assert (worktree_root / "tracked.py").read_text(encoding="utf-8") == "worktree-side independent edit\n"
 
 
 def test_gate_blocks_worktree_review_entry_without_test_suite_receipt(control_plane):
@@ -2079,11 +2167,9 @@ def test_wrapper_success_path(control_plane, tmp_path):
     control_plane.transition(task_id, "INTERVIEW", "tester", "Begin interview")
     rec_result = record_interview_question(
         task_id=task_id,
-        question="interview_summary",
+        question="What is the objective?",
         options={"A": "Feature", "B": "Refactor"},
         recommended="A",
-        answer="A",
-        target_state="DRAFT_PLAN",
         control_plane=control_plane
     )
     assert rec_result["status"] == "RECORDED"
@@ -2425,7 +2511,7 @@ def test_sequential_question_pacing(control_plane, tmp_path):
     control_plane.repo_root = tmp_path
 
     out = io.StringIO()
-    inputs = ["1", "1"]  # review decision, then review-method answer
+    inputs = ["1"]  # review-method answer after entering PLAN_REVIEW
     input_prompts = []
 
     def mock_input(prompt: str) -> str:
@@ -2449,10 +2535,9 @@ def test_sequential_question_pacing(control_plane, tmp_path):
         interactive=True,
     )
     assert rec.to_state == "MULTI_AGENT_REVIEW"
-    # Verify each question was invoked individually in YAML order.
-    assert len(input_prompts) == 2
-    assert "plan_review_agent_review_decision" in input_prompts[0]
-    assert "plan_review_method" in input_prompts[1]
+    # Verify input prompt was invoked individually
+    assert len(input_prompts) == 1
+    assert "Select option" in input_prompts[0]
 
 
 def test_coordinator_rejection_on_failed_check_no_orphan_receipts(control_plane):
@@ -2850,9 +2935,7 @@ def test_coordinator_empty_interactive_input_rejected_and_undeclared_option_reje
             actor="tester",
             reason="Undeclared answer option",
             interactive=False,
-            provided_answers={
-                "confirm_review_draft_plan_to_plan_review": "Completely Bogus Option"
-            },
+            provided_answers={"plan_review_disposition": "Completely Bogus Option"},
         )
 
 
@@ -3192,14 +3275,10 @@ def test_coordinator_artifact_resolution_inside_registered_worktree(control_plan
     control_plane.transition(task_id, "WORKTREE_REVIEW", "tester", "to worktree review")
 
     out = io.StringIO()
-    review_inputs = iter([
-        "Yes — continue to review method selection [Recommended]",
-        "Multi-agent review — internal [Recommended]",
-    ])
     coord = TransitionCoordinator(
         control_plane=control_plane,
         output_stream=out,
-        input_fn=lambda prompt: next(review_inputs),
+        input_fn=lambda prompt: "Yes, multi-agent review — sub-agent (internal) [Recommended]",
     )
 
     # 1. Successful transition: plan files and worktree directory resolved.
@@ -3255,10 +3334,7 @@ def test_coordinator_artifact_resolution_inside_registered_worktree(control_plan
             to_state="MULTI_AGENT_CODE_REVIEW",
             actor="tester",
             reason="Attempt with missing spec/plan",
-            provided_answers={
-                "confirm_review_worktree_review_to_multi_agent_code_review":
-                "Yes — continue to review method selection [Recommended]"
-            },
+            provided_answers={"confirm_review_worktree_review_to_multi_agent_code_review": "Yes, multi-agent review — sub-agent (internal) [Recommended]"},
         )
 
     # 3. Path traversal / outside authorized roots rejected
@@ -3340,9 +3416,6 @@ def test_trivial_fast_track_enters_retrospective_and_completes(control_plane):
         task_id,
         {"decision": "skip", "completion_mode": "skipped", "actor": "human", "skip_reason": "one-line typo"},
         [],
-    )
-    control_plane.record_verification_receipt(
-        task_id, "full_test_suite", "pytest -q (test fixture receipt)", 0
     )
     done_coord = TransitionCoordinator(control_plane=control_plane, input_fn=lambda prompt: "skip")
     done_record = done_coord.coordinate_transition(

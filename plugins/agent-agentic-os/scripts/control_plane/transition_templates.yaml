@@ -1,14 +1,3 @@
-human_recovery:
-  enabled: true
-  purpose: "Allow an explicit human-in-the-loop recovery return when the persisted stage no longer matches the work, including reopening DONE for missed fixes."
-  source_states: "Any canonical state"
-  target_states: "Any different canonical state"
-  authorization: "A human must explicitly name the target, provide a non-empty reason and approver identity, and approve the recovery while the source occupancy is current."
-  command_contract: "Use the recovery approval/apply API or `agent_control.py recover-transition --interactive`; never use ordinary coordinate-transition for an edge absent from the normal DAG."
-  reentry_rule: "Recovery changes occupancy and records a recovery_approval receipt, but it does not grant downstream capability or waive the destination state's gates. The agent must load the destination contract and continue from that state."
-  evidence: "Persist source state, target state, source occupancy transition ID, approver, reason, approval token, actor, and resulting transition in SQLite."
-  safety_boundary: "Human recovery is not an arbitrary silent jump: unknown states, self-targets, missing evidence, stale occupancy, non-human approval, and unconsumed/duplicate tokens are denied."
-
 session_change_control:
   applies_from: task_creation
   owner: controller
@@ -395,33 +384,6 @@ stages:
   RETROSPECTIVE:
     purpose: Capture the complete pipeline-close survey before allowing DONE.
     question_policy: one_at_a_time
-    closeout_change_control:
-      purpose: Classify retrospective findings before the final DONE decision without bypassing implementation authority or review.
-      mandatory_before_done: true
-      classifications:
-      - already_resolved_in_current_package
-      - bounded_fix_requires_rework_loop
-      - larger_follow_up_requires_issue_or_new_work_package
-      already_resolved_rule: Record the change and evidence in the retrospective; do not reopen completed work solely to restate it.
-      bounded_fix_rule: A behavior-changing fix is never applied directly from RETROSPECTIVE. If it remains within the approved scope, use a legal implementation/review return edge, pass the canonical revision brief, rerun focused verification and inventory, and complete review before returning to closeout.
-      no_legal_return_rule: If the current state exposes no legal implementation return edge, preserve the finding as map debt and report that a follow-up control-plane transition or new bounded work package is required; do not reset to INTAKE or edit implementation files merely to avoid the closeout gate.
-      larger_follow_up_rule: A scope expansion, authority change, destructive change, cross-plugin repair, or unresolved baseline failure is a follow-up candidate. Record it in map debt, run the required duplicate search, and request user authorization before creating a new GitHub issue or work package.
-      closeout_evidence:
-      - finding
-      - classification
-      - scope_decision
-      - evidence_or_issue_reference
-      - recovery_or_next_action
-      agent_self_assessment:
-        mandatory_before_done: true
-        question: 'For each retrospective finding, can I implement a safe bounded fix now before commit or push, or is it larger follow-up work?'
-        response_policy: Answer this question for every finding in the closeout report. Mark already-resolved findings as complete, identify bounded fixes that require the legal implementation/review loop, and identify larger work that needs map debt and a user-authorized issue or new work package.
-        no_silent_action: Do not implement a behavior-changing fix merely because the self-assessment calls it quick; the current lifecycle state and legal transition edges still govern whether action is authorized.
-        response_fields:
-        - finding
-        - answer
-        - rationale
-        - immediate_action_or_deferred_artifact
     entry_questions:
     - question_id: retrospective_workflow_complete
       question: Did the run complete the full intended workflow end to end?
@@ -508,59 +470,6 @@ stages:
     - Every adaptive rule matching the recorded answers has been evaluated.
     - Issue-worthy follow-ups are confirmed and tracked before DONE.
     - The final complete-or-skip decision is asked only after this survey is complete.
-  DONE:
-    purpose: "The governed implementation and verification path is complete; Git integration is a separate closeout operation and is not implied by DONE."
-    question_policy: one_at_a_time
-    entry_questions:
-    - question_id: done_git_integration_authorization
-      question: "The verified implementation is DONE. Do you want to begin Git integration using the existing registered feature branch and worktree?"
-      options:
-      - "Yes, begin Git integration [Recommended]"
-      - "No, leave the verified changes in the current worktree"
-      accepted_answers:
-      - "Yes, begin Git integration [Recommended]"
-      - "No, leave the verified changes in the current worktree"
-      default: "Yes, begin Git integration [Recommended]"
-    adaptive_follow_up_rules:
-    - rule_id: done_git_integration_authorized
-      when:
-        question_id: done_git_integration_authorization
-        equals: "Yes, begin Git integration [Recommended]"
-      questions:
-      - question_id: done_commit_authorization
-        question: "After the reconciliation manifest passes, do you authorize exactly one commit on the existing feature branch?"
-        options:
-        - "Yes, authorize one feature-branch commit [Recommended]"
-        - "No, leave the changes uncommitted"
-        accepted_answers:
-        - "Yes, authorize one feature-branch commit [Recommended]"
-        - "No, leave the changes uncommitted"
-        default: "Yes, authorize one feature-branch commit [Recommended]"
-    exit_requirements:
-    - "Report DONE separately from the Git worktree lifecycle state; DONE does not mean committed, pushed, merged, or visible on origin/main."
-    - "Use the existing registered worktree and feature branch when present; do not create a duplicate worktree or branch without explicit human authorization."
-    - "Before any Git mutation, compare the common base, task baseline, registered worktree, and integration checkout in a reconciliation manifest."
-    - "Apply the reviewed worktree patch exactly once and preserve main-only pre-existing changes."
-    - "Ask separately before committing, pushing to origin, opening a PR, or merging; never infer authorization from DONE or from an earlier approval."
-    closeout_contract:
-      feature_branch_policy: "Reuse the registered task feature branch created during worktree setup; create a branch only when none exists and the human explicitly authorizes creation."
-      worktree_policy: "Reuse the registered worktree path; do not create a new worktree during closeout unless the human explicitly authorizes recovery."
-      reconciliation_policy: "Create and pass the reconciliation manifest before applying any reviewed patch; classify worktree-only, main-only-preexisting, shared-task, generated metadata, and untracked paths."
-      commit_policy: "Create exactly one commit containing the reviewed task changes on the authorized feature branch; never independently commit both the worktree branch and main."
-      push_policy: "Ask separately for explicit push authorization, push only the verified feature-branch commit, and report the exact pushed_to_origin result and branch."
-      pull_request_policy: "Ask separately before opening or merging a pull request; neither DONE nor a push authorizes either action."
-      merge_verification_policy: "After an authorized merge, fetch origin/main and verify the actual origin/main commit before reporting merged_into_origin_main."
-      closeout_states:
-      - written_in_worktree
-      - committed_in_worktree
-      - pushed_to_origin
-      - merged_into_origin_main
-      - local_branch_ref_updated
-      - checked_out_on_disk
-    failure_recovery:
-      missing_branch_or_worktree: "Stop and report the exact missing registration; ask whether to recover the existing task or explicitly authorize creation."
-      reconciliation_failure: "Remain in closeout, preserve the manifest and exact conflicting paths, and resolve or explicitly exclude them before integration."
-      authorization_missing: "Do not commit, push, open a PR, or merge; report the next required human authorization and retain the current Git state."
 
 intake_guidance:
   source_documents:
@@ -1392,7 +1301,7 @@ templates:
   from_state: APPROVED
   to_state: IN_WORKTREE
   purpose: Create isolated git worktree and begin test-first implementation.
-  next_steps_hint: "First record human approval with record-human-approval --task-id <task-id> --approver <approver>. Then create or select an isolated feature worktree and branch, record both with update-worktree, and run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to IN_WORKTREE. After entry, report the required delegation summary: agent count, assignments, runtime, model, effort, scope, status, and start time. State queued until an authorized agent dispatch is observed; then state in_progress. Worktree creation alone is not implementation completion. If the user explicitly authorizes implementation in the existing checkout, record it with record-receipt --gate existing_worktree_exception --cmd approved-existing-checkout:<approver> --exit-code 0 before transitioning."
+  next_steps_hint: "First record human approval with record-human-approval --task-id <task-id> --approver <approver>. Then create or select an isolated feature worktree and branch, record both with update-worktree, and run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to IN_WORKTREE. The transition itself auto-reconciles any dirty source-checkout changes into the worktree (main_worktree_reconciliation deterministic check) — do not manually claim pre-worktree changes were carried over; the check does this by code and fails closed on any unresolved conflict. After entry, report the required delegation summary: agent count, assignments, runtime, model, effort, scope, status, and start time. State queued until an authorized agent dispatch is observed; then state in_progress. Worktree creation alone is not implementation completion. If the user explicitly authorizes implementation in the existing checkout, record it with record-receipt --gate existing_worktree_exception --cmd approved-existing-checkout:<approver> --exit-code 0 before transitioning."
   checklist:
   - Current task state is persisted as APPROVED
   - 'Deterministic check satisfied: human_approval'
@@ -1400,6 +1309,7 @@ templates:
   deterministic_checks:
   - human_approval
   - worktree_isolation_or_exception
+  - main_worktree_reconciliation
   human_questions: []
   approval:
     required: false
@@ -1915,14 +1825,13 @@ templates:
   from_state: RETROSPECTIVE
   to_state: DONE
   purpose: Complete the task after a completed retrospective or an explicitly reasoned skip.
-  next_steps_hint: "Before asking the final retrospective_decision or requesting DONE, run the repository-wide pytest -q suite through the approved verifier with verifier_id=pytest_full_suite, inspect the result, and require a recorded full_test_suite receipt with exit_code=0. If the suite fails or no passing receipt exists, remain in RETROSPECTIVE, report the exact failing tests and recovery action, and do not close out. Then persist the completed retrospective through the supported record_retrospective wrapper with the required entry fields and resolved follow-ups; defaults are not inferred. Complete the agent self-assessment for every finding, then answer this edge's retrospective_decision question one at a time with --interactive, satisfy retrospective_done_guard and full_test_suite, and run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to DONE."
+  next_steps_hint: "First persist the completed retrospective through the supported record_retrospective wrapper with the required entry fields and resolved follow-ups; do this before requesting DONE. Defaults are not inferred. Then answer this edge's retrospective_decision question one at a time with --interactive, satisfy retrospective_done_guard, and run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to DONE."
   checklist:
   - Current task state is persisted as RETROSPECTIVE
   - Retrospective survey is complete or explicitly skipped with a reason
   required_artifacts: []
   deterministic_checks:
   - retrospective_done_guard
-  - full_test_suite
   human_questions:
   - question_id: retrospective_decision
     question: 'Choose the pipeline-close retrospective outcome: complete the survey or skip it with a recorded reason.'
@@ -1968,9 +1877,8 @@ templates:
 - transition_id: verify_exit_to_in_worktree
   from_state: VERIFY_EXIT
   to_state: IN_WORKTREE
-  purpose: Return failed verification to the existing implementation worktree for a bounded fix and re-verification.
-  next_steps_hint: "If any VERIFY_EXIT check fails, including full_test_suite, do not transition to RETROSPECTIVE or DONE. Report the exact failed command/tests and recovery action, keep using the existing registered worktree, and do not create another worktree. Implement the bounded fix in IN_WORKTREE, rerun focused verification and the session-wide change inventory, submit through WORKTREE_REVIEW, then return to VERIFY_EXIT. Run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to IN_WORKTREE."
-  failure_recovery: "A failed VERIFY_EXIT check returns to the current registered IN_WORKTREE for bounded implementation fixes. Preserve the failed receipt and exact findings, do not repeat the failed closeout path, do not reset to INTAKE unless the human explicitly authorizes that recovery, and do not create a new worktree."
+  purpose: Advance lifecycle state from VERIFY_EXIT to IN_WORKTREE upon satisfying phase requirements and verifications.
+  next_steps_hint: "Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to IN_WORKTREE."
   checklist:
   - Current task state is persisted as VERIFY_EXIT
   - Structural DAG transition from VERIFY_EXIT to IN_WORKTREE is legal
@@ -2245,7 +2153,7 @@ templates:
   from_state: "*"
   to_state: INTAKE
   purpose: Recover a task whose control-plane record has drifted or desynced from reality (e.g. a raw write bypassing the normal transition path) by resetting it to INTAKE for a full re-run through every gate.
-  next_steps_hint: "For the standard recovery route, answer this edge's YAML questions with --interactive or --answers '<json>' and run coordinate-transition --task-id <task-id> --to INTAKE for a full pipeline rerun. If the human must reopen to another canonical stage (including DONE -> IN_WORKTREE or DONE -> WORKTREE_REVIEW), use the human_recovery contract's approval/apply API instead; preserve the current occupancy binding and execute the destination state's gates."
+  next_steps_hint: "Answer this edge's YAML questions with --interactive or --answers '<json>'. Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to INTAKE."
   checklist:
   - Current task state is not INTAKE
   - Human has provided a genuine, interactive justification for the reset

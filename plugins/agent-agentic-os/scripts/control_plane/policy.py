@@ -229,6 +229,30 @@ def _worktree_isolation_check(ctx: Dict[str, Any]) -> Optional[str]:
     return None
 
 
+def _main_worktree_reconciliation_check(ctx: Dict[str, Any]) -> Optional[str]:
+    """Force pre-worktree dirty source-checkout changes into the newly registered worktree
+    at transition time via code (ctx['reconcile_main_into_worktree']), never by trusting an
+    agent's claim that reconciliation happened (github issue #609). A genuine conflict —
+    the worktree independently diverged on the same path — blocks the transition instead
+    of silently overwriting either side; record an explicit human exception to proceed."""
+    if ctx["count_receipts"]("main_worktree_reconciliation_exception", 0) > 0:
+        return None
+    reconcile = ctx.get("reconcile_main_into_worktree")
+    if reconcile is None:
+        return "Cannot enter IN_WORKTREE: reconciliation callable unavailable in policy context."
+    result = reconcile()
+    conflicts = result.get("conflicts") or []
+    if conflicts:
+        joined = ", ".join(conflicts)
+        return (
+            "Cannot enter IN_WORKTREE: the following source-checkout changes conflict with "
+            f"independent worktree content and were not auto-reconciled: {joined}. Resolve the "
+            "conflict manually inside the worktree, or record an explicit human "
+            "main_worktree_reconciliation_exception receipt with the reason."
+        )
+    return None
+
+
 def _done_check(ctx: Dict[str, Any]) -> Optional[str]:
     """Predicate rule folding in the original _check_done_guard: requires a passing test_suite
     receipt, an asymmetric persistence log entry, a clean leak check, and (if any verifiers
@@ -405,6 +429,7 @@ CHECK_REGISTRY: Dict[str, Any] = {
         )
     ),
     "worktree_isolation_or_exception": _worktree_isolation_check,
+    "main_worktree_reconciliation": _main_worktree_reconciliation_check,
     "test_suite": lambda ctx: (
         None if _gate_receipt_exists(ctx, "test_suite") else (
             "Cannot advance: no recorded test_suite verification receipt found. "
@@ -412,9 +437,9 @@ CHECK_REGISTRY: Dict[str, Any] = {
         )
     ),
     "full_test_suite": lambda ctx: (
-        None if ctx["count_receipts"]("full_test_suite", 0) > 0 else (
+        None if _gate_receipt_exists(ctx, "full_test_suite") else (
             "Cannot advance: no recorded full_test_suite verification receipt found. "
-            "Run the repository-wide pytest -q suite through the approved verifier and record a passing receipt."
+            "Run the repository-wide pytest -q suite through the approved verifier."
         )
     ),
     "code_review_or_skip": lambda ctx: (
