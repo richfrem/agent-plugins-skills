@@ -13,6 +13,8 @@ Key Input Dependencies:
 
 Key Functions:
     - detect_intake_mode() — Detects native vs fallback environment mode
+    - detect_referenced_background_document() — Surfaces a candidate background doc that
+      must be checked for source-assisted answers BEFORE any live Socratic question is asked
     - format_socratic_question() — Formats 1-3 Socratic questions with recommended defaults
     - render_4pillar_spec() — Compiles 4-pillar specification markdown
 """
@@ -102,6 +104,32 @@ def detect_intake_mode() -> str:
 
     # Default fallback for standalone / headless scripts
     return "EXECUTE_SOCRATIC_FALLBACK"
+
+
+DEFAULT_BACKGROUND_DOCUMENT_CANDIDATES = [
+    "temp/prompt.md",
+    "temp/brief.md",
+    "docs/plans/intake.md",
+]
+
+
+def detect_referenced_background_document(search_dir: Optional[Path] = None) -> Optional[str]:
+    """Returns the relative path of a conventional background document (a prompt file,
+    handoff doc, or brief) if one exists at session start, or None.
+
+    This exists because a 2026-09-13 session ignored an explicit written instruction to use
+    a referenced document's answers via record_source_assisted_answer_candidate, and instead
+    asked the human to re-answer questions the document already answered. Printing this fact
+    as part of the tool's own output (rather than leaving it to be remembered from SKILL.md
+    prose) is the fix -- surfaced at the exact moment intake starts, not documented and hoped
+    for. Callers MUST check every candidate document against every open interview question
+    via record_source_assisted_answer_candidate before asking that question live.
+    """
+    base = search_dir or Path.cwd()
+    for rel in DEFAULT_BACKGROUND_DOCUMENT_CANDIDATES:
+        if (base / rel).is_file():
+            return rel
+    return None
 
 
 def locate_and_parse_diagnostic_brief(search_dir: Optional[Path] = None) -> Optional[Dict[str, Any]]:
@@ -206,3 +234,10 @@ def render_4pillar_spec(
 
 if __name__ == "__main__":
     print(detect_intake_mode())
+    _bg_doc = detect_referenced_background_document()
+    if _bg_doc:
+        print(
+            f"BACKGROUND_DOCUMENT_FOUND: {_bg_doc} -- read it and check every interview "
+            "question against it via record_source_assisted_answer_candidate BEFORE asking "
+            "any question live. Do not re-ask what it already answers."
+        )

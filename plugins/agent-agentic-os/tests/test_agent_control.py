@@ -318,7 +318,7 @@ def test_cost_tier_resolution_and_task_columns(control_plane):
     
     # 1. Resolve recommendation from cheapest_models.json
     rec_low = control_plane.resolve_recommended_model(runtime_tool="copilot", tier="low")
-    assert rec_low["model_id"] == "gpt-5.4-nano"
+    assert rec_low["model_id"] == "gpt-5.6-luna"
     assert rec_low["tier"] == "low"
     
     rec_high = control_plane.resolve_recommended_model(runtime_tool="copilot", tier="high")
@@ -336,7 +336,7 @@ def test_cost_tier_resolution_and_task_columns(control_plane):
     
     task = control_plane.get_task(task_id)
     assert task["model_tier"] == "low"
-    assert task["model_id"] == "gpt-5.4-nano"
+    assert task["model_id"] == "gpt-5.6-luna"
 
 
 def test_diagnostic_brief_auto_locate(tmp_path):

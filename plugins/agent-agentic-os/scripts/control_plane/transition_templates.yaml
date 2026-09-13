@@ -583,34 +583,25 @@ templates:
   authority:
     type: deterministic
     explanation: Transition from INTAKE to INTERVIEW is deterministically governed by automated checks and artifacts.
-- transition_id: interview_to_retrospective_trivial
+- transition_id: force_retrospective_from_interview
   from_state: INTERVIEW
   to_state: RETROSPECTIVE
-  purpose: Fast-track a TRIVIAL-classified task from the interview gate to the mandatory pipeline-close retrospective gate.
-  next_steps_hint: "First record every listed stage_question_id (interview_classification, interview_summary, interview_scope, interview_verification, and interview_trivial_evidence) through the supported interview-question mechanism; defaults are not inferred. Then satisfy interview_trivial_complete with verify-interview-question, answer this edge's confirm_interview_complete question interactively, and run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to RETROSPECTIVE."
+  purpose: Human-authorized emergency close -- force any in-progress task directly to the mandatory retrospective gate from INTERVIEW, bypassing the normal interview-completeness gate, when the session is being ended before natural completion.
+  next_steps_hint: "Answer force_retrospective_authorization interactively with the literal value FORCE_RETROSPECTIVE, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to RETROSPECTIVE."
   checklist:
   - Current task state is persisted as INTERVIEW
-  - Every listed stage_question_id has a recorded answer for this INTERVIEW occupancy
-  - Human has completed the INTERVIEW stage-entry questions and applicable follow-ups
+  - Human has explicitly authorized an emergency close via FORCE_RETROSPECTIVE
   required_artifacts: []
-  deterministic_checks:
-  - interview_trivial_complete
-  stage_question_ids:
-  - interview_classification
-  - interview_summary
-  - interview_scope
-  - interview_verification
-  - interview_trivial_evidence
-  stage_route:
-    question_id: interview_classification
-    equals: TRIVIAL
+  deterministic_checks: []
+  stage_question_ids: []
   human_questions:
-  - question_id: confirm_interview_complete
-    question: Confirm the INTERVIEW baseline questions and applicable follow-ups are complete?
+  - question_id: force_retrospective_authorization
+    question: This ends the task early via emergency close, bypassing the normal interview-completeness gate. Type FORCE_RETROSPECTIVE to confirm.
     options:
-    - Yes [Recommended]
-    - No, continue the interview
-    default: Yes [Recommended]
+    - FORCE_RETROSPECTIVE
+    default: ''
+    accepted_answers:
+    - FORCE_RETROSPECTIVE
   approval:
     required: false
     approver_role: agent_or_human
@@ -621,10 +612,10 @@ templates:
   - retrospective_capture
   capabilities_prohibited:
   - push branch to origin
-  denial_message: 'Transition INTERVIEW -> RETROSPECTIVE (trivial) denied: preconditions or required decisions not satisfied.'
+  denial_message: 'Transition INTERVIEW -> RETROSPECTIVE (force) denied: explicit FORCE_RETROSPECTIVE authorization not given.'
   authority:
     type: human_decision
-    explanation: A human must confirm that the stage-entry interview is complete before the task enters the mandatory retrospective gate.
+    explanation: A human must explicitly type FORCE_RETROSPECTIVE to end a task early from INTERVIEW, bypassing the normal interview-completeness gate.
 - transition_id: intake_to_draft_plan
   from_state: INTAKE
   to_state: DRAFT_PLAN
@@ -2211,3 +2202,377 @@ templates:
   authority:
     type: human_decision
     explanation: Force closure is available from any non-DONE state only after an interactive human authorization.
+
+- transition_id: force_retrospective_from_intake
+  from_state: INTAKE
+  to_state: RETROSPECTIVE
+  purpose: Human-authorized emergency close -- force any in-progress task directly to the mandatory retrospective gate from INTAKE, bypassing the normal downstream path, when the session is being ended before natural completion.
+  next_steps_hint: "Answer force_retrospective_authorization interactively with the literal value FORCE_RETROSPECTIVE, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to RETROSPECTIVE."
+  checklist:
+  - Current task state is persisted as INTAKE
+  - Human has explicitly authorized an emergency close via FORCE_RETROSPECTIVE
+  required_artifacts: []
+  deterministic_checks: []
+  stage_question_ids: []
+  human_questions:
+  - question_id: force_retrospective_authorization
+    question: This ends the task early via emergency close, bypassing the normal pipeline from INTAKE. Type FORCE_RETROSPECTIVE to confirm.
+    options:
+    - FORCE_RETROSPECTIVE
+    default: ''
+    accepted_answers:
+    - FORCE_RETROSPECTIVE
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released:
+  - retrospective_capture
+  capabilities_prohibited:
+  - push branch to origin
+  denial_message: 'Transition INTAKE -> RETROSPECTIVE (force) denied: explicit FORCE_RETROSPECTIVE authorization not given.'
+  authority:
+    type: human_decision
+    explanation: A human must explicitly type FORCE_RETROSPECTIVE to end a task early from any state, bypassing its normal downstream gates.
+
+- transition_id: force_retrospective_from_draft_plan
+  from_state: DRAFT_PLAN
+  to_state: RETROSPECTIVE
+  purpose: Human-authorized emergency close -- force any in-progress task directly to the mandatory retrospective gate from DRAFT_PLAN, bypassing the normal downstream path, when the session is being ended before natural completion.
+  next_steps_hint: "Answer force_retrospective_authorization interactively with the literal value FORCE_RETROSPECTIVE, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to RETROSPECTIVE."
+  checklist:
+  - Current task state is persisted as DRAFT_PLAN
+  - Human has explicitly authorized an emergency close via FORCE_RETROSPECTIVE
+  required_artifacts: []
+  deterministic_checks: []
+  stage_question_ids: []
+  human_questions:
+  - question_id: force_retrospective_authorization
+    question: This ends the task early via emergency close, bypassing the normal pipeline from DRAFT_PLAN. Type FORCE_RETROSPECTIVE to confirm.
+    options:
+    - FORCE_RETROSPECTIVE
+    default: ''
+    accepted_answers:
+    - FORCE_RETROSPECTIVE
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released:
+  - retrospective_capture
+  capabilities_prohibited:
+  - push branch to origin
+  denial_message: 'Transition DRAFT_PLAN -> RETROSPECTIVE (force) denied: explicit FORCE_RETROSPECTIVE authorization not given.'
+  authority:
+    type: human_decision
+    explanation: A human must explicitly type FORCE_RETROSPECTIVE to end a task early from any state, bypassing its normal downstream gates.
+
+- transition_id: force_retrospective_from_multi_agent_review
+  from_state: MULTI_AGENT_REVIEW
+  to_state: RETROSPECTIVE
+  purpose: Human-authorized emergency close -- force any in-progress task directly to the mandatory retrospective gate from MULTI_AGENT_REVIEW, bypassing the normal downstream path, when the session is being ended before natural completion.
+  next_steps_hint: "Answer force_retrospective_authorization interactively with the literal value FORCE_RETROSPECTIVE, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to RETROSPECTIVE."
+  checklist:
+  - Current task state is persisted as MULTI_AGENT_REVIEW
+  - Human has explicitly authorized an emergency close via FORCE_RETROSPECTIVE
+  required_artifacts: []
+  deterministic_checks: []
+  stage_question_ids: []
+  human_questions:
+  - question_id: force_retrospective_authorization
+    question: This ends the task early via emergency close, bypassing the normal pipeline from MULTI_AGENT_REVIEW. Type FORCE_RETROSPECTIVE to confirm.
+    options:
+    - FORCE_RETROSPECTIVE
+    default: ''
+    accepted_answers:
+    - FORCE_RETROSPECTIVE
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released:
+  - retrospective_capture
+  capabilities_prohibited:
+  - push branch to origin
+  denial_message: 'Transition MULTI_AGENT_REVIEW -> RETROSPECTIVE (force) denied: explicit FORCE_RETROSPECTIVE authorization not given.'
+  authority:
+    type: human_decision
+    explanation: A human must explicitly type FORCE_RETROSPECTIVE to end a task early from any state, bypassing its normal downstream gates.
+
+- transition_id: force_retrospective_from_plan_review
+  from_state: PLAN_REVIEW
+  to_state: RETROSPECTIVE
+  purpose: Human-authorized emergency close -- force any in-progress task directly to the mandatory retrospective gate from PLAN_REVIEW, bypassing the normal downstream path, when the session is being ended before natural completion.
+  next_steps_hint: "Answer force_retrospective_authorization interactively with the literal value FORCE_RETROSPECTIVE, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to RETROSPECTIVE."
+  checklist:
+  - Current task state is persisted as PLAN_REVIEW
+  - Human has explicitly authorized an emergency close via FORCE_RETROSPECTIVE
+  required_artifacts: []
+  deterministic_checks: []
+  stage_question_ids: []
+  human_questions:
+  - question_id: force_retrospective_authorization
+    question: This ends the task early via emergency close, bypassing the normal pipeline from PLAN_REVIEW. Type FORCE_RETROSPECTIVE to confirm.
+    options:
+    - FORCE_RETROSPECTIVE
+    default: ''
+    accepted_answers:
+    - FORCE_RETROSPECTIVE
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released:
+  - retrospective_capture
+  capabilities_prohibited:
+  - push branch to origin
+  denial_message: 'Transition PLAN_REVIEW -> RETROSPECTIVE (force) denied: explicit FORCE_RETROSPECTIVE authorization not given.'
+  authority:
+    type: human_decision
+    explanation: A human must explicitly type FORCE_RETROSPECTIVE to end a task early from any state, bypassing its normal downstream gates.
+
+- transition_id: force_retrospective_from_awaiting_approval
+  from_state: AWAITING_APPROVAL
+  to_state: RETROSPECTIVE
+  purpose: Human-authorized emergency close -- force any in-progress task directly to the mandatory retrospective gate from AWAITING_APPROVAL, bypassing the normal downstream path, when the session is being ended before natural completion.
+  next_steps_hint: "Answer force_retrospective_authorization interactively with the literal value FORCE_RETROSPECTIVE, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to RETROSPECTIVE."
+  checklist:
+  - Current task state is persisted as AWAITING_APPROVAL
+  - Human has explicitly authorized an emergency close via FORCE_RETROSPECTIVE
+  required_artifacts: []
+  deterministic_checks: []
+  stage_question_ids: []
+  human_questions:
+  - question_id: force_retrospective_authorization
+    question: This ends the task early via emergency close, bypassing the normal pipeline from AWAITING_APPROVAL. Type FORCE_RETROSPECTIVE to confirm.
+    options:
+    - FORCE_RETROSPECTIVE
+    default: ''
+    accepted_answers:
+    - FORCE_RETROSPECTIVE
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released:
+  - retrospective_capture
+  capabilities_prohibited:
+  - push branch to origin
+  denial_message: 'Transition AWAITING_APPROVAL -> RETROSPECTIVE (force) denied: explicit FORCE_RETROSPECTIVE authorization not given.'
+  authority:
+    type: human_decision
+    explanation: A human must explicitly type FORCE_RETROSPECTIVE to end a task early from any state, bypassing its normal downstream gates.
+
+- transition_id: force_retrospective_from_rolled_back
+  from_state: ROLLED_BACK
+  to_state: RETROSPECTIVE
+  purpose: Human-authorized emergency close -- force any in-progress task directly to the mandatory retrospective gate from ROLLED_BACK, bypassing the normal downstream path, when the session is being ended before natural completion.
+  next_steps_hint: "Answer force_retrospective_authorization interactively with the literal value FORCE_RETROSPECTIVE, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to RETROSPECTIVE."
+  checklist:
+  - Current task state is persisted as ROLLED_BACK
+  - Human has explicitly authorized an emergency close via FORCE_RETROSPECTIVE
+  required_artifacts: []
+  deterministic_checks: []
+  stage_question_ids: []
+  human_questions:
+  - question_id: force_retrospective_authorization
+    question: This ends the task early via emergency close, bypassing the normal pipeline from ROLLED_BACK. Type FORCE_RETROSPECTIVE to confirm.
+    options:
+    - FORCE_RETROSPECTIVE
+    default: ''
+    accepted_answers:
+    - FORCE_RETROSPECTIVE
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released:
+  - retrospective_capture
+  capabilities_prohibited:
+  - push branch to origin
+  denial_message: 'Transition ROLLED_BACK -> RETROSPECTIVE (force) denied: explicit FORCE_RETROSPECTIVE authorization not given.'
+  authority:
+    type: human_decision
+    explanation: A human must explicitly type FORCE_RETROSPECTIVE to end a task early from any state, bypassing its normal downstream gates.
+
+- transition_id: force_retrospective_from_escalated
+  from_state: ESCALATED
+  to_state: RETROSPECTIVE
+  purpose: Human-authorized emergency close -- force any in-progress task directly to the mandatory retrospective gate from ESCALATED, bypassing the normal downstream path, when the session is being ended before natural completion.
+  next_steps_hint: "Answer force_retrospective_authorization interactively with the literal value FORCE_RETROSPECTIVE, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to RETROSPECTIVE."
+  checklist:
+  - Current task state is persisted as ESCALATED
+  - Human has explicitly authorized an emergency close via FORCE_RETROSPECTIVE
+  required_artifacts: []
+  deterministic_checks: []
+  stage_question_ids: []
+  human_questions:
+  - question_id: force_retrospective_authorization
+    question: This ends the task early via emergency close, bypassing the normal pipeline from ESCALATED. Type FORCE_RETROSPECTIVE to confirm.
+    options:
+    - FORCE_RETROSPECTIVE
+    default: ''
+    accepted_answers:
+    - FORCE_RETROSPECTIVE
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released:
+  - retrospective_capture
+  capabilities_prohibited:
+  - push branch to origin
+  denial_message: 'Transition ESCALATED -> RETROSPECTIVE (force) denied: explicit FORCE_RETROSPECTIVE authorization not given.'
+  authority:
+    type: human_decision
+    explanation: A human must explicitly type FORCE_RETROSPECTIVE to end a task early from any state, bypassing its normal downstream gates.
+
+- transition_id: force_retrospective_from_done
+  from_state: DONE
+  to_state: RETROSPECTIVE
+  purpose: Human-authorized emergency close -- force any in-progress task directly to the mandatory retrospective gate from DONE, bypassing the normal downstream path, when the session is being ended before natural completion.
+  next_steps_hint: "Answer force_retrospective_authorization interactively with the literal value FORCE_RETROSPECTIVE, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to RETROSPECTIVE."
+  checklist:
+  - Current task state is persisted as DONE
+  - Human has explicitly authorized an emergency close via FORCE_RETROSPECTIVE
+  required_artifacts: []
+  deterministic_checks: []
+  stage_question_ids: []
+  human_questions:
+  - question_id: force_retrospective_authorization
+    question: This ends the task early via emergency close, bypassing the normal pipeline from DONE. Type FORCE_RETROSPECTIVE to confirm.
+    options:
+    - FORCE_RETROSPECTIVE
+    default: ''
+    accepted_answers:
+    - FORCE_RETROSPECTIVE
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released:
+  - retrospective_capture
+  capabilities_prohibited:
+  - push branch to origin
+  denial_message: 'Transition DONE -> RETROSPECTIVE (force) denied: explicit FORCE_RETROSPECTIVE authorization not given.'
+  authority:
+    type: human_decision
+    explanation: A human must explicitly type FORCE_RETROSPECTIVE to end a task early from any state, bypassing its normal downstream gates.
+
+- transition_id: force_retrospective_from_in_worktree
+  from_state: IN_WORKTREE
+  to_state: RETROSPECTIVE
+  purpose: Human-authorized emergency close -- force any in-progress task directly to the mandatory retrospective gate from IN_WORKTREE, bypassing the normal downstream path, when the session is being ended before natural completion.
+  next_steps_hint: "Answer force_retrospective_authorization interactively with the literal value FORCE_RETROSPECTIVE, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to RETROSPECTIVE."
+  checklist:
+  - Current task state is persisted as IN_WORKTREE
+  - Human has explicitly authorized an emergency close via FORCE_RETROSPECTIVE
+  required_artifacts: []
+  deterministic_checks: []
+  stage_question_ids: []
+  human_questions:
+  - question_id: force_retrospective_authorization
+    question: This ends the task early via emergency close, bypassing the normal pipeline from IN_WORKTREE. Type FORCE_RETROSPECTIVE to confirm.
+    options:
+    - FORCE_RETROSPECTIVE
+    default: ''
+    accepted_answers:
+    - FORCE_RETROSPECTIVE
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released:
+  - retrospective_capture
+  capabilities_prohibited:
+  - push branch to origin
+  denial_message: 'Transition IN_WORKTREE -> RETROSPECTIVE (force) denied: explicit FORCE_RETROSPECTIVE authorization not given.'
+  authority:
+    type: human_decision
+    explanation: A human must explicitly type FORCE_RETROSPECTIVE to end a task early from any state, bypassing its normal downstream gates.
+
+- transition_id: force_retrospective_from_worktree_review
+  from_state: WORKTREE_REVIEW
+  to_state: RETROSPECTIVE
+  purpose: Human-authorized emergency close -- force any in-progress task directly to the mandatory retrospective gate from WORKTREE_REVIEW, bypassing the normal downstream path, when the session is being ended before natural completion.
+  next_steps_hint: "Answer force_retrospective_authorization interactively with the literal value FORCE_RETROSPECTIVE, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to RETROSPECTIVE."
+  checklist:
+  - Current task state is persisted as WORKTREE_REVIEW
+  - Human has explicitly authorized an emergency close via FORCE_RETROSPECTIVE
+  required_artifacts: []
+  deterministic_checks: []
+  stage_question_ids: []
+  human_questions:
+  - question_id: force_retrospective_authorization
+    question: This ends the task early via emergency close, bypassing the normal pipeline from WORKTREE_REVIEW. Type FORCE_RETROSPECTIVE to confirm.
+    options:
+    - FORCE_RETROSPECTIVE
+    default: ''
+    accepted_answers:
+    - FORCE_RETROSPECTIVE
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released:
+  - retrospective_capture
+  capabilities_prohibited:
+  - push branch to origin
+  denial_message: 'Transition WORKTREE_REVIEW -> RETROSPECTIVE (force) denied: explicit FORCE_RETROSPECTIVE authorization not given.'
+  authority:
+    type: human_decision
+    explanation: A human must explicitly type FORCE_RETROSPECTIVE to end a task early from any state, bypassing its normal downstream gates.
+
+- transition_id: force_retrospective_from_multi_agent_code_review
+  from_state: MULTI_AGENT_CODE_REVIEW
+  to_state: RETROSPECTIVE
+  purpose: Human-authorized emergency close -- force any in-progress task directly to the mandatory retrospective gate from MULTI_AGENT_CODE_REVIEW, bypassing the normal downstream path, when the session is being ended before natural completion.
+  next_steps_hint: "Answer force_retrospective_authorization interactively with the literal value FORCE_RETROSPECTIVE, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to RETROSPECTIVE."
+  checklist:
+  - Current task state is persisted as MULTI_AGENT_CODE_REVIEW
+  - Human has explicitly authorized an emergency close via FORCE_RETROSPECTIVE
+  required_artifacts: []
+  deterministic_checks: []
+  stage_question_ids: []
+  human_questions:
+  - question_id: force_retrospective_authorization
+    question: This ends the task early via emergency close, bypassing the normal pipeline from MULTI_AGENT_CODE_REVIEW. Type FORCE_RETROSPECTIVE to confirm.
+    options:
+    - FORCE_RETROSPECTIVE
+    default: ''
+    accepted_answers:
+    - FORCE_RETROSPECTIVE
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released:
+  - retrospective_capture
+  capabilities_prohibited:
+  - push branch to origin
+  denial_message: 'Transition MULTI_AGENT_CODE_REVIEW -> RETROSPECTIVE (force) denied: explicit FORCE_RETROSPECTIVE authorization not given.'
+  authority:
+    type: human_decision
+    explanation: A human must explicitly type FORCE_RETROSPECTIVE to end a task early from any state, bypassing its normal downstream gates.
