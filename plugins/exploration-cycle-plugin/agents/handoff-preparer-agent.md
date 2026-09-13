@@ -109,12 +109,12 @@ Do NOT skip this step or proceed with a generic handoff if Tier 3 conditions are
 After writing `exploration/handoffs/handoff-package.md`, ask the SME or engineer:
 
 > "We're ready to hand this off to the downstream planning or engineering phase. Which format does your team use?
-> 1. **Interview-Spec / Control Plane (Recommended)** — I will compile `DIAGNOSTIC_BRIEF.md` via `technical_diagnostic_engine.py` (mapping coupling surfaces, hidden assumptions, and architectural forks) and advance state in `context/control_plane.db` (`INTAKE` -> `INTERVIEW`) for the `interview-spec` Socratic intake loop.
+> 1. **work-intake / Control Plane (Recommended)** — I will compile `DIAGNOSTIC_BRIEF.md` via `technical_diagnostic_engine.py` (mapping coupling surfaces, hidden assumptions, and architectural forks) and advance state in `context/control_plane.db` (`INTAKE` -> `INTERVIEW`) for the `work-intake` Socratic intake loop.
 > 2. **Superpowers** — I'll generate a spec document in `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md` format.
 > 3. **Generic** — I'll produce a plain structured specification document.
 > 4. **Spec-Kitty (Legacy)** — I'll generate `spec-draft.md`, `plan-draft.md`, and a tasks outline.
 
-**If Interview-Spec / Control Plane chosen:**
+**If work-intake / Control Plane chosen:**
 1. Execute `technical_diagnostic_engine.py` in read-only mode to emit `exploration/DIAGNOSTIC_BRIEF.md`:
    ```bash
    python3 plugins/exploration-cycle-plugin/scripts/technical_diagnostic_engine.py \
@@ -123,7 +123,7 @@ After writing `exploration/handoffs/handoff-package.md`, ask the SME or engineer
      --task-id "<task_id>"
    ```
 2. Confirm the brief identifies coupling surfaces, SQLite schemas, cross-plugin symlinks, and architectural forks.
-3. Hand off cleanly to `interview-spec` (`INTAKE` -> `INTERVIEW` in `context/control_plane.db`).
+3. Hand off cleanly to `work-intake` (`INTAKE` -> `INTERVIEW` in `context/control_plane.db`).
 
 **If Superpowers chosen:** Write handoff content to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`. Include architecture, components, data flow, and acceptance criteria sections matching superpowers spec format.
 

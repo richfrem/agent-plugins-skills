@@ -15,7 +15,7 @@ provides_tools:
   - audit_map_debt
 skills:
   - critical-auditor
-  - interview-spec
+  - work-intake
   - optimize-agent-instructions
   - os-architect
   - os-clean-locks

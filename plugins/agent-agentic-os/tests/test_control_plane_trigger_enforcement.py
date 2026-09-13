@@ -70,7 +70,7 @@ def _insert_legal_task(conn, task_id, state):
 
 def test_valid_transitions_table_matches_registry(tmp_path):
     """valid_transitions (as materialized in a live DB) matches TransitionRegistry.get_all_edges()
-    exactly — the automated drift-detection test requested during interview-spec."""
+    exactly — the automated drift-detection test requested during work-intake."""
     adapter, db_path = _make_adapter(tmp_path)
     conn = sqlite3.connect(str(db_path))
     try:

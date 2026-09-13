@@ -60,6 +60,44 @@ TASK_STATE="$(echo "$TASK_ROW" | cut -d'|' -f2)"
 # Check staged files
 STAGED_FILES="$(git diff --cached --name-only --diff-filter=ACM || true)"
 
+# Location-aware enforcement: once a task has an isolated worktree registered
+# (worktree_path set and different from the main repo root), that worktree is
+# the sole active location for the task -- a commit from anywhere else (e.g.
+# the main checkout) on the same branch is a leak, not a legitimate commit.
+# Found live (2026-09-13): an agent registered the main checkout itself as
+# the "worktree" (a separate bug, now fixed in policy.py's
+# _worktree_isolation_check), which meant this hook had no way to tell the
+# difference between "working in the registered worktree" and "working in
+# the main checkout" -- it only ever checked branch + transition history,
+# never location. If worktree_path legitimately equals the repo root (the
+# existing_worktree_exception case), reaching IN_WORKTREE at all already
+# required that exception receipt per policy.py, so no separate check is
+# needed here for that case.
+case "$TASK_STATE" in
+    IN_WORKTREE|WORKTREE_REVIEW|MULTI_AGENT_CODE_REVIEW|VERIFY_EXIT|DONE)
+        TASK_WORKTREE_PATH="$(sqlite3 "$DB_PATH" "SELECT worktree_path FROM tasks WHERE task_id = '$TASK_ID';" 2>/dev/null || true)"
+        if [ -n "$TASK_WORKTREE_PATH" ]; then
+            RESOLVED_TASK_WORKTREE="$(cd "$TASK_WORKTREE_PATH" 2>/dev/null && pwd || echo "$TASK_WORKTREE_PATH")"
+            RESOLVED_REPO_ROOT="$(cd "$REPO_ROOT" 2>/dev/null && pwd || echo "$REPO_ROOT")"
+            CURRENT_CHECKOUT_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || echo "$REPO_ROOT")"
+            if [ "$RESOLVED_TASK_WORKTREE" != "$RESOLVED_REPO_ROOT" ] && [ "$CURRENT_CHECKOUT_ROOT" != "$RESOLVED_TASK_WORKTREE" ]; then
+                echo ""
+                echo "❌ GIT COMMIT BLOCKED: Commit Outside Registered Worktree (Leak)!"
+                echo ""
+                echo "   Task ID:            $TASK_ID"
+                echo "   Task State:         $TASK_STATE"
+                echo "   Registered worktree: $RESOLVED_TASK_WORKTREE"
+                echo "   Current location:    $CURRENT_CHECKOUT_ROOT"
+                echo ""
+                echo "   This task has an isolated worktree registered. All further commits for"
+                echo "   this task's branch must happen inside that worktree, not here."
+                echo ""
+                exit 1
+            fi
+        fi
+        ;;
+esac
+
 # Handle planning / proposal states
 case "$TASK_STATE" in
     INTAKE|INTERVIEW|DRAFT_PLAN|PLAN_REVIEW|MULTI_AGENT_REVIEW|AWAITING_APPROVAL)

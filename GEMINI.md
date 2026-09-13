@@ -213,7 +213,7 @@ os-architect → os-improvement-loop → os-eval-runner → os-eval-backport →
 **Active skills (22):** os-architect, os-improvement-loop, os-eval-runner, os-eval-lab-setup,
 os-eval-backport, os-experiment-log, os-evolution-planner, os-evolution-verifier,
 os-environment-probe, os-memory-manager, os-improvement-report, os-guide, os-init,
-os-clean-locks, todo-check, optimize-agent-instructions, self-evolution, critical-auditor, interview-spec,
+os-clean-locks, todo-check, optimize-agent-instructions, self-evolution, critical-auditor, work-intake,
 os-health-check, issue-resolution-reviewer, repository-improvement
 
 **Reference skills (1):** os-skill-improvement — methodology/reference only; prefer `os-improvement-loop` for active orchestration. **Do not delete.**
@@ -2036,7 +2036,7 @@ globs: ["**/*"]
 All non-trivial engineering tasks MUST progress through the 4-phase lifecycle below. This replaces legacy waterfall approaches and couples upstream discovery to deterministic execution.
 
 ```
-Phase 0: Intake & Socratic Gate (exploration-cycle-plugin + interview-spec)
+Phase 0: Intake & Socratic Gate (exploration-cycle-plugin + work-intake)
    │
 Phase 1: Native Plan Mode & Adversarial Review (critical-auditor + Human Gate)
    │
@@ -2055,7 +2055,7 @@ Before Plan Mode can ever be entered, the task must be bounded:
    - Execute read-only codebase discovery via `exploration-cycle-plugin` (`technical_diagnostic_engine.py`).
    - Inspect coupling surfaces (touched files, SQLite schemas, cross-plugin symlinks), surface hidden assumptions, and evaluate candidate architectural forks.
    - Emit `exploration/DIAGNOSTIC_BRIEF.md`.
-2. **Interview Gate (`interview-spec`):**
+2. **Interview Gate (`work-intake`):**
    - **Native-First Deferral:** Inspect session environment markers first (`CLAUDE_CODE_ENTRY`, `ANTIGRAVITY_IDE`). Defer to native interactive intake if present. Fall back to Socratic Defaulting loop for headless/Copilot sessions.
    - Socratic Defaulting: 1–3 questions max, structured options with explicit recommended default (`Option A [Recommended]` vs. `Option B`).
    - Compiles the immutable **4-Pillar Spec** (`TASK_SPEC.md`):
@@ -2170,7 +2170,7 @@ issue body, prior spec, handoff doc), read that file FIRST, before asking any
 Socratic/interview question. Check every open question against it. For any question the
 document already answers, use the document's answer directly — via
 `record_source_assisted_answer_candidate(source_path=..., source_authorized=True, ...)`
-where `interview-spec`'s control plane is active, or by simply citing the source inline
+where `work-intake`'s control plane is active, or by simply citing the source inline
 otherwise. Never make the human re-answer, live, something they already wrote down for you.
 Only ask a live question for what the document genuinely leaves open or ambiguous.
 

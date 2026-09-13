@@ -78,7 +78,7 @@ If the user reveals at any point (Phase 1 trigger, Phase 2 Domain, Nature, or Pr
 
 ### Desired output
 > What do you need to come out of this exploration?
-- **Technical Codebase Discovery** (→ Technical Diagnostic Brief, `exploration/DIAGNOSTIC_BRIEF.md`, feeding `interview-spec` & `context/control_plane.db`)
+- **Technical Codebase Discovery** (→ Technical Diagnostic Brief, `exploration/DIAGNOSTIC_BRIEF.md`, feeding `work-intake` & `context/control_plane.db`)
 - Just want to think it through and understand it better
 - Need a formal spec (→ Superpowers design doc, `docs/superpowers/specs/`)
 - Need a planning document or roadmap update
@@ -90,7 +90,7 @@ When the user indicates they want to explore a technical task, refactor, bug, or
 1. **Emit Technical Brief:** Direct the downstream workflow to compile `exploration/DIAGNOSTIC_BRIEF.md` using `technical_diagnostic_engine.py`.
 2. **Enforce Read-Only Sandboxing:** Emphasize that technical discovery sub-agents inspect coupling surfaces, SQLite schemas, and cross-plugin symlinks in strictly read-only mode.
    - **Operational Why:** Premature mutations during discovery invalidate verifier baselines, cause main checkout leaks, and violate the mandatory Human Gate before a 4-Pillar Spec is approved.
-3. **Control Plane Alignment:** Log the session trigger in `context/control_plane.db` as `INTAKE` and prepare to hand off to `interview-spec` (`INTERVIEW`).
+3. **Control Plane Alignment:** Log the session trigger in `context/control_plane.db` as `INTAKE` and prepare to hand off to `work-intake` (`INTERVIEW`).
 
 ### Urgency / scope
 > How time-constrained is this?

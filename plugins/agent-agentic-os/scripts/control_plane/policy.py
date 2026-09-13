@@ -37,6 +37,7 @@ Key Input Dependencies:
 """
 
 from fnmatch import fnmatch
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 
@@ -209,7 +210,15 @@ def _interview_standard_check(ctx: Dict[str, Any]) -> Optional[str]:
 
 
 def _worktree_isolation_check(ctx: Dict[str, Any]) -> Optional[str]:
-    """Require isolated worktree metadata unless a human records an exception."""
+    """Require isolated worktree metadata unless a human records an exception.
+
+    Also rejects registering the main checkout path itself as the "worktree" —
+    found live (2026-09-13): an agent passed --path "$(pwd)" (the main checkout)
+    to update-worktree, which this check previously accepted because it only
+    verified worktree_path/worktree_branch were non-empty and the branch wasn't
+    main/master. That is not an isolated worktree. The only sanctioned way to
+    work in the existing checkout is the pre-existing existing_worktree_exception
+    receipt (recorded when the user explicitly authorizes it), not a default."""
     task = ctx.get("task") or {}
     if ctx["count_receipts"]("existing_worktree_exception", 0) > 0:
         return None
@@ -225,6 +234,56 @@ def _worktree_isolation_check(ctx: Dict[str, Any]) -> Optional[str]:
         return (
             f"Cannot enter IN_WORKTREE on default branch '{worktree_branch}': use an isolated "
             "feature branch or record an explicit existing_worktree_exception."
+        )
+
+    repo_root = str(ctx.get("repo_root") or "").strip()
+    if repo_root:
+        resolved_worktree = str(Path(worktree_path).resolve())
+        resolved_repo_root = str(Path(repo_root).resolve())
+        if resolved_worktree == resolved_repo_root:
+            return (
+                "Cannot enter IN_WORKTREE: registered worktree_path is the main checkout itself "
+                f"('{resolved_worktree}'), not an isolated worktree. Create an isolated worktree "
+                "(e.g. .worktrees/task-<task-id>/) and register that path with update-worktree, "
+                "or record an explicit human existing_worktree_exception receipt if the user has "
+                "authorized working directly in the existing checkout."
+            )
+    return None
+
+
+def _main_clean_before_approval_check(ctx: Dict[str, Any]) -> Optional[str]:
+    """Enforce the documented-but-previously-unenforced practice from
+    references/worktree-reconciliation-and-multi-worktree-practices.md Section 1:
+    commit interim INTAKE/INTERVIEW/DRAFT_PLAN work to a small branch and get it
+    merged BEFORE APPROVED, so main is clean before a worktree is ever created.
+    main_worktree_reconciliation (a later check, at APPROVED -> IN_WORKTREE) is a
+    safety net for what slips through, not a substitute for keeping main clean in
+    the first place -- this check closes that gap at the earlier edge.
+
+    Found live (2026-09-13): an agent accumulated substantial uncommitted/committed
+    work directly on the task's own branch through INTERVIEW/DRAFT_PLAN, entered
+    APPROVED/IN_WORKTREE without a clean-foundation commit+PR cycle, then could not
+    push the branch at all once IN_WORKTREE (pre-push-review-guard correctly denies
+    task-branch pushes before DONE) -- a real conflict between two individually
+    correct rules, caused by skipping this earlier gate."""
+    if ctx["count_receipts"]("main_dirty_before_approval_exception", 0) > 0:
+        return None
+    get_advisory = ctx.get("get_main_dirty_advisory")
+    if get_advisory is None:
+        return None
+    advisory = get_advisory()
+    dirty_count = advisory.get("dirty_count", 0) if isinstance(advisory, dict) else 0
+    if dirty_count > 0:
+        dirty_paths = advisory.get("dirty_paths", []) if isinstance(advisory, dict) else []
+        joined = ", ".join(dirty_paths[:10])
+        more = f" (+{len(dirty_paths) - 10} more)" if len(dirty_paths) > 10 else ""
+        return (
+            f"Cannot enter APPROVED: {dirty_count} dirty path(s) on the source checkout "
+            f"({joined}{more}). Commit this interim work to a small branch and get it "
+            "reviewed/merged before a worktree is created, per "
+            "references/worktree-reconciliation-and-multi-worktree-practices.md Section 1, "
+            "or record an explicit human main_dirty_before_approval_exception receipt with "
+            "the reason if the human has authorized proceeding with dirty state."
         )
     return None
 
@@ -430,6 +489,7 @@ CHECK_REGISTRY: Dict[str, Any] = {
     ),
     "worktree_isolation_or_exception": _worktree_isolation_check,
     "main_worktree_reconciliation": _main_worktree_reconciliation_check,
+    "main_clean_before_approval": _main_clean_before_approval_check,
     "test_suite": lambda ctx: (
         None if _gate_receipt_exists(ctx, "test_suite") else (
             "Cannot advance: no recorded test_suite verification receipt found. "

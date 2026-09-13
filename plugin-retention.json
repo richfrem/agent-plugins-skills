@@ -13,7 +13,7 @@
     "agent-agentic-os": {
       "skills": {
         "critical-auditor": true,
-        "interview-spec": true,
+        "work-intake": true,
         "issue-resolution-reviewer": true,
         "optimize-agent-instructions": true,
         "os-architect": true,
@@ -45,7 +45,8 @@
         "self-evolution-policy.md": true,
         "test-driven-development.md": true,
         "worktree-lifecycle-management.md": true,
-        "worktree-subagent-leak-detection.md": true
+        "worktree-subagent-leak-detection.md": true,
+        "state-transition-guidance-compliance.md": true
       },
       "agents": {
         "agent-agentic-os-agentic-os-setup.md": true,

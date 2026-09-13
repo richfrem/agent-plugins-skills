@@ -105,7 +105,7 @@ def test_retrofit_enriches_claude_md_with_phase0_and_control_plane(target_repo):
     assert res.returncode == 0
     content = claude_md.read_text(encoding="utf-8")
     assert "Phase 0 Intake & Socratic Gate" in content, "CLAUDE.md must be enriched with Phase 0 Intake Gate"
-    assert "interview-spec" in content, "CLAUDE.md must reference interview-spec"
+    assert "work-intake" in content, "CLAUDE.md must reference work-intake"
     assert "Some custom domain context." in content, "Original project context must be preserved"
 
 

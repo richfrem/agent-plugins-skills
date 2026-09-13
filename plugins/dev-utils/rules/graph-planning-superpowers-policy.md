@@ -20,7 +20,7 @@ globs: ["**/*"]
 All STANDARD-classified engineering tasks MUST progress through the 4-phase lifecycle below. This replaces legacy waterfall approaches and couples upstream discovery to deterministic execution.
 
 ```
-Phase 0: Intake & Socratic Gate (exploration-cycle-plugin + interview-spec)
+Phase 0: Intake & Socratic Gate (exploration-cycle-plugin + work-intake)
    │
    ├─ TRIVIAL classification (single-file/few-line, no architectural impact):
    │    fast-track directly to INTAKE -> DONE, skipping Phases 1-3 entirely.
@@ -28,7 +28,7 @@ Phase 0: Intake & Socratic Gate (exploration-cycle-plugin + interview-spec)
    │    the triage answer itself is the sole recorded audit artifact. Work still
    │    happens on a feature branch followed by a normal PR; only ceremony is
    │    skipped, never branch discipline or the push-to-origin gate.
-   │    See interview-spec/SKILL.md and GitHub Issue #534 for the full design.
+   │    See work-intake/SKILL.md and GitHub Issue #534 for the full design.
    │
    └─ STANDARD classification: continue below.
    │
@@ -51,7 +51,7 @@ question tracked in [GitHub Issue #537](https://github.com/richfrem/agent-plugin
 ## 2. Phase 0: Pre-Planning Intake Bookend & Socratic Gate
 
 Before Plan Mode can ever be entered, the task must be bounded. Immediately after task
-registration and before any Socratic question, `interview-spec` asks one direct triage
+registration and before any Socratic question, `work-intake` asks one direct triage
 question — TRIVIAL or STANDARD — with a heuristic-derived recommended default (see the
 TRIVIAL fast-track branch in Section 1). Only STANDARD-classified tasks proceed through the
 rest of this phase and into Phase 1:
@@ -60,7 +60,7 @@ rest of this phase and into Phase 1:
    - Execute read-only codebase discovery via `exploration-cycle-plugin` (`technical_diagnostic_engine.py`).
    - Inspect coupling surfaces (touched files, SQLite schemas, cross-plugin symlinks), surface hidden assumptions, and evaluate candidate architectural forks.
    - Emit `exploration/DIAGNOSTIC_BRIEF.md`.
-2. **Interview Gate (`interview-spec`):**
+2. **Interview Gate (`work-intake`):**
    - **Native-First Deferral:** Inspect session environment markers first (`CLAUDE_CODE_ENTRY`, `ANTIGRAVITY_IDE`). Defer to native interactive intake if present. Fall back to Socratic Defaulting loop for headless/Copilot sessions.
    - Socratic Defaulting: 1–3 questions max, structured options with explicit recommended default (`Option A [Recommended]` vs. `Option B`).
    - Compiles the immutable **4-Pillar Spec** (`TASK_SPEC.md`):

@@ -1,1 +1,0 @@
-../../../references/interview-spec/fallback-tree.md

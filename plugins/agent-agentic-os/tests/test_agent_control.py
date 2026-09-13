@@ -200,9 +200,9 @@ def test_task_lifecycle_transitions(control_plane):
     assert control_plane.get_task(task_id)["state"] == "INTERVIEW"
 
     # 3. Transition to DRAFT_PLAN
-    control_plane.record_plan_mode_entry(task_id=task_id, actor="interview-spec")
+    control_plane.record_plan_mode_entry(task_id=task_id, actor="work-intake")
     stage_interview_answers(control_plane, task_id)
-    control_plane.transition(task_id=task_id, to_state="DRAFT_PLAN", actor="interview-spec", reason="4-Pillar Spec compiled")
+    control_plane.transition(task_id=task_id, to_state="DRAFT_PLAN", actor="work-intake", reason="4-Pillar Spec compiled")
     assert control_plane.get_task(task_id)["state"] == "DRAFT_PLAN"
 
     # 4. Critic review passes, merge at PLAN_REVIEW, then move to AWAITING_APPROVAL

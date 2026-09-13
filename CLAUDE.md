@@ -952,7 +952,7 @@ globs: ["**/*"]
 All STANDARD-classified engineering tasks MUST progress through the 4-phase lifecycle below. This replaces legacy waterfall approaches and couples upstream discovery to deterministic execution.
 
 ```
-Phase 0: Intake & Socratic Gate (exploration-cycle-plugin + interview-spec)
+Phase 0: Intake & Socratic Gate (exploration-cycle-plugin + work-intake)
    │
    ├─ TRIVIAL classification (single-file/few-line, no architectural impact):
    │    fast-track directly to INTAKE -> DONE, skipping Phases 1-3 entirely.
@@ -960,7 +960,7 @@ Phase 0: Intake & Socratic Gate (exploration-cycle-plugin + interview-spec)
    │    the triage answer itself is the sole recorded audit artifact. Work still
    │    happens on a feature branch followed by a normal PR; only ceremony is
    │    skipped, never branch discipline or the push-to-origin gate.
-   │    See interview-spec/SKILL.md and GitHub Issue #534 for the full design.
+   │    See work-intake/SKILL.md and GitHub Issue #534 for the full design.
    │
    └─ STANDARD classification: continue below.
    │
@@ -983,7 +983,7 @@ question tracked in [GitHub Issue #537](https://github.com/richfrem/agent-plugin
 ## 2. Phase 0: Pre-Planning Intake Bookend & Socratic Gate
 
 Before Plan Mode can ever be entered, the task must be bounded. Immediately after task
-registration and before any Socratic question, `interview-spec` asks one direct triage
+registration and before any Socratic question, `work-intake` asks one direct triage
 question — TRIVIAL or STANDARD — with a heuristic-derived recommended default (see the
 TRIVIAL fast-track branch in Section 1). Only STANDARD-classified tasks proceed through the
 rest of this phase and into Phase 1:
@@ -992,7 +992,7 @@ rest of this phase and into Phase 1:
    - Execute read-only codebase discovery via `exploration-cycle-plugin` (`technical_diagnostic_engine.py`).
    - Inspect coupling surfaces (touched files, SQLite schemas, cross-plugin symlinks), surface hidden assumptions, and evaluate candidate architectural forks.
    - Emit `exploration/DIAGNOSTIC_BRIEF.md`.
-2. **Interview Gate (`interview-spec`):**
+2. **Interview Gate (`work-intake`):**
    - **Native-First Deferral:** Inspect session environment markers first (`CLAUDE_CODE_ENTRY`, `ANTIGRAVITY_IDE`). Defer to native interactive intake if present. Fall back to Socratic Defaulting loop for headless/Copilot sessions.
    - Socratic Defaulting: 1–3 questions max, structured options with explicit recommended default (`Option A [Recommended]` vs. `Option B`).
    - Compiles the immutable **4-Pillar Spec** (`TASK_SPEC.md`):
@@ -1217,6 +1217,114 @@ issue body, prior spec, handoff doc), read that file FIRST, before asking any
 Socratic/interview question. Check every open question against it. For any question the
 document already answers, use the document's answer directly — via
 `record_source_assisted_answer_candidate(source_path=..., source_authorized=True, ...)`
-where `interview-spec`'s control plane is active, or by simply citing the source inline
+where `work-intake`'s control plane is active, or by simply citing the source inline
 otherwise. Never make the human re-answer, live, something they already wrote down for you.
 Only ask a live question for what the document genuinely leaves open or ambiguous.
+
+<!-- plugin: agent-agentic-os / state-transition-guidance-compliance -->
+---
+description: >
+  Mandatory compliance rule for agents driving SQLite-control-plane state transitions
+  (work-intake and equivalent pipelines). Exists because agents, including Claude, have
+  repeatedly skipped or self-answered YAML transition guidance instead of following it
+  literally.
+globs: ["**/*"]
+---
+
+# State Transition Guidance Compliance
+
+## The Failure Pattern This Rule Targets
+
+Agents driving a control-plane pipeline (work-intake, self-evolution, or
+equivalent) have a documented, repeated failure mode: treating the YAML
+transition guidance (`transition_templates.yaml`'s `human_questions`,
+`next_steps_hint`, `stage_question_ids`) as advisory prose to summarize,
+rather than as literal, mandatory input to follow exactly.
+
+Concretely observed failure instances (see `references/map-debt.md` for full
+detail, not repeated here):
+
+- A full task cycle (`issue-593-context-overhead`) skipped `DRAFT_PLAN` and
+  `AWAITING_APPROVAL` entirely, never produced a spec artifact, and closed
+  with a human retrospective recorded verbatim as "a complete failure."
+- Mid-session, an agent piped a default/recommended answer into an
+  interactive human-approval prompt instead of asking the human for their
+  actual answer first, requiring the human to explicitly stop and say
+  "follow questions at each transition."
+- An agent pushed a branch to a remote origin without an explicit, isolated
+  push instruction from the human, misreading "remove X from GitHub origin"
+  as implicit push authorization.
+- An agent made a sequence of unilateral remediation decisions (reverting
+  files, moving directories, restoring symlinks) after discovering damage
+  from an unauthorized bulk edit, without pausing to present the plan and
+  get confirmation before acting, despite already having been corrected for
+  this exact pattern earlier in the same session.
+- At `APPROVED -> IN_WORKTREE`, the transition guidance literally said
+  "create or select an isolated feature worktree and branch, record both
+  with update-worktree." The agent instead registered the main checkout
+  itself as the worktree path via `update-worktree --path "$(pwd)"`,
+  never creating an isolated `.worktrees/task-<id>/` directory at all —
+  not a tooling gap, a direct failure to do what the instruction said.
+- The same pipeline's own `create_task()` computes a `main_dirty_advisory`
+  field (dirty file count/paths) that the skill's own instructions require
+  reporting to the user immediately if `dirty_count > 0`, recommending a
+  commit before `APPROVED` so interim work doesn't accumulate uncommitted
+  through the whole planning phase. The agent never reported it — partly
+  because the CLI `init` subcommand discards `create_task()`'s return value
+  and never prints the advisory (a real tooling gap), and partly because the
+  agent also never independently checked `git status` to compensate, despite
+  the instruction not depending on the CLI surfacing it.
+
+## The Rule
+
+1. **A YAML `human_questions` entry is not optional summary material — it is
+   the literal question to ask, verbatim or near-verbatim, and the literal
+   set of accepted answers to record.** Do not infer, default, or
+   self-answer on the human's behalf, even when a "Recommended" option
+   exists. A recommended default is a suggestion to present, not a license
+   to select it without asking.
+2. **`next_steps_hint` and `denial_message` text describes the actual
+   required sequence, not a paraphrase to work around.** If the hint says to
+   run a specific command with a specific flag, run that command with that
+   flag. If it says to create an isolated worktree, create an isolated
+   worktree — do not substitute an equivalent-seeming shortcut, such as
+   registering the main checkout itself as if it were the worktree.
+3. **When a step's own documented output includes an advisory or field the
+   instructions say to report** (e.g. `main_dirty_advisory`), and the CLI or
+   tool you're calling doesn't surface it, do not treat that as license to
+   skip the check. Call the underlying function directly, or independently
+   verify the same condition (e.g. `git status`), so the instruction is
+   satisfied regardless of a tooling gap. Report the tooling gap separately
+   as its own friction/map-debt item — it does not excuse skipping the step.
+4. **After discovering damage, corruption, or an unauthorized action** (by
+   yourself or by direct instruction), do not proceed through a multi-step
+   remediation unilaterally. Present the audit (what's broken, why, proposed
+   fix) and get explicit confirmation before executing each remediation step
+   that isn't purely read-only verification (diagnose commands, test runs,
+   `git status`/`git diff` are fine to run freely; `git mv`, file reverts,
+   and `restore`-style mutating commands are not).
+5. **A single correction from the human on this pattern does not
+   self-resolve for the rest of the session.** If corrected once for
+   skipping or self-answering a transition question, treat every subsequent
+   transition in the same session with the same heightened literalness —
+   do not regress after a few exchanges.
+6. **When in doubt about whether an action is "just verification" or "a
+   decision,"** treat it as a decision requiring confirmation. The bar for
+   "just running a read-only check" is narrower than it feels in the moment.
+
+## Non-Negotiables
+
+- Never pipe a canned or default answer into an `--interactive` control-plane
+  prompt without having first obtained that exact answer from the human in
+  this conversation.
+- Never treat "the user mentioned X in passing" as equivalent to "the user
+  gave an explicit, isolated instruction to do X" for any state-changing
+  action (push, transition, deletion, rename).
+- Never chain more than one non-reversible remediation action without an
+  intermediate check-in, even when each individual action seems obviously
+  correct in isolation.
+- Never register the main checkout as a substitute for an isolated worktree
+  when the transition guidance says to create one.
+- Never let a documented advisory field go unreported solely because the CLI
+  wrapper around it failed to print it — verify independently.
+

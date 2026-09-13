@@ -1,4 +1,4 @@
-# interview-spec — Detailed Reference
+# work-intake — Detailed Reference
 
 Extracted from SKILL.md per Layer-1 procedural-core line budget (issue #551).
 
