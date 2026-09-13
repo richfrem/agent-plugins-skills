@@ -2,6 +2,18 @@
 
 Persistent tracking of architectural friction, structural anomalies, and unclosed loops across sessions.
 
+## DEBT-20260913-WORKTREE-BEST-PRACTICES-DOCS
+
+- Logged date: 2026-09-13
+- Cycle/Session ID: worktree-manager-best-practices
+- Artifact affected: `plugins/agent-agentic-os/skills/worktree-manager/SKILL.md`, `plugins/agent-agentic-os/skills/interview-spec/SKILL.md`, `plugins/agent-agentic-os/references/worktree-reconciliation-and-multi-worktree-practices.md` (new), `plugins/agent-agentic-os/scripts/agent_control.py`
+- Friction observed: Follow-up to DEBT-20260913-MAIN-WORKTREE-RECONCILIATION — the code-level fix existed but wasn't reflected in skill guidance, and there was no early (INIT-time) advisory for dirty `main` state, nor documented guidance for preventing one concurrent worktree's merged work from being undone by another (industry-researched: fresh-base branching, integration-branch pattern for overlapping work).
+- Recommended fix: Documented the reconciliation contract and multi-worktree practices in a new canonical reference, linked from `worktree-manager` and `interview-spec` SKILL.md; added a non-blocking `main_dirty_advisory` field to `create_task()` so dirty `main` state is surfaced at INIT time, not just hard-blocked later at `APPROVED -> IN_WORKTREE`.
+- Evidence/repro: New tests `test_create_task_reports_main_dirty_advisory` and `test_create_task_reports_clean_main_advisory` pass. `symlink_manager.py diagnose` clean. `audit.py`/`audit_plugin_structure.py` both pass with 0 errors.
+- Severity: S
+- Repeat: NO
+- Status: RESOLVED
+
 ## DEBT-20260913-MAIN-WORKTREE-RECONCILIATION
 
 - Logged date: 2026-09-13

@@ -10974,6 +10974,12 @@
       "dst": "plugins/agent-agentic-os/skills/interview-spec/scripts/control_plane/wrappers/record_interview_question.py",
       "strategy": "symlink",
       "description": "Fixed-identity interview answer recorder"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/worktree-reconciliation-and-multi-worktree-practices.md",
+      "dst": "plugins/agent-agentic-os/skills/worktree-manager/references/worktree-reconciliation-and-multi-worktree-practices.md",
+      "strategy": "symlink",
+      "description": "Worktree reconciliation and multi-worktree best practices (issue #609)"
     }
   ]
 }
