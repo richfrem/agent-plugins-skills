@@ -70,38 +70,14 @@ Before triggering an autonomous self-evolution cycle, all 4 criteria must be sat
 
 ### Friction-Driven Self-Evolution & Tiers
 
-Agents must not silently work around broken, unclear, missing, or awkward repository capabilities. A self-evolution event is required when **any** of the following occurs:
-- A script, helper, command, skill, sub-agent, selector, eval, or documented workflow fails.
-- The agent avoids an existing capability and performs the work manually instead.
-- The agent uses a workaround because the intended path was broken, unclear, or ambiguous.
-- The agent has to guess because instructions, profiles, schemas, or routing are unclear.
-- The user corrects the agent on a repeatable process problem.
-- The agent notices a missing helper, stale reference, stale agent instruction, or broken skill invocation.
+A self-evolution event is required when a script/eval/tool fails, an existing capability is bypassed/manually replaced, workarounds are used, or repeatable process issues arise. Task success does not waive this.
 
 - **Tier 0 (Friction/Workaround)**: Bypassed capability or used workaround. Patch now + update map + log `Status: RESOLVED` in `map-debt.md` if small/safe; record `Status: OPEN` in `map-debt.md` if unsafe/deferred; escalate if repeated/blocking.
 - **Tier 1 (Gap)**: Missing capability (build missing piece).
 - **Tier 2 (Failure)**: Existing capability broken/errors (patch minimal code, save logs).
 - **Tier 3 (Regression)**: External change broke working behavior (collect evidence, patch primary + fallback).
 
----
-
-### Failure & Friction Tiers
-
-Group all failures and workarounds into exactly one tier to determine the required action:
-- **Tier 0 (Friction/Workaround)**: Bypassed an existing capability or used a temporary workaround.
-  * *Required Response (pick one)*:
-    - If the fix is small + inside allowed edit boundaries: patch it now, update The Map (rules/docs), **and log a `Status: RESOLVED` entry in `map-debt.md`** — resolved fixes still count.
-    - If the fix is not safe or not small: record **Map Debt** in the designated register (e.g., `<project_root>/.agent/map-debt.md` or local rules equivalent) as `Status: OPEN` and log the event.
-    - If friction is repeated/blocking: escalate to the user.
-- **Tier 1 (Gap)**: Capability doesn't exist yet (build missing piece, no evidence needed).
-- **Tier 2 (Failure)**: Code or script exists but is broken or returns errors (patch minimal code, save logs/stack traces).
-- **Tier 3 (Regression)**: External change broke previously working behavior, e.g., stale selectors or API mutations (collect evidence/network/logs first, then patch with primary + fallback paths).
-
----
-
-### No Silent Bypass Rule
-
-If an existing repo capability is intended for the task, the agent must use it. If the capability fails, the agent may use a workaround only after recording the failure as a self-evolution event. Silent bypass is a protocol violation.
+**No Silent Bypass Rule:** Agents must use intended capabilities. Workarounds are permitted only after recording the failure as a self-evolution event.
 
 ---
 
@@ -129,17 +105,5 @@ If friction cannot be fixed immediately, record it as Map Debt in `<project_root
 
 Each entry must include: Logged date (`YYYY-MM-DD`), Cycle/Session ID, Artifact affected, Friction observed, Why not fixed now, Recommended fix, Evidence/repro, Severity (`S`/`M`/`L`), Repeat (`YES`/`NO`), Status (`OPEN`/`RESOLVED`/`ESCALATED`).
 
-Each Map Debt entry must include:
-- Logged date (`YYYY-MM-DD`)
-- Cycle/Session ID (if tracked in execution logs)
-- Artifact affected (file path, rule, or skill slug)
-- Friction observed (one sentence)
-- Why it was not fixed now
-- Recommended fix
-- Evidence or reproduction step
-- Severity: S / M / L
-- Repeat: YES / NO
-- Status: OPEN / RESOLVED / ESCALATED
-
-**Aging rule:** If an `OPEN` entry is older than 3 completed execution cycles or 14 days `(today - Logged) > 14 days`, auto-escalate before starting new work.
-**Repeat = YES:** must escalate on next encounter — no further deferral permitted.
+- **Aging rule:** If `OPEN` entry is older than 3 execution cycles or 14 days, auto-escalate before starting new work.
+- **Repeat = YES:** Must escalate on next encounter — no further deferral permitted.

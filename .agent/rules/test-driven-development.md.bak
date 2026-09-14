@@ -45,10 +45,7 @@ It does NOT apply to:
 
 1. **For Code**: Write a failing unit or integration test first.
 2. **For Orchestration**: Write a mock evaluation scenario, an assertions list, or an expected output schema validator first.
-3. **Skill Tooling**: If the workspace contains a custom test-driven development skill or test runner (such as `superpowers:test-driven-development`), invoke it:
-   ```
-   Skill: superpowers:test-driven-development (if available)
-   ```
+3. **Skill / Test Tooling**: If the workspace contains a test runner or TDD skill, invoke it before touching code.
 
 This enforces the Red-Green-Refactor cycle and blocks the rationalization patterns ("too simple to test", "I'll do it after") that lead to broken systems. If you start the work before writing the contract, it is invalid. Delete it and start over.
 
@@ -212,9 +209,6 @@ For coordinator scripts, workflow engines, master orchestrators, agent prompts, 
 
 ## Related Rules and References
 
-- `<project_root>/.agent/rules/no-inline-python.md` (or local script extraction policy) — extraction policy for scripts
-- `<project_root>/.agent/rules/coding-conventions.md` (or local style guides) — coding conventions and documentation standards
-- `<project_root>/docs/architecture/` (or project design docs) — system architecture details and design specifications
+- `.agent/rules/coding-conventions.md` — coding conventions and documentation standards
 - `superpowers:test-driven-development` skill (if available) — invoke BEFORE writing any implementation
-- `graph-planning-superpowers-policy.md` §3.2 (Phase 2: Strict Red-Green-Refactor Enforcement) — this Iron Law
-  is the concrete implementation of that phase; the two are the same requirement, not competing rules
+- `graph-planning-superpowers-policy.md` — test-driven execution and verification discipline

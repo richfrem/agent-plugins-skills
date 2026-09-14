@@ -54,51 +54,37 @@ This verification applies before:
 
 ### Verification Protocol
 
-### Step 1 — Extract the target from each file
-
+#### Step 1 — Extract the target from each file
 For a single-line text stand-in at path `P` containing relative path `T`:
 ```bash
 cat P  # confirm single line, relative path
 ```
 
-### Step 2 — Repo-wide target search
-
+#### Step 2 — Repo-wide target search
 ```bash
 git ls-files | grep -i "<filename>"
 ```
 - **Target found in repo** → classify as **MISLOCATED_REFERENCE** — do not delete; propose correct path
 - **Target not found** → proceed to Step 3
 
-**Decision:**
-- Target found in repo → classify as **MISLOCATED_REFERENCE** — do not delete; propose correct path
-- Target not found → proceed to Step 3
-
-### Step 3 — Git history check
-
+#### Step 3 — Git history check
 ```bash
 git log --all --oneline --full-history -- "**/filename"
 ```
 - **File existed and was recently deleted** → classify as **POSSIBLE_ACCIDENTAL_DELETION** — add to Map Debt; do not delete
 - **File only appears in consolidation/migration commits with no subsequent history** → likely safe, classify as **DEAD_CROSS_REPO_REFERENCE**
 
-**Decision:**
-- File existed and was recently deleted → classify as **POSSIBLE_ACCIDENTAL_DELETION** — add to Map Debt; do not delete
-- File only appears in consolidation/migration commits with no subsequent history → likely safe, classify as **DEAD_CROSS_REPO_REFERENCE**
-
-### Step 4 — SKILL_ALIAS check (commands/ and agents/)
-
+#### Step 4 — SKILL_ALIAS check (commands/ and agents/)
 If content matches `../skills/<name>/SKILL.md` pattern AND the target SKILL.md exists:
 - Classify as **SKILL_ALIAS** → convert to symlink via `symlink_manager create`, do not delete
 
-### Step 5 — Produce audit table before any change
-
-Output this table and wait for implicit confirmation (no new instruction = proceed, conflict = stop):
+#### Step 5 — Produce audit table before any change
+Output this table and wait for explicit confirmation:
 
 | File | Target | Exists in Repo | Classification | Action |
 |------|--------|----------------|----------------|--------|
 
-### Step 6 — Kill switch
-
+#### Step 6 — Kill switch
 **Stop and output the audit table only (no changes)** if any of the following:
 - 5+ files classified `POSSIBLE_ACCIDENTAL_DELETION`
 - Any ambiguity in target resolution
@@ -116,9 +102,6 @@ Output this table and wait for implicit confirmation (no new instruction = proce
 
 ---
 
-The consolidation from 26 → 11 plugins left pre-consolidation stand-ins with cross-repo paths
-that never existed post-merge. Blind deletion passes treat MISLOCATED and DEAD references
-identically — but only DEAD ones are safe to remove. The distinction requires a git search.
+## Why This Rule Exists
 
-This incident was caught during the dev-utils Opus review (2026-06-28): 19 stand-ins identified,
-repo search revealed MISLOCATED and SKILL_ALIAS cases that would have been incorrectly deleted.
+The consolidation of repository plugins left pre-consolidation stand-ins with cross-repo paths that never existed post-merge. Blind deletion passes treat MISLOCATED and DEAD references identically — but only DEAD ones are safe to remove. The distinction requires git verification. Similarly, agents routinely rationalize deleting functional skills under the guise of "cleanup" or "absorption". This rule unifies both protections under one strict gate.

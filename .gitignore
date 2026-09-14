@@ -115,3 +115,6 @@ context/status.md
 # stay tracked (gitignore doesn't retroactively untrack committed files).
 docs/plans/
 docs/superpowers/
+
+.superpowers/
+.context/

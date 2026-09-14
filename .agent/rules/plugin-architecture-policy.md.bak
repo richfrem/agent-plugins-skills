@@ -5,8 +5,6 @@ globs: ["plugins/**/SKILL.md", "plugins/**/scripts/**/*.py", "plugins/**/*.md"]
 
 # Plugin Architecture & Coupling Policy
 
-**Full ADR context → `ADRs/001_` through `007_`**
-
 ## 1. Hub-and-Spoke Resource Model & Installer Dereferencing
 
 1. **Authoring Model vs. Runtime Model**:
