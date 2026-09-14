@@ -61,7 +61,7 @@ flowchart TB
     ReviewReports --> ReviewSynthesis
     ReviewSynthesis --> PlanAcceptance
     ReviewSynthesis --> Worktree
-    Policy -->|"enforces at APPROVED -> IN_WORKTREE"| MainReconciliation
+    Policy -->|"enforces at APPROVED to IN_WORKTREE"| MainReconciliation
     MainReconciliation --> Worktree
     Facade --> PersistencePort
     Facade --> CryptoPort

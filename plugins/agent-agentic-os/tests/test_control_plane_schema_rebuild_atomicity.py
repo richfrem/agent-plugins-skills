@@ -49,8 +49,9 @@ def _make_adapter(tmp_path):
 def _seed_realistic_data(conn):
     """Seeds tasks + child rows across multiple states, mirroring real control-plane usage.
     enforce_valid_initial_state only permits NULL->INTAKE inserts (LEGAL_INITIAL_STATES), so
-    task-b is inserted at INTAKE and legally transitioned to RETROSPECTIVE via UPDATE because
-    the trivial completion path now requires the retrospective gate."""
+    task-b is inserted at INTAKE and legally transitioned to RETROSPECTIVE via UPDATE, answering
+    the human-authorized emergency-close edge's two required questions (reason category, then
+    the literal FORCE_RETROSPECTIVE confirmation)."""
     conn.execute(
         "INSERT INTO tasks (task_id, title, state, runtime_tool) VALUES (?, ?, ?, ?)",
         ("task-a", "Task A", "INTAKE", "claude"),
@@ -65,12 +66,10 @@ def _seed_realistic_data(conn):
         ("task-b", "INTAKE", "INTERVIEW", "test"),
     )
     interview_answers = {
-        "interview_classification": "TRIVIAL",
-        "interview_summary": "A small verified pipeline change.",
-        "interview_scope": "The control-plane test fixture.",
-        "interview_verification": "The schema rebuild test passes.",
-        "interview_trivial_evidence": "The focused diff and test prove the change.",
-        "confirm_interview_complete": "Yes [Recommended]",
+        "force_retrospective_reason_category": (
+            "Task is effectively complete/trivial -- this is a planned early close, not a failure"
+        ),
+        "force_retrospective_authorization": "FORCE_RETROSPECTIVE",
     }
     for question_id, answer in interview_answers.items():
         conn.execute(

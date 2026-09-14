@@ -496,10 +496,30 @@ CHECK_REGISTRY: Dict[str, Any] = {
             "Call record_verification_receipt(gate_name='test_suite', ...)."
         )
     ),
+    # Edge-scoped softening for IN_WORKTREE -> WORKTREE_REVIEW ONLY (added
+    # 2026-09-13, explicit human request): accepts either a real test_suite
+    # receipt, or an explicit human-recorded skip decision deferring testing
+    # to the later MULTI_AGENT_CODE_REVIEW/VERIFY_EXIT gate, which re-checks
+    # test_suite/full_test_suite independently and is NOT weakened by this.
+    # This does not touch the generic "test_suite" check above, used by
+    # other edges -- only this specific edge's deterministic_checks entry
+    # points at this function instead.
+    "test_suite_or_deferred_to_review": lambda ctx: (
+        None if (
+            _gate_receipt_exists(ctx, "test_suite")
+            or ctx["count_receipts"]("test_suite_deferred_to_review", 0) > 0
+        ) else (
+            "Cannot advance: no test_suite receipt found, and testing was not explicitly "
+            "deferred. Either record a test_suite verification receipt, or record an "
+            "explicit human test_suite_deferred_to_review decision if the human wants to "
+            "defer testing to the later review/control step."
+        )
+    ),
     "full_test_suite": lambda ctx: (
-        None if _gate_receipt_exists(ctx, "full_test_suite") else (
-            "Cannot advance: no recorded full_test_suite verification receipt found. "
-            "Run the repository-wide pytest -q suite through the approved verifier."
+        None if ctx["count_receipts"]("full_test_suite", 0) > 0 else (
+            "Cannot advance: no recorded passing full_test_suite verification receipt "
+            "found. Run the repository-wide pytest -q suite through the approved "
+            "verifier and ensure it exits 0."
         )
     ),
     "code_review_or_skip": lambda ctx: (

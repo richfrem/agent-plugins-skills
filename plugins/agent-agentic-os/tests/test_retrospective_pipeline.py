@@ -87,12 +87,8 @@ def test_retrospective_capture_wrapper_records_agent_completion(tmp_path):
     from control_plane.coordinator import TransitionCoordinator
 
     interview_answers = iter([
-        "TRIVIAL",
-        "Capture the retrospective wrapper behavior.",
-        "The retrospective state and wrapper persistence.",
-        "The wrapper records a complete retrospective.",
-        "The change is limited to the retrospective test path.",
-        "Yes [Recommended]",
+        "Task is effectively complete/trivial -- this is a planned early close, not a failure",
+        "FORCE_RETROSPECTIVE",
     ])
     TransitionCoordinator(
         control_plane=cp,

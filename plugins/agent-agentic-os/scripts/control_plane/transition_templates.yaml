@@ -470,6 +470,37 @@ stages:
     - Every adaptive rule matching the recorded answers has been evaluated.
     - Issue-worthy follow-ups are confirmed and tracked before DONE.
     - The final complete-or-skip decision is asked only after this survey is complete.
+    closeout_change_control:
+      mandatory_before_done: true
+      classifications:
+      - already_resolved_in_current_package
+      - bounded_fix_requires_rework_loop
+      - larger_follow_up_requires_issue_or_new_work_package
+      bounded_fix_rule: A bounded fix is never applied directly from RETROSPECTIVE -- it requires returning through the rework loop (IN_WORKTREE/WORKTREE_REVIEW) like any other implementation change.
+      no_legal_return_rule: RETROSPECTIVE has no legal implementation return edge in the canonical DAG -- a genuine bounded fix requires an explicit human-approved recovery re-entry into IN_WORKTREE, not a silent exception.
+      larger_follow_up_rule: Before opening a new issue or work package for a larger follow-up, run a duplicate search against existing open issues and map-debt entries covering the same root cause.
+      agent_self_assessment:
+        mandatory_before_done: true
+        question: For each retrospective finding, is this a safe bounded fix now, or does it need a separate follow-up?
+        response_policy: Record an explicit classification for every finding before DONE -- do not silently drop a finding without one.
+        no_silent_action: true
+  DONE:
+    purpose: Confirm the human's git-integration intent for the verified worktree before any commit, push, or PR discussion, per worktree-lifecycle-management.md's six-state vocabulary.
+    question_policy: one_at_a_time
+    entry_questions:
+    - question_id: done_git_integration_authorization
+      question: Do you want to begin Git integration now (commit on the existing registered feature branch), or leave the verified changes as-is in the current worktree?
+      options:
+      - Yes, begin Git integration [Recommended]
+      - No, leave the verified changes in the current worktree
+      default: Yes, begin Git integration [Recommended]
+    adaptive_follow_up_rules: []
+    exit_requirements:
+    - The git-integration authorization question has been answered.
+    closeout_contract:
+      feature_branch_policy: Reuse the task's existing registered feature branch (worktree_branch) -- never create a new branch at DONE, and never commit directly to main.
+      commit_policy: Create exactly one commit for the verified work, with an evolution-check/map-debt reference per the Evolution Integrity Gate, before any push is discussed.
+      push_policy: Ask separately, as an explicit isolated instruction, before running git push -- committing and pushing are never bundled into one authorization.
 
 intake_guidance:
   source_documents:
@@ -497,6 +528,13 @@ intake_guidance:
       user_rule: Tell the user what was checked, whether anything blocks the next step, and the single next question or action in plain language.
     internal_follow_up:
       if_any_check_is_yes: "Handle the result internally as FIX, MAP_DEBT, or ESCALATE; do not turn the machine checklist into a user questionnaire."
+human_recovery:
+  enabled: true
+  source_states: Any canonical state
+  target_states: Any different canonical state
+  evidence: Requires a consumed, human-authored APPROVAL decision bound to the exact current occupancy transition_id -- this occupancy binding is what distinguishes a genuine human recovery from a replayed or stale approval.
+  reentry_rule: Re-entering a state via human recovery restores that state's normal capabilities only -- it does not grant downstream capability that the destination state would not otherwise release, and does not retroactively authorize any transition beyond this one.
+  safety_boundary: Recovery targets must be canonical states; unknown states are always rejected regardless of any recorded human approval, since an unknown state has no defined capability or gate contract to enforce.
 execution_guidance:
   work_package:
     advisory: true
@@ -595,6 +633,15 @@ templates:
   deterministic_checks: []
   stage_question_ids: []
   human_questions:
+  - question_id: force_retrospective_reason_category
+    question: Why is this task moving directly to RETROSPECTIVE instead of its normal path?
+    options:
+    - Task is effectively complete/trivial -- this is a planned early close, not a failure
+    - Ending early due to agent or pipeline failure -- needs follow-up documentation
+    default: ''
+    accepted_answers:
+    - Task is effectively complete/trivial -- this is a planned early close, not a failure
+    - Ending early due to agent or pipeline failure -- needs follow-up documentation
   - question_id: force_retrospective_authorization
     question: This ends the task early via emergency close, bypassing the normal interview-completeness gate. Type FORCE_RETROSPECTIVE to confirm.
     options:
@@ -1380,13 +1427,13 @@ templates:
   next_steps_hint: "Implementation is complete only after the approved work package is written and focused verification passes; it is not committed, pushed, merged, or DONE. Before every review submission and after every internal fix round, run the session-wide change inventory and ensure every session-owned file is present and content-matched in the registered worktree. Answer this edge's one question with --interactive or --answers '<json>'. First satisfy test_suite; use: record-verification-receipt for test_suite. Before integration, create the reconciliation manifest required by the IN_WORKTREE completion contract, classify worktree-only, main-only-preexisting, shared-task, and untracked paths, then apply the reviewed worktree patch once. After review and final verification, run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to WORKTREE_REVIEW."
   checklist:
   - Current task state is persisted as IN_WORKTREE
-  - 'Deterministic check satisfied: test_suite'
+  - 'Deterministic check satisfied: test_suite_or_deferred_to_review'
   required_artifacts:
   - docs/plans/<task-id>-spec.md
   - docs/plans/<task-id>-implementation-plan.md
   - .worktrees/<task-id>
   deterministic_checks:
-  - test_suite
+  - test_suite_or_deferred_to_review
   human_questions:
   - question_id: confirm_review_in_worktree_to_worktree_review
     question: Implementation is complete in the registered worktree. Do you wish to proceed to WORKTREE_REVIEW?
@@ -1395,6 +1442,15 @@ templates:
     accepted_answers:
     - Proceed to WORKTREE_REVIEW [Recommended]
     default: Proceed to WORKTREE_REVIEW [Recommended]
+  - question_id: confirm_test_suite_or_defer
+    question: "No test_suite verification receipt is recorded yet. Run tests now, or defer testing to the later MULTI_AGENT_CODE_REVIEW/VERIFY_EXIT gate (which independently re-checks test_suite/full_test_suite)?"
+    options:
+    - Defer to later review/control step [Recommended]
+    - Run tests now instead
+    accepted_answers:
+    - Defer to later review/control step [Recommended]
+    - Run tests now instead
+    default: Defer to later review/control step [Recommended]
   approval:
     required: false
     approver_role: agent_or_human
@@ -1818,13 +1874,15 @@ templates:
   from_state: RETROSPECTIVE
   to_state: DONE
   purpose: Complete the task after a completed retrospective or an explicitly reasoned skip.
-  next_steps_hint: "First persist the completed retrospective through the supported record_retrospective wrapper with the required entry fields and resolved follow-ups; do this before requesting DONE. Defaults are not inferred. Then answer this edge's retrospective_decision question one at a time with --interactive, satisfy retrospective_done_guard, and run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to DONE."
+  next_steps_hint: "First persist the completed retrospective through the supported record_retrospective wrapper with the required entry fields and resolved follow-ups; do this before requesting DONE. Defaults are not inferred. Run the repository-wide pytest -q suite through verify-exit-verification with verifier_id=pytest_full_suite and record its full_test_suite receipt with exit_code=0 -- a non-zero exit code means the task must remain in RETROSPECTIVE until the suite passes or an explicit human exception is recorded. Then answer this edge's retrospective_decision question one at a time with --interactive, satisfy retrospective_done_guard, and run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to DONE."
   checklist:
   - Current task state is persisted as RETROSPECTIVE
   - Retrospective survey is complete or explicitly skipped with a reason
+  - 'Deterministic check satisfied: full_test_suite'
   required_artifacts: []
   deterministic_checks:
   - retrospective_done_guard
+  - full_test_suite
   human_questions:
   - question_id: retrospective_decision
     question: 'Choose the pipeline-close retrospective outcome: complete the survey or skip it with a recorded reason.'
@@ -1871,7 +1929,8 @@ templates:
   from_state: VERIFY_EXIT
   to_state: IN_WORKTREE
   purpose: Advance lifecycle state from VERIFY_EXIT to IN_WORKTREE upon satisfying phase requirements and verifications.
-  next_steps_hint: "Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to IN_WORKTREE."
+  next_steps_hint: "Recovery edge: a failed full_test_suite (or other exit verification) receipt routes back here to fix the failure -- do not transition to RETROSPECTIVE or DONE with a failing receipt. Use the existing registered worktree for this task; do not create another worktree. Once fixed, submit through WORKTREE_REVIEW again (do not re-enter VERIFY_EXIT directly) before retrying exit verification. Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to IN_WORKTREE."
+  failure_recovery: "Do not repeat the failed closeout path -- fix the specific failing verifier or ledger item first, then re-enter WORKTREE_REVIEW rather than retrying VERIFY_EXIT with the same unresolved failure. Do not reset to INTAKE for a verification failure -- that discards all prior progress and is reserved for genuinely desynced control-plane records, not fixable implementation gaps."
   checklist:
   - Current task state is persisted as VERIFY_EXIT
   - Structural DAG transition from VERIFY_EXIT to IN_WORKTREE is legal
@@ -2217,6 +2276,15 @@ templates:
   deterministic_checks: []
   stage_question_ids: []
   human_questions:
+  - question_id: force_retrospective_reason_category
+    question: Why is this task moving directly to RETROSPECTIVE instead of its normal path?
+    options:
+    - Task is effectively complete/trivial -- this is a planned early close, not a failure
+    - Ending early due to agent or pipeline failure -- needs follow-up documentation
+    default: ''
+    accepted_answers:
+    - Task is effectively complete/trivial -- this is a planned early close, not a failure
+    - Ending early due to agent or pipeline failure -- needs follow-up documentation
   - question_id: force_retrospective_authorization
     question: This ends the task early via emergency close, bypassing the normal pipeline from INTAKE. Type FORCE_RETROSPECTIVE to confirm.
     options:
@@ -2251,6 +2319,15 @@ templates:
   deterministic_checks: []
   stage_question_ids: []
   human_questions:
+  - question_id: force_retrospective_reason_category
+    question: Why is this task moving directly to RETROSPECTIVE instead of its normal path?
+    options:
+    - Task is effectively complete/trivial -- this is a planned early close, not a failure
+    - Ending early due to agent or pipeline failure -- needs follow-up documentation
+    default: ''
+    accepted_answers:
+    - Task is effectively complete/trivial -- this is a planned early close, not a failure
+    - Ending early due to agent or pipeline failure -- needs follow-up documentation
   - question_id: force_retrospective_authorization
     question: This ends the task early via emergency close, bypassing the normal pipeline from DRAFT_PLAN. Type FORCE_RETROSPECTIVE to confirm.
     options:
@@ -2285,6 +2362,15 @@ templates:
   deterministic_checks: []
   stage_question_ids: []
   human_questions:
+  - question_id: force_retrospective_reason_category
+    question: Why is this task moving directly to RETROSPECTIVE instead of its normal path?
+    options:
+    - Task is effectively complete/trivial -- this is a planned early close, not a failure
+    - Ending early due to agent or pipeline failure -- needs follow-up documentation
+    default: ''
+    accepted_answers:
+    - Task is effectively complete/trivial -- this is a planned early close, not a failure
+    - Ending early due to agent or pipeline failure -- needs follow-up documentation
   - question_id: force_retrospective_authorization
     question: This ends the task early via emergency close, bypassing the normal pipeline from MULTI_AGENT_REVIEW. Type FORCE_RETROSPECTIVE to confirm.
     options:
@@ -2319,6 +2405,15 @@ templates:
   deterministic_checks: []
   stage_question_ids: []
   human_questions:
+  - question_id: force_retrospective_reason_category
+    question: Why is this task moving directly to RETROSPECTIVE instead of its normal path?
+    options:
+    - Task is effectively complete/trivial -- this is a planned early close, not a failure
+    - Ending early due to agent or pipeline failure -- needs follow-up documentation
+    default: ''
+    accepted_answers:
+    - Task is effectively complete/trivial -- this is a planned early close, not a failure
+    - Ending early due to agent or pipeline failure -- needs follow-up documentation
   - question_id: force_retrospective_authorization
     question: This ends the task early via emergency close, bypassing the normal pipeline from PLAN_REVIEW. Type FORCE_RETROSPECTIVE to confirm.
     options:
@@ -2353,6 +2448,15 @@ templates:
   deterministic_checks: []
   stage_question_ids: []
   human_questions:
+  - question_id: force_retrospective_reason_category
+    question: Why is this task moving directly to RETROSPECTIVE instead of its normal path?
+    options:
+    - Task is effectively complete/trivial -- this is a planned early close, not a failure
+    - Ending early due to agent or pipeline failure -- needs follow-up documentation
+    default: ''
+    accepted_answers:
+    - Task is effectively complete/trivial -- this is a planned early close, not a failure
+    - Ending early due to agent or pipeline failure -- needs follow-up documentation
   - question_id: force_retrospective_authorization
     question: This ends the task early via emergency close, bypassing the normal pipeline from AWAITING_APPROVAL. Type FORCE_RETROSPECTIVE to confirm.
     options:
@@ -2387,6 +2491,15 @@ templates:
   deterministic_checks: []
   stage_question_ids: []
   human_questions:
+  - question_id: force_retrospective_reason_category
+    question: Why is this task moving directly to RETROSPECTIVE instead of its normal path?
+    options:
+    - Task is effectively complete/trivial -- this is a planned early close, not a failure
+    - Ending early due to agent or pipeline failure -- needs follow-up documentation
+    default: ''
+    accepted_answers:
+    - Task is effectively complete/trivial -- this is a planned early close, not a failure
+    - Ending early due to agent or pipeline failure -- needs follow-up documentation
   - question_id: force_retrospective_authorization
     question: This ends the task early via emergency close, bypassing the normal pipeline from ROLLED_BACK. Type FORCE_RETROSPECTIVE to confirm.
     options:
@@ -2421,6 +2534,15 @@ templates:
   deterministic_checks: []
   stage_question_ids: []
   human_questions:
+  - question_id: force_retrospective_reason_category
+    question: Why is this task moving directly to RETROSPECTIVE instead of its normal path?
+    options:
+    - Task is effectively complete/trivial -- this is a planned early close, not a failure
+    - Ending early due to agent or pipeline failure -- needs follow-up documentation
+    default: ''
+    accepted_answers:
+    - Task is effectively complete/trivial -- this is a planned early close, not a failure
+    - Ending early due to agent or pipeline failure -- needs follow-up documentation
   - question_id: force_retrospective_authorization
     question: This ends the task early via emergency close, bypassing the normal pipeline from ESCALATED. Type FORCE_RETROSPECTIVE to confirm.
     options:
@@ -2455,6 +2577,15 @@ templates:
   deterministic_checks: []
   stage_question_ids: []
   human_questions:
+  - question_id: force_retrospective_reason_category
+    question: Why is this task moving directly to RETROSPECTIVE instead of its normal path?
+    options:
+    - Task is effectively complete/trivial -- this is a planned early close, not a failure
+    - Ending early due to agent or pipeline failure -- needs follow-up documentation
+    default: ''
+    accepted_answers:
+    - Task is effectively complete/trivial -- this is a planned early close, not a failure
+    - Ending early due to agent or pipeline failure -- needs follow-up documentation
   - question_id: force_retrospective_authorization
     question: This ends the task early via emergency close, bypassing the normal pipeline from DONE. Type FORCE_RETROSPECTIVE to confirm.
     options:
@@ -2489,6 +2620,15 @@ templates:
   deterministic_checks: []
   stage_question_ids: []
   human_questions:
+  - question_id: force_retrospective_reason_category
+    question: Why is this task moving directly to RETROSPECTIVE instead of its normal path?
+    options:
+    - Task is effectively complete/trivial -- this is a planned early close, not a failure
+    - Ending early due to agent or pipeline failure -- needs follow-up documentation
+    default: ''
+    accepted_answers:
+    - Task is effectively complete/trivial -- this is a planned early close, not a failure
+    - Ending early due to agent or pipeline failure -- needs follow-up documentation
   - question_id: force_retrospective_authorization
     question: This ends the task early via emergency close, bypassing the normal pipeline from IN_WORKTREE. Type FORCE_RETROSPECTIVE to confirm.
     options:
@@ -2523,6 +2663,15 @@ templates:
   deterministic_checks: []
   stage_question_ids: []
   human_questions:
+  - question_id: force_retrospective_reason_category
+    question: Why is this task moving directly to RETROSPECTIVE instead of its normal path?
+    options:
+    - Task is effectively complete/trivial -- this is a planned early close, not a failure
+    - Ending early due to agent or pipeline failure -- needs follow-up documentation
+    default: ''
+    accepted_answers:
+    - Task is effectively complete/trivial -- this is a planned early close, not a failure
+    - Ending early due to agent or pipeline failure -- needs follow-up documentation
   - question_id: force_retrospective_authorization
     question: This ends the task early via emergency close, bypassing the normal pipeline from WORKTREE_REVIEW. Type FORCE_RETROSPECTIVE to confirm.
     options:
@@ -2557,6 +2706,15 @@ templates:
   deterministic_checks: []
   stage_question_ids: []
   human_questions:
+  - question_id: force_retrospective_reason_category
+    question: Why is this task moving directly to RETROSPECTIVE instead of its normal path?
+    options:
+    - Task is effectively complete/trivial -- this is a planned early close, not a failure
+    - Ending early due to agent or pipeline failure -- needs follow-up documentation
+    default: ''
+    accepted_answers:
+    - Task is effectively complete/trivial -- this is a planned early close, not a failure
+    - Ending early due to agent or pipeline failure -- needs follow-up documentation
   - question_id: force_retrospective_authorization
     question: This ends the task early via emergency close, bypassing the normal pipeline from MULTI_AGENT_CODE_REVIEW. Type FORCE_RETROSPECTIVE to confirm.
     options:

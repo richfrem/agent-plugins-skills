@@ -100,12 +100,23 @@ stateDiagram-v2
     ROLLED_BACK --> PLAN_REVIEW : restart planning
     ROLLED_BACK --> INTAKE : human-approved recovery reset
     ROLLED_BACK --> DONE : force close — interactive human authorization
+    ROLLED_BACK --> RETROSPECTIVE : human-approved recovery reset
 
     ESCALATED --> INTAKE : start over
     ESCALATED --> PLAN_REVIEW : restart planning
     ESCALATED --> DONE : force close — interactive human authorization
+    ESCALATED --> RETROSPECTIVE : human-approved recovery reset
 
     DONE --> INTAKE : human-approved recovery reset
+    DONE --> RETROSPECTIVE : human-approved recovery reset
+    INTAKE --> RETROSPECTIVE : human-approved recovery reset
+    DRAFT_PLAN --> RETROSPECTIVE : human-approved recovery reset
+    MULTI_AGENT_REVIEW --> RETROSPECTIVE : human-approved recovery reset
+    PLAN_REVIEW --> RETROSPECTIVE : human-approved recovery reset
+    AWAITING_APPROVAL --> RETROSPECTIVE : human-approved recovery reset
+    IN_WORKTREE --> RETROSPECTIVE : human-approved recovery reset
+    WORKTREE_REVIEW --> RETROSPECTIVE : human-approved recovery reset
+    MULTI_AGENT_CODE_REVIEW --> RETROSPECTIVE : human-approved recovery reset
     DONE --> [*]
 
     note right of DONE

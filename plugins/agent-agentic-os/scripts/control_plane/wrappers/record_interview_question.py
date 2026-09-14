@@ -129,7 +129,7 @@ def record_interview_question(
         answer=chosen_answer,
         actor=actor,
     )
-    answers = cp._persistence.get_unconsumed_transition_answers(
+    answers = cp.get_unconsumed_transition_answers(
         task_id, cap.current_state, requested_target
     )
     missing = next(

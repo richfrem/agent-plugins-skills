@@ -54,11 +54,25 @@ def repo_with_worktree(tmp_path):
     return main_repo, worktree_dir
 
 
+_HUMAN_CONFIRMED_GATED_COMMANDS = frozenset({
+    "init", "coordinate-transition", "transition", "lock-verifiers", "record-receipt",
+    "update-worktree", "log-prior-art", "record-plan-mode-entry", "record-socratic-intake",
+    "record-human-approval", "record-review-skip", "record-critic-review",
+    "record-recovery-approval",
+})
+
+
 def _run_cli(cwd: Path, *args: str):
-    """Invokes the copied agent_control.py CLI as a subprocess with cwd set to the given repo/worktree."""
+    """Invokes the copied agent_control.py CLI as a subprocess with cwd set to the given repo/worktree.
+    Auto-injects --human-confirmed for gated subcommands (DEBT-20260913-NO-HUMAN-CONFIRM-BLANKET-GATE) --
+    this test suite exercises the CLI as a black box, not real human interaction, so a
+    fixed test marker is appropriate here (unlike production code, which must never fabricate this)."""
     script = cwd / "plugins" / "agent-agentic-os" / "scripts" / "agent_control.py"
+    call_args = list(args)
+    if call_args and call_args[0] in _HUMAN_CONFIRMED_GATED_COMMANDS and "--human-confirmed" not in call_args:
+        call_args += ["--human-confirmed", "HUMAN-CONFIRMED: test fixture"]
     return subprocess.run(
-        [sys.executable, str(script), *args],
+        [sys.executable, str(script), *call_args],
         cwd=str(cwd), capture_output=True, text=True
     )
 

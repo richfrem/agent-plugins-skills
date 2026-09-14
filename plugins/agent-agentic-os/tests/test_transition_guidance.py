@@ -458,7 +458,10 @@ def test_coordinator_renders_execution_unit_guidance(control_plane):
     coordinator._write_transition_guidance("INTAKE", "INTERVIEW", phase="before")
 
     rendered = output.getvalue()
-    assert "Execution-unit guidance (advisory)" in rendered
+    # 2026-09-07 (DEBT-20260907-08): the full per-transition banner was
+    # intentionally shrunk to a one-line unit-name summary to stop training
+    # agents to skim the whole advisory block; assert the current wording.
+    assert "Execution-unit guidance (advisory; unchanged across edges)" in rendered
     assert "work_package" in rendered
     assert "task" in rendered
     assert "slice" in rendered

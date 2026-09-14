@@ -67,10 +67,24 @@ def temp_db_path(tmp_path):
 
 @pytest.fixture
 def control_plane(temp_db_path):
-    """Initializes and returns a ControlPlane test fixture instance."""
+    """Initializes and returns a ControlPlane test fixture instance.
+    repo_root is pinned to the isolated tmp_path (a non-git directory) so that
+    main_clean_before_approval / _get_main_dirty_advisory never inspects this
+    real worktree's actual (possibly dirty) checkout -- a non-git repo_root
+    resolves to 0 dirty paths by design (git status returns non-zero, treated
+    as clean), matching the intent of every test using this fixture, none of
+    which are testing the clean-checkout gate itself."""
     cp = ControlPlane(db_path=temp_db_path)
     cp.init_db()
+    cp.repo_root = temp_db_path.parent
     return cp
+
+
+def _sequential_answers(*answers):
+    """Return an input_fn that yields each answer in order across successive prompts,
+    for coordinator flows that ask more than one sequential question."""
+    it = iter(answers)
+    return lambda prompt: next(it)
 
 
 def stage_human_decisions(cp, task_id, from_state, to_state, actor="human", answer="Approved"):
@@ -672,6 +686,7 @@ def test_cli_transition_parsers_accept_skip_review_flags():
         args = parser.parse_args([
             subcommand, "--task-id", "t1", "--to", "AWAITING_APPROVAL",
             "--skip-review", "--skip-reason", "user requested skip",
+            "--human-confirmed", "HUMAN-CONFIRMED: test fixture",
         ])
         assert args.skip_review is True
         assert args.skip_reason == "user requested skip"
@@ -1039,6 +1054,10 @@ def test_gate_blocks_in_worktree_entry_without_isolated_worktree_metadata(contro
     )
     control_plane.transition(task_id, "AWAITING_APPROVAL", "controller", "Review ready")
     stage_human_decisions(control_plane, task_id, "AWAITING_APPROVAL", "APPROVED")
+    control_plane.record_verification_receipt(
+        task_id=task_id, gate_name="main_dirty_before_approval_exception",
+        command_executed="test-deliberately-dirties-repo-root-to-test-reconciliation", exit_code=0,
+    )  # this test's whole purpose is dirty pre-worktree state -- not real interim work.
     control_plane.transition(task_id, "APPROVED", "user", "Approved")
     control_plane.record_human_approval(task_id, "user")
 
@@ -1062,6 +1081,10 @@ def test_gate_allows_explicit_existing_checkout_exception(control_plane, tmp_pat
     )
     control_plane.transition(task_id, "AWAITING_APPROVAL", "controller", "Review ready")
     stage_human_decisions(control_plane, task_id, "AWAITING_APPROVAL", "APPROVED")
+    control_plane.record_verification_receipt(
+        task_id=task_id, gate_name="main_dirty_before_approval_exception",
+        command_executed="test-deliberately-dirties-repo-root-to-test-reconciliation", exit_code=0,
+    )  # this test's whole purpose is dirty pre-worktree state -- not real interim work.
     control_plane.transition(task_id, "APPROVED", "user", "Approved")
     control_plane.record_human_approval(task_id, "user")
     control_plane.update_worktree(task_id, str(tmp_path), "main", "written_in_worktree")
@@ -1151,6 +1174,10 @@ def test_approved_to_in_worktree_auto_reconciles_dirty_main_changes(control_plan
     )
     control_plane.transition(task_id, "AWAITING_APPROVAL", "controller", "Review ready")
     stage_human_decisions(control_plane, task_id, "AWAITING_APPROVAL", "APPROVED")
+    control_plane.record_verification_receipt(
+        task_id=task_id, gate_name="main_dirty_before_approval_exception",
+        command_executed="test-deliberately-dirties-repo-root-to-test-reconciliation", exit_code=0,
+    )  # this test's whole purpose is dirty pre-worktree state -- not real interim work.
     control_plane.transition(task_id, "APPROVED", "user", "Approved")
     control_plane.record_human_approval(task_id, "user")
     control_plane.update_worktree(task_id, str(worktree_root), "feature/recon-001", "written_in_worktree")
@@ -1192,6 +1219,10 @@ def test_approved_to_in_worktree_blocks_on_genuine_reconciliation_conflict(contr
     )
     control_plane.transition(task_id, "AWAITING_APPROVAL", "controller", "Review ready")
     stage_human_decisions(control_plane, task_id, "AWAITING_APPROVAL", "APPROVED")
+    control_plane.record_verification_receipt(
+        task_id=task_id, gate_name="main_dirty_before_approval_exception",
+        command_executed="test-deliberately-dirties-repo-root-to-test-reconciliation", exit_code=0,
+    )  # this test's whole purpose is dirty pre-worktree state -- not real interim work.
     control_plane.transition(task_id, "APPROVED", "user", "Approved")
     control_plane.record_human_approval(task_id, "user")
     control_plane.update_worktree(task_id, str(worktree_root), "feature/recon-002", "written_in_worktree")
@@ -1244,6 +1275,10 @@ def test_worktree_review_question_rejects_non_proceed_answer_before_review(contr
     stage_human_decisions(control_plane, task_id, "PLAN_REVIEW", "AWAITING_APPROVAL", answer="Accept plan and proceed to human approval [Recommended]")
     control_plane.transition(task_id, "AWAITING_APPROVAL", "controller", "Review ready")
     stage_human_decisions(control_plane, task_id, "AWAITING_APPROVAL", "APPROVED")
+    control_plane.record_verification_receipt(
+        task_id=task_id, gate_name="main_dirty_before_approval_exception",
+        command_executed="test-deliberately-dirties-repo-root-to-test-reconciliation", exit_code=0,
+    )  # this test's whole purpose is dirty pre-worktree state -- not real interim work.
     control_plane.transition(task_id, "APPROVED", "user", "Approved")
     control_plane.record_human_approval(task_id, "user")
     stage_worktree_metadata(control_plane, task_id, path=str(tmp_path / ".worktrees" / task_id), branch=f"worktree-{task_id}")
@@ -1546,21 +1581,17 @@ def test_registry_loads_stage_entry_question_contracts():
     assert interview["progress_display"]["enabled"] is True
     assert interview["progress_display"]["count_adaptive_questions"] is True
     assert interview["exit_requirements"]
-    trivial_edge = registry.get_template("INTERVIEW", "RETROSPECTIVE")
-    assert [q["question_id"] for q in trivial_edge.human_questions] == [
-        "confirm_interview_complete"
+    # INTERVIEW -> RETROSPECTIVE is the human-authorized emergency-close edge (not a
+    # separate trivial-fast-track edge): a reason-category question distinguishing a
+    # planned early close from an agent/pipeline failure, then the literal
+    # FORCE_RETROSPECTIVE confirmation. No stage_question_ids/stage_route on this edge.
+    force_retrospective_edge = registry.get_template("INTERVIEW", "RETROSPECTIVE")
+    assert [q["question_id"] for q in force_retrospective_edge.human_questions] == [
+        "force_retrospective_reason_category",
+        "force_retrospective_authorization",
     ]
-    assert trivial_edge.stage_question_ids == [
-        "interview_classification",
-        "interview_summary",
-        "interview_scope",
-        "interview_verification",
-        "interview_trivial_evidence",
-    ]
-    assert trivial_edge.stage_route == {
-        "question_id": "interview_classification",
-        "equals": "TRIVIAL",
-    }
+    assert force_retrospective_edge.stage_question_ids == []
+    assert force_retrospective_edge.stage_route is None
 
     retrospective = registry.get_stage_contract("RETROSPECTIVE")
     assert retrospective is not None
@@ -1597,7 +1628,9 @@ def test_legacy_policy_migration_parity():
         ("INTERVIEW", "PLAN_REVIEW"): "plan_mode_or_socratic",
         ("PLAN_REVIEW", "AWAITING_APPROVAL"): "critic_review_or_skip",
         ("APPROVED", "IN_WORKTREE"): "human_approval",
-        ("IN_WORKTREE", "WORKTREE_REVIEW"): "test_suite",
+        # DEBT-20260913: softened to accept an explicit human-recorded defer decision too
+        # (testing is re-checked, not skipped, at the later MULTI_AGENT_CODE_REVIEW/VERIFY_EXIT gate).
+        ("IN_WORKTREE", "WORKTREE_REVIEW"): "test_suite_or_deferred_to_review",
         ("WORKTREE_REVIEW", "VERIFY_EXIT"): "code_review_or_skip",
         ("VERIFY_EXIT", "RETROSPECTIVE"): "done_guard",
         ("RETROSPECTIVE", "DONE"): "retrospective_done_guard",
@@ -2207,9 +2240,11 @@ def test_wrapper_success_path(control_plane, tmp_path):
     control_plane.transition(task_id, "INTERVIEW", "tester", "Begin interview")
     rec_result = record_interview_question(
         task_id=task_id,
-        question="What is the objective?",
-        options={"A": "Feature", "B": "Refactor"},
-        recommended="A",
+        question="interview_classification",
+        options={"STANDARD": "Standard multi-step task"},
+        recommended="STANDARD",
+        answer="STANDARD",
+        target_state="DRAFT_PLAN",
         control_plane=control_plane
     )
     assert rec_result["status"] == "RECORDED"
@@ -2224,7 +2259,7 @@ def test_wrapper_success_path(control_plane, tmp_path):
         "SELECT answer FROM transition_decisions WHERE task_id = ? ORDER BY decision_id DESC LIMIT 1",
         (task_id,),
     ).fetchone()[0]
-    assert stored == "A"
+    assert stored == "STANDARD"
     conn.close()
 
     # Move to DRAFT_PLAN (releases plan_write)
@@ -2545,13 +2580,16 @@ def test_sequential_question_pacing(control_plane, tmp_path):
     stage_interview_answers(control_plane, task_id)
     control_plane.transition(task_id, "DRAFT_PLAN", "tester", "draft plan")
     plan_dir = tmp_path / "docs" / "plans"
-    plan_dir.mkdir(parents=True)
+    plan_dir.mkdir(parents=True, exist_ok=True)
     (plan_dir / f"{task_id}-spec.md").write_text("# Spec", encoding="utf-8")
     (plan_dir / f"{task_id}-implementation-plan.md").write_text("# Plan", encoding="utf-8")
     control_plane.repo_root = tmp_path
 
     out = io.StringIO()
-    inputs = ["1"]  # review-method answer after entering PLAN_REVIEW
+    inputs = [
+        "Yes — continue to review method selection [Recommended]",
+        "Multi-agent review — internal [Recommended]",
+    ]  # agent-review decision, then review-method answer after entering PLAN_REVIEW
     input_prompts = []
 
     def mock_input(prompt: str) -> str:
@@ -2575,9 +2613,9 @@ def test_sequential_question_pacing(control_plane, tmp_path):
         interactive=True,
     )
     assert rec.to_state == "MULTI_AGENT_REVIEW"
-    # Verify input prompt was invoked individually
-    assert len(input_prompts) == 1
-    assert "Select option" in input_prompts[0]
+    # Verify input prompts were invoked individually, one question at a time (not batched)
+    assert len(input_prompts) == 2
+    assert all("Select option" in p for p in input_prompts)
 
 
 def test_coordinator_rejection_on_failed_check_no_orphan_receipts(control_plane):
@@ -2788,7 +2826,7 @@ def test_rejected_plan_requires_artifact_revision_before_resubmission(control_pl
     control_plane.transition(task_id, "DRAFT_PLAN", "tester", "Enter draft plan")
 
     plan_dir = tmp_path / "docs" / "plans"
-    plan_dir.mkdir(parents=True)
+    plan_dir.mkdir(parents=True, exist_ok=True)
     spec_path = plan_dir / f"{task_id}-spec.md"
     plan_path = plan_dir / f"{task_id}-implementation-plan.md"
     spec_path.write_text("# Spec v1", encoding="utf-8")
@@ -2919,7 +2957,7 @@ def test_coordinator_non_interactive_missing_answer_fails_closed_despite_default
     stage_interview_answers(control_plane, task_id)
     control_plane.transition(task_id, "DRAFT_PLAN", "tester", "draft plan")
     plan_dir = tmp_path / "docs" / "plans"
-    plan_dir.mkdir(parents=True)
+    plan_dir.mkdir(parents=True, exist_ok=True)
     (plan_dir / f"{task_id}-spec.md").write_text("# Spec", encoding="utf-8")
     (plan_dir / f"{task_id}-implementation-plan.md").write_text("# Plan", encoding="utf-8")
     control_plane.repo_root = tmp_path
@@ -2950,7 +2988,7 @@ def test_coordinator_empty_interactive_input_rejected_and_undeclared_option_reje
     stage_interview_answers(control_plane, task_id)
     control_plane.transition(task_id, "DRAFT_PLAN", "tester", "draft plan")
     plan_dir = tmp_path / "docs" / "plans"
-    plan_dir.mkdir(parents=True)
+    plan_dir.mkdir(parents=True, exist_ok=True)
     (plan_dir / f"{task_id}-spec.md").write_text("# Spec", encoding="utf-8")
     (plan_dir / f"{task_id}-implementation-plan.md").write_text("# Plan", encoding="utf-8")
     control_plane.repo_root = tmp_path
@@ -2975,7 +3013,7 @@ def test_coordinator_empty_interactive_input_rejected_and_undeclared_option_reje
             actor="tester",
             reason="Undeclared answer option",
             interactive=False,
-            provided_answers={"plan_review_disposition": "Completely Bogus Option"},
+            provided_answers={"confirm_review_draft_plan_to_plan_review": "Completely Bogus Option"},
         )
 
 
@@ -3021,6 +3059,12 @@ def test_coordinator_skip_review_policy_enforcement_and_justification(control_pl
         reason="Proceed after recorded review skip",
     )
     stage_human_decisions(control_plane, task_id, "AWAITING_APPROVAL", "APPROVED")
+    control_plane.record_verification_receipt(
+        task_id=task_id, gate_name="main_dirty_before_approval_exception",
+        command_executed="test-runs-against-real-worktree-checkout", exit_code=0,
+    )  # this fixture doesn't isolate repo_root, so main_clean_before_approval sees this
+    # actual worktree's real (currently dirty, mid-fix-session) checkout -- not real
+    # interim work needing the clean-checkout gate this test doesn't exercise.
     control_plane.transition(task_id, "APPROVED", "admin", "approved")
 
     with pytest.raises(TransitionCoordinatorError, match="not allowed|cannot be skipped"):
@@ -3318,7 +3362,10 @@ def test_coordinator_artifact_resolution_inside_registered_worktree(control_plan
     coord = TransitionCoordinator(
         control_plane=control_plane,
         output_stream=out,
-        input_fn=lambda prompt: "Yes, multi-agent review — sub-agent (internal) [Recommended]",
+        input_fn=_sequential_answers(
+            "Yes — continue to review method selection [Recommended]",
+            "Multi-agent review — internal [Recommended]",
+        ),
     )
 
     # 1. Successful transition: plan files and worktree directory resolved.
@@ -3374,7 +3421,10 @@ def test_coordinator_artifact_resolution_inside_registered_worktree(control_plan
             to_state="MULTI_AGENT_CODE_REVIEW",
             actor="tester",
             reason="Attempt with missing spec/plan",
-            provided_answers={"confirm_review_worktree_review_to_multi_agent_code_review": "Yes, multi-agent review — sub-agent (internal) [Recommended]"},
+            provided_answers={
+                "confirm_review_worktree_review_to_multi_agent_code_review": "Yes — continue to review method selection [Recommended]",
+                "implementation_review_method": "Multi-agent review — internal [Recommended]",
+            },
         )
 
     # 3. Path traversal / outside authorized roots rejected
@@ -3424,19 +3474,22 @@ def test_interview_spec_engine_cli_entrypoint_prints_intake_mode():
 # ==============================================================================
 
 def test_trivial_fast_track_enters_retrospective_and_completes(control_plane):
-    """A TRIVIAL task skips planning but still enters the mandatory retrospective gate."""
+    """A TRIVIAL task skips planning but still enters the mandatory retrospective gate, via the
+    human-authorized emergency-close edge answering a planned (not failure) reason category."""
     from control_plane.coordinator import TransitionCoordinator
 
     task_id = "task-trivial-001"
     control_plane.create_task(task_id=task_id, title="Fix typo in error message", runtime_tool="claude")
 
     control_plane.transition(task_id, "INTERVIEW", "tester", "Begin the interview")
-    stage_interview_answers(control_plane, task_id, to_state="RETROSPECTIVE", classification="TRIVIAL")
 
     # The retrospective transition has authority.type: human_decision — the DB trigger requires
     # a genuine interactive answer (actor='human'), not a programmatically provided_answers
     # dict (actor='agent') — see coordinator.py.
-    interview_inputs = iter(["Yes [Recommended]"])
+    interview_inputs = iter([
+        "Task is effectively complete/trivial -- this is a planned early close, not a failure",
+        "FORCE_RETROSPECTIVE",
+    ])
     coord = TransitionCoordinator(
         control_plane=control_plane,
         input_fn=lambda prompt: next(interview_inputs),
@@ -3457,6 +3510,7 @@ def test_trivial_fast_track_enters_retrospective_and_completes(control_plane):
         {"decision": "skip", "completion_mode": "skipped", "actor": "human", "skip_reason": "one-line typo"},
         [],
     )
+    control_plane.record_verification_receipt(task_id=task_id, gate_name="full_test_suite", command_executed="pytest -q", exit_code=0)
     done_coord = TransitionCoordinator(control_plane=control_plane, input_fn=lambda prompt: "skip")
     done_record = done_coord.coordinate_transition(
         task_id=task_id,
@@ -3478,14 +3532,14 @@ def test_trivial_fast_track_enters_retrospective_and_completes(control_plane):
         row = conn.execute(
             "SELECT question_id, answer FROM transition_decisions "
             "WHERE task_id = ? AND to_state = 'RETROSPECTIVE' "
-            "AND question_id = 'confirm_interview_complete'",
+            "AND question_id = 'force_retrospective_reason_category'",
             (task_id,),
         ).fetchone()
     finally:
         conn.close()
     assert row is not None
-    assert row[0] == "confirm_interview_complete"
-    assert row[1] == "Yes [Recommended]"
+    assert row[0] == "force_retrospective_reason_category"
+    assert row[1] == "Task is effectively complete/trivial -- this is a planned early close, not a failure"
 
 
 def test_trivial_fast_track_requires_explicit_triage_answer(control_plane):
@@ -3551,14 +3605,15 @@ def test_trivial_misstriage_escape_hatch_to_escalated(control_plane):
 
 
 def test_interview_to_retrospective_edge_registered_and_capabilities_scoped(control_plane):
-    """The trivial interview edge releases retrospective capture but never push access."""
+    """The INTERVIEW -> RETROSPECTIVE emergency-close edge releases retrospective capture but
+    never push access."""
     from control_plane.registry import TransitionRegistry
 
     registry = TransitionRegistry.load_default()
     template = registry.get_template("INTERVIEW", "RETROSPECTIVE")
 
     assert template is not None
-    assert template.transition_id == "interview_to_retrospective_trivial"
+    assert template.transition_id == "force_retrospective_from_interview"
     assert template.required_artifacts == []
     assert "retrospective_capture" in template.capabilities_released
     assert "push branch to origin" not in template.capabilities_released

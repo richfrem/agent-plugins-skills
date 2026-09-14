@@ -102,8 +102,19 @@ def _advance_task_to_in_worktree(cp, task_id, repo, branch):
     )
     conn.commit()
     conn.close()
+    cp.record_verification_receipt(
+        task_id=task_id, gate_name="main_dirty_before_approval_exception",
+        command_executed="test-fixture-uses-real-dirty-planning-files", exit_code=0,
+    )  # DEBT-20260913-MAIN-DIRTY-BEFORE-APPROVAL-UNENFORCED: this fixture's planning
+    # files are intentionally uncommitted for the test's own purpose (testing the
+    # commit-pipeline-guard hook), not real interim work needing the clean-checkout gate.
     cp.transition(task_id, "APPROVED", "tester", "approved")
     cp.update_worktree(task_id, str(repo), branch, "written_in_worktree")
+    cp.record_verification_receipt(
+        task_id=task_id, gate_name="existing_worktree_exception",
+        command_executed="test-fixture-reuses-repo-as-worktree", exit_code=0,
+    )  # this fixture intentionally reuses the same repo dir as the "worktree" to
+    # keep the git-hook test simple -- not a real isolated worktree.
     cp.transition(task_id, "IN_WORKTREE", "tester", "in worktree")
 
 
@@ -313,8 +324,19 @@ def test_control_plane_verify_commit_api(tmp_path):
     )
     conn.commit()
     conn.close()
+    cp.record_verification_receipt(
+        task_id=task_id, gate_name="main_dirty_before_approval_exception",
+        command_executed="test-fixture-uses-real-dirty-planning-files", exit_code=0,
+    )  # DEBT-20260913-MAIN-DIRTY-BEFORE-APPROVAL-UNENFORCED: this fixture's planning
+    # files are intentionally uncommitted for the test's own purpose (testing the
+    # commit-pipeline-guard hook), not real interim work needing the clean-checkout gate.
     cp.transition(task_id, "APPROVED", "tester", "approved")
     cp.update_worktree(task_id, str(repo), branch, "written_in_worktree")
+    cp.record_verification_receipt(
+        task_id=task_id, gate_name="existing_worktree_exception",
+        command_executed="test-fixture-reuses-repo-as-worktree", exit_code=0,
+    )  # this fixture intentionally reuses the same repo dir as the "worktree" to
+    # keep the git-hook test simple -- not a real isolated worktree.
     cp.transition(task_id, "IN_WORKTREE", "tester", "in worktree")
 
     res2 = cp.verify_commit(branch=branch, staged_files=["src/code.py"])
@@ -358,9 +380,10 @@ def test_push_hook_allows_when_done_with_valid_history(tmp_path):
         INSERT INTO transition_decisions (
             task_id, source_occupancy_transition_id, from_state, to_state,
             question_id, answer, decision_type, actor, recorded_at
-        ) VALUES (?, ?, 'IN_WORKTREE', 'WORKTREE_REVIEW', 'confirm_review_in_worktree_to_worktree_review', 'Proceed with review [Recommended]', 'ANSWER', 'human', 12345.0)
+        ) VALUES (?, ?, 'IN_WORKTREE', 'WORKTREE_REVIEW', 'confirm_review_in_worktree_to_worktree_review', 'Proceed with review [Recommended]', 'ANSWER', 'human', 12345.0),
+                 (?, ?, 'IN_WORKTREE', 'WORKTREE_REVIEW', 'confirm_test_suite_or_defer', 'Run tests now instead', 'ANSWER', 'human', 12345.0)
         """,
-        (task_id, last_trans)
+        (task_id, last_trans, task_id, last_trans)
     )
     conn.commit()
     conn.close()

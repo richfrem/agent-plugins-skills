@@ -1970,8 +1970,17 @@ class SqlitePersistenceAdapter(PersistencePort):
                 token_material = f"RECOVERY-{task_id}-{source_occupancy_transition_id}-{destination_state}-{recorded_at}-{existing_count + 1}"
                 token = self._crypto.sha256_hex(token_material)
 
-                # Look up static question IDs required for this recovery edge
-                required_qids = [
+                # Look up static question IDs required for this recovery edge. DONE is
+                # excluded from this lookup: every state already has its own dedicated
+                # human_force_done_confirmation/force_close_authorization question,
+                # answered fresh through TransitionCoordinator's own force-close flow
+                # (apply_recovery_transition routes DONE destinations through
+                # coordinate_transition(force_close=True, ...), never through this
+                # recorded decision). Reusing that same question_id here would record
+                # this call's opaque token as if it were the answer to that question,
+                # making the coordinator believe it's already been answered and skip
+                # asking for the real FORCE_DONE/FORCE_CLOSE confirmation entirely.
+                required_qids = [] if destination_state == "DONE" else [
                     r[0] for r in conn.execute(
                         "SELECT question_id FROM required_transition_questions WHERE from_state = ? AND to_state = ?",
                         (expected_source_state, destination_state)

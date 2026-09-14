@@ -285,12 +285,8 @@ def test_reset_then_walk_forward_unblocks_hooks(control_plane):
         task_id=task_id, to_state="INTERVIEW", actor="human", reason="Begin interview after reset",
     )
     interview_answers = iter([
-        "TRIVIAL",
-        "Re-verify the nested skill reference fix.",
-        "The skill reference path and its loader behavior.",
-        "The installed skill loader finds no nested SKILL.md.",
-        "files=1, diff=abc1234",
-        "Yes [Recommended]",
+        "Task is effectively complete/trivial -- this is a planned early close, not a failure",
+        "FORCE_RETROSPECTIVE",
     ])
     coord2 = TransitionCoordinator(control_plane=control_plane, input_fn=lambda prompt: next(interview_answers))
     coord2.coordinate_transition(

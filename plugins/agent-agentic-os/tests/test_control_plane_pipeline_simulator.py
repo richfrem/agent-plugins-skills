@@ -107,7 +107,7 @@ def test_simulator_can_play_one_named_round(tmp_path):
     round_ = simulator.play_round("incomplete_interview", "one")
 
     assert round_["result"] == "DENIED_AS_EXPECTED"
-    assert "interview_classification" in round_["error"]
+    assert "force_retrospective_reason_category" in round_["error"]
     assert round_["state_preserved"] is True
     assert round_["no_orphan_transition"] is True
     assert round_["no_orphan_decision"] is True

@@ -126,10 +126,11 @@ class PipelineSimulator:
         )
 
     def run_trivial_interview_fast_track(self, task_id: str) -> Dict[str, Any]:
-        """Run INTAKE -> INTERVIEW -> RETROSPECTIVE with real stage enforcement."""
+        """Run INTAKE -> INTERVIEW -> RETROSPECTIVE via the human-authorized emergency-close
+        edge, answering the reason category (planned/trivial, not a failure) then the literal
+        FORCE_RETROSPECTIVE confirmation -- both option 1 on their respective questions."""
         self.enter_interview(task_id)
-        self.stage_interview_answers(task_id, classification="TRIVIAL", to_state="RETROSPECTIVE")
-        answers = iter(["1"])
+        answers = iter(["1", "1"])
         coordinator = TransitionCoordinator(
             self.control_plane,
             registry=self.registry,
@@ -414,7 +415,9 @@ class PipelineSimulator:
             if name == "incomplete_interview":
                 self.transition_from_interview(task_id, "RETROSPECTIVE", classification="TRIVIAL")
             elif name == "wrong_trivial_route":
-                self.stage_interview_answers(task_id, classification="STANDARD", to_state="RETROSPECTIVE")
+                # Simulates a human/agent supplying an undeclared answer to the reason-category
+                # question on the emergency-close edge -- the coordinator must fail closed
+                # rather than guess at a similar-but-not-exact option.
                 before_decisions = len(
                     self.control_plane._persistence.get_unconsumed_transition_answers(
                         task_id, "INTERVIEW", "RETROSPECTIVE"
@@ -424,7 +427,7 @@ class PipelineSimulator:
                 coordinator = TransitionCoordinator(
                     self.control_plane,
                     registry=self.registry,
-                    input_fn=lambda _prompt: "1",
+                    input_fn=lambda _prompt: "STANDARD",
                     output_stream=io.StringIO(),
                 )
                 coordinator.coordinate_transition(

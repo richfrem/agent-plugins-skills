@@ -90,7 +90,7 @@ def test_invalid_target_is_denied_without_decision_or_outline_mutation(tmp_path)
             control_plane=cp,
         )
 
-    assert cp._persistence.get_unconsumed_transition_answers("p00-test", "INTERVIEW", "DRAFT_PLAN") == {}
+    assert cp.get_unconsumed_transition_answers("p00-test", "INTERVIEW", "DRAFT_PLAN") == {}
     assert cp._persistence.get_interview_plan_outline("p00-test") is None
 
 
@@ -101,7 +101,7 @@ def test_unknown_question_and_empty_answer_are_denied_without_mutation(tmp_path)
         with pytest.raises((ValueError, TypeError)):
             _record(cp, question_id, answer)
 
-    assert cp._persistence.get_unconsumed_transition_answers("p00-test", "INTERVIEW", "DRAFT_PLAN") == {}
+    assert cp.get_unconsumed_transition_answers("p00-test", "INTERVIEW", "DRAFT_PLAN") == {}
     assert cp._persistence.get_interview_plan_outline("p00-test") is None
 
 
@@ -131,7 +131,7 @@ def test_answer_recorder_requires_explicit_target_and_answer(tmp_path):
             control_plane=cp,
         )
 
-    assert cp._persistence.get_unconsumed_transition_answers("p00-test", "INTERVIEW", "DRAFT_PLAN") == {}
+    assert cp.get_unconsumed_transition_answers("p00-test", "INTERVIEW", "DRAFT_PLAN") == {}
     assert cp._persistence.get_interview_plan_outline("p00-test") is None
 
 
@@ -203,7 +203,7 @@ def test_answer_and_outline_roll_back_together_on_projection_failure(tmp_path, m
     with pytest.raises(RuntimeError, match="outline serialization failure"):
         _record(cp, "interview_summary", QUESTION_ANSWERS["interview_summary"])
 
-    assert cp._persistence.get_unconsumed_transition_answers("p00-test", "INTERVIEW", "DRAFT_PLAN") == {}
+    assert cp.get_unconsumed_transition_answers("p00-test", "INTERVIEW", "DRAFT_PLAN") == {}
     assert cp._persistence.get_interview_plan_outline("p00-test") is None
 
 

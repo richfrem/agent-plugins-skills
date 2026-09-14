@@ -31,6 +31,7 @@ def test_cli_dispatch_persists_canonical_revise_and_reports_it(control_plane, ca
         "--model", "gpt-5-mini",
         "--verdict", "REQUEST_CHANGES",
         "--findings", "Revise the scope.",
+        "--human-confirmed", "HUMAN-CONFIRMED: test fixture",
     ])
 
     _dispatch_command(control_plane, args)

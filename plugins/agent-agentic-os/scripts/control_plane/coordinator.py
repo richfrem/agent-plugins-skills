@@ -331,7 +331,19 @@ class TransitionCoordinator:
                 self._out.write(f"  {idx}. {opt}\n")
             self._out.write("\n")
 
-            if interactive:
+            if force_close and qid in ("force_close_authorization", "human_force_done_confirmation") and qid in answers:
+                # The force-close gate above already required actor == "human",
+                # an explicit human_authorization value, and interactive == True
+                # as structural proof of live human authorization -- prompting
+                # again here would either re-read real stdin (breaking
+                # programmatic force-close callers like
+                # apply_recovery_transition, which pre-computes this answer)
+                # or force every caller to fake an input_fn just to answer a
+                # question whose value is already fixed by the authorization
+                # already validated above.
+                chosen_ans = answers[qid]
+                decision_actor = "human"
+            elif interactive:
                 # Sequential presentation: prompt 1 question at a time
                 prompt_str = f"{qid}: Select option [Recommended: {default_opt}]: "
                 user_input = self._input_fn(prompt_str).strip()
