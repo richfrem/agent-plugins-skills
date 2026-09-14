@@ -2,6 +2,19 @@
 
 Persistent tracking of architectural friction, structural anomalies, and unclosed loops across sessions.
 
+## DEBT-20260914-PROGRESSIVE-ELABORATION-SUMMARY-DOC
+
+- Logged date: 2026-09-14
+- Cycle/Session ID: progressive-elaboration-vs-duplication-summary (PR #620)
+- Artifact affected: `plugins/agent-agentic-os/references/progressive-elaboration-vs-duplication-summary.md` (new)
+- Friction observed: CI's "Verify Evolution & Map Debt Compliance" gate flags any change under `plugins/` as core logic requiring a map-debt or evolution-log entry, even for a pure reference/documentation addition with no code or skill-behavior change.
+- Why not fixed now: N/A — documentation-only change, no behavior to fix; this entry exists solely to satisfy the CI gate's requirement for any `plugins/` diff.
+- Recommended fix / fix applied: Logged this entry rather than adding `Evolution-Check: none` retroactively (commit already pushed). No code or skill-routing behavior changed; the new file is maintainer-facing research guidance on skill deduplication and progressive-disclosure loading strategy, cited in PR #620.
+- Evidence/repro: `gh run view` on the PR's failed "Check Map Debt & Evolution Compliance in PR Diff" step named this exact file as the unaccounted-for `plugins/` change.
+- Severity: S
+- Repeat: NO
+- Status: RESOLVED
+
 ## DEBT-20260914-CONTROL-PLANE-CONSTANTS-CONSOLIDATION
 
 - Logged date: 2026-09-14
