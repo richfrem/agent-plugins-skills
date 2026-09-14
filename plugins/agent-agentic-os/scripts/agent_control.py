@@ -1155,6 +1155,15 @@ def _build_parser() -> argparse.ArgumentParser:
     p_ct.add_argument("--approval", choices=["APPROVAL", "REJECTION"], default=None)
     p_ct.add_argument("--skip-review", action="store_true", default=False)
     p_ct.add_argument("--skip-reason", default=None)
+    p_ct.add_argument(
+        "--human-confirmed", required=True,
+        help=(
+            "REQUIRED, no default. Must be the literal phrase 'HUMAN-CONFIRMED: <quote of what "
+            "the human actually typed authorizing this specific transition>'. Blanket gate added "
+            "2026-09-13 after an agent transitioned INTAKE->INTERVIEW without any human "
+            "authorization at all -- every transition, deterministic or not, now requires this."
+        ),
+    )
 
     # Compatibility alias: transition routes directly through TransitionCoordinator
     p_tr = sub.add_parser("transition")
@@ -1167,6 +1176,15 @@ def _build_parser() -> argparse.ArgumentParser:
     p_tr.add_argument("--approval", choices=["APPROVAL", "REJECTION"], default=None)
     p_tr.add_argument("--skip-review", action="store_true", default=False)
     p_tr.add_argument("--skip-reason", default=None)
+    p_tr.add_argument(
+        "--human-confirmed", required=True,
+        help=(
+            "REQUIRED, no default. Must be the literal phrase 'HUMAN-CONFIRMED: <quote of what "
+            "the human actually typed authorizing this specific transition>'. Blanket gate added "
+            "2026-09-13 after an agent transitioned INTAKE->INTERVIEW without any human "
+            "authorization at all -- every transition, deterministic or not, now requires this."
+        ),
+    )
 
     p_lock = sub.add_parser("lock-verifiers")
     p_lock.add_argument("--task-id", required=True)
@@ -1247,11 +1265,60 @@ def _build_parser() -> argparse.ArgumentParser:
     p_vc.add_argument("--branch", required=True, help="Git branch to verify commit authorization for")
     p_vc.add_argument("--staged-files", nargs="*", default=[], help="List of staged files")
 
+    # Blanket human-confirmation gate (added 2026-09-13): every state-mutating
+    # subcommand requires an explicit --human-confirmed flag with no default,
+    # regardless of whether the underlying YAML edge is coded as
+    # approval.required=false. Read-only/verification subcommands (status,
+    # transition-guidance, recommend-model, verify-*) are exempt.
+    for _mutating_parser in (
+        p_init, p_lock, p_rc, p_wt, p_lap, p_pme, p_sic, p_ha, p_rs, p_cr, p_rra,
+    ):
+        _mutating_parser.add_argument(
+            "--human-confirmed", required=True,
+            help=(
+                "REQUIRED, no default. Must start with the literal marker "
+                "'HUMAN-CONFIRMED:' followed by a quote of what the human actually typed "
+                "authorizing THIS SPECIFIC action. Fabricating this string is a policy "
+                "violation, not a technicality to route around."
+            ),
+        )
+
     return parser
+
+
+_HUMAN_CONFIRMED_GATED_COMMANDS = frozenset({
+    "init", "coordinate-transition", "transition", "lock-verifiers", "record-receipt",
+    "update-worktree", "log-prior-art", "record-plan-mode-entry", "record-socratic-intake",
+    "record-human-approval", "record-review-skip", "record-critic-review",
+    "record-recovery-approval",
+})
+
+
+def _enforce_human_confirmed(args: argparse.Namespace) -> None:
+    """Blanket gate (added 2026-09-13): every state-mutating subcommand requires an
+    explicit --human-confirmed flag, regardless of what the per-edge YAML says about
+    approval.required. Added live after an agent transitioned INTAKE->INTERVIEW with
+    zero human authorization -- that edge's approval.required=false made it legal per
+    the YAML, which is exactly the gap this closes: the YAML's per-edge setting is no
+    longer sufficient on its own, this check applies uniformly on top of it."""
+    if args.subcommand not in _HUMAN_CONFIRMED_GATED_COMMANDS:
+        return
+    human_confirmed = getattr(args, "human_confirmed", None)
+    if not human_confirmed or not human_confirmed.strip().startswith("HUMAN-CONFIRMED:"):
+        raise SystemExit(
+            f"BLOCKED: --human-confirmed is required for '{args.subcommand}' (added "
+            "2026-09-13 after an agent transitioned INTAKE->INTERVIEW without any human "
+            "authorization at all -- that edge's approval.required=false in the YAML made "
+            "it legal, which is exactly the gap this closes). It must start with the "
+            "literal marker 'HUMAN-CONFIRMED:' followed by a quote of what the human "
+            "actually typed authorizing THIS SPECIFIC action. Fabricating this string is "
+            "a policy violation, not a technicality to route around."
+        )
 
 
 def _dispatch_command(cp: ControlPlane, args: argparse.Namespace):
     """Executes the dispatched CLI command."""
+    _enforce_human_confirmed(args)
     if args.subcommand == "init":
         cp.create_task(args.task_id, args.title, args.runtime, args.spec_path, args.model_tier, args.model_id, args.task_type)
         print(f"Task {args.task_id} initialized in INTAKE (type={args.task_type}).")

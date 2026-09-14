@@ -1,1 +1,0 @@
-../../../../../references/research/skills_vision_analysis.md
