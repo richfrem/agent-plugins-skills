@@ -21,6 +21,10 @@ if _scripts_dir not in sys.path:
 from typing import Any, Dict, Optional
 from agent_control import ControlPlane, PhaseCapabilityDenied
 from control_plane.registry import TransitionRegistry
+from control_plane.constants import (
+    STATE_INTERVIEW, STATE_DRAFT_PLAN,
+    ERROR_CODE_CAPABILITY_DENIED, ERROR_CODE_CONTRACT_DENIED, ERROR_CODE_PERSISTENCE_DENIED,
+)
 
 
 ACTION_IDENTITY = "interview_question"
@@ -32,21 +36,21 @@ def _denial_response(control_plane: ControlPlane, task_id: str, error: Exception
     state = str(task.get("state", "UNKNOWN")) if task else "UNKNOWN"
     last_transition = control_plane.get_last_transition(task_id) if task else None
     occupancy = int(last_transition.transition_id) if last_transition else 0
-    if state == "INTERVIEW":
+    if state == STATE_INTERVIEW:
         recovery = (
             "Correct the failed check and retry record_interview_question.py with the canonical "
-            "question ID, explicit --answer, and --target-state DRAFT_PLAN."
+            f"question ID, explicit --answer, and --target-state {STATE_DRAFT_PLAN}."
         )
     else:
         recovery = (
             f"Run transition-guidance --task-id {task_id} and follow one of the legal next actions."
         )
     if isinstance(error, PhaseCapabilityDenied):
-        code = "CAPABILITY_DENIED"
+        code = ERROR_CODE_CAPABILITY_DENIED
     elif isinstance(error, ValueError):
-        code = "CONTRACT_DENIED"
+        code = ERROR_CODE_CONTRACT_DENIED
     else:
-        code = "PERSISTENCE_DENIED"
+        code = ERROR_CODE_PERSISTENCE_DENIED
     return {
         "status": "DENIED",
         "error": {
@@ -95,7 +99,7 @@ def record_interview_question(
 
     registry = getattr(cp, "_transition_registry", None) or TransitionRegistry.load_default()
     template = registry.get_template(cap.current_state, requested_target)
-    if template is None or requested_target != "DRAFT_PLAN":
+    if template is None or requested_target != STATE_DRAFT_PLAN:
         raise ValueError(
             f"Requested interview target '{requested_target}' is not a legal target from "
             f"state '{cap.current_state}'."

@@ -57,6 +57,23 @@ fi
 TASK_ID="$(echo "$TASK_ROW" | cut -d'|' -f1)"
 TASK_STATE="$(echo "$TASK_ROW" | cut -d'|' -f2)"
 
+# Guidance-compliance block: a human answered "no" (or gave no answer) to a
+# transition's mandatory guidance-compliance confirmation. No commit may proceed
+# until a human explicitly clears it via clear-guidance-block.
+GUIDANCE_BLOCK="$(sqlite3 "$DB_PATH" "SELECT guidance_block_reason FROM tasks WHERE task_id = '$TASK_ID';" 2>/dev/null || true)"
+if [ -n "$GUIDANCE_BLOCK" ]; then
+    echo ""
+    echo "❌ GIT COMMIT BLOCKED: Task Is Guidance-Blocked!"
+    echo ""
+    echo "   Task ID: $TASK_ID"
+    echo "   Reason:  $GUIDANCE_BLOCK"
+    echo ""
+    echo "   Clear this with explicit human authorization before committing:"
+    echo "   python3 plugins/agent-agentic-os/scripts/agent_control.py clear-guidance-block --task-id $TASK_ID --reason '<reason>' --human-confirmed 'HUMAN-CONFIRMED: <what the human said>'"
+    echo ""
+    exit 1
+fi
+
 # Check staged files
 STAGED_FILES="$(git diff --cached --name-only --diff-filter=ACM || true)"
 

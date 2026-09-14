@@ -39,6 +39,9 @@ Key Input Dependencies:
 from fnmatch import fnmatch
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
+from control_plane.constants import (
+    STATE_INTAKE, STATE_INTERVIEW, STATE_DRAFT_PLAN, STATE_MULTI_AGENT_REVIEW, STATE_PLAN_REVIEW, STATE_AWAITING_APPROVAL, STATE_IN_WORKTREE, STATE_WORKTREE_REVIEW, STATE_MULTI_AGENT_CODE_REVIEW, STATE_VERIFY_EXIT, STATE_DONE, STATE_ROLLED_BACK,
+)
 
 
 class DelegationContractError(ValueError):
@@ -377,7 +380,7 @@ def _worktree_push_check(ctx: Dict[str, Any]) -> Optional[str]:
     the task has cleared all verification gates and is in final state DONE."""
     task_state = ctx["task_state"]
     task_id = ctx["task_id"]
-    if task_state == "DONE":
+    if task_state == STATE_DONE:
         return None
     return (
         f"Cannot mark worktree 'pushed_to_origin' for task '{task_id}': Task state is '{task_state}'. "
@@ -404,8 +407,8 @@ def _task_commit_check(ctx: Dict[str, Any]) -> Optional[str]:
     task_id = ctx.get("task_id", "unknown")
     staged_files: List[str] = ctx.get("staged_files", [])
 
-    implementation_states = ("IN_WORKTREE", "WORKTREE_REVIEW", "MULTI_AGENT_CODE_REVIEW", "VERIFY_EXIT", "DONE")
-    planning_states = ("INTAKE", "INTERVIEW", "DRAFT_PLAN", "PLAN_REVIEW", "MULTI_AGENT_REVIEW", "AWAITING_APPROVAL")
+    implementation_states = (STATE_IN_WORKTREE, STATE_WORKTREE_REVIEW, STATE_MULTI_AGENT_CODE_REVIEW, STATE_VERIFY_EXIT, STATE_DONE)
+    planning_states = (STATE_INTAKE, STATE_INTERVIEW, STATE_DRAFT_PLAN, STATE_PLAN_REVIEW, STATE_MULTI_AGENT_REVIEW, STATE_AWAITING_APPROVAL)
 
     # If in planning states, permit only if ALL staged files are docs/plans/ or docs/superpowers/
     if task_state in planning_states:
@@ -590,9 +593,9 @@ def evaluate_transition(ctx: Dict[str, Any], from_state: str, to_state: str) -> 
     this local mapping exists only inside this function, routing through the same
     CHECK_REGISTRY functions _prior_art_check/_done_check/_rolled_back_check already use."""
     edge_to_check_fn = {
-        ("INTAKE", "INTERVIEW"): _prior_art_check,
-        ("VERIFY_EXIT", "DONE"): _done_check,
-        ("IN_WORKTREE", "ROLLED_BACK"): _rolled_back_check,
+        (STATE_INTAKE, STATE_INTERVIEW): _prior_art_check,
+        (STATE_VERIFY_EXIT, STATE_DONE): _done_check,
+        (STATE_IN_WORKTREE, STATE_ROLLED_BACK): _rolled_back_check,
     }
     fn = edge_to_check_fn.get((from_state, to_state))
     if fn is not None:

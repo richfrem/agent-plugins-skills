@@ -23,6 +23,14 @@ import sys
 from pathlib import Path
 import pytest
 
+SCRIPTS_DIR = Path(__file__).resolve().parent.parent / "scripts"
+if str(SCRIPTS_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_DIR))
+
+from control_plane.constants import (
+    STATE_INTAKE,
+)
+
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 AGENT_CONTROL_SRC = REPO_ROOT / "plugins" / "agent-agentic-os" / "scripts" / "agent_control.py"
 CONTROL_PLANE_PKG_SRC = REPO_ROOT / "plugins" / "agent-agentic-os" / "scripts" / "control_plane"
@@ -87,4 +95,4 @@ def test_worktree_shares_control_plane_db_with_main_checkout(repo_with_worktree)
     res_status = _run_cli(worktree_dir, "status", "--task-id", "shared-task-001")
     assert res_status.returncode == 0, res_status.stderr
     assert "shared-task-001" in res_status.stdout
-    assert '"state": "INTAKE"' in res_status.stdout
+    assert f'"state": "{STATE_INTAKE}"' in res_status.stdout

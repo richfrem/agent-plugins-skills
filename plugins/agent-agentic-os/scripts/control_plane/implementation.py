@@ -1,4 +1,25 @@
-"""Validation for the machine-readable implementation task ledger."""
+"""
+control_plane/implementation.py -- Implementation Task Ledger Validation
+=============================================================================
+
+Purpose:
+    Validation for the machine-readable implementation task ledger: a fenced JSON
+    block under a "## Implementation Task Ledger" heading in a plan document, where
+    every entry must be marked COMPLETE with non-empty evidence and at least one
+    artifact path that actually exists inside the repository root.
+
+Key Input Dependencies:
+    - The plan document at `plan_path` (must contain LEDGER_HEADING followed by a
+      fenced ```json block of ledger entries).
+    - `repo_root` -- used to resolve and bound-check each entry's artifact paths.
+
+Key Functions:
+    - LEDGER_HEADING -- the exact markdown heading the ledger's fenced JSON follows.
+    - _load_entries() -- parses and structurally validates the fenced JSON ledger.
+    - validate_implementation_ledger() -- returns a denial reason string unless every
+      ledger entry is COMPLETE with evidence and existing, in-repo artifacts; None
+      on success.
+"""
 
 import json
 from pathlib import Path

@@ -6,6 +6,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 from agent_control import ControlPlane
 from control_plane.ports import TransitionCommitRequest, TransitionRecord
+from control_plane.constants import (
+    STATE_APPROVED, STATE_IN_WORKTREE, STATE_WORKTREE_REVIEW,
+)
 
 
 class FakePersistence:
@@ -22,8 +25,8 @@ class FakePersistence:
         self.receipts.append((task_id, gate_name, command, exit_code, token))
 
 
-def _request(to_state="IN_WORKTREE"):
-    return TransitionCommitRequest("task-1", "APPROVED", to_state, 1, "edge", "controller", "ready", [], [])
+def _request(to_state=STATE_IN_WORKTREE):
+    return TransitionCommitRequest("task-1", STATE_APPROVED, to_state, 1, "edge", "controller", "ready", [], [])
 
 
 def test_approved_to_worktree_persists_kickoff_and_invokes_controller_once():
@@ -42,7 +45,7 @@ def test_other_transition_does_not_kickoff():
     calls = []
     cp = ControlPlane(persistence_adapter=persistence, implementation_controller=lambda *args: calls.append(args))
 
-    cp.commit_authorized_transition(_request("WORKTREE_REVIEW"))
+    cp.commit_authorized_transition(_request(STATE_WORKTREE_REVIEW))
 
     assert calls == []
     assert persistence.receipts == []

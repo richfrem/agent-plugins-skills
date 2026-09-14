@@ -13,7 +13,10 @@ if str(SCRIPTS_DIR) not in sys.path:
 from agent_control import ControlPlane
 from control_plane.adapters import CURRENT_SCHEMA_VERSION
 from control_plane.ports import PersistenceInvariantViolation
-from interview_helpers import stage_interview_answers
+from interview_helpers import stage_interview_answers, REASON_INTERVIEW_COMPLETE
+from control_plane.constants import (
+    STATE_INTERVIEW, STATE_DRAFT_PLAN,
+)
 
 
 def _control_plane_with_task(tmp_path):
@@ -53,7 +56,6 @@ def test_v9_migration_persists_scoped_consent_and_candidate_provenance(tmp_path)
     conn = sqlite3.connect(str(db_path))
     try:
         assert conn.execute("SELECT version FROM schema_version").fetchone()[0] == CURRENT_SCHEMA_VERSION
-        assert CURRENT_SCHEMA_VERSION == 12
         assert conn.execute(
             "SELECT stage, round_id, model_id, actor FROM premium_consents"
         ).fetchone() == ("interview", "round-1", "premium-model", "human")
@@ -106,38 +108,41 @@ def test_unconfirmed_source_candidate_blocks_interview_exit_until_human_confirme
 
 def test_transition_blocks_pending_source_candidate_on_interview_exit(tmp_path):
     control_plane = _control_plane_with_task(tmp_path)
-    control_plane.transition("p01-task", "INTERVIEW", "human", "start interview")
+    control_plane.transition("p01-task", STATE_INTERVIEW, "human", "start interview")
     stage_interview_answers(control_plane, "p01-task")
     candidate_id = control_plane.record_source_assisted_answer_candidate(
         "p01-task", "interview", "round-1", "scope", "P01 only", "docs/brief.md"
     )
 
     with pytest.raises(PersistenceInvariantViolation, match="unconfirmed source-assisted"):
-        control_plane.transition("p01-task", "DRAFT_PLAN", "agent", "interview complete")
-    assert control_plane.get_task("p01-task")["state"] == "INTERVIEW"
+        control_plane.transition("p01-task", STATE_DRAFT_PLAN, "agent", REASON_INTERVIEW_COMPLETE)
+    assert control_plane.get_task("p01-task")["state"] == STATE_INTERVIEW
 
     control_plane.confirm_source_assisted_answer_candidate(candidate_id, actor="human")
-    control_plane.transition("p01-task", "DRAFT_PLAN", "agent", "interview complete")
-    assert control_plane.get_task("p01-task")["state"] == "DRAFT_PLAN"
+    control_plane.transition("p01-task", STATE_DRAFT_PLAN, "agent", REASON_INTERVIEW_COMPLETE)
+    assert control_plane.get_task("p01-task")["state"] == STATE_DRAFT_PLAN
 
 
 def test_coordinate_transition_blocks_pending_source_candidate_on_interview_exit(tmp_path):
     control_plane = _control_plane_with_task(tmp_path)
-    control_plane.transition("p01-task", "INTERVIEW", "human", "start interview")
+    control_plane.transition("p01-task", STATE_INTERVIEW, "human", "start interview")
     stage_interview_answers(control_plane, "p01-task")
     candidate_id = control_plane.record_source_assisted_answer_candidate(
         "p01-task", "interview", "round-7", "scope", "P01 only", "docs/brief.md"
     )
 
+    from control_plane.coordinator import TransitionCoordinator as _TC
     with pytest.raises(PersistenceInvariantViolation, match="unconfirmed source-assisted"):
-        control_plane.coordinate_transition(
-            "p01-task", "DRAFT_PLAN", "agent", "interview complete"
+        _TC(control_plane, input_fn=lambda p: "YES").coordinate_transition(
+            "p01-task", STATE_DRAFT_PLAN, "agent", REASON_INTERVIEW_COMPLETE, interactive=True,
         )
-    assert control_plane.get_task("p01-task")["state"] == "INTERVIEW"
+    assert control_plane.get_task("p01-task")["state"] == STATE_INTERVIEW
 
     control_plane.confirm_source_assisted_answer_candidate(candidate_id, actor="human")
-    control_plane.coordinate_transition("p01-task", "DRAFT_PLAN", "agent", "interview complete")
-    assert control_plane.get_task("p01-task")["state"] == "DRAFT_PLAN"
+    _TC(control_plane, input_fn=lambda p: "YES").coordinate_transition(
+        "p01-task", STATE_DRAFT_PLAN, "agent", REASON_INTERVIEW_COMPLETE, interactive=True,
+    )
+    assert control_plane.get_task("p01-task")["state"] == STATE_DRAFT_PLAN
 
 
 def test_source_candidate_requires_authorized_source_and_human_confirmation(tmp_path):

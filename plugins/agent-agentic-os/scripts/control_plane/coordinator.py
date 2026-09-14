@@ -22,6 +22,10 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, TextIO, Tuple
 from control_plane.registry import TransitionRegistry, TransitionTemplate, TransitionRegistryError
 from control_plane.policy import evaluate_check, PolicyViolation, PolicyConfigurationError
+from control_plane.constants import (
+    STATE_INTERVIEW, STATE_DRAFT_PLAN, STATE_MULTI_AGENT_REVIEW, STATE_PLAN_REVIEW, STATE_AWAITING_APPROVAL, STATE_RETROSPECTIVE, STATE_DONE,
+    GUIDANCE_COMPLIANCE_CONFIRM_ANSWER,
+)
 from control_plane.ports import (
     FilesystemPort,
     TransitionCommitRequest,
@@ -107,6 +111,20 @@ class TransitionCoordinator:
         if not task:
             raise TransitionCoordinatorError(f"Task not found: {task_id}")
 
+        # F-08 fix (external review, 2026-09-14): force_close is the deliberate emergency
+        # escape hatch and must remain usable on a guidance-blocked task -- otherwise an
+        # operator has no way to force-abort a genuinely stuck/broken task at all. Its own
+        # authorization (actor=="human", explicit FORCE_CLOSE/FORCE_DONE, interactive=True)
+        # is independently, strictly validated later in this method regardless.
+        if not force_close:
+            block_reason = self._cp.get_guidance_block_reason(task_id)
+            if block_reason:
+                raise TransitionCoordinatorError(
+                    f"BLOCKED: task '{task_id}' is guidance-blocked ({block_reason}). "
+                    "No further transitions are permitted until clear-guidance-block is run "
+                    "with explicit human authorization."
+                )
+
         current_state = self._cp._read_current_state_for_update(task_id)
         if current_state is None:
             raise TransitionCoordinatorError(f"Task not found: {task_id}")
@@ -116,7 +134,7 @@ class TransitionCoordinator:
         # masking them as an authorization denial.
         self._cp._state_machine.validate_adjacency(task_id, current_state, to_state)
 
-        if to_state == "DONE" and not force_close and current_state != "RETROSPECTIVE":
+        if to_state == STATE_DONE and not force_close and current_state != STATE_RETROSPECTIVE:
             raise TransitionCoordinatorError(
                 "Force close denied: explicit human authorization FORCE_CLOSE is required."
             )
@@ -132,7 +150,7 @@ class TransitionCoordinator:
         # wildcard contract deliberately so an exact ordinary DONE template
         # (notably RETROSPECTIVE -> DONE) cannot shadow the override.
         template = self._registry.get_template(current_state, to_state)
-        if force_close and to_state == "DONE":
+        if force_close and to_state == STATE_DONE:
             template = (
                 self._registry.get_template_by_id(f"force_close_to_done__from_{current_state}")
                 or self._registry.get_template_by_id(f"human_force_done__from_{current_state}")
@@ -155,7 +173,7 @@ class TransitionCoordinator:
             )
 
         if force_close:
-            if to_state != "DONE":
+            if to_state != STATE_DONE:
                 raise TransitionCoordinatorError("force_close is only valid for transitions to DONE.")
             if actor != "human" or not human_authorization:
                 raise TransitionCoordinatorError("Force-close requires explicit human authorization.")
@@ -252,8 +270,8 @@ class TransitionCoordinator:
                 failed_reasons.append(f"Missing required artifact: {art_rel}")
 
         if (
-            current_state == "DRAFT_PLAN"
-            and to_state in {"PLAN_REVIEW", "MULTI_AGENT_REVIEW", "AWAITING_APPROVAL"}
+            current_state == STATE_DRAFT_PLAN
+            and to_state in {STATE_PLAN_REVIEW, STATE_MULTI_AGENT_REVIEW, STATE_AWAITING_APPROVAL}
             and all_passed
         ):
             staged_revision = self._stage_plan_artifact_submission(
@@ -399,7 +417,7 @@ class TransitionCoordinator:
             if qid in (template.stage_question_ids or []):
                 stage_answers[qid] = chosen_ans
 
-        if current_state == "INTERVIEW" and to_state == "DRAFT_PLAN":
+        if current_state == STATE_INTERVIEW and to_state == STATE_DRAFT_PLAN:
             # Project each newly-collected interview answer into the plan-outline
             # artifact before the commit path's assert_interview_plan_outline_ready
             # check runs -- otherwise every interactive DRAFT_PLAN transition fails
@@ -463,6 +481,71 @@ class TransitionCoordinator:
                     recorded_at=self._cp._clock.current_time(),
                 )
             )
+
+        # 7b. Mandatory per-transition guidance-compliance confirmation (added per explicit
+        # human request, 2026-09-13): every non-force-close transition requires an explicit,
+        # separate confirmation that the advisory guidance/checklist/questions above were
+        # actually read and followed -- not inferred from having answered the edge's own
+        # questions. A "no" answer, or no answer at all in interactive mode, blocks ALL
+        # further transitions for this task (guidance_block_reason) until a human explicitly
+        # clears it via clear-guidance-block. force_close is exempt: its own literal
+        # FORCE_CLOSE/FORCE_DONE authorization is already a stricter, separate confirmation.
+        if not force_close and "guidance_compliance_confirmation" in persisted_answers:
+            # Already answered and persisted from an earlier staged decision for this
+            # exact occupancy (the same mechanism every other question already honors
+            # via persisted_answers/ctx["stage_answers"]) -- consistent with the rest
+            # of this method, not a bypass: an explicit affirmative answer must still
+            # already exist somewhere, it's just not re-asked if it does.
+            pass
+        elif not force_close:
+            guidance_prompt = (
+                "guidance_compliance_confirmation: Have you read and followed this "
+                "transition's YAML guidance (advisory text, checklist, and questions) "
+                "exactly, with no shortcuts or substitutions? Type YES or NO: "
+            )
+            if interactive:
+                guidance_answer = self._input_fn(guidance_prompt).strip()
+                guidance_decision_actor = "human"
+            else:
+                # This question may NEVER be satisfied programmatically (found by
+                # external review, 2026-09-14: an agent could otherwise self-certify
+                # via --answers '{"guidance_compliance_confirmation": "YES"}' with
+                # actor="agent", defeating the entire purpose of a human-in-the-loop
+                # confirmation). Unlike every other question on an edge, this one
+                # requires a real live human -- interactive=True is mandatory, no
+                # provided_answers escape hatch. A missing/non-interactive attempt is
+                # a usage error -- fail loud with no side effect (no block set) --
+                # not an implicit "NO". Only a genuine, explicit "NO" typed by a real
+                # human at the prompt may ever set guidance_block_reason.
+                raise TransitionCoordinatorError(
+                    "guidance_compliance_confirmation requires a real human answer -- "
+                    "pass --interactive. It cannot be supplied via provided_answers/--answers."
+                )
+
+            guidance_followed = guidance_answer.strip().upper() == GUIDANCE_COMPLIANCE_CONFIRM_ANSWER
+            staged_decisions.append(
+                TransitionDecision(
+                    task_id=task_id,
+                    source_occupancy_transition_id=source_occupancy_id,
+                    from_state=current_state,
+                    to_state=to_state,
+                    question_id="guidance_compliance_confirmation",
+                    answer=guidance_answer or "(no answer given)",
+                    decision_type="CONFIRMATION",
+                    actor=guidance_decision_actor,
+                    recorded_at=self._cp._clock.current_time(),
+                )
+            )
+            if not guidance_followed:
+                block_reason = (
+                    f"Answered '{guidance_answer or '(no answer given)'}' (not YES) to the "
+                    f"guidance-compliance confirmation for {current_state} -> {to_state}."
+                )
+                self._cp.set_guidance_block(task_id, block_reason)
+                raise TransitionCoordinatorError(
+                    f"BLOCKED: {block_reason} All further transitions for task '{task_id}' "
+                    "are refused until a human explicitly runs clear-guidance-block."
+                )
 
         # 8. Build TransitionCommitRequest
         commit_request = TransitionCommitRequest(

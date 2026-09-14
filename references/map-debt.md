@@ -2,6 +2,19 @@
 
 Persistent tracking of architectural friction, structural anomalies, and unclosed loops across sessions.
 
+## DEBT-20260914-CONTROL-PLANE-CONSTANTS-CONSOLIDATION
+
+- Logged date: 2026-09-14
+- Cycle/Session ID: agentic-os-dedup-invariant-v2
+- Artifact affected: `plugins/agent-agentic-os/scripts/control_plane/adapters.py`, `state_machine.py`, `coordinator.py`, `policy.py`, `agent_control.py`, `pipeline_simulator.py`, `transition_simulation_cases.py`, `worktree_manager.py`, and ~35 test files; new `plugins/agent-agentic-os/scripts/control_plane/constants.py`
+- Friction observed: The `guidance_compliance_confirmation` question added earlier in this work package broke 46 tests because each had independently hardcoded its own literal answer sequence. A follow-up external review and whole-plugin scan found ~1,000 raw task-lifecycle state-name literals plus a second wave of hardcoded decision-type/actor/cost-tier/task-type/worktree-state/gate-name/critic-verdict/delegation-status/retrospective-status literals duplicated across 40 files. This duplication directly caused two live bugs: three `adapters.py` methods embedded a constant's name literally inside a plain (non-f) SQL string instead of its value, so SQLite silently compared against the wrong text and matched nothing; and `_rebuild_schema_transactional()` executed a ~40-line inline `CREATE TRIGGER` that was immediately dropped and replaced by the canonical one from `SCHEMA_SQL` three lines later.
+- Why not fixed now: N/A — fixed in this session.
+- Recommended fix / fix applied: Created `control_plane/constants.py` as the single shared source for every cross-file domain constant. `state_machine.py` imports state names from it and owns only the derived adjacency DAG. `adapters.py`'s `SCHEMA_SQL` builds its `CHECK (... IN (...))` clauses from these constants via a new `sql_in_list()` helper; `SCHEMA_MIGRATIONS` (immutable historical DDL) was deliberately left untouched. Runtime SQL queries that interpolated constants via f-string were converted to `?` bind parameters (f-strings now reserved for `SCHEMA_SQL`/trigger DDL at module-load time only, since SQLite triggers can't accept bind params at all). Two fixed-depth `.parent` chains were replaced by one git-based `_resolve_repo_root()` helper. A follow-up 21-file audit added missing `Key Input Dependencies`/`Key Functions` header sections per `coding-conventions.md` (20 fixed, `evaluate.py` correctly left untouched — its own header says "DO NOT MODIFY THIS FILE"), and fixed one further genuine duplication (`worktree_manager.py`'s native/portable strategy literals) while deliberately declining to merge a coincidental `"COMPLETE"` string shared across 4 unrelated domains (would have been a false coupling, same mistake class as an earlier attempt to import `agent_control`'s `STATE_AWAITING_APPROVAL` into files that actually call the separately-governed `evolution_state.py`'s own `AWAITING_APPROVAL`). Canonical rule updated: `plugins/agent-agentic-os/rules/config-driven-constants-over-hardcoding.md`.
+- Evidence/repro: Full suite green — `pytest plugins/agent-agentic-os/tests/ -q` → 475 passed, 0 failed, including regression coverage for both live bugs found and fixed above.
+- Severity: M
+- Repeat: NO
+- Status: RESOLVED
+
 ## DEBT-20260913-WORKTREE-BASE-BRANCH-DEFAULT
 
 - Logged date: 2026-09-13

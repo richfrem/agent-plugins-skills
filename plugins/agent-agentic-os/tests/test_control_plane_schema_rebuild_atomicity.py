@@ -37,6 +37,9 @@ if str(SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_DIR))
 
 from control_plane.adapters import SqlitePersistenceAdapter, FilesystemAdapter, SCHEMA_SQL
+from control_plane.constants import (
+    STATE_INTAKE, STATE_INTERVIEW, STATE_RETROSPECTIVE,
+)
 
 
 def _make_adapter(tmp_path):
@@ -54,16 +57,16 @@ def _seed_realistic_data(conn):
     the literal FORCE_RETROSPECTIVE confirmation)."""
     conn.execute(
         "INSERT INTO tasks (task_id, title, state, runtime_tool) VALUES (?, ?, ?, ?)",
-        ("task-a", "Task A", "INTAKE", "claude"),
+        ("task-a", "Task A", STATE_INTAKE, "claude"),
     )
     conn.execute(
         "INSERT INTO tasks (task_id, title, state, runtime_tool) VALUES (?, ?, ?, ?)",
-        ("task-b", "Task B", "INTAKE", "claude"),
+        ("task-b", "Task B", STATE_INTAKE, "claude"),
     )
     conn.execute("UPDATE tasks SET state = 'INTERVIEW' WHERE task_id = 'task-b';")
     conn.execute(
         "INSERT INTO task_transitions (task_id, from_state, to_state, actor) VALUES (?, ?, ?, ?)",
-        ("task-b", "INTAKE", "INTERVIEW", "test"),
+        ("task-b", STATE_INTAKE, STATE_INTERVIEW, "test"),
     )
     interview_answers = {
         "force_retrospective_reason_category": (
@@ -84,7 +87,7 @@ def _seed_realistic_data(conn):
     conn.execute("UPDATE tasks SET state = 'RETROSPECTIVE' WHERE task_id = 'task-b';")
     conn.execute(
         "INSERT INTO task_transitions (task_id, from_state, to_state, actor) VALUES (?, ?, ?, ?)",
-        ("task-b", "INTERVIEW", "RETROSPECTIVE", "test"),
+        ("task-b", STATE_INTERVIEW, STATE_RETROSPECTIVE, "test"),
     )
     conn.execute(
         "INSERT INTO critic_reviews (task_id, iteration, model_used, verdict, critique_findings) VALUES (?, ?, ?, ?, ?)",
@@ -160,7 +163,7 @@ def test_rebuild_with_nonempty_data_survives_intact(tmp_path):
     conn = sqlite3.connect(str(db_path))
     try:
         tasks = {r[0]: r[1] for r in conn.execute("SELECT task_id, state FROM tasks")}
-        assert tasks == {"task-a": "INTAKE", "task-b": "RETROSPECTIVE"}
+        assert tasks == {"task-a": STATE_INTAKE, "task-b": STATE_RETROSPECTIVE}
         transitions = conn.execute("SELECT COUNT(*) FROM task_transitions").fetchone()[0]
         assert transitions == 2
         orphans = conn.execute(
@@ -211,7 +214,7 @@ def test_rebuild_failure_mid_copy_loop_rolls_back_completely(tmp_path, monkeypat
         assert orphans == 0, "orphan _*_migrating tables must not survive a rolled-back rebuild"
 
         tasks = {r[0]: r[1] for r in conn.execute("SELECT task_id, state FROM tasks")}
-        assert tasks == {"task-a": "INTAKE", "task-b": "RETROSPECTIVE"}, "data must be unchanged after rollback"
+        assert tasks == {"task-a": STATE_INTAKE, "task-b": STATE_RETROSPECTIVE}, "data must be unchanged after rollback"
 
         post_version = conn.execute("SELECT version FROM schema_version").fetchone()[0]
         assert post_version == pre_version, "schema_version must be unchanged after rollback"

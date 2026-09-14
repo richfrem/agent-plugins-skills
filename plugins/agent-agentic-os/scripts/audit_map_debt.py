@@ -16,6 +16,14 @@ Layer: Backend / py_services / DevOps
 
 Key Input Dependencies:
     - references/map-debt.md or .agent/map-debt.md
+
+Key Functions:
+    - parse_table_entries() -- parses the standard Markdown table format.
+    - parse_debt_entries() -- top-level parse, handling table and legacy key-value
+      block formats.
+    - evaluate_debt() -- returns violation messages for EXPIRED (>14 days OPEN) and
+      REPEAT (Repeat=YES) entries.
+    - main() -- CLI entry point; exits 1 on any violation.
 """
 
 import re

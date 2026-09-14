@@ -115,6 +115,10 @@ from control_plane.adapters import (
 )
 from control_plane import policy as _policy
 from control_plane.state_machine import StateMachine, CANONICAL_STATES, ALLOWED_TRANSITIONS, InvalidStateTransition
+from control_plane.constants import (
+    STATE_INTERVIEW, STATE_DRAFT_PLAN, STATE_APPROVED, STATE_IN_WORKTREE, STATE_RETROSPECTIVE, STATE_DONE,
+)
+
 from control_plane.registry import TransitionRegistry
 from control_plane.coordinator import TransitionCoordinator, TransitionCoordinatorError
 
@@ -345,7 +349,7 @@ class ControlPlane:
         task = self.get_task(task_id)
         if not task:
             raise ValueError(f"Task not found: {task_id}")
-        if self._read_current_state_for_update(task_id) != "INTERVIEW":
+        if self._read_current_state_for_update(task_id) != STATE_INTERVIEW:
             raise PersistenceInvariantViolation(
                 f"Interview outline updates require current state INTERVIEW for task_id='{task_id}'."
             )
@@ -412,7 +416,7 @@ class ControlPlane:
         task = self.get_task(task_id)
         if not task:
             raise ValueError(f"Task not found: {task_id}")
-        if from_state != "INTERVIEW" or self._read_current_state_for_update(task_id) != from_state:
+        if from_state != STATE_INTERVIEW or self._read_current_state_for_update(task_id) != from_state:
             raise PersistenceInvariantViolation(
                 f"Interview answer updates require current state INTERVIEW for task_id='{task_id}'."
             )
@@ -505,7 +509,7 @@ class ControlPlane:
             raise _policy.DelegationContractError(f"Task not found: {task_id}")
         _policy.validate_delegation_contract(contract)
         contract = dict(contract)
-        contract["status"] = "PENDING_APPROVAL" if _policy.delegation_requires_approval(contract) else "APPROVED"
+        contract["status"] = "PENDING_APPROVAL" if _policy.delegation_requires_approval(contract) else STATE_APPROVED
         return self._persistence.create_delegation_plan(task_id, contract)
 
     def get_delegation_plan(self, contract_id: int) -> Optional[Dict[str, Any]]:
@@ -533,7 +537,7 @@ class ControlPlane:
         contract = self.get_delegation_plan(contract_id)
         if not contract:
             raise _policy.DelegationContractError(f"Delegation contract not found: {contract_id}")
-        if contract["status"] not in {"APPROVED", "EXECUTING"}:
+        if contract["status"] not in {STATE_APPROVED, "EXECUTING"}:
             raise _policy.DelegationContractError("Delegation requires human approval before execution")
         receipt = {
             "task_id": contract["task_id"], "backend": backend, "model_id": model_id,
@@ -756,6 +760,14 @@ class ControlPlane:
         if not task:
             raise ValueError(f"Task not found: {task_id}")
 
+        block_reason = self.get_guidance_block_reason(task_id)
+        if block_reason:
+            raise PersistenceInvariantViolation(
+                f"BLOCKED: task '{task_id}' is guidance-blocked ({block_reason}). "
+                "No further transitions are permitted until clear-guidance-block is run "
+                "with explicit human authorization."
+            )
+
         # Authoritative state read, immediately before the guarded write — closes the race
         # window between the adjacency/policy checks and the write (a concurrent writer
         # changing the row after this point is caught by apply_transition()'s guard rather
@@ -764,20 +776,20 @@ class ControlPlane:
         if current_state is None:
             raise ValueError(f"Task not found: {task_id}")
 
-        if to_state == "DONE":
+        if to_state == STATE_DONE:
             # Check edge legality first so callers receive the domain
             # InvalidStateTransition for illegal edges, including force-close.
             self._state_machine.validate_adjacency(task_id, current_state, to_state)
-        if to_state == "DONE" and (current_state != "RETROSPECTIVE" or force_close):
+        if to_state == STATE_DONE and (current_state != STATE_RETROSPECTIVE or force_close):
             raise PersistenceInvariantViolation(
                 "Transition to DONE requires explicit human authorization FORCE_CLOSE via coordinate_transition."
             )
         if not bypass_adjacency:
             self._state_machine.validate_adjacency(task_id, current_state, to_state)
 
-        if current_state == "INTERVIEW" and to_state != "INTERVIEW":
+        if current_state == STATE_INTERVIEW and to_state != STATE_INTERVIEW:
             self.assert_interview_exit_ready(task_id, stage="interview", round_id=None)
-        if current_state == "INTERVIEW" and to_state == "DRAFT_PLAN":
+        if current_state == STATE_INTERVIEW and to_state == STATE_DRAFT_PLAN:
             self.assert_interview_plan_outline_ready(task_id)
 
         # --- Unified gate policy: deterministic checks from authoritative YAML registry ---
@@ -835,13 +847,13 @@ class ControlPlane:
     def commit_authorized_transition(self, commit_request: TransitionCommitRequest) -> TransitionRecord:
         """Internal atomic commit gate: passes normalized TransitionCommitRequest to PersistencePort.
         PersistencePort re-validates persistable invariants in SQLite transaction and atomically commits."""
-        if commit_request.to_state == "DONE":
+        if commit_request.to_state == STATE_DONE:
             self._state_machine.validate_adjacency(
                 commit_request.task_id,
                 commit_request.expected_from_state,
                 commit_request.to_state,
             )
-        if (commit_request.to_state == "DONE" and commit_request.expected_from_state != "RETROSPECTIVE"
+        if (commit_request.to_state == STATE_DONE and commit_request.expected_from_state != STATE_RETROSPECTIVE
             and not (
             commit_request.force_close and commit_request.actor == "human"
             and commit_request.interactive_human_authorization
@@ -862,8 +874,8 @@ class ControlPlane:
             for d in commit_request.staged_decisions
         )
         if (
-            commit_request.expected_from_state == "INTERVIEW"
-            and commit_request.to_state != "INTERVIEW"
+            commit_request.expected_from_state == STATE_INTERVIEW
+            and commit_request.to_state != STATE_INTERVIEW
             and not force_retrospective
         ):
             # This is deliberately immediately before the atomic persistence call so both
@@ -874,12 +886,12 @@ class ControlPlane:
                 commit_request.task_id, stage="interview", round_id=None
             )
         if (
-            commit_request.expected_from_state == "INTERVIEW"
-            and commit_request.to_state == "DRAFT_PLAN"
+            commit_request.expected_from_state == STATE_INTERVIEW
+            and commit_request.to_state == STATE_DRAFT_PLAN
         ):
             self.assert_interview_plan_outline_ready(commit_request.task_id)
         record = self._persistence.apply_transition_with_receipts(commit_request)
-        if record.from_state == "APPROVED" and record.to_state == "IN_WORKTREE":
+        if record.from_state == STATE_APPROVED and record.to_state == STATE_IN_WORKTREE:
             self._kickoff_implementation(record)
         return record
 
@@ -1038,9 +1050,9 @@ class ControlPlane:
         remain the actual authorization gate."""
         if not token or not token.strip():
             raise ValueError("apply_recovery_transition requires a non-empty token from record_recovery_approval.")
-        if destination_state == "DONE":
+        if destination_state == STATE_DONE:
             return self.coordinate_transition(
-                task_id=task_id, to_state="DONE", actor=actor, reason=reason,
+                task_id=task_id, to_state=STATE_DONE, actor=actor, reason=reason,
                 interactive=True, force_close=True, human_authorization="FORCE_CLOSE",
             )
         self.transition(task_id, destination_state, actor, reason, bypass_adjacency=True)
@@ -1103,6 +1115,17 @@ class ControlPlane:
         task_id = task["task_id"]
         task_state = task["state"]
 
+        # F-05 fix (external review, 2026-09-14): this Python-level check previously had no
+        # parity with the shell pre-commit-pipeline-guard's guidance_block_reason check --
+        # callers going through this API instead of the shell hook would incorrectly see
+        # ALLOWED for a guidance-blocked task.
+        block_reason = self.get_guidance_block_reason(task_id)
+        if block_reason:
+            raise PersistenceInvariantViolation(
+                f"BLOCKED: task '{task_id}' is guidance-blocked ({block_reason}). "
+                "No commit is permitted until clear-guidance-block is run with explicit human authorization."
+            )
+
         op_ctx = {
             "task_id": task_id,
             "task_state": task_state,
@@ -1126,6 +1149,33 @@ class ControlPlane:
     def log_asymmetric_persistence(self, task_id: str, destination: str, status: str, details: str):
         """Logs asymmetric Layer 2 persistence entries into the SQLite audit table."""
         self._persistence.insert_asymmetric_persistence(task_id, destination, status, details)
+
+    def get_guidance_block_reason(self, task_id: str) -> Optional[str]:
+        """Returns the task's guidance_block_reason (None if not blocked)."""
+        return self._persistence.get_guidance_block_reason(task_id)
+
+    def set_guidance_block(self, task_id: str, reason: str) -> None:
+        """Blocks all further transitions for task_id until clear_guidance_block() is
+        explicitly called. Triggered when a human answers 'no' (or gives no answer) to
+        the mandatory per-transition guidance-compliance confirmation."""
+        self._persistence.set_guidance_block(task_id, reason)
+
+    def clear_guidance_block(self, task_id: str, reason: str = "") -> None:
+        """Clears a guidance block -- always requires the caller to have gone through the
+        blanket --human-confirmed gate (enforced at the CLI dispatch layer, not here).
+
+        Bug fix (found by external review, 2026-09-14): `reason` was previously accepted
+        by the CLI, printed back as if recorded, then silently discarded -- never actually
+        persisted anywhere. Now logged to asymmetric_persistence_log, the same durable
+        audit trail already used for other Layer-2 persistence facts."""
+        self._persistence.clear_guidance_block(task_id)
+        if reason:
+            self.log_asymmetric_persistence(
+                task_id=task_id,
+                destination="guidance_block_reason",
+                status="RESOLVED",
+                details=f"Guidance block cleared. Reason: {reason}",
+            )
 
     def verify_phase_capability(self, task_id: str, action_identity: str) -> PhaseCapability:
         """Verifies that an action capability is authorized for the task's current phase occupancy.
@@ -1356,6 +1406,10 @@ def _build_parser() -> argparse.ArgumentParser:
     p_rra.add_argument("--decision", default="APPROVAL")
     p_rra.add_argument("--reason", required=True)
 
+    p_cgb = sub.add_parser("clear-guidance-block")
+    p_cgb.add_argument("--task-id", required=True)
+    p_cgb.add_argument("--reason", required=True, help="Why this block is being cleared")
+
     p_vc = sub.add_parser("verify-commit")
     p_vc.add_argument("--branch", required=True, help="Git branch to verify commit authorization for")
     p_vc.add_argument("--staged-files", nargs="*", default=[], help="List of staged files")
@@ -1366,7 +1420,7 @@ def _build_parser() -> argparse.ArgumentParser:
     # approval.required=false. Read-only/verification subcommands (status,
     # transition-guidance, recommend-model, verify-*) are exempt.
     for _mutating_parser in (
-        p_init, p_lock, p_rc, p_wt, p_lap, p_pme, p_sic, p_ha, p_rs, p_cr, p_rra,
+        p_init, p_lock, p_rc, p_wt, p_lap, p_pme, p_sic, p_ha, p_rs, p_cr, p_rra, p_cgb,
     ):
         _mutating_parser.add_argument(
             "--human-confirmed", required=True,
@@ -1385,7 +1439,7 @@ _HUMAN_CONFIRMED_GATED_COMMANDS = frozenset({
     "init", "coordinate-transition", "transition", "lock-verifiers", "record-receipt",
     "update-worktree", "log-prior-art", "record-plan-mode-entry", "record-socratic-intake",
     "record-human-approval", "record-review-skip", "record-critic-review",
-    "record-recovery-approval",
+    "record-recovery-approval", "clear-guidance-block",
 })
 
 
@@ -1488,6 +1542,9 @@ def _dispatch_command(cp: ControlPlane, args: argparse.Namespace):
             reason=args.reason,
         )
         print(f"Recovery approval recorded: {token}")
+    elif args.subcommand == "clear-guidance-block":
+        cp.clear_guidance_block(args.task_id, reason=args.reason)
+        print(f"Guidance block cleared for task '{args.task_id}'. Reason recorded: {args.reason}")
     elif args.subcommand == "verify-commit":
         res = cp.verify_commit(args.branch, args.staged_files)
         print(f"Commit check: {res['status']} ({res['message']})")

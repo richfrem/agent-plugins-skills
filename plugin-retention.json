@@ -36,7 +36,8 @@
         "self-evolution": true,
         "todo-check": true,
         "worktree-manager": true,
-        "evo-smoketest": false
+        "evo-smoketest": false,
+        "transition-guidance-tester": true
       },
       "rules": {
         "adversarial-reasoning-before-agreement-rule.md": true,

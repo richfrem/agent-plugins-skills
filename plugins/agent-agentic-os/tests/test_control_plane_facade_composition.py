@@ -40,6 +40,9 @@ if str(SCRIPTS_DIR) not in sys.path:
 from agent_control import ControlPlane
 from control_plane.adapters import FilesystemAdapter, CryptoAdapter, ModelCatalogAdapter, ClockAdapter, SqlitePersistenceAdapter
 from control_plane.ports import PersistencePort
+from control_plane.constants import (
+    STATE_INTAKE, STATE_INTERVIEW, STATE_DONE,
+)
 
 AGENT_CONTROL_FILE = SCRIPTS_DIR / "agent_control.py"
 BANNED_MODULES = {"sqlite3", "hashlib", "time"}
@@ -124,7 +127,7 @@ class _FakePersistencePort(PersistencePort):
         self.calls.append(("insert_task", task_id, title, task_type, runtime_tool, spec_path, model_tier, model_id))
         self._tasks[task_id] = {
             "task_id": task_id, "title": title, "task_type": task_type, "runtime_tool": runtime_tool,
-            "spec_path": spec_path, "model_tier": model_tier, "model_id": model_id, "state": "INTAKE",
+            "spec_path": spec_path, "model_tier": model_tier, "model_id": model_id, "state": STATE_INTAKE,
         }
 
     def read_current_state(self, task_id: str) -> Optional[str]:
@@ -176,6 +179,18 @@ class _FakePersistencePort(PersistencePort):
 
     def insert_asymmetric_persistence(self, task_id, destination, status, details) -> None:
         self.calls.append(("insert_asymmetric_persistence", task_id, destination, status, details))
+
+    def get_guidance_block_reason(self, task_id):
+        self.calls.append(("get_guidance_block_reason", task_id))
+        return getattr(self, "_guidance_block_reason", None)
+
+    def set_guidance_block(self, task_id, reason) -> None:
+        self.calls.append(("set_guidance_block", task_id, reason))
+        self._guidance_block_reason = reason
+
+    def clear_guidance_block(self, task_id) -> None:
+        self.calls.append(("clear_guidance_block", task_id))
+        self._guidance_block_reason = None
 
     def get_verification_receipts(self, task_id) -> List[Dict[str, Any]]:
         self.calls.append(("get_verification_receipts", task_id))
@@ -274,9 +289,9 @@ def test_fake_persistence_port_proves_full_delegation():
     assert ("confirm_source_assisted_answer_candidate", candidate_id, "human") in fake.calls
     assert ("has_unconfirmed_source_assisted_answer_candidates", "t1", "interview", "round-1") in fake.calls
 
-    cp.transition(task_id="t1", to_state="INTERVIEW", actor="user", reason="test")
-    assert ("apply_transition", "t1", "INTAKE", "INTERVIEW", "user", "test") in fake.calls
-    assert fake._tasks["t1"]["state"] == "INTERVIEW"
+    cp.transition(task_id="t1", to_state=STATE_INTERVIEW, actor="user", reason="test")
+    assert ("apply_transition", "t1", STATE_INTAKE, STATE_INTERVIEW, "user", "test") in fake.calls
+    assert fake._tasks["t1"]["state"] == STATE_INTERVIEW
 
     token = cp.record_verification_receipt(task_id="t1", gate_name="test_suite", command_executed="pytest", exit_code=0)
     assert any(c[0] == "insert_verification_receipt" and c[1] == "t1" for c in fake.calls)
@@ -288,6 +303,6 @@ def test_fake_persistence_port_proves_full_delegation():
     cp.log_asymmetric_persistence(task_id="t1", destination="wiki/decisions/x.md", status="OBSERVED", details="d")
     assert ("insert_asymmetric_persistence", "t1", "wiki/decisions/x.md", "OBSERVED", "d") in fake.calls
 
-    fake._tasks["t1"]["state"] = "DONE"  # satisfy the push-barrier policy check (must be DONE)
+    fake._tasks["t1"]["state"] = STATE_DONE  # satisfy the push-barrier policy check (must be DONE)
     cp.update_worktree(task_id="t1", worktree_path="/tmp/wt", worktree_branch="b", worktree_state="pushed_to_origin")
     assert ("update_worktree_fields", "t1", "/tmp/wt", "b", "pushed_to_origin") in fake.calls

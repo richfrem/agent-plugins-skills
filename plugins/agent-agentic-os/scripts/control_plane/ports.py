@@ -346,6 +346,21 @@ class PersistencePort(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def get_guidance_block_reason(self, task_id: str) -> Optional[str]:
+        """Returns the task's guidance_block_reason (None if not blocked)."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def set_guidance_block(self, task_id: str, reason: str) -> None:
+        """Sets guidance_block_reason, refusing all further transitions until cleared."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def clear_guidance_block(self, task_id: str) -> None:
+        """Clears guidance_block_reason."""
+        raise NotImplementedError
+
+    @abstractmethod
     def get_verification_receipts(self, task_id: str) -> List[Dict[str, Any]]:
         """Returns all verification_receipts rows for task_id."""
         raise NotImplementedError

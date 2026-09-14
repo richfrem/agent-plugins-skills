@@ -103,3 +103,25 @@ detail, not repeated here):
   when the transition guidance says to create one.
 - Never let a documented advisory field go unreported solely because the CLI
   wrapper around it failed to print it — verify independently.
+
+## Enforcement: the guidance-compliance gate (added 2026-09-14)
+
+This rule is no longer advisory-only for `agent-agentic-os`'s control plane.
+`TransitionCoordinator.coordinate_transition()` now asks a mandatory extra
+question, `guidance_compliance_confirmation`, on every non-force-close
+transition: "Have you read and followed this transition's YAML guidance
+exactly?" It can ONLY be answered via a real `interactive=True` call with a
+real human typing the answer — it can never be satisfied by
+`provided_answers`/`--answers`, precisely to prevent an agent self-certifying
+compliance on a human's behalf. A "NO," or any attempt to answer it
+non-interactively, sets a permanent `guidance_block_reason` on the task,
+refusing all further transitions, commits, and pushes until a human explicitly
+runs `clear-guidance-block --human-confirmed ...`.
+
+**Before changing any transition's YAML guidance or the coordinator's
+question-handling logic**, use the `transition-guidance-tester` skill
+(`plugins/agent-agentic-os/skills/transition-guidance-tester/`) to verify the
+guidance is still followable by an agent reading it cold — run
+`run_transition_simulation.py --from <STATE> --to <STATE>` for the specific
+edge you changed. This is opt-in (costs real time via LLM calls), not part of
+the default pytest suite.

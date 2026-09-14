@@ -10956,6 +10956,30 @@
       "dst": "plugins/agent-agentic-os/skills/worktree-manager/references/worktree-reconciliation-and-multi-worktree-practices.md",
       "strategy": "symlink",
       "description": "Worktree reconciliation and multi-worktree best practices (issue #609)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/transition_simulation_cases.py",
+      "dst": "plugins/agent-agentic-os/tests/transition_simulation_cases.py",
+      "strategy": "symlink",
+      "description": "Cheap-agent simulation case generator, canonical in scripts/control_plane; symlinked into tests/ for pytest import"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/transition_simulation_cases.py",
+      "dst": "plugins/agent-agentic-os/skills/transition-guidance-tester/scripts/control_plane/transition_simulation_cases.py",
+      "strategy": "symlink",
+      "description": "Cheap-agent simulation case generator, spoke copy for self-contained skill execution"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/run_transition_simulation.py",
+      "dst": "plugins/agent-agentic-os/skills/transition-guidance-tester/scripts/control_plane/run_transition_simulation.py",
+      "strategy": "symlink",
+      "description": "Cheap-agent simulation CLI runner, spoke copy for self-contained skill execution"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/cheap-agent-transition-simulation.md",
+      "dst": "plugins/agent-agentic-os/skills/transition-guidance-tester/references/cheap-agent-transition-simulation.md",
+      "strategy": "symlink",
+      "description": "Design doc for the cheap-agent transition simulation harness, symlinked into its skill"
     }
   ]
 }

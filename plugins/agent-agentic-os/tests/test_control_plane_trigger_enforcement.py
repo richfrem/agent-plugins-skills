@@ -45,11 +45,14 @@ if str(SCRIPTS_DIR) not in sys.path:
 
 from control_plane.adapters import SqlitePersistenceAdapter, FilesystemAdapter, SCHEMA_SQL, _split_schema_sql_statements
 from control_plane.registry import TransitionRegistry
+from control_plane.constants import (
+    STATE_INTAKE, STATE_INTERVIEW, STATE_IN_WORKTREE, STATE_WORKTREE_REVIEW, STATE_DONE,
+)
 
 # INTAKE -> IN_WORKTREE is not a legal edge in ALLOWED_TRANSITIONS (unlike INTAKE -> DONE,
 # which IS a legal short-circuit edge) — this is the illegal-UPDATE example used throughout
 # issue-523's design discussion. Using DONE here would silently test nothing.
-ILLEGAL_UPDATE_TARGET = "IN_WORKTREE"
+ILLEGAL_UPDATE_TARGET = STATE_IN_WORKTREE
 
 
 def _make_adapter(tmp_path):
@@ -90,20 +93,20 @@ def test_illegal_update_transition_via_raw_sql_is_reverted_and_logged(tmp_path):
     adapter, db_path = _make_adapter(tmp_path)
     conn = sqlite3.connect(str(db_path))
     try:
-        _insert_legal_task(conn, "task-1", "INTAKE")
+        _insert_legal_task(conn, "task-1", STATE_INTAKE)
         before = conn.execute("SELECT state, updated_at FROM tasks WHERE task_id='task-1'").fetchone()
 
         conn.execute(f"UPDATE tasks SET state='{ILLEGAL_UPDATE_TARGET}' WHERE task_id='task-1'")
         conn.commit()
 
         after = conn.execute("SELECT state, updated_at FROM tasks WHERE task_id='task-1'").fetchone()
-        assert after[0] == "INTAKE"
+        assert after[0] == STATE_INTAKE
         assert after[1] == before[1]
 
         violations = conn.execute(
             "SELECT task_id, attempted_from_state, attempted_to_state FROM transition_violations WHERE task_id='task-1'"
         ).fetchall()
-        assert violations == [("task-1", "INTAKE", ILLEGAL_UPDATE_TARGET)]
+        assert violations == [("task-1", STATE_INTAKE, ILLEGAL_UPDATE_TARGET)]
     finally:
         conn.close()
 
@@ -114,13 +117,13 @@ def test_legal_transition_via_raw_sql_is_unaffected_and_unlogged(tmp_path):
     adapter, db_path = _make_adapter(tmp_path)
     conn = sqlite3.connect(str(db_path))
     try:
-        _insert_legal_task(conn, "task-2", "INTAKE")
+        _insert_legal_task(conn, "task-2", STATE_INTAKE)
 
         conn.execute("UPDATE tasks SET state='INTERVIEW' WHERE task_id='task-2'")
         conn.commit()
 
         after = conn.execute("SELECT state FROM tasks WHERE task_id='task-2'").fetchone()
-        assert after[0] == "INTERVIEW"
+        assert after[0] == STATE_INTERVIEW
 
         count = conn.execute(
             "SELECT COUNT(*) FROM transition_violations WHERE task_id='task-2'"
@@ -139,7 +142,7 @@ def test_illegal_insert_initial_state_via_raw_sql_is_deleted_and_logged(tmp_path
     try:
         conn.execute(
             "INSERT INTO tasks (task_id, title, state, runtime_tool) VALUES (?, ?, ?, ?)",
-            ("task-3", "Test Task", "DONE", "claude"),
+            ("task-3", "Test Task", STATE_DONE, "claude"),
         )
         conn.commit()
 
@@ -149,7 +152,7 @@ def test_illegal_insert_initial_state_via_raw_sql_is_deleted_and_logged(tmp_path
         violations = conn.execute(
             "SELECT task_id, attempted_from_state, attempted_to_state FROM transition_violations WHERE task_id='task-3'"
         ).fetchall()
-        assert violations == [("task-3", None, "DONE")]
+        assert violations == [("task-3", None, STATE_DONE)]
     finally:
         conn.close()
 
@@ -161,12 +164,12 @@ def test_delete_then_reinsert_bypass_is_caught_by_insert_trigger(tmp_path):
     adapter, db_path = _make_adapter(tmp_path)
     conn = sqlite3.connect(str(db_path))
     try:
-        _insert_legal_task(conn, "task-4", "INTAKE")
+        _insert_legal_task(conn, "task-4", STATE_INTAKE)
 
         conn.execute("DELETE FROM tasks WHERE task_id='task-4'")
         conn.execute(
             "INSERT INTO tasks (task_id, title, state, runtime_tool) VALUES (?, ?, ?, ?)",
-            ("task-4", "Test Task", "DONE", "claude"),
+            ("task-4", "Test Task", STATE_DONE, "claude"),
         )
         conn.commit()
 
@@ -176,7 +179,7 @@ def test_delete_then_reinsert_bypass_is_caught_by_insert_trigger(tmp_path):
         violations = conn.execute(
             "SELECT task_id, attempted_from_state, attempted_to_state FROM transition_violations WHERE task_id='task-4'"
         ).fetchall()
-        assert violations == [("task-4", None, "DONE")]
+        assert violations == [("task-4", None, STATE_DONE)]
     finally:
         conn.close()
 
@@ -192,7 +195,7 @@ def test_insert_trigger_cascade_does_not_fire_update_trigger(tmp_path):
     try:
         conn.execute(
             "INSERT INTO tasks (task_id, title, state, runtime_tool) VALUES (?, ?, ?, ?)",
-            ("task-7", "Test Task", "DONE", "claude"),
+            ("task-7", "Test Task", STATE_DONE, "claude"),
         )
         conn.commit()
 
@@ -220,11 +223,11 @@ def test_trigger_survives_schema_rebuild(tmp_path):
 
     conn = sqlite3.connect(str(db_path))
     try:
-        _insert_legal_task(conn, "task-5", "INTAKE")
+        _insert_legal_task(conn, "task-5", STATE_INTAKE)
         conn.execute(f"UPDATE tasks SET state='{ILLEGAL_UPDATE_TARGET}' WHERE task_id='task-5'")
         conn.commit()
         after = conn.execute("SELECT state FROM tasks WHERE task_id='task-5'").fetchone()
-        assert after[0] == "INTAKE"
+        assert after[0] == STATE_INTAKE
     finally:
         conn.close()
 
@@ -251,7 +254,7 @@ def test_recursive_triggers_on_hits_recursion_limit_but_no_illegal_write_persist
     conn = sqlite3.connect(str(db_path))
     try:
         conn.execute("PRAGMA recursive_triggers = ON;")
-        _insert_legal_task(conn, "task-6", "INTAKE")
+        _insert_legal_task(conn, "task-6", STATE_INTAKE)
         # Seed at WORKTREE_REVIEW via a trigger-safe raw set (not a legal initial
         # state for _insert_legal_task's INSERT path).
         conn.execute("DROP TRIGGER IF EXISTS enforce_valid_transition;")
@@ -267,7 +270,7 @@ def test_recursive_triggers_on_hits_recursion_limit_but_no_illegal_write_persist
             conn.commit()
 
         after = conn.execute("SELECT state FROM tasks WHERE task_id='task-6'").fetchone()
-        assert after[0] == "WORKTREE_REVIEW"
+        assert after[0] == STATE_WORKTREE_REVIEW
 
         count = conn.execute(
             "SELECT COUNT(*) FROM transition_violations WHERE task_id='task-6'"
@@ -299,7 +302,7 @@ def test_sync_valid_transitions_is_atomic_not_left_empty_on_failure(tmp_path):
         fake_registry = unittest.mock.MagicMock()
         # Good rows first, then one NOT NULL-violating row (to_state=None) to force a
         # mid-batch failure rather than an immediate one.
-        fake_registry.get_all_edges.return_value = real_edges | {("INTAKE", None)}
+        fake_registry.get_all_edges.return_value = real_edges | {(STATE_INTAKE, None)}
 
         with unittest.mock.patch.object(TransitionRegistry, "load_default", return_value=fake_registry):
             with pytest.raises(sqlite3.IntegrityError):

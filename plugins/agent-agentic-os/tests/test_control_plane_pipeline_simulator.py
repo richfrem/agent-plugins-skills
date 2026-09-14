@@ -12,6 +12,9 @@ if str(SCRIPTS_DIR) not in sys.path:
 from control_plane.pipeline_simulator import PipelineSimulator
 from control_plane.coordinator import TransitionCoordinatorError
 from control_plane.state_machine import ALLOWED_TRANSITIONS, InvalidStateTransition
+from control_plane.constants import (
+    STATE_INTAKE, STATE_INTERVIEW, STATE_DRAFT_PLAN, STATE_WORKTREE_REVIEW, STATE_RETROSPECTIVE, STATE_DONE,
+)
 
 
 def test_simulator_runs_trivial_interview_fast_track_against_temporary_sqlite(tmp_path):
@@ -20,7 +23,7 @@ def test_simulator_runs_trivial_interview_fast_track_against_temporary_sqlite(tm
 
     report = simulator.run_trivial_interview_fast_track(task_id)
 
-    assert report["states"] == ["INTAKE", "INTERVIEW", "RETROSPECTIVE"]
+    assert report["states"] == [STATE_INTAKE, STATE_INTERVIEW, STATE_RETROSPECTIVE]
     assert report["db_path"] == str((tmp_path / "simulator.db").resolve())
     assert not (Path.cwd() / "context" / "control_plane.db").exists() or simulator.db_path != Path.cwd() / "context" / "control_plane.db"
 
@@ -31,11 +34,11 @@ def test_simulator_exercises_standard_interview_enforcement(tmp_path):
     simulator.enter_interview(task_id)
 
     with pytest.raises(TransitionCoordinatorError, match="interview_classification"):
-        simulator.transition_from_interview(task_id, "DRAFT_PLAN", classification="STANDARD")
+        simulator.transition_from_interview(task_id, STATE_DRAFT_PLAN, classification="STANDARD")
 
-    simulator.stage_interview_answers(task_id, classification="STANDARD", to_state="DRAFT_PLAN")
-    record = simulator.transition_from_interview(task_id, "DRAFT_PLAN", classification="STANDARD")
-    assert record.to_state == "DRAFT_PLAN"
+    simulator.stage_interview_answers(task_id, classification="STANDARD", to_state=STATE_DRAFT_PLAN)
+    record = simulator.transition_from_interview(task_id, STATE_DRAFT_PLAN, classification="STANDARD", expect_success=True)
+    assert record.to_state == STATE_DRAFT_PLAN
 
 
 def test_simulator_coverage_is_derived_from_live_registry(tmp_path):
@@ -58,7 +61,7 @@ def test_simulator_rejects_illegal_edge_through_production_control_plane(tmp_pat
     task_id = simulator.create_task("illegal-001", "Illegal simulator path")
 
     with pytest.raises(InvalidStateTransition):
-        simulator.control_plane.transition(task_id, "WORKTREE_REVIEW", "simulator", "illegal edge")
+        simulator.control_plane.transition(task_id, STATE_WORKTREE_REVIEW, "simulator", "illegal edge")
 
 
 def test_simulator_exercises_reset_wildcard_with_interactive_approval(tmp_path):
@@ -68,9 +71,9 @@ def test_simulator_exercises_reset_wildcard_with_interactive_approval(tmp_path):
 
     record = simulator.reset_to_intake(task_id)
 
-    assert record.from_state == "INTERVIEW"
-    assert record.to_state == "INTAKE"
-    assert simulator.control_plane._persistence.read_current_state(task_id) == "INTAKE"
+    assert record.from_state == STATE_INTERVIEW
+    assert record.to_state == STATE_INTAKE
+    assert simulator.control_plane._persistence.read_current_state(task_id) == STATE_INTAKE
 
 
 def test_simulator_reports_isolation_contract(tmp_path):
@@ -96,8 +99,8 @@ def test_simulator_can_play_reproducible_adversarial_rounds(tmp_path):
         "reset_recovery",
     ]
     assert all(round_["state_preserved"] for round_ in rounds[:3])
-    assert rounds[3]["after_state"] == "RETROSPECTIVE"
-    assert rounds[4]["after_state"] == "INTAKE"
+    assert rounds[3]["after_state"] == STATE_RETROSPECTIVE
+    assert rounds[4]["after_state"] == STATE_INTAKE
     assert all(round_["no_orphan_transition"] for round_ in rounds)
 
 
@@ -120,9 +123,9 @@ def test_simulator_replays_standard_happy_path_to_done(tmp_path):
 
     report = simulator.run_standard_happy_path(task_id)
 
-    assert report["states"][0] == "INTAKE"
-    assert report["states"][-1] == "DONE"
-    assert simulator.control_plane._persistence.read_current_state(task_id) == "DONE"
+    assert report["states"][0] == STATE_INTAKE
+    assert report["states"][-1] == STATE_DONE
+    assert simulator.control_plane._persistence.read_current_state(task_id) == STATE_DONE
 
 
 def test_standard_happy_path_routes_lifecycle_edges_through_coordinator(tmp_path, monkeypatch):
@@ -136,4 +139,4 @@ def test_standard_happy_path_routes_lifecycle_edges_through_coordinator(tmp_path
 
     report = simulator.run_standard_happy_path(task_id)
 
-    assert report["states"][-1] == "DONE"
+    assert report["states"][-1] == STATE_DONE

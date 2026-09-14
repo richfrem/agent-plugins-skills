@@ -8,6 +8,11 @@ Purpose:
 
 Key Input Dependencies:
     - PATH (via shutil.which) for each CLI binary in PROBES
+
+Key Functions:
+    - PROBES -- the list of (display_name, command) pairs to check.
+    - check_cmd() -- runs one probe command and reports found/responsive/error.
+    - main() -- runs all PROBES and writes environment_probe_report.txt.
 """
 
 import subprocess
