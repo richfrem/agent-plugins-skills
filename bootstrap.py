@@ -195,6 +195,17 @@ def sync_main():
         title="Plugin Sync & Cleanup"
     )
 
+def prune_main():
+    """Entry point for component retention pruning."""
+    run_script(
+        primary_script_name="prune_installed_skills.py",
+        required_scripts=[
+            "plugins/plugin-manager/scripts/prune_installed_skills.py",
+            "plugins/plugin-manager/scripts/retention_manifest.py"
+        ],
+        title="Component Retention Pruner"
+    )
+
 if __name__ == "__main__":
     # If run generically via python bootstrap.py, default to install
     add_main()

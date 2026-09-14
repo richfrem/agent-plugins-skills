@@ -34,6 +34,28 @@ write changes, and sync at the end.
 
 > Copies under individual skills are **never edited directly** — the sync script handles them.
 
+### Versioned capability contract (schema version 2)
+
+Every runtime catalog must retain `_meta.schema_version: 2` and include a
+`runtime` block with `runtime_id`, `provider`, `availability`,
+`native_capabilities`, and `effort_modes`. `native_capabilities` declares the
+runtime's support for `planning`, `worktree`, and `subagents` as `native`,
+`portable`, or `unknown`; it describes runtime capability, not model quality.
+The catalog must also include `capability_tiers.low`, `.medium`, and `.high`,
+each listing model `cli_id` values present in `models[]`. These tiers are the
+authoritative candidates for low-, medium-, and high-effort selection.
+Every model entry must retain `context_window_k`, `max_output_k`,
+`pricing_usd_per_1m`, and `tool_support` fields, using `null` or an explicit
+`unknown` value when the provider does not publish a limit or capability.
+
+The CLI router and the control-plane adapter validate this contract and fail
+closed when it is missing or inconsistent. Keep native capability declarations
+honest: do not claim native support merely because a portable fallback exists.
+When refreshing catalogs, preserve withdrawn models with `available: false` or
+an appropriate withdrawn/deprecated status, and update tier membership rather
+than deleting history. Explicit model choices remain caller overrides; tier
+selection applies only when no model is supplied.
+
 ---
 
 ## Step 1 — Fetch current data from official sources
@@ -78,7 +100,7 @@ For each CLI backend, compare fetched data to the current JSON:
 
 - **copilot**: Claude IDs use **dots** (`claude-sonnet-4.6`). Prices in AI Credits (`credits_per_1m`). See `_meta.credits_formula`.
 - **claude**: Claude IDs use **dashes** (`claude-sonnet-5`). Has more models than Copilot — the files intentionally differ.
-- **agy**: Each thinking level (Low/Med/High) is a separate `cli_id` entry. Do not collapse them.
+- **agy**: The catalog may expose runtime aliases for Low/Medium/High thinking selection, even though the official Gemini API model ID is `gemini-3.8-flash`. Preserve those aliases when they are required by the Agy CLI.
 - **codex**: OpenAI models only. Matches OpenAI API pricing (not Copilot AI Credits).
 
 ---
@@ -89,10 +111,10 @@ Compare current `cheapest_models.json` entries against what Step 1 found:
 
 | CLI | Current cheapest | Verification question |
 |---|---|---|
-| `copilot` | `gpt-5.4-nano` (20 cr/1M input) | Is there anything cheaper in the catalog? |
-| `agy` | `gemini-3.5-flash` (Low) | Is Flash (Low) still the cheapest Gemini? |
+| `copilot` | `mai-code-1.1-flash` (20 cr/1M input) | Is there anything cheaper in the catalog? |
+| `agy` | `gemini-3.8-flash-low` (Low) | Is Flash (Low) still the cheapest Gemini? |
 | `claude` | `claude-haiku-4-5` ($1/1M input) | Is Haiku still cheapest current Claude? |
-| `codex` | `gpt-5-mini` ($0.25/1M input) | Is there anything cheaper? |
+| `codex` | `gpt-5.6-luna` ($0.20/1M input) | Is there anything cheaper? |
 | `llama` | `gemma-4-12b` (free, self-hosted) | Always free — no change expected |
 
 If cheapest changed for any CLI:
@@ -137,9 +159,9 @@ Sync: [N] copies of cheapest_models updated across repo.
 
 ## Common Failures
 
-- **Display name vs CLI ID**: Copilot shows "GPT-5.4 nano" — CLI arg is `gpt-5.4-nano`. Always use CLI identifier.
+- **Display name vs CLI ID**: Copilot display names and CLI identifiers can differ (for example, `MAI-Code-1.1-Flash` versus `mai-code-1.1-flash`). Always use the identifier accepted by the installed CLI, and treat the provider's runtime model list as authoritative.
 - **Dot vs dash notation**: `claude-sonnet-4.6` (Copilot) ≠ `claude-sonnet-4-6` (direct API). Wrong notation silently fails at runtime.
-- **agy thinking levels**: `gemini-3.5-flash` (medium) ≠ `gemini-3.5-flash-low`. Separate `cli_id` entries.
+- **agy thinking levels**: `gemini-3.8-flash-low` is an Agy runtime alias for low thinking; do not mistake it for a separate official Gemini API model.
 - **Long context pricing**: Always capture both tiers when a model has them.
 - **OpenAI 403**: `openai.com/api/pricing/` blocks fetchers. Use `search_web` fallback.
 - **Symlinks**: Some copies of `cheapest_models.json` are symlinks — `sync_cheapest_models.py` skips them automatically.

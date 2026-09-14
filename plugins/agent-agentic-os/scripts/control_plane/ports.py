@@ -64,6 +64,14 @@ class TransitionDecision:
 
 
 @dataclass(frozen=True)
+class InterviewAnswerRecord:
+    """Identifiers returned by the atomic answer-and-outline persistence operation."""
+
+    decision_id: int
+    outline_revision: int
+
+
+@dataclass(frozen=True)
 class TransitionCommitRequest:
     task_id: str
     expected_from_state: str
@@ -74,6 +82,8 @@ class TransitionCommitRequest:
     reason: str
     staged_decisions: List[TransitionDecision]
     staged_receipts: List[Dict[str, Any]]
+    force_close: bool = False
+    interactive_human_authorization: bool = False
 
 
 @dataclass(frozen=True)
@@ -171,6 +181,99 @@ class PersistencePort(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def insert_premium_consent(
+        self, task_id: str, stage: str, round_id: str, model_id: str, actor: str
+    ) -> int:
+        """Persist human consent for one exact task/stage/round/model scope."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def has_premium_consent(self, task_id: str, stage: str, round_id: str, model_id: str) -> bool:
+        """Return whether an exact task/stage/round/model consent scope exists."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def insert_source_assisted_answer_candidate(
+        self,
+        task_id: str,
+        stage: str,
+        round_id: str,
+        question_id: str,
+        answer: str,
+        source_path: str,
+        source_authorized: bool,
+    ) -> int:
+        """Persist one source-derived answer candidate and its provenance."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def confirm_source_assisted_answer_candidate(self, candidate_id: int, actor: str) -> bool:
+        """Mark one pending source-derived answer candidate as human-confirmed."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def has_unconfirmed_source_assisted_answer_candidates(
+        self, task_id: str, stage: str, round_id: Optional[str]
+    ) -> bool:
+        """Return whether the requested scope still has unconfirmed candidates.
+
+        ``round_id=None`` checks every round in the stage, which is used by the
+        authoritative lifecycle exit gate.
+        """
+        raise NotImplementedError
+
+    def upsert_interview_plan_outline(
+        self, task_id: str, bullets: List[Dict[str, Any]], artifact_path: str
+    ) -> int:
+        """Persist the canonical interview outline and return its revision."""
+        raise NotImplementedError
+
+    def record_interview_answer(
+        self,
+        decision: TransitionDecision,
+        bullets: List[Dict[str, Any]],
+        artifact_path: str,
+    ) -> InterviewAnswerRecord:
+        """Atomically persist one answer decision and its revisioned outline."""
+        raise NotImplementedError
+
+    def get_interview_plan_outline(self, task_id: str) -> Optional[Dict[str, Any]]:
+        """Retrieve the canonical interview outline, or None when not yet created."""
+        raise NotImplementedError
+
+    def create_delegation_plan(self, task_id: str, contract: Dict[str, Any]) -> int:
+        """Persist a governed delegation contract and return its identifier."""
+        raise NotImplementedError
+
+    def get_delegation_plan(self, contract_id: int) -> Optional[Dict[str, Any]]:
+        """Retrieve a delegation contract by identifier."""
+        raise NotImplementedError
+
+    def approve_delegation_plan(self, contract_id: int, actor: str) -> None:
+        """Record the human approval for a contract that requires it."""
+        raise NotImplementedError
+
+    def count_delegation_receipts(self, contract_id: int) -> int:
+        """Count execution attempts against a delegation contract."""
+        raise NotImplementedError
+
+    def insert_delegation_receipt(self, contract_id: int, receipt: Dict[str, Any]) -> int:
+        """Persist one execution receipt."""
+        raise NotImplementedError
+
+    def insert_delegation_verifier_receipt(self, contract_id: int, command: str, exit_code: int) -> None:
+        """Persist the verifier receipt required before accepting a result."""
+        raise NotImplementedError
+
+    def mark_delegation_status(self, contract_id: int, status: str) -> None:
+        """Update the governed contract status."""
+        raise NotImplementedError
+
+    def has_delegation_verifier_receipt(self, contract_id: int) -> bool:
+        """Return whether a passing verifier receipt exists."""
+        raise NotImplementedError
+
+    @abstractmethod
     def insert_task(self, task_id: str, title: str, task_type: str, runtime_tool: str,
                      spec_path: Optional[str], model_tier: Optional[str], model_id: Optional[str]) -> None:
         """Inserts a new task row in INTAKE state and its creation transition, atomically."""
@@ -243,6 +346,21 @@ class PersistencePort(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def get_guidance_block_reason(self, task_id: str) -> Optional[str]:
+        """Returns the task's guidance_block_reason (None if not blocked)."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def set_guidance_block(self, task_id: str, reason: str) -> None:
+        """Sets guidance_block_reason, refusing all further transitions until cleared."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def clear_guidance_block(self, task_id: str) -> None:
+        """Clears guidance_block_reason."""
+        raise NotImplementedError
+
+    @abstractmethod
     def get_verification_receipts(self, task_id: str) -> List[Dict[str, Any]]:
         """Returns all verification_receipts rows for task_id."""
         raise NotImplementedError
@@ -260,6 +378,19 @@ class PersistencePort(ABC):
     @abstractmethod
     def update_worktree_fields(self, task_id: str, worktree_path: str, worktree_branch: str, worktree_state: str) -> None:
         """Updates a task's worktree_path/worktree_branch/worktree_state columns."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def record_done_closeout_decision(
+        self, task_id: str, source_occupancy_transition_id: int, question_id: str,
+        answer: str, actor: str, recorded_at: float,
+    ) -> int:
+        """Persists one human decision made while the task is in DONE closeout."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_done_closeout_decisions(self, task_id: str) -> List[Dict[str, Any]]:
+        """Returns persisted DONE closeout decisions for a task."""
         raise NotImplementedError
 
     @abstractmethod
@@ -327,4 +458,3 @@ class PersistencePort(ABC):
     def validate_task_pipeline_history(self, task_id: str, task_state: str) -> Optional[str]:
         """Validates transition history and violations for pipeline commit check. Returns error string or None."""
         raise NotImplementedError
-

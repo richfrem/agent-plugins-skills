@@ -1,1 +1,0 @@
-../../../references/claude-directory-spec.md

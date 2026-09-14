@@ -24,7 +24,7 @@ _PLUGINS_DIR = _HERE / "plugins"
 _SKILL_DIRS = [
     # agent-agentic-os (20 skills)
     ("agent-agentic-os",         "critical-auditor"),
-    ("agent-agentic-os",         "interview-spec"),
+    ("agent-agentic-os",         "work-intake"),
     ("agent-agentic-os",         "optimize-agent-instructions"),
     ("agent-agentic-os",         "os-architect"),
     ("agent-agentic-os",         "os-clean-locks"),
@@ -99,15 +99,12 @@ _SKILL_DIRS = [
     ("agent-scaffolders",        "synthesize-learnings"),
     ("agent-scaffolders",        "update-ecosystem-index"),
 
-    # cli-agents (12 skills) — consolidated from deleted claude-cli + copilot-cli + gemini-cli
+    # cli-agents (11 skills) — consolidated from deleted claude-cli + copilot-cli + gemini-cli
     ("cli-agents",               "agt-security"),
     ("cli-agents",               "agy-cli-agent"),
-    ("cli-agents",               "antigravity-project-setup"),
     ("cli-agents",               "claude-cli-agent"),
-    ("cli-agents",               "claude-project-setup"),
     ("cli-agents",               "codex-cli-agent"),
     ("cli-agents",               "copilot-cli-agent"),
-    ("cli-agents",               "gemini-cli-agent"),
     ("cli-agents",               "local-llm-bridge"),
     ("cli-agents",               "local-llm-setup"),
     ("cli-agents",               "maf-adapter"),
@@ -116,21 +113,23 @@ _SKILL_DIRS = [
     # dependency-management (1 skill)
     ("dependency-management",    "dependency-management"),
 
-    # dev-utils (14 skills)
+    # dev-utils (16 skills)
     ("dev-utils",                "adr-management"),
-    ("dev-utils",                "bundle-context-full"),
     ("dev-utils",                "coding-conventions-agent"),
     ("dev-utils",                "context-bundler"),
     ("dev-utils",                "convert-mermaid"),
+    ("dev-utils",                "github-issue-agent"),
+    ("dev-utils",                "github-issue-backlog-agent"),
+    ("dev-utils",                "github-issue-pr-lifecycle-agent"),
+    ("dev-utils",                "github-issue-prioritizer"),
+    ("dev-utils",                "github-issue-worktree-agent"),
     ("dev-utils",                "hf-download"),
     ("dev-utils",                "hf-init"),
     ("dev-utils",                "hf-upload"),
     ("dev-utils",                "humanize"),
     ("dev-utils",                "link-checker-agent"),
     ("dev-utils",                "optimize-context"),
-    ("dev-utils",                "red-team-bundler"),
     ("dev-utils",                "symlink-manager"),
-    ("dev-utils",                "task-agent"),
 
     # exploration-cycle-plugin (20 skills)
     ("exploration-cycle-plugin", "business-requirements-capture"),
@@ -166,8 +165,9 @@ _SKILL_DIRS = [
     ("obsidian-wiki-engine",     "obsidian-wiki-builder"),
     ("obsidian-wiki-engine",     "obsidian-wiki-linter"),
 
-    # plugin-manager (3 skills)
+    # plugin-manager (4 skills)
     ("plugin-manager",           "plugin-installer"),
+    ("plugin-manager",           "plugin-pruner"),
     ("plugin-manager",           "plugin-remover"),
     ("plugin-manager",           "plugin-syncer"),
 

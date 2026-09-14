@@ -1,1 +1,6 @@
-../../../assets/diagrams/ecosystem_system_bridge.mmd
+graph LR
+    Plugins[Canonical Source: plugins/] --> Installer[Installer: plugin_add.py]
+    Installer --> AgentsCentral[.agents/ Central Store]
+    AgentsCentral --> ClientClaude[.claude/]
+    AgentsCentral --> ClientGemini[.gemini/]
+    AgentsCentral --> ClientAzure[.azure/]

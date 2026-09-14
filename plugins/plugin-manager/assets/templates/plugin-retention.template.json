@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "updated_at": "2026-09-11T00:00:00Z",
+  "protected_defaults": [
+    "plugin-installer",
+    "plugin-remover",
+    "plugin-syncer",
+    "plugin-pruner",
+    "symlink-manager",
+    "worktree-manager"
+  ],
+  "plugins": {}
+}

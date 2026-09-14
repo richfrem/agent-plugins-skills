@@ -1,1 +1,0 @@
-../../../../assets/templates/task-template.md

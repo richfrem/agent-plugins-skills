@@ -4,7 +4,7 @@ plugin: cli-agents
 description: >
   Antigravity (`agy`) CLI sub-agent system for all Google Gemini models and cross-model
   access (Gemini, Claude, GPT-OSS) via the agy binary. Use when dispatching tasks to
-  Gemini 3.1 Pro (cheapest real-world), Gemini 3.5 Flash, or other agy-hosted models.
+  Gemini 3.1 Pro, Gemini 3.8 Flash, or other agy-hosted models.
   Replaces the deprecated gemini-cli-agent (gemini binary retired June 18 2026).
   Trigger with "use agy", "dispatch to antigravity", "run with agy", "use gemini model",
   "agy sub-agent", or "use cheapest gemini".
@@ -30,6 +30,26 @@ You dispatch tasks to Google Gemini (and other) models via the `agy` binary.
 > `agy` is the **sole Gemini CLI** since the standalone `gemini` binary retired June 18 2026.
 > All Gemini model work — including cost-efficient older models — routes through `agy`.
 
+## Native orchestration facilities (verified September 2026)
+
+`agy` has a native `--mode=plan` that investigates with read-only tools and presents an
+outline before edits. It also has asynchronous background subagents, custom agent profiles,
+and a `/agents` panel. Use them for genuinely independent work; keep a single agent for a
+small, coupled edit. The CLI does **not** document a flag that creates or manages Git
+worktrees, so create the governed portable worktree first and invoke `agy` inside it.
+
+```bash
+# Plan without editing
+agy --mode=plan -p "Inspect this repository and propose an implementation plan."
+
+# Inspect locally installed custom agents before selecting one
+agy agents
+```
+
+Do not treat `--dangerously-skip-permissions` as isolation: it approves tool requests. Use
+`--sandbox` for terminal restrictions, and retain the control plane's approval and receipt
+requirements even when agy delegates work.
+
 ### Model Strategy: Flash by Default, Pro for Deep Reasoning
 
 > **See `references/agy-models.json`** for the full model catalog, cost tiers, and strategy field.
@@ -37,10 +57,10 @@ You dispatch tasks to Google Gemini (and other) models via the `agy` binary.
 ```bash
 # Default (Flash — faster, cheaper/token, optimized for agentic/coding tasks)
 python ./scripts/run_agent.py <PERSONA> <INPUT> <OUTPUT> "<INSTR>" --cli agy
-# ↑ run_agent.py loads gemini-3.5-flash from references/cheapest_models.json
+# ↑ run_agent.py loads the current Flash model from references/cheapest_models.json
 
-# Explicit Low thinking (recommended for CLI loops to control Thought Preservation cost)
-python ./scripts/run_agent.py <PERSONA> <INPUT> <OUTPUT> "<INSTR>" --cli agy --model "Gemini 3.5 Flash (Low)"
+# Explicit Low effort (recommended for CLI loops to control Thought Preservation cost)
+python ./scripts/run_agent.py <PERSONA> <INPUT> <OUTPUT> "<INSTR>" --cli agy --model gemini-3.8-flash --effort low
 
 # Pro — escalate for deep reasoning / architecture decisions
 python ./scripts/run_agent.py <PERSONA> <INPUT> <OUTPUT> "<INSTR>" --cli agy --model gemini-3.1-pro
@@ -48,10 +68,10 @@ python ./scripts/run_agent.py <PERSONA> <INPUT> <OUTPUT> "<INSTR>" --cli agy --m
 
 ### Flash vs Pro: Which to Use
 
-| | **Gemini 3.5 Flash** | **Gemini 3.1 Pro** |
+| | **Gemini 3.8 Flash** | **Gemini 3.1 Pro** |
 |:---|:---:|:---:|
-| Price (in/out per 1M) | $1.50 / $9.00 | $2.00 / $12.00 |
-| Speed | **4× faster** | Baseline |
+| Price (in/out per 1M, through 2026-12-31) | $0.75 / $3.75 | $2.00 / $12.00 |
+| Speed | Not benchmarked | Not benchmarked |
 | Agentic tool use / MCP / terminal | **Best** | Good |
 | Coding (edit-test loops) | **Best** | Better for final review |
 | Deep abstract reasoning | Good | **Best** |
@@ -87,7 +107,27 @@ Do NOT use tools. Do NOT access filesystem." > review.md
 python ./scripts/run_agent.py <PERSONA_FILE> <INPUT_FILE> <OUTPUT_FILE> "<INSTRUCTION>" --cli agy
 ```
 
-`run_agent.py` calls `agy --dangerously-skip-permissions -p` and streams output live to stdout and the output file simultaneously. Loads model from `references/cheapest_models.json` (currently `gemini-3.1-pro`).
+For medium or high reasoning, pass the effort explicitly (the wrapper also maps
+`--tier` to effort for agy when `--effort` is omitted):
+
+```bash
+python ./scripts/run_agent.py agents/architect-review.md plan.md output.md "Review the plan." \
+  --cli agy --model gemini-3.8-flash --tier medium --effort medium --isolated
+```
+
+The shared router validates `low|medium|high` and forwards a non-empty `--effort` to `agy`.
+When `--model` is explicit and `--effort` is omitted, it derives effort from `--tier`.
+Verify the assembled command or run a heartbeat before an expensive dispatch.
+
+### Print-mode timeout
+
+`agy --print` defaults to a **5-minute** wait (`--print-timeout 5m0s`). Set the timeout
+explicitly for bounded implementation work; for example, use `--print-timeout 15m0s` when
+the approved task allows up to 15 minutes. This controls the CLI wait window, not model
+quality or quota. If the timeout is omitted, a valid long-running task may be terminated
+before it reports a commit.
+
+`run_agent.py` calls `agy --dangerously-skip-permissions -p` and streams output live to stdout and the output file simultaneously. Loads model from `references/cheapest_models.json` (currently `gemini-3.8-flash-low`).
 
 ### Health Check
 ```bash
@@ -107,16 +147,12 @@ python ./scripts/run_agent.py agents/security-auditor.md target.py security.md \
 
 ## Available Models
 
-| Display Name (agy models) | `--model` ID | Thinking | Rec |
-|:---|:---|:---:|:---|
-| **Gemini 3.5 Flash (Low)** | `gemini-3.5-flash-low` | Low | **Best for CLI loops — cheapest, fastest** |
-| Gemini 3.5 Flash (Medium) | `gemini-3.5-flash` | Medium | **Default** — standard dispatch |
-| Gemini 3.5 Flash (High) | `gemini-3.5-flash-high` | High | Single-shot deep tasks only |
-| Gemini 3.1 Pro (Low) | `gemini-3.1-pro` | Low | Deep reasoning, architecture |
-| Gemini 3.1 Pro (High) | `gemini-3.1-pro-high` | High | Most demanding reasoning only |
-| Claude Sonnet 4.6 (Thinking) | `claude-sonnet-4.6-thinking` | — | Anthropic quality via agy |
-| Claude Opus 4.6 (Thinking) | `claude-opus-4.6-thinking` | — | Critical tasks only |
-| GPT-OSS 120B (Medium) | `gpt-oss-120b` | Medium | OpenAI OSS via agy |
+`update-cli-models` is the sole authority for current Agy model IDs, picker
+availability, pricing, and synchronized catalog copies. Read
+`references/agy-models.json` through that authority before selecting a model;
+effort is selected separately from the model. The current picker choices are
+represented in that catalog, including Gemini 3.8/3.7/3.6 Flash, Gemini 3.1
+Pro, Claude Sonnet/Opus 4.6 Thinking, and GPT-OSS 120B.
 
 > Full pricing data and strategy field: `references/agy-models.json`
 

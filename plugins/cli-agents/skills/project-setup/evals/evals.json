@@ -8,6 +8,10 @@
     "should_trigger": true
   },
   {
+    "prompt": "os-init and os-health-check are complete; discover my available agent runtimes and write my low, medium, and high model preferences before setting up the project.",
+    "should_trigger": true
+  },
+  {
     "prompt": "Create CLAUDE.md and .claude/settings.json for my Python backend project.",
     "should_trigger": true
   },

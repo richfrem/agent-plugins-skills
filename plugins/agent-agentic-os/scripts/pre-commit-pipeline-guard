@@ -57,8 +57,63 @@ fi
 TASK_ID="$(echo "$TASK_ROW" | cut -d'|' -f1)"
 TASK_STATE="$(echo "$TASK_ROW" | cut -d'|' -f2)"
 
+# Guidance-compliance block: a human answered "no" (or gave no answer) to a
+# transition's mandatory guidance-compliance confirmation. No commit may proceed
+# until a human explicitly clears it via clear-guidance-block.
+GUIDANCE_BLOCK="$(sqlite3 "$DB_PATH" "SELECT guidance_block_reason FROM tasks WHERE task_id = '$TASK_ID';" 2>/dev/null || true)"
+if [ -n "$GUIDANCE_BLOCK" ]; then
+    echo ""
+    echo "❌ GIT COMMIT BLOCKED: Task Is Guidance-Blocked!"
+    echo ""
+    echo "   Task ID: $TASK_ID"
+    echo "   Reason:  $GUIDANCE_BLOCK"
+    echo ""
+    echo "   Clear this with explicit human authorization before committing:"
+    echo "   python3 plugins/agent-agentic-os/scripts/agent_control.py clear-guidance-block --task-id $TASK_ID --reason '<reason>' --human-confirmed 'HUMAN-CONFIRMED: <what the human said>'"
+    echo ""
+    exit 1
+fi
+
 # Check staged files
 STAGED_FILES="$(git diff --cached --name-only --diff-filter=ACM || true)"
+
+# Location-aware enforcement: once a task has an isolated worktree registered
+# (worktree_path set and different from the main repo root), that worktree is
+# the sole active location for the task -- a commit from anywhere else (e.g.
+# the main checkout) on the same branch is a leak, not a legitimate commit.
+# Found live (2026-09-13): an agent registered the main checkout itself as
+# the "worktree" (a separate bug, now fixed in policy.py's
+# _worktree_isolation_check), which meant this hook had no way to tell the
+# difference between "working in the registered worktree" and "working in
+# the main checkout" -- it only ever checked branch + transition history,
+# never location. If worktree_path legitimately equals the repo root (the
+# existing_worktree_exception case), reaching IN_WORKTREE at all already
+# required that exception receipt per policy.py, so no separate check is
+# needed here for that case.
+case "$TASK_STATE" in
+    IN_WORKTREE|WORKTREE_REVIEW|MULTI_AGENT_CODE_REVIEW|VERIFY_EXIT|DONE)
+        TASK_WORKTREE_PATH="$(sqlite3 "$DB_PATH" "SELECT worktree_path FROM tasks WHERE task_id = '$TASK_ID';" 2>/dev/null || true)"
+        if [ -n "$TASK_WORKTREE_PATH" ]; then
+            RESOLVED_TASK_WORKTREE="$(cd "$TASK_WORKTREE_PATH" 2>/dev/null && pwd || echo "$TASK_WORKTREE_PATH")"
+            RESOLVED_REPO_ROOT="$(cd "$REPO_ROOT" 2>/dev/null && pwd || echo "$REPO_ROOT")"
+            CURRENT_CHECKOUT_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || echo "$REPO_ROOT")"
+            if [ "$RESOLVED_TASK_WORKTREE" != "$RESOLVED_REPO_ROOT" ] && [ "$CURRENT_CHECKOUT_ROOT" != "$RESOLVED_TASK_WORKTREE" ]; then
+                echo ""
+                echo "❌ GIT COMMIT BLOCKED: Commit Outside Registered Worktree (Leak)!"
+                echo ""
+                echo "   Task ID:            $TASK_ID"
+                echo "   Task State:         $TASK_STATE"
+                echo "   Registered worktree: $RESOLVED_TASK_WORKTREE"
+                echo "   Current location:    $CURRENT_CHECKOUT_ROOT"
+                echo ""
+                echo "   This task has an isolated worktree registered. All further commits for"
+                echo "   this task's branch must happen inside that worktree, not here."
+                echo ""
+                exit 1
+            fi
+        fi
+        ;;
+esac
 
 # Handle planning / proposal states
 case "$TASK_STATE" in
@@ -105,7 +160,7 @@ case "$TASK_STATE" in
         fi
 
         # Check all transitions against valid_transitions
-        TRANSITIONS_ROWS="$(sqlite3 "$DB_PATH" "SELECT from_state, to_state FROM task_transitions WHERE task_id = '$TASK_ID' ORDER BY transition_id ASC;" 2>/dev/null || true)"
+        TRANSITIONS_ROWS="$(sqlite3 "$DB_PATH" "SELECT transition_id, from_state, to_state FROM task_transitions WHERE task_id = '$TASK_ID' ORDER BY transition_id ASC;" 2>/dev/null || true)"
         if [ -z "$TRANSITIONS_ROWS" ]; then
             echo ""
             echo "❌ GIT COMMIT BLOCKED: No Transition History Found!"
@@ -117,24 +172,28 @@ case "$TASK_STATE" in
         fi
 
         LAST_TO=""
-        while IFS='|' read -r from_st to_st; do
+        while IFS='|' read -r transition_id from_st to_st; do
             [ -z "$from_st" ] && continue
             if [ "$from_st" = "NONE" ] && [ "$to_st" = "INTAKE" ]; then
                 LAST_TO="INTAKE"
                 continue
             fi
 
-            # Check validity in valid_transitions
+            # Normal edges must be in valid_transitions. A non-DAG edge is valid only when
+            # this exact persisted transition has a consumed, human recovery approval.
             IS_VALID="$(sqlite3 "$DB_PATH" "SELECT COUNT(*) FROM valid_transitions WHERE from_state = '$from_st' AND to_state = '$to_st';" 2>/dev/null || echo "0")"
             if [ "$IS_VALID" -eq 0 ]; then
-                echo ""
-                echo "❌ GIT COMMIT BLOCKED: Invalid State Transition Detected!"
-                echo ""
-                echo "   Task ID:     $TASK_ID"
-                echo "   Edge:        $from_st -> $to_st"
-                echo "   This transition is not present in the valid_transitions table."
-                echo ""
-                exit 1
+                RECOVERY_VALID="$(sqlite3 "$DB_PATH" "SELECT COUNT(*) FROM transition_decisions WHERE task_id = '$TASK_ID' AND bound_transition_id = '$transition_id' AND from_state = '$from_st' AND to_state = '$to_st' AND decision_type = 'APPROVAL' AND actor = 'human' AND question_id LIKE 'recovery_approval_%' AND consumed_at IS NOT NULL;" 2>/dev/null || echo "0")"
+                if [ "$RECOVERY_VALID" -eq 0 ]; then
+                    echo ""
+                    echo "❌ GIT COMMIT BLOCKED: Invalid State Transition Detected!"
+                    echo ""
+                    echo "   Task ID:     $TASK_ID"
+                    echo "   Edge:        $from_st -> $to_st"
+                    echo "   This transition is not in valid_transitions and has no exact human recovery approval."
+                    echo ""
+                    exit 1
+                fi
             fi
 
             # Check continuity

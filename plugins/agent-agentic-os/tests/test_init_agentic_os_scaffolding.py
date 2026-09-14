@@ -18,6 +18,14 @@ import sys
 from pathlib import Path
 import pytest
 
+SCRIPTS_DIR = Path(__file__).resolve().parent.parent / "scripts"
+if str(SCRIPTS_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_DIR))
+
+from control_plane.constants import (
+    STATE_WORKTREE_REVIEW,
+)
+
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 INIT_SCRIPT = REPO_ROOT / "plugins" / "agent-agentic-os" / "scripts" / "init_agentic_os.py"
 
@@ -105,7 +113,7 @@ def test_retrofit_enriches_claude_md_with_phase0_and_control_plane(target_repo):
     assert res.returncode == 0
     content = claude_md.read_text(encoding="utf-8")
     assert "Phase 0 Intake & Socratic Gate" in content, "CLAUDE.md must be enriched with Phase 0 Intake Gate"
-    assert "interview-spec" in content, "CLAUDE.md must reference interview-spec"
+    assert "work-intake" in content, "CLAUDE.md must reference work-intake"
     assert "Some custom domain context." in content, "Original project context must be preserved"
 
 
@@ -158,7 +166,7 @@ def test_scaffolded_control_plane_db_matches_agent_control_schema(target_repo):
     conn = sqlite3.connect(str(db_path))
     tasks_sql = conn.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name='tasks'").fetchone()[0]
     assert "task_type" in tasks_sql
-    assert "WORKTREE_REVIEW" in tasks_sql
+    assert STATE_WORKTREE_REVIEW in tasks_sql
 
     version_row = conn.execute("SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='schema_version'").fetchone()
     assert version_row[0] == 1, "schema_version table must exist (same self-healing schema as agent_control.py)"

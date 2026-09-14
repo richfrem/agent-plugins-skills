@@ -14,9 +14,27 @@ Output:
     context/memory/reports/summary_YYYYMMDD_HHMM.md     -- text summary
 
 Usage:
-    pythonenerate_report.py --plugin-dir /path/to/agent-agentic-os [--project-dir /path/to/project]
+    python3 generate_report.py --plugin-dir /path/to/agent-agentic-os [--project-dir /path/to/project]
 
-Dependencies: pandas, matplotlib (see requirements.txt)
+Key Input Dependencies:
+    - pandas, matplotlib (see requirements.txt)
+    - Per-skill results.tsv files under `<plugin-dir>` (cycle_id, score, status,
+      change_summary columns; status one of KEEP/DISCARD/BASELINE).
+    - The improvement ledger (north-star progress table read by load_north_star()).
+
+Key Functions:
+    - find_results_tsvs() / load_results_tsv() / _parse_md_table() /
+      load_north_star() / _load_skill_frames() -- discover and load input data.
+    - plot_skill() / plot_north_star() / plot_friction() and their
+      _scatter_discard_and_baseline() / _scatter_kept_with_running_best() /
+      _style_skill_chart() / _annotate_first_score_baseline() helpers -- render the
+      per-skill and north-star subplots.
+    - _north_star_summary_lines() / _overall_summary_lines() /
+      _top_improvements_lines() / _skill_summary_section() / generate_summary() --
+      build the text summary sections.
+    - _build_progress_figure() -- assembles the full multi-subplot progress figure.
+    - main() -- CLI entry point: writes progress_YYYYMMDD_HHMM.png and
+      summary_YYYYMMDD_HHMM.md under context/memory/reports/.
 """
 
 import argparse

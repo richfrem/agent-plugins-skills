@@ -38,7 +38,7 @@ Current scale (read from `plugins/` — verify with `find plugins -name SKILL.md
 │   ├── agent-orchestration/        # OS-decoupled execution primitives (9 skills)
 │   ├── agent-memory/               # RLM summary cache + ChromaDB vector store (13 skills)
 │   ├── agent-scaffolders/          # Plugin/skill/agent/rule scaffolding & evolution auditing (32 skills)
-│   ├── cli-agents/                 # Multi-LLM CLI dispatch (Claude/Copilot/Gemini/Agy) (14 skills)
+│   ├── cli-agents/                 # Multi-LLM CLI dispatch (Claude/Copilot/Gemini/Agy) (11 skills)
 │   ├── dependency-management/      # pip-compile / dependency tier workflow (1 skill)
 │   ├── dev-utils/                  # ADR mgmt, symlinks, context bundling, GitHub issues, worktrees (17 skills)
 │   ├── exploration-cycle-plugin/   # Business discovery workflow + SQLite control plane (20 skills)
@@ -117,9 +117,9 @@ Tooling for creating, validating, and auditing ecosystem components: `create-plu
 `create-rule` (invariant-driven, zero-fluff agent rules), `create-sub-agent`, `audit-plugin`, `audit-skill`
 (evolution alignment), plus APM package conversion, marketplace management, and ecosystem-index maintenance.
 
-### 4.6. Plugin: cli-agents (v2.1.0)
+### 4.6. Plugin: cli-agents (v2.2.0, 11 skills)
 Multi-LLM task router (`run_agent.py`) consolidated from claude-cli/copilot-cli/gemini-cli.
-6 backends, `--isolated` security contract, 12 expert-persona sub-agents (architect-review,
+6 backends, `--isolated` security contract, 11 expert-persona sub-agents (architect-review,
 security-auditor, tdd-contract-reviewer, red-team-reviewer, etc.) — the first three form the
 "Graph Planning Phase 1 Fan-Out Trio" per `graph-planning-superpowers-policy.md`. Model selection
 driven by `references/copilot-models.json` cost tiers. Gemini CLI consumer access ended June 18,

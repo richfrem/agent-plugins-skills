@@ -1,7 +1,7 @@
 {
     "name": "dev-utils",
     "version": "1.4.0",
-    "description": "Unified Developer Utilities Suite — 18 skills consolidated from standalone plugins. Covers ADR management, coding conventions, context bundling, Mermaid diagram rendering, GitHub issue logging & friction management, GitHub issue backlog bridge, issue prioritizer & Projects v2 sync, issue worktree manager, issue PR lifecycle orchestrator, HuggingFace download/upload/init, text humanization, link validation, symlink management, task tracking, agent context hygiene (optimize-context), and red-team context bundling.",
+    "description": "Unified Developer Utilities Suite — 16 skills consolidated from standalone plugins. Covers ADR management, coding conventions, context bundling, Mermaid diagram rendering, GitHub issue logging & friction management, GitHub issue backlog bridge, issue prioritizer & Projects v2 sync, GitHub issue worktree manager, GitHub issue PR lifecycle orchestrator, HuggingFace download/upload/init, text humanization, link validation, symlink management, agent context hygiene (optimize-context), and red-team context bundling.",
     "author": {
         "name": "Richard Fremmerlid"
     },
@@ -11,12 +11,11 @@
         "dev-utils",
         "utilities",
         "context-bundler",
-        "task-manager",
         "github-issue",
         "github-issue-backlog",
         "github-issue-prioritizer",
-        "issue-worktree",
-        "issue-pr-lifecycle",
+        "github-issue-worktree",
+        "github-issue-pr-lifecycle",
         "adr-manager",
         "link-checker",
         "huggingface",
@@ -28,7 +27,6 @@
     ],
     "capabilities": [
         "context-bundling",
-        "task-management",
         "github-issue-logging",
         "github-projects-v2-sync",
         "worktree-isolation",

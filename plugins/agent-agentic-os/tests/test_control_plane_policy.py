@@ -29,6 +29,9 @@ import sys
 from pathlib import Path
 
 import pytest
+from control_plane.constants import (
+    STATE_INTAKE, STATE_INTERVIEW, STATE_IN_WORKTREE, STATE_WORKTREE_REVIEW, STATE_MULTI_AGENT_CODE_REVIEW, STATE_VERIFY_EXIT, STATE_DONE,
+)
 
 SCRIPTS_DIR = Path(__file__).resolve().parent.parent / "scripts"
 if str(SCRIPTS_DIR) not in sys.path:
@@ -231,8 +234,8 @@ def test_legacy_transition_rules_route_through_registered_policy_functions():
     with pytest.raises(policy.PolicyViolation, match="Prior art scan required"):
         policy.evaluate_transition(
             _base_ctx(task={"task_type": "EVOLUTION"}),
-            "INTAKE",
-            "INTERVIEW",
+            STATE_INTAKE,
+            STATE_INTERVIEW,
         )
 
 
@@ -250,10 +253,10 @@ def test_rolled_back_rule_blocks_and_passes():
 def test_worktree_push_operation_rule_permits_done_and_blocks_others():
     from control_plane import policy
 
-    op_ctx = {"task_id": "t1", "task_state": "DONE"}
+    op_ctx = {"task_id": "t1", "task_state": STATE_DONE}
     policy.evaluate_operation(op_ctx, "worktree_push")  # must not raise
 
-    for blocked_state in ["IN_WORKTREE", "WORKTREE_REVIEW", "MULTI_AGENT_CODE_REVIEW", "VERIFY_EXIT"]:
+    for blocked_state in [STATE_IN_WORKTREE, STATE_WORKTREE_REVIEW, STATE_MULTI_AGENT_CODE_REVIEW, STATE_VERIFY_EXIT]:
         op_ctx_blocked = {"task_id": "t1", "task_state": blocked_state}
         with pytest.raises(policy.PolicyViolation, match="Task must be in final state 'DONE' before pushing"):
             policy.evaluate_operation(op_ctx_blocked, "worktree_push")
@@ -269,6 +272,39 @@ def test_evaluate_check_registry_contains_expected_checks():
     assert "plan_mode_or_socratic" in check_ids
     assert "human_approval" in check_ids
     assert "test_suite" in check_ids
+    assert "full_test_suite" in check_ids
+
+
+def test_full_test_suite_check_requires_repository_wide_receipt():
+    from control_plane import policy
+
+    with pytest.raises(policy.PolicyViolation, match="full_test_suite"):
+        policy.evaluate_check("full_test_suite", _base_ctx())
+
+    policy.evaluate_check(
+        "full_test_suite",
+        _base_ctx(
+            has_receipt=lambda gate_name: gate_name == "full_test_suite",
+            count_receipts=lambda gate_name, exit_code=None: (
+                1 if gate_name == "full_test_suite" and exit_code == 0 else 0
+            ),
+        ),
+    )
+
+
+def test_full_test_suite_check_rejects_failed_receipt():
+    from control_plane import policy
+
+    with pytest.raises(policy.PolicyViolation, match="full_test_suite"):
+        policy.evaluate_check(
+            "full_test_suite",
+            _base_ctx(
+                has_receipt=lambda gate_name: gate_name == "full_test_suite",
+                count_receipts=lambda gate_name, exit_code=None: (
+                    1 if gate_name == "full_test_suite" and exit_code is None else 0
+                ),
+            ),
+        )
 
 
 def test_unknown_check_type_fails_closed_not_open():

@@ -15,7 +15,7 @@ Key Input Dependencies:
 Standards:
     - Strictly read-only: Cannot write, stage, or mutate repository files outside temporary diagnostic caches.
     - Self-contained execution: Interacts with control_plane.db via standard sqlite3 only; no cross-plugin Python imports or filesystem coupling.
-    - Emits DIAGNOSTIC_BRIEF.md adhering to the upstream interview-spec contract.
+    - Emits DIAGNOSTIC_BRIEF.md adhering to the upstream work-intake contract.
 """
 
 import argparse
@@ -95,10 +95,10 @@ def render_diagnostic_brief(
 
 ---
 
-## 4. Handoff Contract to `interview-spec`
+## 4. Handoff Contract to `work-intake`
 - **Recommended Default:** {candidate_forks[0].get('title', 'Fork 1') if candidate_forks else 'Standard Implementation'}
 - **Next State Transition:** `INTAKE` -> `INTERVIEW`
-- **Handoff Target:** `plugins/agent-agentic-os/skills/interview-spec`
+- **Handoff Target:** `plugins/agent-agentic-os/skills/work-intake`
 """
 
 
@@ -160,7 +160,7 @@ def sync_to_control_plane(
                 conn.execute(
                     """
                     INSERT INTO task_transitions (task_id, from_state, to_state, actor, reason)
-                    VALUES (?, 'INTAKE', 'INTERVIEW', 'exploration_engine', 'Diagnostic brief compiled; handoff to interview-spec')
+                    VALUES (?, 'INTAKE', 'INTERVIEW', 'exploration_engine', 'Diagnostic brief compiled; handoff to work-intake')
                     """,
                     (task_id,)
                 )
@@ -174,7 +174,7 @@ def sync_to_control_plane(
 
 def main() -> None:
     """CLI entry point: parse args, render the diagnostic brief, sync state to control_plane.db."""
-    parser = argparse.ArgumentParser(description="Generate diagnostic brief and handoff to interview-spec.")
+    parser = argparse.ArgumentParser(description="Generate diagnostic brief and handoff to work-intake.")
     parser.add_argument("--task-id", required=True, help="Unique task identifier")
     parser.add_argument("--title", required=True, help="Task title")
     parser.add_argument("--output", default="exploration/DIAGNOSTIC_BRIEF.md", help="Output file path")

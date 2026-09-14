@@ -23,12 +23,14 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-# Locate github-issue-agent scripts directory for gh_issue_create import
+# Locate scripts directory for gh_issue_create import
 SCRIPT_DIR = Path(__file__).resolve().parent
-GH_ISSUE_AGENT_SCRIPTS = SCRIPT_DIR.parents[1] / "github-issue-agent" / "scripts"
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
 
-if str(GH_ISSUE_AGENT_SCRIPTS) not in sys.path:
-    sys.path.insert(0, str(GH_ISSUE_AGENT_SCRIPTS))
+PLUGIN_SCRIPTS = SCRIPT_DIR.parents[1] / "scripts" if len(SCRIPT_DIR.parents) > 1 else SCRIPT_DIR
+if PLUGIN_SCRIPTS.exists() and str(PLUGIN_SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(PLUGIN_SCRIPTS))
 
 from gh_issue_create import create_issue
 

@@ -8,6 +8,18 @@ Purpose:
     Hardcodes action identity 'exit_verification'. Never allows caller-supplied
     action identity. Authorizes against task's current phase occupancy before
     spawning any subprocess or recording any verification receipt.
+
+Key Input Dependencies:
+    - agent_control.py's ControlPlane (phase-capability authorization).
+    - VERIFIER_CATALOG -- the closed set of verifier_id -> allowed command/gate.
+      Only cataloged verifier_ids may be run; nothing caller-supplied.
+
+Key Functions:
+    - ACTION_IDENTITY -- the fixed action identity this wrapper always uses.
+    - VERIFIER_CATALOG -- closed verifier_id -> {command, gate} mapping.
+    - run_exit_verification() -- authorizes, runs the cataloged verifier subprocess,
+      and records the verification receipt.
+    - main() -- CLI entry point.
 """
 
 import subprocess
@@ -31,13 +43,17 @@ VERIFIER_CATALOG: Dict[str, Dict[str, Any]] = {
         "command": ["pytest"],
         "gate_name": "test_suite",
     },
+    "pytest_full_suite": {
+        "command": ["pytest", "-q"],
+        "gate_name": "full_test_suite",
+    },
     "leak_check": {
         "command": ["python3", "-c", "print('clean')"],
         "gate_name": "leak_check",
     },
 }
 
-ALLOWED_GATES = {"test_suite", "leak_check", "exit_verification"}
+ALLOWED_GATES = {"test_suite", "full_test_suite", "leak_check", "exit_verification"}
 
 
 def run_exit_verification(

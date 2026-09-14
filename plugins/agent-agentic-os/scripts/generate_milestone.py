@@ -30,6 +30,17 @@ Exit codes:
 Key Input Dependencies:
     - <experiment-dir>/evals/results.tsv
     - <experiment-dir>/evals/traces/*.json
+
+Key Functions:
+    - _load_tsv() / _load_traces() -- read results.tsv and trace JSON files.
+    - _best_keeps() / _worst_discards() -- top-N KEEP/DISCARD rows by score.
+    - _current_fp_fn() -- latest false-positive/false-negative counts from traces.
+    - _recurring_false_positives() -- FPs seen across the most recent N traces.
+    - _compute_score_trajectory() -- score progression vs. baseline over iterations.
+    - _analyze_dominant_problem() -- identifies the current dominant failure mode.
+    - _build_milestone_lines() -- assembles the milestone_NNN.md content.
+    - generate_milestone() -- top-level read-then-write entry point.
+    - main() -- CLI entry point.
 """
 
 import argparse

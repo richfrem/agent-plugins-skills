@@ -1,1 +1,0 @@
-../../../scripts/task_manager.py

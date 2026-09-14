@@ -127,9 +127,22 @@ def test_model_catalog_adapter_helper_components_against_temp_files(tmp_path):
     test actually proves."""
     cli_refs = tmp_path / "plugins" / "cli-agents" / "references"
     cli_refs.mkdir(parents=True)
-    (cli_refs / "copilot-models.json").write_text(
-        json.dumps({"strategy": {"default": "gpt-5-mini", "heartbeat": "gpt-5.4-nano"}}), encoding="utf-8"
-    )
+    (cli_refs / "copilot-models.json").write_text(json.dumps({
+        "_meta": {"schema_version": 2},
+        "runtime": {
+            "runtime_id": "copilot",
+            "provider": "GitHub",
+            "availability": "available",
+            "native_capabilities": {"planning": "unknown", "worktree": "portable", "subagents": "unknown"},
+            "effort_modes": ["low", "medium", "high"],
+        },
+        "models": [
+            {"cli_id": "gpt-5-mini", "status": "GA", "context_window_k": 1, "max_output_k": None, "tool_support": {"prompt": True}, "pricing_usd_per_1m": {"input": 0.25, "output": 2.0}},
+            {"cli_id": "gpt-5.4-nano", "status": "GA", "context_window_k": 1, "max_output_k": None, "tool_support": {"prompt": True}, "pricing_usd_per_1m": {"input": 0.2, "output": 1.25}},
+        ],
+        "capability_tiers": {"low": ["gpt-5.4-nano", "gpt-5-mini"], "medium": ["gpt-5-mini"], "high": ["gpt-5-mini"]},
+        "strategy": {"default": "gpt-5-mini", "heartbeat": "gpt-5.4-nano"},
+    }), encoding="utf-8")
     (cli_refs / "cheapest_models.json").write_text(
         json.dumps({"copilot": {"model": "gpt-5.4-nano"}}), encoding="utf-8"
     )

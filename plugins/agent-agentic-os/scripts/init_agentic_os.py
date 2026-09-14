@@ -213,10 +213,10 @@ def _merge_instructions_with_judgment(existing_text: str, project_name: str) -> 
     text = existing_text
     
     # Check for Phase 0 Intake & Socratic Gate
-    if "Phase 0 Intake & Socratic Gate" not in text and "interview-spec" not in text:
+    if "Phase 0 Intake & Socratic Gate" not in text and "work-intake" not in text:
         intake_block = (
             "\n\n## Phase 0 Intake & Socratic Gate (Mandatory)\n"
-            "> Every engineering task, feature proposal, bugfix, or improvement MUST trigger `interview-spec` first.\n"
+            "> Every engineering task, feature proposal, bugfix, or improvement MUST trigger `work-intake` first.\n"
             "- Register the task in `context/control_plane.db` via `python3 scripts/agent_control.py init`.\n"
             "- Enforce host-native Plan Mode (strictly read-only discovery).\n"
             "- Socratic Pacing: Interrogate ONE question per turn with structured options and explicit `[Recommended]` default.\n"

@@ -14,6 +14,9 @@ Usage (preferred — named-flag form):
     python scripts/run_agent.py <PERSONA_FILE> <INPUT_FILE> <OUTPUT_FILE> "<INSTRUCTION>" \\
         --cli llama --model gemma-4-12b --max-tokens 200
 
+    Optional local preferences:
+        --cli codex --tier medium --profile context/agent-capability-profile.json
+
 Usage (legacy — positional form, backward compat):
     python scripts/run_agent.py <PERSONA_FILE> <INPUT_FILE> <OUTPUT_FILE> "<INSTRUCTION>" \\
         [cli=copilot] [model=<default>] [isolated=false]
@@ -33,15 +36,16 @@ Flags (named-flag mode):
                     codex   → Codex / OpenAI-compatible CLI (prompt via stdin)
                     llama   → optimized local Gemma host (direct HTTP to llama-server :8089)
     --model, -m   Model identifier. Defaults per backend:
-                    copilot → gpt-5-mini
+                    copilot → mai-code-1.1-flash
                     gemini  → gemini-3-flash-preview
-                    claude  → haiku-4.5
-                    agy     → gemini-3.5-flash (loaded from cheapest_models.json)
-                    codex   → gpt-5-codex
+                    claude  → claude-haiku-4-5
+                    agy     → gemini-3.8-flash-low (loaded from cheapest_models.json)
+                    codex   → gpt-5.6-luna
                     llama   → gemma-4-12b
     --max-tokens  Max output tokens for cli=llama (default: 120).
     --isolated    Isolation mode: append safety footer to prompt; suppress dangerous CLI
                   permission flags (--yolo, --dangerously-skip-permissions).
+    --profile     Optional validated local capability profile for provider/tier preferences.
 
 Prompt assembly:
     persona + input   →  persona / ---SOURCE--- input / ---INSTRUCTION--- instruction
@@ -50,7 +54,6 @@ Prompt assembly:
 
 Symlink targets (file-level, per plugin-architecture-policy):
     skills/copilot-cli-agent/scripts/run_agent.py → ../../../scripts/run_agent.py
-    skills/gemini-cli-agent/scripts/run_agent.py  → ../../../scripts/run_agent.py
     skills/agy-cli-agent/scripts/run_agent.py     → ../../../scripts/run_agent.py
     skills/claude-cli-agent/scripts/run_agent.py  → ../../../scripts/run_agent.py
 
@@ -73,16 +76,20 @@ import sys
 import tempfile
 import urllib.error
 import urllib.request
+from pathlib import Path
+
+from model_catalog import CatalogContractError, load_catalog, select_model
+from capability_profile import ProfileStatus, load_profile
 
 # ── Defaults per CLI ──────────────────────────────────────────────────────────
 def _load_default_models() -> dict[str, str | None]:
     """Return hardcoded default models, overridden by cheapest_models.json if present."""
     defaults = {
-        "copilot": "gpt-5-mini",
+        "copilot": "mai-code-1.1-flash",
         "gemini": "gemini-3-flash-preview",
-        "claude": "haiku-4.5",
-        "agy": "gemini-3.5-flash",
-        "codex": "gpt-5-mini",
+        "claude": "claude-haiku-4-5",
+        "agy": "gemini-3.8-flash-low",
+        "codex": "gpt-5.6-luna",
         "llama": "gemma-4-12b",
     }
     try:
@@ -143,7 +150,7 @@ def build_prompt(persona: str, source: str, instruction: str, isolated: bool) ->
     if has_persona:
         parts.append(persona)
     if has_source:
-        parts.append(f"---SOURCE---\n{source}" if has_persona else source)
+        parts.append(f"---SOURCE---\n{source}\n---END SOURCE---")
     if has_instruction:
         label = "---INSTRUCTION---\n" if (has_persona or has_source) else ""
         parts.append(f"{label}{instruction}")
@@ -180,11 +187,23 @@ def _build_cmd_gemini(model: str, prompt: str, isolated: bool = False) -> list[s
     sys.exit(1)
 
 
-def _build_cmd_agy(model: str, prompt_file: str, isolated: bool = False) -> list[str]:
+def _build_cmd_agy(
+    model: str,
+    prompt_file: str,
+    isolated: bool = False,
+    effort: str | None = None,
+    print_timeout: str | None = None,
+) -> list[str]:
     """Agy CLI. --dangerously-skip-permissions is suppressed when isolated=True."""
     cmd = ["agy"]
     if model:
         cmd += ["--model", model]
+    if effort:
+        if effort not in {"low", "medium", "high"}:
+            raise ValueError(f"Unsupported agy effort: {effort}")
+        cmd += ["--effort", effort]
+    if print_timeout:
+        cmd += ["--print-timeout", print_timeout]
     if not isolated:
         cmd += ["--dangerously-skip-permissions"]
     cmd += ["-p", f"@{prompt_file}"]
@@ -240,15 +259,59 @@ def _call_llama_direct(
 
 # ── Main orchestrator ─────────────────────────────────────────────────────────
 
-def _resolve_cli_and_model(cli: str, model: str | None) -> tuple:
+def _catalog_key_for_cli(cli: str) -> str:
+    """Map CLI aliases to the authoritative runtime catalog key."""
+    return "agy" if cli == "gemini" else cli
+
+
+def _resolve_catalog_model(cli: str, tier: str, preferred_model: str | None = None) -> str:
+    """Resolve a catalog-backed model, failing closed when the contract is invalid."""
+    if cli == "llama":
+        return _DEFAULT_MODELS[cli] or ""
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+    catalog_path = os.path.join(
+        script_dir, "..", "references", f"{_catalog_key_for_cli(cli)}-models.json"
+    )
+    cheapest = None
+    cheapest_path = os.path.join(script_dir, "..", "references", "cheapest_models.json")
+    try:
+        with open(cheapest_path, "r", encoding="utf-8") as handle:
+            cheapest = json.load(handle).get(_catalog_key_for_cli(cli), {}).get("model")
+        catalog = load_catalog(Path(catalog_path))
+        catalog_preference = preferred_model or (cheapest if tier == "low" else None)
+        return select_model(catalog, tier, preferred_model=catalog_preference)
+    except (OSError, json.JSONDecodeError, CatalogContractError) as exc:
+        raise ValueError(f"Unable to resolve a valid model catalog for {cli}: {exc}") from exc
+
+
+def _resolve_cli_and_model(
+    cli: str,
+    model: str | None,
+    tier: str = "low",
+    profile_path: str | None = None,
+) -> tuple:
     """Validate/lowercase the cli name, resolve the default model, and inject Homebrew PATH on macOS."""
     cli = cli.lower()
     if cli not in _DEFAULT_MODELS:
         print(f"Error: unknown cli '{cli}'. Choose from: {', '.join(_DEFAULT_MODELS)}")
         sys.exit(1)
 
+    if tier not in ("low", "medium", "high"):
+        raise ValueError(f"Unsupported capability tier: {tier}")
+
+    if model is None and profile_path:
+        profile_result = load_profile(Path(profile_path))
+        provider = profile_result.profile.get("providers", {}).get(cli, {})
+        preferred = provider.get("model_tiers", {}).get(tier) if isinstance(provider, dict) else None
+        if profile_result.status is ProfileStatus.READY and provider.get("available") is True and preferred:
+            try:
+                model = _resolve_catalog_model(cli, tier, preferred_model=preferred)
+            except RuntimeError:
+                # A stale or withdrawn preference must never block dispatch.
+                model = None
+
     if model is None:
-        model = _DEFAULT_MODELS[cli] or ""
+        model = _resolve_catalog_model(cli, tier)
 
     # Homebrew path injection for macOS
     if os.path.exists("/opt/homebrew/bin") and "/opt/homebrew/bin" not in os.environ.get("PATH", ""):
@@ -266,14 +329,22 @@ def _maybe_write_prompt_tmp(cli: str, prompt: str) -> str:
         return tf.name
 
 
-def _build_cli_cmd(cli: str, model: str, prompt: str, prompt_tmp: str, isolated: bool) -> list[str]:
+def _build_cli_cmd(
+    cli: str,
+    model: str,
+    prompt: str,
+    prompt_tmp: str,
+    isolated: bool,
+    effort: str | None = None,
+    print_timeout: str | None = None,
+) -> list[str]:
     """Dispatch to the correct command builder for the given backend."""
     if cli == "copilot":
         return _build_cmd_copilot(model, prompt_tmp, isolated)
     if cli == "gemini":
         return _build_cmd_gemini(model, prompt, isolated)
     if cli == "agy":
-        return _build_cmd_agy(model, prompt_tmp, isolated)
+        return _build_cmd_agy(model, prompt_tmp, isolated, effort, print_timeout)
     if cli == "codex":
         return _build_cmd_codex(model)
     return _build_cmd_claude(model, prompt, isolated)  # claude
@@ -310,12 +381,20 @@ def run_agent(
     model: str | None = None,
     isolated: bool = False,
     max_tokens: int = _LLAMA_MAX_TOKENS_DEFAULT,
+    require_input: bool = False,
+    tier: str = "low",
+    profile_path: str | None = None,
+    effort: str | None = None,
+    print_timeout: str | None = None,
 ) -> None:
     """Assemble the prompt and dispatch it to the selected backend, writing output_file."""
-    cli, model = _resolve_cli_and_model(cli, model)
+    cli, model = _resolve_cli_and_model(cli, model, tier, profile_path)
 
     persona = read_file_or_empty(resolve_path(persona_file))
-    source = read_file_or_empty(resolve_path(input_file))
+    resolved_input = resolve_path(input_file)
+    source = read_file_or_empty(resolved_input)
+    if require_input and not source.strip():
+        raise ValueError(f"Required input is missing or empty: {input_file}")
     prompt = build_prompt(persona, source, instruction, isolated)
 
     os.makedirs(os.path.dirname(os.path.abspath(output_file)), exist_ok=True)
@@ -330,7 +409,7 @@ def run_agent(
     try:
         prompt_tmp = _maybe_write_prompt_tmp(cli, prompt)
 
-        cmd = _build_cli_cmd(cli, model, prompt, prompt_tmp, isolated)
+        cmd = _build_cli_cmd(cli, model, prompt, prompt_tmp, isolated, effort, print_timeout)
         _execute_cli_command(cmd, cli, output_file, prompt_tmp)
 
         print(f"[run_agent] {cli} complete → {output_file}")
@@ -389,6 +468,15 @@ if __name__ == "__main__":
         parser.add_argument("--model", "-m", default=None,
                             help="Model identifier (default: per backend)")
         parser.add_argument(
+            "--tier", choices=("low", "medium", "high"), default="low",
+            help="Capability/cost tier used when --model is omitted (default: low)",
+        )
+        parser.add_argument(
+            "--profile",
+            default=None,
+            help="Optional validated local capability profile for provider/tier preferences.",
+        )
+        parser.add_argument(
             "--max-tokens", type=int, default=_LLAMA_MAX_TOKENS_DEFAULT,
             help=f"Max output tokens for cli=llama (default: {_LLAMA_MAX_TOKENS_DEFAULT})",
         )
@@ -396,6 +484,24 @@ if __name__ == "__main__":
             "--isolated", action="store_true",
             help="Isolation mode: append safety footer; suppress --yolo / dangerous flags",
         )
+        parser.add_argument(
+            "--effort", choices=("low", "medium", "high"), default=None,
+            help="Reasoning effort for agy (low, medium, or high).",
+        )
+        parser.add_argument(
+            "--print-timeout", default=None,
+            help="Explicit Agy print wait ceiling, for example 15m0s.",
+        )
+        parser.add_argument(
+            "--require-input", action="store_true",
+            help="Fail before dispatch when input_file is missing or empty.",
+        )
         args = parser.parse_args()
+        # Keep the public capability tier and agy reasoning effort aligned when
+        # callers select an explicit model but omit --effort. This prevents an
+        # empty effort value from reaching agy and failing after dispatch starts.
+        if args.cli == "agy" and args.effort is None:
+            args.effort = args.tier
         run_agent(args.persona_file, args.input_file, args.output_file, args.instruction,
-                  args.cli, args.model, args.isolated, args.max_tokens)
+                  args.cli, args.model, args.isolated, args.max_tokens, args.require_input,
+                  args.tier, args.profile, args.effort, args.print_timeout)

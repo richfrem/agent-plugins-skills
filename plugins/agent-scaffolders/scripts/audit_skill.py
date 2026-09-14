@@ -134,6 +134,11 @@ def audit_skill(
     line_count = len(lines)
     res.metrics["line_count"] = line_count
 
+    if line_count > 80:
+        res.warnings.append(
+            f"SKILL.md ({line_count} lines) exceeds progressive disclosure budget (target <= 80 lines). "
+            "Offload procedural details and reference catalogs to references/."
+        )
     if line_count > 100:
         res.warnings.append(
             f"SKILL.md exceeds 100 lines ({line_count} lines). "

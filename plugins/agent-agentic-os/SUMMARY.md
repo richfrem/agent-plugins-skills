@@ -1,14 +1,27 @@
-# Agent Harness: Summary
+# Agentic OS Control Plane: Summary
 
 ## What This Is
 
-A pragmatic developer harness that gives your agent three things working together:
+A pragmatic control plane that gives agent workflows three things working together:
 
-1. **Structured memory hierarchy** - agents carry forward what they learned in previous sessions with deduplication, conflict detection, and size management above native auto-memory limits.
-2. **Continuous improvement loop** - skills and workflows learn from session friction and improve with every execution. It leverages a feedback control system with a metric-based gate.
-3. **Cross-IDE orchestration** - a shared event log with simple execution locks allows solo developers to comfortably orchestrate things across multiple IDEs (Cursor, VS Code, Windsurf) while preventing collisions.
+1. **Governed task lifecycle** - legal state transitions, human approval gates, evidence contracts, and recovery paths are persisted in SQLite.
+2. **Verifiable execution** - plan outlines, verification receipts, worktree status, implementation completeness, and retrospectives make each task auditable.
+3. **Continuous improvement** - friction, map debt, experiment results, and follow-ups feed the next execution instead of disappearing at session end.
 
-Claude Code ships auto-memory, native hooks, and subagent coordination. This plugin provides an **opinionated discipline layer** on top of those primitives to connect different workspaces.
+The control plane works with native agent capabilities and does not replace the model's reasoning. It establishes boundaries, records decisions, and requires evidence at the points where authority or correctness matters.
+
+The canonical path is:
+
+```text
+Intake → Interview → Draft plan → Plan review → Human approval
+→ Worktree implementation → Verification → Retrospective → Done
+```
+
+The interview is adaptive: its questions are coverage prompts, not a script to follow literally.
+It produces a plan-outline artifact that is reviewed before the draft plan is accepted.
+
+For the optional relationship to `obra/superpowers`, see
+[Superpowers boundary and attribution](./references/superpowers-boundary-and-attribution.md).
 
 ## Who This Is For
 
@@ -55,7 +68,7 @@ What ties these patterns together is that all three share the same event log (`e
 ## Scope and Honest Limits
 
 - **Single developer, single machine** - designed for this use case, tested for this use case
-- **File system is the backend** - no databases, no message queues, no external dependencies
+- **Local-first backend** - SQLite and filesystem artifacts; no external service is required for the control plane
 - **No scale requirements** - if you need multi-machine coordination or high-throughput event streaming, this is not the tool; see `references/architecture/vision.md` for what that would require
 - **Academic/research quality** - deliberate. The goal is clarity of implementation, not production hardening
 - **Complementary to native Claude Code** - Anthropic has shipped auto-memory, hooks, and subagent coordination. This plugin adds the structured memory hierarchy, eval-gated improvement loop, and event bus coordination on top of those native primitives — not competing with them

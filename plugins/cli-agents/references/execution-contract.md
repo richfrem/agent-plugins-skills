@@ -73,3 +73,18 @@ Workarounds = Tier 0 Friction. This is a self-evolution event, not a soft warnin
 
 See `references/backend-capabilities.md` for the capability matrix. Agent MUST
 select backend based on task type — do not default blindly.
+
+## Rule 5 — User Profile Is a Preference, Not an Authority Bypass
+
+When a validated local capability profile exists, use its provider availability
+and low/medium/high model preference for default selection:
+
+```bash
+python3 scripts/run_agent.py persona.md input.md output.md "instruction" \
+  --cli codex --tier medium --profile context/agent-capability-profile.json
+```
+
+An explicit `--model` always wins. Invalid, partial, stale, or unavailable
+profile entries fall back to the current catalog and must not silently claim
+that a provider is available. Follow `references/capability-profile-contract.md`;
+never put credentials, tokens, prompts, or raw provider output in the profile.

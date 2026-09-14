@@ -347,8 +347,66 @@ def remove_plugin_artifacts(plugin_name: str, root: Path, dry_run: bool) -> int:
 
 
 
-def _remove_from_registries(plugin_name: str, root: Path, dry_run: bool) -> None:
-    """Remove plugin_name from plugin-sources.json and skills-lock.json.
+def _find_all_orphaned_artifacts(root: Path) -> list:
+    """Find any remaining files or directories under .agents/ that should be scrubbed."""
+    orphans = []
+    agent_base = root / ".agents"
+    if not agent_base.is_dir():
+        return orphans
+
+    for sub in ("skills", "agents", "workflows", "rules", "hooks", "ownership"):
+        sub_dir = agent_base / sub
+        if sub_dir.is_dir():
+            for item in sorted(sub_dir.iterdir()):
+                if item.name.startswith("."):
+                    continue
+                orphans.append(item)
+    return orphans
+
+
+def _clean_orphaned_artifacts(root: Path, dry_run: bool) -> int:
+    """Delete all orphaned artifacts under .agents/."""
+    orphans = _find_all_orphaned_artifacts(root)
+    removed_count = 0
+    for item in orphans:
+        print(f"    - Removing: {item.relative_to(root)}")
+        if not dry_run:
+            if item.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(item)):
+                item.unlink()
+            elif item.is_dir():
+                shutil.rmtree(item)
+            else:
+                item.unlink()
+        removed_count += 1
+    return removed_count
+
+
+def _clear_skills_lock(root: Path, dry_run: bool) -> None:
+    """Reset skills-lock.json skills registry."""
+    lock_file = root / "skills-lock.json"
+    if lock_file.exists() and not dry_run:
+        try:
+            lock = json.loads(lock_file.read_text(encoding="utf-8"))
+            lock["skills"] = {}
+            lock_file.write_text(json.dumps(lock, indent=2) + "\n", encoding="utf-8")
+        except Exception:
+            pass
+
+
+def _clear_retention_manifest(root: Path, dry_run: bool) -> None:
+    """Reset plugin-retention.json plugins registry."""
+    retention_file = root / "plugin-retention.json"
+    if retention_file.exists() and not dry_run:
+        try:
+            rdata = json.loads(retention_file.read_text(encoding="utf-8"))
+            rdata["plugins"] = {}
+            retention_file.write_text(json.dumps(rdata, indent=2) + "\n", encoding="utf-8")
+        except Exception:
+            pass
+
+
+def _remove_from_registries(plugin_name: str, root: Path, dry_run: bool, owned_skill_names: set = None) -> None:
+    """Remove plugin_name from plugin-sources.json, skills-lock.json, and plugin-retention.json.
 
     Migrates legacy schema entries on read. Prunes empty source entries after
     removal. Silently warns on parse or write errors without crashing.
@@ -357,6 +415,7 @@ def _remove_from_registries(plugin_name: str, root: Path, dry_run: bool) -> None
         plugin_name: The plugin slug to deregister.
         root: Repository root where the registry files live.
         dry_run: If True, compute changes but do not write files.
+        owned_skill_names: Optional set of individual skill names belonging to this plugin.
     """
     sources_file = root / "plugin-sources.json"
     if sources_file.exists():
@@ -389,13 +448,34 @@ def _remove_from_registries(plugin_name: str, root: Path, dry_run: bool) -> None
     if lock_file.exists():
         try:
             lock = json.loads(lock_file.read_text(encoding="utf-8"))
-            if "skills" in lock and plugin_name in lock["skills"]:
-                del lock["skills"][plugin_name]
-                print(f"    - Removed from skills-lock.json")
-                if not dry_run:
+            if "skills" in lock:
+                modified = False
+                if plugin_name in lock["skills"]:
+                    del lock["skills"][plugin_name]
+                    modified = True
+                if owned_skill_names:
+                    for s in owned_skill_names:
+                        if s in lock["skills"]:
+                            del lock["skills"][s]
+                            modified = True
+                if modified and not dry_run:
                     lock_file.write_text(json.dumps(lock, indent=2) + "\n", encoding="utf-8")
+                    print(f"    - Removed from skills-lock.json")
         except Exception as e:
              print(yellow(f"    Warning: Failed updating skills-lock.json: {e}"))
+
+    # 3. plugin-retention.json
+    retention_file = root / "plugin-retention.json"
+    if retention_file.exists():
+        try:
+            rdata = json.loads(retention_file.read_text(encoding="utf-8"))
+            if "plugins" in rdata and plugin_name in rdata["plugins"]:
+                del rdata["plugins"][plugin_name]
+                print(f"    - Removed from plugin-retention.json: {plugin_name}")
+                if not dry_run:
+                    retention_file.write_text(json.dumps(rdata, indent=2) + "\n", encoding="utf-8")
+        except Exception as e:
+            print(yellow(f"    Warning: Failed updating plugin-retention.json: {e}"))
 
 
 def _print_removal_banner() -> None:
@@ -410,29 +490,6 @@ def _print_removal_banner() -> None:
     print()
 
 
-def _load_installed_or_exit(project_root: Path) -> list:
-    """Read plugin-sources.json and return the installed plugin list, or exit if unavailable."""
-    sources_file = project_root / "plugin-sources.json"
-
-    if not sources_file.exists():
-        print(yellow("No plugin-sources.json found. No tracking data available to remove."))
-        sys.exit(0)
-
-    try:
-        data = json.loads(sources_file.read_text(encoding="utf-8"))
-    except Exception as e:
-        print(red(f"Error reading plugin-sources.json: {e}"))
-        sys.exit(1)
-
-    installed_plugins = _load_installed(data)
-
-    if not installed_plugins:
-        print(yellow("No plugins currently recorded in plugin-sources.json."))
-        sys.exit(0)
-
-    return installed_plugins
-
-
 def _select_plugins_to_remove(installed_plugins: list, args) -> list:
     """Return the subset of installed plugins to remove based on CLI flags or TUI."""
     if args.plugins:
@@ -444,16 +501,35 @@ def _select_plugins_to_remove(installed_plugins: list, args) -> list:
     return _multiselect("  Select plugins to remove", installed_plugins)
 
 
-def _remove_selected_plugins(selected: list, project_root: Path, dry_run: bool) -> None:
+def _remove_selected_plugins(selected: list, project_root: Path, dry_run: bool, is_all: bool = False) -> None:
     """Remove artifacts and registry entries for each selected plugin."""
     print(f"\nProceeding to remove {len(selected)} plugins...")
     for p in selected:
         pname = p["name"]
         print(f"\n{bold(pname)}:")
+        ownership_file = project_root / ".agents" / "ownership" / f"{pname}.json"
+        owned_skills = set()
+        if ownership_file.exists():
+            try:
+                odata = json.loads(ownership_file.read_text(encoding="utf-8"))
+                for art in odata.get("artifacts", []):
+                    parts = Path(art).parts
+                    if len(parts) >= 3 and parts[0] == ".agents" and parts[1] == "skills":
+                        owned_skills.add(parts[2])
+            except Exception:
+                pass
         artifacts_removed = remove_plugin_artifacts(pname, project_root, dry_run)
-        _remove_from_registries(pname, project_root, dry_run)
+        _remove_from_registries(pname, project_root, dry_run, owned_skills)
         if artifacts_removed == 0:
             print(dim("    (no file artifacts found)"))
+
+    if is_all:
+        orphans = _find_all_orphaned_artifacts(project_root)
+        if orphans:
+            print(cyan(f"\nCleaning up {len(orphans)} orphaned artifacts to ensure clean environment..."))
+            _clean_orphaned_artifacts(project_root, dry_run)
+            _clear_skills_lock(project_root, dry_run)
+            _clear_retention_manifest(project_root, dry_run)
 
 
 def main() -> None:
@@ -471,14 +547,57 @@ def main() -> None:
     args = parser.parse_args()
 
     project_root = Path.cwd()
-    installed_plugins = _load_installed_or_exit(project_root)
+    sources_file = project_root / "plugin-sources.json"
+
+    data = {"sources": []}
+    if sources_file.exists():
+        try:
+            data = json.loads(sources_file.read_text(encoding="utf-8"))
+        except Exception as e:
+            print(red(f"Error reading plugin-sources.json: {e}"))
+            sys.exit(1)
+
+    installed_plugins = _load_installed(data)
+
+    if not installed_plugins:
+        orphans = _find_all_orphaned_artifacts(project_root)
+        if orphans:
+            if args.all or args.yes:
+                print(cyan(f"No plugins recorded in plugin-sources.json, but found {len(orphans)} orphaned artifacts in .agents/."))
+                print("Cleaning up orphaned artifacts from .agents/...")
+                _clean_orphaned_artifacts(project_root, args.dry_run)
+                _clear_skills_lock(project_root, args.dry_run)
+                _clear_retention_manifest(project_root, args.dry_run)
+                print(bold(green("\nCleanup complete. .agents/skills is now empty.\n")))
+                sys.exit(0)
+            else:
+                _print_removal_banner()
+                print(yellow(f"No plugins recorded in plugin-sources.json, but found {len(orphans)} orphaned artifacts in .agents/."))
+                try:
+                    ans = input("Would you like to clean up all orphaned artifacts? [y/N]: ").strip().lower()
+                except (EOFError, KeyboardInterrupt):
+                    ans = "n"
+                if ans in ("y", "yes"):
+                    _clean_orphaned_artifacts(project_root, args.dry_run)
+                    _clear_skills_lock(project_root, args.dry_run)
+                    _clear_retention_manifest(project_root, args.dry_run)
+                    print(bold(green("\nCleanup complete. .agents/skills is now empty.\n")))
+                    sys.exit(0)
+                else:
+                    print(yellow("Exiting without changes."))
+                    sys.exit(0)
+        else:
+            print(yellow("No plugins currently recorded in plugin-sources.json, and .agents/ is already clean."))
+            sys.exit(0)
+
     selected = _select_plugins_to_remove(installed_plugins, args)
 
     if not selected:
         print(yellow("  No plugins selected. Exiting."))
         sys.exit(0)
 
-    _remove_selected_plugins(selected, project_root, args.dry_run)
+    is_all = (args.all or len(selected) == len(installed_plugins)) and not args.plugins
+    _remove_selected_plugins(selected, project_root, args.dry_run, is_all=is_all)
 
     print()
     if args.dry_run:

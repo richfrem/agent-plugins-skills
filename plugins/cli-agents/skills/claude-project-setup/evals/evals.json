@@ -1,8 +1,0 @@
-[
-  {"prompt": "Set up claude for this project — scaffold the .claude directory with CLAUDE.md and settings.", "should_trigger": true},
-  {"prompt": "Optimize my CLAUDE.md — it's over 300 lines and needs to be split into rules files.", "should_trigger": true},
-  {"prompt": "Configure claude for this project with hooks and a settings.json.", "should_trigger": true},
-  {"prompt": "Pipe large source files to Claude CLI for a sub-agent security analysis.", "should_trigger": false},
-  {"prompt": "Create a new agent skill using the scaffolding workflow.", "should_trigger": false},
-  {"prompt": "Configure a GitHub Copilot workspace with a prompt file.", "should_trigger": false}
-]

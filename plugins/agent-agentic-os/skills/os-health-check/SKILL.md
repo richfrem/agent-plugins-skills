@@ -66,6 +66,13 @@ DEBT-20260905-12/-13/-14). Any MISSING result is a Tier 1 finding — recommend 
 `init_agentic_os.py --target . --retrofit` (idempotent, safe to re-run). Exact commands are
 in `references/detailed-reference.md`.
 
+When `plugins/cli-agents` is installed, also report the state of the optional
+`context/agent-capability-profile.json` profile: missing means setup discovery
+is still required; invalid or stale means refresh guidance is required; ready
+means provider and model-tier preferences may be used. Do not treat a missing
+optional profile as a failed Agentic OS substrate, and never read credentials
+or raw provider output while checking it.
+
 ### Phase 4: Summarize & Lock Release
 
 ```bash

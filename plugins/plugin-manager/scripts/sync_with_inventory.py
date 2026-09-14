@@ -323,17 +323,50 @@ def _sync_all_registered_sources(sources_data: list, root: Path, dry_run: bool) 
             sync_source(src, s["plugins"], root, dry_run)
 
 
+def enforce_retention_pruning(root: Path, dry_run: bool) -> None:
+    """Invokes prune_installed_skills.py to enforce component retention manifest."""
+    retention_file = root / "plugin-retention.json"
+    if not retention_file.exists():
+        print("  [RETENTION] No plugin-retention.json manifest found — skipping pruning.")
+        return
+
+    candidate_paths = [
+        root / "plugins" / "plugin-manager" / "scripts" / "prune_installed_skills.py",
+        root / ".agents" / "skills" / "plugin-pruner" / "scripts" / "prune_installed_skills.py",
+        SCRIPT_DIR / "prune_installed_skills.py",
+    ]
+    pruner_script = next((p for p in candidate_paths if p.exists()), None)
+    if not pruner_script:
+        print("  [WARNING] prune_installed_skills.py not found at any candidate location.")
+        return
+
+    cmd = [sys.executable, str(pruner_script)]
+    if dry_run:
+        cmd.append("--dry-run")
+    else:
+        cmd.extend(["--execute", "--confirm-token", "PRUNE-INSTALLED-SKILLS"])
+
+    print(f"  [RETENTION] Enforcing retention manifest ({retention_file.name})...")
+    try:
+        subprocess.run(cmd, check=True)
+        print("  [RETENTION] Retention enforcement completed successfully.")
+    except subprocess.CalledProcessError as e:
+        print(f"  [ERROR] Retention enforcement failed: {e}")
+
+
 def main() -> None:
     """CLI entry point: read registry, clean stale plugins, sync all sources, validate.
 
     Reads plugin-sources.json to discover all registered plugin sources,
     detects and cleans up stale local-path sources whose directories are gone,
     calls plugin_add.py to reinstall each source (unless --cleanup-only),
+    enforces retention policy via prune_installed_skills.py (unless --no-prune),
     then runs validate_agents_state to confirm .agents/ is consistent.
     """
     parser = argparse.ArgumentParser(description="Sync all plugins from plugin-sources.json registry.")
     parser.add_argument("--dry-run", action="store_true", help="Simulate without modifying files.")
     parser.add_argument("--cleanup-only", action="store_true", help="Run cleanup only, skip reinstall.")
+    parser.add_argument("--no-prune", action="store_true", help="Skip post-sync component retention pruning.")
     args = parser.parse_args()
 
     root = Path.cwd()
@@ -350,7 +383,11 @@ def main() -> None:
     else:
         print("\nSkipping reinstall (--cleanup-only).")
 
-    print("\n--- 5. Post-Sync Validation ---")
+    if not args.cleanup_only and not args.no_prune:
+        print(f"\n--- 5. Enforcing Retention Policy ---")
+        enforce_retention_pruning(root, args.dry_run)
+
+    print("\n--- 6. Post-Sync Validation ---")
     if not args.dry_run:
         validate_agents_state(root, registered_set)
     else:

@@ -10,6 +10,29 @@ Purpose:
 
 Layer:
     OS Kernel / Execution Control Plane Substrate — Registry (domain layer)
+
+Key Input Dependencies:
+    - control_plane/transition_templates.yaml (the single authoritative registry
+      loaded by load_default()/load_from_file()) — each entry's field set is
+      validated against REQUIRED_TEMPLATE_FIELDS.
+    - control_plane/state_machine.py's ALLOWED_TRANSITIONS/CANONICAL_STATES — every
+      loaded template must have exactly one matching (from_state, to_state) edge.
+
+Key Functions:
+    - TransitionRegistryError — raised on a missing/malformed/schema-violating YAML.
+    - REQUIRED_TEMPLATE_FIELDS — the field set every template entry must declare.
+    - TransitionTemplate — dataclass for one validated transition's full template.
+    - TransitionRegistry — loads and serves the registry:
+        - get_template()/get_template_by_id() — look up one template.
+        - get_all_templates()/get_all_edges()/get_all_declared_check_ids() —
+          registry-wide views.
+        - get_edges_releasing_capability()/get_legal_next_states() — capability and
+          adjacency queries.
+        - get_transition_guidance() — builds the human-readable advisory guidance
+          block for one edge (purpose, checklist, next steps).
+        - get_stage_contract()/get_stage_question() — per-state question contracts.
+        - load_from_file()/load_default() — construct a validated registry from a
+          given YAML path, or the canonical transition_templates.yaml.
 """
 
 from dataclasses import dataclass
@@ -40,7 +63,28 @@ REQUIRED_TEMPLATE_FIELDS = [
     "capabilities_released",
     "capabilities_prohibited",
     "denial_message",
+    "next_steps_hint",
 ]
+
+TRANSITION_GUIDANCE_SCHEMA_VERSION = "transition-guidance-v1"
+EXECUTION_GUIDANCE_UNITS = (
+    "work_package",
+    "task",
+    "slice",
+    "transition",
+    "execution_step",
+)
+EXECUTION_GUIDANCE_FIELDS = (
+    "objective",
+    "scope_boundary",
+    "prerequisites",
+    "authority",
+    "expected_artifacts",
+    "validation_command",
+    "completion_evidence",
+    "handoff_condition",
+    "failure_recovery",
+)
 
 
 @dataclass(frozen=True)
@@ -60,8 +104,10 @@ class TransitionTemplate:
     capabilities_prohibited: List[str]
     denial_message: str
     next_steps_hint: str = ""
+    failure_recovery: str = ""
     stage_question_ids: List[str] = None
     stage_route: Optional[Dict[str, Any]] = None
+    guidance: Optional[Dict[str, Any]] = None
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -80,8 +126,10 @@ class TransitionTemplate:
             "capabilities_prohibited": list(self.capabilities_prohibited),
             "denial_message": self.denial_message,
             "next_steps_hint": self.next_steps_hint,
+            "failure_recovery": self.failure_recovery,
             "stage_question_ids": list(self.stage_question_ids or []),
             "stage_route": dict(self.stage_route or {}),
+            "guidance": dict(self.guidance or {}),
         }
 
 
@@ -92,11 +140,15 @@ class TransitionRegistry:
         self,
         templates: List[TransitionTemplate],
         stage_contracts: Optional[Dict[str, Dict[str, Any]]] = None,
+        execution_guidance: Optional[Dict[str, Dict[str, Any]]] = None,
+        model_effort_guidance: Optional[Dict[str, Dict[str, Any]]] = None,
     ):
         self._templates_by_edge: Dict[Tuple[str, str], TransitionTemplate] = {}
         self._templates_by_id: Dict[str, TransitionTemplate] = {}
         self._capability_to_edges: Dict[str, List[Tuple[str, str]]] = {}
         self._stage_contracts = dict(stage_contracts or {})
+        self._execution_guidance = dict(execution_guidance or {})
+        self._model_effort_guidance = dict(model_effort_guidance or {})
 
         for t in templates:
             edge = (t.from_state, t.to_state)
@@ -135,6 +187,92 @@ class TransitionRegistry:
 
     def get_edges_releasing_capability(self, capability: str) -> List[Tuple[str, str]]:
         return list(self._capability_to_edges.get(capability, []))
+
+    def get_legal_next_states(self, state: str) -> List[str]:
+        """Return legal next states from the canonical state machine.
+
+        This deliberately does not read a YAML-maintained next-state list. Guidance
+        may explain an edge, but it must never become a second source of transition
+        authority.
+        """
+        return list(ALLOWED_TRANSITIONS.get(state, []))
+
+    def get_transition_guidance(
+        self,
+        from_state: str,
+        to_state: Optional[str] = None,
+        task_id_placeholder: str = "<task-id>",
+    ) -> Dict[str, Any]:
+        """Build a read-only, advisory snapshot for a state or requested edge."""
+        legal_next_states = self.get_legal_next_states(from_state)
+        transitions = []
+        for next_state in legal_next_states:
+            template = self.get_template(from_state, next_state)
+            if template is None:
+                continue
+            transitions.append(self._edge_guidance(template, task_id_placeholder))
+
+        result: Dict[str, Any] = {
+            "advisory": True,
+            "registry_version": TRANSITION_GUIDANCE_SCHEMA_VERSION,
+            "current_state": from_state,
+            "stage_contract": self.get_stage_contract(from_state),
+            "legal_next_states": legal_next_states,
+            "transitions": transitions,
+            "execution_guidance": {
+                unit: dict(self._execution_guidance[unit])
+                for unit in EXECUTION_GUIDANCE_UNITS
+            },
+            "model_effort_guidance": {
+                phase: dict(settings)
+                for phase, settings in self._model_effort_guidance.items()
+            },
+        }
+        if to_state is None:
+            return result
+
+        if to_state not in legal_next_states:
+            result.update({
+                "requested_to_state": to_state,
+                "legal": False,
+                "command": None,
+                "denial_guidance": (
+                    f"{from_state} -> {to_state} is not a legal transition. "
+                    f"Choose one of: {', '.join(legal_next_states) or '(none — terminal state)'}."
+                ),
+                "recovery_states": legal_next_states,
+            })
+            return result
+
+        edge = self.get_template(from_state, to_state)
+        result.update(self._edge_guidance(edge, task_id_placeholder))
+        result["requested_to_state"] = to_state
+        result["legal"] = True
+        return result
+
+    @staticmethod
+    def _edge_guidance(template: TransitionTemplate, task_id_placeholder: str) -> Dict[str, Any]:
+        command = (
+            "python3 plugins/agent-agentic-os/scripts/agent_control.py "
+            f"coordinate-transition --task-id {task_id_placeholder} --to {template.to_state}"
+        )
+        configured = dict(template.guidance or {})
+        helpers = list(configured.get("helper_commands", []))
+        if template.approval.get("required"):
+            helpers.append(
+                "python3 plugins/agent-agentic-os/scripts/agent_control.py "
+                f"record-human-approval --task-id {task_id_placeholder} --approver <name>"
+            )
+        return {
+            "from_state": template.from_state,
+            "to_state": template.to_state,
+            "transition_id": template.transition_id,
+            "command": command,
+            "helper_commands": helpers,
+            "success_guidance": configured.get("success", template.next_steps_hint),
+            "denial_guidance": configured.get("denial", template.denial_message),
+            "failure_recovery": template.failure_recovery,
+        }
 
     def get_stage_contract(self, state: str) -> Optional[Dict[str, Any]]:
         """Return the entry-question contract for a lifecycle state."""
@@ -189,22 +327,62 @@ class TransitionRegistry:
                     raise TransitionRegistryError(f"Stage '{state}' field '{field}' must be a list")
             stage_contracts[state] = contract
 
+        raw_execution_guidance = data.get("execution_guidance")
+        if not isinstance(raw_execution_guidance, dict):
+            raise TransitionRegistryError("YAML root must contain an 'execution_guidance' mapping")
+        execution_guidance: Dict[str, Dict[str, Any]] = {}
+        for unit in EXECUTION_GUIDANCE_UNITS:
+            contract = raw_execution_guidance.get(unit)
+            if not isinstance(contract, dict):
+                raise TransitionRegistryError(
+                    f"execution_guidance must define mapping for '{unit}'"
+                )
+            if contract.get("advisory") is not True:
+                raise TransitionRegistryError(
+                    f"execution_guidance.{unit}.advisory must be true"
+                )
+            if contract.get("required_fields") != list(EXECUTION_GUIDANCE_FIELDS):
+                raise TransitionRegistryError(
+                    f"execution_guidance.{unit}.required_fields must match the execution guidance contract"
+                )
+            if not isinstance(contract.get("instruction"), str) or not contract["instruction"].strip():
+                raise TransitionRegistryError(
+                    f"execution_guidance.{unit}.instruction must be a non-empty string"
+                )
+            execution_guidance[unit] = contract
+
+        raw_model_effort_guidance = data.get("model_effort_guidance", {})
+        if not isinstance(raw_model_effort_guidance, dict):
+            raise TransitionRegistryError("'model_effort_guidance' must be a mapping")
+        model_effort_guidance: Dict[str, Dict[str, Any]] = {}
+        for phase, settings in raw_model_effort_guidance.items():
+            if not isinstance(settings, dict):
+                raise TransitionRegistryError(f"model_effort_guidance.{phase} must be a mapping")
+            for field in ("recommended_model", "recommended_effort", "reason"):
+                if not isinstance(settings.get(field), str) or not settings[field].strip():
+                    raise TransitionRegistryError(
+                        f"model_effort_guidance.{phase}.{field} must be a non-empty string"
+                    )
+            if settings.get("requires_confirmation_for_premium") is not True:
+                raise TransitionRegistryError(
+                    f"model_effort_guidance.{phase}.requires_confirmation_for_premium must be true"
+                )
+            model_effort_guidance[phase] = settings
+
         parsed: List[TransitionTemplate] = []
         for idx, raw_item in enumerate(raw_templates):
             if not isinstance(raw_item, dict):
                 raise TransitionRegistryError(f"Template at index {idx} must be a mapping")
 
-            # Wildcard expansion: from_state: "*" fans out into one literal template
-            # per non-INTAKE canonical state (issue: reset_to_intake recovery edge).
-            # INTAKE is excluded — INTAKE -> INTAKE is a no-op self-loop with no
-            # recovery value.
+            # Wildcard expansion fans out into one literal template per canonical state.
+            # The reset-to-INTAKE wildcard excludes INTAKE's no-op self-loop.
             if raw_item.get("from_state") == "*":
                 base_transition_id = raw_item.get("transition_id", f"wildcard_{idx}")
                 wildcard_to_state = raw_item.get("to_state")
                 existing_edges = {(t.from_state, t.to_state) for t in parsed}
                 expanded_items = []
                 for state in CANONICAL_STATES:
-                    if state == "INTAKE":
+                    if state == wildcard_to_state:
                         continue
                     if (state, wildcard_to_state) in existing_edges:
                         continue
@@ -228,6 +406,22 @@ class TransitionRegistry:
                     raise TransitionRegistryError(f"Field 'deterministic_checks' must be a list in template '{item.get('transition_id')}'")
                 if not isinstance(item["human_questions"], list):
                     raise TransitionRegistryError(f"Field 'human_questions' must be a list in template '{item.get('transition_id')}'")
+                for question in item["human_questions"]:
+                    if not isinstance(question, dict):
+                        raise TransitionRegistryError(
+                            f"Human question must be a mapping in template '{item.get('transition_id')}'"
+                        )
+                    accepted_answers = question.get("accepted_answers")
+                    if accepted_answers is not None:
+                        if not isinstance(accepted_answers, list) or not accepted_answers:
+                            raise TransitionRegistryError(
+                                f"Field 'accepted_answers' must be a non-empty list in template '{item.get('transition_id')}'"
+                            )
+                        options = question.get("options", [])
+                        if not isinstance(options, list) or any(answer not in options for answer in accepted_answers):
+                            raise TransitionRegistryError(
+                                f"Field 'accepted_answers' must contain only declared options in template '{item.get('transition_id')}'"
+                            )
                 if not isinstance(item["approval"], dict):
                     raise TransitionRegistryError(f"Field 'approval' must be a dict in template '{item.get('transition_id')}'")
                 if not isinstance(item["skip"], dict):
@@ -240,10 +434,26 @@ class TransitionRegistry:
                     raise TransitionRegistryError(f"Field 'capabilities_prohibited' must be a list in template '{item.get('transition_id')}'")
                 if not isinstance(item["denial_message"], str) or len(item["denial_message"]) == 0:
                     raise TransitionRegistryError(f"Field 'denial_message' must be a non-empty string in template '{item.get('transition_id')}'")
+                if not isinstance(item.get("next_steps_hint"), str) or len(item["next_steps_hint"].strip()) == 0:
+                    raise TransitionRegistryError(f"Field 'next_steps_hint' must be a non-empty string in template '{item.get('transition_id')}'")
+                if not isinstance(item.get("failure_recovery", ""), str):
+                    raise TransitionRegistryError(f"Field 'failure_recovery' must be a string in template '{item.get('transition_id')}'")
                 if not isinstance(item.get("stage_question_ids", []), list):
                     raise TransitionRegistryError(f"Field 'stage_question_ids' must be a list in template '{item.get('transition_id')}'")
                 if item.get("stage_route") is not None and not isinstance(item["stage_route"], dict):
                     raise TransitionRegistryError(f"Field 'stage_route' must be a mapping in template '{item.get('transition_id')}'")
+                if item.get("guidance") is not None and not isinstance(item["guidance"], dict):
+                    raise TransitionRegistryError(f"Field 'guidance' must be a mapping in template '{item.get('transition_id')}'")
+                guidance = item.get("guidance", {})
+                if not isinstance(guidance.get("helper_commands", []), list):
+                    raise TransitionRegistryError(
+                        f"Field 'guidance.helper_commands' must be a list in template '{item.get('transition_id')}'"
+                    )
+                for guidance_field in ("success", "denial"):
+                    if guidance_field in guidance and not isinstance(guidance[guidance_field], str):
+                        raise TransitionRegistryError(
+                            f"Field 'guidance.{guidance_field}' must be a string in template '{item.get('transition_id')}'"
+                        )
 
                 t = TransitionTemplate(
                     transition_id=item["transition_id"],
@@ -261,12 +471,14 @@ class TransitionRegistry:
                     capabilities_prohibited=item["capabilities_prohibited"],
                     denial_message=item["denial_message"],
                     next_steps_hint=item.get("next_steps_hint", ""),
+                    failure_recovery=item.get("failure_recovery", ""),
                     stage_question_ids=item.get("stage_question_ids", []),
                     stage_route=item.get("stage_route"),
+                    guidance=item.get("guidance", {}),
                 )
                 parsed.append(t)
 
-        return cls(parsed, stage_contracts)
+        return cls(parsed, stage_contracts, execution_guidance, model_effort_guidance)
 
     @classmethod
     def load_default(cls) -> "TransitionRegistry":

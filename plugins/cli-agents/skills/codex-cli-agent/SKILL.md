@@ -15,6 +15,27 @@ Dispatches bounded tasks to the Codex CLI (`codex` binary). Uses the `run_agent.
 > [!IMPORTANT]
 > **Default model: `gpt-5-codex`.** Requires `OPENAI_API_KEY` in environment. The `codex` binary must be on PATH.
 
+## Native orchestration facilities (verified September 2026)
+
+This Codex CLI provides sandboxed execution (`--sandbox`), approval policy, non-interactive
+`exec`, dedicated `review`, session resume/fork, and browsing sessions through `codex agents`.
+Its documented CLI surface does **not** expose a native plan mode, a command that creates Git
+worktrees, or a CLI flag to delegate subagents. Do not infer any of those from the model or from
+an outer host's collaboration tools. Use the Agentic OS portable worktree and its orchestration
+layer for those functions; then run Codex in that selected worktree.
+
+```bash
+# Bounded review on the current portable worktree
+codex review --uncommitted "Review only correctness and regression risks."
+
+# Restricted execution inside a selected worktree
+codex exec --sandbox workspace-write "Implement the approved task and run focused tests."
+```
+
+Use `--dangerously-bypass-approvals-and-sandbox` only with explicit authorization and external
+containment. When a host does provide collaboration tools, record that host runtime separately
+rather than claiming the Codex CLI itself supplied native delegation.
+
 ---
 
 ## Orchestration Pattern: `run_agent.py`

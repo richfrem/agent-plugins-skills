@@ -17,7 +17,7 @@ test -f .git/hooks/pre-commit-evolution-guard && echo "OK pre-commit-evolution-g
 test -f .github/workflows/verify-evolution-integrity.yml && echo "OK verify-evolution-integrity.yml (CI Gate)" || echo "MISSING verify-evolution-integrity.yml"
 
 # Verify instruction files contain Phase 0 intake rule
-grep -q "interview-spec" CLAUDE.md && echo "OK CLAUDE.md (interview-spec rule)" || echo "MISSING CLAUDE.md interview-spec rule"
+grep -q "work-intake" CLAUDE.md && echo "OK CLAUDE.md (work-intake rule)" || echo "MISSING CLAUDE.md work-intake rule"
 
 # Audit for lingering backup files (.bak) requiring agent review
 BAK_FILES=$(find . -maxdepth 2 -name "*.bak" 2>/dev/null)

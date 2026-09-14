@@ -31,6 +31,9 @@ from control_plane.registry import TransitionRegistry
 from control_plane.state_machine import ALLOWED_TRANSITIONS
 from agent_control import ControlPlane, PersistenceInvariantViolation, ConcurrentModificationError
 from control_plane.coordinator import TransitionCoordinator, TransitionCoordinatorError
+from control_plane.constants import (
+    STATE_INTAKE, STATE_DRAFT_PLAN, STATE_AWAITING_APPROVAL, STATE_APPROVED, STATE_VERIFY_EXIT, STATE_RETROSPECTIVE, STATE_DONE, STATE_ESCALATED,
+)
 
 
 @pytest.fixture
@@ -205,7 +208,7 @@ def test_all_question_edges_from_valid_transitions_table(test_env):
         conn.commit()
         conn.execute("UPDATE tasks SET state = ? WHERE task_id = ?", (to_s, t2))
         conn.commit()
-        if (from_s, to_s) == ("RETROSPECTIVE", "DONE") and "retrospective_decision" in required_qids:
+        if (from_s, to_s) == (STATE_RETROSPECTIVE, STATE_DONE) and "retrospective_decision" in required_qids:
             assert conn.execute("SELECT state FROM tasks WHERE task_id = ?", (t2,)).fetchone()[0] == to_s
         else:
             assert conn.execute("SELECT state FROM tasks WHERE task_id = ?", (t2,)).fetchone()[0] == from_s
@@ -284,10 +287,10 @@ def test_dynamically_added_transitions_enforced_without_test_suite_changes(test_
     conn.commit()
 
     task_det = "task-dyn-det-01"
-    _seed_task_at_state(conn, task_det, "VERIFY_EXIT")
+    _seed_task_at_state(conn, task_det, STATE_VERIFY_EXIT)
     conn.execute("UPDATE tasks SET state = 'DRAFT_PLAN' WHERE task_id = ?", (task_det,))
     conn.commit()
-    assert conn.execute("SELECT state FROM tasks WHERE task_id = ?", (task_det,)).fetchone()[0] == "DRAFT_PLAN"
+    assert conn.execute("SELECT state FROM tasks WHERE task_id = ?", (task_det,)).fetchone()[0] == STATE_DRAFT_PLAN
     assert conn.execute("SELECT COUNT(*) FROM transition_violations WHERE task_id = ?", (task_det,)).fetchone()[0] == 0
 
     # 2. Dynamically add a new question-required transition: VERIFY_EXIT -> APPROVED
@@ -296,12 +299,12 @@ def test_dynamically_added_transitions_enforced_without_test_suite_changes(test_
     conn.commit()
 
     task_q = "task-dyn-q-01"
-    _seed_task_at_state(conn, task_q, "VERIFY_EXIT")
+    _seed_task_at_state(conn, task_q, STATE_VERIFY_EXIT)
 
     # Attempt transition with no decision -> REJECTED
     conn.execute("UPDATE tasks SET state = 'APPROVED' WHERE task_id = ?", (task_q,))
     conn.commit()
-    assert conn.execute("SELECT state FROM tasks WHERE task_id = ?", (task_q,)).fetchone()[0] == "VERIFY_EXIT"
+    assert conn.execute("SELECT state FROM tasks WHERE task_id = ?", (task_q,)).fetchone()[0] == STATE_VERIFY_EXIT
     assert conn.execute("SELECT COUNT(*) FROM transition_violations WHERE task_id = ?", (task_q,)).fetchone()[0] >= 1
 
     # Attempt transition with actor='agent' -> REJECTED
@@ -317,7 +320,7 @@ def test_dynamically_added_transitions_enforced_without_test_suite_changes(test_
     conn.commit()
     conn.execute("UPDATE tasks SET state = 'APPROVED' WHERE task_id = ?", (task_q,))
     conn.commit()
-    assert conn.execute("SELECT state FROM tasks WHERE task_id = ?", (task_q,)).fetchone()[0] == "VERIFY_EXIT"
+    assert conn.execute("SELECT state FROM tasks WHERE task_id = ?", (task_q,)).fetchone()[0] == STATE_VERIFY_EXIT
 
     # Provide valid human decision -> SUCCEEDS
     conn.execute(
@@ -332,14 +335,14 @@ def test_dynamically_added_transitions_enforced_without_test_suite_changes(test_
     conn.commit()
     conn.execute("UPDATE tasks SET state = 'APPROVED' WHERE task_id = ?", (task_q,))
     conn.commit()
-    assert conn.execute("SELECT state FROM tasks WHERE task_id = ?", (task_q,)).fetchone()[0] == "APPROVED"
+    assert conn.execute("SELECT state FROM tasks WHERE task_id = ?", (task_q,)).fetchone()[0] == STATE_APPROVED
 
     # 3. Invalid transition not in valid_transitions table: VERIFY_EXIT -> MULTI_AGENT_REVIEW -> REJECTED
     task_inv = "task-dyn-inv-01"
-    _seed_task_at_state(conn, task_inv, "VERIFY_EXIT")
+    _seed_task_at_state(conn, task_inv, STATE_VERIFY_EXIT)
     conn.execute("UPDATE tasks SET state = 'MULTI_AGENT_REVIEW' WHERE task_id = ?", (task_inv,))
     conn.commit()
-    assert conn.execute("SELECT state FROM tasks WHERE task_id = ?", (task_inv,)).fetchone()[0] == "VERIFY_EXIT"
+    assert conn.execute("SELECT state FROM tasks WHERE task_id = ?", (task_inv,)).fetchone()[0] == STATE_VERIFY_EXIT
     assert conn.execute("SELECT COUNT(*) FROM transition_violations WHERE task_id = ?", (task_inv,)).fetchone()[0] >= 1
 
     conn.close()
@@ -358,10 +361,10 @@ def test_reproduce_live_self_approval_bypass_rejected(test_env):
 
     # Setup task at AWAITING_APPROVAL
     conn = sqlite3.connect(db_path)
-    _seed_task_at_state(conn, task_id, "AWAITING_APPROVAL")
+    _seed_task_at_state(conn, task_id, STATE_AWAITING_APPROVAL)
 
     row = conn.execute("SELECT state FROM tasks WHERE task_id = ?", (task_id,)).fetchone()
-    assert row[0] == "AWAITING_APPROVAL"
+    assert row[0] == STATE_AWAITING_APPROVAL
 
     # ATTEMPT 1: Raw SQL UPDATE bypassing coordinator with zero decisions recorded
     conn.execute("UPDATE tasks SET state = 'APPROVED' WHERE task_id = ?", (task_id,))
@@ -369,30 +372,30 @@ def test_reproduce_live_self_approval_bypass_rejected(test_env):
 
     # Verify that database trigger silently reverted state and logged violation
     row_after_raw = conn.execute("SELECT state FROM tasks WHERE task_id = ?", (task_id,)).fetchone()
-    assert row_after_raw[0] == "AWAITING_APPROVAL", "Raw SQL update to APPROVED without decision must be reverted by trigger!"
+    assert row_after_raw[0] == STATE_AWAITING_APPROVAL, "Raw SQL update to APPROVED without decision must be reverted by trigger!"
 
     violations = conn.execute(
         "SELECT task_id, attempted_from_state, attempted_to_state FROM transition_violations WHERE task_id = ?",
         (task_id,)
     ).fetchall()
     assert len(violations) >= 1
-    assert violations[-1] == (task_id, "AWAITING_APPROVAL", "APPROVED")
+    assert violations[-1] == (task_id, STATE_AWAITING_APPROVAL, STATE_APPROVED)
 
     # ATTEMPT 2: Programmatic cp.transition call with actor='human' without recorded human decision
     with pytest.raises((PersistenceInvariantViolation, ConcurrentModificationError)):
-        cp.transition(task_id, "APPROVED", actor="human", reason="Self-approved without decision row")
+        cp.transition(task_id, STATE_APPROVED, actor="human", reason="Self-approved without decision row")
 
     row_after_call = conn.execute("SELECT state FROM tasks WHERE task_id = ?", (task_id,)).fetchone()
-    assert row_after_call[0] == "AWAITING_APPROVAL"
+    assert row_after_call[0] == STATE_AWAITING_APPROVAL
 
     # ATTEMPT 3: Non-interactive coordinate_transition passing programmatic answers dict
     reg = TransitionRegistry.load_default()
     coord = TransitionCoordinator(control_plane=cp, registry=reg)
 
-    with pytest.raises((TransitionCoordinatorError, PersistenceInvariantViolation)):
+    with pytest.raises(TransitionCoordinatorError, match="interactive human provenance"):
         coord.coordinate_transition(
             task_id=task_id,
-            to_state="APPROVED",
+            to_state=STATE_APPROVED,
             actor="human",
             reason="Synthetic approval",
             interactive=False,
@@ -401,7 +404,7 @@ def test_reproduce_live_self_approval_bypass_rejected(test_env):
         )
 
     row_after_coord = conn.execute("SELECT state FROM tasks WHERE task_id = ?", (task_id,)).fetchone()
-    assert row_after_coord[0] == "AWAITING_APPROVAL"
+    assert row_after_coord[0] == STATE_AWAITING_APPROVAL
     conn.close()
 
 
@@ -413,27 +416,27 @@ def test_interactive_coordinator_prompts_and_succeeds_with_human_decision(test_e
     db_path = test_env["db_path"]
     task_id = "task-interactive-success-003"
     conn = sqlite3.connect(db_path)
-    _seed_task_at_state(conn, task_id, "AWAITING_APPROVAL")
+    _seed_task_at_state(conn, task_id, STATE_AWAITING_APPROVAL)
     conn.close()
 
     reg = TransitionRegistry.load_default()
     # Mock interactive stdin input selecting option 1 ("Yes, approve implementation")
     # and approving the transition ("y")
-    inputs = iter(["1", "y"])
+    inputs = iter(["1", "y", "YES"])
     coord = TransitionCoordinator(control_plane=cp, registry=reg, input_fn=lambda prompt: next(inputs))
 
     record = coord.coordinate_transition(
         task_id=task_id,
-        to_state="APPROVED",
+        to_state=STATE_APPROVED,
         actor="human",
         reason="Interactive approval from human",
         interactive=True
     )
-    assert record.to_state == "APPROVED"
+    assert record.to_state == STATE_APPROVED
 
     conn = sqlite3.connect(db_path)
     state = conn.execute("SELECT state FROM tasks WHERE task_id = ?", (task_id,)).fetchone()[0]
-    assert state == "APPROVED"
+    assert state == STATE_APPROVED
 
     # Verify decision rows exist with actor='human'
     decisions = conn.execute(
@@ -477,7 +480,7 @@ def test_approval_only_edge_rejects_forged_agent_approval(test_env):
     db_path = test_env["db_path"]
     conn = sqlite3.connect(db_path)
 
-    from_s, to_s = "VERIFY_EXIT", "APPROVED"
+    from_s, to_s = STATE_VERIFY_EXIT, STATE_APPROVED
     approval_qid = "approval_verify_exit_to_approved"
 
     # Seed transition in valid_transitions and required_transition_questions without human_questions
@@ -534,7 +537,7 @@ def test_non_interactive_approval_always_records_actor_agent(test_env):
 
     task_id = "task-non-interactive-approval"
     conn = sqlite3.connect(db_path)
-    _seed_task_at_state(conn, task_id, "AWAITING_APPROVAL")
+    _seed_task_at_state(conn, task_id, STATE_AWAITING_APPROVAL)
     conn.close()
 
     coord = TransitionCoordinator(control_plane=cp, registry=reg)
@@ -544,7 +547,7 @@ def test_non_interactive_approval_always_records_actor_agent(test_env):
     with pytest.raises((PersistenceInvariantViolation, TransitionCoordinatorError)):
         coord.coordinate_transition(
             task_id=task_id,
-            to_state="APPROVED",
+            to_state=STATE_APPROVED,
             actor="agent",
             reason="Non-interactive approval attempt",
             interactive=False,
@@ -576,27 +579,27 @@ def test_stale_decision_replay_across_occupancies_fails(test_env):
 
     task_id = "task-stale-replay-001"
     # Seed task at AWAITING_APPROVAL (initial occupancy, e.g. trans_id 1)
-    _seed_task_at_state(conn, task_id, "AWAITING_APPROVAL")
+    _seed_task_at_state(conn, task_id, STATE_AWAITING_APPROVAL)
     conn.close()
 
     # Step (a): Complete valid human-approved transition to APPROVED
-    inputs = iter(["1", "y"])
+    inputs = iter(["1", "y", "YES"])
     coord = TransitionCoordinator(control_plane=cp, registry=reg, input_fn=lambda prompt: next(inputs))
     record1 = coord.coordinate_transition(
         task_id=task_id,
-        to_state="APPROVED",
+        to_state=STATE_APPROVED,
         actor="human",
         reason="Initial valid human approval in occupancy 1",
         interactive=True
     )
-    assert record1.to_state == "APPROVED"
+    assert record1.to_state == STATE_APPROVED
 
     conn = sqlite3.connect(db_path)
-    assert conn.execute("SELECT state FROM tasks WHERE task_id = ?", (task_id,)).fetchone()[0] == "APPROVED"
+    assert conn.execute("SELECT state FROM tasks WHERE task_id = ?", (task_id,)).fetchone()[0] == STATE_APPROVED
 
     # Step (b): Task leaves APPROVED and re-enters AWAITING_APPROVAL (occupancy changes)
-    _seed_task_at_state(conn, task_id, "AWAITING_APPROVAL")
-    assert conn.execute("SELECT state FROM tasks WHERE task_id = ?", (task_id,)).fetchone()[0] == "AWAITING_APPROVAL"
+    _seed_task_at_state(conn, task_id, STATE_AWAITING_APPROVAL)
+    assert conn.execute("SELECT state FROM tasks WHERE task_id = ?", (task_id,)).fetchone()[0] == STATE_AWAITING_APPROVAL
 
     # Step (c): Attempt transition from AWAITING_APPROVAL -> APPROVED WITHOUT recording new decisions!
     # 1. Raw SQL UPDATE test
@@ -605,7 +608,7 @@ def test_stale_decision_replay_across_occupancies_fails(test_env):
 
     # If trigger permits stale replay, state becomes APPROVED. The test asserts that trigger MUST revert it back to AWAITING_APPROVAL!
     state_after_raw = conn.execute("SELECT state FROM tasks WHERE task_id = ?", (task_id,)).fetchone()[0]
-    assert state_after_raw == "AWAITING_APPROVAL", (
+    assert state_after_raw == STATE_AWAITING_APPROVAL, (
         "CRITICAL VULNERABILITY: Stale decision from prior occupancy satisfied trigger on re-entry! "
         "State was transitioned to APPROVED without fresh human decision."
     )
@@ -634,7 +637,7 @@ def test_recovery_approval_alignment_and_security_guarantees(test_env):
 
     # Setup: create task and move to ESCALATED
     conn = sqlite3.connect(db_path)
-    _seed_task_at_state(conn, task_id, "ESCALATED")
+    _seed_task_at_state(conn, task_id, STATE_ESCALATED)
     # Determine initial occupancy ID
     last_trans = conn.execute("SELECT transition_id FROM task_transitions WHERE task_id = ? ORDER BY transition_id DESC LIMIT 1", (task_id,)).fetchone()
     occ1 = last_trans[0]
@@ -644,7 +647,7 @@ def test_recovery_approval_alignment_and_security_guarantees(test_env):
     conn = sqlite3.connect(db_path)
     conn.execute("UPDATE tasks SET state = 'INTAKE' WHERE task_id = ?", (task_id,))
     conn.commit()
-    assert conn.execute("SELECT state FROM tasks WHERE task_id = ?", (task_id,)).fetchone()[0] == "ESCALATED", \
+    assert conn.execute("SELECT state FROM tasks WHERE task_id = ?", (task_id,)).fetchone()[0] == STATE_ESCALATED, \
         "Raw transition to INTAKE without recovery approval must be reverted by trigger!"
     assert conn.execute("SELECT COUNT(*) FROM transition_violations WHERE task_id = ? AND attempted_from_state = 'ESCALATED' AND attempted_to_state = 'INTAKE'", (task_id,)).fetchone()[0] >= 1
     conn.close()
@@ -652,8 +655,8 @@ def test_recovery_approval_alignment_and_security_guarantees(test_env):
     # 2. Issue approval and test token uniqueness
     token1 = adapter.record_recovery_approval(
         task_id=task_id,
-        expected_source_state="ESCALATED",
-        destination_state="INTAKE",
+        expected_source_state=STATE_ESCALATED,
+        destination_state=STATE_INTAKE,
         source_occupancy_transition_id=occ1,
         approver="admin",
         decision="APPROVAL",
@@ -661,8 +664,8 @@ def test_recovery_approval_alignment_and_security_guarantees(test_env):
     )
     token2 = adapter.record_recovery_approval(
         task_id=task_id,
-        expected_source_state="ESCALATED",
-        destination_state="INTAKE",
+        expected_source_state=STATE_ESCALATED,
+        destination_state=STATE_INTAKE,
         source_occupancy_transition_id=occ1,
         approver="admin",
         decision="APPROVAL",
@@ -688,18 +691,18 @@ def test_recovery_approval_alignment_and_security_guarantees(test_env):
     # 4. Test atomic recovery execution
     rec = adapter.apply_recovery_transition(
         task_id=task_id,
-        expected_source_state="ESCALATED",
-        destination_state="INTAKE",
+        expected_source_state=STATE_ESCALATED,
+        destination_state=STATE_INTAKE,
         source_occupancy_transition_id=occ1,
         approval_receipt_token=token1,
         actor="admin",
         reason="De-escalate to INTAKE"
     )
-    assert rec.to_state == "INTAKE"
+    assert rec.to_state == STATE_INTAKE
 
     # 5. Verify decisions are now marked consumed
     conn = sqlite3.connect(db_path)
-    assert conn.execute("SELECT state FROM tasks WHERE task_id = ?", (task_id,)).fetchone()[0] == "INTAKE"
+    assert conn.execute("SELECT state FROM tasks WHERE task_id = ?", (task_id,)).fetchone()[0] == STATE_INTAKE
     consumed_decisions = conn.execute(
         "SELECT consumed_at, bound_transition_id FROM transition_decisions WHERE task_id = ? AND answer = ?",
         (task_id, token1)
@@ -713,8 +716,8 @@ def test_recovery_approval_alignment_and_security_guarantees(test_env):
     with pytest.raises(ValueError):
         adapter.apply_recovery_transition(
             task_id=task_id,
-            expected_source_state="INTAKE",
-            destination_state="INTAKE",
+            expected_source_state=STATE_INTAKE,
+            destination_state=STATE_INTAKE,
             source_occupancy_transition_id=occ1,
             approval_receipt_token=token1,
             actor="admin",
@@ -723,7 +726,7 @@ def test_recovery_approval_alignment_and_security_guarantees(test_env):
 
     # 7. Occupancy binding: token2 was issued in occ1; re-entering ESCALATED (occ2) rejects token2
     conn = sqlite3.connect(db_path)
-    _seed_task_at_state(conn, task_id, "ESCALATED")
+    _seed_task_at_state(conn, task_id, STATE_ESCALATED)
     last_trans2 = conn.execute("SELECT transition_id FROM task_transitions WHERE task_id = ? ORDER BY transition_id DESC LIMIT 1", (task_id,)).fetchone()
     occ2 = last_trans2[0]
     assert occ2 > occ1
@@ -733,8 +736,8 @@ def test_recovery_approval_alignment_and_security_guarantees(test_env):
     with pytest.raises(ValueError, match="Stale occupancy ID"):
         adapter.apply_recovery_transition(
             task_id=task_id,
-            expected_source_state="ESCALATED",
-            destination_state="INTAKE",
+            expected_source_state=STATE_ESCALATED,
+            destination_state=STATE_INTAKE,
             source_occupancy_transition_id=occ1,
             approval_receipt_token=token2,
             actor="admin",
@@ -745,11 +748,10 @@ def test_recovery_approval_alignment_and_security_guarantees(test_env):
     with pytest.raises(ValueError, match="Stale occupancy ID"):
         adapter.apply_recovery_transition(
             task_id=task_id,
-            expected_source_state="ESCALATED",
-            destination_state="INTAKE",
+            expected_source_state=STATE_ESCALATED,
+            destination_state=STATE_INTAKE,
             source_occupancy_transition_id=occ1,
             approval_receipt_token=token1,
             actor="admin",
             reason="Attempt reusing consumed token from old occupancy"
         )
-

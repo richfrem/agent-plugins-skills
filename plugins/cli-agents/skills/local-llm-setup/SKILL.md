@@ -9,6 +9,11 @@ description: >
 allowed-tools: Bash, Read, Write
 ---
 
+For the full platform-specific bootstrap, build, model-download, daemon, and
+verification procedure, read `../../references/local-llm-setup-deep-reference.md`.
+This skill is the user-facing entry point; the deep reference preserves the
+former standalone setup agent's detailed procedure.
+
 <example>
 <commentary>User wants to set up local Gemma 4 for the first time on a Mac.</commentary>
 User: Set up local LLM with Gemma 4 on my M1 Mac

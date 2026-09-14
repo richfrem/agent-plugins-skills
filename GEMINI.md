@@ -213,7 +213,7 @@ os-architect → os-improvement-loop → os-eval-runner → os-eval-backport →
 **Active skills (22):** os-architect, os-improvement-loop, os-eval-runner, os-eval-lab-setup,
 os-eval-backport, os-experiment-log, os-evolution-planner, os-evolution-verifier,
 os-environment-probe, os-memory-manager, os-improvement-report, os-guide, os-init,
-os-clean-locks, todo-check, optimize-agent-instructions, self-evolution, critical-auditor, interview-spec,
+os-clean-locks, todo-check, optimize-agent-instructions, self-evolution, critical-auditor, work-intake,
 os-health-check, issue-resolution-reviewer, repository-improvement
 
 **Reference skills (1):** os-skill-improvement — methodology/reference only; prefer `os-improvement-loop` for active orchestration. **Do not delete.**
@@ -238,11 +238,11 @@ Do not add OS infrastructure (evals, memory promotion, kernel calls) to agent-or
 
 ### cli-agents (v2.1.0) — consolidated from claude-cli, copilot-cli, gemini-cli
 
-**Skills (14):** agent-file-synchronization, agt-security, agy-cli-agent, antigravity-project-setup,
-claude-cli-agent, claude-project-setup, codex-cli-agent, copilot-cli-agent, gemini-cli-agent,
+**Skills (11):** agent-file-synchronization, agt-security, agy-cli-agent,
+claude-cli-agent, codex-cli-agent, copilot-cli-agent,
 local-llm-bridge, local-llm-setup, maf-adapter, project-setup, update-cli-models
 
-**Note:** `gemini-cli-agent` — Gemini CLI consumer access ended June 18, 2026 (that date has now passed). Only enterprise Gemini Code Assist licenses retain the `gemini` binary. Use `agy-cli-agent` — it is now the primary path for Gemini model access, not just frontier models.
+**Note:** Gemini CLI consumer access ended June 18, 2026 (that date has now passed). Only enterprise Gemini Code Assist licenses retain the `gemini` binary. Use `agy-cli-agent` — it is now the primary path for Gemini model access, not just frontier models.
 
 **Scripts:** Each skill has its own `scripts/run_agent.py` for its respective CLI tool.
 
@@ -262,10 +262,10 @@ vector-db-cleanup, vector-db-audit, memory-management
 
 ### dev-utils (v1.4.0) — consolidated from 9 standalone plugins
 
-**Skills (17):** adr-management, coding-conventions-agent, context-bundler, convert-mermaid,
-github-issue-agent, github-issue-backlog-agent, github-issue-prioritizer, hf-init, hf-upload,
-hf-download, humanize, issue-pr-lifecycle-agent, issue-worktree-agent, link-checker-agent,
-optimize-context, symlink-manager, task-agent
+**Skills (16):** adr-management, coding-conventions-agent, context-bundler, convert-mermaid,
+github-issue-agent, github-issue-backlog-agent, github-issue-prioritizer, github-issue-pr-lifecycle-agent,
+github-issue-worktree-agent, hf-init, hf-upload, hf-download, humanize, link-checker-agent,
+optimize-context, symlink-manager
 
 **Do not reference:** `plugins/adr-manager`, `plugins/coding-conventions`, `plugins/context-bundler`,
 `plugins/huggingface-utils`, `plugins/link-checker`, `plugins/mermaid-to-png`,
@@ -422,10 +422,10 @@ that a blind copy will silently destroy. Check for and re-append these before co
 
 | File | Platform-specific addition to preserve | Corresponding `cli-agents` skill |
 |---|---|---|
-| `GEMINI.md` | `## Gemini CLI Tool Mapping` table at the end of the file (Claude Code tool name → Gemini CLI equivalent) | `gemini-cli-agent` (deprecated, see note above), `agy-cli-agent` |
+| `GEMINI.md` | `## Gemini CLI Tool Mapping` table at the end of the file (Claude Code tool name → Gemini CLI equivalent) | `agy-cli-agent` |
 | `.github/copilot-instructions.md` | Header must be `# Copilot Instructions for <repo-name>` + an "Authoritative... Mirrors CLAUDE.md" blockquote, not a generic title | `copilot-cli-agent` |
 | `AGENTS.md` | Cross-tool convention (Codex and other OpenAI-compatible agents read this file) — currently no required platform-specific section beyond shared content, but verify before assuming that's still true | `codex-cli-agent` |
-| `CLAUDE.md` | Source of truth — no platform section of its own | `claude-cli-agent`, `claude-project-setup` |
+| `CLAUDE.md` | Source of truth — no platform section of its own | `claude-cli-agent`, `project-setup` |
 
 The full canonical rules for what belongs in each file live in `optimize-agent-instructions`
 (`plugins/agent-agentic-os/skills/optimize-agent-instructions/SKILL.md`) — consult it, don't just
@@ -457,13 +457,13 @@ known copy before editing to avoid either double-editing a symlink target or mis
   (Phase 3). Applies whenever `spec-driven-development-policy.md` used to apply — that file no longer exists.
 
 ### GitHub Issue Lifecycle Skills (dev-utils)
-Local task scratchpad (`task-agent`) is ephemeral and gitignored — durable backlog lives as GitHub Issues:
+Local task scratchpad is ephemeral and gitignored — durable backlog lives as GitHub Issues:
 ```
-github-issue-agent          ← create/search/comment/close issues; friction_cluster_agent for hotspot synthesis
-github-issue-backlog-agent  ← bridge: promote tasks/*.md → GitHub Issue (dry-run default, --execute for live)
-github-issue-prioritizer    ← rank issues, sync GitHub Projects v2
-issue-worktree-agent        ← isolated git worktree per issue
-issue-pr-lifecycle-agent    ← full issue → worktree → PR → close orchestration
+github-issue-agent              ← create/search/comment/close issues; friction_cluster_agent for hotspot synthesis
+github-issue-backlog-agent      ← bridge: promote tasks/*.md → GitHub Issue (dry-run default, --execute for live)
+github-issue-prioritizer        ← rank issues, sync GitHub Projects v2
+github-issue-worktree-agent     ← isolated git worktree per issue
+github-issue-pr-lifecycle-agent ← full issue → worktree → PR → close orchestration
 ```
 `issue-resolution-reviewer` (agent-agentic-os) — post-closure quality audit skill.
 `gh_issue_create.py` auto-creates missing taxonomy labels (`type:*`/`tier:*`/`area:*`/etc.)
@@ -2036,7 +2036,7 @@ globs: ["**/*"]
 All non-trivial engineering tasks MUST progress through the 4-phase lifecycle below. This replaces legacy waterfall approaches and couples upstream discovery to deterministic execution.
 
 ```
-Phase 0: Intake & Socratic Gate (exploration-cycle-plugin + interview-spec)
+Phase 0: Intake & Socratic Gate (exploration-cycle-plugin + work-intake)
    │
 Phase 1: Native Plan Mode & Adversarial Review (critical-auditor + Human Gate)
    │
@@ -2055,7 +2055,7 @@ Before Plan Mode can ever be entered, the task must be bounded:
    - Execute read-only codebase discovery via `exploration-cycle-plugin` (`technical_diagnostic_engine.py`).
    - Inspect coupling surfaces (touched files, SQLite schemas, cross-plugin symlinks), surface hidden assumptions, and evaluate candidate architectural forks.
    - Emit `exploration/DIAGNOSTIC_BRIEF.md`.
-2. **Interview Gate (`interview-spec`):**
+2. **Interview Gate (`work-intake`):**
    - **Native-First Deferral:** Inspect session environment markers first (`CLAUDE_CODE_ENTRY`, `ANTIGRAVITY_IDE`). Defer to native interactive intake if present. Fall back to Socratic Defaulting loop for headless/Copilot sessions.
    - Socratic Defaulting: 1–3 questions max, structured options with explicit recommended default (`Option A [Recommended]` vs. `Option B`).
    - Compiles the immutable **4-Pillar Spec** (`TASK_SPEC.md`):
@@ -2160,3 +2160,17 @@ globs: ["requirements*.txt", "requirements*.in", "Dockerfile", "pyproject.toml"]
 
 Skills in `.agents/skills/` use Claude Code tool names in their SKILL.md files.
 When executing skills via Gemini, translate tool references using the table above.
+
+---
+
+## Background Document Priority (added 2026-09-13)
+
+If the user's opening message references, pastes, or points to a local file (a prompt,
+issue body, prior spec, handoff doc), read that file FIRST, before asking any
+Socratic/interview question. Check every open question against it. For any question the
+document already answers, use the document's answer directly — via
+`record_source_assisted_answer_candidate(source_path=..., source_authorized=True, ...)`
+where `work-intake`'s control plane is active, or by simply citing the source inline
+otherwise. Never make the human re-answer, live, something they already wrote down for you.
+Only ask a live question for what the document genuinely leaves open or ambiguous.
+

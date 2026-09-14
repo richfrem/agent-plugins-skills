@@ -4,6 +4,76 @@ This registry tracks technical debt, process friction, and workarounds.
 Entries must be resolved, aged, or escalated. 
 Do not delete resolved items; set `Status: RESOLVED` to maintain history.
 
+| 2026-09-10 | WP-576 follow-up | Plan-to-diff completeness was previously inferred from green tests and could miss approved but unimplemented plan tasks. | Added the implementation ledger contract and fail-closed `implementation_completeness` gate before retrospective. | Verify every implementation-plan task has COMPLETE status, evidence, and existing artifacts before leaving VERIFY_EXIT. | Tier 1 | 1 | RESOLVED — full suite, simulator paths, audits, and symlink diagnosis pass |
+| 2026-09-10 | autonomous implementation controller | Authorized work packages had no persistent bounded queue or watchdog-backed continuation owner after worktree entry. | Added JSON-backed queue/controller around the existing lifecycle-independent implementation loop, with heartbeat persistence, stale-runner blocking, and explicit exit-verification stop. | Add cross-process locking if multiple controller processes are ever supported. | Tier 1 | 1 | OPEN follow-up — single-writer controller only |
+
+---
+
+## Tier 1 (Friction): Duplicated hardcoded domain literals across control-plane files
+
+**Status: RESOLVED**
+**Discovered:** 2026-09-14, external review (Gemini) of `control_plane/adapters.py` plus a
+follow-up whole-plugin scan, during the `agentic-os-dedup-invariant-v2` work package.
+- The mandatory `guidance_compliance_confirmation` question added earlier in this same
+  work package broke 46 pre-existing tests because each had independently hardcoded its
+  own literal answer sequence — the proximate trigger for a much broader scan.
+- The broader scan found ~1,000 raw occurrences of task-lifecycle state-name literals
+  (`"INTAKE"`, `"INTERVIEW"`, etc.) across 40 production and test files, plus a second
+  wave of hardcoded domain values in `control_plane/adapters.py` specifically: decision
+  types, actors, cost tiers, task types, worktree states, confirmation statuses, gate
+  names, critic verdicts, delegation statuses, retrospective decision/completion-mode/
+  follow-up statuses, and `ModelCatalogAdapter`'s tool-alias mapping and status
+  denylist — each independently retyped at every call site instead of read from one
+  authoritative source.
+- Two live bugs were found and fixed as a direct consequence of this duplication: (1)
+  three `adapters.py` methods embedded `'{DECISION_TYPE_APPROVAL}'` inside a **plain**
+  (non-f) triple-quoted SQL string, so SQLite was literally comparing against the
+  25-character text `{DECISION_TYPE_APPROVAL}` instead of `APPROVAL` — silently
+  matching nothing; (2) `_rebuild_schema_transactional()` built and executed a ~40-line
+  inline `CREATE TRIGGER` definition that was immediately dropped and replaced by the
+  canonical one extracted from `SCHEMA_SQL` three lines later — dead code that had
+  drifted from the canonical trigger it duplicated.
+- **Fix applied:** created `control_plane/constants.py` as the single shared source for
+  every cross-file domain constant (state names, decision types, actors, cost tiers,
+  task types, worktree states — the exact 6-state vocabulary from
+  `worktree-lifecycle-management.md` — gate names, critic verdicts, delegation
+  statuses, retrospective/follow-up statuses, error codes, the guidance-compliance
+  accepted answer, and test-only `REASON_*` free-text constants). `state_machine.py`
+  imports the state names from it and owns only the derived adjacency DAG
+  (`ALLOWED_TRANSITIONS`/`CANONICAL_STATES`); `adapters.py`'s `SCHEMA_SQL` (the
+  fresh-create schema) now builds its `CHECK (... IN (...))` clauses from these
+  constants via a new `sql_in_list()` helper. `SCHEMA_MIGRATIONS` (the immutable
+  historical DDL record) was deliberately left untouched — rewriting a historical
+  migration to reference current constants would misrepresent what was actually
+  executed against real databases over time.
+- Also fixed: runtime SQL queries that had been interpolating constants directly into
+  the query text (`f"... WHERE actor = '{ACTOR_HUMAN}'"`) were converted to proper `?`
+  bind parameters — f-string interpolation is now reserved for `SCHEMA_SQL`/trigger DDL
+  at module-load time only, where SQLite triggers cannot accept bind parameters at all.
+  Two repo-root-relative path resolutions using a fixed `Path(__file__).parent.parent...`
+  chain were replaced with one `_resolve_repo_root()` helper (git-based, with a
+  fixed-depth fallback only if git is unavailable).
+- A follow-up 21-file audit checked the rest of `plugins/agent-agentic-os/scripts/` for
+  the required `Key Input Dependencies`/`Key Functions` header sections
+  (`coding-conventions.md`); 20 files were fixed, `evaluate.py` was correctly left
+  untouched (its own header says "DO NOT MODIFY THIS FILE. It is the locked
+  evaluator."). One further genuine duplication was found and fixed
+  (`worktree_manager.py`'s `"native"`/`"portable"` strategy literals, duplicated into
+  its test file) — a coincidental `"COMPLETE"` string shared across 4 unrelated domains
+  (ledger status, session-event kind, install-classification state, simulation-result
+  status) was deliberately NOT merged into one constant, since doing so would have been
+  a false coupling between unrelated concepts (same mistake class caught earlier when a
+  batch script wrongly imported `agent_control`'s `STATE_AWAITING_APPROVAL` into files
+  that actually call the separately-governed `evolution_state.py`'s own `AWAITING_APPROVAL`).
+- Canonical rule updated: `plugins/agent-agentic-os/rules/config-driven-constants-over-hardcoding.md`
+  now documents the single-shared-file pattern, the SQL-parameterization rule, and the
+  repo-root-resolution rule.
+- **Regression test:** full suite green (475 passed) after all changes, including the
+  two live bugs found and fixed above.
+
+**Residual/deferred:** none — full-suite verified, retrospective recorded, task
+transitioned to DONE.
+
 ---
 
 ## Tier 3 (Structural): Controller verifies and commits against the wrong directory
@@ -47,4 +117,3 @@ merge commit `15cd7592`) and a full real ROLLBACK cycle (`live-rollback-17881549
 - Updated `self-evolution-policy.md` across plugin source and downstream repositories with **Hard Gate 15: Single Source of Truth Verification First**.
 - Mandated that analysis skills (`update-stock-analysis`) query canonical CLI utilities (`portfolio_io.py --ticker {TICKER}`) before assigning lifecycle status or actions, strictly forbidding inline Python/SQL.
 - Added `--ticker`, `--pillars`, and `--json` CLI primitives to `portfolio_io.py` to eliminate inline query workarounds.
-

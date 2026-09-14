@@ -45,6 +45,7 @@ context/*.db-shm
 context/*.jsonl
 context/os-state.json
 context/plugin-config.json
+context/agent-capability-profile.json
 context/bundles/
 
 # Added by Spec Kitty CLI (auto-managed)
@@ -109,9 +110,8 @@ context/memory.md
 context/os-state.json
 context/status.md
 
-# Local planning/spec working docs (interview-spec, brainstorming, writing-plans output) —
+# Local planning/spec working docs (work-intake, brainstorming, writing-plans output) —
 # not durable repo documentation; already-tracked files here predate this ignore rule and
 # stay tracked (gitignore doesn't retroactively untrack committed files).
 docs/plans/
 docs/superpowers/
-

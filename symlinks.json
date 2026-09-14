@@ -1820,62 +1820,8 @@
       "description": ""
     },
     {
-      "src": "plugins/dev-utils/references/acceptance-criteria.md",
-      "dst": "plugins/dev-utils/skills/task-agent/references/acceptance-criteria.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/references/assistant_preferences.md",
-      "dst": "plugins/dev-utils/skills/task-agent/references/assistant_preferences.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/references/per-user-tasks-default.md",
-      "dst": "plugins/dev-utils/skills/task-agent/references/per-user-tasks-default.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/references/user-hermes-tasks-root.md",
-      "dst": "plugins/dev-utils/skills/task-agent/references/user-hermes-tasks-root.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/references/terminal-backgrounding.md",
-      "dst": "plugins/dev-utils/skills/task-agent/references/terminal-backgrounding.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/scripts/task_manager.py",
-      "dst": "plugins/dev-utils/skills/task-agent/scripts/task_manager.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/scripts/next_number.py",
-      "dst": "plugins/dev-utils/skills/task-agent/scripts/next_number.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/assets/templates/task-template.md",
-      "dst": "plugins/dev-utils/skills/task-agent/assets/templates/task-template.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
       "src": "plugins/cli-agents/scripts/run_agent.py",
       "dst": "plugins/cli-agents/skills/copilot-cli-agent/scripts/run_agent.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/cli-agents/scripts/run_agent.py",
-      "dst": "plugins/cli-agents/skills/gemini-cli-agent/scripts/run_agent.py",
       "strategy": "symlink",
       "description": ""
     },
@@ -2008,18 +1954,6 @@
     {
       "src": "plugins/cli-agents/references/cheapest_models.json",
       "dst": "plugins/cli-agents/skills/copilot-cli-agent/references/cheapest_models.json",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/cli-agents/references/cheapest_models.md",
-      "dst": "plugins/cli-agents/skills/gemini-cli-agent/references/cheapest_models.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/cli-agents/references/cheapest_models.json",
-      "dst": "plugins/cli-agents/skills/gemini-cli-agent/references/cheapest_models.json",
       "strategy": "symlink",
       "description": ""
     },
@@ -2182,12 +2116,6 @@
     {
       "src": "plugins/agent-agentic-os/rules/destructive-action-guard.md",
       "dst": "plugins/agent-agentic-os/skills/self-evolution/references/destructive-action-guard.md",
-      "strategy": "symlink",
-      "description": "Plugin reference \u2192 Skill reference"
-    },
-    {
-      "src": "plugins/dev-utils/rules/git-operations.md",
-      "dst": "plugins/dev-utils/skills/task-agent/references/git-operations.md",
       "strategy": "symlink",
       "description": "Plugin reference \u2192 Skill reference"
     },
@@ -9164,18 +9092,6 @@
       "description": ""
     },
     {
-      "src": "plugins/agent-scaffolders/references/reference/research/azure_foundry_integration_plan.md",
-      "dst": "plugins/agent-scaffolders/skills/ecosystem-authoritative-sources/references/reference/research/azure_foundry_integration_plan.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/reference/research/skills_vision_analysis.md",
-      "dst": "plugins/agent-scaffolders/skills/ecosystem-authoritative-sources/references/reference/research/skills_vision_analysis.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
       "src": "plugins/agent-scaffolders/references/reference/skill-evaluation-and-testing.md",
       "dst": "plugins/agent-scaffolders/skills/ecosystem-authoritative-sources/references/reference/skill-evaluation-and-testing.md",
       "strategy": "symlink",
@@ -9220,18 +9136,6 @@
     {
       "src": "plugins/agent-scaffolders/references/research/azure-foundry-agents.md",
       "dst": "plugins/agent-scaffolders/skills/ecosystem-authoritative-sources/references/research/azure-foundry-agents.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/research/azure_foundry_integration_plan.md",
-      "dst": "plugins/agent-scaffolders/skills/ecosystem-authoritative-sources/references/research/azure_foundry_integration_plan.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/research/skills_vision_analysis.md",
-      "dst": "plugins/agent-scaffolders/skills/ecosystem-authoritative-sources/references/research/skills_vision_analysis.md",
       "strategy": "symlink",
       "description": ""
     },
@@ -9795,24 +9699,6 @@
     },
     {
       "src": "plugins/cli-agents/references/acceptance-criteria.md",
-      "dst": "plugins/cli-agents/skills/antigravity-project-setup/references/acceptance-criteria.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/cli-agents/references/antigravity-directory-spec.md",
-      "dst": "plugins/cli-agents/skills/antigravity-project-setup/references/antigravity-directory-spec.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/cli-agents/references/gemini-cli-commands.md",
-      "dst": "plugins/cli-agents/skills/antigravity-project-setup/references/gemini-cli-commands.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/cli-agents/references/acceptance-criteria.md",
       "dst": "plugins/cli-agents/skills/claude-cli-agent/references/acceptance-criteria.md",
       "strategy": "symlink",
       "description": ""
@@ -9820,24 +9706,6 @@
     {
       "src": "plugins/cli-agents/references/fallback-tree.md",
       "dst": "plugins/cli-agents/skills/claude-cli-agent/references/fallback-tree.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/cli-agents/references/acceptance-criteria.md",
-      "dst": "plugins/cli-agents/skills/claude-project-setup/references/acceptance-criteria.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/cli-agents/references/claude-directory-spec.md",
-      "dst": "plugins/cli-agents/skills/claude-project-setup/references/claude-directory-spec.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/cli-agents/references/claude-settings-schema.md",
-      "dst": "plugins/cli-agents/skills/claude-project-setup/references/claude-settings-schema.md",
       "strategy": "symlink",
       "description": ""
     },
@@ -9862,36 +9730,6 @@
     {
       "src": "plugins/cli-agents/references/program.md",
       "dst": "plugins/cli-agents/skills/copilot-cli-agent/references/program.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/cli-agents/references/acceptance-criteria.md",
-      "dst": "plugins/cli-agents/skills/gemini-cli-agent/references/acceptance-criteria.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/cli-agents/references/antigravity-directory-spec.md",
-      "dst": "plugins/cli-agents/skills/gemini-cli-agent/references/antigravity-directory-spec.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/cli-agents/references/fallback-tree.md",
-      "dst": "plugins/cli-agents/skills/gemini-cli-agent/references/fallback-tree.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/cli-agents/references/gemini-cli-commands.md",
-      "dst": "plugins/cli-agents/skills/gemini-cli-agent/references/gemini-cli-commands.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/cli-agents/references/program.md",
-      "dst": "plugins/cli-agents/skills/gemini-cli-agent/references/program.md",
       "strategy": "symlink",
       "description": ""
     },
@@ -9962,10 +9800,10 @@
       "description": ""
     },
     {
-      "src": "plugins/dev-utils/references/acceptance-criteria.md",
+      "src": "plugins/dev-utils/references/optimize-context-acceptance-criteria.md",
       "dst": "plugins/dev-utils/skills/optimize-context/references/acceptance-criteria.md",
       "strategy": "symlink",
-      "description": ""
+      "description": "optimize-context acceptance criteria"
     },
     {
       "src": "plugins/plugin-manager/references/acceptance-criteria.md",
@@ -9998,12 +9836,6 @@
       "description": ""
     },
     {
-      "src": "plugins/plugin-manager/references/plugin_installer.py",
-      "dst": "plugins/plugin-manager/skills/plugin-installer/references/plugin_installer.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
       "src": "plugins/plugin-manager/references/acceptance-criteria.md",
       "dst": "plugins/plugin-manager/skills/plugin-syncer/references/acceptance-criteria.md",
       "strategy": "symlink",
@@ -10017,13 +9849,13 @@
     },
     {
       "src": "plugins/dev-utils/scripts/issue_worktree_manage.py",
-      "dst": "plugins/dev-utils/skills/issue-worktree-agent/scripts/issue_worktree_manage.py",
+      "dst": "plugins/dev-utils/skills/github-issue-worktree-agent/scripts/issue_worktree_manage.py",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/dev-utils/scripts/issue_pr_orchestrate.py",
-      "dst": "plugins/dev-utils/skills/issue-pr-lifecycle-agent/scripts/issue_pr_orchestrate.py",
+      "dst": "plugins/dev-utils/skills/github-issue-pr-lifecycle-agent/scripts/issue_pr_orchestrate.py",
       "strategy": "symlink",
       "description": ""
     },
@@ -10233,25 +10065,25 @@
     },
     {
       "src": "plugins/agent-agentic-os/scripts/agent_control.py",
-      "dst": "plugins/agent-agentic-os/skills/interview-spec/scripts/agent_control.py",
+      "dst": "plugins/agent-agentic-os/skills/work-intake/scripts/agent_control.py",
       "strategy": "symlink",
       "description": "Control plane engine"
     },
     {
       "src": "plugins/agent-agentic-os/scripts/interview_spec_engine.py",
-      "dst": "plugins/agent-agentic-os/skills/interview-spec/scripts/interview_spec_engine.py",
+      "dst": "plugins/agent-agentic-os/skills/work-intake/scripts/interview_spec_engine.py",
       "strategy": "symlink",
       "description": "Interview spec intake engine"
     },
     {
-      "src": "plugins/agent-agentic-os/references/interview-spec/acceptance-criteria.md",
-      "dst": "plugins/agent-agentic-os/skills/interview-spec/references/acceptance-criteria.md",
+      "src": "plugins/agent-agentic-os/references/work-intake/acceptance-criteria.md",
+      "dst": "plugins/agent-agentic-os/skills/work-intake/references/acceptance-criteria.md",
       "strategy": "symlink",
       "description": "Acceptance criteria reference"
     },
     {
-      "src": "plugins/agent-agentic-os/references/interview-spec/fallback-tree.md",
-      "dst": "plugins/agent-agentic-os/skills/interview-spec/references/fallback-tree.md",
+      "src": "plugins/agent-agentic-os/references/work-intake/fallback-tree.md",
+      "dst": "plugins/agent-agentic-os/skills/work-intake/references/fallback-tree.md",
       "strategy": "symlink",
       "description": "Fallback tree reference"
     },
@@ -10323,55 +10155,55 @@
     },
     {
       "src": "plugins/agent-agentic-os/references/multi-round-external-review-protocol.md",
-      "dst": "plugins/agent-agentic-os/skills/interview-spec/references/multi-round-external-review-protocol.md",
+      "dst": "plugins/agent-agentic-os/skills/work-intake/references/multi-round-external-review-protocol.md",
       "strategy": "symlink",
-      "description": "Multi-round external review protocol, shared by interview-spec"
+      "description": "Multi-round external review protocol, shared by work-intake"
     },
     {
       "src": "plugins/agent-agentic-os/scripts/control_plane/__init__.py",
-      "dst": "plugins/agent-agentic-os/skills/interview-spec/scripts/control_plane/__init__.py",
+      "dst": "plugins/agent-agentic-os/skills/work-intake/scripts/control_plane/__init__.py",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-agentic-os/scripts/control_plane/ports.py",
-      "dst": "plugins/agent-agentic-os/skills/interview-spec/scripts/control_plane/ports.py",
+      "dst": "plugins/agent-agentic-os/skills/work-intake/scripts/control_plane/ports.py",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-agentic-os/scripts/control_plane/adapters.py",
-      "dst": "plugins/agent-agentic-os/skills/interview-spec/scripts/control_plane/adapters.py",
+      "dst": "plugins/agent-agentic-os/skills/work-intake/scripts/control_plane/adapters.py",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-agentic-os/scripts/control_plane/policy.py",
-      "dst": "plugins/agent-agentic-os/skills/interview-spec/scripts/control_plane/policy.py",
+      "dst": "plugins/agent-agentic-os/skills/work-intake/scripts/control_plane/policy.py",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-agentic-os/scripts/control_plane/state_machine.py",
-      "dst": "plugins/agent-agentic-os/skills/interview-spec/scripts/control_plane/state_machine.py",
+      "dst": "plugins/agent-agentic-os/skills/work-intake/scripts/control_plane/state_machine.py",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-agentic-os/scripts/control_plane/registry.py",
-      "dst": "plugins/agent-agentic-os/skills/interview-spec/scripts/control_plane/registry.py",
+      "dst": "plugins/agent-agentic-os/skills/work-intake/scripts/control_plane/registry.py",
       "strategy": "symlink",
       "description": "TransitionRegistry, required by agent_control.py \u2014 missing entry caused ModuleNotFoundError (issue-551 work package)"
     },
     {
       "src": "plugins/agent-agentic-os/scripts/control_plane/coordinator.py",
-      "dst": "plugins/agent-agentic-os/skills/interview-spec/scripts/control_plane/coordinator.py",
+      "dst": "plugins/agent-agentic-os/skills/work-intake/scripts/control_plane/coordinator.py",
       "strategy": "symlink",
       "description": "TransitionCoordinator, required by agent_control.py \u2014 missing entry caused ModuleNotFoundError (issue-551 work package)"
     },
     {
       "src": "plugins/agent-agentic-os/scripts/control_plane/transition_templates.yaml",
-      "dst": "plugins/agent-agentic-os/skills/interview-spec/scripts/control_plane/transition_templates.yaml",
+      "dst": "plugins/agent-agentic-os/skills/work-intake/scripts/control_plane/transition_templates.yaml",
       "strategy": "symlink",
       "description": "Loaded at runtime by registry.py relative to its own __file__ \u2014 must ship alongside registry.py (issue-551 work package)"
     },
@@ -10449,7 +10281,7 @@
     },
     {
       "src": "plugins/dev-utils/scripts/issue_worktree_manage.py",
-      "dst": "plugins/dev-utils/skills/issue-pr-lifecycle-agent/scripts/issue_worktree_manage.py",
+      "dst": "plugins/dev-utils/skills/github-issue-pr-lifecycle-agent/scripts/issue_worktree_manage.py",
       "strategy": "symlink",
       "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
     },
@@ -10496,10 +10328,10 @@
       "description": "evo-smoketest fallback-tree.md (issue-551 hub-and-spoke fix)"
     },
     {
-      "src": "plugins/agent-agentic-os/references/interview-spec-detailed-reference.md",
-      "dst": "plugins/agent-agentic-os/skills/interview-spec/references/detailed-reference.md",
+      "src": "plugins/agent-agentic-os/references/work-intake-detailed-reference.md",
+      "dst": "plugins/agent-agentic-os/skills/work-intake/references/detailed-reference.md",
       "strategy": "symlink",
-      "description": "interview-spec detailed-reference.md (issue-551 hub-and-spoke fix)"
+      "description": "work-intake detailed-reference.md (issue-551 hub-and-spoke fix)"
     },
     {
       "src": "plugins/agent-agentic-os/references/issue-resolution-reviewer-fallback-tree.md",
@@ -10731,69 +10563,423 @@
     },
     {
       "src": "docs/diagrams/control-plane-architecture.mermaid",
-      "dst": "plugins/agent-agentic-os/skills/interview-spec/references/control-plane-architecture.mermaid",
+      "dst": "plugins/agent-agentic-os/skills/work-intake/references/control-plane-architecture.mermaid",
       "strategy": "symlink",
-      "description": "Control-plane diagram referenced by interview-spec pipeline docs"
+      "description": "Control-plane diagram referenced by work-intake pipeline docs"
     },
     {
       "src": "docs/diagrams/control-plane-pipeline-happy-path.mermaid",
-      "dst": "plugins/agent-agentic-os/skills/interview-spec/references/control-plane-pipeline-happy-path.mermaid",
+      "dst": "plugins/agent-agentic-os/skills/work-intake/references/control-plane-pipeline-happy-path.mermaid",
       "strategy": "symlink",
-      "description": "Control-plane diagram referenced by interview-spec pipeline docs"
+      "description": "Control-plane diagram referenced by work-intake pipeline docs"
     },
     {
       "src": "docs/diagrams/control-plane-pipeline.mermaid",
-      "dst": "plugins/agent-agentic-os/skills/interview-spec/references/control-plane-pipeline.mermaid",
+      "dst": "plugins/agent-agentic-os/skills/work-intake/references/control-plane-pipeline.mermaid",
       "strategy": "symlink",
-      "description": "Control-plane diagram referenced by interview-spec pipeline docs"
+      "description": "Control-plane diagram referenced by work-intake pipeline docs"
     },
     {
       "src": "plugins/agent-agentic-os/scripts/control_plane/wrappers/record_retrospective.py",
-      "dst": "plugins/agent-agentic-os/skills/interview-spec/scripts/control_plane/wrappers/record_retrospective.py",
+      "dst": "plugins/agent-agentic-os/skills/work-intake/scripts/control_plane/wrappers/record_retrospective.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-agentic-os/references/map-debt.md",
-      "dst": "plugins/agent-agentic-os/skills/issue-resolution-reviewer/references/map-debt.md",
+      "src": "plugins/cli-agents/scripts/model_catalog.py",
+      "dst": "plugins/cli-agents/skills/copilot-cli-agent/scripts/model_catalog.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-agentic-os/references/map-debt.md",
-      "dst": "plugins/agent-agentic-os/skills/os-evolution-verifier/references/map-debt.md",
+      "src": "plugins/cli-agents/scripts/model_catalog.py",
+      "dst": "plugins/cli-agents/skills/agy-cli-agent/scripts/model_catalog.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-agentic-os/references/map-debt.md",
-      "dst": "plugins/agent-agentic-os/skills/os-init/references/map-debt.md",
+      "src": "plugins/cli-agents/scripts/model_catalog.py",
+      "dst": "plugins/cli-agents/skills/claude-cli-agent/scripts/model_catalog.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-agentic-os/references/evolution-log.md",
-      "dst": "plugins/agent-agentic-os/skills/os-health-check/references/evolution-log.md",
+      "src": "plugins/cli-agents/scripts/model_catalog.py",
+      "dst": "plugins/cli-agents/skills/codex-cli-agent/scripts/model_catalog.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-agentic-os/references/evolution-log.md",
-      "dst": "plugins/agent-agentic-os/skills/os-init/references/evolution-log.md",
+      "src": "plugins/cli-agents/scripts/model_catalog.py",
+      "dst": "plugins/cli-agents/skills/local-llm-bridge/scripts/model_catalog.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-agentic-os/references/domain-patterns/README.md",
-      "dst": "plugins/agent-agentic-os/skills/os-evolution-planner/references/domain-patterns-README.md",
+      "src": "plugins/cli-agents/scripts/model_catalog.py",
+      "dst": "plugins/cli-agents/skills/local-llm-setup/scripts/model_catalog.py",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-agentic-os/references/domain-patterns/routing-skill.md",
-      "dst": "plugins/agent-agentic-os/skills/os-evolution-planner/references/domain-patterns-routing-skill.md",
+      "src": "plugins/agent-agentic-os/references/work-intake/acceptance-criteria.md",
+      "dst": "plugins/agent-agentic-os/skills/worktree-manager/references/acceptance-criteria.md",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/work-intake/fallback-tree.md",
+      "dst": "plugins/agent-agentic-os/skills/worktree-manager/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/scripts/capability_profile.py",
+      "dst": "plugins/cli-agents/skills/copilot-cli-agent/scripts/capability_profile.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/scripts/capability_profile.py",
+      "dst": "plugins/cli-agents/skills/agy-cli-agent/scripts/capability_profile.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/scripts/capability_profile.py",
+      "dst": "plugins/cli-agents/skills/claude-cli-agent/scripts/capability_profile.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/scripts/capability_profile.py",
+      "dst": "plugins/cli-agents/skills/codex-cli-agent/scripts/capability_profile.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/scripts/capability_profile.py",
+      "dst": "plugins/cli-agents/skills/local-llm-bridge/scripts/capability_profile.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/scripts/capability_profile.py",
+      "dst": "plugins/cli-agents/skills/local-llm-setup/scripts/capability_profile.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/implementation.py",
+      "dst": "plugins/agent-agentic-os/skills/work-intake/scripts/control_plane/implementation.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/installation_probe.py",
+      "dst": "plugins/agent-agentic-os/skills/os-init/scripts/control_plane/installation_probe.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/__init__.py",
+      "dst": "plugins/agent-agentic-os/skills/os-init/scripts/control_plane/__init__.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/ports.py",
+      "dst": "plugins/agent-agentic-os/skills/os-init/scripts/control_plane/ports.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/state_machine.py",
+      "dst": "plugins/agent-agentic-os/skills/os-init/scripts/control_plane/state_machine.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/adapters.py",
+      "dst": "plugins/agent-agentic-os/skills/os-init/scripts/control_plane/adapters.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/plugin-manager/scripts/prune_installed_skills.py",
+      "dst": "plugins/plugin-manager/skills/plugin-pruner/scripts/prune_installed_skills.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/plugin-manager/assets/templates/plugin-retention.template.json",
+      "dst": "plugins/plugin-manager/skills/plugin-pruner/assets/templates/plugin-retention.template.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/plugin-manager/references/retention-workflow.md",
+      "dst": "plugins/plugin-manager/skills/plugin-pruner/references/retention-workflow.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/plugin-manager/references/pruner-cli-guide.md",
+      "dst": "plugins/plugin-manager/skills/plugin-pruner/references/pruner-cli-guide.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/plugin-manager/references/acceptance-criteria.md",
+      "dst": "plugins/plugin-manager/skills/plugin-pruner/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/plugin-manager/references/installer-cli-guide.md",
+      "dst": "plugins/plugin-manager/skills/plugin-installer/references/installer-cli-guide.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/plugin-manager/references/remover-cli-guide.md",
+      "dst": "plugins/plugin-manager/skills/plugin-remover/references/remover-cli-guide.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/plugin-manager/references/syncer-cli-guide.md",
+      "dst": "plugins/plugin-manager/skills/plugin-syncer/references/syncer-cli-guide.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/plugin-manager/references/acceptance-criteria.md",
+      "dst": "plugins/plugin-manager/skills/plugin-remover/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-scaffolders/references/discovery-interview.md",
+      "dst": "plugins/agent-scaffolders/skills/create-skill/references/discovery-interview.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-scaffolders/references/platform-primitives.md",
+      "dst": "plugins/agent-scaffolders/skills/create-skill/references/platform-primitives.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-scaffolders/references/review-rubric.md",
+      "dst": "plugins/agent-scaffolders/skills/audit-skill/references/review-rubric.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/scripts/body_validator.py",
+      "dst": "plugins/dev-utils/skills/github-issue-backlog-agent/scripts/body_validator.py",
+      "strategy": "symlink",
+      "description": "Body validator for github-issue-backlog-agent"
+    },
+    {
+      "src": "plugins/dev-utils/scripts/gh_issue_taxonomy_validate.py",
+      "dst": "plugins/dev-utils/skills/github-issue-backlog-agent/scripts/gh_issue_taxonomy_validate.py",
+      "strategy": "symlink",
+      "description": "Taxonomy validator for github-issue-backlog-agent"
+    },
+    {
+      "src": "plugins/dev-utils/scripts/redaction_gate.py",
+      "dst": "plugins/dev-utils/skills/github-issue-backlog-agent/scripts/redaction_gate.py",
+      "strategy": "symlink",
+      "description": "Redaction gate for github-issue-backlog-agent"
+    },
+    {
+      "src": "plugins/dev-utils/references/github-issue-agent-acceptance-criteria.md",
+      "dst": "plugins/dev-utils/skills/github-issue-agent/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": "github-issue-agent acceptance-criteria.md reference"
+    },
+    {
+      "src": "plugins/dev-utils/references/github-issue-agent-fallback-tree.md",
+      "dst": "plugins/dev-utils/skills/github-issue-agent/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": "github-issue-agent fallback-tree.md reference"
+    },
+    {
+      "src": "plugins/dev-utils/references/github-issue-agent-operation-catalog.md",
+      "dst": "plugins/dev-utils/skills/github-issue-agent/references/operation-catalog.md",
+      "strategy": "symlink",
+      "description": "github-issue-agent operation-catalog.md reference"
+    },
+    {
+      "src": "plugins/dev-utils/references/github-issue-agent-taxonomy-guide.md",
+      "dst": "plugins/dev-utils/skills/github-issue-agent/references/taxonomy-guide.md",
+      "strategy": "symlink",
+      "description": "github-issue-agent taxonomy-guide.md reference"
+    },
+    {
+      "src": "plugins/dev-utils/references/github-issue-backlog-agent-acceptance-criteria.md",
+      "dst": "plugins/dev-utils/skills/github-issue-backlog-agent/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": "github-issue-backlog-agent acceptance-criteria.md reference"
+    },
+    {
+      "src": "plugins/dev-utils/references/github-issue-backlog-agent-bridge-guide.md",
+      "dst": "plugins/dev-utils/skills/github-issue-backlog-agent/references/bridge-guide.md",
+      "strategy": "symlink",
+      "description": "github-issue-backlog-agent bridge-guide.md reference"
+    },
+    {
+      "src": "plugins/dev-utils/references/github-issue-backlog-agent-fallback-tree.md",
+      "dst": "plugins/dev-utils/skills/github-issue-backlog-agent/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": "github-issue-backlog-agent fallback-tree.md reference"
+    },
+    {
+      "src": "plugins/dev-utils/references/github-issue-pr-lifecycle-agent-acceptance-criteria.md",
+      "dst": "plugins/dev-utils/skills/github-issue-pr-lifecycle-agent/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": "github-issue-pr-lifecycle-agent acceptance-criteria.md reference"
+    },
+    {
+      "src": "plugins/dev-utils/references/github-issue-pr-lifecycle-agent-fallback-tree.md",
+      "dst": "plugins/dev-utils/skills/github-issue-pr-lifecycle-agent/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": "github-issue-pr-lifecycle-agent fallback-tree.md reference"
+    },
+    {
+      "src": "plugins/dev-utils/references/github-issue-pr-lifecycle-agent-lifecycle-guide.md",
+      "dst": "plugins/dev-utils/skills/github-issue-pr-lifecycle-agent/references/lifecycle-guide.md",
+      "strategy": "symlink",
+      "description": "github-issue-pr-lifecycle-agent lifecycle-guide.md reference"
+    },
+    {
+      "src": "plugins/dev-utils/references/github-issue-prioritizer-acceptance-criteria.md",
+      "dst": "plugins/dev-utils/skills/github-issue-prioritizer/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": "github-issue-prioritizer acceptance-criteria.md reference"
+    },
+    {
+      "src": "plugins/dev-utils/references/github-issue-prioritizer-fallback-tree.md",
+      "dst": "plugins/dev-utils/skills/github-issue-prioritizer/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": "github-issue-prioritizer fallback-tree.md reference"
+    },
+    {
+      "src": "plugins/dev-utils/references/github-issue-prioritizer-priority-matrix.md",
+      "dst": "plugins/dev-utils/skills/github-issue-prioritizer/references/priority-matrix.md",
+      "strategy": "symlink",
+      "description": "github-issue-prioritizer priority-matrix.md reference"
+    },
+    {
+      "src": "plugins/dev-utils/references/github-issue-worktree-agent-acceptance-criteria.md",
+      "dst": "plugins/dev-utils/skills/github-issue-worktree-agent/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": "github-issue-worktree-agent acceptance-criteria.md reference"
+    },
+    {
+      "src": "plugins/dev-utils/references/github-issue-worktree-agent-fallback-tree.md",
+      "dst": "plugins/dev-utils/skills/github-issue-worktree-agent/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": "github-issue-worktree-agent fallback-tree.md reference"
+    },
+    {
+      "src": "plugins/dev-utils/references/github-issue-worktree-agent-worktree-guide.md",
+      "dst": "plugins/dev-utils/skills/github-issue-worktree-agent/references/worktree-guide.md",
+      "strategy": "symlink",
+      "description": "github-issue-worktree-agent worktree-guide.md reference"
+    },
+    {
+      "src": "plugins/dev-utils/references/optimize-context-deduplication-topology.md",
+      "dst": "plugins/dev-utils/skills/optimize-context/references/deduplication-topology.md",
+      "strategy": "symlink",
+      "description": "optimize-context deduplication-topology.md reference"
+    },
+    {
+      "src": "plugins/dev-utils/references/optimize-context-fallback-tree.md",
+      "dst": "plugins/dev-utils/skills/optimize-context/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": "optimize-context fallback-tree.md reference"
+    },
+    {
+      "src": "plugins/dev-utils/references/optimize-context-instruction-optimization.md",
+      "dst": "plugins/dev-utils/skills/optimize-context/references/instruction-optimization.md",
+      "strategy": "symlink",
+      "description": "optimize-context instruction-optimization.md reference"
+    },
+    {
+      "src": "plugins/dev-utils/references/optimize-context-session-efficiency.md",
+      "dst": "plugins/dev-utils/skills/optimize-context/references/session-efficiency.md",
+      "strategy": "symlink",
+      "description": "optimize-context session-efficiency.md reference"
+    },
+    {
+      "src": "plugins/plugin-manager/references/fallback-tree.md",
+      "dst": "plugins/plugin-manager/skills/plugin-installer/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/plugin-manager/references/fallback-tree.md",
+      "dst": "plugins/plugin-manager/skills/plugin-pruner/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/plugin-manager/references/fallback-tree.md",
+      "dst": "plugins/plugin-manager/skills/plugin-remover/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/plugin-manager/references/fallback-tree.md",
+      "dst": "plugins/plugin-manager/skills/plugin-syncer/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/plugin-manager/references/plugin_installer_overview.md",
+      "dst": "plugins/plugin-manager/skills/plugin-installer/references/plugin_installer_overview.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/wrappers/record_interview_question.py",
+      "dst": "plugins/agent-agentic-os/skills/work-intake/scripts/control_plane/wrappers/record_interview_question.py",
+      "strategy": "symlink",
+      "description": "Fixed-identity interview answer recorder"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/worktree-reconciliation-and-multi-worktree-practices.md",
+      "dst": "plugins/agent-agentic-os/skills/worktree-manager/references/worktree-reconciliation-and-multi-worktree-practices.md",
+      "strategy": "symlink",
+      "description": "Worktree reconciliation and multi-worktree best practices (issue #609)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/transition_simulation_cases.py",
+      "dst": "plugins/agent-agentic-os/tests/transition_simulation_cases.py",
+      "strategy": "symlink",
+      "description": "Cheap-agent simulation case generator, canonical in scripts/control_plane; symlinked into tests/ for pytest import"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/transition_simulation_cases.py",
+      "dst": "plugins/agent-agentic-os/skills/transition-guidance-tester/scripts/control_plane/transition_simulation_cases.py",
+      "strategy": "symlink",
+      "description": "Cheap-agent simulation case generator, spoke copy for self-contained skill execution"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/run_transition_simulation.py",
+      "dst": "plugins/agent-agentic-os/skills/transition-guidance-tester/scripts/control_plane/run_transition_simulation.py",
+      "strategy": "symlink",
+      "description": "Cheap-agent simulation CLI runner, spoke copy for self-contained skill execution"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/cheap-agent-transition-simulation.md",
+      "dst": "plugins/agent-agentic-os/skills/transition-guidance-tester/references/cheap-agent-transition-simulation.md",
+      "strategy": "symlink",
+      "description": "Design doc for the cheap-agent transition simulation harness, symlinked into its skill"
     }
   ]
 }

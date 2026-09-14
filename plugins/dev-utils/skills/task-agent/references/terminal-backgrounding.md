@@ -1,1 +1,0 @@
-../../../references/terminal-backgrounding.md

@@ -22,11 +22,24 @@ from typing import Dict, List, Optional, Tuple
 
 def load_taxonomy(json_path: Optional[str] = None) -> Dict:
     """Load the machine-readable taxonomy JSON file."""
-    if not json_path:
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        json_path = os.path.join(base_dir, "issue-taxonomy.json")
-    with open(json_path, "r", encoding="utf-8") as f:
-        return json.load(f)
+    if json_path and os.path.exists(json_path):
+        with open(json_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    real_plugin_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+    candidates = [
+        os.path.join(base_dir, "issue-taxonomy.json"),
+        os.path.join(base_dir, "skills", "github-issue-agent", "issue-taxonomy.json"),
+        os.path.join(real_plugin_dir, "skills", "github-issue-agent", "issue-taxonomy.json"),
+        os.path.join(base_dir, "github-issue-agent", "issue-taxonomy.json"),
+    ]
+    for cand in candidates:
+        if os.path.exists(cand):
+            with open(cand, "r", encoding="utf-8") as f:
+                return json.load(f)
+
+    raise FileNotFoundError(f"issue-taxonomy.json not found in candidate paths: {candidates}")
 
 
 def validate_taxonomy(labels: List[str], taxonomy_path: Optional[str] = None) -> Tuple[bool, List[str]]:

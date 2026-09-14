@@ -48,6 +48,15 @@ Workflow after scaffolding:
 
 Key Input Dependencies:
     - skills/os-eval-runner/assets/templates/autoresearch/*.template
+
+Key Functions:
+    - _load_template() / _render() -- load and variable-render one template.
+    - _resolve_display_paths() -- human-readable relative paths for the summary.
+    - _write_or_skip() -- writes a file only if it doesn't already exist.
+    - _deploy_templates() -- renders/copies all three templates into the experiment dir.
+    - _print_summary_and_next_steps() -- prints created/skipped files and next steps.
+    - scaffold() -- top-level idempotent scaffold entry point.
+    - main() -- CLI entry point.
 """
 
 import argparse

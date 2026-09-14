@@ -1,7 +1,152 @@
+session_change_control:
+  applies_from: task_creation
+  owner: controller
+  worktree_first_invariant: "From the first task/session mutation, the registered worktree is the authoritative location for all session-owned changes. Do not make direct main-checkout edits after the session baseline unless they are explicitly classified, reconciled, and copied into the worktree."
+  session_baseline: "Record the main checkout and registered worktree status before the first mutation, then preserve the baseline reference for the entire task."
+  observation_loop:
+    trigger: "Any user or agent observation about execution friction, a contract defect, missing evidence, or a pipeline improvement, including observations made before implementation tasks formally begin."
+    sequence:
+    - record_observation
+    - classify_observation
+    - decide_immediate_fix_or_defer
+    - update_ledger_and_plan_if_in_scope
+    - apply_in_registered_worktree
+    - run_focused_verification
+    - record_evidence_and_resume_current_stage
+    classifications:
+    - in_scope_immediate_pipeline_fix
+    - deferred_map_debt
+    - material_scope_expansion
+    - blocker
+    immediate_fix_rule: "An in-scope, non-destructive pipeline fix may be handled before formal implementation begins, but it must be recorded as a bounded task/plan delta, applied in the registered worktree, focused-tested, and included in the session-wide change inventory."
+    approval_boundary: "Material scope expansion, destructive action, authority change, or implementation outside the approved boundary requires human approval before action."
+    status_reporting: "Report pre-implementation fixes as pipeline observations handled; do not report implementation as started or complete solely because an observation was addressed."
+    failure_recovery: "If the observation cannot be classified or its worktree/ledger/evidence update cannot complete, record the exact blocker and recovery action, preserve the current lifecycle state, and do not silently continue."
+  review_gate: "Before any review submission, verify every session-owned change is present and content-matched in the registered worktree; classify generated metadata separately and fail closed on missing, mismatched, or unclassified implementation changes."
+
+review_selection_contract:
+  id: review-selection-v1
+  applies_to:
+  - plan_review_to_multi_agent_review
+  - worktree_review_to_multi_agent_code_review
+  canonical_profile_path: context/agent-capability-profile.json
+  environment_summary_fallback: context/memory/environment.md
+  profile_owner: project-setup
+  profile_lifecycle:
+    establish: "Run the interactive project-setup capability baseline once during project setup."
+    consume: "Pipeline review and implementation stages read the profile and current catalog references; they do not repeat deep environment analysis."
+    refresh: "If the profile is missing, partial, invalid, stale, or the user reports an environment change, route back to project-setup for the provider and model questions."
+  availability_rule: "Offer only runtimes and providers whose installation probe succeeds, whose subscription/account/license access is explicitly confirmed by the user, and whose project-use authorization is explicitly confirmed when applicable; never infer availability from the host agent, repository author, or a static option list."
+  question_sequence:
+  - review_decision
+  - review_method
+  - internal_runtime_model_effort
+  internal_runtime_model_effort:
+    applies_when: "The selected review method is single-agent internal or multi-agent internal."
+    question_policy: one_at_a_time
+    sequence:
+    - internal_cli_runtime
+    - internal_model
+    - internal_effort
+    cli_runtime_question: "Which available CLI/runtime should run the internal reviewers?"
+    model_question: "Which model should the internal reviewers use?"
+    effort_question: "Which effort level should the internal reviewers use?"
+    option_resolution:
+      cli_runtime: "Render only providers with available=true in context/agent-capability-profile.json; do not infer availability from installed binaries, the host agent, or a static option list."
+      model: "After the runtime is selected, render only model IDs and capability tiers from update-cli-models for that runtime."
+      effort: "Render only effort levels supported by the selected runtime/model and current catalog."
+    persistence: "Persist the runtime, model, and effort answers before dispatch; never dispatch an internal reviewer with an inferred or default route."
+  user_must_choose_internal_route: true
+  human_answer_provenance:
+    chat_answer: "A user answer received in chat is a human decision. Persist it through coordinate-transition --interactive so SQLite records actor=human."
+    answers_flag: "Do not use --answers to represent a human-gated answer; it records agent provenance and will be rejected by the SQLite human-decision trigger."
+    scripted_use: "Use --answers only for non-human scripted tests or explicitly agent-authored decisions on edges that permit them."
+  internal_selection_rule: "After the user selects an internal method, inspect the confirmed environment and current catalogs, recommend a proportional runtime/model/effort route, and ask the user to choose or confirm it. Do not dispatch an internal reviewer until that explicit user selection is recorded."
+  premium_rule: "A premium model or high-effort route requires explicit user confirmation even when recommended."
+  catalog_authority_skill: update-cli-models
+  catalog_resolution:
+    authority: update-cli-models
+    do_not_duplicate_catalogs: true
+    instruction: "Read update-cli-models for current model IDs, capability tiers, pricing, master and installed-copy resolution, and synchronization rules."
+    missing_catalog_rule: "If the profile or required catalog cannot be resolved, report the exact missing path and route back to project-setup for refresh; do not invent model choices or dispatch."
+  feedback_handoff:
+    applies_to:
+    - MULTI_AGENT_REVIEW
+    - MULTI_AGENT_CODE_REVIEW
+    sequence:
+    - collect_each_reviewer_report
+    - synthesize_one_canonical_round_brief
+    - persist_raw_reports_and_synthesis
+    - record_critic_outcome_and_exact_return_edge
+    - if_changes_requested_transition_to_worktree_and_pass_revision_brief
+    storage:
+      raw_reports: "Store each report under the task-scoped temp review directory, with reviewer, runtime, model, effort, and round in the filename or manifest."
+      synthesis: "Store one task-scoped synthesis/revision brief beside the raw reports; it is the implementer's only consolidated review input."
+      durable_outcome: "Persist the canonical PASS, REVISE, or REVIEW_FAILURE outcome and concise findings through the control-plane critic-review receipt, linked to the review iteration and report manifest."
+    synthesis_rule: "The orchestrator, not an individual reviewer, reconciles duplicate findings, preserves dissent, assigns severity, separates in-scope fixes from follow-up debt, and names the exact acceptance checks required before re-review."
+    implementation_handoff: "For REVISE or REQUEST_CHANGES, do not ask the reviewer to edit code and do not feed raw reports directly into an unrelated model. Transition to IN_WORKTREE and pass the canonical revision brief to the already-authorized implementation controller as a bounded fix prompt."
+    re_review_rule: "After the bounded fix prompt is completed, run focused verification and the session-wide change inventory, return through WORKTREE_REVIEW, and start a new review iteration with the same selection contract unless the user explicitly changes it."
+    review_type_isolation:
+      plan_review: "MULTI_AGENT_REVIEW receipts concern the draft plan only. They may authorize a return to DRAFT_PLAN, but they never authorize implementation rework, satisfy code_review_or_skip, or count as an implementation-review round."
+      implementation_review: "MULTI_AGENT_CODE_REVIEW receipts concern the implementation in the registered worktree only. They may authorize the existing return to IN_WORKTREE for bounded fixes or the exit path after PASS."
+      round_numbering: "Maintain separate plan-review and implementation-review iteration counters; do not call an implementation review round 2 merely because plan review reached iteration 2."
+      rework_gate: "Do not transition MULTI_AGENT_CODE_REVIEW to IN_WORKTREE without a current implementation-review receipt whose verdict is REQUEST_CHANGES, REVISE, or REVIEW_FAILURE with bounded recovery."
+      human_transition_gate: "After the current implementation-review synthesis and revision brief are recorded, ask the human whether to transition back to IN_WORKTREE. Do not begin fixes or treat the rework transition as implicitly approved."
+
 stages:
   INTERVIEW:
     purpose: Capture the minimum understanding needed before selecting the next lifecycle path.
     question_policy: one_at_a_time
+    intent_first: true
+    canonical_questions_are_coverage_prompts: true
+    adaptation_guidance:
+      principle: Understand the desired work; do not conduct a literal questionnaire.
+      ask_only_unresolved: true
+      allow_combined_answers: true
+      allow_rephrased_questions: true
+      allow_not_applicable_with_rationale: true
+      allow_contextual_follow_ups: true
+      preserve_canonical_ids: true
+      no_inferred_answers: true
+      approval_and_authority_are_always_explicit: true
+    plan_outline:
+      enabled: true
+      purpose: Capture the plan-ready bullets discovered during the interview before drafting the full plan.
+      update_after_each_answer: true
+      user_visibility: Show a concise outline summary or a link to the current outline; do not make the user reconstruct it from chat.
+      artifact_path: docs/plans/<task-id>-plan-outline.md
+      link_rule: When the outline artifact exists, provide its repository-relative clickable path in the response.
+      bullet_types:
+      - purpose
+      - desired_user_outcome
+      - scope_boundary
+      - success_evidence
+      - constraint_or_authority
+      - risk_or_open_question
+      - decision
+      outline_is_not_approval: true
+      draft_plan_source: The completed outline is the primary interview input for the initial draft plan.
+    intent_coverage:
+    - intent_id: classification
+      canonical_question_id: interview_classification
+      purpose: Choose the proportionate lifecycle route.
+    - intent_id: problem
+      canonical_question_id: interview_summary
+      purpose: Understand the desired outcome and why it matters.
+    - intent_id: scope
+      canonical_question_id: interview_scope
+      purpose: Define included behavior, boundaries, and exclusions.
+    - intent_id: verification
+      canonical_question_id: interview_verification
+      purpose: Define observable evidence of correctness.
+    - intent_id: acceptance
+      canonical_question_id: interview_acceptance_criteria
+      purpose: Define constraints and acceptance conditions for standard work.
+    progress_display:
+      enabled: true
+      count_adaptive_questions: true
+      format: "Interview question {current} of {total}"
+      include_remaining_summary: true
     entry_questions:
     - question_id: interview_classification
       question: Is this a trivial fix or a standard task?
@@ -40,11 +185,202 @@ stages:
         question: What acceptance criteria and constraints must the implementation satisfy?
         options: []
         default: ''
+      - question_id: interview_planning_model_effort
+        question: >-
+          For the upcoming planning phase, what model and effort level would you
+          like to choose? The interviewer will first classify the planning
+          problem as low, medium or high complexity, inspect your available
+          tools, recommend a cost/effort route, and explain the tradeoff. You
+          may confirm the recommendation or choose another supported option.
+        options: []
+        default: ''
+        selection_mode: confirm_or_change
+        recommendation_source: model_effort_guidance
+        recommendation_phase: plan
+        availability_sources:
+        - os-init
+        - project-setup
+        - cli-agents
+        complexity_options:
+          low:
+            recommended_cost_tier: low
+            recommended_effort: low
+            guidance: Use the cheapest capable available model; premium planning is unnecessary.
+          medium:
+            recommended_cost_tier: medium
+            recommended_effort: medium
+            guidance: Use a competent mid-tier model unless ambiguity or risk warrants more.
+          high:
+            recommended_cost_tier: high
+            recommended_effort: medium
+            guidance: Prefer a highly capable model such as Astra at medium effort; consider capable alternatives available to the user.
+        undersized_choice_guidance: If the user selects a low-tier or low-effort route for a high-complexity plan, advise that it may reduce plan quality and ask whether to continue; defer to the user.
+        premium_confirmation_required: true
     exit_requirements:
-    - Every entry question has an answer.
+    - A concise plan outline is persisted and reviewable before the initial draft plan is compiled.
+    - Every required intent area has a recorded coverage disposition: direct answer, combined answer, authorized source answer, explicit not-applicable rationale, or focused adaptive follow-up.
+    - Canonical question IDs remain traceable in the coverage record; the user is not required to hear redundant literal wording.
     - Every adaptive rule matching the recorded answers has been evaluated.
     - All generated follow-up questions have an answer or an explicit human refusal.
     - The agent has not inferred an answer on the user's behalf.
+  MULTI_AGENT_REVIEW:
+    purpose: Execute the selected independent review of the current plan before returning to plan acceptance.
+    question_policy: one_at_a_time
+    entry_questions: []
+    adaptive_follow_up_rules: []
+    kickoff:
+      mandatory_after_entry: true
+      do_not_stop_after_transition: true
+      runtime_entrypoint: "Use the selected review skill/runtime; for internal multi-agent review, bundle the current artifacts, dispatch the configured reviewer set, collect every report, and record the critic outcome before any return transition."
+      internal_multi_agent_reviewer_set:
+      - architecture reviewer
+      - security auditor
+      - TDD contract reviewer
+      required_receipt_fields:
+      - task_id
+      - review_iteration
+      - method
+      - reviewer
+      - runtime
+      - model
+      - effort
+      - report_path_or_external_receipt
+      - verdict
+      - findings
+      outcome_vocabulary:
+      - PASS
+      - REQUEST_CHANGES
+      - REVIEW_FAILURE
+      required_sequence:
+      - Verify the selected review method and the current plan artifacts.
+      - Create the bounded review bundle or load the approved internal review context.
+      - Dispatch every selected reviewer with the recorded model, effort, and scope.
+      - Collect each reviewer result and preserve its artifact path or external receipt.
+      - Synthesize the collected reports into the canonical round brief before choosing the return edge.
+      - Record one critic-review outcome linked to the raw-report manifest and synthesis brief.
+      - Return to DRAFT_PLAN for requested changes, or return to PLAN_REVIEW for acceptance.
+      continuation_rule: After entering MULTI_AGENT_REVIEW, continue through kickoff, dispatch, collection, and outcome recording in the same run; do not wait for another user prompt for routine internal work.
+      failure_rule: If dispatch or collection cannot complete, record the exact blocker, affected reviewer or artifact, and the concrete recovery action; do not report the review as complete.
+      approval_boundary: Reviewers may critique the plan but may not approve implementation, expand scope, modify production code, create a worktree, or push changes.
+    evidence_requirements:
+    - The review method and model/effort choice are persisted.
+    - Every selected reviewer has a completed result or an explicit failure receipt.
+    - Raw reports and one canonical synthesis/revision brief are persisted for the implementer or plan author.
+    - A critic-review or review-skip receipt is persisted before leaving this stage.
+    exit_requirements:
+    - The recorded outcome names the exact return edge and any required plan changes.
+    - No implementation capability is released by this review stage.
+  IN_WORKTREE:
+    purpose: Execute the approved implementation in the registered isolated worktree.
+    question_policy: one_at_a_time
+    entry_questions: []
+    adaptive_follow_up_rules: []
+    status_display:
+      enabled: true
+      lifecycle_states:
+      - queued
+      - in_progress
+      - blocked
+      - complete
+      format: "Implementation status: {status}; agent: {agent}; model: {model}; effort: {effort}; worktree: {worktree}"
+      unknown_value: "unobserved"
+      user_summary_rule: Always tell the user whether implementation has started, which agent/runtime/model/effort is active when known, and the next gate; never imply completion from worktree creation alone.
+    delegation_display:
+      required_after_worktree_entry: true
+      fields:
+      - agent_count
+      - assignments
+      - runtime
+      - model
+      - effort
+      - scope
+      - status
+      - started_at
+      user_summary_template: "Implementation delegation: {agent_count} agent(s); assignments: {assignments}; runtime: {runtime}; model: {model}; effort: {effort}; scope: {scope}; status: {status}; started: {started_at}."
+      dispatch_truth_rule: Do not report implementation as started until at least one authorized agent dispatch is observed; worktree creation alone is queued preparation.
+    implementation_kickoff:
+      mandatory_after_entry: true
+      runtime_entrypoint: "ControlPlane.create_implementation_controller(...).run()"
+      runtime_enforcement: "Use ImplementationController.run_verification() for focused, integration, and final-suite commands; the cadence guard rejects out-of-order or duplicate final-suite runs."
+      do_not_wait_for_repeated_user_prompt: true
+      ownership: "After APPROVED -> IN_WORKTREE, the implementation controller owns the work package until exit verification or an explicit blocker."
+      pipeline_gate_policy: "Do not request lifecycle transitions for internal task dispatch, task review, or bounded fix rounds. Return to the pipeline only for exit verification, retrospective, or a human-authorized abort."
+      continuation_loop: "dispatch -> observe -> review -> fix/re-dispatch -> scoped re-review; continue automatically while authorized and within the review bound."
+      idle_rule: "Never leave an authorized work package silently idle: dispatch the next legal internal action, or record BLOCKED with the exact blocker and next action."
+      authorization_scope: "APPROVED -> IN_WORKTREE authorizes the complete bounded implementation loop, including internal dispatches, reviews, and fix rounds, until exit verification or a genuine blocker. Do not ask the user to re-authorize these internal steps."
+      user_prompt_boundary: "Do not pause for routine progress confirmation. Prompt the user only for a new material scope, destructive action, premium-model authorization not already recorded, unresolved blocker, or the post-implementation review/exit gate."
+      required_preflight:
+      - Probe the active runtime's native planning, worktree, and subagent capabilities; use a native facility only when explicitly reported, otherwise use the portable fallback.
+      - Read the approved specification, implementation plan, and task ledger.
+      - Verify the registered worktree contains or can safely access the approved artifacts and required source baseline.
+      - Create or resume a persistent implementation ledger before dispatch.
+      - Select the least costly model and effort that meet each task's complexity and the user's recorded tool availability.
+      required_execution:
+      - Split the approved ledger into bounded implementation tasks.
+      - Dispatch one or more authorized implementer agents when tasks are independently reviewable; otherwise dispatch one integration implementer.
+      - Record each dispatch with agent/runtime/model/effort/scope/start time before telling the user implementation is in_progress.
+      - Review each completed task before dispatching dependent work; these are internal session events, not lifecycle transitions.
+      blocked_behavior: If source baseline, approved artifacts, model authorization, or a security/destructive gate prevents dispatch, report status blocked with the exact blocker and next safe action; do not silently remain queued.
+      model_effort_rule: Reuse an explicitly selected implementation model/effort for the same approved scope. Otherwise recommend and select a proportional supported route; seek confirmation only for a premium model, materially broader scope, or a new review round.
+      cost_control_rule: "Use the least-cost capable route for each bounded task. Do not interrupt an active high-risk slice solely to change models; at the next verified checkpoint, prefer Luna medium (or the user's equivalent mid-tier tool) for independent review and routine fixes. Reserve premium models for high-complexity planning, architecture, or unresolved correctness risk."
+      quota_awareness_rule: "Before dispatch, report the selected model, effort, complexity rationale, and known quota/reset constraint. If the active quota is low, prefer a cheaper capable route or defer non-urgent review until reset; never claim a reset time not observed from the runtime."
+      test_cadence_rule: "For each micro-slice, run only focused tests covering the changed contract. Run the subsystem suite at an integration checkpoint and the full plugin suite only once before the P01 acceptance gate or equivalent release checkpoint; do not repeat long full-suite runs after every small edit unless a focused failure requires it."
+      subagent_review_test_sequence: "Subagents must follow this order: focused tests for the slice; independent agent review after implementation; bounded fix/re-review rounds for findings; then one final full test and parity check before acceptance. A passing slice test is not an acceptance result, and a full-suite run does not replace independent review."
+      simulator_acceptance_rule: "Any new lifecycle or authorization contract must add simulator scenarios before acceptance. The final check must execute the acceptance matrix through production ControlPlane/TransitionCoordinator paths, including every wildcard/override edge, normal-path preservation, authorized success, unauthorized denial, persistence consumption, and error contract; simulator success is required evidence, not optional regression coverage."
+      session_continuity_rule: "Keep the implementing agy or Claude session alive through bounded review-fix rounds whenever the runtime supports continuation. Relay concrete reviewer findings into that same session immediately; do not close and reopen the implementation context for ordinary corrections. Independent reviews must be narrowly targeted to the changed contract and acceptance matrix."
+      user_update_rule: Immediately after entry, report queued preparation. Immediately after the first dispatch, report in_progress with the delegation summary. After each task boundary, report completed/reviewed/blocked work and the next dispatch or gate.
+    exit_requirements:
+    - Implementation evidence and tests are recorded before reporting complete.
+    - The implementation plan contains a fenced JSON Implementation Task Ledger with every in-scope task COMPLETE, evidence, and existing artifact paths before exit verification.
+    - Active model and effort are reported from observed runtime metadata, not inferred from task title.
+    completion_contract:
+      definition: "Implementation is complete when the approved bounded work package is written in the registered worktree, the focused acceptance checks pass, and the implementation ledger records the evidence. This status does not mean committed, pushed, merged, or DONE."
+      authority: "The registered worktree is the review source of truth. The main checkout is not an independent implementation authority and may contain pre-existing or mirrored task changes."
+      session_change_inventory:
+        mandatory: true
+        run_on_every_session: true
+        run_before_every_review_submission: true
+        run_after_every_internal_fix_round: true
+        reminder: "At every implementation checkpoint, compare the session-start baseline, main checkout, and registered worktree path by path. Ensure every file created or modified by this session is present with the intended content in the registered worktree before reporting implementation complete or requesting WORKTREE_REVIEW."
+        ownership_rule: "A path changed after the session baseline is session-owned unless it is explicitly recorded as pre-existing. A session-owned main-only path is a blocker; it must not be classified as main_only_preexisting."
+        required_fields:
+        - session_baseline_reference
+        - path
+        - session_owned
+        - main_status
+        - worktree_status
+        - content_match
+        - disposition
+        failure_rule: "Do not report completion or enter WORKTREE_REVIEW while any session-owned change is absent or mismatched in the registered worktree."
+        recovery: "Synchronize the missing session-owned change into the registered worktree using the approved file/symlink workflow, rerun focused verification, and repeat the inventory until it passes. Preserve unrelated main changes."
+        comparison_policy:
+          implementation_files: "Require byte-identical intended content between main and the registered worktree."
+          generated_metadata: "Allow regenerated installer metadata to differ only in expected timestamps or source-location bookkeeping; verify semantic entries and record the difference."
+          missing_or_unclassified: "Always fail closed."
+      reconciliation_manifest:
+        required_before_integration: true
+        purpose: "Reconcile the common base, task baseline, registered worktree, and main checkout before applying any reviewed patch."
+        classifications:
+        - worktree_only
+        - main_only_preexisting
+        - shared_task_change
+        - generated_metadata
+        - untracked
+        required_fields:
+        - path
+        - common_base_blob_or_status
+        - task_baseline_status
+        - worktree_status
+        - main_status
+        - classification
+        - disposition
+      integration_contract:
+        review_source: registered_worktree
+        apply_reviewed_patch_once: true
+        preserve_main_only_preexisting_changes: true
+        commit_policy: "After WORKTREE_REVIEW, final verification, and the DONE operation gate, integrate the reviewed worktree patch once into the authorized integration checkout and create one commit. Do not commit both the worktree branch and main independently."
+        push_policy: "Push only the verified integration commit after explicit human authorization at the push/DONE boundary; never push from IN_WORKTREE or WORKTREE_REVIEW."
+      recovery: "If reconciliation finds conflicting task changes, missing worktree artifacts, or unclassified files, remain in the current gate, record the exact paths and classification failure, and resolve or explicitly exclude them before integration."
   RETROSPECTIVE:
     purpose: Capture the complete pipeline-close survey before allowing DONE.
     question_policy: one_at_a_time
@@ -134,12 +470,134 @@ stages:
     - Every adaptive rule matching the recorded answers has been evaluated.
     - Issue-worthy follow-ups are confirmed and tracked before DONE.
     - The final complete-or-skip decision is asked only after this survey is complete.
+    closeout_change_control:
+      mandatory_before_done: true
+      classifications:
+      - already_resolved_in_current_package
+      - bounded_fix_requires_rework_loop
+      - larger_follow_up_requires_issue_or_new_work_package
+      bounded_fix_rule: A bounded fix is never applied directly from RETROSPECTIVE -- it requires returning through the rework loop (IN_WORKTREE/WORKTREE_REVIEW) like any other implementation change.
+      no_legal_return_rule: RETROSPECTIVE has no legal implementation return edge in the canonical DAG -- a genuine bounded fix requires an explicit human-approved recovery re-entry into IN_WORKTREE, not a silent exception.
+      larger_follow_up_rule: Before opening a new issue or work package for a larger follow-up, run a duplicate search against existing open issues and map-debt entries covering the same root cause.
+      agent_self_assessment:
+        mandatory_before_done: true
+        question: For each retrospective finding, is this a safe bounded fix now, or does it need a separate follow-up?
+        response_policy: Record an explicit classification for every finding before DONE -- do not silently drop a finding without one.
+        no_silent_action: true
+  DONE:
+    purpose: Confirm the human's git-integration intent for the verified worktree before any commit, push, or PR discussion, per worktree-lifecycle-management.md's six-state vocabulary.
+    question_policy: one_at_a_time
+    entry_questions:
+    - question_id: done_git_integration_authorization
+      question: Do you want to begin Git integration now (commit on the existing registered feature branch), or leave the verified changes as-is in the current worktree?
+      options:
+      - Yes, begin Git integration [Recommended]
+      - No, leave the verified changes in the current worktree
+      default: Yes, begin Git integration [Recommended]
+    adaptive_follow_up_rules: []
+    exit_requirements:
+    - The git-integration authorization question has been answered.
+    closeout_contract:
+      feature_branch_policy: Reuse the task's existing registered feature branch (worktree_branch) -- never create a new branch at DONE, and never commit directly to main.
+      commit_policy: Create exactly one commit for the verified work, with an evolution-check/map-debt reference per the Evolution Integrity Gate, before any push is discussed.
+      push_policy: Ask separately, as an explicit isolated instruction, before running git push -- committing and pushing are never bundled into one authorization.
+
+intake_guidance:
+  source_documents:
+    authorization_required: true
+    inferred_answers_require_confirmation: true
+    documents_cannot_grant_approval: true
+    resume_confirmed_answers: true
+  review_rounds:
+    ceilings_minutes: {QUICK: 5, STANDARD: 15, SIGNIFICANT: 30}
+    shared_whole_round_budget: true
+    timeout_status: partial_timeout
+  precompletion_summary:
+    machine_gate:
+      audience: internal
+      preserve_fields: true
+      evaluate_all_checks: true
+    user_summary:
+      audience: user
+      plain_language: true
+      hide_machine_gate_details: true
+      explain_map_debt_as: "a follow-up the agents recorded for later improvement"
+      say_whether_user_action_is_needed: true
+      ask_one_question_at_a_time: true
+      ask_only_if_human_decision_is_required: true
+      user_rule: Tell the user what was checked, whether anything blocks the next step, and the single next question or action in plain language.
+    internal_follow_up:
+      if_any_check_is_yes: "Handle the result internally as FIX, MAP_DEBT, or ESCALATE; do not turn the machine checklist into a user questionnaire."
+human_recovery:
+  enabled: true
+  source_states: Any canonical state
+  target_states: Any different canonical state
+  evidence: Requires a consumed, human-authored APPROVAL decision bound to the exact current occupancy transition_id -- this occupancy binding is what distinguishes a genuine human recovery from a replayed or stale approval.
+  reentry_rule: Re-entering a state via human recovery restores that state's normal capabilities only -- it does not grant downstream capability that the destination state would not otherwise release, and does not retroactively authorize any transition beyond this one.
+  safety_boundary: Recovery targets must be canonical states; unknown states are always rejected regardless of any recorded human approval, since an unknown state has no defined capability or gate contract to enforce.
+execution_guidance:
+  work_package:
+    advisory: true
+    required_fields: &execution_guidance_fields
+    - objective
+    - scope_boundary
+    - prerequisites
+    - authority
+    - expected_artifacts
+    - validation_command
+    - completion_evidence
+    - handoff_condition
+    - failure_recovery
+    instruction: Define the approved work-package outcome, boundaries, delegated authority, artifacts, validation, handoff, and recovery before executing its tasks.
+  task:
+    advisory: true
+    required_fields: *execution_guidance_fields
+    instruction: Execute one bounded task from the work package; preserve its scope, use the approved authority, produce its named artifacts, run its validation, and report completion or recovery evidence.
+  slice:
+    advisory: true
+    required_fields: *execution_guidance_fields
+    instruction: Treat each slice as a small independently verifiable increment; state its prerequisites, implement only its boundary, validate it, and hand off only with the required evidence.
+  transition:
+    advisory: true
+    required_fields: *execution_guidance_fields
+    instruction: "Before each lifecycle transition, resolve the edge guidance, satisfy its questions and checks through the supported mechanism, and use the success or denial recovery path without treating advisory text as authority. A human answer received in chat must be persisted through --interactive, never --answers, so SQLite records actor=human. After a human answer is accepted, immediately persist the decision, complete the requested transition, load the destination state's stage contract, and ask its next question or execute its deterministic handoff; never stop after merely acknowledging an answer."
+  execution_step:
+    advisory: true
+    required_fields: *execution_guidance_fields
+    instruction: Perform the next concrete command or edit only after confirming its prerequisite; record the expected artifact or test evidence and stop for a gate, failure, or scope change.
+
+model_effort_guidance:
+  interview:
+    recommended_model: current-user-model
+    recommended_effort: low
+    reason: Intake answers are bounded; reuse authorized source answers and ask only unresolved questions.
+    requires_confirmation_for_premium: true
+  plan:
+    recommended_model: user-selected-planning-model
+    recommended_effort: high
+    reason: Planning resolves architecture and acceptance evidence; a premium model may be useful but requires explicit confirmation.
+    requires_confirmation_for_premium: true
+  review:
+    recommended_model: user-selected-review-model
+    recommended_effort: medium
+    reason: Independent review should be proportionate to risk and may use a different model from planning.
+    requires_confirmation_for_premium: true
+  implementation:
+    recommended_model: user-selected-implementation-model
+    recommended_effort: medium
+    reason: Implementation should use the least costly supported route that meets the evidence contract; after a premium checkpoint, use a mid-tier model such as Luna medium for review and routine fixes when risk permits.
+    requires_confirmation_for_premium: true
 
 templates:
 - transition_id: intake_to_interview
   from_state: INTAKE
   to_state: INTERVIEW
   purpose: Begin interactive requirements capture and Socratic defaulting with human user.
+  next_steps_hint: "First satisfy prior_art_scan; use: log-prior-art --task-id <task-id>. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to INTERVIEW."
+  guidance:
+    success: "After prior-art evidence is recorded, enter INTERVIEW to collect the user's requirements one question at a time."
+    helper_commands:
+    - "python3 plugins/agent-agentic-os/scripts/agent_control.py log-prior-art --task-id <task-id> --summary '<summary>'"
   checklist:
   - Current task state is persisted as INTAKE
   - 'Deterministic check satisfied: prior_art_scan'
@@ -163,32 +621,34 @@ templates:
   authority:
     type: deterministic
     explanation: Transition from INTAKE to INTERVIEW is deterministically governed by automated checks and artifacts.
-- transition_id: interview_to_retrospective_trivial
+- transition_id: force_retrospective_from_interview
   from_state: INTERVIEW
   to_state: RETROSPECTIVE
-  purpose: Fast-track a TRIVIAL-classified task from the interview gate to the mandatory pipeline-close retrospective gate.
+  purpose: Human-authorized emergency close -- force any in-progress task directly to the mandatory retrospective gate from INTERVIEW, bypassing the normal interview-completeness gate, when the session is being ended before natural completion.
+  next_steps_hint: "Answer force_retrospective_authorization interactively with the literal value FORCE_RETROSPECTIVE, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to RETROSPECTIVE."
   checklist:
   - Current task state is persisted as INTERVIEW
-  - Human has completed the INTERVIEW stage-entry questions and applicable follow-ups
+  - Human has explicitly authorized an emergency close via FORCE_RETROSPECTIVE
   required_artifacts: []
-  deterministic_checks:
-  - interview_trivial_complete
-  stage_question_ids:
-  - interview_classification
-  - interview_summary
-  - interview_scope
-  - interview_verification
-  - interview_trivial_evidence
-  stage_route:
-    question_id: interview_classification
-    equals: TRIVIAL
+  deterministic_checks: []
+  stage_question_ids: []
   human_questions:
-  - question_id: confirm_interview_complete
-    question: Confirm the INTERVIEW baseline questions and applicable follow-ups are complete?
+  - question_id: force_retrospective_reason_category
+    question: Why is this task moving directly to RETROSPECTIVE instead of its normal path?
     options:
-    - Yes [Recommended]
-    - No, continue the interview
-    default: Yes [Recommended]
+    - Task is effectively complete/trivial -- this is a planned early close, not a failure
+    - Ending early due to agent or pipeline failure -- needs follow-up documentation
+    default: ''
+    accepted_answers:
+    - Task is effectively complete/trivial -- this is a planned early close, not a failure
+    - Ending early due to agent or pipeline failure -- needs follow-up documentation
+  - question_id: force_retrospective_authorization
+    question: This ends the task early via emergency close, bypassing the normal interview-completeness gate. Type FORCE_RETROSPECTIVE to confirm.
+    options:
+    - FORCE_RETROSPECTIVE
+    default: ''
+    accepted_answers:
+    - FORCE_RETROSPECTIVE
   approval:
     required: false
     approver_role: agent_or_human
@@ -199,14 +659,15 @@ templates:
   - retrospective_capture
   capabilities_prohibited:
   - push branch to origin
-  denial_message: 'Transition INTERVIEW -> RETROSPECTIVE (trivial) denied: preconditions or required decisions not satisfied.'
+  denial_message: 'Transition INTERVIEW -> RETROSPECTIVE (force) denied: explicit FORCE_RETROSPECTIVE authorization not given.'
   authority:
     type: human_decision
-    explanation: A human must confirm that the stage-entry interview is complete before the task enters the mandatory retrospective gate.
+    explanation: A human must explicitly type FORCE_RETROSPECTIVE to end a task early from INTERVIEW, bypassing the normal interview-completeness gate.
 - transition_id: intake_to_draft_plan
   from_state: INTAKE
   to_state: DRAFT_PLAN
   purpose: Advance lifecycle state from INTAKE to DRAFT_PLAN upon satisfying phase requirements and verifications.
+  next_steps_hint: "Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to DRAFT_PLAN."
   checklist:
   - Current task state is persisted as INTAKE
   - Structural DAG transition from INTAKE to DRAFT_PLAN is legal
@@ -230,14 +691,14 @@ templates:
   authority:
     type: deterministic
     explanation: Transition from INTAKE to DRAFT_PLAN is deterministically governed by automated checks and artifacts.
-# Plan-review entry edges intentionally use a binary submit/revise question:
-# they decide whether the current artifacts are ready for that review state.
-# The 5-way review-method questions belong only to edges that select a review
-# method or permit an explicit review skip, not to plan-review entry.
+# Review-state entry edges use a binary submit/revise question: they decide
+# whether the current artifacts are ready for that destination. Review-method
+# selection and explicit review skips are separate target-specific edges.
 - transition_id: intake_to_plan_review
   from_state: INTAKE
   to_state: PLAN_REVIEW
   purpose: Advance lifecycle state from INTAKE to PLAN_REVIEW upon satisfying phase requirements and verifications.
+  next_steps_hint: "Answer this edge's YAML questions with --interactive or --answers '<json>'. Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to PLAN_REVIEW."
   checklist:
   - Current task state is persisted as INTAKE
   - Structural DAG transition from INTAKE to PLAN_REVIEW is legal
@@ -251,6 +712,8 @@ templates:
     options:
     - Proceed with review [Recommended]
     - Continue revising prior stage
+    accepted_answers:
+    - Proceed with review [Recommended]
     default: Proceed with review [Recommended]
   approval:
     required: false
@@ -271,6 +734,7 @@ templates:
   from_state: INTAKE
   to_state: ESCALATED
   purpose: Escalate task from INTAKE due to blocking failure, unresolvable ambiguity, or user intervention.
+  next_steps_hint: "Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to ESCALATED."
   checklist:
   - Current task state is persisted as INTAKE
   - Structural DAG transition from INTAKE to ESCALATED is legal
@@ -292,15 +756,14 @@ templates:
 - transition_id: interview_to_draft_plan
   from_state: INTERVIEW
   to_state: DRAFT_PLAN
-  purpose: Synthesize interview requirements into architectural specification and task implementation plan.
+  purpose: Confirm the interview outline is complete and hand it to DRAFT_PLAN, where the full architectural specification and implementation plan are compiled.
+  next_steps_hint: "Record each standard interview answer through the supported interview-question mechanism; each answer updates docs/plans/<task-id>-plan-outline.md. Then review the outline, satisfy interview_standard_complete with verify-interview-question, record-plan-mode-entry or record-socratic-intake as applicable, and run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to DRAFT_PLAN. DRAFT_PLAN then compiles the full specification and implementation plan from the outline."
   checklist:
   - Current task state is persisted as INTERVIEW
-  - 'Deterministic check satisfied: plan_mode_or_socratic'
-  required_artifacts:
-  - docs/plans/<task-id>-spec.md
-  - docs/plans/<task-id>-implementation-plan.md
+  - Standard interview questions and acceptance criteria are complete
+  - Interview plan outline is persisted and reviewable
+  required_artifacts: []
   deterministic_checks:
-  - plan_mode_or_socratic
   - interview_standard_complete
   stage_question_ids:
   - interview_classification
@@ -308,6 +771,7 @@ templates:
   - interview_scope
   - interview_verification
   - interview_acceptance_criteria
+  - interview_planning_model_effort
   stage_route:
     question_id: interview_classification
     equals: STANDARD
@@ -332,6 +796,7 @@ templates:
   from_state: INTERVIEW
   to_state: PLAN_REVIEW
   purpose: Advance lifecycle state from INTERVIEW to PLAN_REVIEW upon satisfying phase requirements and verifications.
+  next_steps_hint: "Answer this edge's YAML questions with --interactive or --answers '<json>'. First satisfy plan_mode_or_socratic, interview_standard_complete; use: record-plan-mode-entry or record-socratic-intake; verify-interview-question. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to PLAN_REVIEW."
   checklist:
   - Current task state is persisted as INTERVIEW
   - 'Deterministic check satisfied: plan_mode_or_socratic'
@@ -347,6 +812,7 @@ templates:
   - interview_scope
   - interview_verification
   - interview_acceptance_criteria
+  - interview_planning_model_effort
   stage_route:
     question_id: interview_classification
     equals: STANDARD
@@ -356,6 +822,8 @@ templates:
     options:
     - Proceed with review [Recommended]
     - Continue revising prior stage
+    accepted_answers:
+    - Proceed with review [Recommended]
     default: Proceed with review [Recommended]
   approval:
     required: false
@@ -376,6 +844,7 @@ templates:
   from_state: INTERVIEW
   to_state: ESCALATED
   purpose: Escalate task from INTERVIEW due to blocking failure, unresolvable ambiguity, or user intervention.
+  next_steps_hint: "Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to ESCALATED."
   checklist:
   - Current task state is persisted as INTERVIEW
   - Structural DAG transition from INTERVIEW to ESCALATED is legal
@@ -394,56 +863,27 @@ templates:
   authority:
     type: deterministic
     explanation: Transition from INTERVIEW to ESCALATED is deterministically governed by automated checks and artifacts.
-- transition_id: draft_plan_to_multi_agent_review
-  from_state: DRAFT_PLAN
-  to_state: MULTI_AGENT_REVIEW
-  purpose: Submit draft specification and implementation plan for independent multi-agent review.
-  checklist:
-  - Current task state is persisted as DRAFT_PLAN
-  - Structural DAG transition from DRAFT_PLAN to MULTI_AGENT_REVIEW is legal
-  required_artifacts: []
-  deterministic_checks: []
-  human_questions:
-  - question_id: submit_for_multi_agent_review
-    question: Submit plan for independent multi-agent review?
-    options:
-    - No, skip review entirely
-    - Yes, single-agent review — sub-agent (internal)
-    - Yes, single-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)
-    - Yes, multi-agent review — sub-agent (internal) [Recommended]
-    - Yes, multi-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)
-    default: Yes, multi-agent review — sub-agent (internal) [Recommended]
-  approval:
-    required: false
-    approver_role: agent_or_human
-  skip:
-    allowed: false
-    requires_justification: false
-  capabilities_released: []
-  capabilities_prohibited:
-  - modify production code
-  - create implementation worktree
-  - push branch to origin
-  denial_message: 'Transition DRAFT_PLAN -> MULTI_AGENT_REVIEW denied: preconditions or required decisions not satisfied.'
-  authority:
-    type: deterministic
-    explanation: Transition from DRAFT_PLAN to MULTI_AGENT_REVIEW is deterministically governed by automated checks and artifacts.
 - transition_id: draft_plan_to_plan_review
   from_state: DRAFT_PLAN
   to_state: PLAN_REVIEW
-  purpose: Advance lifecycle state from DRAFT_PLAN to PLAN_REVIEW upon satisfying phase requirements and verifications.
+  purpose: Submit the authored plan to the PLAN_REVIEW disposition-and-acceptance gate.
+  next_steps_hint: "The plan is drafted. Answer whether to submit the current artifacts to PLAN_REVIEW or continue revising, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to PLAN_REVIEW. If submitted, PLAN_REVIEW separately asks whether agents should review the draft and, when requested, which supported review method to use. Explicit review skips and plan revisions use their own target-specific transitions. No plan-review choice approves implementation."
   checklist:
   - Current task state is persisted as DRAFT_PLAN
   - Structural DAG transition from DRAFT_PLAN to PLAN_REVIEW is legal
-  required_artifacts: []
+  required_artifacts:
+  - docs/plans/<task-id>-spec.md
+  - docs/plans/<task-id>-implementation-plan.md
   deterministic_checks: []
   human_questions:
-  - question_id: plan_review_submission
-    question: Submit draft implementation plan for plan review?
+  - question_id: confirm_review_draft_plan_to_plan_review
+    question: 'Would you like to submit the drafted plan for review?'
     options:
-    - Proceed with plan review [Recommended]
-    - Revise draft plan
-    default: Proceed with plan review [Recommended]
+    - Proceed with review [Recommended]
+    - Continue revising prior stage
+    accepted_answers:
+    - Proceed with review [Recommended]
+    default: Proceed with review [Recommended]
   approval:
     required: false
     approver_role: agent_or_human
@@ -459,38 +899,11 @@ templates:
   authority:
     type: human_review
     explanation: Entry into PLAN_REVIEW requires human confirmation of review scope and artifacts.
-- transition_id: draft_plan_to_awaiting_approval
-  from_state: DRAFT_PLAN
-  to_state: AWAITING_APPROVAL
-  purpose: Advance lifecycle state from DRAFT_PLAN to AWAITING_APPROVAL upon satisfying phase requirements and verifications.
-  checklist:
-  - Current task state is persisted as DRAFT_PLAN
-  - 'Deterministic check satisfied: critic_review_or_skip'
-  required_artifacts:
-  - docs/plans/<task-id>-spec.md
-  - docs/plans/<task-id>-implementation-plan.md
-  deterministic_checks:
-  - critic_review_or_skip
-  human_questions: []
-  approval:
-    required: false
-    approver_role: agent_or_human
-  skip:
-    allowed: true
-    requires_justification: true
-  capabilities_released: []
-  capabilities_prohibited:
-  - modify production code
-  - create implementation worktree
-  - push branch to origin
-  denial_message: 'Transition DRAFT_PLAN -> AWAITING_APPROVAL denied: preconditions or required decisions not satisfied.'
-  authority:
-    type: deterministic
-    explanation: Transition from DRAFT_PLAN to AWAITING_APPROVAL is deterministically governed by automated checks and artifacts.
 - transition_id: draft_plan_to_interview
   from_state: DRAFT_PLAN
   to_state: INTERVIEW
   purpose: Advance lifecycle state from DRAFT_PLAN to INTERVIEW upon satisfying phase requirements and verifications.
+  next_steps_hint: "Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to INTERVIEW."
   checklist:
   - Current task state is persisted as DRAFT_PLAN
   - Structural DAG transition from DRAFT_PLAN to INTERVIEW is legal
@@ -518,6 +931,7 @@ templates:
   from_state: DRAFT_PLAN
   to_state: ESCALATED
   purpose: Escalate task from DRAFT_PLAN due to blocking failure, unresolvable ambiguity, or user intervention.
+  next_steps_hint: "Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to ESCALATED."
   checklist:
   - Current task state is persisted as DRAFT_PLAN
   - Structural DAG transition from DRAFT_PLAN to ESCALATED is legal
@@ -542,6 +956,7 @@ templates:
   from_state: MULTI_AGENT_REVIEW
   to_state: DRAFT_PLAN
   purpose: Advance lifecycle state from MULTI_AGENT_REVIEW to DRAFT_PLAN upon satisfying phase requirements and verifications.
+  next_steps_hint: "Return to DRAFT_PLAN to revise the plan artifacts. A later review submission must have a changed artifact identity or a matching plan_artifact_revision receipt. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to DRAFT_PLAN."
   checklist:
   - Current task state is persisted as MULTI_AGENT_REVIEW
   - Structural DAG transition from MULTI_AGENT_REVIEW to DRAFT_PLAN is legal
@@ -566,47 +981,20 @@ templates:
   authority:
     type: deterministic
     explanation: Transition from MULTI_AGENT_REVIEW to DRAFT_PLAN is deterministically governed by automated checks and artifacts.
+# Human answer handling: the coordinator canonicalizes unambiguous shorthand (for example,
+# "Proceed with review") to the exact registered option below and persists that canonical
+# value. Ambiguous answers must be clarified; agents must not guess.
 - transition_id: multi_agent_review_to_plan_review
   from_state: MULTI_AGENT_REVIEW
   to_state: PLAN_REVIEW
-  purpose: Advance lifecycle state from MULTI_AGENT_REVIEW to PLAN_REVIEW upon satisfying phase requirements and verifications.
+  purpose: Merge completed independent review outcomes back into PLAN_REVIEW for the plan-acceptance decision.
+  next_steps_hint: "Record the passing critic outcome, summarize any revisions, and run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to PLAN_REVIEW. The next PLAN_REVIEW -> AWAITING_APPROVAL edge asks whether the plan is accepted or requires further revisions."
   checklist:
   - Current task state is persisted as MULTI_AGENT_REVIEW
   - Structural DAG transition from MULTI_AGENT_REVIEW to PLAN_REVIEW is legal
   required_artifacts:
   - docs/plans/<task-id>-spec.md
   - docs/plans/<task-id>-implementation-plan.md
-  deterministic_checks: []
-  human_questions:
-  - question_id: confirm_review_multi_agent_review_to_plan_review
-    question: Submit artifacts for review in PLAN_REVIEW?
-    options:
-    - Proceed with review [Recommended]
-    - Continue revising prior stage
-    default: Proceed with review [Recommended]
-  approval:
-    required: false
-    approver_role: agent_or_human
-  skip:
-    allowed: false
-    requires_justification: false
-  capabilities_released: []
-  capabilities_prohibited:
-  - modify production code
-  - create implementation worktree
-  - push branch to origin
-  denial_message: 'Transition MULTI_AGENT_REVIEW -> PLAN_REVIEW denied: preconditions or required decisions not satisfied.'
-  authority:
-    type: human_review
-    explanation: Entry into PLAN_REVIEW requires human confirmation of review scope and artifacts.
-- transition_id: multi_agent_review_to_awaiting_approval
-  from_state: MULTI_AGENT_REVIEW
-  to_state: AWAITING_APPROVAL
-  purpose: Advance approved plan to awaiting human approval stage gate.
-  checklist:
-  - Current task state is persisted as MULTI_AGENT_REVIEW
-  - 'Deterministic check satisfied: critic_review_pass'
-  required_artifacts: []
   deterministic_checks:
   - critic_review_pass
   human_questions: []
@@ -621,15 +1009,15 @@ templates:
   - modify production code
   - create implementation worktree
   - push branch to origin
-  denial_message: 'Transition MULTI_AGENT_REVIEW -> AWAITING_APPROVAL denied: preconditions or required decisions not satisfied.'
+  denial_message: 'Transition MULTI_AGENT_REVIEW -> PLAN_REVIEW denied: preconditions or required decisions not satisfied.'
   authority:
     type: deterministic
-    explanation: Transition from MULTI_AGENT_REVIEW to AWAITING_APPROVAL is deterministically governed by automated checks
-      and artifacts.
+    explanation: A passing recorded critic outcome deterministically returns the completed review to PLAN_REVIEW for acceptance.
 - transition_id: multi_agent_review_to_escalated
   from_state: MULTI_AGENT_REVIEW
   to_state: ESCALATED
   purpose: Escalate task from MULTI_AGENT_REVIEW due to blocking failure, unresolvable ambiguity, or user intervention.
+  next_steps_hint: "Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to ESCALATED."
   checklist:
   - Current task state is persisted as MULTI_AGENT_REVIEW
   - Structural DAG transition from MULTI_AGENT_REVIEW to ESCALATED is legal
@@ -651,7 +1039,14 @@ templates:
 - transition_id: plan_review_to_multi_agent_review
   from_state: PLAN_REVIEW
   to_state: MULTI_AGENT_REVIEW
-  purpose: Advance lifecycle state from PLAN_REVIEW to MULTI_AGENT_REVIEW upon satisfying phase requirements and verifications.
+  purpose: Select the requested independent review method after the plan was submitted for review.
+  next_steps_hint: "PLAN_REVIEW uses review-selection-v1. Ask one question at a time using the same sequence as implementation review: (1) ask whether the user wants agents to review the draft plan; (2) only after Yes, show all four review methods together—single-agent internal, single-agent external bundle, multi-agent internal, and multi-agent external bundle; (3) only for an internal method, ask separately for the CLI/runtime, model, and effort, resolving each from the confirmed profile and update-cli-models catalog. Do not dispatch an internal reviewer before all three explicit selections are recorded. Persist chat answers through --interactive so SQLite records actor=human. If No, record the explicit skip receipt and use PLAN_REVIEW -> AWAITING_APPROVAL. For an accepted review choice, run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to MULTI_AGENT_REVIEW, then immediately execute the MULTI_AGENT_REVIEW.kickoff.required_sequence through outcome recording; do not stop after acknowledging the transition."
+  review_selection_contract: review-selection-v1
+  review_selection:
+    scope: draft_plan
+    user_choice_required_for_internal: true
+    recommendation_source: model_effort_guidance.review
+    catalog_source: review_selection_contract.catalog_resolution
   checklist:
   - Current task state is persisted as PLAN_REVIEW
   - Structural DAG transition from PLAN_REVIEW to MULTI_AGENT_REVIEW is legal
@@ -659,7 +1054,28 @@ templates:
   - docs/plans/<task-id>-spec.md
   - docs/plans/<task-id>-implementation-plan.md
   deterministic_checks: []
-  human_questions: []
+  human_questions:
+  - question_id: plan_review_agent_review_decision
+    question: 'Would you like agents to review the draft plan?'
+    options:
+    - Yes — continue to review method selection [Recommended]
+    - No — skip agent review and continue to plan acceptance
+    accepted_answers:
+    - Yes — continue to review method selection [Recommended]
+    default: Yes — continue to review method selection [Recommended]
+  - question_id: plan_review_method
+    question: 'Which review method would you like?'
+    options:
+    - Single-agent review — internal
+    - Single-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)
+    - Multi-agent review — internal [Recommended]
+    - Multi-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)
+    accepted_answers:
+    - Single-agent review — internal
+    - Single-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)
+    - Multi-agent review — internal [Recommended]
+    - Multi-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)
+    default: Multi-agent review — internal [Recommended]
   approval:
     required: false
     approver_role: agent_or_human
@@ -678,20 +1094,29 @@ templates:
 - transition_id: plan_review_to_awaiting_approval
   from_state: PLAN_REVIEW
   to_state: AWAITING_APPROVAL
-  purpose: Advance lifecycle state from PLAN_REVIEW to AWAITING_APPROVAL upon satisfying phase requirements and verifications.
+  purpose: Confirm plan acceptance after either the skip path or completed independent review, then enter the separate human implementation-approval gate.
+  next_steps_hint: "Review the authored plan or the revised plan returned from independent review. Record the review outcome with record-critic-review, or record an intentional skip with record-review-skip; ensure critic_review_or_skip is satisfied. Then answer whether you accept the plan or require further revisions. If accepted, run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to AWAITING_APPROVAL. Revisions return to DRAFT_PLAN."
   checklist:
   - Current task state is persisted as PLAN_REVIEW
   - 'Deterministic check satisfied: critic_review_or_skip'
   required_artifacts: []
   deterministic_checks:
   - critic_review_or_skip
-  human_questions: []
+  human_questions:
+  - question_id: confirm_plan_acceptance
+    question: Do you accept the plan as it is, or do you require further revisions?
+    options:
+    - Accept plan and proceed to human approval [Recommended]
+    - Require further revisions
+    accepted_answers:
+    - Accept plan and proceed to human approval [Recommended]
+    default: Accept plan and proceed to human approval [Recommended]
   approval:
     required: false
     approver_role: agent_or_human
   skip:
-    allowed: true
-    requires_justification: true
+    allowed: false
+    requires_justification: false
   capabilities_released: []
   capabilities_prohibited:
   - modify production code
@@ -705,6 +1130,7 @@ templates:
   from_state: PLAN_REVIEW
   to_state: DRAFT_PLAN
   purpose: Advance lifecycle state from PLAN_REVIEW to DRAFT_PLAN upon satisfying phase requirements and verifications.
+  next_steps_hint: "Return to DRAFT_PLAN to revise the plan artifacts. A later review submission must have a changed artifact identity or a matching plan_artifact_revision receipt. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to DRAFT_PLAN."
   checklist:
   - Current task state is persisted as PLAN_REVIEW
   - Structural DAG transition from PLAN_REVIEW to DRAFT_PLAN is legal
@@ -712,7 +1138,14 @@ templates:
   - docs/plans/<task-id>-spec.md
   - docs/plans/<task-id>-implementation-plan.md
   deterministic_checks: []
-  human_questions: []
+  human_questions:
+  - question_id: confirm_plan_revision
+    question: Would you like to make any changes to the plan?
+    options:
+    - Yes — return to DRAFT_PLAN to make changes [Recommended]
+    accepted_answers:
+    - Yes — return to DRAFT_PLAN to make changes [Recommended]
+    default: Yes — return to DRAFT_PLAN to make changes [Recommended]
   approval:
     required: false
     approver_role: agent_or_human
@@ -733,6 +1166,7 @@ templates:
   from_state: PLAN_REVIEW
   to_state: INTERVIEW
   purpose: Advance lifecycle state from PLAN_REVIEW to INTERVIEW upon satisfying phase requirements and verifications.
+  next_steps_hint: "Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to INTERVIEW."
   checklist:
   - Current task state is persisted as PLAN_REVIEW
   - Structural DAG transition from PLAN_REVIEW to INTERVIEW is legal
@@ -760,6 +1194,7 @@ templates:
   from_state: PLAN_REVIEW
   to_state: ESCALATED
   purpose: Escalate task from PLAN_REVIEW due to blocking failure, unresolvable ambiguity, or user intervention.
+  next_steps_hint: "Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to ESCALATED."
   checklist:
   - Current task state is persisted as PLAN_REVIEW
   - Structural DAG transition from PLAN_REVIEW to ESCALATED is legal
@@ -784,17 +1219,21 @@ templates:
   from_state: AWAITING_APPROVAL
   to_state: APPROVED
   purpose: Obtain explicit human approval to proceed with task implementation and worktree creation.
+  next_steps_hint: "Commit any interim work made during INTAKE/INTERVIEW/DRAFT_PLAN to a small branch and get it reviewed/merged BEFORE this transition, so main is clean before a worktree is created (references/worktree-reconciliation-and-multi-worktree-practices.md Section 1 -- this is now enforced by the main_clean_before_approval check below, not just documented practice). If main is dirty, either commit/push it first or record an explicit human main_dirty_before_approval_exception receipt with the reason. Then answer this edge's YAML questions with --interactive or --answers '<json>'. Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to APPROVED."
   checklist:
   - Current task state is persisted as AWAITING_APPROVAL
   - Structural DAG transition from AWAITING_APPROVAL to APPROVED is legal
+  - 'Deterministic check satisfied: main_clean_before_approval'
   required_artifacts: []
-  deterministic_checks: []
+  deterministic_checks:
+  - main_clean_before_approval
   human_questions:
   - question_id: human_implementation_approval
     question: Approve task implementation and worktree creation?
     options:
     - Yes, approve implementation [Recommended]
-    - No, hold in AWAITING_APPROVAL
+    accepted_answers:
+    - Yes, approve implementation [Recommended]
     default: Yes, approve implementation [Recommended]
   approval:
     required: true
@@ -810,38 +1249,11 @@ templates:
   authority:
     type: human_decision
     explanation: Advancing to APPROVED requires explicit human review and authorization gate decision.
-- transition_id: awaiting_approval_to_multi_agent_review
-  from_state: AWAITING_APPROVAL
-  to_state: MULTI_AGENT_REVIEW
-  purpose: Advance lifecycle state from AWAITING_APPROVAL to MULTI_AGENT_REVIEW upon satisfying phase requirements and verifications.
-  checklist:
-  - Current task state is persisted as AWAITING_APPROVAL
-  - Structural DAG transition from AWAITING_APPROVAL to MULTI_AGENT_REVIEW is legal
-  required_artifacts:
-  - docs/plans/<task-id>-spec.md
-  - docs/plans/<task-id>-implementation-plan.md
-  deterministic_checks: []
-  human_questions: []
-  approval:
-    required: false
-    approver_role: agent_or_human
-  skip:
-    allowed: false
-    requires_justification: false
-  capabilities_released: []
-  capabilities_prohibited:
-  - modify production code
-  - create implementation worktree
-  - push branch to origin
-  denial_message: 'Transition AWAITING_APPROVAL -> MULTI_AGENT_REVIEW denied: preconditions or required decisions not satisfied.'
-  authority:
-    type: deterministic
-    explanation: Transition from AWAITING_APPROVAL to MULTI_AGENT_REVIEW is deterministically governed by automated checks
-      and artifacts.
 - transition_id: awaiting_approval_to_plan_review
   from_state: AWAITING_APPROVAL
   to_state: PLAN_REVIEW
   purpose: Advance lifecycle state from AWAITING_APPROVAL to PLAN_REVIEW upon satisfying phase requirements and verifications.
+  next_steps_hint: "Answer this edge's YAML questions with --interactive or --answers '<json>'. Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to PLAN_REVIEW."
   checklist:
   - Current task state is persisted as AWAITING_APPROVAL
   - Structural DAG transition from AWAITING_APPROVAL to PLAN_REVIEW is legal
@@ -855,6 +1267,8 @@ templates:
     options:
     - Proceed with review [Recommended]
     - Continue revising prior stage
+    accepted_answers:
+    - Proceed with review [Recommended]
     default: Proceed with review [Recommended]
   approval:
     required: false
@@ -875,6 +1289,7 @@ templates:
   from_state: AWAITING_APPROVAL
   to_state: DRAFT_PLAN
   purpose: Advance lifecycle state from AWAITING_APPROVAL to DRAFT_PLAN upon satisfying phase requirements and verifications.
+  next_steps_hint: "Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to DRAFT_PLAN."
   checklist:
   - Current task state is persisted as AWAITING_APPROVAL
   - Structural DAG transition from AWAITING_APPROVAL to DRAFT_PLAN is legal
@@ -903,6 +1318,7 @@ templates:
   from_state: AWAITING_APPROVAL
   to_state: ESCALATED
   purpose: Escalate task from AWAITING_APPROVAL due to blocking failure, unresolvable ambiguity, or user intervention.
+  next_steps_hint: "Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to ESCALATED."
   checklist:
   - Current task state is persisted as AWAITING_APPROVAL
   - Structural DAG transition from AWAITING_APPROVAL to ESCALATED is legal
@@ -925,12 +1341,15 @@ templates:
   from_state: APPROVED
   to_state: IN_WORKTREE
   purpose: Create isolated git worktree and begin test-first implementation.
+  next_steps_hint: "First record human approval with record-human-approval --task-id <task-id> --approver <approver>. Then create or select an isolated feature worktree and branch, record both with update-worktree, and run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to IN_WORKTREE. The transition itself auto-reconciles any dirty source-checkout changes into the worktree (main_worktree_reconciliation deterministic check) — do not manually claim pre-worktree changes were carried over; the check does this by code and fails closed on any unresolved conflict. After entry, report the required delegation summary: agent count, assignments, runtime, model, effort, scope, status, and start time. State queued until an authorized agent dispatch is observed; then state in_progress. Worktree creation alone is not implementation completion. If the user explicitly authorizes implementation in the existing checkout, record it with record-receipt --gate existing_worktree_exception --cmd approved-existing-checkout:<approver> --exit-code 0 before transitioning."
   checklist:
   - Current task state is persisted as APPROVED
   - 'Deterministic check satisfied: human_approval'
   required_artifacts: []
   deterministic_checks:
   - human_approval
+  - worktree_isolation_or_exception
+  - main_worktree_reconciliation
   human_questions: []
   approval:
     required: false
@@ -946,10 +1365,43 @@ templates:
   authority:
     type: deterministic
     explanation: Transition from APPROVED to IN_WORKTREE is deterministically governed by automated checks and artifacts.
+- transition_id: approved_to_retrospective_planning_only
+  from_state: APPROVED
+  to_state: RETROSPECTIVE
+  purpose: Complete a planning-only work package without creating an implementation worktree.
+  next_steps_hint: "This is an explicit planning-only completion path with no worktree. Record human approval, verify the plan artifacts, then record a planning_only_completion receipt. Run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to RETROSPECTIVE. Implementation, worktree creation, and code claims remain prohibited."
+  checklist:
+  - Current task state is persisted as APPROVED
+  - 'Deterministic check satisfied: human_approval'
+  - 'Deterministic check satisfied: planning_only_completion'
+  required_artifacts:
+  - docs/plans/<task-id>-spec.md
+  - docs/plans/<task-id>-implementation-plan.md
+  deterministic_checks:
+  - human_approval
+  - planning_only_completion
+  human_questions: []
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released: []
+  capabilities_prohibited:
+  - modify production code
+  - create implementation worktree
+  - claim implementation completion
+  - push branch to origin
+  denial_message: 'Transition APPROVED -> RETROSPECTIVE (planning-only) denied: approval, plan evidence, or planning-only completion receipt is missing.'
+  authority:
+    type: deterministic
+    explanation: Planning-only completion requires explicit human approval and a durable receipt distinguishing plan completion from implementation completion.
 - transition_id: approved_to_escalated
   from_state: APPROVED
   to_state: ESCALATED
   purpose: Escalate task from APPROVED due to blocking failure, unresolvable ambiguity, or user intervention.
+  next_steps_hint: "Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to ESCALATED."
   checklist:
   - Current task state is persisted as APPROVED
   - Structural DAG transition from APPROVED to ESCALATED is legal
@@ -971,27 +1423,34 @@ templates:
 - transition_id: in_worktree_to_worktree_review
   from_state: IN_WORKTREE
   to_state: WORKTREE_REVIEW
-  purpose: Verify implementation tests pass and enter worktree review.
+  purpose: "Implementation is complete in the registered worktree; submit the bounded, verified worktree diff to WORKTREE_REVIEW."
+  next_steps_hint: "Implementation is complete only after the approved work package is written and focused verification passes; it is not committed, pushed, merged, or DONE. Before every review submission and after every internal fix round, run the session-wide change inventory and ensure every session-owned file is present and content-matched in the registered worktree. Answer this edge's one question with --interactive or --answers '<json>'. First satisfy test_suite; use: record-verification-receipt for test_suite. Before integration, create the reconciliation manifest required by the IN_WORKTREE completion contract, classify worktree-only, main-only-preexisting, shared-task, and untracked paths, then apply the reviewed worktree patch once. After review and final verification, run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to WORKTREE_REVIEW."
   checklist:
   - Current task state is persisted as IN_WORKTREE
-  - 'Deterministic check satisfied: test_suite'
+  - 'Deterministic check satisfied: test_suite_or_deferred_to_review'
   required_artifacts:
   - docs/plans/<task-id>-spec.md
   - docs/plans/<task-id>-implementation-plan.md
   - .worktrees/<task-id>
   deterministic_checks:
-  - test_suite
+  - test_suite_or_deferred_to_review
   human_questions:
   - question_id: confirm_review_in_worktree_to_worktree_review
-    question: Submit artifacts for review in WORKTREE_REVIEW?
+    question: Implementation is complete in the registered worktree. Do you wish to proceed to WORKTREE_REVIEW?
     options:
-    - No, continue revising prior stage
-    - Yes, proceed to WORKTREE_REVIEW — skip review entirely
-    - Yes, single-agent review — sub-agent (internal)
-    - Yes, single-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)
-    - Yes, multi-agent review — sub-agent (internal) [Recommended]
-    - Yes, multi-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)
-    default: Yes, multi-agent review — sub-agent (internal) [Recommended]
+    - Proceed to WORKTREE_REVIEW [Recommended]
+    accepted_answers:
+    - Proceed to WORKTREE_REVIEW [Recommended]
+    default: Proceed to WORKTREE_REVIEW [Recommended]
+  - question_id: confirm_test_suite_or_defer
+    question: "No test_suite verification receipt is recorded yet. Run tests now, or defer testing to the later MULTI_AGENT_CODE_REVIEW/VERIFY_EXIT gate (which independently re-checks test_suite/full_test_suite)?"
+    options:
+    - Defer to later review/control step [Recommended]
+    - Run tests now instead
+    accepted_answers:
+    - Defer to later review/control step [Recommended]
+    - Run tests now instead
+    default: Defer to later review/control step [Recommended]
   approval:
     required: false
     approver_role: agent_or_human
@@ -1010,6 +1469,7 @@ templates:
   from_state: IN_WORKTREE
   to_state: VERIFY_EXIT
   purpose: Advance lifecycle state from IN_WORKTREE to VERIFY_EXIT upon satisfying phase requirements and verifications.
+  next_steps_hint: "Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to VERIFY_EXIT."
   checklist:
   - Current task state is persisted as IN_WORKTREE
   - Structural DAG transition from IN_WORKTREE to VERIFY_EXIT is legal
@@ -1034,6 +1494,7 @@ templates:
   from_state: IN_WORKTREE
   to_state: ROLLED_BACK
   purpose: Roll back worktree changes from IN_WORKTREE to clean baseline.
+  next_steps_hint: "First satisfy rolled_back_guard; use: record the rollback verification receipt. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to ROLLED_BACK."
   checklist:
   - Current task state is persisted as IN_WORKTREE
   - 'Deterministic check satisfied: rolled_back_guard'
@@ -1058,6 +1519,7 @@ templates:
   from_state: IN_WORKTREE
   to_state: ESCALATED
   purpose: Escalate task from IN_WORKTREE due to blocking failure, unresolvable ambiguity, or user intervention.
+  next_steps_hint: "Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to ESCALATED."
   checklist:
   - Current task state is persisted as IN_WORKTREE
   - Structural DAG transition from IN_WORKTREE to ESCALATED is legal
@@ -1081,6 +1543,13 @@ templates:
   from_state: WORKTREE_REVIEW
   to_state: MULTI_AGENT_CODE_REVIEW
   purpose: Submit worktree code diff for independent multi-agent adversarial code review.
+  next_steps_hint: "WORKTREE_REVIEW uses review-selection-v1. Ask one question at a time: (1) ask whether the user wants agents to review the implementation; (2) only after Yes, show all four review methods together—single-agent internal, single-agent external bundle, multi-agent internal, and multi-agent external bundle; (3) only for an internal method, ask separately for the CLI/runtime, model, and effort, resolving each from the confirmed profile and update-cli-models catalog. Do not dispatch an internal reviewer before all three explicit selections are recorded. Persist chat answers through --interactive so SQLite records actor=human. Then complete this edge's checklist and run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to MULTI_AGENT_CODE_REVIEW."
+  review_selection_contract: review-selection-v1
+  review_selection:
+    scope: implementation
+    user_choice_required_for_internal: true
+    recommendation_source: model_effort_guidance.review
+    catalog_source: review_selection_contract.catalog_resolution
   checklist:
   - Current task state is persisted as WORKTREE_REVIEW
   - Structural DAG transition from WORKTREE_REVIEW to MULTI_AGENT_CODE_REVIEW is legal
@@ -1091,14 +1560,25 @@ templates:
   deterministic_checks: []
   human_questions:
   - question_id: confirm_review_worktree_review_to_multi_agent_code_review
-    question: Submit implementation for independent code review?
+    question: 'Would you like agents to review the implementation?'
     options:
-    - No, skip review entirely
-    - Yes, single-agent review — sub-agent (internal)
-    - Yes, single-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)
-    - Yes, multi-agent review — sub-agent (internal) [Recommended]
-    - Yes, multi-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)
-    default: Yes, multi-agent review — sub-agent (internal) [Recommended]
+    - Yes — continue to review method selection [Recommended]
+    - No — skip agent review and continue to exit verification
+    accepted_answers:
+    - Yes — continue to review method selection [Recommended]
+  - question_id: implementation_review_method
+    question: 'Which review method would you like?'
+    options:
+    - Single-agent review — internal
+    - Single-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)
+    - Multi-agent review — internal [Recommended]
+    - Multi-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)
+    accepted_answers:
+    - Single-agent review — internal
+    - Single-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)
+    - Multi-agent review — internal [Recommended]
+    - Multi-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)
+    default: Multi-agent review — internal [Recommended]
   approval:
     required: false
     approver_role: agent_or_human
@@ -1117,6 +1597,7 @@ templates:
   from_state: WORKTREE_REVIEW
   to_state: VERIFY_EXIT
   purpose: Advance reviewed code to final exit verification and baseline sovereignty checks.
+  next_steps_hint: "Direct path after an explicit review skip: no additional human question is required here. Record the skip reason and satisfy code_review_or_skip with: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to VERIFY_EXIT --skip-review --skip-reason '<reason>'. If code review is wanted instead, answer the WORKTREE_REVIEW -> MULTI_AGENT_CODE_REVIEW question first; do not infer a review choice from this deterministic edge."
   checklist:
   - Current task state is persisted as WORKTREE_REVIEW
   - 'Deterministic check satisfied: code_review_or_skip'
@@ -1142,6 +1623,7 @@ templates:
   from_state: WORKTREE_REVIEW
   to_state: IN_WORKTREE
   purpose: Advance lifecycle state from WORKTREE_REVIEW to IN_WORKTREE upon satisfying phase requirements and verifications.
+  next_steps_hint: "Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to IN_WORKTREE."
   checklist:
   - Current task state is persisted as WORKTREE_REVIEW
   - Structural DAG transition from WORKTREE_REVIEW to IN_WORKTREE is legal
@@ -1167,6 +1649,7 @@ templates:
   from_state: WORKTREE_REVIEW
   to_state: ROLLED_BACK
   purpose: Roll back worktree changes from WORKTREE_REVIEW to clean baseline.
+  next_steps_hint: "First satisfy rolled_back_guard; use: record the rollback verification receipt. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to ROLLED_BACK."
   checklist:
   - Current task state is persisted as WORKTREE_REVIEW
   - 'Deterministic check satisfied: rolled_back_guard'
@@ -1191,6 +1674,7 @@ templates:
   from_state: WORKTREE_REVIEW
   to_state: ESCALATED
   purpose: Escalate task from WORKTREE_REVIEW due to blocking failure, unresolvable ambiguity, or user intervention.
+  next_steps_hint: "Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to ESCALATED."
   checklist:
   - Current task state is persisted as WORKTREE_REVIEW
   - Structural DAG transition from WORKTREE_REVIEW to ESCALATED is legal
@@ -1210,14 +1694,14 @@ templates:
   authority:
     type: deterministic
     explanation: Transition from WORKTREE_REVIEW to ESCALATED is deterministically governed by automated checks and artifacts.
-# Return-to-review edges also intentionally use the binary submit/revise
-# question. The 5-way structure is reserved for choosing a review method or
-# explicitly skipping a discretionary review, not for resubmitting artifacts.
+# Return-to-review edges also use the binary submit/revise question. Review
+# method selection belongs only to the edge that enters the review state, and
+# explicit skips use the deterministic exit edge with a recorded skip receipt.
 - transition_id: multi_agent_code_review_to_worktree_review
   from_state: MULTI_AGENT_CODE_REVIEW
   to_state: WORKTREE_REVIEW
-  purpose: Advance lifecycle state from MULTI_AGENT_CODE_REVIEW to WORKTREE_REVIEW upon satisfying phase requirements and
-    verifications.
+  purpose: Return a completed or re-submitted review package to WORKTREE_REVIEW for artifact and scope confirmation.
+  next_steps_hint: "Use this edge only after the review outcome is recorded and the package is ready for artifact review. For a requested change or failed review requiring edits, use MULTI_AGENT_CODE_REVIEW -> IN_WORKTREE instead; do not edit while in the review state. After any bounded fix, rerun focused verification and the session-wide change inventory, then submit through WORKTREE_REVIEW and re-enter MULTI_AGENT_CODE_REVIEW. Answer this edge's human question with --interactive so SQLite records actor=human, complete its checklist, and run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to WORKTREE_REVIEW."
   checklist:
   - Current task state is persisted as MULTI_AGENT_CODE_REVIEW
   - Structural DAG transition from MULTI_AGENT_CODE_REVIEW to WORKTREE_REVIEW is legal
@@ -1232,6 +1716,8 @@ templates:
     options:
     - Proceed with review [Recommended]
     - Continue revising prior stage
+    accepted_answers:
+    - Proceed with review [Recommended]
     default: Proceed with review [Recommended]
   approval:
     required: false
@@ -1251,12 +1737,14 @@ templates:
   from_state: MULTI_AGENT_CODE_REVIEW
   to_state: VERIFY_EXIT
   purpose: Advance lifecycle state from MULTI_AGENT_CODE_REVIEW to VERIFY_EXIT upon satisfying phase requirements and verifications.
+  next_steps_hint: "First satisfy code_review_or_skip; use: record-critic-review with verdict PASS or record-review-skip with a justification. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to VERIFY_EXIT."
   checklist:
   - Current task state is persisted as MULTI_AGENT_CODE_REVIEW
   - Structural DAG transition from MULTI_AGENT_CODE_REVIEW to VERIFY_EXIT is legal
   required_artifacts:
   - .worktrees/<task-id>
-  deterministic_checks: []
+  deterministic_checks:
+  - code_review_or_skip
   human_questions: []
   approval:
     required: false
@@ -1275,14 +1763,23 @@ templates:
 - transition_id: multi_agent_code_review_to_in_worktree
   from_state: MULTI_AGENT_CODE_REVIEW
   to_state: IN_WORKTREE
-  purpose: Advance lifecycle state from MULTI_AGENT_CODE_REVIEW to IN_WORKTREE upon satisfying phase requirements and verifications.
+  purpose: Return a review package requiring bounded changes to the implementation worktree.
+  next_steps_hint: "Use this existing rework edge only after the current implementation-review reports have been synthesized, the outcome is REQUEST_CHANGES, REVISE, or REVIEW_FAILURE with bounded recovery, the revision brief is recorded, and the human approves this question. Do not edit in MULTI_AGENT_CODE_REVIEW. After entry, make only the approved bounded fixes in the registered worktree, rerun focused verification and the session-wide change inventory, then submit via IN_WORKTREE -> WORKTREE_REVIEW -> MULTI_AGENT_CODE_REVIEW for another review round. Do not create a new transition type for this loop. Run: python3 plugins/agent-agentic-os/scripts/control_plane/agent_control.py coordinate-transition --task-id <task-id> --to IN_WORKTREE."
   checklist:
   - Current task state is persisted as MULTI_AGENT_CODE_REVIEW
   - Structural DAG transition from MULTI_AGENT_CODE_REVIEW to IN_WORKTREE is legal
   required_artifacts:
   - .worktrees/<task-id>
   deterministic_checks: []
-  human_questions: []
+  human_questions:
+  - question_id: confirm_rework_multi_agent_code_review_to_in_worktree
+    question: "The implementation review identified bounded changes. Do you wish to transition back to IN_WORKTREE so the authorized implementer can apply the revision brief?"
+    options:
+    - Yes — transition to IN_WORKTREE and begin bounded fixes [Recommended]
+    - No — remain in MULTI_AGENT_CODE_REVIEW
+    accepted_answers:
+    - Yes — transition to IN_WORKTREE and begin bounded fixes [Recommended]
+    default: Yes — transition to IN_WORKTREE and begin bounded fixes [Recommended]
   approval:
     required: false
     approver_role: agent_or_human
@@ -1295,13 +1792,13 @@ templates:
   - merge into origin/main directly
   denial_message: 'Transition MULTI_AGENT_CODE_REVIEW -> IN_WORKTREE denied: preconditions or required decisions not satisfied.'
   authority:
-    type: deterministic
-    explanation: Transition from MULTI_AGENT_CODE_REVIEW to IN_WORKTREE is deterministically governed by automated checks
-      and artifacts.
+    type: human_review
+    explanation: Returning to IN_WORKTREE after implementation review requires the recorded review outcome, bounded revision brief, and explicit human authorization.
 - transition_id: multi_agent_code_review_to_rolled_back
   from_state: MULTI_AGENT_CODE_REVIEW
   to_state: ROLLED_BACK
   purpose: Roll back worktree changes from MULTI_AGENT_CODE_REVIEW to clean baseline.
+  next_steps_hint: "First satisfy rolled_back_guard; use: record the rollback verification receipt. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to ROLLED_BACK."
   checklist:
   - Current task state is persisted as MULTI_AGENT_CODE_REVIEW
   - 'Deterministic check satisfied: rolled_back_guard'
@@ -1326,6 +1823,7 @@ templates:
   from_state: MULTI_AGENT_CODE_REVIEW
   to_state: ESCALATED
   purpose: Escalate task from MULTI_AGENT_CODE_REVIEW due to blocking failure, unresolvable ambiguity, or user intervention.
+  next_steps_hint: "Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to ESCALATED."
   checklist:
   - Current task state is persisted as MULTI_AGENT_CODE_REVIEW
   - Structural DAG transition from MULTI_AGENT_CODE_REVIEW to ESCALATED is legal
@@ -1349,12 +1847,15 @@ templates:
   from_state: VERIFY_EXIT
   to_state: RETROSPECTIVE
   purpose: Verify clean leak checks and enter the mandatory pipeline-close retrospective gate.
+  next_steps_hint: "STOP: do NOT run `pytest` directly by itself, and do NOT call the individual verifier wrappers one at a time -- a bare pytest run records no receipt, and calling verifiers separately is exactly the slow, error-prone path this hint used to describe (verifier_id=pytest_full_suite, verifier_id=pytest_unit_tests, verifier_id=leak_check, each a separate call). Use the single bundled wrapper instead, which runs all 3 verifiers plus the required asymmetric-persistence log entry in ONE call and fails fast on the first real failure: (1) Confirm docs/plans/<task-id>-implementation-plan.md has a fenced JSON Implementation Task Ledger with every item status=COMPLETE, evidence, and existing artifact paths -- this satisfies implementation_completeness (the bundle does not check this one). (2) Run: python3 plugins/agent-agentic-os/scripts/control_plane/wrappers/run_verify_exit_bundle.py --task-id <task-id> --destination references/map-debt.md --details '<what was logged and why>' -- this alone satisfies full_test_suite, test_suite, leak_check, and done_guard's asymmetric-persistence requirement (default destination is references/map-debt.md; use wiki/decisions/<task-id>.md instead if that's where you logged it). (3) Only after that reports status=COMPLETED: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to RETROSPECTIVE --human-confirmed 'HUMAN-CONFIRMED: <what the human actually said>'."
   checklist:
   - Current task state is persisted as VERIFY_EXIT
-  - 'Deterministic checks satisfied: test_suite, leak_check, and asymmetric persistence'
+  - 'Deterministic checks satisfied: full_test_suite, test_suite, leak_check, and asymmetric persistence'
   required_artifacts: []
   deterministic_checks:
   - done_guard
+  - implementation_completeness
+  - full_test_suite
   human_questions: []
   approval:
     required: false
@@ -1365,7 +1866,7 @@ templates:
   capabilities_released:
   - retrospective_capture
   capabilities_prohibited: []
-  denial_message: 'Transition VERIFY_EXIT -> RETROSPECTIVE denied: preconditions or required decisions not satisfied.'
+  denial_message: 'Transition VERIFY_EXIT -> RETROSPECTIVE denied: verification or implementation completeness requirements are not satisfied.'
   authority:
     type: deterministic
     explanation: Transition from VERIFY_EXIT to RETROSPECTIVE is governed by the existing exit verification receipts and persistence checks.
@@ -1373,12 +1874,15 @@ templates:
   from_state: RETROSPECTIVE
   to_state: DONE
   purpose: Complete the task after a completed retrospective or an explicitly reasoned skip.
+  next_steps_hint: "First persist the completed retrospective through the supported record_retrospective wrapper with the required entry fields and resolved follow-ups; do this before requesting DONE. Defaults are not inferred. Run the repository-wide pytest -q suite through verify-exit-verification with verifier_id=pytest_full_suite and record its full_test_suite receipt with exit_code=0 -- a non-zero exit code means the task must remain in RETROSPECTIVE until the suite passes or an explicit human exception is recorded. Then answer this edge's retrospective_decision question one at a time with --interactive, satisfy retrospective_done_guard, and run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to DONE."
   checklist:
   - Current task state is persisted as RETROSPECTIVE
   - Retrospective survey is complete or explicitly skipped with a reason
+  - 'Deterministic check satisfied: full_test_suite'
   required_artifacts: []
   deterministic_checks:
   - retrospective_done_guard
+  - full_test_suite
   human_questions:
   - question_id: retrospective_decision
     question: 'Choose the pipeline-close retrospective outcome: complete the survey or skip it with a recorded reason.'
@@ -1402,6 +1906,7 @@ templates:
   from_state: RETROSPECTIVE
   to_state: ESCALATED
   purpose: Escalate a retrospective that cannot be completed or whose follow-up issue creation is blocked.
+  next_steps_hint: "Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to ESCALATED."
   checklist:
   - Current task state is persisted as RETROSPECTIVE
   - Human or agent has documented the blocking reason
@@ -1424,6 +1929,8 @@ templates:
   from_state: VERIFY_EXIT
   to_state: IN_WORKTREE
   purpose: Advance lifecycle state from VERIFY_EXIT to IN_WORKTREE upon satisfying phase requirements and verifications.
+  next_steps_hint: "Recovery edge: a failed full_test_suite (or other exit verification) receipt routes back here to fix the failure -- do not transition to RETROSPECTIVE or DONE with a failing receipt. Use the existing registered worktree for this task; do not create another worktree. Once fixed, submit through WORKTREE_REVIEW again (do not re-enter VERIFY_EXIT directly) before retrying exit verification. Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to IN_WORKTREE."
+  failure_recovery: "Do not repeat the failed closeout path -- fix the specific failing verifier or ledger item first, then re-enter WORKTREE_REVIEW rather than retrying VERIFY_EXIT with the same unresolved failure. Do not reset to INTAKE for a verification failure -- that discards all prior progress and is reserved for genuinely desynced control-plane records, not fixable implementation gaps."
   checklist:
   - Current task state is persisted as VERIFY_EXIT
   - Structural DAG transition from VERIFY_EXIT to IN_WORKTREE is legal
@@ -1449,6 +1956,7 @@ templates:
   from_state: VERIFY_EXIT
   to_state: WORKTREE_REVIEW
   purpose: Advance lifecycle state from VERIFY_EXIT to WORKTREE_REVIEW upon satisfying phase requirements and verifications.
+  next_steps_hint: "Answer this edge's YAML questions with --interactive or --answers '<json>'. Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to WORKTREE_REVIEW."
   checklist:
   - Current task state is persisted as VERIFY_EXIT
   - Structural DAG transition from VERIFY_EXIT to WORKTREE_REVIEW is legal
@@ -1463,6 +1971,8 @@ templates:
     options:
     - Proceed with review [Recommended]
     - Continue revising prior stage
+    accepted_answers:
+    - Proceed with review [Recommended]
     default: Proceed with review [Recommended]
   approval:
     required: false
@@ -1482,6 +1992,7 @@ templates:
   from_state: VERIFY_EXIT
   to_state: ROLLED_BACK
   purpose: Roll back worktree changes from VERIFY_EXIT to clean baseline.
+  next_steps_hint: "First satisfy rolled_back_guard; use: record the rollback verification receipt. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to ROLLED_BACK."
   checklist:
   - Current task state is persisted as VERIFY_EXIT
   - 'Deterministic check satisfied: rolled_back_guard'
@@ -1505,6 +2016,7 @@ templates:
   from_state: VERIFY_EXIT
   to_state: ESCALATED
   purpose: Escalate task from VERIFY_EXIT due to blocking failure, unresolvable ambiguity, or user intervention.
+  next_steps_hint: "Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to ESCALATED."
   checklist:
   - Current task state is persisted as VERIFY_EXIT
   - Structural DAG transition from VERIFY_EXIT to ESCALATED is legal
@@ -1527,6 +2039,7 @@ templates:
   from_state: ROLLED_BACK
   to_state: ESCALATED
   purpose: Escalate task from ROLLED_BACK due to blocking failure, unresolvable ambiguity, or user intervention.
+  next_steps_hint: "Answer this edge's YAML questions with --interactive or --answers '<json>'. Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to ESCALATED."
   checklist:
   - Current task state is persisted as ROLLED_BACK
   - Structural DAG transition from ROLLED_BACK to ESCALATED is legal
@@ -1555,6 +2068,7 @@ templates:
   from_state: ROLLED_BACK
   to_state: PLAN_REVIEW
   purpose: Advance lifecycle state from ROLLED_BACK to PLAN_REVIEW upon satisfying phase requirements and verifications.
+  next_steps_hint: "Answer this edge's YAML questions with --interactive or --answers '<json>'. Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to PLAN_REVIEW."
   checklist:
   - Current task state is persisted as ROLLED_BACK
   - Structural DAG transition from ROLLED_BACK to PLAN_REVIEW is legal
@@ -1588,6 +2102,7 @@ templates:
   from_state: ESCALATED
   to_state: INTAKE
   purpose: Advance lifecycle state from ESCALATED to INTAKE upon satisfying phase requirements and verifications.
+  next_steps_hint: "Answer this edge's YAML questions with --interactive or --answers '<json>'. Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to INTAKE."
   checklist:
   - Current task state is persisted as ESCALATED
   - Structural DAG transition from ESCALATED to INTAKE is legal
@@ -1619,6 +2134,7 @@ templates:
   from_state: ESCALATED
   to_state: PLAN_REVIEW
   purpose: Advance lifecycle state from ESCALATED to PLAN_REVIEW upon satisfying phase requirements and verifications.
+  next_steps_hint: "Answer this edge's YAML questions with --interactive or --answers '<json>'. Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to PLAN_REVIEW."
   checklist:
   - Current task state is persisted as ESCALATED
   - Structural DAG transition from ESCALATED to PLAN_REVIEW is legal
@@ -1648,10 +2164,48 @@ templates:
   authority:
     type: human_decision
     explanation: Advancing to PLAN_REVIEW requires explicit human review and authorization gate decision.
+- transition_id: human_force_done
+  from_state: "*"
+  to_state: DONE
+  purpose: Allow a human-in-the-loop to terminate any non-DONE task as DONE without claiming implementation occurred.
+  next_steps_hint: "This is an exceptional human-forced completion. Answer FORCE_DONE interactively, provide a reason, and run coordinate-transition --task-id <task-id> --to DONE --interactive. The decision is permanent for this task incarnation and must explain why remaining work is intentionally closed."
+  checklist:
+  - Current task state is not DONE
+  - Human confirmation is provided interactively
+  required_artifacts: []
+  deterministic_checks: []
+  human_questions:
+  - question_id: human_force_done_confirmation
+    question: 'Force this task to DONE now, acknowledging that this does not claim implementation or verification occurred?'
+    options:
+    - FORCE_DONE
+    - FORCE_CLOSE
+    - CANCEL
+    accepted_answers:
+    - FORCE_DONE
+    - FORCE_CLOSE
+    default: CANCEL
+  approval:
+    required: false
+    approver_role: human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released: []
+  capabilities_prohibited:
+  - claim implementation completion
+  - claim verification completion
+  - create implementation worktree
+  - push branch to origin
+  denial_message: 'Human-forced DONE denied: interactive FORCE_DONE confirmation is required.'
+  authority:
+    type: human_decision
+    explanation: Only an interactive human confirmation can take this exceptional terminal path; the recorded reason must distinguish administrative closure from implementation completion.
 - transition_id: reset_to_intake
   from_state: "*"
   to_state: INTAKE
   purpose: Recover a task whose control-plane record has drifted or desynced from reality (e.g. a raw write bypassing the normal transition path) by resetting it to INTAKE for a full re-run through every gate.
+  next_steps_hint: "Answer this edge's YAML questions with --interactive or --answers '<json>'. Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to INTAKE."
   checklist:
   - Current task state is not INTAKE
   - Human has provided a genuine, interactive justification for the reset
@@ -1677,3 +2231,508 @@ templates:
   authority:
     type: human_decision
     explanation: A human must provide a genuine, interactive justification before a drifted task record can be reset to INTAKE.
+- transition_id: force_close_to_done
+  from_state: "*"
+  to_state: DONE
+  purpose: Close a task from any active lifecycle state when a human explicitly authorizes force closure.
+  next_steps_hint: "Run coordinate-transition --to DONE --force-close --interactive; a genuine human must type the exact authorization FORCE_CLOSE at the prompt before this transition can commit."
+  checklist:
+  - Current task state is persisted and matches the requested source occupancy
+  - Explicit human force-close authorization is recorded
+  required_artifacts: []
+  deterministic_checks: []
+  human_questions:
+  - question_id: force_close_authorization
+    question: Type FORCE_CLOSE to authorize closing this task immediately.
+    options:
+    - FORCE_CLOSE
+    - FORCE_DONE
+    default: ''
+    accepted_answers:
+    - FORCE_CLOSE
+    - FORCE_DONE
+  approval:
+    required: false
+    approver_role: human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released: []
+  capabilities_prohibited: []
+  denial_message: 'Force close denied: explicit human authorization FORCE_CLOSE is required.'
+  authority:
+    type: human_decision
+    explanation: Force closure is available from any non-DONE state only after an interactive human authorization.
+
+- transition_id: force_retrospective_from_intake
+  from_state: INTAKE
+  to_state: RETROSPECTIVE
+  purpose: Human-authorized emergency close -- force any in-progress task directly to the mandatory retrospective gate from INTAKE, bypassing the normal downstream path, when the session is being ended before natural completion.
+  next_steps_hint: "Answer force_retrospective_authorization interactively with the literal value FORCE_RETROSPECTIVE, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to RETROSPECTIVE."
+  checklist:
+  - Current task state is persisted as INTAKE
+  - Human has explicitly authorized an emergency close via FORCE_RETROSPECTIVE
+  required_artifacts: []
+  deterministic_checks: []
+  stage_question_ids: []
+  human_questions:
+  - question_id: force_retrospective_reason_category
+    question: Why is this task moving directly to RETROSPECTIVE instead of its normal path?
+    options:
+    - Task is effectively complete/trivial -- this is a planned early close, not a failure
+    - Ending early due to agent or pipeline failure -- needs follow-up documentation
+    default: ''
+    accepted_answers:
+    - Task is effectively complete/trivial -- this is a planned early close, not a failure
+    - Ending early due to agent or pipeline failure -- needs follow-up documentation
+  - question_id: force_retrospective_authorization
+    question: This ends the task early via emergency close, bypassing the normal pipeline from INTAKE. Type FORCE_RETROSPECTIVE to confirm.
+    options:
+    - FORCE_RETROSPECTIVE
+    default: ''
+    accepted_answers:
+    - FORCE_RETROSPECTIVE
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released:
+  - retrospective_capture
+  capabilities_prohibited:
+  - push branch to origin
+  denial_message: 'Transition INTAKE -> RETROSPECTIVE (force) denied: explicit FORCE_RETROSPECTIVE authorization not given.'
+  authority:
+    type: human_decision
+    explanation: A human must explicitly type FORCE_RETROSPECTIVE to end a task early from any state, bypassing its normal downstream gates.
+
+- transition_id: force_retrospective_from_draft_plan
+  from_state: DRAFT_PLAN
+  to_state: RETROSPECTIVE
+  purpose: Human-authorized emergency close -- force any in-progress task directly to the mandatory retrospective gate from DRAFT_PLAN, bypassing the normal downstream path, when the session is being ended before natural completion.
+  next_steps_hint: "Answer force_retrospective_authorization interactively with the literal value FORCE_RETROSPECTIVE, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to RETROSPECTIVE."
+  checklist:
+  - Current task state is persisted as DRAFT_PLAN
+  - Human has explicitly authorized an emergency close via FORCE_RETROSPECTIVE
+  required_artifacts: []
+  deterministic_checks: []
+  stage_question_ids: []
+  human_questions:
+  - question_id: force_retrospective_reason_category
+    question: Why is this task moving directly to RETROSPECTIVE instead of its normal path?
+    options:
+    - Task is effectively complete/trivial -- this is a planned early close, not a failure
+    - Ending early due to agent or pipeline failure -- needs follow-up documentation
+    default: ''
+    accepted_answers:
+    - Task is effectively complete/trivial -- this is a planned early close, not a failure
+    - Ending early due to agent or pipeline failure -- needs follow-up documentation
+  - question_id: force_retrospective_authorization
+    question: This ends the task early via emergency close, bypassing the normal pipeline from DRAFT_PLAN. Type FORCE_RETROSPECTIVE to confirm.
+    options:
+    - FORCE_RETROSPECTIVE
+    default: ''
+    accepted_answers:
+    - FORCE_RETROSPECTIVE
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released:
+  - retrospective_capture
+  capabilities_prohibited:
+  - push branch to origin
+  denial_message: 'Transition DRAFT_PLAN -> RETROSPECTIVE (force) denied: explicit FORCE_RETROSPECTIVE authorization not given.'
+  authority:
+    type: human_decision
+    explanation: A human must explicitly type FORCE_RETROSPECTIVE to end a task early from any state, bypassing its normal downstream gates.
+
+- transition_id: force_retrospective_from_multi_agent_review
+  from_state: MULTI_AGENT_REVIEW
+  to_state: RETROSPECTIVE
+  purpose: Human-authorized emergency close -- force any in-progress task directly to the mandatory retrospective gate from MULTI_AGENT_REVIEW, bypassing the normal downstream path, when the session is being ended before natural completion.
+  next_steps_hint: "Answer force_retrospective_authorization interactively with the literal value FORCE_RETROSPECTIVE, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to RETROSPECTIVE."
+  checklist:
+  - Current task state is persisted as MULTI_AGENT_REVIEW
+  - Human has explicitly authorized an emergency close via FORCE_RETROSPECTIVE
+  required_artifacts: []
+  deterministic_checks: []
+  stage_question_ids: []
+  human_questions:
+  - question_id: force_retrospective_reason_category
+    question: Why is this task moving directly to RETROSPECTIVE instead of its normal path?
+    options:
+    - Task is effectively complete/trivial -- this is a planned early close, not a failure
+    - Ending early due to agent or pipeline failure -- needs follow-up documentation
+    default: ''
+    accepted_answers:
+    - Task is effectively complete/trivial -- this is a planned early close, not a failure
+    - Ending early due to agent or pipeline failure -- needs follow-up documentation
+  - question_id: force_retrospective_authorization
+    question: This ends the task early via emergency close, bypassing the normal pipeline from MULTI_AGENT_REVIEW. Type FORCE_RETROSPECTIVE to confirm.
+    options:
+    - FORCE_RETROSPECTIVE
+    default: ''
+    accepted_answers:
+    - FORCE_RETROSPECTIVE
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released:
+  - retrospective_capture
+  capabilities_prohibited:
+  - push branch to origin
+  denial_message: 'Transition MULTI_AGENT_REVIEW -> RETROSPECTIVE (force) denied: explicit FORCE_RETROSPECTIVE authorization not given.'
+  authority:
+    type: human_decision
+    explanation: A human must explicitly type FORCE_RETROSPECTIVE to end a task early from any state, bypassing its normal downstream gates.
+
+- transition_id: force_retrospective_from_plan_review
+  from_state: PLAN_REVIEW
+  to_state: RETROSPECTIVE
+  purpose: Human-authorized emergency close -- force any in-progress task directly to the mandatory retrospective gate from PLAN_REVIEW, bypassing the normal downstream path, when the session is being ended before natural completion.
+  next_steps_hint: "Answer force_retrospective_authorization interactively with the literal value FORCE_RETROSPECTIVE, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to RETROSPECTIVE."
+  checklist:
+  - Current task state is persisted as PLAN_REVIEW
+  - Human has explicitly authorized an emergency close via FORCE_RETROSPECTIVE
+  required_artifacts: []
+  deterministic_checks: []
+  stage_question_ids: []
+  human_questions:
+  - question_id: force_retrospective_reason_category
+    question: Why is this task moving directly to RETROSPECTIVE instead of its normal path?
+    options:
+    - Task is effectively complete/trivial -- this is a planned early close, not a failure
+    - Ending early due to agent or pipeline failure -- needs follow-up documentation
+    default: ''
+    accepted_answers:
+    - Task is effectively complete/trivial -- this is a planned early close, not a failure
+    - Ending early due to agent or pipeline failure -- needs follow-up documentation
+  - question_id: force_retrospective_authorization
+    question: This ends the task early via emergency close, bypassing the normal pipeline from PLAN_REVIEW. Type FORCE_RETROSPECTIVE to confirm.
+    options:
+    - FORCE_RETROSPECTIVE
+    default: ''
+    accepted_answers:
+    - FORCE_RETROSPECTIVE
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released:
+  - retrospective_capture
+  capabilities_prohibited:
+  - push branch to origin
+  denial_message: 'Transition PLAN_REVIEW -> RETROSPECTIVE (force) denied: explicit FORCE_RETROSPECTIVE authorization not given.'
+  authority:
+    type: human_decision
+    explanation: A human must explicitly type FORCE_RETROSPECTIVE to end a task early from any state, bypassing its normal downstream gates.
+
+- transition_id: force_retrospective_from_awaiting_approval
+  from_state: AWAITING_APPROVAL
+  to_state: RETROSPECTIVE
+  purpose: Human-authorized emergency close -- force any in-progress task directly to the mandatory retrospective gate from AWAITING_APPROVAL, bypassing the normal downstream path, when the session is being ended before natural completion.
+  next_steps_hint: "Answer force_retrospective_authorization interactively with the literal value FORCE_RETROSPECTIVE, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to RETROSPECTIVE."
+  checklist:
+  - Current task state is persisted as AWAITING_APPROVAL
+  - Human has explicitly authorized an emergency close via FORCE_RETROSPECTIVE
+  required_artifacts: []
+  deterministic_checks: []
+  stage_question_ids: []
+  human_questions:
+  - question_id: force_retrospective_reason_category
+    question: Why is this task moving directly to RETROSPECTIVE instead of its normal path?
+    options:
+    - Task is effectively complete/trivial -- this is a planned early close, not a failure
+    - Ending early due to agent or pipeline failure -- needs follow-up documentation
+    default: ''
+    accepted_answers:
+    - Task is effectively complete/trivial -- this is a planned early close, not a failure
+    - Ending early due to agent or pipeline failure -- needs follow-up documentation
+  - question_id: force_retrospective_authorization
+    question: This ends the task early via emergency close, bypassing the normal pipeline from AWAITING_APPROVAL. Type FORCE_RETROSPECTIVE to confirm.
+    options:
+    - FORCE_RETROSPECTIVE
+    default: ''
+    accepted_answers:
+    - FORCE_RETROSPECTIVE
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released:
+  - retrospective_capture
+  capabilities_prohibited:
+  - push branch to origin
+  denial_message: 'Transition AWAITING_APPROVAL -> RETROSPECTIVE (force) denied: explicit FORCE_RETROSPECTIVE authorization not given.'
+  authority:
+    type: human_decision
+    explanation: A human must explicitly type FORCE_RETROSPECTIVE to end a task early from any state, bypassing its normal downstream gates.
+
+- transition_id: force_retrospective_from_rolled_back
+  from_state: ROLLED_BACK
+  to_state: RETROSPECTIVE
+  purpose: Human-authorized emergency close -- force any in-progress task directly to the mandatory retrospective gate from ROLLED_BACK, bypassing the normal downstream path, when the session is being ended before natural completion.
+  next_steps_hint: "Answer force_retrospective_authorization interactively with the literal value FORCE_RETROSPECTIVE, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to RETROSPECTIVE."
+  checklist:
+  - Current task state is persisted as ROLLED_BACK
+  - Human has explicitly authorized an emergency close via FORCE_RETROSPECTIVE
+  required_artifacts: []
+  deterministic_checks: []
+  stage_question_ids: []
+  human_questions:
+  - question_id: force_retrospective_reason_category
+    question: Why is this task moving directly to RETROSPECTIVE instead of its normal path?
+    options:
+    - Task is effectively complete/trivial -- this is a planned early close, not a failure
+    - Ending early due to agent or pipeline failure -- needs follow-up documentation
+    default: ''
+    accepted_answers:
+    - Task is effectively complete/trivial -- this is a planned early close, not a failure
+    - Ending early due to agent or pipeline failure -- needs follow-up documentation
+  - question_id: force_retrospective_authorization
+    question: This ends the task early via emergency close, bypassing the normal pipeline from ROLLED_BACK. Type FORCE_RETROSPECTIVE to confirm.
+    options:
+    - FORCE_RETROSPECTIVE
+    default: ''
+    accepted_answers:
+    - FORCE_RETROSPECTIVE
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released:
+  - retrospective_capture
+  capabilities_prohibited:
+  - push branch to origin
+  denial_message: 'Transition ROLLED_BACK -> RETROSPECTIVE (force) denied: explicit FORCE_RETROSPECTIVE authorization not given.'
+  authority:
+    type: human_decision
+    explanation: A human must explicitly type FORCE_RETROSPECTIVE to end a task early from any state, bypassing its normal downstream gates.
+
+- transition_id: force_retrospective_from_escalated
+  from_state: ESCALATED
+  to_state: RETROSPECTIVE
+  purpose: Human-authorized emergency close -- force any in-progress task directly to the mandatory retrospective gate from ESCALATED, bypassing the normal downstream path, when the session is being ended before natural completion.
+  next_steps_hint: "Answer force_retrospective_authorization interactively with the literal value FORCE_RETROSPECTIVE, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to RETROSPECTIVE."
+  checklist:
+  - Current task state is persisted as ESCALATED
+  - Human has explicitly authorized an emergency close via FORCE_RETROSPECTIVE
+  required_artifacts: []
+  deterministic_checks: []
+  stage_question_ids: []
+  human_questions:
+  - question_id: force_retrospective_reason_category
+    question: Why is this task moving directly to RETROSPECTIVE instead of its normal path?
+    options:
+    - Task is effectively complete/trivial -- this is a planned early close, not a failure
+    - Ending early due to agent or pipeline failure -- needs follow-up documentation
+    default: ''
+    accepted_answers:
+    - Task is effectively complete/trivial -- this is a planned early close, not a failure
+    - Ending early due to agent or pipeline failure -- needs follow-up documentation
+  - question_id: force_retrospective_authorization
+    question: This ends the task early via emergency close, bypassing the normal pipeline from ESCALATED. Type FORCE_RETROSPECTIVE to confirm.
+    options:
+    - FORCE_RETROSPECTIVE
+    default: ''
+    accepted_answers:
+    - FORCE_RETROSPECTIVE
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released:
+  - retrospective_capture
+  capabilities_prohibited:
+  - push branch to origin
+  denial_message: 'Transition ESCALATED -> RETROSPECTIVE (force) denied: explicit FORCE_RETROSPECTIVE authorization not given.'
+  authority:
+    type: human_decision
+    explanation: A human must explicitly type FORCE_RETROSPECTIVE to end a task early from any state, bypassing its normal downstream gates.
+
+- transition_id: force_retrospective_from_done
+  from_state: DONE
+  to_state: RETROSPECTIVE
+  purpose: Human-authorized emergency close -- force any in-progress task directly to the mandatory retrospective gate from DONE, bypassing the normal downstream path, when the session is being ended before natural completion.
+  next_steps_hint: "Answer force_retrospective_authorization interactively with the literal value FORCE_RETROSPECTIVE, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to RETROSPECTIVE."
+  checklist:
+  - Current task state is persisted as DONE
+  - Human has explicitly authorized an emergency close via FORCE_RETROSPECTIVE
+  required_artifacts: []
+  deterministic_checks: []
+  stage_question_ids: []
+  human_questions:
+  - question_id: force_retrospective_reason_category
+    question: Why is this task moving directly to RETROSPECTIVE instead of its normal path?
+    options:
+    - Task is effectively complete/trivial -- this is a planned early close, not a failure
+    - Ending early due to agent or pipeline failure -- needs follow-up documentation
+    default: ''
+    accepted_answers:
+    - Task is effectively complete/trivial -- this is a planned early close, not a failure
+    - Ending early due to agent or pipeline failure -- needs follow-up documentation
+  - question_id: force_retrospective_authorization
+    question: This ends the task early via emergency close, bypassing the normal pipeline from DONE. Type FORCE_RETROSPECTIVE to confirm.
+    options:
+    - FORCE_RETROSPECTIVE
+    default: ''
+    accepted_answers:
+    - FORCE_RETROSPECTIVE
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released:
+  - retrospective_capture
+  capabilities_prohibited:
+  - push branch to origin
+  denial_message: 'Transition DONE -> RETROSPECTIVE (force) denied: explicit FORCE_RETROSPECTIVE authorization not given.'
+  authority:
+    type: human_decision
+    explanation: A human must explicitly type FORCE_RETROSPECTIVE to end a task early from any state, bypassing its normal downstream gates.
+
+- transition_id: force_retrospective_from_in_worktree
+  from_state: IN_WORKTREE
+  to_state: RETROSPECTIVE
+  purpose: Human-authorized emergency close -- force any in-progress task directly to the mandatory retrospective gate from IN_WORKTREE, bypassing the normal downstream path, when the session is being ended before natural completion.
+  next_steps_hint: "Answer force_retrospective_authorization interactively with the literal value FORCE_RETROSPECTIVE, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to RETROSPECTIVE."
+  checklist:
+  - Current task state is persisted as IN_WORKTREE
+  - Human has explicitly authorized an emergency close via FORCE_RETROSPECTIVE
+  required_artifacts: []
+  deterministic_checks: []
+  stage_question_ids: []
+  human_questions:
+  - question_id: force_retrospective_reason_category
+    question: Why is this task moving directly to RETROSPECTIVE instead of its normal path?
+    options:
+    - Task is effectively complete/trivial -- this is a planned early close, not a failure
+    - Ending early due to agent or pipeline failure -- needs follow-up documentation
+    default: ''
+    accepted_answers:
+    - Task is effectively complete/trivial -- this is a planned early close, not a failure
+    - Ending early due to agent or pipeline failure -- needs follow-up documentation
+  - question_id: force_retrospective_authorization
+    question: This ends the task early via emergency close, bypassing the normal pipeline from IN_WORKTREE. Type FORCE_RETROSPECTIVE to confirm.
+    options:
+    - FORCE_RETROSPECTIVE
+    default: ''
+    accepted_answers:
+    - FORCE_RETROSPECTIVE
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released:
+  - retrospective_capture
+  capabilities_prohibited:
+  - push branch to origin
+  denial_message: 'Transition IN_WORKTREE -> RETROSPECTIVE (force) denied: explicit FORCE_RETROSPECTIVE authorization not given.'
+  authority:
+    type: human_decision
+    explanation: A human must explicitly type FORCE_RETROSPECTIVE to end a task early from any state, bypassing its normal downstream gates.
+
+- transition_id: force_retrospective_from_worktree_review
+  from_state: WORKTREE_REVIEW
+  to_state: RETROSPECTIVE
+  purpose: Human-authorized emergency close -- force any in-progress task directly to the mandatory retrospective gate from WORKTREE_REVIEW, bypassing the normal downstream path, when the session is being ended before natural completion.
+  next_steps_hint: "Answer force_retrospective_authorization interactively with the literal value FORCE_RETROSPECTIVE, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to RETROSPECTIVE."
+  checklist:
+  - Current task state is persisted as WORKTREE_REVIEW
+  - Human has explicitly authorized an emergency close via FORCE_RETROSPECTIVE
+  required_artifacts: []
+  deterministic_checks: []
+  stage_question_ids: []
+  human_questions:
+  - question_id: force_retrospective_reason_category
+    question: Why is this task moving directly to RETROSPECTIVE instead of its normal path?
+    options:
+    - Task is effectively complete/trivial -- this is a planned early close, not a failure
+    - Ending early due to agent or pipeline failure -- needs follow-up documentation
+    default: ''
+    accepted_answers:
+    - Task is effectively complete/trivial -- this is a planned early close, not a failure
+    - Ending early due to agent or pipeline failure -- needs follow-up documentation
+  - question_id: force_retrospective_authorization
+    question: This ends the task early via emergency close, bypassing the normal pipeline from WORKTREE_REVIEW. Type FORCE_RETROSPECTIVE to confirm.
+    options:
+    - FORCE_RETROSPECTIVE
+    default: ''
+    accepted_answers:
+    - FORCE_RETROSPECTIVE
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released:
+  - retrospective_capture
+  capabilities_prohibited:
+  - push branch to origin
+  denial_message: 'Transition WORKTREE_REVIEW -> RETROSPECTIVE (force) denied: explicit FORCE_RETROSPECTIVE authorization not given.'
+  authority:
+    type: human_decision
+    explanation: A human must explicitly type FORCE_RETROSPECTIVE to end a task early from any state, bypassing its normal downstream gates.
+
+- transition_id: force_retrospective_from_multi_agent_code_review
+  from_state: MULTI_AGENT_CODE_REVIEW
+  to_state: RETROSPECTIVE
+  purpose: Human-authorized emergency close -- force any in-progress task directly to the mandatory retrospective gate from MULTI_AGENT_CODE_REVIEW, bypassing the normal downstream path, when the session is being ended before natural completion.
+  next_steps_hint: "Answer force_retrospective_authorization interactively with the literal value FORCE_RETROSPECTIVE, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to RETROSPECTIVE."
+  checklist:
+  - Current task state is persisted as MULTI_AGENT_CODE_REVIEW
+  - Human has explicitly authorized an emergency close via FORCE_RETROSPECTIVE
+  required_artifacts: []
+  deterministic_checks: []
+  stage_question_ids: []
+  human_questions:
+  - question_id: force_retrospective_reason_category
+    question: Why is this task moving directly to RETROSPECTIVE instead of its normal path?
+    options:
+    - Task is effectively complete/trivial -- this is a planned early close, not a failure
+    - Ending early due to agent or pipeline failure -- needs follow-up documentation
+    default: ''
+    accepted_answers:
+    - Task is effectively complete/trivial -- this is a planned early close, not a failure
+    - Ending early due to agent or pipeline failure -- needs follow-up documentation
+  - question_id: force_retrospective_authorization
+    question: This ends the task early via emergency close, bypassing the normal pipeline from MULTI_AGENT_CODE_REVIEW. Type FORCE_RETROSPECTIVE to confirm.
+    options:
+    - FORCE_RETROSPECTIVE
+    default: ''
+    accepted_answers:
+    - FORCE_RETROSPECTIVE
+  approval:
+    required: false
+    approver_role: agent_or_human
+  skip:
+    allowed: false
+    requires_justification: false
+  capabilities_released:
+  - retrospective_capture
+  capabilities_prohibited:
+  - push branch to origin
+  denial_message: 'Transition MULTI_AGENT_CODE_REVIEW -> RETROSPECTIVE (force) denied: explicit FORCE_RETROSPECTIVE authorization not given.'
+  authority:
+    type: human_decision
+    explanation: A human must explicitly type FORCE_RETROSPECTIVE to end a task early from any state, bypassing its normal downstream gates.

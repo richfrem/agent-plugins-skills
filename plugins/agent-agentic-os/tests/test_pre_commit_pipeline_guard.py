@@ -32,6 +32,10 @@ from control_plane.adapters import SqlitePersistenceAdapter, FilesystemAdapter
 from control_plane.policy import evaluate_operation, PolicyViolation
 from agent_control import ControlPlane, PersistenceInvariantViolation
 from interview_helpers import stage_interview_answers
+from helpers.implementation_ledger import stage_implementation_ledger
+from control_plane.constants import (
+    STATE_INTERVIEW, STATE_DRAFT_PLAN, STATE_PLAN_REVIEW, STATE_AWAITING_APPROVAL, STATE_APPROVED, STATE_IN_WORKTREE, STATE_WORKTREE_REVIEW, STATE_VERIFY_EXIT, STATE_RETROSPECTIVE, STATE_DONE,
+)
 
 HOOK_PATH = SCRIPTS_DIR / "pre-commit-pipeline-guard"
 
@@ -59,12 +63,37 @@ def _setup_git_repo_with_db(tmp_path):
 def _advance_task_to_in_worktree(cp, task_id, repo, branch):
     """Advances task through all required pipeline stages to IN_WORKTREE."""
     cp.create_task(task_id, f"Task {task_id}", "claude")
-    cp.transition(task_id, "INTERVIEW", "tester", "interview")
+    cp.transition(task_id, STATE_INTERVIEW, "tester", "interview")
     cp.record_plan_mode_entry(task_id, "tester")
     stage_interview_answers(cp, task_id)
-    cp.transition(task_id, "DRAFT_PLAN", "tester", "draft")
+    cp.transition(task_id, STATE_DRAFT_PLAN, "tester", "draft")
+    plans = repo / "docs" / "plans"
+    plans.mkdir(parents=True, exist_ok=True)
+    (plans / f"{task_id}-spec.md").write_text("# Spec\n", encoding="utf-8")
+    (plans / f"{task_id}-implementation-plan.md").write_text("# Plan\n", encoding="utf-8")
+    cp.repo_root = repo
+    stage_implementation_ledger(cp, task_id, repo)
+    from control_plane.coordinator import TransitionCoordinator
+    # Each real edge question is followed by the mandatory guidance-compliance
+    # confirmation ("1" alone is no longer enough -- it would get reused for that
+    # question too and be read as "not YES", blocking the task).
+    answers = iter(["1", "YES", "1", "YES"])
+    coordinator = TransitionCoordinator(control_plane=cp, input_fn=lambda _prompt: next(answers))
+    coordinator.coordinate_transition(
+        task_id=task_id,
+        to_state=STATE_PLAN_REVIEW,
+        actor="human",
+        reason="Submit plan for disposition",
+        interactive=True,
+    )
     cp.record_review_skip(task_id, "multi_agent_review", "tester", "skip")
-    cp.transition(task_id, "AWAITING_APPROVAL", "tester", "awaiting")
+    coordinator.coordinate_transition(
+        task_id=task_id,
+        to_state=STATE_AWAITING_APPROVAL,
+        actor="human",
+        reason="Accept plan after review skip",
+        interactive=True,
+    )
     cp.record_human_approval(task_id, "tester")
     conn = sqlite3.connect(cp.db_path)
     last_trans = conn.execute("SELECT transition_id FROM task_transitions WHERE task_id = ? ORDER BY transition_id DESC LIMIT 1", (task_id,)).fetchone()[0]
@@ -80,9 +109,20 @@ def _advance_task_to_in_worktree(cp, task_id, repo, branch):
     )
     conn.commit()
     conn.close()
-    cp.transition(task_id, "APPROVED", "tester", "approved")
-    cp.transition(task_id, "IN_WORKTREE", "tester", "in worktree")
+    cp.record_verification_receipt(
+        task_id=task_id, gate_name="main_dirty_before_approval_exception",
+        command_executed="test-fixture-uses-real-dirty-planning-files", exit_code=0,
+    )  # DEBT-20260913-MAIN-DIRTY-BEFORE-APPROVAL-UNENFORCED: this fixture's planning
+    # files are intentionally uncommitted for the test's own purpose (testing the
+    # commit-pipeline-guard hook), not real interim work needing the clean-checkout gate.
+    cp.transition(task_id, STATE_APPROVED, "tester", "approved")
     cp.update_worktree(task_id, str(repo), branch, "written_in_worktree")
+    cp.record_verification_receipt(
+        task_id=task_id, gate_name="existing_worktree_exception",
+        command_executed="test-fixture-reuses-repo-as-worktree", exit_code=0,
+    )  # this fixture intentionally reuses the same repo dir as the "worktree" to
+    # keep the git-hook test simple -- not a real isolated worktree.
+    cp.transition(task_id, STATE_IN_WORKTREE, "tester", "in worktree")
 
 
 def test_hook_bypasses_main_branch(tmp_path):
@@ -129,10 +169,10 @@ def test_hook_allows_plan_doc_commit_during_planning_states(tmp_path):
 
     cp = ControlPlane(db_path=db_path)
     cp.create_task(task_id, "Plan Docs Task", "claude")
-    cp.transition(task_id, "INTERVIEW", "tester", "interview")
+    cp.transition(task_id, STATE_INTERVIEW, "tester", "interview")
     cp.record_plan_mode_entry(task_id, "tester")
     stage_interview_answers(cp, task_id)
-    cp.transition(task_id, "DRAFT_PLAN", "tester", "draft")
+    cp.transition(task_id, STATE_DRAFT_PLAN, "tester", "draft")
     cp.update_worktree(task_id, str(repo), branch, "written_in_worktree")
 
     # Stage plan documentation only
@@ -262,12 +302,21 @@ def test_control_plane_verify_commit_api(tmp_path):
     assert res["status"] == "ALLOWED"
 
     # Once advanced to IN_WORKTREE -> allowed for code
-    cp.transition(task_id, "INTERVIEW", "tester", "interview")
+    cp.transition(task_id, STATE_INTERVIEW, "tester", "interview")
     cp.record_plan_mode_entry(task_id, "tester")
     stage_interview_answers(cp, task_id)
-    cp.transition(task_id, "DRAFT_PLAN", "tester", "draft")
+    cp.transition(task_id, STATE_DRAFT_PLAN, "tester", "draft")
+    plans = repo / "docs" / "plans"
+    plans.mkdir(parents=True, exist_ok=True)
+    (plans / f"{task_id}-spec.md").write_text("# Spec\n", encoding="utf-8")
+    (plans / f"{task_id}-implementation-plan.md").write_text("# Plan\n", encoding="utf-8")
+    cp.repo_root = repo
+    from control_plane.coordinator import TransitionCoordinator
+    answers = iter(["1", "YES", "1", "YES"])
+    coordinator = TransitionCoordinator(control_plane=cp, input_fn=lambda _prompt: next(answers))
+    coordinator.coordinate_transition(task_id=task_id, to_state=STATE_PLAN_REVIEW, actor="human", reason="Submit plan", interactive=True)
     cp.record_review_skip(task_id, "multi_agent_review", "tester", "skip")
-    cp.transition(task_id, "AWAITING_APPROVAL", "tester", "awaiting")
+    coordinator.coordinate_transition(task_id=task_id, to_state=STATE_AWAITING_APPROVAL, actor="human", reason="Accept skipped plan", interactive=True)
     cp.record_human_approval(task_id, "tester")
     conn = sqlite3.connect(cp.db_path)
     last_trans = conn.execute("SELECT transition_id FROM task_transitions WHERE task_id = ? ORDER BY transition_id DESC LIMIT 1", (task_id,)).fetchone()[0]
@@ -283,8 +332,20 @@ def test_control_plane_verify_commit_api(tmp_path):
     )
     conn.commit()
     conn.close()
-    cp.transition(task_id, "APPROVED", "tester", "approved")
-    cp.transition(task_id, "IN_WORKTREE", "tester", "in worktree")
+    cp.record_verification_receipt(
+        task_id=task_id, gate_name="main_dirty_before_approval_exception",
+        command_executed="test-fixture-uses-real-dirty-planning-files", exit_code=0,
+    )  # DEBT-20260913-MAIN-DIRTY-BEFORE-APPROVAL-UNENFORCED: this fixture's planning
+    # files are intentionally uncommitted for the test's own purpose (testing the
+    # commit-pipeline-guard hook), not real interim work needing the clean-checkout gate.
+    cp.transition(task_id, STATE_APPROVED, "tester", "approved")
+    cp.update_worktree(task_id, str(repo), branch, "written_in_worktree")
+    cp.record_verification_receipt(
+        task_id=task_id, gate_name="existing_worktree_exception",
+        command_executed="test-fixture-reuses-repo-as-worktree", exit_code=0,
+    )  # this fixture intentionally reuses the same repo dir as the "worktree" to
+    # keep the git-hook test simple -- not a real isolated worktree.
+    cp.transition(task_id, STATE_IN_WORKTREE, "tester", "in worktree")
 
     res2 = cp.verify_commit(branch=branch, staged_files=["src/code.py"])
     assert res2["status"] == "ALLOWED"
@@ -319,6 +380,7 @@ def test_push_hook_allows_when_done_with_valid_history(tmp_path):
     
     # Advance task to DONE (record test_suite before entering WORKTREE_REVIEW)
     cp.record_verification_receipt(task_id, "test_suite", "pytest", 0)
+    cp.record_verification_receipt(task_id, "full_test_suite", "pytest -q", 0)
     conn = sqlite3.connect(cp.db_path)
     last_trans = conn.execute("SELECT transition_id FROM task_transitions WHERE task_id = ? ORDER BY transition_id DESC LIMIT 1", (task_id,)).fetchone()[0]
     conn.execute(
@@ -326,27 +388,55 @@ def test_push_hook_allows_when_done_with_valid_history(tmp_path):
         INSERT INTO transition_decisions (
             task_id, source_occupancy_transition_id, from_state, to_state,
             question_id, answer, decision_type, actor, recorded_at
-        ) VALUES (?, ?, 'IN_WORKTREE', 'WORKTREE_REVIEW', 'confirm_review_in_worktree_to_worktree_review', 'Proceed with review [Recommended]', 'ANSWER', 'human', 12345.0)
+        ) VALUES (?, ?, 'IN_WORKTREE', 'WORKTREE_REVIEW', 'confirm_review_in_worktree_to_worktree_review', 'Proceed with review [Recommended]', 'ANSWER', 'human', 12345.0),
+                 (?, ?, 'IN_WORKTREE', 'WORKTREE_REVIEW', 'confirm_test_suite_or_defer', 'Run tests now instead', 'ANSWER', 'human', 12345.0)
         """,
-        (task_id, last_trans)
+        (task_id, last_trans, task_id, last_trans)
     )
     conn.commit()
     conn.close()
-    cp.transition(task_id, "WORKTREE_REVIEW", "tester", "review")
+    cp.transition(task_id, STATE_WORKTREE_REVIEW, "tester", "review")
     cp.record_review_skip(task_id, "multi_agent_code_review", "tester", "skip")
-    cp.transition(task_id, "VERIFY_EXIT", "tester", "verify")
+    cp.transition(task_id, STATE_VERIFY_EXIT, "tester", "verify")
     cp.record_verification_receipt(task_id, "leak_check", "git status", 0)
     cp.log_asymmetric_persistence(task_id, "references/map-debt.md", "RESOLVED", "test")
-    cp.transition(task_id, "RETROSPECTIVE", "tester", "enter retrospective")
+    cp.transition(task_id, STATE_RETROSPECTIVE, "tester", "enter retrospective")
     cp.save_retrospective(
         task_id,
         {"decision": "skip", "completion_mode": "skipped", "actor": "human", "skip_reason": "hook fixture"},
         [],
     )
     from control_plane.coordinator import TransitionCoordinator
-    TransitionCoordinator(control_plane=cp, input_fn=lambda prompt: "skip").coordinate_transition(
-        task_id, "DONE", "tester", "done", interactive=True,
+    done_answers = iter(["skip", "YES"])
+    TransitionCoordinator(control_plane=cp, input_fn=lambda prompt: next(done_answers)).coordinate_transition(
+        task_id, STATE_DONE, "tester", "done", interactive=True,
     )
 
     res = subprocess.run([str(PUSH_HOOK_PATH)], cwd=str(repo), capture_output=True, text=True)
     assert res.returncode == 0
+
+
+def test_git_guards_allow_exact_human_approved_recovery_edge(tmp_path):
+    """Allow a non-DAG edge only when its exact recovery approval is persisted and consumed."""
+    repo, db_path = _setup_git_repo_with_db(tmp_path)
+    task_id = "task-approved-recovery-010"
+    branch = "feat/approved-recovery"
+    subprocess.run(["git", "checkout", "-b", branch], cwd=str(repo), check=True, capture_output=True)
+
+    cp = ControlPlane(db_path=db_path)
+    _advance_task_to_in_worktree(cp, task_id, repo, branch)
+    token = cp.record_recovery_approval(
+        task_id, STATE_DONE, "human-reviewer", "Reopen only through the explicitly approved recovery edge."
+    )
+    cp.apply_recovery_transition(
+        task_id, STATE_DONE, token, "human", "Apply the approved recovery edge for closeout verification."
+    )
+
+    code_file = repo / "feature.py"
+    code_file.write_text("def run(): pass\n", encoding="utf-8")
+    subprocess.run(["git", "add", "feature.py"], cwd=str(repo), check=True)
+
+    commit_check = subprocess.run([str(HOOK_PATH)], cwd=str(repo), capture_output=True, text=True)
+    push_check = subprocess.run([str(PUSH_HOOK_PATH)], cwd=str(repo), capture_output=True, text=True)
+    assert commit_check.returncode == 0, commit_check.stdout + commit_check.stderr
+    assert push_check.returncode == 0, push_check.stdout + push_check.stderr

@@ -44,14 +44,43 @@ fi
 QUERY_SQL="SELECT task_id, state FROM tasks WHERE worktree_branch = '$CURRENT_BRANCH' ORDER BY created_at DESC LIMIT 1;"
 TASK_ROW="$(sqlite3 "$DB_PATH" "$QUERY_SQL" 2>/dev/null || true)"
 
-# If no task associated with this branch, permit push with warning
+# If no task associated with this branch, DENY. Fail-open here previously let any
+# unregistered branch push regardless of pipeline state (see map-debt entry for
+# this fix). A push on a non-main branch must be traceable to a control-plane task.
 if [ -z "$TASK_ROW" ]; then
-    echo "⚠️  WARNING: pre-push-review-guard found no task registered for branch '$CURRENT_BRANCH' — push is ungated." >&2
-    exit 0
+    echo ""
+    echo "❌ GIT PUSH BLOCKED: No Task Registered For This Branch!"
+    echo ""
+    echo "   Branch: $CURRENT_BRANCH"
+    echo ""
+    echo "   This branch has no task in the SQLite control plane (tasks.worktree_branch)."
+    echo "   Register it first, e.g.:"
+    echo "     python3 plugins/agent-agentic-os/scripts/agent_control.py init --task-id <task-id> --title <title> --runtime <runtime> --spec-path <path>"
+    echo "     python3 plugins/agent-agentic-os/scripts/agent_control.py update-worktree --task-id <task-id> --branch $CURRENT_BRANCH ..."
+    echo "   then drive the task to DONE before pushing."
+    echo ""
+    exit 1
 fi
 
 TASK_ID="$(echo "$TASK_ROW" | cut -d'|' -f1)"
 TASK_STATE="$(echo "$TASK_ROW" | cut -d'|' -f2)"
+
+# Guidance-compliance block: a human answered "no" (or gave no answer) to a
+# transition's mandatory guidance-compliance confirmation. No push may proceed
+# until a human explicitly clears it via clear-guidance-block.
+GUIDANCE_BLOCK="$(sqlite3 "$DB_PATH" "SELECT guidance_block_reason FROM tasks WHERE task_id = '$TASK_ID';" 2>/dev/null || true)"
+if [ -n "$GUIDANCE_BLOCK" ]; then
+    echo ""
+    echo "❌ GIT PUSH BLOCKED: Task Is Guidance-Blocked!"
+    echo ""
+    echo "   Task ID: $TASK_ID"
+    echo "   Reason:  $GUIDANCE_BLOCK"
+    echo ""
+    echo "   Clear this with explicit human authorization before pushing:"
+    echo "   python3 plugins/agent-agentic-os/scripts/agent_control.py clear-guidance-block --task-id $TASK_ID --reason '<reason>' --human-confirmed 'HUMAN-CONFIRMED: <what the human said>'"
+    echo ""
+    exit 1
+fi
 
 # Only state DONE is permitted to push to origin
 if [ "$TASK_STATE" != "DONE" ]; then
@@ -84,7 +113,7 @@ if [ "$VIOLATIONS_COUNT" -gt 0 ]; then
 fi
 
 # 2. Check all transitions against valid_transitions
-TRANSITIONS_ROWS="$(sqlite3 "$DB_PATH" "SELECT from_state, to_state FROM task_transitions WHERE task_id = '$TASK_ID' ORDER BY transition_id ASC;" 2>/dev/null || true)"
+TRANSITIONS_ROWS="$(sqlite3 "$DB_PATH" "SELECT transition_id, from_state, to_state FROM task_transitions WHERE task_id = '$TASK_ID' ORDER BY transition_id ASC;" 2>/dev/null || true)"
 if [ -z "$TRANSITIONS_ROWS" ]; then
     echo ""
     echo "❌ GIT PUSH BLOCKED: No Transition History Found!"
@@ -96,23 +125,28 @@ if [ -z "$TRANSITIONS_ROWS" ]; then
 fi
 
 LAST_TO=""
-while IFS='|' read -r from_st to_st; do
+while IFS='|' read -r transition_id from_st to_st; do
     [ -z "$from_st" ] && continue
     if [ "$from_st" = "NONE" ] && [ "$to_st" = "INTAKE" ]; then
         LAST_TO="INTAKE"
         continue
     fi
 
-    # Check validity in valid_transitions
+    # Normal edges must be in valid_transitions. A non-DAG edge is valid only when
+    # this exact persisted transition has a consumed, human recovery approval.
     IS_VALID="$(sqlite3 "$DB_PATH" "SELECT COUNT(*) FROM valid_transitions WHERE from_state = '$from_st' AND to_state = '$to_st';" 2>/dev/null || echo "0")"
     if [ "$IS_VALID" -eq 0 ]; then
-        echo ""
-        echo "❌ GIT PUSH BLOCKED: Invalid State Transition Detected!"
-        echo ""
-        echo "   Task ID:     $TASK_ID"
-        echo "   Edge:        $from_st -> $to_st"
-        echo ""
-        exit 1
+        RECOVERY_VALID="$(sqlite3 "$DB_PATH" "SELECT COUNT(*) FROM transition_decisions WHERE task_id = '$TASK_ID' AND bound_transition_id = '$transition_id' AND from_state = '$from_st' AND to_state = '$to_st' AND decision_type = 'APPROVAL' AND actor = 'human' AND question_id LIKE 'recovery_approval_%' AND consumed_at IS NOT NULL;" 2>/dev/null || echo "0")"
+        if [ "$RECOVERY_VALID" -eq 0 ]; then
+            echo ""
+            echo "❌ GIT PUSH BLOCKED: Invalid State Transition Detected!"
+            echo ""
+            echo "   Task ID:     $TASK_ID"
+            echo "   Edge:        $from_st -> $to_st"
+            echo "   This transition is not in valid_transitions and has no exact human recovery approval."
+            echo ""
+            exit 1
+        fi
     fi
 
     # Check continuity

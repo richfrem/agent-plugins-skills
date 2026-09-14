@@ -40,6 +40,9 @@ if str(SCRIPTS_DIR) not in sys.path:
 from agent_control import ControlPlane
 from control_plane.adapters import FilesystemAdapter, CryptoAdapter, ModelCatalogAdapter, ClockAdapter, SqlitePersistenceAdapter
 from control_plane.ports import PersistencePort
+from control_plane.constants import (
+    STATE_INTAKE, STATE_INTERVIEW, STATE_DONE,
+)
 
 AGENT_CONTROL_FILE = SCRIPTS_DIR / "agent_control.py"
 BANNED_MODULES = {"sqlite3", "hashlib", "time"}
@@ -95,11 +98,36 @@ class _FakePersistencePort(PersistencePort):
         self.calls.append(("get_task", task_id))
         return self._tasks.get(task_id)
 
+    def insert_premium_consent(self, task_id, stage, round_id, model_id, actor) -> int:
+        self.calls.append(("insert_premium_consent", task_id, stage, round_id, model_id, actor))
+        return 1
+
+    def has_premium_consent(self, task_id, stage, round_id, model_id) -> bool:
+        self.calls.append(("has_premium_consent", task_id, stage, round_id, model_id))
+        return True
+
+    def insert_source_assisted_answer_candidate(
+        self, task_id, stage, round_id, question_id, answer, source_path, source_authorized
+    ) -> int:
+        self.calls.append((
+            "insert_source_assisted_answer_candidate", task_id, stage, round_id,
+            question_id, answer, source_path, source_authorized,
+        ))
+        return 1
+
+    def confirm_source_assisted_answer_candidate(self, candidate_id, actor) -> bool:
+        self.calls.append(("confirm_source_assisted_answer_candidate", candidate_id, actor))
+        return True
+
+    def has_unconfirmed_source_assisted_answer_candidates(self, task_id, stage, round_id) -> bool:
+        self.calls.append(("has_unconfirmed_source_assisted_answer_candidates", task_id, stage, round_id))
+        return False
+
     def insert_task(self, task_id, title, task_type, runtime_tool, spec_path, model_tier, model_id) -> None:
         self.calls.append(("insert_task", task_id, title, task_type, runtime_tool, spec_path, model_tier, model_id))
         self._tasks[task_id] = {
             "task_id": task_id, "title": title, "task_type": task_type, "runtime_tool": runtime_tool,
-            "spec_path": spec_path, "model_tier": model_tier, "model_id": model_id, "state": "INTAKE",
+            "spec_path": spec_path, "model_tier": model_tier, "model_id": model_id, "state": STATE_INTAKE,
         }
 
     def read_current_state(self, task_id: str) -> Optional[str]:
@@ -152,6 +180,18 @@ class _FakePersistencePort(PersistencePort):
     def insert_asymmetric_persistence(self, task_id, destination, status, details) -> None:
         self.calls.append(("insert_asymmetric_persistence", task_id, destination, status, details))
 
+    def get_guidance_block_reason(self, task_id):
+        self.calls.append(("get_guidance_block_reason", task_id))
+        return getattr(self, "_guidance_block_reason", None)
+
+    def set_guidance_block(self, task_id, reason) -> None:
+        self.calls.append(("set_guidance_block", task_id, reason))
+        self._guidance_block_reason = reason
+
+    def clear_guidance_block(self, task_id) -> None:
+        self.calls.append(("clear_guidance_block", task_id))
+        self._guidance_block_reason = None
+
     def get_verification_receipts(self, task_id) -> List[Dict[str, Any]]:
         self.calls.append(("get_verification_receipts", task_id))
         return [r for r in self._receipts if r["task_id"] == task_id]
@@ -166,6 +206,16 @@ class _FakePersistencePort(PersistencePort):
     def update_worktree_fields(self, task_id, worktree_path, worktree_branch, worktree_state) -> None:
         self.calls.append(("update_worktree_fields", task_id, worktree_path, worktree_branch, worktree_state))
         self._tasks[task_id]["worktree_state"] = worktree_state
+
+    def record_done_closeout_decision(self, task_id, source_occupancy_transition_id,
+                                      question_id, answer, actor, recorded_at) -> int:
+        self.calls.append(("record_done_closeout_decision", task_id, source_occupancy_transition_id,
+                           question_id, answer, actor, recorded_at))
+        return 1
+
+    def get_done_closeout_decisions(self, task_id) -> List[Dict[str, Any]]:
+        self.calls.append(("get_done_closeout_decisions", task_id))
+        return []
 
     def ensure_schema(self) -> None:
         self.schema_ensured = True
@@ -226,9 +276,22 @@ def test_fake_persistence_port_proves_full_delegation():
     assert ("insert_task", "t1", "Fake Persistence Task", "GENERAL", "claude", None, None, None) in fake.calls
     assert cp.get_task("t1") == fake._tasks["t1"]
 
-    cp.transition(task_id="t1", to_state="INTERVIEW", actor="user", reason="test")
-    assert ("apply_transition", "t1", "INTAKE", "INTERVIEW", "user", "test") in fake.calls
-    assert fake._tasks["t1"]["state"] == "INTERVIEW"
+    cp.record_premium_consent("t1", "interview", "round-1", "premium-model", "human")
+    cp.require_premium_consent("t1", "interview", "round-1", "premium-model")
+    candidate_id = cp.record_source_assisted_answer_candidate(
+        "t1", "interview", "round-1", "scope", "P01 only", "docs/brief.md"
+    )
+    cp.confirm_source_assisted_answer_candidate(candidate_id, "human")
+    cp.assert_interview_exit_ready("t1", "interview", "round-1")
+    assert ("insert_premium_consent", "t1", "interview", "round-1", "premium-model", "human") in fake.calls
+    assert ("has_premium_consent", "t1", "interview", "round-1", "premium-model") in fake.calls
+    assert any(call[0] == "insert_source_assisted_answer_candidate" for call in fake.calls)
+    assert ("confirm_source_assisted_answer_candidate", candidate_id, "human") in fake.calls
+    assert ("has_unconfirmed_source_assisted_answer_candidates", "t1", "interview", "round-1") in fake.calls
+
+    cp.transition(task_id="t1", to_state=STATE_INTERVIEW, actor="user", reason="test")
+    assert ("apply_transition", "t1", STATE_INTAKE, STATE_INTERVIEW, "user", "test") in fake.calls
+    assert fake._tasks["t1"]["state"] == STATE_INTERVIEW
 
     token = cp.record_verification_receipt(task_id="t1", gate_name="test_suite", command_executed="pytest", exit_code=0)
     assert any(c[0] == "insert_verification_receipt" and c[1] == "t1" for c in fake.calls)
@@ -240,6 +303,6 @@ def test_fake_persistence_port_proves_full_delegation():
     cp.log_asymmetric_persistence(task_id="t1", destination="wiki/decisions/x.md", status="OBSERVED", details="d")
     assert ("insert_asymmetric_persistence", "t1", "wiki/decisions/x.md", "OBSERVED", "d") in fake.calls
 
-    fake._tasks["t1"]["state"] = "DONE"  # satisfy the push-barrier policy check (must be DONE)
+    fake._tasks["t1"]["state"] = STATE_DONE  # satisfy the push-barrier policy check (must be DONE)
     cp.update_worktree(task_id="t1", worktree_path="/tmp/wt", worktree_branch="b", worktree_state="pushed_to_origin")
     assert ("update_worktree_fields", "t1", "/tmp/wt", "b", "pushed_to_origin") in fake.calls

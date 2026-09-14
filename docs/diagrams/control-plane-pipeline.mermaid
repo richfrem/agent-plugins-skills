@@ -1,100 +1,143 @@
 stateDiagram-v2
-    state "Step 1: Intake — task registered" as INTAKE
-    state "Step 2: Interview — understanding what you want" as INTERVIEW
-    state "Step 3: Draft plan written" as DRAFT_PLAN
-    state "Step 3: Draft plan written (legacy path)" as PLAN_REVIEW
-    state "Step 4a: Multi-agent review of the plan — 1 or N rounds (your choice)" as MULTI_AGENT_REVIEW
-    state "Step 5: Awaiting your approval" as AWAITING_APPROVAL
-    state "Step 6: Approved — you said go" as APPROVED
-    state "Step 7: Implementation (isolated worktree)" as IN_WORKTREE
-    state "Step 8: Here's what changed — please review" as WORKTREE_REVIEW
-    state "Step 8a: Multi-agent review of the code — 1 or N rounds (your choice)" as MULTI_AGENT_CODE_REVIEW
-    state "Step 9: Verifying (tests, checks)" as VERIFY_EXIT
-    state "Step 10: Retrospective — complete survey or explicitly skip with reason" as RETROSPECTIVE
-    state "Step 11: Done" as DONE
-    state "Rolled back — problem found, documented" as ROLLED_BACK
-    state "Escalated to you for a decision" as ESCALATED
+    state "Step 1: Intake — task registered [INTAKE]" as INTAKE
+    state "Step 2: Interview — understanding what you want [INTERVIEW]" as INTERVIEW
+    state "Step 3: Draft plan authored [DRAFT_PLAN]" as DRAFT_PLAN
+    state "Step 4: Plan disposition & acceptance gate [PLAN_REVIEW]" as PLAN_REVIEW
+    state "Step 4a: Independent plan review — 0 or more rounds [MULTI_AGENT_REVIEW]" as MULTI_AGENT_REVIEW
+    state "Step 5: Awaiting your approval [AWAITING_APPROVAL]" as AWAITING_APPROVAL
+    state "Step 6: Approved — you said go [APPROVED]" as APPROVED
+    state "Step 7: Implementation (isolated worktree) [IN_WORKTREE]" as IN_WORKTREE
+    state "Step 8: Here's what changed — please review [WORKTREE_REVIEW]" as WORKTREE_REVIEW
+    state "Step 8a: Multi-agent review of the code — 1 or N rounds (your choice) [MULTI_AGENT_CODE_REVIEW]" as MULTI_AGENT_CODE_REVIEW
+    state "Step 9: Verifying (tests, checks) [VERIFY_EXIT]" as VERIFY_EXIT
+    state "Step 10: Retrospective — complete survey or explicitly skip with reason [RETROSPECTIVE]" as RETROSPECTIVE
+    state "Step 11: Done [DONE]" as DONE
+    state "Rolled back — problem found, documented [ROLLED_BACK]" as ROLLED_BACK
+    state "Escalated to you for a decision [ESCALATED]" as ESCALATED
 
     [*] --> INTAKE
     INTAKE --> INTERVIEW
     INTAKE --> DRAFT_PLAN : skip straight to planning
     INTAKE --> PLAN_REVIEW : skip straight to planning
     INTAKE --> ESCALATED
+    INTAKE --> DONE : force close — interactive human authorization
 
-    INTERVIEW --> DRAFT_PLAN : plan/questions complete<br/>(or explicit skip, recorded)
-    INTERVIEW --> PLAN_REVIEW : plan/questions complete<br/>(or explicit skip, recorded)
+    INTERVIEW --> DRAFT_PLAN : interview complete<br/>no plan artifacts required yet
+    INTERVIEW --> PLAN_REVIEW : legacy/direct plan submission path<br/>(artifacts required)
     INTERVIEW --> RETROSPECTIVE : trivial path — interview baseline<br/>and adaptive follow-ups complete
     INTERVIEW --> ESCALATED
     INTERVIEW --> INTAKE : human-approved recovery reset
+    INTERVIEW --> DONE : force close — interactive human authorization
 
-    DRAFT_PLAN --> PLAN_REVIEW : same step, either path
-    PLAN_REVIEW --> DRAFT_PLAN : same step, either path
+    DRAFT_PLAN --> PLAN_REVIEW : submit plan<br/>ask additional review? yes/no
+    PLAN_REVIEW --> DRAFT_PLAN : changes requested<br/>revise artifact identity
     DRAFT_PLAN --> INTERVIEW : needs more questions
     PLAN_REVIEW --> INTERVIEW : needs more questions
 
-    DRAFT_PLAN --> MULTI_AGENT_REVIEW : Want a second AI opinion<br/>on this plan first? Yes
-    PLAN_REVIEW --> MULTI_AGENT_REVIEW : Want a second AI opinion<br/>on this plan first? Yes
-    DRAFT_PLAN --> AWAITING_APPROVAL : Proceed straight<br/>to your approval? Yes<br/>(skip recorded, never silent)
-    PLAN_REVIEW --> AWAITING_APPROVAL : Proceed straight<br/>to your approval? Yes<br/>(skip recorded, never silent)
+    PLAN_REVIEW --> MULTI_AGENT_REVIEW : yes — ask method, then internal runtime/model/effort<br/>one at a time; repeat if needed
+    PLAN_REVIEW --> AWAITING_APPROVAL : no / plan accepted<br/>continue to human approval
     DRAFT_PLAN --> ESCALATED
     DRAFT_PLAN --> INTAKE : human-approved recovery reset
+    DRAFT_PLAN --> DONE : force close — interactive human authorization
     PLAN_REVIEW --> ESCALATED
     PLAN_REVIEW --> INTAKE : human-approved recovery reset
+    PLAN_REVIEW --> DONE : force close — interactive human authorization
 
-    MULTI_AGENT_REVIEW --> AWAITING_APPROVAL : review complete
-    MULTI_AGENT_REVIEW --> DRAFT_PLAN : reviewer requested changes
-    MULTI_AGENT_REVIEW --> PLAN_REVIEW : reviewer requested changes
+    MULTI_AGENT_REVIEW --> PLAN_REVIEW : review complete<br/>merge outcomes for plan acceptance
+    MULTI_AGENT_REVIEW --> DRAFT_PLAN : reviewer requested changes<br/>new identity required before resubmission
     MULTI_AGENT_REVIEW --> ESCALATED
     MULTI_AGENT_REVIEW --> INTAKE : human-approved recovery reset
+    MULTI_AGENT_REVIEW --> DONE : force close — interactive human authorization
 
     AWAITING_APPROVAL --> APPROVED : you say Proceed / Go<br/>(this step can never be skipped)
     AWAITING_APPROVAL --> DRAFT_PLAN : needs more work
     AWAITING_APPROVAL --> PLAN_REVIEW : needs more work
-    AWAITING_APPROVAL --> MULTI_AGENT_REVIEW : needs more work
     AWAITING_APPROVAL --> ESCALATED
     AWAITING_APPROVAL --> INTAKE : human-approved recovery reset
+    AWAITING_APPROVAL --> DONE : force close — interactive human authorization
 
     APPROVED --> IN_WORKTREE
+    APPROVED --> RETROSPECTIVE : human-approved skip implementation
     APPROVED --> ESCALATED
     APPROVED --> INTAKE : human-approved recovery reset
+    APPROVED --> DONE : force close — interactive human authorization
 
     IN_WORKTREE --> WORKTREE_REVIEW : implementation + tests done
     IN_WORKTREE --> VERIFY_EXIT
     IN_WORKTREE --> ROLLED_BACK
     IN_WORKTREE --> ESCALATED
     IN_WORKTREE --> INTAKE : human-approved recovery reset
+    IN_WORKTREE --> DONE : force close — interactive human authorization
 
-    WORKTREE_REVIEW --> MULTI_AGENT_CODE_REVIEW : Want a second AI review<br/>of this code? Yes
+    WORKTREE_REVIEW --> MULTI_AGENT_CODE_REVIEW : yes — choose method<br/>then internal runtime/model/effort one at a time
     WORKTREE_REVIEW --> VERIFY_EXIT : Proceed straight<br/>to verification? Yes<br/>(skip recorded, never silent)
     WORKTREE_REVIEW --> IN_WORKTREE : more changes needed
     WORKTREE_REVIEW --> ROLLED_BACK
     WORKTREE_REVIEW --> ESCALATED
     WORKTREE_REVIEW --> INTAKE : human-approved recovery reset
+    WORKTREE_REVIEW --> DONE : force close — interactive human authorization
 
-    MULTI_AGENT_CODE_REVIEW --> WORKTREE_REVIEW
+    MULTI_AGENT_CODE_REVIEW --> WORKTREE_REVIEW : review package ready<br/>for artifact/scope confirmation
     MULTI_AGENT_CODE_REVIEW --> VERIFY_EXIT
-    MULTI_AGENT_CODE_REVIEW --> IN_WORKTREE : reviewer requested changes
+    MULTI_AGENT_CODE_REVIEW --> IN_WORKTREE : synthesis says bounded changes<br/>human approves rework
     MULTI_AGENT_CODE_REVIEW --> ROLLED_BACK
     MULTI_AGENT_CODE_REVIEW --> ESCALATED
     MULTI_AGENT_CODE_REVIEW --> INTAKE : human-approved recovery reset
+    MULTI_AGENT_CODE_REVIEW --> DONE : force close — interactive human authorization
 
-    VERIFY_EXIT --> RETROSPECTIVE : all checks passed
+    VERIFY_EXIT --> RETROSPECTIVE : ledger + full/task tests + leak check<br/>and map-debt evidence pass
     VERIFY_EXIT --> IN_WORKTREE : verification failed
     VERIFY_EXIT --> WORKTREE_REVIEW : verification failed
     VERIFY_EXIT --> ROLLED_BACK
     VERIFY_EXIT --> ESCALATED
     VERIFY_EXIT --> INTAKE : human-approved recovery reset
+    VERIFY_EXIT --> DONE : force close — interactive human authorization
 
-    RETROSPECTIVE --> DONE : survey complete or explicitly skipped<br/>with reason; follow-ups resolved
+    RETROSPECTIVE --> DONE : survey complete or explicitly skipped<br/>with reason<br/>follow-ups resolved
     RETROSPECTIVE --> ESCALATED : retrospective blocked
     RETROSPECTIVE --> INTAKE : human-approved recovery reset
-
     ROLLED_BACK --> ESCALATED
     ROLLED_BACK --> PLAN_REVIEW : restart planning
     ROLLED_BACK --> INTAKE : human-approved recovery reset
+    ROLLED_BACK --> DONE : force close — interactive human authorization
+    ROLLED_BACK --> RETROSPECTIVE : human-approved recovery reset
 
     ESCALATED --> INTAKE : start over
     ESCALATED --> PLAN_REVIEW : restart planning
+    ESCALATED --> DONE : force close — interactive human authorization
+    ESCALATED --> RETROSPECTIVE : human-approved recovery reset
 
     DONE --> INTAKE : human-approved recovery reset
+    DONE --> RETROSPECTIVE : human-approved recovery reset
+    INTAKE --> RETROSPECTIVE : human-approved recovery reset
+    DRAFT_PLAN --> RETROSPECTIVE : human-approved recovery reset
+    MULTI_AGENT_REVIEW --> RETROSPECTIVE : human-approved recovery reset
+    PLAN_REVIEW --> RETROSPECTIVE : human-approved recovery reset
+    AWAITING_APPROVAL --> RETROSPECTIVE : human-approved recovery reset
+    IN_WORKTREE --> RETROSPECTIVE : human-approved recovery reset
+    WORKTREE_REVIEW --> RETROSPECTIVE : human-approved recovery reset
+    MULTI_AGENT_CODE_REVIEW --> RETROSPECTIVE : human-approved recovery reset
     DONE --> [*]
+
+    note right of DONE
+        Force-close from any state requires
+        explicit human authorization.
+        Agents cannot invoke this bypass.
+    end note
+
+    note right of IN_WORKTREE
+        After APPROVED → IN_WORKTREE, the
+        implementation controller runs dispatch,
+        review, synthesis, and bounded fixes without
+        asking for routine lifecycle transitions.
+        Re-enter review only after focused tests and
+        the session-wide change inventory pass.
+    end note
+
+    note right of MULTI_AGENT_CODE_REVIEW
+        Plan-review receipts and implementation-review
+        receipts are isolated. Every reviewer report is
+        preserved, synthesized into one revision brief,
+        and a requested change returns through the
+        human-approved IN_WORKTREE rework edge.
+    end note

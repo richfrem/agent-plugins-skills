@@ -40,6 +40,10 @@ if str(SCRIPTS_DIR) not in sys.path:
 
 from agent_control import ControlPlane, PersistenceInvariantViolation
 from interview_helpers import stage_interview_answers
+from helpers.implementation_ledger import stage_implementation_ledger
+from control_plane.constants import (
+    STATE_INTERVIEW, STATE_DRAFT_PLAN, STATE_PLAN_REVIEW, STATE_AWAITING_APPROVAL, STATE_APPROVED, STATE_IN_WORKTREE, STATE_WORKTREE_REVIEW, STATE_MULTI_AGENT_CODE_REVIEW, STATE_VERIFY_EXIT, STATE_RETROSPECTIVE, STATE_DONE,
+)
 
 
 @pytest.fixture
@@ -65,6 +69,10 @@ def _coordinate_transition(cp: ControlPlane, task_id: str, to_state: str, actor=
     from control_plane.registry import TransitionRegistry
     reg = TransitionRegistry.load_default()
     def _answer(prompt):
+        if "guidance_compliance_confirmation" in prompt:
+            return "YES"
+        if "confirm_review_in_worktree_to_worktree_review" in prompt:
+            return "1"  # The only option is explicit proceed to worktree review.
         return "y" if "(y/n)" in prompt else "1"
     coord = TransitionCoordinator(control_plane=cp, registry=reg, input_fn=_answer)
     return coord.coordinate_transition(
@@ -77,13 +85,14 @@ def _coordinate_transition(cp: ControlPlane, task_id: str, to_state: str, actor=
 
 
 def _complete_retrospective(cp: ControlPlane, task_id: str):
-    cp.transition(task_id, "RETROSPECTIVE", "controller", "Enter retrospective")
+    cp.record_verification_receipt(task_id, "full_test_suite", "pytest -q", 0)
+    cp.transition(task_id, STATE_RETROSPECTIVE, "controller", "Enter retrospective")
     cp.save_retrospective(
         task_id,
         {"decision": "opt_in", "completion_mode": "completed", "actor": "human"},
         [],
     )
-    _coordinate_transition(cp, task_id, "DONE", actor="human", reason="Complete retrospective")
+    _coordinate_transition(cp, task_id, STATE_DONE, actor="human", reason="Complete retrospective")
 
 
 def _advance_to_in_worktree(cp: ControlPlane, task_id: str, title: str, tmp_path):
@@ -96,16 +105,18 @@ def _advance_to_in_worktree(cp: ControlPlane, task_id: str, title: str, tmp_path
     plans_dir.mkdir(parents=True, exist_ok=True)
     (plans_dir / f"{task_id}-spec.md").write_text("# Spec", encoding="utf-8")
     (plans_dir / f"{task_id}-implementation-plan.md").write_text("# Plan", encoding="utf-8")
+    stage_implementation_ledger(control_plane, task_id, tmp_path)
     (tmp_path / ".worktrees" / task_id).mkdir(parents=True, exist_ok=True)
 
     cp.create_task(task_id=task_id, title=title, runtime_tool="claude")
     cp.record_plan_mode_entry(task_id=task_id, actor="controller")
-    _coordinate_transition(cp, task_id, "PLAN_REVIEW", actor="controller", reason="Plan ready")
+    _coordinate_transition(cp, task_id, STATE_PLAN_REVIEW, actor="controller", reason="Plan ready")
     cp.record_review_skip(task_id=task_id, phase="multi_agent_review", actor="user", reason="characterization test")
-    cp.transition(task_id=task_id, to_state="AWAITING_APPROVAL", actor="controller", reason="Review ready")
-    _coordinate_transition(cp, task_id, "APPROVED", actor="user", reason="Approved")
+    _coordinate_transition(cp, task_id, STATE_AWAITING_APPROVAL, actor="controller", reason="Review ready")
+    _coordinate_transition(cp, task_id, STATE_APPROVED, actor="user", reason="Approved")
     cp.record_human_approval(task_id=task_id, approver="user")
-    cp.transition(task_id=task_id, to_state="IN_WORKTREE", actor="controller", reason="Worktree created")
+    cp.update_worktree(task_id, f".worktrees/{task_id}", f"feature/{task_id}", "written_in_worktree")
+    cp.transition(task_id=task_id, to_state=STATE_IN_WORKTREE, actor="controller", reason="Worktree created")
 
 
 # --- update_worktree() push-barrier: strict DONE state gate (5a5efc2a) ---
@@ -115,9 +126,9 @@ def test_push_barrier_permits_done(control_plane, tmp_path):
     task_id = "char-push-done-001"
     _advance_to_in_worktree(control_plane, task_id, "Push Barrier: DONE", tmp_path)
     control_plane.record_verification_receipt(task_id=task_id, gate_name="test_suite", command_executed="pytest", exit_code=0)
-    _coordinate_transition(control_plane, task_id, "WORKTREE_REVIEW", actor="controller", reason="Implementation done")
+    _coordinate_transition(control_plane, task_id, STATE_WORKTREE_REVIEW, actor="controller", reason="Implementation done")
     control_plane.record_review_skip(task_id=task_id, phase="multi_agent_code_review", actor="user", reason="characterization test")
-    control_plane.transition(task_id=task_id, to_state="VERIFY_EXIT", actor="controller", reason="Ready to verify exit")
+    control_plane.transition(task_id=task_id, to_state=STATE_VERIFY_EXIT, actor="controller", reason="Ready to verify exit")
     control_plane.record_verification_receipt(task_id=task_id, gate_name="leak_check", command_executed="git status", exit_code=0)
     control_plane.log_asymmetric_persistence(task_id=task_id, destination="references/map-debt.md", status="RESOLVED", details="Resolved")
     _complete_retrospective(control_plane, task_id)
@@ -128,21 +139,21 @@ def test_push_barrier_permits_done(control_plane, tmp_path):
     assert control_plane.get_task(task_id)["worktree_state"] == "pushed_to_origin"
 
 
-@pytest.mark.parametrize("intermediate_state", ["IN_WORKTREE", "WORKTREE_REVIEW", "MULTI_AGENT_CODE_REVIEW", "VERIFY_EXIT"])
+@pytest.mark.parametrize("intermediate_state", [STATE_IN_WORKTREE, STATE_WORKTREE_REVIEW, STATE_MULTI_AGENT_CODE_REVIEW, STATE_VERIFY_EXIT])
 def test_push_barrier_blocks_intermediate_states(control_plane, intermediate_state, tmp_path):
     """Characterizes: worktree_state='pushed_to_origin' is rejected when task state is not DONE."""
     task_id = f"char-push-blocked-{intermediate_state.lower()}"
     _advance_to_in_worktree(control_plane, task_id, f"Push Barrier: {intermediate_state}", tmp_path)
     
-    if intermediate_state in ("WORKTREE_REVIEW", "MULTI_AGENT_CODE_REVIEW", "VERIFY_EXIT"):
+    if intermediate_state in (STATE_WORKTREE_REVIEW, STATE_MULTI_AGENT_CODE_REVIEW, STATE_VERIFY_EXIT):
         control_plane.record_verification_receipt(task_id=task_id, gate_name="test_suite", command_executed="pytest", exit_code=0)
-        _coordinate_transition(control_plane, task_id, "WORKTREE_REVIEW", actor="controller", reason="Implementation done")
-    if intermediate_state in ("MULTI_AGENT_CODE_REVIEW", "VERIFY_EXIT"):
-        if intermediate_state == "MULTI_AGENT_CODE_REVIEW":
-            _coordinate_transition(control_plane, task_id, "MULTI_AGENT_CODE_REVIEW", actor="controller", reason="Adversarial code review")
+        _coordinate_transition(control_plane, task_id, STATE_WORKTREE_REVIEW, actor="controller", reason="Implementation done")
+    if intermediate_state in (STATE_MULTI_AGENT_CODE_REVIEW, STATE_VERIFY_EXIT):
+        if intermediate_state == STATE_MULTI_AGENT_CODE_REVIEW:
+            _coordinate_transition(control_plane, task_id, STATE_MULTI_AGENT_CODE_REVIEW, actor="controller", reason="Adversarial code review")
         else:
             control_plane.record_review_skip(task_id=task_id, phase="multi_agent_code_review", actor="user", reason="characterization test")
-            control_plane.transition(task_id=task_id, to_state="VERIFY_EXIT", actor="controller", reason="Ready to verify exit")
+            control_plane.transition(task_id=task_id, to_state=STATE_VERIFY_EXIT, actor="controller", reason="Ready to verify exit")
 
     with pytest.raises(PersistenceInvariantViolation, match="Pushing to origin requires full pipeline completion"):
         control_plane.update_worktree(
@@ -160,8 +171,8 @@ def test_prior_art_guard_not_applicable_to_general_task(control_plane):
     consolidated matrix this file exists to be."""
     task_id = "char-priorart-general-001"
     control_plane.create_task(task_id=task_id, title="General", runtime_tool="claude", task_type="GENERAL")
-    control_plane.transition(task_id=task_id, to_state="INTERVIEW", actor="user", reason="Starting")
-    assert control_plane.get_task(task_id)["state"] == "INTERVIEW"
+    control_plane.transition(task_id=task_id, to_state=STATE_INTERVIEW, actor="user", reason="Starting")
+    assert control_plane.get_task(task_id)["state"] == STATE_INTERVIEW
 
 
 def test_prior_art_guard_does_not_re_fire_on_later_edge_after_intake_satisfied(control_plane):
@@ -178,13 +189,13 @@ def test_prior_art_guard_does_not_re_fire_on_later_edge_after_intake_satisfied(c
         task_id=task_id, destination="references/map-debt.md", status="OBSERVED",
         details="prior_art_scan: summary=scanned; repeat_yes_entries=none"
     )
-    control_plane.transition(task_id=task_id, to_state="INTERVIEW", actor="controller", reason="Prior art scanned")
+    control_plane.transition(task_id=task_id, to_state=STATE_INTERVIEW, actor="controller", reason="Prior art scanned")
     control_plane.record_plan_mode_entry(task_id=task_id, actor="controller")
     stage_interview_answers(control_plane, task_id)
 
     # No further prior-art logging done here — guard must not re-fire on this later edge.
-    control_plane.transition(task_id=task_id, to_state="DRAFT_PLAN", actor="controller", reason="Compiled spec")
-    assert control_plane.get_task(task_id)["state"] == "DRAFT_PLAN"
+    control_plane.transition(task_id=task_id, to_state=STATE_DRAFT_PLAN, actor="controller", reason="Compiled spec")
+    assert control_plane.get_task(task_id)["state"] == STATE_DRAFT_PLAN
 
 
 # --- _check_done_guard: locked-verifier sovereignty sub-branch, intact case ---
@@ -200,6 +211,7 @@ def test_done_guard_locked_verifier_sovereignty_branch_passes_when_intact(contro
     plans_dir.mkdir(parents=True, exist_ok=True)
     (plans_dir / f"{task_id}-spec.md").write_text("# Spec", encoding="utf-8")
     (plans_dir / f"{task_id}-implementation-plan.md").write_text("# Plan", encoding="utf-8")
+    stage_implementation_ledger(control_plane, task_id, tmp_path)
 
     control_plane.create_task(task_id=task_id, title="Done sovereignty intact", runtime_tool="claude")
 
@@ -208,13 +220,14 @@ def test_done_guard_locked_verifier_sovereignty_branch_passes_when_intact(contro
     control_plane.lock_verifiers(task_id=task_id, file_paths=[verifier_file])
 
     control_plane.record_plan_mode_entry(task_id=task_id, actor="controller")
-    _coordinate_transition(control_plane, task_id, "PLAN_REVIEW", actor="controller", reason="Plan ready")
+    _coordinate_transition(control_plane, task_id, STATE_PLAN_REVIEW, actor="controller", reason="Plan ready")
     control_plane.record_review_skip(task_id=task_id, phase="multi_agent_review", actor="user", reason="characterization test")
-    control_plane.transition(task_id=task_id, to_state="AWAITING_APPROVAL", actor="controller", reason="Review ready")
-    _coordinate_transition(control_plane, task_id, "APPROVED", actor="user", reason="Approved")
+    _coordinate_transition(control_plane, task_id, STATE_AWAITING_APPROVAL, actor="controller", reason="Review ready")
+    _coordinate_transition(control_plane, task_id, STATE_APPROVED, actor="user", reason="Approved")
     control_plane.record_human_approval(task_id=task_id, approver="user")
-    control_plane.transition(task_id=task_id, to_state="IN_WORKTREE", actor="controller", reason="Worktree created")
-    control_plane.transition(task_id=task_id, to_state="VERIFY_EXIT", actor="controller", reason="Verifying")
+    control_plane.update_worktree(task_id, f".worktrees/{task_id}", f"feature/{task_id}", "written_in_worktree")
+    control_plane.transition(task_id=task_id, to_state=STATE_IN_WORKTREE, actor="controller", reason="Worktree created")
+    control_plane.transition(task_id=task_id, to_state=STATE_VERIFY_EXIT, actor="controller", reason="Verifying")
 
     control_plane.record_verification_receipt(task_id=task_id, gate_name="test_suite", command_executed="pytest", exit_code=0)
     control_plane.log_asymmetric_persistence(
@@ -224,4 +237,4 @@ def test_done_guard_locked_verifier_sovereignty_branch_passes_when_intact(contro
 
     # Verifier file untouched since locking — sovereignty branch must pass silently.
     _complete_retrospective(control_plane, task_id)
-    assert control_plane.get_task(task_id)["state"] == "DONE"
+    assert control_plane.get_task(task_id)["state"] == STATE_DONE

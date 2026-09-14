@@ -95,7 +95,7 @@ import json
 import os
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional, Any, Tuple
+from typing import Callable, Dict, List, Optional, Any, Tuple
 
 from control_plane.ports import (
     FilesystemPort,
@@ -106,6 +106,7 @@ from control_plane.ports import (
     PhaseCapability,
     TransitionRecord,
     TransitionDecision,
+    InterviewAnswerRecord,
     TransitionCommitRequest,
 )
 from control_plane.adapters import (
@@ -114,6 +115,10 @@ from control_plane.adapters import (
 )
 from control_plane import policy as _policy
 from control_plane.state_machine import StateMachine, CANONICAL_STATES, ALLOWED_TRANSITIONS, InvalidStateTransition
+from control_plane.constants import (
+    STATE_INTERVIEW, STATE_DRAFT_PLAN, STATE_APPROVED, STATE_IN_WORKTREE, STATE_RETROSPECTIVE, STATE_DONE,
+)
+
 from control_plane.registry import TransitionRegistry
 from control_plane.coordinator import TransitionCoordinator, TransitionCoordinatorError
 
@@ -172,7 +177,8 @@ class ControlPlane:
                  crypto_adapter: Optional["CryptoPort"] = None,
                  model_catalog_adapter: Optional["ModelCatalogPort"] = None,
                  clock_adapter: Optional["ClockPort"] = None,
-                 persistence_adapter: Optional["PersistencePort"] = None):
+                 persistence_adapter: Optional["PersistencePort"] = None,
+                 implementation_controller: Optional[Callable[[str, TransitionRecord], None]] = None):
         """Initializes the ControlPlane instance. All infrastructure is delegated: connection
         management, schema migration, and every task/transition/receipt/review/verifier/log/
         worktree CRUD operation go through a PersistencePort (SqlitePersistenceAdapter by
@@ -192,6 +198,9 @@ class ControlPlane:
         self._crypto = crypto_adapter if crypto_adapter is not None else CryptoAdapter()
         self._clock = clock_adapter if clock_adapter is not None else ClockAdapter()
         self._model_catalog = model_catalog_adapter if model_catalog_adapter is not None else ModelCatalogAdapter()
+        # Optional runtime bridge.  Lifecycle transitions remain authoritative; the
+        # callback is only invoked after a committed APPROVED -> IN_WORKTREE edge.
+        self._implementation_controller = implementation_controller
         self._state_machine = StateMachine()
         if persistence_adapter is not None:
             self._persistence = persistence_adapter
@@ -205,6 +214,25 @@ class ControlPlane:
         """Initializes SQLite tables and WAL mode. Delegates to the SqlitePersistenceAdapter,
         which self-heals FK-corrupted or legacy schemas."""
         self._persistence.ensure_schema()
+
+    def create_implementation_controller(
+        self,
+        dispatch,
+        review,
+        fix=None,
+        **kwargs,
+    ):
+        """Return the canonical persistent implementation runtime for this control plane.
+
+        The queue lives beside the control-plane database, so callers no longer need to
+        import the loop primitive or invent a queue location. Execution callbacks remain
+        supplied by the active native/portable runtime.
+        """
+        from control_plane.implementation_loop import create_default_controller
+
+        db_path = self.db_path or (Path.cwd() / "context" / "control_plane.db")
+        queue_path = Path(db_path).parent / "implementation-queue.json"
+        return create_default_controller(queue_path, dispatch, review, fix, **kwargs)
 
     def resolve_recommended_model(self, runtime_tool: str, tier: str = "low") -> Dict[str, str]:
         """Resolves model recommendation and model_id from plugins/cli-agents/references/.
@@ -231,10 +259,404 @@ class ControlPlane:
             model_id = rec["model_id"]
 
         self._persistence.insert_task(task_id, title, task_type, runtime_tool, spec_path, model_tier, model_id)
+        return {"task_id": task_id, "main_dirty_advisory": self._get_main_dirty_advisory()}
+
+    def _get_main_dirty_advisory(self) -> Dict[str, Any]:
+        """Non-blocking report of dirty source-checkout paths at task-creation time, so
+        interim work isn't left uncommitted through the whole planning phase (github
+        issue #609 follow-up). Read-only: never copies or modifies files."""
+        import subprocess
+
+        repo_root = getattr(self, "repo_root", None)
+        if repo_root is None and self.db_path is not None and self.db_path.parent.name == "context":
+            repo_root = self.db_path.parent.parent
+        if repo_root is None:
+            repo_root = Path.cwd()
+        result = subprocess.run(
+            ["git", "-C", str(repo_root), "status", "--porcelain=v1", "--untracked-files=all"],
+            capture_output=True, text=True, check=False,
+        )
+        paths = [line[3:].strip() for line in result.stdout.splitlines() if line.strip()]
+        return {"dirty_count": len(paths), "dirty_paths": paths}
+
+    def record_premium_consent(
+        self, task_id: str, stage: str, round_id: str, model_id: str, actor: str
+    ) -> int:
+        """Record explicit human consent for a premium model in one exact interview scope."""
+        if actor != "human":
+            raise PersistenceInvariantViolation("Premium consent requires actor='human'")
+        return self._persistence.insert_premium_consent(task_id, stage, round_id, model_id, actor)
+
+    def require_premium_consent(self, task_id: str, stage: str, round_id: str, model_id: str) -> None:
+        """Deny premium use unless human consent matches the exact stage and round."""
+        if not self._persistence.has_premium_consent(task_id, stage, round_id, model_id):
+            raise PersistenceInvariantViolation(
+                "Premium consent missing for "
+                f"task_id='{task_id}', stage='{stage}', round_id='{round_id}', model_id='{model_id}'"
+            )
+
+    def record_source_assisted_answer_candidate(
+        self,
+        task_id: str,
+        stage: str,
+        round_id: str,
+        question_id: str,
+        answer: str,
+        source_path: str,
+        source_authorized: bool = True,
+    ) -> int:
+        """Persist an authorized source answer only as a candidate pending human confirmation."""
+        if not source_authorized:
+            raise PersistenceInvariantViolation("Source-assisted answer candidates require an authorized source")
+        return self._persistence.insert_source_assisted_answer_candidate(
+            task_id, stage, round_id, question_id, answer, source_path, source_authorized
+        )
+
+    def confirm_source_assisted_answer_candidate(self, candidate_id: int, actor: str) -> None:
+        """Confirm one pending source candidate through the human decision boundary."""
+        if actor != "human":
+            raise PersistenceInvariantViolation("Source-assisted answer confirmation requires actor='human'")
+        if not self._persistence.confirm_source_assisted_answer_candidate(candidate_id, actor):
+            raise ValueError(f"Pending source-assisted answer candidate not found: {candidate_id}")
+
+    def assert_interview_exit_ready(
+        self, task_id: str, stage: str, round_id: Optional[str]
+    ) -> None:
+        """Block interview exit while the requested scope has a pending source candidate."""
+        if self._persistence.has_unconfirmed_source_assisted_answer_candidates(task_id, stage, round_id):
+            raise PersistenceInvariantViolation(
+                "Cannot exit interview with unconfirmed source-assisted answer candidate "
+                f"for task_id='{task_id}', stage='{stage}', round_id='{round_id}'"
+            )
+
+    def assert_interview_plan_outline_ready(self, task_id: str) -> None:
+        """Require a persisted, non-empty interview outline before drafting a plan."""
+        outline = self._persistence.get_interview_plan_outline(task_id)
+        if not outline or not outline.get("bullets"):
+            raise PersistenceInvariantViolation(
+                f"Cannot enter DRAFT_PLAN for task_id='{task_id}': interview plan outline is missing."
+            )
+        artifact_path = self._resolve_plan_outline_path(outline["artifact_path"])
+        if not artifact_path.is_file() or not artifact_path.read_text(encoding="utf-8").strip():
+            raise PersistenceInvariantViolation(
+                f"Cannot enter DRAFT_PLAN for task_id='{task_id}': interview plan outline artifact is missing or empty."
+            )
+
+    def update_interview_plan_outline(
+        self, task_id: str, question_id: str, answer: str, actor: str = "interviewer"
+    ) -> Dict[str, Any]:
+        """Update the canonical outline and project its Markdown review artifact."""
+        task = self.get_task(task_id)
+        if not task:
+            raise ValueError(f"Task not found: {task_id}")
+        if self._read_current_state_for_update(task_id) != STATE_INTERVIEW:
+            raise PersistenceInvariantViolation(
+                f"Interview outline updates require current state INTERVIEW for task_id='{task_id}'."
+            )
+        if not answer or not answer.strip():
+            raise ValueError("Interview outline answers must be non-empty.")
+
+        outline = self._persistence.get_interview_plan_outline(task_id)
+        bullets = list(outline.get("bullets", [])) if outline else []
+        bullet_types = {
+            "interview_classification": "decision",
+            "interview_summary": "desired_user_outcome",
+            "interview_scope": "scope_boundary",
+            "interview_verification": "success_evidence",
+            "interview_acceptance_criteria": "constraint_or_authority",
+            "interview_planning_model_effort": "constraint_or_authority",
+            "interview_trivial_evidence": "success_evidence",
+        }
+        bullet = {
+            "question_id": question_id,
+            "bullet_type": bullet_types.get(question_id, "open_question"),
+            "text": answer.strip(),
+            "actor": actor,
+        }
+        for index, existing in enumerate(bullets):
+            if existing.get("question_id") == question_id:
+                bullets[index] = bullet
+                break
+        else:
+            bullets.append(bullet)
+
+        artifact_rel = f"docs/plans/{task_id}-plan-outline.md"
+        revision = self._persistence.upsert_interview_plan_outline(task_id, bullets, artifact_rel)
+        artifact_path = self._resolve_plan_outline_path(artifact_rel)
+        artifact_path.parent.mkdir(parents=True, exist_ok=True)
+        lines = [
+            f"# Plan Outline — {task.get('title', task_id)}", "", f"Task: `{task_id}`",
+            f"Revision: {revision}", "",
+            "These bullets are the interview input to the initial draft plan. They are not implementation approval.", "",
+        ]
+        lines.extend(
+            f"- **{item['bullet_type']}** (`{item['question_id']}`): {item['text']}"
+            for item in bullets
+        )
+        temporary = artifact_path.with_name(f".{artifact_path.name}.{os.getpid()}.tmp")
+        try:
+            temporary.write_text("\n".join(lines) + "\n", encoding="utf-8")
+            os.replace(temporary, artifact_path)
+        finally:
+            if temporary.exists():
+                temporary.unlink()
+        return {"revision": revision, "artifact_path": artifact_rel, "bullets": bullets}
+
+    def record_interview_answer(
+        self,
+        task_id: str,
+        source_occupancy_transition_id: int,
+        from_state: str,
+        to_state: str,
+        question_id: str,
+        answer: str,
+        actor: str = "interviewer",
+    ) -> Dict[str, Any]:
+        """Persist one interview answer and outline revision in one SQLite transaction."""
+        task = self.get_task(task_id)
+        if not task:
+            raise ValueError(f"Task not found: {task_id}")
+        if from_state != STATE_INTERVIEW or self._read_current_state_for_update(task_id) != from_state:
+            raise PersistenceInvariantViolation(
+                f"Interview answer updates require current state INTERVIEW for task_id='{task_id}'."
+            )
+        if not answer or not answer.strip():
+            raise ValueError("Interview answers must be non-empty.")
+
+        outline = self._persistence.get_interview_plan_outline(task_id)
+        bullets = list(outline.get("bullets", [])) if outline else []
+        bullet_types = {
+            "interview_classification": "decision",
+            "interview_summary": "desired_user_outcome",
+            "interview_scope": "scope_boundary",
+            "interview_verification": "success_evidence",
+            "interview_acceptance_criteria": "constraint_or_authority",
+            "interview_planning_model_effort": "constraint_or_authority",
+        }
+        bullets.append({
+            "question_id": question_id,
+            "bullet_type": bullet_types.get(question_id, "open_question"),
+            "text": answer.strip(),
+            "actor": actor,
+        })
+        artifact_rel = f"docs/plans/{task_id}-plan-outline.md"
+        decision = TransitionDecision(
+            task_id=task_id,
+            source_occupancy_transition_id=source_occupancy_transition_id,
+            from_state=from_state,
+            to_state=to_state,
+            question_id=question_id,
+            answer=answer.strip(),
+            decision_type="ANSWER",
+            actor=actor,
+            recorded_at=self._clock.current_time(),
+        )
+        persisted = self._persistence.record_interview_answer(decision, bullets, artifact_rel)
+
+        artifact_path = self._resolve_plan_outline_path(artifact_rel)
+        artifact_path.parent.mkdir(parents=True, exist_ok=True)
+        lines = [
+            f"# Plan Outline — {task.get('title', task_id)}", "", f"Task: `{task_id}`",
+            f"Revision: {persisted.outline_revision}", "",
+            "These bullets are the interview input to the initial draft plan. They are not implementation approval.", "",
+        ]
+        lines.extend(
+            f"- **{item['bullet_type']}** (`{item['question_id']}`): {item['text']}"
+            for item in bullets
+        )
+        temporary = artifact_path.with_name(f".{artifact_path.name}.{os.getpid()}.tmp")
+        try:
+            temporary.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
+            os.replace(temporary, artifact_path)
+        finally:
+            if temporary.exists():
+                temporary.unlink()
+        return {
+            "decision_id": persisted.decision_id,
+            "outline_revision": persisted.outline_revision,
+            "artifact_path": artifact_rel,
+            "bullets": bullets,
+        }
+
+    def get_last_transition(self, task_id: str):
+        """Public facade for reading a task's most recent transition record -- delegates
+        to the persistence port rather than requiring callers to reach into
+        cp._persistence directly (test_wrappers_prohibit_raw_sql_and_private_persistence_attributes
+        forbids exactly that pattern outside this class)."""
+        return self._persistence.get_last_transition(task_id)
+
+    def get_unconsumed_transition_answers(self, task_id: str, from_state: str, to_state: str) -> Dict[str, str]:
+        """Public facade for reading recorded-but-not-yet-consumed interview answers for
+        one transition edge -- delegates to the persistence port rather than requiring
+        callers (e.g. record_interview_question.py) to reach into cp._persistence directly
+        (test_wrappers_prohibit_raw_sql_and_private_persistence_attributes forbids exactly
+        that pattern outside this class)."""
+        return self._persistence.get_unconsumed_transition_answers(task_id, from_state, to_state)
+
+    def _resolve_plan_outline_path(self, artifact_rel: str) -> Path:
+        """Resolve a plan-outline path inside the active repository root."""
+        repo_root = getattr(self, "repo_root", None)
+        if repo_root is None and self.db_path is not None and self.db_path.parent.name == "context":
+            repo_root = self.db_path.parent.parent
+        root = Path(repo_root or Path.cwd()).resolve()
+        path = (root / artifact_rel).resolve()
+        path.relative_to(root)
+        return path
+
+    def create_delegation_plan(self, task_id: str, contract: Dict[str, Any]) -> int:
+        """Create a persisted delegation boundary; native execution strategy remains model-owned."""
+        if not self.get_task(task_id):
+            raise _policy.DelegationContractError(f"Task not found: {task_id}")
+        _policy.validate_delegation_contract(contract)
+        contract = dict(contract)
+        contract["status"] = "PENDING_APPROVAL" if _policy.delegation_requires_approval(contract) else STATE_APPROVED
+        return self._persistence.create_delegation_plan(task_id, contract)
+
+    def get_delegation_plan(self, contract_id: int) -> Optional[Dict[str, Any]]:
+        """Retrieve one persisted delegation contract."""
+        return self._persistence.get_delegation_plan(contract_id)
+
+    def approve_delegation_plan(self, contract_id: int, actor: str) -> None:
+        """Approve a high-cost or write-capable delegation through the human gate."""
+        if actor != "human":
+            raise _policy.DelegationContractError("Delegation approval requires actor='human'")
+        self._persistence.approve_delegation_plan(contract_id, actor)
+
+    def record_delegation_receipt(
+        self,
+        contract_id: int,
+        backend: str,
+        model_id: str,
+        cost_tier: str,
+        capability_class: str,
+        backend_available: bool = True,
+        write_capable: bool = False,
+        written_paths: Optional[List[str]] = None,
+    ) -> int:
+        """Record one bounded execution attempt after contract and approval checks."""
+        contract = self.get_delegation_plan(contract_id)
+        if not contract:
+            raise _policy.DelegationContractError(f"Delegation contract not found: {contract_id}")
+        if contract["status"] not in {STATE_APPROVED, "EXECUTING"}:
+            raise _policy.DelegationContractError("Delegation requires human approval before execution")
+        receipt = {
+            "task_id": contract["task_id"], "backend": backend, "model_id": model_id,
+            "cost_tier": cost_tier, "capability_class": capability_class,
+            "backend_available": backend_available, "write_capable": write_capable,
+            "written_paths": written_paths or [],
+        }
+        try:
+            _policy.validate_delegation_receipt(
+                contract, receipt, self._persistence.count_delegation_receipts(contract_id)
+            )
+        except _policy.DelegationContractError as exc:
+            if "renewed approval" in str(exc):
+                self._persistence.insert_delegation_receipt(contract_id, receipt)
+                self._persistence.mark_delegation_status(contract_id, "PENDING_APPROVAL")
+            raise
+        self._persistence.mark_delegation_status(contract_id, "EXECUTING")
+        return self._persistence.insert_delegation_receipt(contract_id, receipt)
+
+    def record_delegation_verifier_receipt(self, contract_id: int, command: str, exit_code: int) -> None:
+        """Record the declared verifier result for a delegation."""
+        contract = self.get_delegation_plan(contract_id)
+        if not contract:
+            raise _policy.DelegationContractError(f"Delegation contract not found: {contract_id}")
+        if command != contract["verifier"].get("command"):
+            raise _policy.DelegationContractError("Verifier command does not match the approved contract")
+        self._persistence.insert_delegation_verifier_receipt(contract_id, command, exit_code)
+
+    def accept_delegation_result(self, contract_id: int) -> Dict[str, Any]:
+        """Accept a result only after an execution receipt and passing verifier receipt exist."""
+        contract = self.get_delegation_plan(contract_id)
+        if not contract:
+            raise _policy.DelegationContractError(f"Delegation contract not found: {contract_id}")
+        if self._persistence.count_delegation_receipts(contract_id) == 0:
+            raise _policy.DelegationContractError("Delegation result requires an execution receipt")
+        if not self._persistence.has_delegation_verifier_receipt(contract_id):
+            raise _policy.DelegationContractError("Delegation result requires a passing verifier receipt")
+        self._persistence.mark_delegation_status(contract_id, "ACCEPTED")
+        contract["status"] = "ACCEPTED"
+        return contract
 
     def get_task(self, task_id: str) -> Optional[Dict[str, Any]]:
         """Retrieves a task dictionary by task_id."""
         return self._persistence.get_task(task_id)
+
+    def get_transition_guidance(
+        self, task_id: str, requested_to_state: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Return advisory guidance derived from the task's persisted state.
+
+        This is intentionally read-only. The returned command is never an
+        authorization token and cannot bypass policy, human decisions, or SQLite
+        transition triggers.
+        """
+        task = self.get_task(task_id)
+        if not task:
+            raise ValueError(f"Task not found: {task_id}")
+        current_state = self._read_current_state_for_update(task_id)
+        if current_state is None:
+            raise ValueError(f"Task not found: {task_id}")
+        if not hasattr(self, "_transition_registry"):
+            self._transition_registry = TransitionRegistry.load_default()
+        return self._transition_registry.get_transition_guidance(
+            current_state, requested_to_state
+        )
+
+    def _reconcile_main_into_worktree(self, repo_root: Path, worktree_path: Path) -> Dict[str, List[str]]:
+        """Force-copies dirty (modified/untracked) files from the source checkout into the
+        registered worktree so pre-worktree edits are never silently left behind (github
+        issue #609: an agent's self-report that this happened is not evidence it happened).
+        Never overwrites a worktree file that has independently diverged from the same
+        committed base in a different way — those are reported as conflicts and left
+        untouched on both sides for a human to resolve."""
+        import subprocess
+
+        repo_root = Path(repo_root).resolve()
+        worktree_path = Path(worktree_path).resolve()
+        result = subprocess.run(
+            ["git", "-C", str(repo_root), "status", "--porcelain=v1", "--untracked-files=all"],
+            capture_output=True, text=True, check=False,
+        )
+        reconciled: List[str] = []
+        conflicts: List[str] = []
+        deleted_on_main: List[str] = []
+        if result.returncode != 0:
+            # repo_root is not a real git repository (e.g. a bare tmp_path test
+            # fixture) -- nothing to reconcile, not a conflict. Matches the
+            # existing check=False handling in _get_main_dirty_advisory.
+            return {"reconciled": reconciled, "conflicts": conflicts, "deleted_on_main": deleted_on_main}
+        for line in result.stdout.splitlines():
+            if not line.strip():
+                continue
+            status, rel_path = line[:2], line[3:].strip()
+            if " -> " in rel_path:
+                rel_path = rel_path.split(" -> ", 1)[1]
+            src = repo_root / rel_path
+            dst = worktree_path / rel_path
+            if status.strip().startswith("D") or not src.exists():
+                deleted_on_main.append(rel_path)
+                continue
+            src_bytes = src.read_bytes()
+            if dst.exists():
+                dst_bytes = dst.read_bytes()
+                if dst_bytes == src_bytes:
+                    continue
+                base_bytes: Optional[bytes] = None
+                base_result = subprocess.run(
+                    ["git", "-C", str(repo_root), "show", f"HEAD:{rel_path}"],
+                    capture_output=True, check=False,
+                )
+                if base_result.returncode == 0:
+                    base_bytes = base_result.stdout
+                if base_bytes is not None and dst_bytes != base_bytes:
+                    conflicts.append(rel_path)
+                    continue
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            dst.write_bytes(src_bytes)
+            reconciled.append(rel_path)
+        return {"reconciled": reconciled, "conflicts": conflicts, "deleted_on_main": deleted_on_main}
 
     def _build_transition_policy_ctx(
         self,
@@ -250,9 +672,59 @@ class ControlPlane:
         get_answers = getattr(self._persistence, "get_unconsumed_transition_answers", None)
         if get_answers and from_state and to_state:
             stage_answers = get_answers(task_id, from_state, to_state)
+
+        def check_implementation_completeness() -> Optional[str]:
+            from control_plane.implementation import validate_implementation_ledger
+
+            repo_root = getattr(self, "repo_root", None)
+            if repo_root is None and self.db_path is not None and self.db_path.parent.name == "context":
+                repo_root = self.db_path.parent.parent
+            if repo_root is None:
+                repo_root = Path.cwd()
+            roots = []
+            task_worktree = task.get("worktree_path")
+            if task_worktree:
+                worktree_root = Path(task_worktree)
+                if not worktree_root.is_absolute():
+                    worktree_root = Path(repo_root) / worktree_root
+                roots.append(worktree_root.resolve())
+            roots.append(Path(repo_root).resolve())
+            for root in roots:
+                plan_path = root / "docs" / "plans" / f"{task_id}-implementation-plan.md"
+                if plan_path.exists():
+                    return validate_implementation_ledger(plan_path, root)
+            return (
+                f"Implementation plan ledger missing for task '{task_id}': "
+                f"expected docs/plans/{task_id}-implementation-plan.md with a fenced JSON "
+                "Implementation Task Ledger; add COMPLETE entries with evidence and existing "
+                "artifact paths before retrying VERIFY_EXIT -> RETROSPECTIVE."
+            )
+
+        def reconcile_main_into_worktree() -> Dict[str, List[str]]:
+            repo_root = getattr(self, "repo_root", None)
+            if repo_root is None and self.db_path is not None and self.db_path.parent.name == "context":
+                repo_root = self.db_path.parent.parent
+            if repo_root is None:
+                repo_root = Path.cwd()
+            worktree = task.get("worktree_path")
+            if not worktree:
+                return {"reconciled": [], "conflicts": [], "deleted_on_main": []}
+            worktree_root = Path(worktree)
+            if not worktree_root.is_absolute():
+                worktree_root = Path(repo_root) / worktree_root
+            return self._reconcile_main_into_worktree(Path(repo_root), worktree_root)
+
+        ctx_repo_root = getattr(self, "repo_root", None)
+        if ctx_repo_root is None and self.db_path is not None and self.db_path.parent.name == "context":
+            ctx_repo_root = self.db_path.parent.parent
+        if ctx_repo_root is None:
+            ctx_repo_root = Path.cwd()
+
         return {
             "task_id": task_id,
             "task": task,
+            "repo_root": str(Path(ctx_repo_root).resolve()),
+            "reconcile_main_into_worktree": reconcile_main_into_worktree,
             "has_receipt": lambda gate_name: self._persistence.has_receipt(task_id, gate_name),
             "has_passing_critic_review": lambda: self._persistence.has_passing_critic_review(task_id),
             "count_receipts": lambda gate_name, exit_code=None: self._persistence.count_receipts(task_id, gate_name, exit_code),
@@ -262,9 +734,13 @@ class ControlPlane:
             "has_complete_retrospective": lambda: self._persistence.has_complete_retrospective(task_id),
             "verify_sovereignty": lambda: self.verify_sovereignty(task_id),
             "stage_answers": stage_answers,
+            "check_implementation_completeness": check_implementation_completeness,
+            "get_main_dirty_advisory": self._get_main_dirty_advisory,
         }
 
-    def transition(self, task_id: str, to_state: str, actor: str, reason: str):
+    def transition(self, task_id: str, to_state: str, actor: str, reason: str,
+                   force_close: bool = False, human_authorization: Optional[str] = None,
+                   bypass_adjacency: bool = False):
         """INTERNAL USE ONLY: Validates and applies a deterministic state transition according to the canonical DAG.
 
         DEPRECATION NOTICE: This method is strictly internal and functional ONLY for deterministic transitions
@@ -284,6 +760,14 @@ class ControlPlane:
         if not task:
             raise ValueError(f"Task not found: {task_id}")
 
+        block_reason = self.get_guidance_block_reason(task_id)
+        if block_reason:
+            raise PersistenceInvariantViolation(
+                f"BLOCKED: task '{task_id}' is guidance-blocked ({block_reason}). "
+                "No further transitions are permitted until clear-guidance-block is run "
+                "with explicit human authorization."
+            )
+
         # Authoritative state read, immediately before the guarded write — closes the race
         # window between the adjacency/policy checks and the write (a concurrent writer
         # changing the row after this point is caught by apply_transition()'s guard rather
@@ -292,7 +776,21 @@ class ControlPlane:
         if current_state is None:
             raise ValueError(f"Task not found: {task_id}")
 
-        self._state_machine.validate_adjacency(task_id, current_state, to_state)
+        if to_state == STATE_DONE:
+            # Check edge legality first so callers receive the domain
+            # InvalidStateTransition for illegal edges, including force-close.
+            self._state_machine.validate_adjacency(task_id, current_state, to_state)
+        if to_state == STATE_DONE and (current_state != STATE_RETROSPECTIVE or force_close):
+            raise PersistenceInvariantViolation(
+                "Transition to DONE requires explicit human authorization FORCE_CLOSE via coordinate_transition."
+            )
+        if not bypass_adjacency:
+            self._state_machine.validate_adjacency(task_id, current_state, to_state)
+
+        if current_state == STATE_INTERVIEW and to_state != STATE_INTERVIEW:
+            self.assert_interview_exit_ready(task_id, stage="interview", round_id=None)
+        if current_state == STATE_INTERVIEW and to_state == STATE_DRAFT_PLAN:
+            self.assert_interview_plan_outline_ready(task_id)
 
         # --- Unified gate policy: deterministic checks from authoritative YAML registry ---
         if not hasattr(self, "_transition_registry"):
@@ -324,6 +822,8 @@ class ControlPlane:
         skip_decision: Optional[Tuple[str, str]] = None,
         skip_review: bool = False,
         skip_reason: Optional[str] = None,
+        force_close: bool = False,
+        human_authorization: Optional[str] = None,
     ) -> TransitionRecord:
         """Public orchestration entry point: coordinates transition via TransitionCoordinator."""
         if not hasattr(self, "_transition_registry"):
@@ -340,12 +840,80 @@ class ControlPlane:
             skip_decision=skip_decision,
             skip_review=skip_review,
             skip_reason=skip_reason,
+            force_close=force_close,
+            human_authorization=human_authorization,
         )
 
     def commit_authorized_transition(self, commit_request: TransitionCommitRequest) -> TransitionRecord:
         """Internal atomic commit gate: passes normalized TransitionCommitRequest to PersistencePort.
         PersistencePort re-validates persistable invariants in SQLite transaction and atomically commits."""
-        return self._persistence.apply_transition_with_receipts(commit_request)
+        if commit_request.to_state == STATE_DONE:
+            self._state_machine.validate_adjacency(
+                commit_request.task_id,
+                commit_request.expected_from_state,
+                commit_request.to_state,
+            )
+        if (commit_request.to_state == STATE_DONE and commit_request.expected_from_state != STATE_RETROSPECTIVE
+            and not (
+            commit_request.force_close and commit_request.actor == "human"
+            and commit_request.interactive_human_authorization
+            and any(
+                d.question_id in {"force_close_authorization", "human_force_done_confirmation"}
+                and d.answer in {"FORCE_CLOSE", "FORCE_DONE"}
+                and d.actor == "human"
+                for d in commit_request.staged_decisions
+            )
+        )):
+            raise PersistenceInvariantViolation(
+                "Transition to DONE requires explicit human authorization FORCE_CLOSE."
+            )
+        force_retrospective = any(
+            d.question_id == "force_retrospective_authorization"
+            and d.answer == "FORCE_RETROSPECTIVE"
+            and d.actor == "human"
+            for d in commit_request.staged_decisions
+        )
+        if (
+            commit_request.expected_from_state == STATE_INTERVIEW
+            and commit_request.to_state != STATE_INTERVIEW
+            and not force_retrospective
+        ):
+            # This is deliberately immediately before the atomic persistence call so both
+            # deterministic and coordinated transition front-doors share the same gate.
+            # Skipped only for an explicit human-authorized FORCE_RETROSPECTIVE emergency
+            # close, which intentionally bypasses the normal interview-completeness gate.
+            self.assert_interview_exit_ready(
+                commit_request.task_id, stage="interview", round_id=None
+            )
+        if (
+            commit_request.expected_from_state == STATE_INTERVIEW
+            and commit_request.to_state == STATE_DRAFT_PLAN
+        ):
+            self.assert_interview_plan_outline_ready(commit_request.task_id)
+        record = self._persistence.apply_transition_with_receipts(commit_request)
+        if record.from_state == STATE_APPROVED and record.to_state == STATE_IN_WORKTREE:
+            self._kickoff_implementation(record)
+        return record
+
+    def _kickoff_implementation(self, record: TransitionRecord) -> None:
+        """Persist and dispatch the implementation kickoff exactly once.
+
+        The receipt is written before invoking the external controller, making
+        retries/replays idempotent.  A controller failure is intentionally
+        propagated so callers can observe and recover it; the durable receipt
+        prevents an accidental duplicate dispatch.
+        """
+        gate_name = "implementation_kickoff"
+        if self._persistence.has_receipt(record.task_id, gate_name):
+            return
+        self.record_verification_receipt(
+            record.task_id,
+            gate_name=gate_name,
+            command_executed=f"implementation-kickoff:owner={record.actor}",
+            exit_code=0,
+        )
+        if self._implementation_controller is not None:
+            self._implementation_controller(record.task_id, record)
 
     def lock_verifiers(self, task_id: str, file_paths: List[Path]):
         """Calculates and locks baseline SHA256 hashes of verifier files. File-existence
@@ -375,6 +943,8 @@ class ControlPlane:
 
     def record_critic_review(self, task_id: str, iteration: int, model: str, verdict: str, findings: str):
         """Records a clean-context peer critic review iteration and verdict."""
+        if verdict == "REQUEST_CHANGES":
+            verdict = "REVISE"
         if verdict not in ("PASS", "REVISE", "REJECT"):
             raise ValueError(f"Invalid verdict: {verdict}")
         self._persistence.insert_critic_review(task_id, iteration, model, verdict, findings)
@@ -414,6 +984,79 @@ class ControlPlane:
         return self.record_verification_receipt(
             task_id, gate_name="human_approval", command_executed=f"approved-by:{approver}", exit_code=0
         )
+
+    def record_recovery_approval(
+        self,
+        task_id: str,
+        destination_state: str,
+        approver: str,
+        reason: str = "",
+        decision: str = "APPROVAL",
+        expected_source_state: Optional[str] = None,
+        source_occupancy_transition_id: Optional[int] = None,
+    ) -> str:
+        """Public facade for an explicit human-approved recovery re-entry across a
+        non-DAG edge -- delegates to the persistence port rather than requiring
+        callers to reach into cp._persistence directly (test_wrappers_prohibit_raw_sql_and_private_persistence_attributes
+        forbids exactly that pattern in production code). expected_source_state and
+        source_occupancy_transition_id auto-derive from the task's current record when
+        not explicitly supplied -- the common case (a caller who just wants "approve
+        recovery from wherever this task currently is") shouldn't have to look those up
+        itself; explicit overrides remain available for callers (e.g. the CLI) that
+        already have them on hand and want the stricter occupancy-staleness check."""
+        if expected_source_state is None or source_occupancy_transition_id is None:
+            task = self.get_task(task_id)
+            if not task:
+                raise ValueError(f"Task not found: {task_id}")
+            if expected_source_state is None:
+                expected_source_state = task["state"]
+            if source_occupancy_transition_id is None:
+                last_transition = self._persistence.get_last_transition(task_id)
+                source_occupancy_transition_id = last_transition.transition_id if last_transition else 0
+        return self._persistence.record_recovery_approval(
+            task_id=task_id,
+            expected_source_state=expected_source_state,
+            destination_state=destination_state,
+            source_occupancy_transition_id=source_occupancy_transition_id,
+            approver=approver,
+            decision=decision,
+            reason=reason,
+        )
+
+    def apply_recovery_transition(
+        self, task_id: str, destination_state: str, token: str, actor: str, reason: str
+    ) -> TransitionRecord:
+        """Applies a transition to destination_state after a matching record_recovery_approval
+        token has been issued. The token itself carries no separate lookup state (the
+        underlying APPROVAL decision rows are bound to task_id + occupancy + states, not
+        the token) -- token is required non-empty here as a defense against a caller
+        skipping record_recovery_approval and calling this directly, which would still
+        fail at the SQLite trigger since no matching APPROVAL decision would exist.
+
+        DONE is special-cased: self.transition() hard-rejects any DONE destination
+        outside the normal RETROSPECTIVE->DONE path regardless of DAG legality, requiring
+        the coordinate_transition FORCE_CLOSE path instead -- a recorded recovery approval
+        is exactly the explicit human authorization that check exists to require, so this
+        routes DONE recoveries through coordinate_transition(force_close=True) rather than
+        failing on the same check apply_recovery_transition exists to satisfy.
+
+        Recovery edges are, by definition, outside the normal ALLOWED_TRANSITIONS DAG
+        (e.g. DONE -> IN_WORKTREE to reopen a closed task for bounded rework) -- that is
+        exactly the scenario record_recovery_approval/apply_recovery_transition exist to
+        support. self.transition()'s Python-level validate_adjacency() has no concept of
+        this override (unlike the SQLite enforce_valid_transition trigger, which already
+        accepts a matching unconsumed APPROVAL decision), so it must be bypassed here; the
+        already-required non-empty recovery token plus the trigger's own recovery_td check
+        remain the actual authorization gate."""
+        if not token or not token.strip():
+            raise ValueError("apply_recovery_transition requires a non-empty token from record_recovery_approval.")
+        if destination_state == STATE_DONE:
+            return self.coordinate_transition(
+                task_id=task_id, to_state=STATE_DONE, actor=actor, reason=reason,
+                interactive=True, force_close=True, human_authorization="FORCE_CLOSE",
+            )
+        self.transition(task_id, destination_state, actor, reason, bypass_adjacency=True)
+        return self._persistence.get_last_transition(task_id)
 
     def record_review_skip(self, task_id: str, phase: str, actor: str, reason: str) -> str:
         """Records an explicit, auditable decision to skip a user-discretionary review phase
@@ -472,6 +1115,17 @@ class ControlPlane:
         task_id = task["task_id"]
         task_state = task["state"]
 
+        # F-05 fix (external review, 2026-09-14): this Python-level check previously had no
+        # parity with the shell pre-commit-pipeline-guard's guidance_block_reason check --
+        # callers going through this API instead of the shell hook would incorrectly see
+        # ALLOWED for a guidance-blocked task.
+        block_reason = self.get_guidance_block_reason(task_id)
+        if block_reason:
+            raise PersistenceInvariantViolation(
+                f"BLOCKED: task '{task_id}' is guidance-blocked ({block_reason}). "
+                "No commit is permitted until clear-guidance-block is run with explicit human authorization."
+            )
+
         op_ctx = {
             "task_id": task_id,
             "task_state": task_state,
@@ -495,6 +1149,33 @@ class ControlPlane:
     def log_asymmetric_persistence(self, task_id: str, destination: str, status: str, details: str):
         """Logs asymmetric Layer 2 persistence entries into the SQLite audit table."""
         self._persistence.insert_asymmetric_persistence(task_id, destination, status, details)
+
+    def get_guidance_block_reason(self, task_id: str) -> Optional[str]:
+        """Returns the task's guidance_block_reason (None if not blocked)."""
+        return self._persistence.get_guidance_block_reason(task_id)
+
+    def set_guidance_block(self, task_id: str, reason: str) -> None:
+        """Blocks all further transitions for task_id until clear_guidance_block() is
+        explicitly called. Triggered when a human answers 'no' (or gives no answer) to
+        the mandatory per-transition guidance-compliance confirmation."""
+        self._persistence.set_guidance_block(task_id, reason)
+
+    def clear_guidance_block(self, task_id: str, reason: str = "") -> None:
+        """Clears a guidance block -- always requires the caller to have gone through the
+        blanket --human-confirmed gate (enforced at the CLI dispatch layer, not here).
+
+        Bug fix (found by external review, 2026-09-14): `reason` was previously accepted
+        by the CLI, printed back as if recorded, then silently discarded -- never actually
+        persisted anywhere. Now logged to asymmetric_persistence_log, the same durable
+        audit trail already used for other Layer-2 persistence facts."""
+        self._persistence.clear_guidance_block(task_id)
+        if reason:
+            self.log_asymmetric_persistence(
+                task_id=task_id,
+                destination="guidance_block_reason",
+                status="RESOLVED",
+                details=f"Guidance block cleared. Reason: {reason}",
+            )
 
     def verify_phase_capability(self, task_id: str, action_identity: str) -> PhaseCapability:
         """Verifies that an action capability is authorized for the task's current phase occupancy.
@@ -619,6 +1300,15 @@ def _build_parser() -> argparse.ArgumentParser:
     p_ct.add_argument("--approval", choices=["APPROVAL", "REJECTION"], default=None)
     p_ct.add_argument("--skip-review", action="store_true", default=False)
     p_ct.add_argument("--skip-reason", default=None)
+    p_ct.add_argument(
+        "--human-confirmed", required=True,
+        help=(
+            "REQUIRED, no default. Must be the literal phrase 'HUMAN-CONFIRMED: <quote of what "
+            "the human actually typed authorizing this specific transition>'. Blanket gate added "
+            "2026-09-13 after an agent transitioned INTAKE->INTERVIEW without any human "
+            "authorization at all -- every transition, deterministic or not, now requires this."
+        ),
+    )
 
     # Compatibility alias: transition routes directly through TransitionCoordinator
     p_tr = sub.add_parser("transition")
@@ -631,6 +1321,15 @@ def _build_parser() -> argparse.ArgumentParser:
     p_tr.add_argument("--approval", choices=["APPROVAL", "REJECTION"], default=None)
     p_tr.add_argument("--skip-review", action="store_true", default=False)
     p_tr.add_argument("--skip-reason", default=None)
+    p_tr.add_argument(
+        "--human-confirmed", required=True,
+        help=(
+            "REQUIRED, no default. Must be the literal phrase 'HUMAN-CONFIRMED: <quote of what "
+            "the human actually typed authorizing this specific transition>'. Blanket gate added "
+            "2026-09-13 after an agent transitioned INTAKE->INTERVIEW without any human "
+            "authorization at all -- every transition, deterministic or not, now requires this."
+        ),
+    )
 
     p_lock = sub.add_parser("lock-verifiers")
     p_lock.add_argument("--task-id", required=True)
@@ -653,6 +1352,10 @@ def _build_parser() -> argparse.ArgumentParser:
 
     p_st = sub.add_parser("status")
     p_st.add_argument("--task-id", required=True)
+
+    p_tg = sub.add_parser("transition-guidance")
+    p_tg.add_argument("--task-id", required=True)
+    p_tg.add_argument("--to", default=None, help="Optional requested destination state")
 
     p_lap = sub.add_parser("log-prior-art")
     p_lap.add_argument("--task-id", required=True)
@@ -677,6 +1380,13 @@ def _build_parser() -> argparse.ArgumentParser:
     p_rs.add_argument("--actor", required=True)
     p_rs.add_argument("--reason", required=True)
 
+    p_cr = sub.add_parser("record-critic-review")
+    p_cr.add_argument("--task-id", required=True)
+    p_cr.add_argument("--iteration", type=int, required=True)
+    p_cr.add_argument("--model", required=True)
+    p_cr.add_argument("--verdict", choices=["PASS", "REVISE", "REJECT", "REQUEST_CHANGES"], required=True)
+    p_cr.add_argument("--findings", required=True)
+
     # Slice 4: Action wrapper verification & recovery subcommands
     p_viq = sub.add_parser("verify-interview-question")
     p_viq.add_argument("--task-id", required=True)
@@ -696,15 +1406,68 @@ def _build_parser() -> argparse.ArgumentParser:
     p_rra.add_argument("--decision", default="APPROVAL")
     p_rra.add_argument("--reason", required=True)
 
+    p_cgb = sub.add_parser("clear-guidance-block")
+    p_cgb.add_argument("--task-id", required=True)
+    p_cgb.add_argument("--reason", required=True, help="Why this block is being cleared")
+
     p_vc = sub.add_parser("verify-commit")
     p_vc.add_argument("--branch", required=True, help="Git branch to verify commit authorization for")
     p_vc.add_argument("--staged-files", nargs="*", default=[], help="List of staged files")
 
+    # Blanket human-confirmation gate (added 2026-09-13): every state-mutating
+    # subcommand requires an explicit --human-confirmed flag with no default,
+    # regardless of whether the underlying YAML edge is coded as
+    # approval.required=false. Read-only/verification subcommands (status,
+    # transition-guidance, recommend-model, verify-*) are exempt.
+    for _mutating_parser in (
+        p_init, p_lock, p_rc, p_wt, p_lap, p_pme, p_sic, p_ha, p_rs, p_cr, p_rra, p_cgb,
+    ):
+        _mutating_parser.add_argument(
+            "--human-confirmed", required=True,
+            help=(
+                "REQUIRED, no default. Must start with the literal marker "
+                "'HUMAN-CONFIRMED:' followed by a quote of what the human actually typed "
+                "authorizing THIS SPECIFIC action. Fabricating this string is a policy "
+                "violation, not a technicality to route around."
+            ),
+        )
+
     return parser
+
+
+_HUMAN_CONFIRMED_GATED_COMMANDS = frozenset({
+    "init", "coordinate-transition", "transition", "lock-verifiers", "record-receipt",
+    "update-worktree", "log-prior-art", "record-plan-mode-entry", "record-socratic-intake",
+    "record-human-approval", "record-review-skip", "record-critic-review",
+    "record-recovery-approval", "clear-guidance-block",
+})
+
+
+def _enforce_human_confirmed(args: argparse.Namespace) -> None:
+    """Blanket gate (added 2026-09-13): every state-mutating subcommand requires an
+    explicit --human-confirmed flag, regardless of what the per-edge YAML says about
+    approval.required. Added live after an agent transitioned INTAKE->INTERVIEW with
+    zero human authorization -- that edge's approval.required=false made it legal per
+    the YAML, which is exactly the gap this closes: the YAML's per-edge setting is no
+    longer sufficient on its own, this check applies uniformly on top of it."""
+    if args.subcommand not in _HUMAN_CONFIRMED_GATED_COMMANDS:
+        return
+    human_confirmed = getattr(args, "human_confirmed", None)
+    if not human_confirmed or not human_confirmed.strip().startswith("HUMAN-CONFIRMED:"):
+        raise SystemExit(
+            f"BLOCKED: --human-confirmed is required for '{args.subcommand}' (added "
+            "2026-09-13 after an agent transitioned INTAKE->INTERVIEW without any human "
+            "authorization at all -- that edge's approval.required=false in the YAML made "
+            "it legal, which is exactly the gap this closes). It must start with the "
+            "literal marker 'HUMAN-CONFIRMED:' followed by a quote of what the human "
+            "actually typed authorizing THIS SPECIFIC action. Fabricating this string is "
+            "a policy violation, not a technicality to route around."
+        )
 
 
 def _dispatch_command(cp: ControlPlane, args: argparse.Namespace):
     """Executes the dispatched CLI command."""
+    _enforce_human_confirmed(args)
     if args.subcommand == "init":
         cp.create_task(args.task_id, args.title, args.runtime, args.spec_path, args.model_tier, args.model_id, args.task_type)
         print(f"Task {args.task_id} initialized in INTAKE (type={args.task_type}).")
@@ -726,7 +1489,8 @@ def _dispatch_command(cp: ControlPlane, args: argparse.Namespace):
         print(f"Transitioned task {args.task_id} to {args.to} (transition_id={rec.transition_id}).")
     elif args.subcommand == "record-critic-review":
         cp.record_critic_review(args.task_id, args.iteration, args.model, args.verdict, args.findings)
-        print(f"Critic review recorded for task {args.task_id} (verdict={args.verdict}).")
+        canonical_verdict = "REVISE" if args.verdict == "REQUEST_CHANGES" else args.verdict
+        print(f"Critic review recorded for task {args.task_id} (verdict={canonical_verdict}).")
     elif args.subcommand == "lock-verifiers":
         paths = [Path(p.strip()) for p in args.paths.split(",")]
         cp.lock_verifiers(args.task_id, paths)
@@ -742,6 +1506,8 @@ def _dispatch_command(cp: ControlPlane, args: argparse.Namespace):
         print(f"Task {args.task_id} worktree state set to {args.state}.")
     elif args.subcommand == "status":
         print(json.dumps(cp.get_task(args.task_id), indent=2, default=str))
+    elif args.subcommand == "transition-guidance":
+        print(json.dumps(cp.get_transition_guidance(args.task_id, args.to), indent=2))
     elif args.subcommand == "log-prior-art":
         repeat_entries = args.repeat_yes_entries or "none"
         details = f"prior_art_scan: summary={args.summary}; repeat_yes_entries={repeat_entries}"
@@ -766,7 +1532,7 @@ def _dispatch_command(cp: ControlPlane, args: argparse.Namespace):
         cap = cp.verify_phase_capability(args.task_id, "exit_verification")
         print(f"Verified exit_verification capability for {args.task_id} in {cap.current_state} (transition {cap.transition_id}).")
     elif args.subcommand == "record-recovery-approval":
-        token = cp._persistence.record_recovery_approval(
+        token = cp.record_recovery_approval(
             task_id=args.task_id,
             expected_source_state=args.from_state,
             destination_state=args.to_state,
@@ -776,6 +1542,9 @@ def _dispatch_command(cp: ControlPlane, args: argparse.Namespace):
             reason=args.reason,
         )
         print(f"Recovery approval recorded: {token}")
+    elif args.subcommand == "clear-guidance-block":
+        cp.clear_guidance_block(args.task_id, reason=args.reason)
+        print(f"Guidance block cleared for task '{args.task_id}'. Reason recorded: {args.reason}")
     elif args.subcommand == "verify-commit":
         res = cp.verify_commit(args.branch, args.staged_files)
         print(f"Commit check: {res['status']} ({res['message']})")

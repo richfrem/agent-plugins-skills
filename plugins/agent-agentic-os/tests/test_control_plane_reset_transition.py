@@ -46,6 +46,9 @@ from control_plane.registry import TransitionRegistry
 from control_plane.state_machine import CANONICAL_STATES, ALLOWED_TRANSITIONS
 from control_plane.coordinator import TransitionCoordinator, TransitionCoordinatorError
 from control_plane.adapters import SCHEMA_SQL, _split_schema_sql_statements
+from control_plane.constants import (
+    STATE_INTAKE, STATE_INTERVIEW, STATE_APPROVED, STATE_IN_WORKTREE, STATE_WORKTREE_REVIEW, STATE_RETROSPECTIVE, STATE_DONE,
+)
 
 
 @pytest.fixture
@@ -60,7 +63,7 @@ def control_plane(temp_db_path):
     return cp
 
 
-NON_INTAKE_STATES = [s for s in CANONICAL_STATES if s != "INTAKE"]
+NON_INTAKE_STATES = [s for s in CANONICAL_STATES if s != STATE_INTAKE]
 
 # Any state that already has a pre-existing, non-wildcard edge to INTAKE (e.g.
 # escalated_to_intake) is skipped by the wildcard reset_to_intake expansion, to
@@ -71,7 +74,7 @@ NON_INTAKE_STATES = [s for s in CANONICAL_STATES if s != "INTAKE"]
 _REGISTRY_FOR_STATE_DERIVATION = TransitionRegistry.load_default()
 STATES_WITH_PREEXISTING_INTAKE_EDGE = {
     t.from_state for t in _REGISTRY_FOR_STATE_DERIVATION.get_all_templates()
-    if t.to_state == "INTAKE" and not t.transition_id.startswith("reset_to_intake__from_")
+    if t.to_state == STATE_INTAKE and not t.transition_id.startswith("reset_to_intake__from_")
 }
 RESET_EDGE_STATES = [s for s in NON_INTAKE_STATES if s not in STATES_WITH_PREEXISTING_INTAKE_EDGE]
 
@@ -107,18 +110,18 @@ def test_wildcard_expansion_produces_one_edge_per_non_intake_state():
     assert "reset_to_intake__from_INTAKE" not in reset_template_ids
     for s in STATES_WITH_PREEXISTING_INTAKE_EDGE:
         assert f"reset_to_intake__from_{s}" not in reset_template_ids
-        assert registry.get_template(s, "INTAKE") is not None
+        assert registry.get_template(s, STATE_INTAKE) is not None
 
 
 def test_reset_edge_not_offered_from_intake_itself():
-    assert "INTAKE" not in ALLOWED_TRANSITIONS.get("INTAKE", [])
+    assert STATE_INTAKE not in ALLOWED_TRANSITIONS.get(STATE_INTAKE, [])
 
 
 def test_reset_edges_require_human_approval():
     registry = TransitionRegistry.load_default()
 
     for source_state in RESET_EDGE_STATES:
-        template = registry.get_template(source_state, "INTAKE")
+        template = registry.get_template(source_state, STATE_INTAKE)
         assert template is not None
         assert template.approval["required"] is True
         assert template.approval["approver_role"] == "human"
@@ -142,22 +145,23 @@ def test_reset_from_every_non_intake_state_interactive_succeeds(control_plane, s
     answers = iter([
         "Recovering drifted record after raw-write bypass evidence",
         "y",
+        "YES",
     ])
     coord = TransitionCoordinator(control_plane=control_plane, input_fn=lambda prompt: next(answers))
     record = coord.coordinate_transition(
         task_id=task_id,
-        to_state="INTAKE",
+        to_state=STATE_INTAKE,
         actor="human",
         reason="Reset drifted task record",
         interactive=True,
     )
-    assert record.to_state == "INTAKE"
-    assert control_plane.get_task(task_id)["state"] == "INTAKE"
+    assert record.to_state == STATE_INTAKE
+    assert control_plane.get_task(task_id)["state"] == STATE_INTAKE
 
     conn = control_plane._persistence.get_connection()
     try:
         row = conn.execute(
-            "SELECT decision_type, actor FROM transition_decisions WHERE task_id = ? AND to_state = 'INTAKE'",
+            "SELECT decision_type, actor FROM transition_decisions WHERE task_id = ? AND to_state = 'INTAKE' AND decision_type = 'RESET'",
             (task_id,),
         ).fetchone()
     finally:
@@ -173,7 +177,7 @@ def test_reset_via_provided_answers_rejected(control_plane):
     control_plane.create_task(task_id=task_id, title="Reset actor gap test", runtime_tool="claude")
     conn = control_plane._persistence.get_connection()
     try:
-        _seed_task_at_state(conn, task_id, "IN_WORKTREE")
+        _seed_task_at_state(conn, task_id, STATE_IN_WORKTREE)
     finally:
         conn.close()
 
@@ -181,7 +185,7 @@ def test_reset_via_provided_answers_rejected(control_plane):
     with pytest.raises(TransitionCoordinatorError, match="requires explicit human approval"):
         coord.coordinate_transition(
             task_id=task_id,
-            to_state="INTAKE",
+            to_state=STATE_INTAKE,
             actor="agent",
             reason="Attempted programmatic reset",
             interactive=False,
@@ -194,7 +198,7 @@ def test_reset_interactive_empty_answer_fails_closed(control_plane):
     control_plane.create_task(task_id=task_id, title="Reset empty test", runtime_tool="claude")
     conn = control_plane._persistence.get_connection()
     try:
-        _seed_task_at_state(conn, task_id, "WORKTREE_REVIEW")
+        _seed_task_at_state(conn, task_id, STATE_WORKTREE_REVIEW)
     finally:
         conn.close()
 
@@ -202,7 +206,7 @@ def test_reset_interactive_empty_answer_fails_closed(control_plane):
     with pytest.raises(TransitionCoordinatorError, match="Missing required response"):
         coord.coordinate_transition(
             task_id=task_id,
-            to_state="INTAKE",
+            to_state=STATE_INTAKE,
             actor="human",
             reason="attempt empty justification",
             interactive=True,
@@ -215,7 +219,7 @@ def test_reset_starts_a_fresh_transition_ledger(control_plane):
     control_plane.create_task(task_id=task_id, title="Reset preserve test", runtime_tool="claude")
     conn = control_plane._persistence.get_connection()
     try:
-        _seed_task_at_state(conn, task_id, "APPROVED")
+        _seed_task_at_state(conn, task_id, STATE_APPROVED)
         before_count = conn.execute(
             "SELECT COUNT(*) FROM task_transitions WHERE task_id = ?", (task_id,)
         ).fetchone()[0]
@@ -225,10 +229,11 @@ def test_reset_starts_a_fresh_transition_ledger(control_plane):
     answers = iter([
         "Recovering from drift, preserving history as evidence",
         "y",
+        "YES",
     ])
     coord = TransitionCoordinator(control_plane=control_plane, input_fn=lambda prompt: next(answers))
     coord.coordinate_transition(
-        task_id=task_id, to_state="INTAKE", actor="human", reason="Reset", interactive=True,
+        task_id=task_id, to_state=STATE_INTAKE, actor="human", reason="Reset", interactive=True,
     )
 
     conn = control_plane._persistence.get_connection()
@@ -244,7 +249,7 @@ def test_reset_starts_a_fresh_transition_ledger(control_plane):
         conn.close()
     assert before_count > 1
     assert after_count == 1
-    assert remaining == [('APPROVED', 'INTAKE')]
+    assert [tuple(row) for row in remaining] == [('APPROVED', 'INTAKE')]
 
 
 def test_reset_then_walk_forward_unblocks_hooks(control_plane):
@@ -259,53 +264,55 @@ def test_reset_then_walk_forward_unblocks_hooks(control_plane):
     # Simulate drift: raw write directly to DONE, bypassing transition().
     conn = control_plane._persistence.get_connection()
     try:
-        _seed_task_at_state(conn, task_id, "DONE")
+        _seed_task_at_state(conn, task_id, STATE_DONE)
     finally:
         conn.close()
-    assert control_plane.get_task(task_id)["state"] == "DONE"
+    assert control_plane.get_task(task_id)["state"] == STATE_DONE
 
     # RESET back to INTAKE via the real gate.
     reset_answers = iter([
         "Simulated drift from raw write; resetting to re-run full pipeline",
         "y",
+        "YES",
     ])
     coord = TransitionCoordinator(control_plane=control_plane, input_fn=lambda prompt: next(reset_answers))
     coord.coordinate_transition(
-        task_id=task_id, to_state="INTAKE", actor="human", reason="Reset drifted DONE record", interactive=True,
+        task_id=task_id, to_state=STATE_INTAKE, actor="human", reason="Reset drifted DONE record", interactive=True,
     )
-    assert control_plane.get_task(task_id)["state"] == "INTAKE"
+    assert control_plane.get_task(task_id)["state"] == STATE_INTAKE
 
     # Walk forward legitimately: INTAKE -> INTERVIEW -> RETROSPECTIVE -> DONE via
     # the trivial fast-track, with the interview contract fully answered.
     coord2 = TransitionCoordinator(
         control_plane=control_plane,
-        input_fn=lambda prompt: "unused",
+        input_fn=lambda prompt: "YES",
     )
     coord2.coordinate_transition(
-        task_id=task_id, to_state="INTERVIEW", actor="human", reason="Begin interview after reset",
+        task_id=task_id, to_state=STATE_INTERVIEW, actor="human", reason="Begin interview after reset", interactive=True,
     )
     interview_answers = iter([
-        "TRIVIAL",
-        "Re-verify the nested skill reference fix.",
-        "The skill reference path and its loader behavior.",
-        "The installed skill loader finds no nested SKILL.md.",
-        "files=1, diff=abc1234",
-        "Yes [Recommended]",
+        "Task is effectively complete/trivial -- this is a planned early close, not a failure",
+        "FORCE_RETROSPECTIVE",
+        "YES",
     ])
     coord2 = TransitionCoordinator(control_plane=control_plane, input_fn=lambda prompt: next(interview_answers))
     coord2.coordinate_transition(
-        task_id=task_id, to_state="RETROSPECTIVE", actor="human", reason="Trivial fast-track after reset", interactive=True,
+        task_id=task_id, to_state=STATE_RETROSPECTIVE, actor="human", reason="Trivial fast-track after reset", interactive=True,
     )
     control_plane.save_retrospective(
         task_id,
         {"decision": "skip", "completion_mode": "skipped", "actor": "human", "skip_reason": "re-verified typo"},
         [],
     )
-    coord3 = TransitionCoordinator(control_plane=control_plane, input_fn=lambda prompt: "skip")
-    coord3.coordinate_transition(
-        task_id=task_id, to_state="DONE", actor="human", reason="Retrospective skipped", interactive=True,
+    control_plane.record_verification_receipt(
+        task_id, "full_test_suite", "pytest -q (test fixture receipt)", 0
     )
-    assert control_plane.get_task(task_id)["state"] == "DONE"
+    done_answers = iter(["skip", "YES"])
+    coord3 = TransitionCoordinator(control_plane=control_plane, input_fn=lambda prompt: next(done_answers))
+    coord3.coordinate_transition(
+        task_id=task_id, to_state=STATE_DONE, actor="human", reason="Retrospective skipped", interactive=True,
+    )
+    assert control_plane.get_task(task_id)["state"] == STATE_DONE
 
     conn = control_plane._persistence.get_connection()
     try:

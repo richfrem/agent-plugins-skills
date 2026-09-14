@@ -20,6 +20,7 @@ import os
 import sys
 import tempfile
 import unittest
+from pathlib import Path
 from unittest.mock import MagicMock, mock_open, patch
 
 sys.path.insert(0, os.path.dirname(__file__))
@@ -34,7 +35,10 @@ from run_agent import (
     _build_cmd_gemini,
     _call_llama_direct,
     _load_default_models,
+    _resolve_catalog_model,
+    _resolve_cli_and_model,
     build_prompt,
+    run_agent,
 )
 
 
@@ -49,12 +53,55 @@ class TestBuildPrompt(unittest.TestCase):
         self.assertNotIn("---SOURCE---", result)
         self.assertNotIn("---INSTRUCTION---", result)
 
-    def test_source_plus_instruction(self):
-        """Verify source + instruction includes an INSTRUCTION marker but no SOURCE marker."""
+    def test_source_plus_instruction_is_always_delimited(self):
+        """A source is visibly delimited even without a persona."""
         result = build_prompt("", "Source content", "Do this.", False)
         self.assertIn("Source content", result)
+        self.assertIn("---SOURCE---", result)
+        self.assertIn("---END SOURCE---", result)
         self.assertIn("---INSTRUCTION---", result)
-        self.assertNotIn("---SOURCE---", result)
+
+    def test_require_input_rejects_missing_source_before_dispatch(self):
+        """Required review input fails closed instead of sending an empty prompt."""
+        missing = os.path.join(tempfile.gettempdir(), "run-agent-missing-review-input.md")
+        with patch("run_agent._execute_cli_command") as execute:
+            with self.assertRaisesRegex(ValueError, "Required input"):
+                run_agent(
+                    "/dev/null", missing, os.path.join(tempfile.gettempdir(), "unused-review.md"),
+                    "Review the supplied source.", cli="claude", require_input=True,
+                )
+            execute.assert_not_called()
+
+    def test_require_input_rejects_existing_empty_source_before_dispatch(self):
+        """Required review input rejects an existing zero-byte source before dispatch."""
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as source_file:
+            source_path = source_file.name
+        try:
+            with patch("run_agent._execute_cli_command") as execute:
+                with self.assertRaisesRegex(ValueError, "Required input"):
+                    run_agent(
+                        "/dev/null", source_path, os.path.join(tempfile.gettempdir(), "unused-review.md"),
+                        "Review the supplied source.", cli="claude", model="haiku-4.5", require_input=True,
+                    )
+                execute.assert_not_called()
+        finally:
+            os.unlink(source_path)
+
+    def test_optional_dev_null_input_remains_supported(self):
+        """Non-review dispatches may intentionally omit source with /dev/null."""
+        output_path = os.path.join(tempfile.gettempdir(), "run-agent-optional-input.md")
+        with patch("run_agent._execute_cli_command") as execute:
+            run_agent(
+                "/dev/null", "/dev/null", output_path, "Do this.",
+                cli="claude", model="haiku-4.5", require_input=False,
+            )
+        execute.assert_called_once()
+
+    def test_source_is_delimited_without_persona(self):
+        """Every supplied source is bounded even when the persona is omitted."""
+        result = build_prompt("", "Review source", "Review it.", False)
+        self.assertLess(result.index("---SOURCE---"), result.index("Review source"))
+        self.assertLess(result.index("Review source"), result.index("---END SOURCE---"))
 
     def test_persona_plus_instruction(self):
         """Verify persona + instruction includes the persona text and INSTRUCTION marker."""
@@ -182,6 +229,16 @@ class TestCommandBuilders(unittest.TestCase):
         """Verify --dangerously-skip-permissions is excluded when isolated=True."""
         cmd = _build_cmd_agy("agy-3.5-sonnet", "/tmp/prompt.txt", isolated=True)
         self.assertNotIn("--dangerously-skip-permissions", cmd)
+
+    def test_agy_passes_explicit_print_timeout(self):
+        """Verify bounded Agy dispatches pass the requested print timeout."""
+        cmd = _build_cmd_agy(
+            "gemini-3.8-flash",
+            "/tmp/prompt.txt",
+            print_timeout="15m0s",
+        )
+        self.assertIn("--print-timeout", cmd)
+        self.assertIn("15m0s", cmd)
 
     def test_claude_includes_model_and_prompt(self):
         """Verify the claude command includes the binary name, model, and prompt text."""
@@ -362,6 +419,162 @@ class TestLoadDefaultModels(unittest.TestCase):
             result = _load_default_models()
         self.assertEqual(result["llama"], "gemma-4-12b")
         self.assertEqual(set(result.keys()), {"copilot", "gemini", "claude", "agy", "codex", "llama"})
+
+
+class TestCapabilityTierResolution(unittest.TestCase):
+
+    def test_catalog_selects_model_for_requested_tier(self):
+        cli, model = _resolve_cli_and_model("copilot", None, "medium")
+        self.assertEqual(cli, "copilot")
+        self.assertTrue(model)
+
+    def test_explicit_model_remains_an_override(self):
+        self.assertEqual(_resolve_cli_and_model("copilot", "caller-model", "high"), ("copilot", "caller-model"))
+
+    def test_ready_profile_preference_is_used_when_no_explicit_model_exists(self):
+        with tempfile.TemporaryDirectory() as directory:
+            profile = Path(directory) / "profile.json"
+            profile.write_text(json.dumps({
+                "schema_version": 1,
+                "providers": {
+                    "copilot": {
+                        "available": True,
+                        "model_tiers": {"low": "profile-low", "medium": "gpt-5.3-codex", "high": "profile-high"},
+                    }
+                },
+                "constraints": {"workplace_restrictions": [], "network_restricted": False},
+                "fallback_order": ["copilot"],
+                "source": "user-confirmed",
+                "updated_at": "2026-09-10T00:00:00+00:00",
+            }), encoding="utf-8")
+
+            self.assertEqual(
+                _resolve_cli_and_model("copilot", None, "medium", profile_path=str(profile)),
+                ("copilot", "gpt-5.3-codex"),
+            )
+
+    def test_invalid_profile_model_falls_back_to_catalog(self):
+        with tempfile.TemporaryDirectory() as directory:
+            profile = Path(directory) / "profile.json"
+            profile.write_text(json.dumps({
+                "schema_version": 1,
+                "providers": {"copilot": {"available": True, "model_tiers": {"medium": "withdrawn-model"}}},
+                "constraints": {"workplace_restrictions": [], "network_restricted": False},
+                "fallback_order": ["copilot"],
+                "source": "user-confirmed",
+                "updated_at": "2026-09-10T00:00:00+00:00",
+            }), encoding="utf-8")
+
+            cli, model = _resolve_cli_and_model("copilot", None, "medium", profile_path=str(profile))
+
+            self.assertEqual(cli, "copilot")
+            self.assertEqual(model, _resolve_catalog_model("copilot", "medium"))
+
+    def test_profile_catalog_rejection_falls_back_without_raising(self):
+        with tempfile.TemporaryDirectory() as directory:
+            profile = Path(directory) / "profile.json"
+            profile.write_text(json.dumps({
+                "schema_version": 1,
+                "providers": {"copilot": {
+                    "available": True,
+                    "model_tiers": {"medium": "withdrawn-model"},
+                }},
+                "constraints": {},
+                "fallback_order": ["copilot"],
+                "source": "user-confirmed",
+                "updated_at": "2026-09-09T00:00:00+00:00",
+            }), encoding="utf-8")
+
+            with patch("run_agent._resolve_catalog_model", side_effect=[
+                RuntimeError("preferred model rejected"),
+                "catalog-fallback",
+            ]):
+                assert _resolve_cli_and_model(
+                    "copilot", None, "medium", profile_path=str(profile)
+                ) == ("copilot", "catalog-fallback")
+
+    def test_explicit_model_overrides_profile_preference(self):
+        with tempfile.TemporaryDirectory() as directory:
+            profile = Path(directory) / "profile.json"
+            profile.write_text(json.dumps({
+                "schema_version": 1,
+                "providers": {"copilot": {
+                    "available": True,
+                    "model_tiers": {"medium": "profile-model"},
+                }},
+                "constraints": {},
+                "fallback_order": ["copilot"],
+                "source": "user-confirmed",
+                "updated_at": "2026-09-09T00:00:00+00:00",
+            }), encoding="utf-8")
+
+            assert _resolve_cli_and_model(
+                "copilot", "explicit-model", "medium", profile_path=str(profile)
+            ) == ("copilot", "explicit-model")
+
+    def test_missing_provider_profile_uses_catalog_default(self):
+        with tempfile.TemporaryDirectory() as directory:
+            profile = Path(directory) / "profile.json"
+            profile.write_text(json.dumps({
+                "schema_version": 1,
+                "providers": {"codex": {"available": True}},
+                "constraints": {},
+                "fallback_order": ["codex"],
+                "source": "user-confirmed",
+                "updated_at": "2026-09-09T00:00:00+00:00",
+            }), encoding="utf-8")
+
+            cli, model = _resolve_cli_and_model(
+                "copilot", None, "low", profile_path=str(profile)
+            )
+
+            assert cli == "copilot"
+            assert model
+
+    def test_unavailable_profile_provider_uses_explicit_cli_catalog_default(self):
+        with tempfile.TemporaryDirectory() as directory:
+            profile = Path(directory) / "profile.json"
+            profile.write_text(json.dumps({
+                "schema_version": 1,
+                "providers": {"copilot": {
+                    "available": False,
+                    "model_tiers": {"medium": "profile-model"},
+                }},
+                "constraints": {},
+                "fallback_order": ["codex", "copilot"],
+                "source": "user-confirmed",
+                "updated_at": "2026-09-09T00:00:00+00:00",
+            }), encoding="utf-8")
+
+            cli, model = _resolve_cli_and_model(
+                "copilot", None, "medium", profile_path=str(profile)
+            )
+
+            assert cli == "copilot"
+            assert model == _resolve_catalog_model("copilot", "medium")
+
+    def test_snapshot_bearing_profile_is_not_used_without_current_snapshot(self):
+        with tempfile.TemporaryDirectory() as directory:
+            profile = Path(directory) / "profile.json"
+            profile.write_text(json.dumps({
+                "schema_version": 1,
+                "providers": {"copilot": {
+                    "available": True,
+                    "model_tiers": {"medium": "stale-profile-model"},
+                }},
+                "constraints": {},
+                "fallback_order": ["copilot"],
+                "source": "user-confirmed",
+                "updated_at": "2026-09-09T00:00:00+00:00",
+                "plugin_snapshot": "unknown-current-plugin",
+            }), encoding="utf-8")
+
+            cli, model = _resolve_cli_and_model(
+                "copilot", None, "medium", profile_path=str(profile)
+            )
+
+            assert cli == "copilot"
+            assert model == _resolve_catalog_model("copilot", "medium")
 
 
 if __name__ == "__main__":

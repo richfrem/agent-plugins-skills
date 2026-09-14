@@ -4,9 +4,25 @@ flowchart TB
     Coordinator["TransitionCoordinator"]
     Registry["TransitionRegistry"]
     Templates["transition_templates.yaml: edge and stage contracts"]
+    Guidance["Transition guidance: versioned advisory snapshot"]
+    ForceClose["Force close: any active state to DONE; interactive human authorization required"]
+    ArtifactGate["Plan artifact identity/revision gate"]
+    Delegation["DelegationContract: scope, authority, budget, receipts"]
+    ReviewDispatch["Review dispatch: required source + canonical verdict"]
+    ReviewSelection["review-selection-v1: decision → method → internal runtime/model/effort"]
+    ReviewReports["Task-scoped raw reviewer reports + receipts"]
+    ReviewSynthesis["Canonical review synthesis / revision brief"]
+    PlanBranch["Plan branch: skip review or request review"]
+    PlanAcceptance["PLAN_REVIEW convergence: accept plan or return to DRAFT_PLAN"]
+    InterviewOutline["Atomic interview answer + revisioned outline projection"]
+    Inventory["Session-wide change inventory + reconciliation manifest"]
+    Worktree["Registered implementation worktree"]
+    MainReconciliation["main_worktree_reconciliation: force-copies dirty source-checkout files into worktree; blocks on conflict (issue #609)"]
+    Lifecycle["Canonical lifecycle states: [INTAKE] → [INTERVIEW] → [DRAFT_PLAN] → [PLAN_REVIEW] → [MULTI_AGENT_REVIEW] → [AWAITING_APPROVAL] → [APPROVED] → [IN_WORKTREE] → [WORKTREE_REVIEW] → [MULTI_AGENT_CODE_REVIEW] → [VERIFY_EXIT] → [RETROSPECTIVE] → [DONE]"]
 
     State["StateMachine (control_plane/state_machine.py)"]
     Policy["Unified policy engine (control_plane/policy.py)"]
+    HumanClose["Human-authorized force close\n(any state → DONE; agent forbidden)"]
 
     PersistencePort["PersistencePort"]
     CryptoPort["CryptoPort"]
@@ -21,16 +37,32 @@ flowchart TB
     ClockAdapter["ClockAdapter"]
 
     DB[(control_plane.db)]
+    Receipts["verification_receipts: gate and artifact identities"]
     RepoFiles["Repository and verifier files"]
     CatalogFiles["Model catalog JSON files"]
     Clock["Wall clock"]
 
     Callers --> Facade
+    Facade --> Lifecycle
 
     Facade --> State
     Facade --> Policy
     Facade --> Coordinator
     Coordinator --> Registry
+    Coordinator --> Guidance
+    Coordinator --> ReviewSelection
+    Coordinator --> ForceClose
+    Coordinator --> ArtifactGate
+    Coordinator --> PlanBranch
+    Coordinator --> PlanAcceptance
+    Facade --> Delegation
+    Coordinator --> ReviewDispatch
+    ReviewDispatch --> ReviewReports
+    ReviewReports --> ReviewSynthesis
+    ReviewSynthesis --> PlanAcceptance
+    ReviewSynthesis --> Worktree
+    Policy -->|"enforces at APPROVED to IN_WORKTREE"| MainReconciliation
+    MainReconciliation --> Worktree
     Facade --> PersistencePort
     Facade --> CryptoPort
     Facade --> FilesystemPort
@@ -47,7 +79,21 @@ flowchart TB
     ClockPort --> ClockAdapter
 
     SQLiteAdapter --> DB
+    Delegation --> PersistencePort
+    ReviewDispatch --> ModelPort
+    PlanBranch --> PlanAcceptance
+    PlanAcceptance --> ArtifactGate
+    ArtifactGate --> FilesystemPort
+    ArtifactGate --> PersistencePort
+    InterviewOutline --> PersistencePort
+    InterviewOutline --> FilesystemPort
+    Worktree --> Inventory
+    Inventory --> ReviewDispatch
+    Inventory --> PersistencePort
+    DB -.-> Receipts
     DB -.->|"trigger-enforced required questions: stage, edge, approval"| Coordinator
+    HumanClose --> State
+    HumanClose -.->|"explicit HITL approval recorded"| Receipts
     CryptoAdapter --> RepoFiles
     FilesystemAdapter --> RepoFiles
     ModelAdapter --> CatalogFiles

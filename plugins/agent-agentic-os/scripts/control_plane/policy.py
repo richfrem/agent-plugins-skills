@@ -36,7 +36,94 @@ Key Input Dependencies:
     - evaluate_operation() — evaluates all rules registered for a given operation name
 """
 
+from fnmatch import fnmatch
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
+from control_plane.constants import (
+    STATE_INTAKE, STATE_INTERVIEW, STATE_DRAFT_PLAN, STATE_MULTI_AGENT_REVIEW, STATE_PLAN_REVIEW, STATE_AWAITING_APPROVAL, STATE_IN_WORKTREE, STATE_WORKTREE_REVIEW, STATE_MULTI_AGENT_CODE_REVIEW, STATE_VERIFY_EXIT, STATE_DONE, STATE_ROLLED_BACK,
+)
+
+
+class DelegationContractError(ValueError):
+    """Raised when a delegation contract or receipt violates its approved boundary."""
+
+
+DELEGATION_REQUIRED_FIELDS = (
+    "objective", "scope", "authority", "tool_limits", "budget", "artifacts",
+    "verifier", "escalation", "fallback_candidates", "backend", "model_id",
+    "cost_tier", "capability_class",
+)
+
+
+def validate_delegation_contract(contract: Dict[str, Any]) -> None:
+    """Validate the governance boundary without constraining model reasoning or strategy."""
+    missing = [field for field in DELEGATION_REQUIRED_FIELDS if field not in contract]
+    if missing:
+        raise DelegationContractError("Delegation contract missing: " + ", ".join(missing))
+    if not str(contract["objective"]).strip():
+        raise DelegationContractError("Delegation objective is required")
+    if not isinstance(contract["scope"], list) or not contract["scope"] or not all(isinstance(item, str) and item for item in contract["scope"]):
+        raise DelegationContractError("Delegation scope must contain at least one boundary")
+    if not isinstance(contract["tool_limits"], list):
+        raise DelegationContractError("Delegation tool_limits must be a list")
+    budget = contract["budget"]
+    if not isinstance(budget, dict) or int(budget.get("max_requests", 0)) < 1:
+        raise DelegationContractError("Delegation budget must define max_requests >= 1")
+    if contract["cost_tier"] not in {"low", "medium", "high"}:
+        raise DelegationContractError("Delegation cost_tier must be low, medium, or high")
+    authority = contract["authority"]
+    if not isinstance(authority, dict) or not isinstance(authority.get("read"), bool):
+        raise DelegationContractError("Delegation authority must declare boolean read access")
+    if not isinstance(contract["artifacts"], list):
+        raise DelegationContractError("Delegation artifacts must be a list")
+    if not isinstance(contract["verifier"], dict) or not contract["verifier"].get("command"):
+        raise DelegationContractError("Delegation verifier command is required")
+    if not isinstance(contract["escalation"], dict):
+        raise DelegationContractError("Delegation escalation policy is required")
+    if not isinstance(contract["fallback_candidates"], list):
+        raise DelegationContractError("Delegation fallback_candidates must be a list")
+
+
+def delegation_requires_approval(contract: Dict[str, Any]) -> bool:
+    """High-cost or write-capable delegation requires a human approval receipt."""
+    authority = contract.get("authority", {})
+    return contract.get("cost_tier") == "high" or bool(authority.get("write"))
+
+
+def validate_delegation_receipt(
+    contract: Dict[str, Any],
+    receipt: Dict[str, Any],
+    request_count: int,
+) -> bool:
+    """Validate one execution attempt against the approved contract."""
+    if not receipt.get("backend_available", True):
+        raise DelegationContractError("Delegation backend is unavailable")
+    max_requests = int(contract["budget"].get("max_requests", 0))
+    if request_count >= max_requests:
+        raise DelegationContractError("Delegation budget exhausted")
+    if receipt.get("cost_tier") not in {"low", "medium", "high"}:
+        raise DelegationContractError("Delegation receipt has invalid cost tier")
+    if receipt.get("written_paths"):
+        patterns = contract["scope"]
+        out_of_scope = [path for path in receipt["written_paths"] if not any(fnmatch(path, pattern) for pattern in patterns)]
+        if out_of_scope:
+            raise DelegationContractError(f"Delegation write is outside approved scope: {out_of_scope}")
+    changed_identity = receipt.get("backend") != contract.get("backend") or receipt.get("model_id") != contract.get("model_id")
+    if changed_identity:
+        declared = any(
+            candidate.get("backend") == receipt.get("backend") and candidate.get("model_id") == receipt.get("model_id")
+            for candidate in contract.get("fallback_candidates", [])
+            if isinstance(candidate, dict)
+        )
+        if not declared:
+            raise DelegationContractError("Delegation substitution is not a declared fallback candidate")
+    changed_boundary = any(
+        receipt.get(field) != contract.get(field)
+        for field in ("cost_tier", "capability_class")
+    ) or bool(receipt.get("write_capable")) != bool(contract["authority"].get("write"))
+    if changed_boundary:
+        raise DelegationContractError("Delegation substitution requires renewed approval")
+    return True
 
 
 class PolicyViolation(Exception):
@@ -125,6 +212,109 @@ def _interview_standard_check(ctx: Dict[str, Any]) -> Optional[str]:
     return _interview_route_check(ctx, "STANDARD", "interview_acceptance_criteria")
 
 
+def _worktree_isolation_check(ctx: Dict[str, Any]) -> Optional[str]:
+    """Require isolated worktree metadata unless a human records an exception.
+
+    Also rejects registering the main checkout path itself as the "worktree" —
+    found live (2026-09-13): an agent passed --path "$(pwd)" (the main checkout)
+    to update-worktree, which this check previously accepted because it only
+    verified worktree_path/worktree_branch were non-empty and the branch wasn't
+    main/master. That is not an isolated worktree. The only sanctioned way to
+    work in the existing checkout is the pre-existing existing_worktree_exception
+    receipt (recorded when the user explicitly authorizes it), not a default."""
+    task = ctx.get("task") or {}
+    if ctx["count_receipts"]("existing_worktree_exception", 0) > 0:
+        return None
+
+    worktree_path = str(task.get("worktree_path") or "").strip()
+    worktree_branch = str(task.get("worktree_branch") or "").strip()
+    if not worktree_path or not worktree_branch:
+        return (
+            "Cannot enter IN_WORKTREE: record an isolated worktree path and feature branch "
+            "before implementation, or record an explicit existing_worktree_exception."
+        )
+    if worktree_branch in {"main", "master"}:
+        return (
+            f"Cannot enter IN_WORKTREE on default branch '{worktree_branch}': use an isolated "
+            "feature branch or record an explicit existing_worktree_exception."
+        )
+
+    repo_root = str(ctx.get("repo_root") or "").strip()
+    if repo_root:
+        resolved_worktree = str(Path(worktree_path).resolve())
+        resolved_repo_root = str(Path(repo_root).resolve())
+        if resolved_worktree == resolved_repo_root:
+            return (
+                "Cannot enter IN_WORKTREE: registered worktree_path is the main checkout itself "
+                f"('{resolved_worktree}'), not an isolated worktree. Create an isolated worktree "
+                "(e.g. .worktrees/task-<task-id>/) and register that path with update-worktree, "
+                "or record an explicit human existing_worktree_exception receipt if the user has "
+                "authorized working directly in the existing checkout."
+            )
+    return None
+
+
+def _main_clean_before_approval_check(ctx: Dict[str, Any]) -> Optional[str]:
+    """Enforce the documented-but-previously-unenforced practice from
+    references/worktree-reconciliation-and-multi-worktree-practices.md Section 1:
+    commit interim INTAKE/INTERVIEW/DRAFT_PLAN work to a small branch and get it
+    merged BEFORE APPROVED, so main is clean before a worktree is ever created.
+    main_worktree_reconciliation (a later check, at APPROVED -> IN_WORKTREE) is a
+    safety net for what slips through, not a substitute for keeping main clean in
+    the first place -- this check closes that gap at the earlier edge.
+
+    Found live (2026-09-13): an agent accumulated substantial uncommitted/committed
+    work directly on the task's own branch through INTERVIEW/DRAFT_PLAN, entered
+    APPROVED/IN_WORKTREE without a clean-foundation commit+PR cycle, then could not
+    push the branch at all once IN_WORKTREE (pre-push-review-guard correctly denies
+    task-branch pushes before DONE) -- a real conflict between two individually
+    correct rules, caused by skipping this earlier gate."""
+    if ctx["count_receipts"]("main_dirty_before_approval_exception", 0) > 0:
+        return None
+    get_advisory = ctx.get("get_main_dirty_advisory")
+    if get_advisory is None:
+        return None
+    advisory = get_advisory()
+    dirty_count = advisory.get("dirty_count", 0) if isinstance(advisory, dict) else 0
+    if dirty_count > 0:
+        dirty_paths = advisory.get("dirty_paths", []) if isinstance(advisory, dict) else []
+        joined = ", ".join(dirty_paths[:10])
+        more = f" (+{len(dirty_paths) - 10} more)" if len(dirty_paths) > 10 else ""
+        return (
+            f"Cannot enter APPROVED: {dirty_count} dirty path(s) on the source checkout "
+            f"({joined}{more}). Commit this interim work to a small branch and get it "
+            "reviewed/merged before a worktree is created, per "
+            "references/worktree-reconciliation-and-multi-worktree-practices.md Section 1, "
+            "or record an explicit human main_dirty_before_approval_exception receipt with "
+            "the reason if the human has authorized proceeding with dirty state."
+        )
+    return None
+
+
+def _main_worktree_reconciliation_check(ctx: Dict[str, Any]) -> Optional[str]:
+    """Force pre-worktree dirty source-checkout changes into the newly registered worktree
+    at transition time via code (ctx['reconcile_main_into_worktree']), never by trusting an
+    agent's claim that reconciliation happened (github issue #609). A genuine conflict —
+    the worktree independently diverged on the same path — blocks the transition instead
+    of silently overwriting either side; record an explicit human exception to proceed."""
+    if ctx["count_receipts"]("main_worktree_reconciliation_exception", 0) > 0:
+        return None
+    reconcile = ctx.get("reconcile_main_into_worktree")
+    if reconcile is None:
+        return "Cannot enter IN_WORKTREE: reconciliation callable unavailable in policy context."
+    result = reconcile()
+    conflicts = result.get("conflicts") or []
+    if conflicts:
+        joined = ", ".join(conflicts)
+        return (
+            "Cannot enter IN_WORKTREE: the following source-checkout changes conflict with "
+            f"independent worktree content and were not auto-reconciled: {joined}. Resolve the "
+            "conflict manually inside the worktree, or record an explicit human "
+            "main_worktree_reconciliation_exception receipt with the reason."
+        )
+    return None
+
+
 def _done_check(ctx: Dict[str, Any]) -> Optional[str]:
     """Predicate rule folding in the original _check_done_guard: requires a passing test_suite
     receipt, an asymmetric persistence log entry, a clean leak check, and (if any verifiers
@@ -132,10 +322,12 @@ def _done_check(ctx: Dict[str, Any]) -> Optional[str]:
     Raises whatever ctx['verify_sovereignty']() raises (VerifierSovereigntyViolation) — that
     exception type and message are preserved exactly, unrelated to PolicyViolation."""
     task_id = ctx["task_id"]
-    if ctx["count_receipts"](gate_name="test_suite", exit_code=0) == 0:
+    planning_only = ctx["count_receipts"](gate_name="planning_only_completion", exit_code=0) > 0
+    required_test_gate = "plan_validation" if planning_only else "test_suite"
+    if ctx["count_receipts"](gate_name=required_test_gate, exit_code=0) == 0:
         return (
-            f"Cannot complete task '{task_id}': No passing test_suite verification receipt "
-            "(gate_name='test_suite', exit_code == 0) found."
+            f"Cannot complete task '{task_id}': No passing {required_test_gate} verification receipt "
+            f"(gate_name='{required_test_gate}', exit_code == 0) found."
         )
 
     if ctx["count_locked_verifiers"]() > 0:
@@ -166,6 +358,11 @@ def _retrospective_done_check(ctx: Dict[str, Any]) -> Optional[str]:
     return None
 
 
+def _implementation_completeness_check(ctx: Dict[str, Any]) -> Optional[str]:
+    """Require the approved implementation ledger to prove every task is complete."""
+    return ctx["check_implementation_completeness"]()
+
+
 def _rolled_back_check(ctx: Dict[str, Any]) -> Optional[str]:
     """Predicate rule folding in the original _check_rolled_back_guard: requires at least one
     asymmetric_persistence_log entry documenting the failure before rollback."""
@@ -183,7 +380,7 @@ def _worktree_push_check(ctx: Dict[str, Any]) -> Optional[str]:
     the task has cleared all verification gates and is in final state DONE."""
     task_state = ctx["task_state"]
     task_id = ctx["task_id"]
-    if task_state == "DONE":
+    if task_state == STATE_DONE:
         return None
     return (
         f"Cannot mark worktree 'pushed_to_origin' for task '{task_id}': Task state is '{task_state}'. "
@@ -210,8 +407,8 @@ def _task_commit_check(ctx: Dict[str, Any]) -> Optional[str]:
     task_id = ctx.get("task_id", "unknown")
     staged_files: List[str] = ctx.get("staged_files", [])
 
-    implementation_states = ("IN_WORKTREE", "WORKTREE_REVIEW", "MULTI_AGENT_CODE_REVIEW", "VERIFY_EXIT", "DONE")
-    planning_states = ("INTAKE", "INTERVIEW", "DRAFT_PLAN", "PLAN_REVIEW", "MULTI_AGENT_REVIEW", "AWAITING_APPROVAL")
+    implementation_states = (STATE_IN_WORKTREE, STATE_WORKTREE_REVIEW, STATE_MULTI_AGENT_CODE_REVIEW, STATE_VERIFY_EXIT, STATE_DONE)
+    planning_states = (STATE_INTAKE, STATE_INTERVIEW, STATE_DRAFT_PLAN, STATE_PLAN_REVIEW, STATE_MULTI_AGENT_REVIEW, STATE_AWAITING_APPROVAL)
 
     # If in planning states, permit only if ALL staged files are docs/plans/ or docs/superpowers/
     if task_state in planning_states:
@@ -287,10 +484,45 @@ CHECK_REGISTRY: Dict[str, Any] = {
             "Call record_human_approval() — this gate can never be skipped."
         )
     ),
+    "planning_only_completion": lambda ctx: (
+        None if _gate_receipt_exists(ctx, "planning_only_completion") else (
+            "Cannot advance: no planning_only_completion receipt found. "
+            "Record explicit approval that implementation is intentionally skipped."
+        )
+    ),
+    "worktree_isolation_or_exception": _worktree_isolation_check,
+    "main_worktree_reconciliation": _main_worktree_reconciliation_check,
+    "main_clean_before_approval": _main_clean_before_approval_check,
     "test_suite": lambda ctx: (
         None if _gate_receipt_exists(ctx, "test_suite") else (
             "Cannot advance: no recorded test_suite verification receipt found. "
             "Call record_verification_receipt(gate_name='test_suite', ...)."
+        )
+    ),
+    # Edge-scoped softening for IN_WORKTREE -> WORKTREE_REVIEW ONLY (added
+    # 2026-09-13, explicit human request): accepts either a real test_suite
+    # receipt, or an explicit human-recorded skip decision deferring testing
+    # to the later MULTI_AGENT_CODE_REVIEW/VERIFY_EXIT gate, which re-checks
+    # test_suite/full_test_suite independently and is NOT weakened by this.
+    # This does not touch the generic "test_suite" check above, used by
+    # other edges -- only this specific edge's deterministic_checks entry
+    # points at this function instead.
+    "test_suite_or_deferred_to_review": lambda ctx: (
+        None if (
+            _gate_receipt_exists(ctx, "test_suite")
+            or ctx["count_receipts"]("test_suite_deferred_to_review", 0) > 0
+        ) else (
+            "Cannot advance: no test_suite receipt found, and testing was not explicitly "
+            "deferred. Either record a test_suite verification receipt, or record an "
+            "explicit human test_suite_deferred_to_review decision if the human wants to "
+            "defer testing to the later review/control step."
+        )
+    ),
+    "full_test_suite": lambda ctx: (
+        None if ctx["count_receipts"]("full_test_suite", 0) > 0 else (
+            "Cannot advance: no recorded passing full_test_suite verification receipt "
+            "found. Run the repository-wide pytest -q suite through the approved "
+            "verifier and ensure it exits 0."
         )
     ),
     "code_review_or_skip": lambda ctx: (
@@ -304,6 +536,7 @@ CHECK_REGISTRY: Dict[str, Any] = {
     ),
     "done_guard": _done_check,
     "retrospective_done_guard": _retrospective_done_check,
+    "implementation_completeness": _implementation_completeness_check,
     "rolled_back_guard": _rolled_back_check,
 }
 
@@ -360,9 +593,9 @@ def evaluate_transition(ctx: Dict[str, Any], from_state: str, to_state: str) -> 
     this local mapping exists only inside this function, routing through the same
     CHECK_REGISTRY functions _prior_art_check/_done_check/_rolled_back_check already use."""
     edge_to_check_fn = {
-        ("INTAKE", "INTERVIEW"): _prior_art_check,
-        ("VERIFY_EXIT", "DONE"): _done_check,
-        ("IN_WORKTREE", "ROLLED_BACK"): _rolled_back_check,
+        (STATE_INTAKE, STATE_INTERVIEW): _prior_art_check,
+        (STATE_VERIFY_EXIT, STATE_DONE): _done_check,
+        (STATE_IN_WORKTREE, STATE_ROLLED_BACK): _rolled_back_check,
     }
     fn = edge_to_check_fn.get((from_state, to_state))
     if fn is not None:

@@ -17,7 +17,7 @@ class CopilotAdapter:
     def __init__(self):
         """Initialize with the adapter name and default model."""
         self.name = "copilot"
-        self.default_model = "gpt-5-mini"
+        self.default_model = "mai-code-1.1-flash"
 
     def heartbeat(self) -> bool:
         """Return True if the copilot CLI is installed and responds to a heartbeat prompt."""

@@ -1,142 +1,120 @@
-# Repository Installation — Central Authority
+# Repository Installation & Lifecycle — Central Authority
 
-This document defines the single, authoritative suite of installation methods for all **128 skills** and **10 plugins** in the Universal Agent Plugins & Skills repository.
+This document defines the authoritative installation, retention, and lifecycle management methods for all plugins and skills in the Universal Agent Plugins & Skills repository.
 
 ---
 
-## Consumer Installation (Bootstrapping)
+## Consumer Installation & Management
 
-These commands are for consumers who want to add plugins seamlessly *without* cloning the repo. The single `.agents/` environment directory is **not committed** to your repo. It will be empty by default. Run one of the installers below to deploy plugins.
+These commands are for consumers who want to add and manage plugins seamlessly in any project repository. Installed artifacts are deployed directly into `.agents/` and registered in `plugin-sources.json` and `plugin-retention.json`.
 
-### Option 1: `uvx` — Modern Python Standard (Recommended)
+### 1. Install Plugins (`plugin-add`)
 
-If you have [uv](https://docs.astral.sh/uv/) installed, you get instantaneous, isolated installations natively cross-platform without Node.js.
+Use [uvx](https://docs.astral.sh/uv/) for instant, isolated, cross-platform installation:
 
 ```bash
-# Interactive picker
+# Interactive TUI: select plugins and optionally toggle specific skills
 uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills
 
-# Install everything non-interactively (no prompts)
+# Install everything non-interactively (all plugins, all skills)
 uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills --all -y
 
-# Install a specific plugin directly (e.g., agent-orchestration/)
+# Install a specific plugin non-interactively (e.g. agent-orchestration/)
 uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills/plugins/agent-orchestration -y
 
-# Preview what will be installed without writing any files
+# Dry-run preview
 uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills --dry-run
 ```
 
-### Option 2: Fallback Bootstrap (Zero Tooling Assumptions)
+---
 
-If you don't use `uv`, you can install purely using standard Python tooling without cloning the repo.
+### 2. Prune Unneeded Skills (`plugin-prune`)
 
-**Mac / Linux:**
+Reduce model context size and eliminate token bloat by retaining only the exact skills, rules, and agents you need:
+
 ```bash
-curl -sL https://raw.githubusercontent.com/richfrem/agent-plugins-skills/main/bootstrap.py | python -
-```
-**Windows (PowerShell):**
-```powershell
-Invoke-RestMethod https://raw.githubusercontent.com/richfrem/agent-plugins-skills/main/bootstrap.py | python -
-```
+# Interactive TUI: review installed plugins and untoggle unneeded skills/rules/agents
+uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-prune --interactive
 
-### Subsequent Installations
+# Headless execution against plugin-retention.json
+uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-prune --execute --confirm-token PRUNE-INSTALLED-SKILLS
 
-Because `uvx` and `bootstrap.py` execute ephemerally, you simply repeat the same command to add new plugins later. There is no local state to manage outside of your `.agents/` folder.
+# Dry-run inspection
+uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-prune --dry-run
+```
 
 ---
 
-## Alternative: Agent Plugin Marketplace (Claude / Copilot)
+### 3. Uninstall Plugins (`plugin-remove`)
 
-If you are using **Claude Code** (2.1.81+) or the **Copilot Plugin CLI**, you can add this repository as a native marketplace and install plugins without leaving the terminal:
+Safely remove installed plugins and scrub their artifacts from `.agents/`, `.claude/`, `.gemini/`, etc.:
+
+```bash
+# Interactive uninstaller TUI
+uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-remove
+
+# Headless: remove a specific plugin
+uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-remove --plugins agent-orchestration/ --yes
+
+# Headless: remove all tracked plugins
+uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-remove --all --yes
+```
+
+---
+
+### 4. Sync Environment (`plugin-sync`)
+
+Re-synchronize all declared plugins from `plugin-sources.json` and enforce your retention settings from `plugin-retention.json`:
+
+```bash
+# Full sync: reinstalls tracked plugins and runs post-sync retention pruning
+python3 plugins/plugin-manager/scripts/sync_with_inventory.py
+
+# Dry-run sync inspection
+python3 plugins/plugin-manager/scripts/sync_with_inventory.py --dry-run
+
+# Sync without pruning
+python3 plugins/plugin-manager/scripts/sync_with_inventory.py --no-prune
+```
+
+---
+
+## Alternative: Native Marketplace (Claude Code / Copilot CLI)
+
+If using **Claude Code** or **Copilot CLI**, you can add this repository as a native marketplace:
 
 ### Claude Code Syntax
 ```text
-# Add this repository to your known marketplaces
 /plugin marketplace add richfrem/agent-plugins-skills
-
-# Open the interactive TUI to browse, discover, and install plugins
 /plugin
-
-# Or install a specific plugin directly
 /plugin install <plugin-name>
 ```
 
 ### Copilot CLI Syntax
 ```bash
-# Add this repository as a known marketplace
 copilot plugin marketplace add richfrem/agent-plugins-skills
-
-# Browse, discover, and install plugins via TUI
 copilot plugin
-
-# Install a specific plugin directly
-# Use the slugified marketplace ID (e.g., richfrem-agent-plugins-skills)
 copilot plugin install <plugin-name>@richfrem-agent-plugins-skills
 ```
 
-> [!NOTE]
-> **Gemini CLI**: The `gemini extensions install` command installs the entire repository as a raw context bundle, not as discrete addressable plugins. For Gemini CLI, use **`uvx`** (Option 1 above) which correctly deploys individual plugins and skills into your `.agents/` folder.
-
 ---
 
-## Alternative: npx skills CLI (Mac / Linux only)
+## Local Development (Contributors & Testing)
 
-> [!NOTE]
-> **`npx skills add` installs skills only** — no commands, agents, or hooks. It also only works correctly on Mac/Linux (Git symlinks check out as plain-text files on Windows). For full plugin deployment on any platform, use `uvx` or `bootstrap.py`.
-
-### Standard Commands
-```bash
-# Install a specific skill collection
-npx skills add richfrem/agent-plugins-skills
-
-# Install a specific plugin from a repository
-npx skills add <user>/<repo>/plugins/<plugin-name>
-
-# Update all installed skills across all agents
-npx skills update
-```
-
-### Local Development & Reinstallation
-For contributors and skill developers who need to test local sources:
-```bash
-# Force local reinstallation
-npx skills add richfrem/agent-plugins-skills/plugins/my-plugin --force
-
-# Reset .agents folder for clean local sync
-rm -rf .agents/ && npx skills add richfrem/agent-plugins-skills/plugins/my-plugin --force
-```
-> [!CAUTION] 
-> **Broken Symlinks on Windows:** `npx skills add` fails on Windows because it fails to dereference Git symlinks correctly. Use `uvx` or `bootstrap.py` for full platform-agnostic deployment.
-
----
-
-## Installer Comparison
-
-| Method | Platform | Full Plugin | GitHub source | Notes |
-|---|---|---|---|---|
-| `uvx` ★ | **All** (Win/Mac/Linux) | ✅ skills + agents + commands + hooks | ✅ `owner/repo` | Recommended default |
-| `bootstrap.py` | **All** (Win/Mac/Linux) | ✅ full | ✅ `owner/repo` | Zero-dependency fallback |
-| Marketplace CLI ★ | **Claude / Copilot** | ✅ skills + agents + commands + hooks | ✅ | Native TUI / Marketplace |
-| `npx skills add` | Mac/Linux only | ❌ skills only | ✅ | No Python required |
-
----
-
-### Local Development (For Developers)
-
-If you want to maintain a Git repo for debugging instead of using the remote bootstrappers:
+From a local clone of this repository:
 
 ```bash
-git clone https://github.com/richfrem/agent-plugins-skills.git
-cd agent-plugins-skills
+# Install from local directory
+python3 plugins/plugin-manager/scripts/plugin_add.py plugins/<plugin-name> -y
+python3 plugins/plugin-manager/scripts/plugin_add.py plugins/ --all -y
 
-# Install a specific plugin from local source
-python plugins/plugin-manager/scripts/plugin_add.py plugins/<plugin-name> -y
+# Interactive pruner
+python3 plugins/plugin-manager/scripts/prune_installed_skills.py --interactive
 
-# Install all plugins from local source
-python plugins/plugin-manager/scripts/plugin_add.py plugins/ --all -y
+# Interactive remover
+python3 plugins/plugin-manager/scripts/plugin_remove.py
 
-# Alternatively, you can use uvx to run the installer natively against your local files
-uvx --from . plugin-add plugins/
-uvx --from . plugin-add plugins/agent-scaffolders
+# Sync inventory
+python3 plugins/plugin-manager/scripts/sync_with_inventory.py
 ```
 
