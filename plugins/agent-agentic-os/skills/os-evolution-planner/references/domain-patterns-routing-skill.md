@@ -1,0 +1,1 @@
+../../../references/domain-patterns/routing-skill.md

@@ -5,481 +5,15 @@
 
 Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-specific instructions as needed.
 
-**Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
+## Overview
 
-## 1. Think Before Coding
-
-**Don't assume. Don't hide confusion. Surface tradeoffs.**
-
-Before implementing:
-- State your assumptions explicitly. If uncertain, ask.
-- If multiple interpretations exist, present them - don't pick silently.
-- If a simpler approach exists, say so. Push back when warranted.
-- If something is unclear, stop. Name what's confusing. Ask.
-
-## 2. Simplicity First
-
-**Minimum code that solves the problem. Nothing speculative.**
-
-- No features beyond what was asked.
-- No abstractions for single-use code.
-- No "flexibility" or "configurability" that wasn't requested.
-- No error handling for impossible scenarios.
-- If you write 200 lines and it could be 50, rewrite it.
-
-Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
-
-## 3. Surgical Changes
-
-**Touch only what you must. Clean up only your own mess.**
-
-When editing existing code:
-- Don't "improve" adjacent code, comments, or formatting.
-- Don't refactor things that aren't broken.
-- Match existing style, even if you'd do it differently.
-- If you notice unrelated dead code, mention it - don't delete it.
-
-When your changes create orphans:
-- Remove imports/variables/functions that YOUR changes made unused.
-- Don't remove pre-existing dead code unless asked.
-
-The test: Every changed line should trace directly to the user's request.
-
-## 4. Goal-Driven Execution
-
-**Define success criteria. Loop until verified.**
-
-Transform tasks into verifiable goals:
-- "Add validation" → "Write tests for invalid inputs, then make them pass"
-- "Fix the bug" → "Write a test that reproduces it, then make it pass"
-- "Refactor X" → "Ensure tests pass before and after"
-
-For multi-step tasks, state a brief plan:
-```
-1. [Step] → verify: [check]
-2. [Step] → verify: [check]
-3. [Step] → verify: [check]
-```
-
-Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
-
----
-
-**These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
-
----
-
-## Project-Specific Rules
-
-### Purpose
-Upstream source monorepo for a cross-platform library of reusable AI agent plugins and skills.
-Plugins are authored here and deployed into target projects via the bridge installer.
-Individual skills must be **fully self-contained** — no runtime cross-plugin dependencies.
-
-**This working directory has no application/domain data.** If a session shows a domain-specific
-slash command or agent (e.g. `portfolio-advisor`, `tradingview`, `stock-valuation`) that isn't one
-of the plugins listed below, it's installed globally via the Claude Code marketplace and belongs
-to a *different* project — it expects files (e.g. `investment_screener/backend/data/...`) that
-don't exist here. Check `pwd` before assuming this repo owns an unfamiliar command.
-
-### Key Commands
-```bash
-# Install plugins into any project (recommended)
-uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills
-
-# Install a specific plugin non-interactively (e.g., agent-orchestration/)
-uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills/plugins/agent-orchestration -y
-
-# Interactive local install
-python plugins/plugin-manager/scripts/plugin_add.py
-
-# Bulk install all plugins
-python plugins/plugin-manager/scripts/plugin_add.py --all -y
-
-# Local installation testing via uvx (uses remote script but local plugin files)
-uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add plugins/
-uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add plugins/agent-scaffolders
-```
-
-> **Windows**: Never use `npx skills add` — use `uvx` or `bootstrap.py` instead.
-
-```bash
-# Dependencies (per plugin)
-pip-compile ./requirements.in && pip install -r ./requirements.txt
-```
-
-### Plugin Reinstall Rule (always active)
-
-> **After modifying any skill, script, reference, sub-agent, or plugin source file in `plugins/`**, you MUST reinstall the affected plugin(s) into `.agents/` so the live runtime reflects the changes and gets replicated/updated.
-> The skills in `.agents/skills/` are what agents actually run — edits to `plugins/` are inactive until synced.
-
-```bash
-# Reinstall all plugins from local source (recommended after multi-plugin edits / testing)
-python3 plugins/plugin-manager/scripts/plugin_add.py plugins/ -y
-
-# Alternatively, sync all tracked plugins
-python3 plugins/plugin-manager/scripts/sync_with_inventory.py
-
-# Reinstall a single plugin only
-python3 plugins/plugin-manager/scripts/plugin_add.py plugins/<plugin-name> -y
-```
-
-Skip reinstall only for: documentation-only edits to `references/`, `ADRs/`, or `docs/` that contain no agent-executable content.
-
-### Architecture
-```
-plugins/<plugin>/           ← canonical source
-  skills/<skill>/SKILL.md   ← skill definition
-  evals/evals.json          ← routing evals (should_trigger boolean schema)
-  scripts/                  ← shared scripts (file-level symlinks only)
-  agents/ commands/         ← sub-agents and slash commands
-
-.agents/                    ← bridge installer output (hard copies, symlinks resolved)
-  skills/ agents/ workflows/
-```
-> **`plugins/` is the source of truth.** `.agents/` and the Claude Code marketplace/plugin system
-> contain installed copies only — never treat them as authoritative. All counts, skill lists, and
-> version references in this file must reflect what is in `plugins/`, not what is installed.
-> Skills run from `.agents/skills/` at runtime — NOT from `plugins/`. Files in `plugins/` are
-> inactive until installed via `plugin_add.py` or `uvx`.
-
-See `plugins/plugin-manager/scripts/` for ecosystem management scripts.
-See `ADRs/` for authoritative architecture rules.
-See `architecture.md` for the full repo architecture overview (project structure, plugin-by-plugin breakdown, ADR summary, symlink system, runtime state layout).
-
----
-
-## Plugin Evolution Entry Points
-
-The agent-agentic-os plugin provides a structured workflow for evolving any plugin,
-skill, or sub-agent in this repo. Three key capabilities:
-
-| Skill / Agent | Invoke as | Purpose |
-|---------------|-----------|---------|
-| `os-architect` | `/os-architect` | Front-door intake — start here for any evolution activity |
-| `os-evolution-planner` | called by os-architect | Writes task plans + Copilot CLI delegation prompts |
-| `os-architect-tester` | agent dispatch | Validates os-architect via pre-scripted scenario transcripts |
-
-### Evolution workflow
-
-1. **Invoke `/os-architect`** — describe what you want to evolve in plain language
-2. **Intent classified** into one of 5 categories (pattern abstraction, research application, lab setup, gap fill, multi-loop)
-3. **Ecosystem audit** — os-architect checks what exists vs what's needed
-4. **Path proposed**: A (orchestrate existing) / B (update existing) / C (create new)
-5. **os-evolution-planner** writes the task plan + Copilot CLI delegation prompt
-6. **Dispatch** via `run_agent.py` with `claude-sonnet-4.6` (single premium request, batch everything)
-7. **Validate** via `os-architect-tester` after any changes to os-architect
-
----
-
-## Idea Intake Entry Points
-
-Three front doors exist for a new idea, problem, or need. They are **not 1:1** — pick by how
-well the problem is already understood, not by idea "type":
-
-| Starting point | Entry point | Output |
-|---|---|---|
-| Already know exactly what's broken/needed | `github-issue-agent` — file the issue directly | GitHub Issue |
-| Know WHAT to build, need to design the HOW (single subsystem, one session) | `superpowers:brainstorming` | `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md` |
-| Don't know the shape yet — unknowns, multiple stakeholders, need a prototype first | `exploration-cycle-plugin`'s `intake-agent` (multi-session discovery) | `exploration/handoffs/handoff-package.md` |
-
-**Confirmed bridge, not a guess:** `handoff-preparer-agent.md` explicitly offers a "Superpowers"
-destination and writes to the *same* `docs/superpowers/specs/` path/format `brainstorming`
-produces directly. Exploration-cycle is a heavier front-end for fuzzy problems — it funnels into
-the same `writing-plans` → `docs/superpowers/plans/` pipeline once the problem is shaped, not a
-competing path. (The "Spec-Kitty" destination also offered there is unused in this repo — see the
-spec-kitty note above.)
-
-**When to create/link the GitHub issue:** at the commit-to-build moment (after `writing-plans`
-produces a plan doc), not at idea time — early design thinking can dead-end, and tracking
-abandoned explorations is noise. If an issue already exists and the fix turns out to need real
-design work, drop into brainstorming from there and link the resulting spec back onto the *same*
-issue (`gh_issue_comment.py`) rather than opening a duplicate — see
-`github-issue-logging-policy.md` §3, Root-Cause Consolidation.
-
----
-
-**spec-kitty is not installed or used in this repo.** `plugins/spec-kitty-plugin/` was removed on
-2026-09-05 (legacy/deprecated pointer, superseded by the native Spec Kitty CLI, never part of the
-tracked local plugin set in `plugin-sources.json`). Do not suggest routing work to spec-kitty or
-`spk-*` skills unless the user explicitly reinstalls it themselves.
-
-## Plugin State — Current Versions (10 plugins · 137 skills)
-
-### agent-agentic-os (v1.9.0)
-
-Core improvement loop:
-```
-os-architect → os-improvement-loop → os-eval-runner → os-eval-backport → os-experiment-log
-```
-
-**Active skills (22):** os-architect, os-improvement-loop, os-eval-runner, os-eval-lab-setup,
-os-eval-backport, os-experiment-log, os-evolution-planner, os-evolution-verifier,
-os-environment-probe, os-memory-manager, os-improvement-report, os-guide, os-init,
-os-clean-locks, todo-check, optimize-agent-instructions, self-evolution, critical-auditor, interview-spec,
-os-health-check, issue-resolution-reviewer, repository-improvement
-
-**Reference skills (1):** os-skill-improvement — methodology/reference only; prefer `os-improvement-loop` for active orchestration. **Do not delete.**
-
-**Agents (4):** os-architect-agent, os-architect-tester-agent, improvement-intake-agent,
-agentic-os-setup
-
-**Do not reference:** `triple-loop-architect`, `triple-loop-orchestrator`
-
----
-
-### agent-orchestration (v2.3.0) — OS-decoupled
-
-**9 execution primitives:** orchestrator, select-loop-strategy, co-pilot-loop, learning-loop, dual-loop, agent-swarm, red-team-review, triple-loop-learning, graph-execution
-
-**Plugin boundary:** agent-orchestration/ provides execution patterns only — no eval gate, no memory.
-os-improvement-loop delegates its inner loop to `triple-loop-learning` as the execution substrate.
-
-Do not add OS infrastructure (evals, memory promotion, kernel calls) to agent-orchestration/ skills.
-
----
-
-### cli-agents (v2.1.0) — consolidated from claude-cli, copilot-cli, gemini-cli
-
-**Skills (14):** agent-file-synchronization, agt-security, agy-cli-agent, antigravity-project-setup,
-claude-cli-agent, claude-project-setup, codex-cli-agent, copilot-cli-agent, gemini-cli-agent,
-local-llm-bridge, local-llm-setup, maf-adapter, project-setup, update-cli-models
-
-**Note:** `gemini-cli-agent` — Gemini CLI consumer access ended June 18, 2026 (that date has now passed). Only enterprise Gemini Code Assist licenses retain the `gemini` binary. Use `agy-cli-agent` — it is now the primary path for Gemini model access, not just frontier models.
-
-**Scripts:** Each skill has its own `scripts/run_agent.py` for its respective CLI tool.
-
-**Do not reference:** `plugins/claude-cli`, `plugins/copilot-cli`, `plugins/gemini-cli` — all deleted.
-
----
-
-### agent-memory (v1.0.0) — consolidated from rlm-factory, vector-db, memory-management
-
-**Skills (13):** rlm-init, rlm-curator, rlm-search, rlm-distill-agent, rlm-cleanup-agent,
-rlm-audit, vector-db-init, vector-db-launch, vector-db-ingest, vector-db-search,
-vector-db-cleanup, vector-db-audit, memory-management
-
-**Do not reference:** `plugins/rlm-factory`, `plugins/vector-db`, `plugins/memory-management` — all deleted.
-
----
-
-### dev-utils (v1.4.0) — consolidated from 9 standalone plugins
-
-**Skills (16):** adr-management, coding-conventions-agent, context-bundler, convert-mermaid,
-github-issue-agent, github-issue-backlog-agent, github-issue-prioritizer, github-issue-pr-lifecycle-agent,
-github-issue-worktree-agent, hf-init, hf-upload, hf-download, humanize, link-checker-agent,
-optimize-context, symlink-manager
-
-**Do not reference:** `plugins/adr-manager`, `plugins/coding-conventions`, `plugins/context-bundler`,
-`plugins/huggingface-utils`, `plugins/link-checker`, `plugins/mermaid-to-png`,
-`plugins/task-manager`, `plugins/voice-writer` — all deleted.
-
-### Copilot CLI delegation pattern (canonical)
-
-> **June 2026:** All Copilot models bill per AI Credits (token-based). Model selection should use
-> `plugins/cli-agents/references/copilot-models.json` — see the `strategy` field for tier recommendations
-> and `cost_tiers` for cheapest-to-most-expensive groupings. Plan first — fewer requests saves credits.
-
-```bash
-# 1. Heartbeat — use cheapest model (see copilot-models.json strategy.heartbeat)
-python3 plugins/cli-agents/skills/copilot-cli-agent/scripts/run_agent.py \
-  /dev/null /dev/null temp/heartbeat.md "HEARTBEAT CHECK: Respond HEARTBEAT_OK only." \
-  gpt-5.4-nano
-
-# 2. Dispatch — pick model from copilot-models.json strategy field for the task tier
-python3 plugins/cli-agents/skills/copilot-cli-agent/scripts/run_agent.py \
-  /dev/null tasks/todo/copilot_prompt_<task>.md temp/copilot_output_<task>.md \
-  "Generate all files exactly as specified. Use the Write tool to write files directly." \
-  claude-sonnet-4.6  # strategy.complex — see copilot-models.json
-
-# 3. Verify output before claiming complete
-wc -l temp/copilot_output_<task>.md  # expect 100+ lines for multi-file output
-```
-
----
-
-## Behavior & Judgment (Karpathy Principles)
-
-These govern HOW to think, not just what to do. Apply before writing any code or content.
-
-### 1. Think Before Acting
-
-Don't assume. Don't hide confusion. Surface tradeoffs before starting.
-
-- State assumptions explicitly. If uncertain, ask — don't run with a guess.
-- If multiple interpretations exist, name them. Pick only after confirming.
-- Before adding a new skill or plugin, ask: does this belong in an existing plugin? Is there a scaffold skill to use (`create-skill`, `create-plugin`)?
-- If something is unclear, stop. Name what's confusing. Ask.
-
-### 2. Simplicity First
-
-Minimum change that solves the problem. Nothing speculative.
-
-- No features beyond what was asked.
-- No abstractions for single-use code.
-- SKILL.md under ~500 lines — push extra detail to `references/` files.
-- No error handling for impossible scenarios.
-- If 200 lines could be 50, rewrite it. If a skill could be a pointer file, make it one.
-
-Ask: *Would a senior engineer say this is overcomplicated? If yes, simplify.*
-
-### 3. Surgical Changes
-
-Touch only what you must. Clean up only your own mess.
-
-- Don't "improve" adjacent SKILL.md sections, comments, or evals you weren't asked to change.
-- Don't refactor things that aren't broken.
-- Match existing style in the plugin you're editing, even if you'd do it differently.
-- If you notice unrelated dead code or stale skill content, mention it — don't silently fix it.
-- Every changed line should trace directly to what was asked.
-
-### 4. Goal-Driven Execution
-
-Define success criteria first. Loop until verified.
-
-- For evals: write `evals.json` routing criteria *before* writing SKILL.md content. The evals are the spec.
-- For scripts: state what the script will output and verify it before claiming complete.
-- For multi-step tasks, state a brief plan with a verification step for each stage.
-- Use the `verification-before-completion` skill on non-trivial tasks — it enforces shell verification before claiming done.
-
----
-
-## Coding Rules (always applied)
-
-- **Source of truth**: `plugins/` is authoritative. `.agents/`, the marketplace, and the Claude Code plugin system are installed copies — never use them to derive counts, versions, or skill lists.
-- **TDW (TDD & TDO)**: No code development or orchestration execution without a failing test or success contract first. Full rule: `.agent/rules/test-driven-development.md`
-- **Self-Evolution & Map Debt**: Classify failures/friction (Tiers 0/1/2/3), max 3 attempts. Active map debt audit must pass. Always execute the `PRE-COMPLETION GATE` check block and log map debt before ending the session. Full rule: `.agent/rules/self-evolution-policy.md`
-- **Evolution Integrity Gate**: PRs modifying core logic (`plugins/`, `src/`, `py_services/`) must stage an update to `references/map-debt.md` or `references/evolution-log.md`, or include `Evolution-Check: none` in the commit message.
-- **No file deletions without explicit user permission** (self-evolution policy). Auto-approved: adding functions, appending. Explicit confirmation required: rename/move. Hard gated: any deletion. Full rule: `.agent/rules/self-evolution-policy.md`
-- **Skill deletion pre-check**: Before deleting anything under `plugins/**/skills/`, apply `.agent/rules/destructive-action-guard.md` (Part 1). If the reason contains "redundant", "absorbed", "consolidated", "superseded", "duplicate", "cleanup", "merge", "simplify", or "replace" — hard stop and ask the user to name the exact skill path.
-- **ADR-001**: No cross-plugin script execution — delegate via agent skill at runtime
-- **ADR-002**: Within-plugin multi-skill script sharing via hub-and-spoke (plugin root `scripts/`)
-- **ADR-003**: File-level symlinks only — never directory symlinks, never duplicate files
-- **ADR-004**: Installed artifacts must be self-contained — no runtime cross-plugin paths
-- **ADR-007**: MAF is an optional certified runtime adapter — `.md` manifests are the source of truth, portable across Claude Code / Copilot CLI / Gemini CLI / MAF. Do not make MAF the primary orchestration kernel.
-
-### Security-sensitive control plane (exploration-cycle-plugin)
-`plugins/exploration-cycle-plugin/scripts/` contains the Python control plane: `dispatch.py`, `state_engine.py`, `sandbox_runner.py`. These files have active security work (v1.3 shipped; v1.4 in progress). Before modifying them, read `ADRs/007_maf_adapter_runtime_decision.md` and `docs/superpowers/specs/2026-05-31-maf-synthesis-v1.4-spec.md` for the current security model and planned changes. Do not add casual convenience bypasses to the authorization gate or path enforcement.
-
-### Skill Standards (always applied)
-- Skill `name`: kebab-case, matches directory name exactly, 1–64 chars
-- Skill `description`: third person ("Extracts text", not "I extract text")
-- `evals.json`: must use `should_trigger: true/false` — legacy `expected_behavior` produces 0% accuracy
-- SKILL.md: under ~500 lines; extra detail goes in `references/` files
-- Helper scripts: Python only — never generate `.sh` bash scripts
-
-### After editing any skill or script in a plugin — audit symlinks
-**Never use `ln -s` directly. All symlink operations must go through `symlink_manager.py`.**
-(Full protocol: `.agent/rules/plugin-architecture-policy.md` Section 5)
-
-```bash
-# 1. Diagnose first — always
-python3 .agents/skills/symlink-manager/scripts/symlink_manager.py diagnose
-
-# 2. Add new links to symlinks.json manifest (not by hand — via script)
-# 3. Restore all from manifest
-python3 .agents/skills/symlink-manager/scripts/symlink_manager.py restore
-
-# 4. Verify — zero broken or real-file imposters before committing
-python3 .agents/skills/symlink-manager/scripts/symlink_manager.py diagnose
-```
-Fix any BROKEN entries before committing. A broken symlink in `plugins/` will silently fail at install time.
-Shared scripts live in `plugins/<plugin>/scripts/` and are symlinked into each skill's `scripts/` — if you add a new shared script, add it to `symlinks.json` then run `restore`.
-
-### skills-lock.json is machine-generated — never hand-edit, never manually merge conflicts in it
-`skills-lock.json` records per-skill `installedAt`/`updatedAt` timestamps written by `plugin_add.py`/
-`sync_with_inventory.py`. Two branches that each ran a reinstall independently will diverge on nearly
-every entry — this is pure timestamp noise, not a real conflict. On a merge/rebase conflict in this file:
-take either side to clear the markers (`git checkout --ours skills-lock.json` is fine), then regenerate it
-fresh with `python3 plugins/plugin-manager/scripts/plugin_add.py plugins/ -y` and re-stage. Do not attempt
-to manually reconcile `<<<<<<<`/`=======`/`>>>>>>>` blocks in this file line by line.
-Note: the reinstall/sync scripts add and update entries but do not prune ones for skills that were
-deleted — if you remove a skill, manually delete its `skills-lock.json` entry too.
-
-### Run both plugin audits after any skill/plugin create or update
-`audit.py` (compliance) and `audit_plugin_structure.py` (structural) check different things — passing
-one does not mean the other passes. A new script or asset file written directly inside a skill directory
-instead of the plugin root (ADR-002/003 hub-and-spoke) is invisible to `audit.py` and only caught by
-`audit_plugin_structure.py`. Run both before considering any new or edited skill/plugin complete:
-
-```bash
-python3 plugins/agent-scaffolders/scripts/audit.py --path plugins/<plugin-name>
-python3 plugins/agent-scaffolders/scripts/audit_plugin_structure.py plugins/<plugin-name>
-```
-
-Fix any structural errors via `symlink_manager.py` (move the real file to the plugin root, add a
-`symlinks.json` entry, `restore`) — never `mv`/`ln -s` by hand. See `self-evolution-policy.md` Rule 12.
-
-### Scaffolding New Plugins/Skills
-Use these skills rather than hand-rolling structure:
-- `create-plugin` — full plugin scaffold with discovery interview
-- `create-skill` — skill scaffold with evals, references, acceptance-criteria
-- `audit-plugin` — validate structure after scaffolding
-
-Then run `plugin_add.py` to deploy.
-
-### Instruction File Mirrors — CLAUDE.md, GEMINI.md, copilot-instructions.md, AGENTS.md
-When the user asks to replicate CLAUDE.md into the other instruction files, the default workflow is a
-**full copy with only the top `# ` line renamed** — but each target file has platform-specific content
-that a blind copy will silently destroy. Check for and re-append these before considering the sync done:
-
-| File | Platform-specific addition to preserve | Corresponding `cli-agents` skill |
-|---|---|---|
-| `GEMINI.md` | `## Gemini CLI Tool Mapping` table at the end of the file (Claude Code tool name → Gemini CLI equivalent) | `gemini-cli-agent` (deprecated, see note above), `agy-cli-agent` |
-| `.github/copilot-instructions.md` | Header must be `# Copilot Instructions for <repo-name>` + an "Authoritative... Mirrors CLAUDE.md" blockquote, not a generic title | `copilot-cli-agent` |
-| `AGENTS.md` | Cross-tool convention (Codex and other OpenAI-compatible agents read this file) — currently no required platform-specific section beyond shared content, but verify before assuming that's still true | `codex-cli-agent` |
-| `CLAUDE.md` | Source of truth — no platform section of its own | `claude-cli-agent`, `claude-project-setup` |
-
-The full canonical rules for what belongs in each file live in `optimize-agent-instructions`
-(`plugins/agent-agentic-os/skills/optimize-agent-instructions/SKILL.md`) — consult it, don't just
-diff against memory of what was there before. This was missed once already this session: a full-copy
-sync silently dropped GEMINI.md's tool-mapping table until caught in a later manual review.
-
-### Active Rule Files
-Full rule definitions live in `.agent/rules/` — these are the authoritative source, CLAUDE.md carries only the key non-negotiables.
-
-**Some rule files exist as multiple logical copies — check before editing more than one.** A few are real
-symlinks (e.g. `plugins/agent-agentic-os/skills/self-evolution/references/self-evolution-policy.md` →
-`plugins/agent-agentic-os/rules/self-evolution-policy.md`; edit the real target once, both update). Others
-are genuinely independent duplicate files with no symlink relationship (e.g. `.agent/rules/self-evolution-policy.md`
-is a separate copy from the plugin's own copy — each needs its own edit). Run `ls -la` / `readlink` on every
-known copy before editing to avoid either double-editing a symlink target or missing an independent duplicate.
-- `coding-conventions.md` — dual-layer docs, file headers, type hints, naming, `tool_inventory.json` registration
-- `dependency-management.md` — pip-compile workflow, no manual pip install, tiered hierarchy
-- `plugin-architecture-policy.md` — decoupling, hub-and-spoke, relative paths, self-contained skills, symlink_manager protocol (Section 5)
-- `self-evolution-policy.md` — failure tiers, 3-attempt max, deletion prohibition, autonomy gates
-- `test-driven-development.md` — TDD iron law, test tier locations, anti-patterns
-- `github-issue-logging-policy.md` — friction-tier → GitHub Issue decision matrix; **mandatory dedup search
-  (`gh_issue_search.py`) before filing any new issue** — consolidate into an existing root-cause issue via
-  comment rather than opening a duplicate; 5 required body sections (Summary/Observed/Expected/Evidence/Impact)
-- `graph-planning-superpowers-policy.md` — the plan/review/execution lifecycle for significant work: enter
-  native Plan Mode (`/plan`) before drafting a plan (Phase 1), fan-out the plan draft to the Architecture
-  Skeptic / Security-Edge-Case Auditor / TDD Contract Reviewer trio via `context-bundler`'s Multi-Persona
-  Fan-Out Mode with a 2-3 round convergence cap, then execute in an isolated worktree with Superpowers TDD
-  (Phase 2), then multi-stage verify — deterministic tests, worktree merge, out-of-band bundle review
-  (Phase 3). Applies whenever `spec-driven-development-policy.md` used to apply — that file no longer exists.
-
-### GitHub Issue Lifecycle Skills (dev-utils)
-Local task scratchpad is ephemeral and gitignored — durable backlog lives as GitHub Issues:
-```
-github-issue-agent              ← create/search/comment/close issues; friction_cluster_agent for hotspot synthesis
-github-issue-backlog-agent      ← bridge: promote tasks/*.md → GitHub Issue (dry-run default, --execute for live)
-github-issue-prioritizer        ← rank issues, sync GitHub Projects v2
-github-issue-worktree-agent     ← isolated git worktree per issue
-github-issue-pr-lifecycle-agent ← full issue → worktree → PR → close orchestration
-```
-`issue-resolution-reviewer` (agent-agentic-os) — post-closure quality audit skill.
-`gh_issue_create.py` auto-creates missing taxonomy labels (`type:*`/`tier:*`/`area:*`/etc.)
-on first live use — the repo doesn't pre-register them.
-
-### Scratch Output
-Write temporary files and analysis output to `temp/` — never to the project root directly.
+This is the authoritative instruction file for agents working in this repository. Preserve the project-specific rules below while applying the behavioral guidelines and platform-specific conventions.
 
 <!-- plugin: agent-agentic-os / adversarial-reasoning-before-agreement-rule -->
 ---
 description: >
   Prevent sycophantic, agreeable, or premature agent responses by requiring adversarial reasoning,
-  assumption checks, counterarguments, and explicit approval gates before recommendations are accepted.
+  assumption checks, counterarguments, and explicit risk evaluation before recommendations are accepted.
 globs:
   - "*.md"
   - "docs/**/*.md"
@@ -493,525 +27,49 @@ globs:
 
 # Rule: Adversarial Reasoning Before Agreement
 
-## Why This Rule Exists
+## 1. Why This Rule Exists
 
-AI agents tend to be too agreeable. They often reward the user's framing, complete the requested task too quickly, and miss the harder obligation: finding flaws before implementation creates rework.
+AI agents have a known sycophancy bias: they tend to validate the user's framing, agree too quickly, and jump into execution without stress-testing assumptions. This leads to premature migrations, hidden coupling, and costly rework.
 
-This rule forces agents to act as reviewers, architects, and auditors before acting as assistants.
-
-The goal is not argument for its own sake.
-
-The goal is to make agreement earned.
-
-**A useful agent does not merely help execute a plan. A useful agent stress-tests the plan first.**
+**A useful agent does not merely execute a proposal—it stress-tests the plan first to make agreement earned.**
 
 ---
 
-## The Iron Law
+## 2. The Iron Law
 
-NO IMPORTANT RECOMMENDATION, APPROVAL, DESIGN CHANGE, MIGRATION PLAN, OR IMPLEMENTATION PLAN MAY BE ACCEPTED WITHOUT AN ADVERSARIAL PASS FIRST.
+**NO SIGNIFICANT ARCHITECTURE DECISION, SCHEMA DESIGN, CODE REFACTOR, DELETION PLAN, OR MIGRATION PROPOSAL MAY BE ACCEPTED WITHOUT AN ADVERSARIAL PASS FIRST.**
 
 This applies to:
-
-- Architecture decisions
-- ADRs
-- migration plans
-- database/schema design
-- data-layer refactors
-- plugin and skill updates
-- sub-agent instructions
-- security, governance, and persistence changes
-- production code implementation plans
-- cleanup or deletion plans
-- Git/worktree/merge/release plans
+- Architecture, system design, and dependency changes
+- Database/schema changes and data persistence refactors
+- Plugin, skill, agent instruction, and workflow modifications
+- Security boundaries, governance, and permission updates
+- Cleanup, file relocation, and deletion plans
 
 It does not apply to:
-
-- simple factual lookup
-- trivial spelling or formatting changes
-- isolated mechanical edits with no design implication
-- user explicitly asking only for wording polish
-
-If the work can create data loss, hidden coupling, broken workflows, or misleading agent behaviour, this rule applies.
+- Simple factual lookups or documentation clarifications
+- Minor typos, formatting, or localized bug fixes with obvious remedies
+- Mechanical tasks explicitly constrained by the user
 
 ---
 
-## Mandatory Response Pattern
+## 3. Core Anti-Sycophancy Principles
 
-Before agreeing, approving, or implementing, produce this structure:
-
-```text
-Assumptions That Matter:
-1.
-2.
-3.
-
-Strongest Objections:
-1.
-2.
-3.
-
-Failure Modes:
-1.
-2.
-3.
-
-What Is Missing:
-1.
-2.
-3.
-
-Recommendation:
-Proceed / Proceed with changes / Do not proceed
-```
-
-Do not omit the adversarial sections because the proposal appears reasonable.
-
-Do not start with praise.
-
-Start with the risk surface.
+1. **Agreement Must Be Earned**: Never offer uncritical validation ("Looks great!", "You're totally right!"). If you agree, state *why* while naming the remaining risks or failure modes.
+2. **Challenge the Premise**: When presented with a problem framing or proposed solution, evaluate whether the root problem is being solved, or merely a symptom.
+3. **Identify Critical Assumptions**: Explicitly call out assumptions that, if invalid, would change the recommendation. Inspect context, code, and tests to verify assumptions before asking the user.
+4. **No Cleanup Without Evidence**: Prohibit destructive actions, deletions, or deprecations based on perceived "absorption" or redundancy without verified inventories and user authorization.
+5. **Present Viable Alternatives**: For major technical recommendations, articulate at least one credible alternative and explain the explicit tradeoffs of the chosen path.
 
 ---
 
-## Prompt Pattern 1: Interrogate the Assumptions First
-
-### Required behaviour
-
-Before answering, identify the assumptions that would materially change the answer if false.
-
-### Required output
-
-```text
-Assumptions That Matter:
-- Assumption 1
-- Assumption 2
-- Assumption 3
-```
-
-Only include assumptions that affect the recommendation.
-
-Do not ask filler questions.
-
-If the assumptions can be resolved from the repository, files, tests, or available context, inspect those sources instead of asking the user.
-
-### Example
-
-Bad:
-
-```text
-Sounds good. Let's use SQLite.
-```
-
-Good:
-
-```text
-Assumptions That Matter:
-- This is local-first and not multi-user.
-- SQLite is a derived read model, not the authoritative ledger.
-- All writers can route through one shared data layer.
-
-If any of these are false, the recommendation changes.
-```
-
----
-
-## Prompt Pattern 2: Steelman Against Agreement
-
-### Required behaviour
-
-Before agreeing with a conclusion, argue against it as strongly as possible using credible objections.
-
-### Required output
-
-```text
-Strongest Objections:
-1.
-2.
-3.
-```
-
-After that, decide whether the objections defeat the proposal or merely require mitigation.
-
-### Example
-
-Bad:
-
-```text
-This migration plan looks solid.
-```
-
-Good:
-
-```text
-Strongest Objections:
-1. The plan may miss undocumented consumers of old JSON files.
-2. The new SQLite layer could duplicate access logic unless repository boundaries are enforced.
-3. Cleanup could delete files before replay equivalence is proven.
-
-Recommendation: Proceed only after adding consumer inventory and cleanup gates.
-```
-
----
-
-## Prompt Pattern 3: Grade the Reasoning, Not the Answer
-
-### Required behaviour
-
-When reviewing a plan or draft, do not rewrite it first.
-
-First evaluate the reasoning.
-
-### Required output
-
-```text
-Strongest Reasoning:
-Weakest Reasoning:
-Unsupported Claim:
-Highest-Risk Assumption:
-Evidence Needed:
-```
-
-### Example
-
-Bad:
-
-```text
-Here is a rewritten version.
-```
-
-Good:
-
-```text
-Strongest Reasoning:
-The plan separates JSONL authority from SQLite projection.
-
-Weakest Reasoning:
-It assumes all legacy JSON consumers are known.
-
-Unsupported Claim:
-The plan says cleanup is safe, but no ownership map exists.
-
-Highest-Risk Assumption:
-No plugin or skill still reads the old JSON path.
-```
-
----
-
-## Prompt Pattern 4: Ask What Is Missing
-
-### Required behaviour
-
-Before concluding, identify blind spots.
-
-### Required output
-
-```text
-What Is Missing:
-- Missing dependency:
-- Missing consumer:
-- Missing test:
-- Missing rollback path:
-- Missing documentation:
-```
-
-At least one missing item must be considered for non-trivial architecture, data, or migration work.
-
-### Example
-
-```text
-What Is Missing:
-- No repo-wide scan for consumers of ta-sweep-results.json.
-- No manifest proving migrated JSON events match source records.
-- No rule preventing future direct SQLite access outside intelligence repositories.
-```
-
----
-
-## Prompt Pattern 5: Commit to a Position Before Assisting
-
-### Required behaviour
-
-The agent must state its actual recommendation before generating implementation details.
-
-### Required output
-
-```text
-Recommendation:
-- Proceed
-- Proceed with changes
-- Do not proceed
-
-Reason:
-```
-
-The recommendation must follow from the adversarial pass.
-
-Do not hide uncertainty behind vague wording.
-
-### Example
-
-```text
-Recommendation: Proceed with changes.
-
-Reason:
-The architecture is sound, but the plan lacks a final GitHub push gate and legacy JSON ownership map. Add those before cleanup or merge completion.
-```
-
----
-
-## Anti-Sycophancy Rules
-
-### 1. Agreement must be earned
-
-Do not say:
-
-```text
-You're right.
-Good idea.
-Looks great.
-This is solid.
-```
-
-unless the statement is followed by evidence and remaining risks.
-
-Preferred:
-
-```text
-I agree with the direction because X, but the weak point is Y.
-```
-
----
-
-### 2. Never reward the framing without testing it
-
-If the user proposes a solution, evaluate whether the problem framing is correct.
-
-Required check:
-
-```text
-Is this solving the right problem?
-```
-
----
-
-### 3. Do not over-praise progress updates
-
-When reviewing agent progress, avoid motivational filler.
-
-Bad:
-
-```text
-Amazing progress. This looks fantastic.
-```
-
-Good:
-
-```text
-This is useful progress if the repository boundary holds. The next risk is whether consumers still bypass the new data layer.
-```
-
----
-
-### 4. Do not approve cleanup without proof
-
-For deletion, archival, migration cleanup, or old-file removal, require evidence.
-
-Required proof:
-
-```text
-- ownership map
-- migration manifest
-- source hash
-- replay verification
-- consumer inventory
-- rollback path
-```
-
-No proof, no cleanup.
-
----
-
-### 5. Separate confidence from certainty
-
-Use clear confidence levels:
-
-```text
-High confidence:
-Medium confidence:
-Low confidence:
-Unknown:
-```
-
-Do not present assumptions as facts.
-
----
-
-## Required Falsification Pass
-
-For architecture, migration, persistence, security, or workflow changes, include:
-
-```text
-How This Could Fail:
-1.
-2.
-3.
-```
-
-At least one failure mode must involve hidden coupling or undocumented consumers.
-
-At least one failure mode must involve rollback or recovery.
-
-At least one failure mode must involve testing gaps.
-
----
-
-## Required Alternative Pass
-
-For significant recommendations, include at least one alternative.
-
-Required format:
-
-```text
-Recommended Approach:
-
-Alternative Considered:
-
-Why Not:
-```
-
-Do not pretend the chosen path is the only path.
-
----
-
-## Approval Gate
-
-Approval must be explicit.
-
-Use this format:
-
-```text
-Approval Status:
-- Approved
-- Conditionally approved
-- Not approved
-
-Conditions:
-1.
-2.
-3.
-```
-
-Do not bury approval in narrative prose.
-
----
-
-## Migration and Refactor Special Rules
-
-For migrations and refactors, assume:
-
-```text
-Hidden consumers exist.
-Old files are still read somewhere.
-Tests miss at least one workflow.
-Generated artifacts may be mistaken for authoritative data.
-Cleanup will happen too early unless blocked.
-```
-
-Therefore require:
-
-```text
-- producer inventory
-- consumer inventory
-- ownership map
-- rollback path
-- generated artifact policy
-- Git/worktree/push verification
-```
-
----
-
-## Agent Self-Check Before Final Response
-
-Before finalizing a response, the agent must ask itself:
-
-```text
-1. Did I challenge the user's premise?
-2. Did I identify assumptions that matter?
-3. Did I provide the strongest objections?
-4. Did I identify missing evidence?
-5. Did I distinguish facts from recommendations?
-6. Did I avoid empty praise?
-7. Did I give a clear approval status when relevant?
-```
-
-If the answer to any of these is no, revise the response.
-
----
-
-## Bad Responses
-
-```text
-Looks good. I would proceed.
-```
-
-```text
-You're absolutely right. This is the correct architecture.
-```
-
-```text
-The agent made great progress. I don't see any issues.
-```
-
-```text
-Cleanup seems safe now.
-```
-
-These are invalid because they skip adversarial review.
-
----
-
-## Good Responses
-
-```text
-Recommendation: Proceed with changes.
-
-Assumptions That Matter:
-- The SQLite database is derived and rebuildable.
-- JSONL remains authoritative.
-- All durable intelligence writes route through event_store.py.
-
-Strongest Objections:
-1. Old JSON files may still have undocumented consumers.
-2. Skill.md files may still reference dated research Markdown.
-3. Cleanup may run before replay equivalence is proven.
-
-What Is Missing:
-- Consumer inventory.
-- Legacy path scan.
-- GitHub origin push verification.
-
-Approval Status: Conditionally approved.
-```
-
----
-
-## Final Principle
-
-The agent's job is not to agree faster.
-
-The agent's job is to make the user's reasoning harder to break.
-
----
-
-## Relationship to Graph Planning's Phase 1 Fan-Out
-
-This rule is the **single-agent, always-on** discipline: before *this* agent agrees with or
-implements anything non-trivial, it self-applies adversarial reasoning. `graph-planning-superpowers-policy.md`
-§2.2-2.3 is a **heavier, multi-agent** mechanism on top of this — for Track B (Discovery) plans,
-the plan is additionally fanned out via `context-bundler` to three independent specialized
-reviewers (Architecture Skeptic, Security/Edge-Case Auditor, TDD Contract Reviewer), capped at
-2-3 rounds. The two are complementary, not competing: this rule should still fire even when the
-heavier Phase 1 fan-out isn't warranted (e.g. Track A/Factory or Track C/Micro-Fix work).
+## 4. Evaluation Checklist
+
+Before confirming significant design changes or plans, verify:
+- **Assumptions**: What must hold true for this solution to succeed?
+- **Failure Modes**: How could this approach fail in production or under edge cases?
+- **Missing Elements**: Are tests, migration paths, rollback strategies, or consumer dependencies unaccounted for?
+- **Tradeoffs**: What is made more complex or constrained by choosing this design?
 
 
 <!-- plugin: agent-agentic-os / destructive-action-guard -->
@@ -1032,8 +90,6 @@ Before deleting files, removing skill directories, bulk-removing stand-ins, or r
 
 ### The Failure Mode
 An agent reviews two skills, concludes that skill A's "functionality is covered by" or "has been absorbed into" skill B, then **deletes skill A's directory**. This is always wrong without explicit user instruction naming the exact skill path.
-
-*Historical Incident (April 2026):* `os-skill-improvement` was deleted because an agent concluded its methodology was "absorbed" by `os-improvement-loop`. It was not. Recovery required `git show` from history and manual restoration.
 
 ### The Iron Law
 **Never delete a skill directory, its SKILL.md, or its evals because you believe the skill is redundant, absorbed, consolidated, or superseded.**
@@ -1139,7 +195,7 @@ globs: ["**/*"]
 
 This policy governs when and how friction events, execution workarounds, tool failures, and map debt identified during agent runs are logged into GitHub Issues.
 
-It directly extends [`self-evolution-policy.md`](file:///Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/agent-agentic-os/rules/self-evolution-policy.md) by defining the decision boundary between in-session fixes, local Map Debt entries (`map-debt.md`), and formal GitHub Issue creation.
+It directly extends `self-evolution-policy.md` by defining the decision boundary between in-session fixes, local Map Debt entries (`map-debt.md`), and formal GitHub Issue creation.
 
 ---
 
@@ -1240,10 +296,10 @@ globs: ["**/*"]
 
 ## Self-Evolution & Self-Healing Policy
 
-**Full context and execution protocol -> `<project_root>/.agent/skills/self-evolution/SKILL.md` (if available)**  
-**Skill/directory deletion rules -> `<project_root>/.agent/rules/skill-deletion-guard.md` (if available)**
+**Full context and execution protocol -> `.agent/skills/self-evolution/SKILL.md` (if available)**  
+**Skill/directory deletion rules -> `.agent/rules/destructive-action-guard.md` (Part 1)**
 
-Governs responses when any tool call, subprocess, automation step, selector query, script, workflow, or sub-agent encounters failure or friction. Agents must treat failures as evolution events governed by graph state machines (via [`agent-orchestration:graph-execution`](../plugins/agent-orchestration/skills/graph-execution/SKILL.md) and [`agent-orchestration:select-loop-strategy`](../plugins/agent-orchestration/skills/select-loop-strategy/SKILL.md)) and 3-Layer Filesystem Memory.
+Governs responses when any tool call, subprocess, automation step, selector query, script, workflow, or sub-agent encounters failure or friction. Agents must treat failures as evolution events governed by graph state machines (via `agent-orchestration:graph-execution` and `agent-orchestration:select-loop-strategy`) and 3-Layer Filesystem Memory.
 
 ---
 
@@ -1391,10 +447,7 @@ It does NOT apply to:
 
 1. **For Code**: Write a failing unit or integration test first.
 2. **For Orchestration**: Write a mock evaluation scenario, an assertions list, or an expected output schema validator first.
-3. **Skill Tooling**: If the workspace contains a custom test-driven development skill or test runner (such as `superpowers:test-driven-development`), invoke it:
-   ```
-   Skill: superpowers:test-driven-development (if available)
-   ```
+3. **Skill / Test Tooling**: If the workspace contains a test runner or TDD skill, invoke it before touching code.
 
 This enforces the Red-Green-Refactor cycle and blocks the rationalization patterns ("too simple to test", "I'll do it after") that lead to broken systems. If you start the work before writing the contract, it is invalid. Delete it and start over.
 
@@ -1558,12 +611,9 @@ For coordinator scripts, workflow engines, master orchestrators, agent prompts, 
 
 ## Related Rules and References
 
-- `<project_root>/.agent/rules/no-inline-python.md` (or local script extraction policy) — extraction policy for scripts
-- `<project_root>/.agent/rules/coding-conventions.md` (or local style guides) — coding conventions and documentation standards
-- `<project_root>/docs/architecture/` (or project design docs) — system architecture details and design specifications
+- `.agent/rules/coding-conventions.md` — coding conventions and documentation standards
 - `superpowers:test-driven-development` skill (if available) — invoke BEFORE writing any implementation
-- `graph-planning-superpowers-policy.md` §3.2 (Phase 2: Strict Red-Green-Refactor Enforcement) — this Iron Law
-  is the concrete implementation of that phase; the two are the same requirement, not competing rules
+- `graph-planning-superpowers-policy.md` — test-driven execution and verification discipline
 
 <!-- plugin: agent-agentic-os / worktree-lifecycle-management -->
 ---
@@ -1575,31 +625,7 @@ globs: ["**/*"]
 
 ## The Problem This Rule Solves
 
-**2026-08-18 incident:** a session created two worktrees to execute SharePoint plugin
-work, and repeatedly reported progress as "done"/"merged"/"pushed" without distinguishing
-which of five genuinely different states a change was actually in. This caused the user to
-ask "where are the CRUD scripts" and "is the worktree gone" many times over, each time
-receiving an answer that was locally true but did not match what the user could actually
-see on their own disk. Concretely:
-
-1. A subagent-driven-development round finished, the branch was pushed, and the session
-   reported "final review complete" without stating that nothing was merged yet.
-2. A second worktree's work (file moves + new scripts) sat fully uncommitted for many
-   turns while the session narrated architecture debates instead of stating the plain
-   fact: "nothing is saved anywhere except the worktree's working directory."
-3. After the user merged a PR on GitHub, the session ran `git fetch origin main:main`
-   (updating the **local branch ref**) and reported the plugin as present -- without
-   checking that the user's actual working directory was checked out on a **different
-   branch**, so the files were invisible on disk. The user had to ask "i don't see it are
-   you sure?" before this was caught.
-4. Within one of the worktrees, symlinks were created with raw `ln -s` and a hand-edited
-   `symlinks.json` instead of this repo's mandated `.agents/skills/symlink-manager/
-   scripts/symlink_manager.py` (per `.agent/rules/plugin-architecture-policy.md` Section 5), discovered
-   only when the user separately flagged it.
-
-None of these were lies -- each statement was true in isolation. The failure was treating
-"local worktree state", "committed", "pushed to origin", "merged on GitHub", "local branch
-ref updated", and "checked out on disk" as one undifferentiated bucket called "done".
+Worktree-related changes frequently suffer from ambiguity when multiple git states (uncommitted local work, committed on a branch, pushed to remote, merged to main, local ref updated, and checked out on disk) are collapsed into the vague word "done". This leads to confusion about where files actually reside and whether PRs or branches are safely integrated.
 
 ## The Law
 
@@ -1645,9 +671,8 @@ ref updated", and "checked out on disk" as one undifferentiated bucket called "d
    Updating a local branch ref is not the same as changing the working directory. If the
    current checkout is on a different branch than the one just updated, say so before the
    user has to ask why they can't see anything.
-4. **State exact absolute paths for every file/plugin/worktree you reference.** "It's in
-   the new plugin" is not an answer; `C:\...\plugins\sharepoint-provisioning-execution\
-   scripts\spo-update-list.ps1` is.
+4. **State exact full paths for every file/plugin/worktree you reference.** "It's in
+   the new plugin" is not an answer; state the exact path (e.g. `/full/path/to/plugins/<plugin>/scripts/script.py`).
 5. **Before deleting any worktree, verify state 4 (merged into origin/main) first**, via
    `git fetch` + `git log origin/main`, not by assuming a prior push means the PR was
    merged. Only after that verification, delete via the native worktree-removal tool (or
@@ -1662,18 +687,22 @@ ref updated", and "checked out on disk" as one undifferentiated bucket called "d
 7. **When multiple worktrees exist, or worktree work spans several turns, restate the
    current state of every open worktree at the start of any status report** -- don't make
    the user re-derive it from scattered messages.
+8. **Mandatory Post-Implementation Review Stage Gate (`WORKTREE_REVIEW`)**: Once code development
+   and automated tests pass inside a worktree, AI agents MUST NEVER autonomously push to origin
+   or open a PR. The agent MUST transition the task in `context/control_plane.db` to `WORKTREE_REVIEW`,
+   present the diff and summary to the human user, and provide the user the explicit choice between:
+   - (A) Running multi-agent adversarial code review (`MULTI_AGENT_CODE_REVIEW`) across independent model perspectives, or
+   - (B) Authorizing direct `git push` and PR creation for human review.
+9. **Zero Autonomous Push Invariant**: Pushing code to origin without passing through the post-implementation
+   review gate and receiving user authorization is an operational violation. Pre-push hooks and
+   `agent_control.py update-worktree` will reject any attempt to mark a worktree as `pushed_to_origin`
+   unless the task has transitioned through `WORKTREE_REVIEW`.
 
 ## Where This Applies
 
-- Every `superpowers:using-git-worktrees` / `EnterWorktree` session in this repo.
-- Every report to the user about progress on worktree-based work, from creation through
-  final deletion.
-- Applies in addition to, not instead of,
-  `.agent/rules/worktree-subagent-leak-detection.md` (renamed 2026-08-18, formerly
-  `worktree-subagent-isolation.md`) — that file covers a narrower, different failure mode
-  (a dispatched subagent's writes leaking into the wrong checkout); this file covers the
-  full lifecycle around the worktree itself. Both apply simultaneously in any
-  subagent-driven-development session run inside a worktree.
+- Every worktree session in the repository.
+- Every report to the user about progress on worktree-based work, from creation through final deletion.
+- Applies in addition to, not instead of, `worktree-subagent-leak-detection.md` (which covers subagents writing outside assigned worktrees). Both apply simultaneously in any subagent session run inside a worktree.
 
 
 <!-- plugin: agent-agentic-os / worktree-subagent-leak-detection -->
@@ -1684,36 +713,11 @@ globs: ["**/*"]
 
 # Worktree/Subagent Isolation (Leak Detection)
 
-**Scope note (renamed 2026-08-18):** this file covers exactly one failure mode — a
-dispatched subagent writing outside its assigned worktree. For the broader lifecycle
-(creating a worktree, reporting its state honestly, pushing, verifying an actual merge,
-updating local `main`, and cleaning up afterward), see
-`.agent/rules/worktree-lifecycle-management.md`, added the same day after a session
-repeatedly conflated "pushed" with "merged" and "local branch ref updated" with "visible
-on disk". Both rules apply simultaneously whenever a `subagent-driven-development` session
-runs inside a worktree.
+**Scope:** This rule covers subagents writing outside their assigned worktree. For the broader lifecycle (creating, verifying, pushing, merging, and cleaning up worktrees), see `worktree-lifecycle-management.md`. Both rules apply simultaneously when subagents execute inside a worktree.
 
 ## The Problem This Rule Solves
 
-Dispatching an implementer or fix subagent into a `superpowers:subagent-driven-development`
-worktree, with an explicit instruction to `cd` into the worktree path and confirm via
-`pwd` / `git branch --show-current` before making any change, is the project's standard
-isolation pattern. It has still failed **twice**:
-
-1. **Phase 2b, Task 3** — an implementer committed a change onto the user's active
-   main-checkout branch instead of its assigned worktree (documented informally in
-   `start_here.md` at the time; caught by independently verifying `git log`/`readlink`
-   after the subagent's report, not by the subagent noticing its own mistake).
-2. **Phase 3 C2, Task 7 fix rounds (2026-07-09)** — a fix subagent left a stray,
-   uncommitted, *incomplete* copy of its changes in the main checkout's
-   `plugins/portfolio-advisor/scripts/daily_brief.py`, despite reporting a passing
-   `pwd`/`git branch --show-current` confirmation at task start. Not caught until the
-   final pre-merge `git status` check on the main checkout — logged as
-   `.agent/map-debt.md`'s "subagent-driven-development implementer wrote to main
-   checkout instead of worktree (2nd occurrence)" entry.
-
-Both times the subagent's own confirmation step passed. Both times a stray write still
-landed in the main checkout anyway.
+A subagent's `cd` and `pwd` confirmation at task start only changes its shell state—file editing tools (Edit/Write) resolve absolute file paths independently and can mistakenly write to the main checkout. Treat task-start confirmation as a preliminary check, not a guarantee.
 
 ## The Law
 
@@ -1770,112 +774,6 @@ landed in the main checkout anyway.
 - Applies to every task in a plan, not just the first or last — the leak in the C2
   incident happened during a mid-plan fix round (Task 7's second fix dispatch), not at
   the boundaries.
-
-
-<!-- plugin: agent-scaffolders / plugin-architecture-policy -->
----
-description: Universal rules for plugin file duplication, symlinks, cross-plugin resource bounds, Python script organization, and relative execution paths.
-globs: ["plugins/**/SKILL.md", "plugins/**/scripts/**/*.py", "plugins/**/*.md"]
----
-
-# Plugin Architecture & Coupling Policy
-
-## 1. Hub-and-Spoke Resource Model & Installer Dereferencing
-
-1. **Authoring Model vs. Runtime Model**:
-   ```text
-   one canonical editable source
-   → managed file-level symlinks in skill source folders
-   → plugin installer dereferences symlinks into hard copies
-   → installed skills are fully self-contained
-   ```
-   Symlinks are used exclusively as a repository authoring and maintenance mechanism. The plugin installer dereferences all symlinks into physical hard copies during deployment into `.agents/`.
-
-2. **Self-Contained Installed Skills**:
-   An installed skill must be fully portable and independent. It must **NEVER** depend at runtime on:
-   - The source repository or source symlink
-   - The source plugin directory
-   - The repository root or monorepo environment
-   - Another installed plugin
-   - A sibling Python distribution or external runtime package
-
-3. **Canonical Ownership**:
-   Every shared resource has exactly one editable canonical source owner in the repository. Consumers receive installer-materialized hard copies, which are deployed artifacts—not editable authorities. Do not create competing canonical source copies.
-
----
-
-## 2. Separation of Concerns & Loose Coupling
-
-1. **Pluggable Independence**: If a user installs a skill via `plugin_add.py` or `uvx`, that skill MUST function completely in isolation. It cannot crash or halt because another plugin is uninstalled or missing.
-2. **Agent Delegation over Code Interfaces**: If a plugin requires coordination with another plugin, it must do so via Natural Language agent instructions (e.g., *"Please invoke the `<plugin>-agent` to..."*) rather than hardcoded Python imports, hidden filesystem state manipulations, or rigid cross-plugin bindings.
-3. **Cross-Plugin Wire Contracts**: Sharing schemas, references, assets, or executable contract helpers through installer-materialized hard copies is permitted. Cross-plugin Python runtime imports or cross-plugin directory symlinks are strictly forbidden.
-
----
-
-## 3. Plugin-Level Resource & Python Organization
-
-1. **One Canonical Plugin-Level `scripts/` Directory**:
-   Canonical Python code shared by skills belongs at the plugin root under `plugins/<plugin>/scripts/`.
-2. **Logical Subfolders Approved**:
-   Related Python scripts may be logically grouped into cohesive subfolders beneath `scripts/`.
-   Approved examples:
-   - `scripts/contracts/` (plugin-owned contracts and validation)
-   - `scripts/pandoc_fixes/` (cohesive implementation modules)
-   - `scripts/validation/` (input/output validation scripts)
-   - `scripts/media/` (media conversion and handling)
-3. **No Redundant Package-Name Directory**:
-   Do **NOT** add a redundant package-name directory inside `scripts/` (e.g. `scripts/<plugin_name>/...`). The enclosing plugin directory already establishes the domain context.
-4. **No Top-Level Sibling Runtime Packages**:
-   Top-level external runtime packages (e.g. `contracts/python/` or `runtime/python/`) must not exist as required external dependencies. All shared code must belong to an owning plugin.
-
----
-
-## 4. Resource Placement by Purpose
-
-Resource placement is determined strictly by **purpose**, not file extension:
-
-| Directory | Purpose |
-|---|---|
-| `references/` | Schemas, contracts, and documentation the agent reads |
-| `scripts/` | Executable Python, validation, transformation, and helper scripts |
-| `assets/` | Templates and static resources copied, embedded, transformed, or emitted |
-| `tests/fixtures/` | Plugin test evidence and test fixtures |
-| `evals/fixtures/` | Skill evaluation evidence and test cases |
-
----
-
-## 5. Mandatory Symlink Workflow
-
-1. **File-Level Symlinks ONLY**:
-   All shared resources within or across plugins must use **file-level symlinks ONLY**. Directory-level symlinks are strictly forbidden because installation bridges drop them or fail on cross-platform checkouts.
-2. **Zero Manual `ln -s`**:
-   Never invoke `ln -s` directly. All symlink creation, updates, and maintenance must go through `symlink_manager.py` and be recorded in `symlinks.json`.
-3. **Mandatory Symlink Validation Sequence**:
-   After creating or editing any shared script or resource:
-   ```bash
-   # 1. Diagnose first
-   python3 .agents/skills/symlink-manager/scripts/symlink_manager.py diagnose
-
-   # 2. Restore all from manifest
-   python3 .agents/skills/symlink-manager/scripts/symlink_manager.py restore
-
-   # 3. Verify zero broken symlinks or real-file imposters
-   python3 .agents/skills/symlink-manager/scripts/symlink_manager.py diagnose
-   ```
-
----
-
-## 6. Strict Relative Path Execution
-
-1. **Relative to Skill Root**: Inside `SKILL.md` workflows, path references must always be **relative to the skill root** (e.g., `../scripts/script.py` or `python3 scripts/script.py`). **Never use absolute paths or paths relative to the repository root.**
-2. **Self-Contained Content**: Every file a skill references must be present inside the skill's directory — either as a hard copy or a symlink.
-3. **Execution Context**:
-   Installed skills execute from dynamic target locations:
-   - `.agents/skills/<skill-name>/` (canonical)
-   - `.claude/skills/<skill-name>/`
-   Relative paths inside commands resolve from the skill root at the installed location. Verify paths against the installed structure, not the source tree.
-
-
 
 
 <!-- plugin: dev-utils / coding-conventions -->
@@ -1951,7 +849,7 @@ Never run `git stash`, `git stash pop`, or `git stash apply` unless the user exp
   ```
 
 ### 3. Pre-Push Freshness & Quality Gate
-Before pushing any changes to GitHub or concluding updates to plugins or skills:
+Before **explicitly pushing** changes to GitHub (i.e., only when the user has issued a direct push command):
 1. **Upstream Freshness Check**: Verify the branch is up to date with `origin/main`:
    ```bash
    git fetch origin main
@@ -1993,10 +891,35 @@ Never `git push --force` to main or master under any circumstances.
 ### 6. No --no-verify
 Never skip hooks with `--no-verify` unless the user explicitly requests it.
 
-### 7. Commit only what is asked & required
+### 7. No autonomous PR or remote operations
+- **Never run `gh pr create`**, `gh pr merge`, or any GitHub CLI command that creates or merges a pull request without an explicit, isolated user directive (e.g., "open a PR", "create a pull request now").
+- Discussing, reviewing, or mentioning a PR in conversation does NOT constitute permission to open one.
+- Applies equally to `hub`, `gh`, and any git alias that results in a remote-side PR or branch creation.
+
+### 8. No branch switching during active unreviewed work
+- Do not `git checkout`, `git switch`, or `git checkout -b` away from a feature branch that contains local commits not yet approved by the user.
+- If a new branch is needed while work-in-progress commits exist on the current branch, stop and confirm with the user what to do with those commits before switching.
+
+### 9. Commit only what is asked & required
 - Commit only files within the task scope.
 - Auto-modified files like `.DS_Store` or `uv.lock` should not be committed unless relevant.
 - When `skills-lock.json` or `symlinks.json` changes as a direct result of adding/modifying skills or plugins, commit them together with the changes.
+
+### 10. Evolution Integrity Gate — update map-debt BEFORE committing core logic
+Any commit that touches files under `plugins/`, `src/`, or `py_services/` **must** do one of the following before `git commit`:
+- Stage an update to `references/map-debt.md` recording the debt entry (RESOLVED or OPEN) for the change, **OR**
+- Stage an update to `references/evolution-log.md` if one exists, **OR**
+- Include `Evolution-Check: none` in the commit message body with a one-line justification.
+
+**Failure mode this prevents:** committing core logic changes and only discovering the missing map-debt entry when CI fails on the PR — forcing a follow-up commit and a broken CI run.
+
+**Correct sequence:**
+1. Make code changes
+2. Update `references/map-debt.md` (add or resolve the relevant DEBT entry)
+3. `git add <code files> references/map-debt.md`
+4. `git commit`
+
+The CI gate (`Verify Evolution & Map Debt Compliance`) enforces this post-hoc. The rule enforces it pre-emptively. Both must be respected.
 
 ## Approval Required
 
@@ -2010,9 +933,9 @@ Never skip hooks with `--no-verify` unless the user explicitly requests it.
 
 - `git status`, `git diff`, `git log` — read-only, always safe
 - `git add <specific files>` + `git commit` when the user asked to commit
-- `git push` (non-force) when the user asked to push
-- Fetching and merging `origin/main` into the current working feature branch to keep PRs conflict-free
-- `git checkout -b <branch>` when the user asks for a new branch
+- `git push` (non-force) **only** when the user issued an explicit, isolated push directive (e.g., "push this branch", "push now") — conversational mentions of PRs or branches do NOT qualify
+- Fetching and merging `origin/main` into the current working feature branch to keep it current — **but only while on that feature branch, and only if no local unreviewed commits would be lost or detached**
+- `git checkout -b <branch>` when the user asks for a new branch **and no unreviewed local commits are present on the current branch**
 
 
 
@@ -2036,10 +959,20 @@ globs: ["**/*"]
 
 ## 1. Overview & 4-Phase Lifecycle
 
-All non-trivial engineering tasks MUST progress through the 4-phase lifecycle below. This replaces legacy waterfall approaches and couples upstream discovery to deterministic execution.
+All STANDARD-classified engineering tasks MUST progress through the 4-phase lifecycle below. This replaces legacy waterfall approaches and couples upstream discovery to deterministic execution.
 
 ```
-Phase 0: Intake & Socratic Gate (exploration-cycle-plugin + interview-spec)
+Phase 0: Intake & Socratic Gate (exploration-cycle-plugin + work-intake)
+   │
+   ├─ TRIVIAL classification (single-file/few-line, no architectural impact):
+   │    fast-track directly to INTAKE -> DONE, skipping Phases 1-3 entirely.
+   │    No spec/plan compilation, no worktree isolation, no multi-agent review —
+   │    the triage answer itself is the sole recorded audit artifact. Work still
+   │    happens on a feature branch followed by a normal PR; only ceremony is
+   │    skipped, never branch discipline or the push-to-origin gate.
+   │    See work-intake/SKILL.md and GitHub Issue #534 for the full design.
+   │
+   └─ STANDARD classification: continue below.
    │
 Phase 1: Native Plan Mode & Adversarial Review (critical-auditor + Human Gate)
    │
@@ -2048,17 +981,28 @@ Phase 2: Worktree Isolation & Superpowers TDD (.worktrees/task-<id> + Red-Green-
 Phase 3: Deterministic Exit Gates & Asymmetric Persistence (6-State Vocabulary + Wiki)
 ```
 
+**Scope note:** this policy governs tasks tracked in `agent_control.py`'s SQLite control
+plane. The `self-evolution` skill runs a separate, independent lifecycle
+(`evolution_state.py`, TRIAGE→...→COMPLETED/ROLLBACK/ESCALATED) with its own worktree
+convention and approval flow — see `self-evolution-policy.md` and Section 4's note below.
+Whether these two systems should eventually be reconciled into one is an open architectural
+question tracked in [GitHub Issue #537](https://github.com/richfrem/agent-plugins-skills/issues/537); until that's decided, treat them as two separately-governed systems, not one universal mechanism.
+
 ---
 
 ## 2. Phase 0: Pre-Planning Intake Bookend & Socratic Gate
 
-Before Plan Mode can ever be entered, the task must be bounded:
+Before Plan Mode can ever be entered, the task must be bounded. Immediately after task
+registration and before any Socratic question, `work-intake` asks one direct triage
+question — TRIVIAL or STANDARD — with a heuristic-derived recommended default (see the
+TRIVIAL fast-track branch in Section 1). Only STANDARD-classified tasks proceed through the
+rest of this phase and into Phase 1:
 
 1. **Read-Only Exploration Cycle:**
    - Execute read-only codebase discovery via `exploration-cycle-plugin` (`technical_diagnostic_engine.py`).
    - Inspect coupling surfaces (touched files, SQLite schemas, cross-plugin symlinks), surface hidden assumptions, and evaluate candidate architectural forks.
    - Emit `exploration/DIAGNOSTIC_BRIEF.md`.
-2. **Interview Gate (`interview-spec`):**
+2. **Interview Gate (`work-intake`):**
    - **Native-First Deferral:** Inspect session environment markers first (`CLAUDE_CODE_ENTRY`, `ANTIGRAVITY_IDE`). Defer to native interactive intake if present. Fall back to Socratic Defaulting loop for headless/Copilot sessions.
    - Socratic Defaulting: 1–3 questions max, structured options with explicit recommended default (`Option A [Recommended]` vs. `Option B`).
    - Compiles the immutable **4-Pillar Spec** (`TASK_SPEC.md`):
@@ -2088,6 +1032,12 @@ Before Plan Mode can ever be entered, the task must be bounded:
 1. **Standard Worktree Topology:**
    - Implementation MUST execute in dedicated isolated worktrees at `.worktrees/task-<task_id>/` (governed by `issue_worktree_manage.py`). Never use sibling directories (`../worktree-...`).
    - Update `worktree_state` in `context/control_plane.db` to `written_in_worktree`.
+   - **This convention applies to `agent_control.py`-tracked tasks only.** `self-evolution`
+     cycles use their own separate, documented convention — sibling directories under
+     `../worktree-evolution-<cycle_id>/` — per `self-evolution/SKILL.md` and
+     `self-evolution-policy.md`. This is not a violation of the rule above; it's a
+     different, independently-governed system (see Section 1's scope note and
+     [#537](https://github.com/richfrem/agent-plugins-skills/issues/537)).
 2. **Superpowers TDD Deferral Rule:**
    - Invoke Superpowers execution loops only where native execution lacks automated TDD or DAG management.
    - Enforce strict Red-Green-Refactor:
@@ -2121,6 +1071,132 @@ Before Plan Mode can ever be entered, the task must be bounded:
 - UTF-8 encoding only. No smart quotes or non-ASCII characters in manifests and rules.
 
 
+<!-- plugin: agent-scaffolders / plugin-architecture-policy -->
+---
+description: Universal rules for plugin file duplication, symlinks, cross-plugin resource bounds, Python script organization, and relative execution paths.
+globs: ["plugins/**/SKILL.md", "plugins/**/scripts/**/*.py", "plugins/**/*.md"]
+---
+
+# Plugin Architecture & Coupling Policy
+
+## 1. Hub-and-Spoke Resource Model & Installer Dereferencing
+
+1. **Authoring Model vs. Runtime Model**:
+   ```text
+   one canonical editable source
+   → managed file-level symlinks in skill source folders
+   → plugin installer dereferences symlinks into hard copies
+   → installed skills are fully self-contained
+   ```
+   Symlinks are used exclusively as a repository authoring and maintenance mechanism. The plugin installer dereferences all symlinks into physical hard copies during deployment into `.agents/`.
+
+2. **Self-Contained Installed Skills**:
+   An installed skill must be fully portable and independent. It must **NEVER** depend at runtime on:
+   - The source repository or source symlink
+   - The source plugin directory
+   - The repository root or monorepo environment
+   - Another installed plugin
+   - A sibling Python distribution or external runtime package
+
+3. **Canonical Ownership**:
+   Every shared resource has exactly one editable canonical source owner in the repository. Consumers receive installer-materialized hard copies, which are deployed artifacts—not editable authorities. Do not create competing canonical source copies.
+
+---
+
+## 2. Separation of Concerns & Loose Coupling
+
+1. **Pluggable Independence**: If a user installs a skill via `plugin_add.py` or `uvx`, that skill MUST function completely in isolation. It cannot crash or halt because another plugin is uninstalled or missing.
+2. **Agent Delegation over Code Interfaces**: If a plugin requires coordination with another plugin, it must do so via Natural Language agent instructions (e.g., *"Please invoke the `<plugin>-agent` to..."*) rather than hardcoded Python imports, hidden filesystem state manipulations, or rigid cross-plugin bindings.
+3. **Cross-Plugin Wire Contracts**: Sharing schemas, references, assets, or executable contract helpers through installer-materialized hard copies is permitted. Cross-plugin Python runtime imports or cross-plugin directory symlinks are strictly forbidden.
+
+---
+
+## 3. Plugin-Level Resource & Python Organization
+
+1. **One Canonical Plugin-Level `scripts/` Directory**:
+   Canonical Python code shared by skills belongs at the plugin root under `plugins/<plugin>/scripts/`.
+2. **Logical Subfolders Approved**:
+   Related Python scripts may be logically grouped into cohesive subfolders beneath `scripts/`.
+   Approved examples:
+   - `scripts/contracts/` (plugin-owned contracts and validation)
+   - `scripts/pandoc_fixes/` (cohesive implementation modules)
+   - `scripts/validation/` (input/output validation scripts)
+   - `scripts/media/` (media conversion and handling)
+3. **No Redundant Package-Name Directory**:
+   Do **NOT** add a redundant package-name directory inside `scripts/` (e.g. `scripts/<plugin_name>/...`). The enclosing plugin directory already establishes the domain context.
+4. **No Top-Level Sibling Runtime Packages**:
+   Top-level external runtime packages (e.g. `contracts/python/` or `runtime/python/`) must not exist as required external dependencies. All shared code must belong to an owning plugin.
+
+---
+
+## 4. Resource Placement by Purpose
+
+Resource placement is determined strictly by **purpose**, not file extension:
+
+| Directory | Purpose |
+|---|---|
+| `references/` | Schemas, contracts, and documentation the agent reads |
+| `scripts/` | Executable Python, validation, transformation, and helper scripts |
+| `assets/` | Templates and static resources copied, embedded, transformed, or emitted |
+| `tests/fixtures/` | Plugin test evidence and test fixtures |
+| `evals/fixtures/` | Skill evaluation evidence and test cases |
+
+---
+
+## 5. Mandatory Symlink Workflow & Cross-Platform Protocol
+
+**NEVER create symlinks with `ln -s` directly.**  
+**NEVER create real file copies where a symlink should exist.**
+
+All symlink creation, repair, and auditing must go through `.agents/skills/symlink-manager/scripts/symlink_manager.py` and be recorded in `symlinks.json`.
+
+1. **File-Level Symlinks ONLY**:
+   All shared resources within or across plugins must use **file-level symlinks ONLY**. Directory-level symlinks are strictly forbidden because installation bridges drop them or fail on cross-platform checkouts.
+2. **Zero Manual `ln -s`**:
+   Never invoke `ln -s` directly in the shell. Direct calls bypass the manifest, causing links to fail or disappear on fresh checkouts.
+3. **Canonical Source Locations**:
+   | Resource Type | Canonical Master Copy | Installed / Spoke Location |
+   |---|---|---|
+   | Python scripts | `plugins/<plugin-name>/scripts/` | `plugins/<plugin-name>/skills/<skill>/scripts/` |
+   | References / docs | `plugins/<plugin-name>/references/` | `plugins/<plugin-name>/skills/<skill>/references/` |
+   | Assets / templates | `plugins/<plugin-name>/assets/` | `plugins/<plugin-name>/skills/<skill>/assets/` |
+4. **Required 5-Step Symlink Workflow**:
+   - **Step 1: Diagnose first**
+     ```bash
+     python3 .agents/skills/symlink-manager/scripts/symlink_manager.py diagnose
+     ```
+     Identify every `? regular file (not a link)` and `✗ broken symlink` before touching anything.
+   - **Step 2: Remove real-file imposters**
+     If a file that should be a symlink is a regular file copy, delete the imposter first:
+     ```bash
+     rm -f path/to/real-file-that-should-be-symlink
+     ```
+   - **Step 3: Register link in manifest (`symlinks.json`)**
+     Record the canonical source and skill target via `symlink_manager.py` or formatted entry:
+     `{ "src": "canonical/source.py", "dst": "skill/scripts/source.py", "strategy": "symlink", "description": "..." }`
+   - **Step 4: Restore all from manifest**
+     ```bash
+     python3 .agents/skills/symlink-manager/scripts/symlink_manager.py restore
+     ```
+   - **Step 5: Verify clean status**
+     ```bash
+     python3 .agents/skills/symlink-manager/scripts/symlink_manager.py diagnose
+     ```
+     Ensure zero `? regular file` or `✗ broken symlink` entries remain before committing.
+
+---
+
+## 6. Strict Relative Path Execution
+
+1. **Relative to Skill Root**: Inside `SKILL.md` workflows, path references must always be **relative to the skill root** (e.g., `../scripts/script.py` or `python3 scripts/script.py`). **Never use absolute paths or paths relative to the repository root.**
+2. **Self-Contained Content**: Every file a skill references must be present inside the skill's directory — either as a hard copy or a symlink.
+3. **Execution Context**:
+   Installed skills execute from dynamic target locations:
+   - `.agents/skills/<skill-name>/` (canonical)
+   - `.claude/skills/<skill-name>/`
+   Relative paths inside commands resolve from the skill root at the installed location. Verify paths against the installed structure, not the source tree.
+
+
 <!-- plugin: dependency-management / dependency-management -->
 ---
 description: Universal dependency management rules for Python and agent services.
@@ -2142,14 +1218,6 @@ globs: ["requirements*.txt", "requirements*.in", "Dockerfile", "pyproject.toml"]
 8. **Agent Orchestration** — cross-plugin coordination uses skill delegation via the prompt loop, not direct script execution.
 
 
-
-## Plugin & Skill Maintenance Policy
-- Check `context/plugin-config.json` for this repository's configured contribution mode:
-  1. `fork-and-pr`: Test fix locally, commit to feature branch in cloned upstream repo, and submit PR to `richfrem/agent-plugins-skills`.
-  2. `local-patch-and-issue`: Apply immediate fix directly in `.agents/skills/` and log an issue in `richfrem/agent-plugins-skills` with reproduction details.
-  3. `domain-override`: Keep upstream shared skills unmodified; put project customizations in `.agent/rules/local-*` or local `plugins/`.
-- Never make silent undocumented edits to shared skills without either opening an upstream PR or logging an issue.
-
 ---
 
 ## Background Document Priority (added 2026-09-13)
@@ -2159,7 +1227,277 @@ issue body, prior spec, handoff doc), read that file FIRST, before asking any
 Socratic/interview question. Check every open question against it. For any question the
 document already answers, use the document's answer directly — via
 `record_source_assisted_answer_candidate(source_path=..., source_authorized=True, ...)`
-where `interview-spec`'s control plane is active, or by simply citing the source inline
+where `work-intake`'s control plane is active, or by simply citing the source inline
 otherwise. Never make the human re-answer, live, something they already wrote down for you.
 Only ask a live question for what the document genuinely leaves open or ambiguous.
 
+<!-- plugin: agent-agentic-os / state-transition-guidance-compliance -->
+---
+description: >
+  Mandatory compliance rule for agents driving SQLite-control-plane state transitions
+  (work-intake and equivalent pipelines). Exists because agents, including Claude, have
+  repeatedly skipped or self-answered YAML transition guidance instead of following it
+  literally.
+globs: ["**/*"]
+---
+
+# State Transition Guidance Compliance
+
+## The Failure Pattern This Rule Targets
+
+Agents driving a control-plane pipeline (work-intake, self-evolution, or
+equivalent) have a documented, repeated failure mode: treating the YAML
+transition guidance (`transition_templates.yaml`'s `human_questions`,
+`next_steps_hint`, `stage_question_ids`) as advisory prose to summarize,
+rather than as literal, mandatory input to follow exactly.
+
+Concretely observed failure instances (see `references/map-debt.md` for full
+detail, not repeated here):
+
+- A full task cycle (`issue-593-context-overhead`) skipped `DRAFT_PLAN` and
+  `AWAITING_APPROVAL` entirely, never produced a spec artifact, and closed
+  with a human retrospective recorded verbatim as "a complete failure."
+- Mid-session, an agent piped a default/recommended answer into an
+  interactive human-approval prompt instead of asking the human for their
+  actual answer first, requiring the human to explicitly stop and say
+  "follow questions at each transition."
+- An agent pushed a branch to a remote origin without an explicit, isolated
+  push instruction from the human, misreading "remove X from GitHub origin"
+  as implicit push authorization.
+- An agent made a sequence of unilateral remediation decisions (reverting
+  files, moving directories, restoring symlinks) after discovering damage
+  from an unauthorized bulk edit, without pausing to present the plan and
+  get confirmation before acting, despite already having been corrected for
+  this exact pattern earlier in the same session.
+- At `APPROVED -> IN_WORKTREE`, the transition guidance literally said
+  "create or select an isolated feature worktree and branch, record both
+  with update-worktree." The agent instead registered the main checkout
+  itself as the worktree path via `update-worktree --path "$(pwd)"`,
+  never creating an isolated `.worktrees/task-<id>/` directory at all —
+  not a tooling gap, a direct failure to do what the instruction said.
+- The same pipeline's own `create_task()` computes a `main_dirty_advisory`
+  field (dirty file count/paths) that the skill's own instructions require
+  reporting to the user immediately if `dirty_count > 0`, recommending a
+  commit before `APPROVED` so interim work doesn't accumulate uncommitted
+  through the whole planning phase. The agent never reported it — partly
+  because the CLI `init` subcommand discards `create_task()`'s return value
+  and never prints the advisory (a real tooling gap), and partly because the
+  agent also never independently checked `git status` to compensate, despite
+  the instruction not depending on the CLI surfacing it.
+
+## The Rule
+
+1. **A YAML `human_questions` entry is not optional summary material — it is
+   the literal question to ask, verbatim or near-verbatim, and the literal
+   set of accepted answers to record.** Do not infer, default, or
+   self-answer on the human's behalf, even when a "Recommended" option
+   exists. A recommended default is a suggestion to present, not a license
+   to select it without asking.
+2. **`next_steps_hint` and `denial_message` text describes the actual
+   required sequence, not a paraphrase to work around.** If the hint says to
+   run a specific command with a specific flag, run that command with that
+   flag. If it says to create an isolated worktree, create an isolated
+   worktree — do not substitute an equivalent-seeming shortcut, such as
+   registering the main checkout itself as if it were the worktree.
+3. **When a step's own documented output includes an advisory or field the
+   instructions say to report** (e.g. `main_dirty_advisory`), and the CLI or
+   tool you're calling doesn't surface it, do not treat that as license to
+   skip the check. Call the underlying function directly, or independently
+   verify the same condition (e.g. `git status`), so the instruction is
+   satisfied regardless of a tooling gap. Report the tooling gap separately
+   as its own friction/map-debt item — it does not excuse skipping the step.
+4. **After discovering damage, corruption, or an unauthorized action** (by
+   yourself or by direct instruction), do not proceed through a multi-step
+   remediation unilaterally. Present the audit (what's broken, why, proposed
+   fix) and get explicit confirmation before executing each remediation step
+   that isn't purely read-only verification (diagnose commands, test runs,
+   `git status`/`git diff` are fine to run freely; `git mv`, file reverts,
+   and `restore`-style mutating commands are not).
+5. **A single correction from the human on this pattern does not
+   self-resolve for the rest of the session.** If corrected once for
+   skipping or self-answering a transition question, treat every subsequent
+   transition in the same session with the same heightened literalness —
+   do not regress after a few exchanges.
+6. **When in doubt about whether an action is "just verification" or "a
+   decision,"** treat it as a decision requiring confirmation. The bar for
+   "just running a read-only check" is narrower than it feels in the moment.
+
+## Non-Negotiables
+
+- Never pipe a canned or default answer into an `--interactive` control-plane
+  prompt without having first obtained that exact answer from the human in
+  this conversation.
+- Never treat "the user mentioned X in passing" as equivalent to "the user
+  gave an explicit, isolated instruction to do X" for any state-changing
+  action (push, transition, deletion, rename).
+- Never chain more than one non-reversible remediation action without an
+  intermediate check-in, even when each individual action seems obviously
+  correct in isolation.
+- Never register the main checkout as a substitute for an isolated worktree
+  when the transition guidance says to create one.
+- Never let a documented advisory field go unreported solely because the CLI
+  wrapper around it failed to print it — verify independently.
+
+
+<!-- plugin: agent-agentic-os / config-driven-constants-over-hardcoding -->
+---
+description: >
+  Derive expected values, contracts, and magic strings from a live single source of
+  truth (a registry, a config file, a production constant) rather than hardcoding
+  literal copies of them into tests and scripts. Prevents the exact fragility this
+  rule was written to name: adding one new required question broke 46 tests because
+  each had its own hardcoded, literal answer sequence with no shared source.
+globs: ["plugins/**/*.py", "plugins/**/*.yaml", "plugins/**/*.yml"]
+---
+
+# Rule: Config-Driven / Data-Driven Over Hardcoding
+
+## Why This Rule Exists
+
+On 2026-09-14, adding one new mandatory question (`guidance_compliance_confirmation`)
+to every non-force-close transition broke 46 pre-existing tests. Every one of them
+had independently hardcoded its own literal expected answer sequence
+(`iter(["1", "y"])`, `lambda p: "1"`) instead of deriving the expected question count
+and content from `TransitionRegistry` (which already parses the same
+`transition_templates.yaml` the production code reads). One semantically small change
+became 46 separate, mechanical, error-prone edits — the definition of brittle
+hardcoding.
+
+## The Rule
+
+1. **If a value is already declared somewhere authoritative — a YAML registry, a
+   production constant, a schema version — read it from there. Never retype it as a
+   second, independent literal.** Two independently-maintained copies of the same
+   fact will drift; only one of them can be wrong when they do, and finding out which
+   costs real debugging time.
+2. **Magic strings that mean something specific to the system (an accepted answer
+   value, a sentinel, a status code) belong in one named constant the rest of the
+   codebase imports** — not retyped as a literal at every call site. See
+   `coordinator.py`'s `GUIDANCE_COMPLIANCE_CONFIRM_ANSWER` for the pattern: a single
+   `"YES"` definition that every caller (production code, tests, future callers)
+   references instead of retyping.
+3. **Test fixtures that drive a data-shaped contract (a question sequence, a required
+   field list, an edge's `human_questions`) should build their expected input from the
+   same registry/loader the production code uses**, not a parallel hardcoded list.
+   See `plugins/agent-agentic-os/tests/interview_helpers.py`'s
+   `sequential_answers_for_edge()` — it asks `TransitionRegistry.load_default()`
+   what an edge actually requires and derives the answer sequence from that, so a
+   future universal question addition (or removal) only requires updating the
+   registry-reading helper, not every individual test.
+4. **A test asserting equality against a version number, a count, or a schema value
+   that's already independently derivable from a live query should assert the query
+   result matches the imported constant — never ALSO hardcode a second, literal
+   expected value for that same constant.** A pattern like
+   `assert query_result == CURRENT_SCHEMA_VERSION` is correct and durable;
+   `assert CURRENT_SCHEMA_VERSION == 13` immediately below it is redundant, tests
+   nothing the first line doesn't already cover, and breaks on every legitimate
+   version bump for zero safety benefit. Delete assertions like the second one; don't
+   just update the number.
+5. **When you must write a magic value into a config/rules file that mirrors
+   something computed elsewhere, put a comment naming the authoritative source it
+   must stay consistent with**, so a future reader (human or agent) knows where to go
+   to verify/update it, rather than discovering the relationship by breakage.
+
+## Where Constants Live: One Shared `control_plane/constants.py`
+
+**Revised 2026-09-14.** An earlier version of this rule recommended colocating each
+constant group with the production module that "owned" the concept (state names in
+`state_machine.py`, decision types in `adapters.py`, etc.). Review found that split
+ownership still left every consumer guessing which file to import from, and produced
+real duplication anyway (e.g. `adapters.py` independently re-defining
+`GUIDANCE_COMPLIANCE_CONFIRM_ANSWER` and `STATE_*` instead of importing them). This is
+standard practice, not a judgment call: **every domain constant used by more than one
+file — production or test — lives in exactly one shared module,
+`plugins/agent-agentic-os/scripts/control_plane/constants.py`.**
+
+**Before writing any state, decision type, actor, status, task type, or other
+domain-meaningful string literal: check `constants.py` first.** If the constant you
+need isn't there yet, add it there (grouped with a `# --- <table/concept> ---` header
+comment matching the existing sections), then import it — never define it locally,
+even "just for this one file," and never assert against both the literal and the
+imported constant in the same test (assert only against the constant).
+
+Modules that build a *derived structure* from these raw names still own that
+derivation, not the names themselves:
+- `control_plane/state_machine.py` imports `STATE_*` from `constants.py` and builds
+  `CANONICAL_STATES`/`ALLOWED_TRANSITIONS` (the adjacency DAG) from them — the DAG
+  shape is domain logic; the state names it's built from are not.
+- `control_plane/adapters.py` imports the SQL-CHECK-constrained value groups
+  (`DECISION_TYPES`, `COST_TIERS`, `TASK_TYPES`, `WORKTREE_STATES`,
+  `CRITIC_VERDICTS`, `DELEGATION_STATUSES`, `RETROSPECTIVE_*`, `FOLLOW_UP_*`, etc.)
+  and renders them into `SCHEMA_SQL`'s `CHECK (... IN (...))` clauses via
+  `constants.sql_in_list()`.
+
+**Exception — `SCHEMA_MIGRATIONS` in `adapters.py` is an immutable historical
+record.** It captures DDL literally as it was executed against real databases over
+time and must NEVER be rewritten to reference `constants.py`, even where a value
+overlaps with a shared constant. Only the fresh-create `SCHEMA_SQL` and all Python
+logic after `SCHEMA_MIGRATIONS` derive from the shared constants.
+
+## SQL Parameterization: `?` at Runtime, f-strings Only at DDL/Trigger Load Time
+
+A literal string interpolated into a *runtime* query (inside a method, executed with
+caller-supplied or looped values) must be passed as a bound `?` parameter, never
+spliced into the SQL text via an f-string — even when the interpolated value is a
+trusted internal constant, not user input. This was found as a live, if low-risk, bug
+during this rule's 2026-09-14 revision: three `adapters.py` methods embedded
+`'{DECISION_TYPE_APPROVAL}'` inside a **plain** (non-f) triple-quoted string, so
+SQLite was literally comparing against the 25-character text `{DECISION_TYPE_APPROVAL}`
+instead of `APPROVAL` — parameterizing forces this class of mistake to fail loudly
+(wrong bind-parameter count) instead of silently matching nothing.
+
+- **Runtime query, e.g. inside a method body:** `conn.execute("... WHERE actor = ?", (ACTOR_HUMAN,))` — never `f"... WHERE actor = '{ACTOR_HUMAN}'"`.
+- **Module-load-time DDL (`SCHEMA_SQL`) or a `CREATE TRIGGER` body:** an f-string
+  interpolating constants (`f"... CHECK (state IN ({sql_in_list(CANONICAL_STATES)}))"`)
+  is correct and is the ONLY place this rule permits it — SQLite triggers cannot
+  accept bind parameters in their body at all, so there is no `?`-based alternative
+  for trigger DDL; `SCHEMA_SQL` itself is likewise built once at import time, not
+  per-call, so injection risk does not apply the way it does to a runtime query.
+
+## Repo-Relative Path Resolution: No Fixed `.parent` Chains
+
+Never resolve a repository-root-relative path via a fixed-depth chain like
+`Path(__file__).resolve().parent.parent.parent.parent.parent` — it breaks silently
+(resolves to the wrong directory, no error) the moment the file moves one level.
+Resolve via `git rev-parse --show-toplevel` (see `adapters.py`'s
+`_resolve_repo_root()`) or by anchoring on a known marker directory/file (see
+`adapters.py`'s `_discover_shared_db_path()`, which walks up looking for `.agents/`
+before falling back to `git rev-parse --git-common-dir`), with a fixed-depth walk only
+as a last-resort fallback if git is unavailable — never as the primary strategy.
+
+## Where This Applies
+
+- Test fixtures that drive `TransitionCoordinator.coordinate_transition()` or any
+  other registry-shaped contract.
+- Any hardcoded literal that duplicates a fact already expressed in
+  `transition_templates.yaml`, a schema version constant, `constants.py`, or another
+  single authoritative production source.
+- Any new state, decision type, actor, status, task type, gate name, or other
+  domain-meaningful string used in more than one place — define once in
+  `control_plane/constants.py`, import everywhere else.
+
+## Non-Negotiables
+
+- Never hardcode an answer sequence for a control-plane edge without first checking
+  whether `TransitionRegistry`/`interview_helpers.py`'s data-driven helpers already
+  express the same contract.
+- Never add a second, literal-hardcoded assertion of a value that's already
+  dynamically verified against its authoritative source in the same test.
+- Never introduce a new "magic string" answer/sentinel value without first checking
+  `control_plane/constants.py`, and adding it there if it's not already present.
+- Never interpolate a Python constant directly into a runtime SQL query string; pass
+  it as a `?` bind parameter. f-string interpolation is reserved for `SCHEMA_SQL` and
+  trigger DDL bodies at module-load time only.
+- Never resolve the repository root via a fixed `.parent.parent...` chain; use
+  `_resolve_repo_root()` (git-based) or an equivalent marker-anchored resolver.
+- Never rewrite `SCHEMA_MIGRATIONS` to reference `constants.py` — it is an immutable
+  historical record and keeps its own literal strings forever.
+
+
+
+## Plugin & Skill Maintenance Policy
+- Check `context/plugin-config.json` for this repository's configured contribution mode:
+  1. `fork-and-pr`: Test fix locally, commit to feature branch in cloned upstream repo, and submit PR to `richfrem/agent-plugins-skills`.
+  2. `local-patch-and-issue`: Apply immediate fix directly in `.agents/skills/` and log an issue in `richfrem/agent-plugins-skills` with reproduction details.
+  3. `domain-override`: Keep upstream shared skills unmodified; put project customizations in `.agent/rules/local-*` or local `plugins/`.
+- Never make silent undocumented edits to shared skills without either opening an upstream PR or logging an issue.

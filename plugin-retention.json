@@ -47,7 +47,8 @@
         "test-driven-development.md": true,
         "worktree-lifecycle-management.md": true,
         "worktree-subagent-leak-detection.md": true,
-        "state-transition-guidance-compliance.md": true
+        "state-transition-guidance-compliance.md": true,
+        "config-driven-constants-over-hardcoding.md": true
       },
       "agents": {
         "agent-agentic-os-agentic-os-setup.md": true,
