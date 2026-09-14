@@ -10,6 +10,9 @@ if str(SCRIPTS) not in sys.path:
 
 from agent_control import ControlPlane
 from control_plane.wrappers.record_interview_question import record_interview_question
+from control_plane.constants import (
+    STATE_INTERVIEW, STATE_DRAFT_PLAN,
+)
 
 
 def _interview_cp(tmp_path: Path):
@@ -19,7 +22,7 @@ def _interview_cp(tmp_path: Path):
     cp.init_db()
     cp.create_task("outline-task", "Outline task", "codex")
     cp.log_asymmetric_persistence("outline-task", "references/map-debt.md", "OBSERVED", "prior_art_scan")
-    cp.transition("outline-task", "INTERVIEW", "agent", "begin interview")
+    cp.transition("outline-task", STATE_INTERVIEW, "agent", "begin interview")
     cp.repo_root = repo_root
     return cp, repo_root
 
@@ -33,7 +36,7 @@ def test_recording_interview_answer_persists_outline_and_artifact(tmp_path):
         options={},
         recommended="",
         answer="Make the pipeline continue after each answer.",
-        target_state="DRAFT_PLAN",
+        target_state=STATE_DRAFT_PLAN,
         control_plane=cp,
     )
 
@@ -51,7 +54,7 @@ def test_revising_same_outline_question_updates_revision_without_duplicate_decis
     cp, _ = _interview_cp(tmp_path)
     record_interview_question(
         task_id="outline-task", question="interview_summary", options={}, recommended="",
-        answer="First wording", target_state="DRAFT_PLAN", control_plane=cp,
+        answer="First wording", target_state=STATE_DRAFT_PLAN, control_plane=cp,
     )
 
     cp.update_interview_plan_outline(
@@ -65,4 +68,4 @@ def test_revising_same_outline_question_updates_revision_without_duplicate_decis
 def test_interview_exit_to_draft_plan_requires_outline_artifact(tmp_path):
     cp, _ = _interview_cp(tmp_path)
     with __import__("pytest").raises(Exception, match="plan outline"):
-        cp.transition("outline-task", "DRAFT_PLAN", "agent", "draft plan")
+        cp.transition("outline-task", STATE_DRAFT_PLAN, "agent", "draft plan")

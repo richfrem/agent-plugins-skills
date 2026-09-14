@@ -29,6 +29,9 @@ import sys
 from pathlib import Path
 
 import pytest
+from control_plane.constants import (
+    STATE_INTAKE, STATE_INTERVIEW, STATE_IN_WORKTREE, STATE_WORKTREE_REVIEW, STATE_MULTI_AGENT_CODE_REVIEW, STATE_VERIFY_EXIT, STATE_DONE,
+)
 
 SCRIPTS_DIR = Path(__file__).resolve().parent.parent / "scripts"
 if str(SCRIPTS_DIR) not in sys.path:
@@ -231,8 +234,8 @@ def test_legacy_transition_rules_route_through_registered_policy_functions():
     with pytest.raises(policy.PolicyViolation, match="Prior art scan required"):
         policy.evaluate_transition(
             _base_ctx(task={"task_type": "EVOLUTION"}),
-            "INTAKE",
-            "INTERVIEW",
+            STATE_INTAKE,
+            STATE_INTERVIEW,
         )
 
 
@@ -250,10 +253,10 @@ def test_rolled_back_rule_blocks_and_passes():
 def test_worktree_push_operation_rule_permits_done_and_blocks_others():
     from control_plane import policy
 
-    op_ctx = {"task_id": "t1", "task_state": "DONE"}
+    op_ctx = {"task_id": "t1", "task_state": STATE_DONE}
     policy.evaluate_operation(op_ctx, "worktree_push")  # must not raise
 
-    for blocked_state in ["IN_WORKTREE", "WORKTREE_REVIEW", "MULTI_AGENT_CODE_REVIEW", "VERIFY_EXIT"]:
+    for blocked_state in [STATE_IN_WORKTREE, STATE_WORKTREE_REVIEW, STATE_MULTI_AGENT_CODE_REVIEW, STATE_VERIFY_EXIT]:
         op_ctx_blocked = {"task_id": "t1", "task_state": blocked_state}
         with pytest.raises(policy.PolicyViolation, match="Task must be in final state 'DONE' before pushing"):
             policy.evaluate_operation(op_ctx_blocked, "worktree_push")

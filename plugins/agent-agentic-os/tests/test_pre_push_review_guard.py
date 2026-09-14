@@ -61,15 +61,18 @@ def test_warns_when_no_control_plane_db_present(git_repo_on_branch):
 
 
 def test_warns_when_no_task_matches_current_branch(git_repo_on_branch):
-    """control_plane.db exists but no task row matches the current branch — must warn, not silently pass."""
+    """control_plane.db exists but no task row matches the current branch — must deny (fail-closed),
+    not silently pass. Hardened 2026-09-13 (see references/map-debt.md
+    DEBT-20260913-PUSH-GUARD-FAILOPEN-01): the guard previously warned and exited 0, letting any
+    unregistered branch push regardless of pipeline state."""
     db_path = git_repo_on_branch / "context" / "control_plane.db"
     db_path.parent.mkdir(parents=True, exist_ok=True)
     ControlPlane(db_path=db_path).init_db()
 
     res = _run_guard(git_repo_on_branch)
-    assert res.returncode == 0
-    assert "WARNING" in res.stderr
-    assert "no task" in res.stderr.lower() or "ungated" in res.stderr.lower()
+    assert res.returncode == 1
+    assert "GIT PUSH BLOCKED" in res.stdout
+    assert "no task" in res.stdout.lower()
 
 
 def test_still_blocks_when_task_state_not_cleared(git_repo_on_branch):

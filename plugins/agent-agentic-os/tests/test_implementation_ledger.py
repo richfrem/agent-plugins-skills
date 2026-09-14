@@ -13,6 +13,9 @@ if str(SCRIPTS_DIR) not in sys.path:
 from control_plane.implementation import validate_implementation_ledger
 from agent_control import ControlPlane
 from control_plane import policy
+from control_plane.constants import (
+    STATE_VERIFY_EXIT, STATE_RETROSPECTIVE,
+)
 
 
 def _plan(entries):
@@ -77,7 +80,7 @@ def test_verify_exit_policy_uses_the_ledger_gate(tmp_path):
     )
 
     ctx = cp._build_transition_policy_ctx(
-        "ledger-task", cp.get_task("ledger-task"), "VERIFY_EXIT", "RETROSPECTIVE"
+        "ledger-task", cp.get_task("ledger-task"), STATE_VERIFY_EXIT, STATE_RETROSPECTIVE
     )
     with pytest.raises(policy.PolicyViolation, match="not COMPLETE"):
         policy.evaluate_check("implementation_completeness", ctx)

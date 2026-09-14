@@ -25,7 +25,7 @@ CLI Arguments:
     acquire_lock, release_lock, emit_event, 
     read_events, state_update, state_increment, claim_task
 
-Input Files:
+Key Input Dependencies:
     - context/os-state.json
     - context/agents.json
 

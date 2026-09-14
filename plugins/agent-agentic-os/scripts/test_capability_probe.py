@@ -1,4 +1,22 @@
-"""RED contract tests for active-runtime capability detection."""
+"""
+test_capability_probe.py -- Contract Tests for Active-Runtime Capability Detection
+=======================================================================================
+
+Purpose:
+    RED contract tests for active-runtime capability detection: verifies
+    detect_runtime() correctly identifies codex/agy/copilot/claude-code from each
+    runtime's environment session markers.
+
+Key Input Dependencies:
+    - capability_probe.py (module under test) -- detect_runtime(), probe_runtime().
+    - pytest's monkeypatch fixture, used to set the runtime marker env vars per test.
+
+Key Functions:
+    - test_detects_codex_from_active_session_marker()
+    - test_detects_agy_from_active_session_marker()
+    - test_detects_copilot_from_active_session_marker()
+    - test_detects_claude_code_from_active_session_marker()
+"""
 
 from capability_probe import detect_runtime, probe_runtime
 import pytest

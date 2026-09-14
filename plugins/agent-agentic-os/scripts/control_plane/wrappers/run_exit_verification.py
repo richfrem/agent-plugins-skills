@@ -8,6 +8,18 @@ Purpose:
     Hardcodes action identity 'exit_verification'. Never allows caller-supplied
     action identity. Authorizes against task's current phase occupancy before
     spawning any subprocess or recording any verification receipt.
+
+Key Input Dependencies:
+    - agent_control.py's ControlPlane (phase-capability authorization).
+    - VERIFIER_CATALOG -- the closed set of verifier_id -> allowed command/gate.
+      Only cataloged verifier_ids may be run; nothing caller-supplied.
+
+Key Functions:
+    - ACTION_IDENTITY -- the fixed action identity this wrapper always uses.
+    - VERIFIER_CATALOG -- closed verifier_id -> {command, gate} mapping.
+    - run_exit_verification() -- authorizes, runs the cataloged verifier subprocess,
+      and records the verification receipt.
+    - main() -- CLI entry point.
 """
 
 import subprocess

@@ -71,8 +71,57 @@ from control_plane.ports import (
     PhaseCapability,
     PersistenceInvariantViolation,
 )
-from control_plane.state_machine import ALLOWED_TRANSITIONS
+from control_plane.state_machine import ALLOWED_TRANSITIONS, CANONICAL_STATES
+from control_plane.constants import (
+    STATE_INTAKE, STATE_DONE, STATE_WORKTREE_REVIEW,
+    DECISION_TYPE_APPROVAL, DECISION_TYPES,
+    ACTOR_HUMAN, ACTOR_AGENT, ACTOR_SYSTEM,
+    COST_TIER_LOW, COST_TIERS,
+    CONFIRMATION_STATUS_PENDING, CONFIRMATION_STATUS_CONFIRMED,
+    GATE_MULTI_AGENT_REVIEW_SKIPPED, GATE_MULTI_AGENT_CODE_REVIEW_SKIPPED,
+    TASK_TYPE_GENERAL, TASK_TYPES,
+    WORKTREE_STATES,
+    QUESTION_ID_RETROSPECTIVE_DECISION,
+    QUESTION_ID_FORCE_CLOSE_AUTHORIZATION, QUESTION_ID_HUMAN_FORCE_DONE_CONFIRMATION,
+    ANSWER_FORCE_CLOSE, ANSWER_FORCE_DONE,
+    CRITIC_VERDICTS,
+    PERSISTENCE_LOG_STATUSES,
+    RETROSPECTIVE_DECISION_OPT_IN, RETROSPECTIVE_DECISION_SKIP, RETROSPECTIVE_DECISIONS,
+    RETROSPECTIVE_COMPLETION_MODE_COMPLETED, RETROSPECTIVE_COMPLETION_MODE_SKIPPED,
+    RETROSPECTIVE_COMPLETION_MODES,
+    FOLLOW_UP_KIND_ISSUE, FOLLOW_UP_KINDS,
+    FOLLOW_UP_STATUS_PROPOSED, FOLLOW_UP_STATUS_CONFIRMED, FOLLOW_UP_STATUS_CREATED,
+    FOLLOW_UP_STATUSES,
+    DELEGATION_STATUSES,
+    DISALLOWED_MODEL_STATUSES, STRATEGY_FALLBACK_KEYS,
+    TOOL_CATALOG_ALIASES,
+    sql_in_list,
+)
 
+# NOTE: SCHEMA_MIGRATIONS below is an immutable historical record of DDL actually
+# executed against real databases over time -- it deliberately keeps its own literal
+# strings and must NEVER be rewritten to reference the shared constants above, even
+# though some values overlap. Only SCHEMA_SQL (the fresh-create target schema) and the
+# Python logic after SCHEMA_MIGRATIONS derive from control_plane/constants.py.
+
+
+def _resolve_repo_root() -> Path:
+    """Single shared resolver for the repository root. Resolves via
+    `git rev-parse --show-toplevel` (works regardless of how many directories deep
+    this file lives, unlike a fixed `.parents[N]` index that breaks silently if the
+    file moves) and falls back to a fixed parent-count walk only if git is
+    unavailable. Both call sites needing repo_root use this instead of each
+    repeating their own `.parent.parent.parent.parent.parent` chain."""
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"],
+            cwd=str(Path(__file__).resolve().parent), capture_output=True, text=True, timeout=5,
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            return Path(result.stdout.strip())
+    except (subprocess.SubprocessError, OSError):
+        pass
+    return Path(__file__).resolve().parents[4]
 
 
 class FilesystemAdapter(FilesystemPort):
@@ -110,7 +159,7 @@ class ClockAdapter(ClockPort):
         return time.strftime(fmt)
 
 
-SCHEMA_SQL = """
+SCHEMA_SQL = f"""
 PRAGMA foreign_keys = ON;
 PRAGMA journal_mode = WAL;
 PRAGMA busy_timeout = 5000;
@@ -120,24 +169,22 @@ CREATE TABLE IF NOT EXISTS tasks (
     title TEXT NOT NULL,
     state TEXT NOT NULL CHECK (
         state IN (
-            'INTAKE', 'INTERVIEW', 'DRAFT_PLAN', 'MULTI_AGENT_REVIEW', 'PLAN_REVIEW', 'AWAITING_APPROVAL',
-            'APPROVED', 'IN_WORKTREE', 'WORKTREE_REVIEW', 'MULTI_AGENT_CODE_REVIEW', 'VERIFY_EXIT', 'RETROSPECTIVE', 'DONE',
-            'ROLLED_BACK', 'ESCALATED'
+            {sql_in_list(CANONICAL_STATES)}
         )
     ),
-    task_type TEXT NOT NULL DEFAULT 'GENERAL' CHECK (task_type IN ('GENERAL', 'EVOLUTION')),
+    task_type TEXT NOT NULL DEFAULT '{TASK_TYPE_GENERAL}' CHECK (task_type IN ({sql_in_list(TASK_TYPES)})),
     runtime_tool TEXT NOT NULL,
     worktree_path TEXT,
     worktree_branch TEXT,
     worktree_state TEXT CHECK (
         worktree_state IS NULL OR worktree_state IN (
-            'written_in_worktree', 'committed_in_worktree', 'pushed_to_origin',
-            'merged_into_origin_main', 'local_branch_ref_updated', 'checked_out_on_disk'
+            {sql_in_list(WORKTREE_STATES)}
         )
     ),
     spec_path TEXT,
-    model_tier TEXT CHECK (model_tier IS NULL OR model_tier IN ('low', 'medium', 'high')),
+    model_tier TEXT CHECK (model_tier IS NULL OR model_tier IN ({sql_in_list(COST_TIERS)})),
     model_id TEXT,
+    guidance_block_reason TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -165,7 +212,7 @@ CREATE TABLE IF NOT EXISTS critic_reviews (
     task_id TEXT NOT NULL REFERENCES tasks(task_id) ON DELETE CASCADE,
     iteration INTEGER NOT NULL CHECK(iteration >= 1),
     model_used TEXT NOT NULL,
-    verdict TEXT NOT NULL CHECK (verdict IN ('PASS', 'REVISE', 'REJECT')),
+    verdict TEXT NOT NULL CHECK (verdict IN ({sql_in_list(CRITIC_VERDICTS)})),
     critique_findings TEXT,
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -184,7 +231,7 @@ CREATE TABLE IF NOT EXISTS asymmetric_persistence_log (
     log_id INTEGER PRIMARY KEY AUTOINCREMENT,
     task_id TEXT NOT NULL REFERENCES tasks(task_id) ON DELETE CASCADE,
     destination TEXT NOT NULL,
-    status TEXT NOT NULL CHECK(status IN ('OBSERVED', 'HYPOTHESIS', 'CONFIRMED', 'RESOLVED')),
+    status TEXT NOT NULL CHECK(status IN ({sql_in_list(PERSISTENCE_LOG_STATUSES)})),
     details TEXT,
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -197,7 +244,7 @@ CREATE TABLE IF NOT EXISTS transition_decisions (
     to_state TEXT NOT NULL,
     question_id TEXT NOT NULL,
     answer TEXT NOT NULL,
-    decision_type TEXT NOT NULL CHECK(decision_type IN ('ANSWER', 'APPROVAL', 'REJECTION', 'SKIP', 'CONFIRMATION', 'RESET')),
+    decision_type TEXT NOT NULL CHECK(decision_type IN ({sql_in_list(DECISION_TYPES)})),
     actor TEXT NOT NULL,
     recorded_at REAL NOT NULL,
     consumed_at REAL,
@@ -210,7 +257,7 @@ CREATE TABLE IF NOT EXISTS done_closeout_decisions (
     source_occupancy_transition_id INTEGER NOT NULL REFERENCES task_transitions(transition_id),
     question_id TEXT NOT NULL,
     answer TEXT NOT NULL,
-    actor TEXT NOT NULL CHECK(actor = 'human'),
+    actor TEXT NOT NULL CHECK(actor = '{ACTOR_HUMAN}'),
     recorded_at REAL NOT NULL,
     UNIQUE(task_id, source_occupancy_transition_id, question_id)
 );
@@ -218,9 +265,9 @@ CREATE TABLE IF NOT EXISTS done_closeout_decisions (
 CREATE TABLE IF NOT EXISTS retrospective_entries (
     retrospective_id INTEGER PRIMARY KEY AUTOINCREMENT,
     task_id TEXT NOT NULL UNIQUE REFERENCES tasks(task_id) ON DELETE CASCADE,
-    decision TEXT NOT NULL CHECK(decision IN ('opt_in', 'skip')),
-    completion_mode TEXT NOT NULL CHECK(completion_mode IN ('draft', 'completed', 'skipped')),
-    actor TEXT NOT NULL CHECK(actor IN ('agent', 'human')),
+    decision TEXT NOT NULL CHECK(decision IN ({sql_in_list(RETROSPECTIVE_DECISIONS)})),
+    completion_mode TEXT NOT NULL CHECK(completion_mode IN ({sql_in_list(RETROSPECTIVE_COMPLETION_MODES)})),
+    actor TEXT NOT NULL CHECK(actor IN ('{ACTOR_AGENT}', '{ACTOR_HUMAN}')),
     outcome TEXT NOT NULL DEFAULT '',
     strengths TEXT NOT NULL DEFAULT '',
     friction TEXT NOT NULL DEFAULT '',
@@ -235,9 +282,9 @@ CREATE TABLE IF NOT EXISTS retrospective_entries (
 CREATE TABLE IF NOT EXISTS retrospective_follow_ups (
     follow_up_id INTEGER PRIMARY KEY AUTOINCREMENT,
     retrospective_id INTEGER NOT NULL REFERENCES retrospective_entries(retrospective_id) ON DELETE CASCADE,
-    kind TEXT NOT NULL CHECK(kind IN ('direct', 'issue')),
+    kind TEXT NOT NULL CHECK(kind IN ({sql_in_list(FOLLOW_UP_KINDS)})),
     description TEXT NOT NULL,
-    status TEXT NOT NULL CHECK(status IN ('proposed', 'confirmed', 'rejected', 'created')),
+    status TEXT NOT NULL CHECK(status IN ({sql_in_list(FOLLOW_UP_STATUSES)})),
     duplicate_checked INTEGER NOT NULL DEFAULT 0 CHECK(duplicate_checked IN (0, 1)),
     issue_url TEXT,
     issue_number TEXT,
@@ -259,9 +306,9 @@ CREATE TABLE IF NOT EXISTS delegation_contracts (
     fallback_candidates_json TEXT NOT NULL,
     backend TEXT NOT NULL,
     model_id TEXT NOT NULL,
-    cost_tier TEXT NOT NULL CHECK(cost_tier IN ('low', 'medium', 'high')),
+    cost_tier TEXT NOT NULL CHECK(cost_tier IN ({sql_in_list(COST_TIERS)})),
     capability_class TEXT NOT NULL,
-    status TEXT NOT NULL CHECK(status IN ('PENDING_APPROVAL', 'APPROVED', 'EXECUTING', 'ACCEPTED', 'REJECTED')),
+    status TEXT NOT NULL CHECK(status IN ({sql_in_list(DELEGATION_STATUSES)})),
     approved_by TEXT,
     created_at REAL NOT NULL,
     updated_at REAL NOT NULL
@@ -273,7 +320,7 @@ CREATE TABLE IF NOT EXISTS delegation_receipts (
     task_id TEXT NOT NULL REFERENCES tasks(task_id) ON DELETE CASCADE,
     backend TEXT NOT NULL,
     model_id TEXT NOT NULL,
-    cost_tier TEXT NOT NULL CHECK(cost_tier IN ('low', 'medium', 'high')),
+    cost_tier TEXT NOT NULL CHECK(cost_tier IN ({sql_in_list(COST_TIERS)})),
     capability_class TEXT NOT NULL,
     write_capable INTEGER NOT NULL DEFAULT 0 CHECK(write_capable IN (0, 1)),
     written_paths_json TEXT NOT NULL DEFAULT '[]',
@@ -295,7 +342,7 @@ CREATE TABLE IF NOT EXISTS premium_consents (
     stage TEXT NOT NULL,
     round_id TEXT NOT NULL,
     model_id TEXT NOT NULL,
-    actor TEXT NOT NULL CHECK(actor = 'human'),
+    actor TEXT NOT NULL CHECK(actor = '{ACTOR_HUMAN}'),
     consented_at REAL NOT NULL,
     UNIQUE(task_id, stage, round_id, model_id)
 );
@@ -310,13 +357,13 @@ CREATE TABLE IF NOT EXISTS source_assisted_answer_candidates (
     source_path TEXT NOT NULL,
     source_authorized INTEGER NOT NULL CHECK(source_authorized IN (0, 1)),
     confirmation_status TEXT NOT NULL DEFAULT 'pending'
-        CHECK(confirmation_status IN ('pending', 'confirmed')),
+        CHECK(confirmation_status IN ('{CONFIRMATION_STATUS_PENDING}', '{CONFIRMATION_STATUS_CONFIRMED}')),
     confirmed_by TEXT,
     confirmed_at REAL,
     created_at REAL NOT NULL,
     CHECK(
-        (confirmation_status = 'pending' AND confirmed_by IS NULL AND confirmed_at IS NULL)
-        OR (confirmation_status = 'confirmed' AND confirmed_by = 'human' AND confirmed_at IS NOT NULL)
+        (confirmation_status = '{CONFIRMATION_STATUS_PENDING}' AND confirmed_by IS NULL AND confirmed_at IS NULL)
+        OR (confirmation_status = '{CONFIRMATION_STATUS_CONFIRMED}' AND confirmed_by = '{ACTOR_HUMAN}' AND confirmed_at IS NOT NULL)
     )
 );
 
@@ -383,8 +430,8 @@ WHEN NEW.state != OLD.state
           )
           AND recovery_td.from_state = OLD.state
           AND recovery_td.to_state = NEW.state
-          AND recovery_td.decision_type = 'APPROVAL'
-          AND recovery_td.actor = 'human'
+          AND recovery_td.decision_type = '{DECISION_TYPE_APPROVAL}'
+          AND recovery_td.actor = '{ACTOR_HUMAN}'
           AND recovery_td.answer IS NOT NULL
           AND trim(recovery_td.answer) != ''
           AND recovery_td.consumed_at IS NULL
@@ -404,7 +451,7 @@ WHEN NEW.state != OLD.state
                     AND td.question_id = rq.question_id
                     AND td.answer IS NOT NULL
                     AND trim(td.answer) != ''
-                    AND (td.actor = 'human' OR (rq.question_id = 'retrospective_decision' AND td.actor = 'agent'))
+                    AND (td.actor = '{ACTOR_HUMAN}' OR (rq.question_id = '{QUESTION_ID_RETROSPECTIVE_DECISION}' AND td.actor = '{ACTOR_AGENT}'))
                     AND td.consumed_at IS NULL
               )
               AND NOT EXISTS (
@@ -412,9 +459,9 @@ WHEN NEW.state != OLD.state
                   WHERE force_td.task_id = OLD.task_id
                     AND force_td.from_state = OLD.state
                     AND force_td.to_state = NEW.state
-                    AND force_td.question_id IN ('force_close_authorization', 'human_force_done_confirmation')
-                    AND force_td.answer IN ('FORCE_CLOSE', 'FORCE_DONE')
-                    AND force_td.actor = 'human'
+                    AND force_td.question_id IN ('{QUESTION_ID_FORCE_CLOSE_AUTHORIZATION}', '{QUESTION_ID_HUMAN_FORCE_DONE_CONFIRMATION}')
+                    AND force_td.answer IN ('{ANSWER_FORCE_CLOSE}', '{ANSWER_FORCE_DONE}')
+                    AND force_td.actor = '{ACTOR_HUMAN}'
                     AND force_td.consumed_at IS NULL
               )
         )
@@ -446,12 +493,12 @@ BEGIN
 END;
 """
 
-CURRENT_SCHEMA_VERSION = 12
+CURRENT_SCHEMA_VERSION = 13
 
 # issue-523: the only state ControlPlane.create_task() ever seeds a new task at. Not derived
 # from TransitionRegistry (which only declares state-to-state edges among existing states, not
 # initial states) — this is the closest available source of truth for the INSERT-side trigger.
-LEGAL_INITIAL_STATES = ["INTAKE"]
+LEGAL_INITIAL_STATES = [STATE_INTAKE]
 
 CHILD_TABLES = [
     "task_transitions",
@@ -734,7 +781,7 @@ class SqlitePersistenceAdapter(PersistencePort):
             return True
 
         row = conn.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name='tasks'").fetchone()
-        if row and "WORKTREE_REVIEW" not in (row[0] or ""):
+        if row and STATE_WORKTREE_REVIEW not in (row[0] or ""):
             return True
 
         orphan = conn.execute(
@@ -786,7 +833,7 @@ class SqlitePersistenceAdapter(PersistencePort):
     def _log_orphan_merge_conflicts(self, conflicting_task_ids: List[str]):
         """Appends a map-debt entry for task_ids dropped during an orphaned-table merge
         (present in both the fresh `tasks` table and a dangling `_tasks_old`)."""
-        repo_root = Path(__file__).resolve().parent.parent.parent.parent.parent
+        repo_root = _resolve_repo_root()
         map_debt_path = repo_root / "references" / "map-debt.md"
         if not self._fs.exists(map_debt_path):
             return
@@ -864,49 +911,10 @@ class SqlitePersistenceAdapter(PersistencePort):
                 orphan_merge_conflicts = self._merge_orphaned_tasks_old(conn)
                 conn.execute('DROP TABLE "_tasks_old_merge";')
 
-            conn.execute("""
-                CREATE TRIGGER IF NOT EXISTS enforce_valid_transition
-                AFTER UPDATE ON tasks
-                WHEN NEW.state != OLD.state
-                 AND (
-                    NOT EXISTS (
-                        SELECT 1 FROM valid_transitions WHERE from_state = OLD.state AND to_state = NEW.state
-                    )
-                    OR EXISTS (
-                        SELECT 1 FROM required_transition_questions rq
-                        WHERE rq.from_state = OLD.state AND rq.to_state = NEW.state
-                          AND NOT EXISTS (
-                              SELECT 1 FROM transition_decisions td
-                              WHERE td.task_id = OLD.task_id
-                                AND td.from_state = OLD.state
-                                AND td.to_state = NEW.state
-                                AND td.question_id = rq.question_id
-                                AND td.answer IS NOT NULL
-                                AND trim(td.answer) != ''
-                                AND (td.actor = 'human' OR (rq.question_id = 'retrospective_decision' AND td.actor = 'agent'))
-                                AND td.consumed_at IS NULL
-                          )
-                          AND NOT EXISTS (
-                              SELECT 1 FROM transition_decisions force_td
-                              WHERE force_td.task_id = OLD.task_id
-                                AND force_td.from_state = OLD.state
-                                AND force_td.to_state = NEW.state
-                                AND force_td.question_id IN ('force_close_authorization', 'human_force_done_confirmation')
-                                AND force_td.answer IN ('FORCE_CLOSE', 'FORCE_DONE')
-                                AND force_td.actor = 'human'
-                                AND force_td.consumed_at IS NULL
-                          )
-                    )
-                 )
-                BEGIN
-                    INSERT INTO transition_violations (task_id, attempted_from_state, attempted_to_state)
-                    VALUES (OLD.task_id, OLD.state, NEW.state);
-                    UPDATE tasks SET state = OLD.state, updated_at = OLD.updated_at WHERE task_id = NEW.task_id;
-                END;
-            """)
-            # Recreate the trigger from the canonical schema so recovery approvals
-            # are honored after a schema rebuild as well as on a fresh database.
-            conn.execute("DROP TRIGGER IF EXISTS enforce_valid_transition;")
+            # Recreate the trigger from the canonical schema (SCHEMA_SQL) rather than a second,
+            # independently-maintained inline copy -- the two previously drifted from being
+            # hand-edited separately, and the inline copy's result was discarded immediately by
+            # the very next DROP TRIGGER anyway, making it dead code.
             recovery_trigger = next(
                 statement for statement in _split_schema_sql_statements(SCHEMA_SQL)
                 if "CREATE TRIGGER IF NOT EXISTS enforce_valid_transition" in statement
@@ -991,9 +999,9 @@ class SqlitePersistenceAdapter(PersistencePort):
             return conn.execute(
                 """
                 SELECT 1 FROM premium_consents
-                WHERE task_id = ? AND stage = ? AND round_id = ? AND model_id = ? AND actor = 'human'
+                WHERE task_id = ? AND stage = ? AND round_id = ? AND model_id = ? AND actor = ?
                 """,
-                (task_id, stage, round_id, model_id),
+                (task_id, stage, round_id, model_id, ACTOR_HUMAN),
             ).fetchone() is not None
         finally:
             conn.close()
@@ -1046,10 +1054,10 @@ class SqlitePersistenceAdapter(PersistencePort):
             cursor = conn.execute(
                 """
                 UPDATE source_assisted_answer_candidates
-                SET confirmation_status = 'confirmed', confirmed_by = ?, confirmed_at = ?
-                WHERE candidate_id = ? AND confirmation_status = 'pending'
+                SET confirmation_status = ?, confirmed_by = ?, confirmed_at = ?
+                WHERE candidate_id = ? AND confirmation_status = ?
                 """,
-                (actor, self._clock.current_time(), candidate_id),
+                (CONFIRMATION_STATUS_CONFIRMED, actor, self._clock.current_time(), candidate_id, CONFIRMATION_STATUS_PENDING),
             )
             conn.commit()
             return cursor.rowcount == 1
@@ -1119,15 +1127,15 @@ class SqlitePersistenceAdapter(PersistencePort):
             if round_id is None:
                 query = """
                     SELECT 1 FROM source_assisted_answer_candidates
-                    WHERE task_id = ? AND stage = ? AND confirmation_status = 'pending'
+                    WHERE task_id = ? AND stage = ? AND confirmation_status = ?
                 """
-                params = (task_id, stage)
+                params = (task_id, stage, CONFIRMATION_STATUS_PENDING)
             else:
                 query = """
                     SELECT 1 FROM source_assisted_answer_candidates
-                    WHERE task_id = ? AND stage = ? AND round_id = ? AND confirmation_status = 'pending'
+                    WHERE task_id = ? AND stage = ? AND round_id = ? AND confirmation_status = ?
                 """
-                params = (task_id, stage, round_id)
+                params = (task_id, stage, round_id, CONFIRMATION_STATUS_PENDING)
             return conn.execute(query, params).fetchone() is not None
         finally:
             conn.close()
@@ -1286,16 +1294,16 @@ class SqlitePersistenceAdapter(PersistencePort):
                 conn.execute(
                     """
                     INSERT INTO tasks (task_id, title, state, task_type, runtime_tool, spec_path, model_tier, model_id)
-                    VALUES (?, ?, 'INTAKE', ?, ?, ?, ?, ?)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                     """,
-                    (task_id, title, task_type, runtime_tool, spec_path, model_tier, model_id)
+                    (task_id, title, STATE_INTAKE, task_type, runtime_tool, spec_path, model_tier, model_id)
                 )
                 conn.execute(
                     """
                     INSERT INTO task_transitions (task_id, from_state, to_state, actor, reason)
-                    VALUES (?, 'NONE', 'INTAKE', 'system', 'Task created')
+                    VALUES (?, ?, ?, ?, ?)
                     """,
-                    (task_id,)
+                    (task_id, "NONE", STATE_INTAKE, ACTOR_SYSTEM, "Task created")
                 )
         finally:
             conn.close()
@@ -1336,8 +1344,8 @@ class SqlitePersistenceAdapter(PersistencePort):
                 )
                 # Invalidate stale discretionary skip receipts on leaving occupancy
                 conn.execute(
-                    "DELETE FROM verification_receipts WHERE task_id = ? AND gate_name IN ('multi_agent_review_skipped', 'multi_agent_code_review_skipped')",
-                    (task_id,)
+                    "DELETE FROM verification_receipts WHERE task_id = ? AND gate_name IN (?, ?)",
+                    (task_id, GATE_MULTI_AGENT_REVIEW_SKIPPED, GATE_MULTI_AGENT_CODE_REVIEW_SKIPPED)
                 )
                 # Invalidate any lingering unconsumed decisions upon leaving occupancy
                 conn.execute(
@@ -1500,6 +1508,46 @@ class SqlitePersistenceAdapter(PersistencePort):
         finally:
             conn.close()
 
+    def get_guidance_block_reason(self, task_id: str) -> Optional[str]:
+        """Returns the task's guidance_block_reason (None if not blocked)."""
+        self.ensure_schema()
+        conn = self.get_connection()
+        try:
+            row = conn.execute("SELECT guidance_block_reason FROM tasks WHERE task_id = ?", (task_id,)).fetchone()
+            return row["guidance_block_reason"] if row else None
+        finally:
+            conn.close()
+
+    def set_guidance_block(self, task_id: str, reason: str) -> None:
+        """Sets guidance_block_reason, refusing all further transitions for this task
+        until explicitly cleared -- triggered when a human answers 'no' (or gives no
+        answer) to the mandatory per-transition guidance-compliance confirmation."""
+        self.ensure_schema()
+        conn = self.get_connection()
+        try:
+            with conn:
+                conn.execute(
+                    "UPDATE tasks SET guidance_block_reason = ?, updated_at = CURRENT_TIMESTAMP WHERE task_id = ?",
+                    (reason, task_id)
+                )
+        finally:
+            conn.close()
+
+    def clear_guidance_block(self, task_id: str) -> None:
+        """Clears guidance_block_reason -- requires an explicit, separate human-confirmed
+        CLI action (clear-guidance-block); never cleared automatically by a later transition
+        attempt."""
+        self.ensure_schema()
+        conn = self.get_connection()
+        try:
+            with conn:
+                conn.execute(
+                    "UPDATE tasks SET guidance_block_reason = NULL, updated_at = CURRENT_TIMESTAMP WHERE task_id = ?",
+                    (task_id,)
+                )
+        finally:
+            conn.close()
+
     def get_verification_receipts(self, task_id: str) -> List[Dict[str, Any]]:
         """Returns all verification_receipts rows for task_id."""
         self.ensure_schema()
@@ -1588,24 +1636,28 @@ class SqlitePersistenceAdapter(PersistencePort):
             ).fetchone()
             if not row:
                 return False
-            if row["decision"] == "skip":
-                complete = row["completion_mode"] == "skipped" and bool(row["skip_reason"].strip())
+            if row["decision"] == RETROSPECTIVE_DECISION_SKIP:
+                complete = row["completion_mode"] == RETROSPECTIVE_COMPLETION_MODE_SKIPPED and bool(row["skip_reason"].strip())
             else:
-                complete = row["decision"] == "opt_in" and row["completion_mode"] == "completed"
+                complete = row["decision"] == RETROSPECTIVE_DECISION_OPT_IN and row["completion_mode"] == RETROSPECTIVE_COMPLETION_MODE_COMPLETED
             if not complete:
                 return False
             open_issue = conn.execute(
                 """
                 SELECT 1 FROM retrospective_follow_ups
                 WHERE retrospective_id = ?
-                  AND kind = 'issue'
+                  AND kind = ?
                   AND (
-                      status IN ('proposed', 'confirmed')
-                      OR (status = 'created' AND (duplicate_checked = 0 OR issue_url IS NULL OR trim(issue_url) = ''))
+                      status IN (?, ?)
+                      OR (status = ? AND (duplicate_checked = 0 OR issue_url IS NULL OR trim(issue_url) = ''))
                   )
                 LIMIT 1
                 """,
-                (row["retrospective_id"],),
+                (
+                    row["retrospective_id"], FOLLOW_UP_KIND_ISSUE,
+                    FOLLOW_UP_STATUS_PROPOSED, FOLLOW_UP_STATUS_CONFIRMED,
+                    FOLLOW_UP_STATUS_CREATED,
+                ),
             ).fetchone()
             return open_issue is None
         finally:
@@ -1642,7 +1694,7 @@ class SqlitePersistenceAdapter(PersistencePort):
             ).fetchone()
             if task is None:
                 raise ValueError(f"Task not found: {task_id}")
-            if task["state"] != "DONE":
+            if task["state"] != STATE_DONE:
                 raise PersistenceInvariantViolation(
                     f"DONE closeout decisions require task '{task_id}' to be in DONE; "
                     f"current state is '{task['state']}'."
@@ -1652,7 +1704,7 @@ class SqlitePersistenceAdapter(PersistencePort):
                 "WHERE task_id = ? ORDER BY transition_id DESC LIMIT 1",
                 (task_id,),
             ).fetchone()
-            if latest is None or latest["transition_id"] != source_occupancy_transition_id or latest["to_state"] != "DONE":
+            if latest is None or latest["transition_id"] != source_occupancy_transition_id or latest["to_state"] != STATE_DONE:
                 raise PersistenceInvariantViolation(
                     f"DONE closeout decision for '{task_id}' is stale; expected current DONE "
                     f"occupancy {latest['transition_id'] if latest else None}."
@@ -1788,7 +1840,7 @@ class SqlitePersistenceAdapter(PersistencePort):
             # transition ledger so failed attempts from the prior run cannot poison
             # commit/push hooks that validate the complete task history. The reset
             # transition itself is inserted below as the new ledger root.
-            if request.to_state == "INTAKE":
+            if request.to_state == STATE_INTAKE:
                 prior_transition_ids = [
                     row["transition_id"] for row in conn.execute(
                         "SELECT transition_id FROM task_transitions WHERE task_id = ?",
@@ -1814,7 +1866,7 @@ class SqlitePersistenceAdapter(PersistencePort):
                 )
 
             # 4. Structural validation of staged decisions
-            valid_types = {'ANSWER', 'APPROVAL', 'REJECTION', 'SKIP', 'CONFIRMATION', 'RESET'}
+            valid_types = set(DECISION_TYPES)
             seen_questions = set()
             for d in request.staged_decisions:
                 if d.task_id != request.task_id:
@@ -1901,8 +1953,8 @@ class SqlitePersistenceAdapter(PersistencePort):
             # been evaluated. Staged receipts inserted in Step 8 immediately restore valid skips
             # for the new transition if applicable.
             conn.execute(
-                "DELETE FROM verification_receipts WHERE task_id = ? AND gate_name IN ('multi_agent_review_skipped', 'multi_agent_code_review_skipped')",
-                (request.task_id,)
+                "DELETE FROM verification_receipts WHERE task_id = ? AND gate_name IN (?, ?)",
+                (request.task_id, GATE_MULTI_AGENT_REVIEW_SKIPPED, GATE_MULTI_AGENT_CODE_REVIEW_SKIPPED)
             )
 
             # 8. Insert staged receipts
@@ -1970,8 +2022,17 @@ class SqlitePersistenceAdapter(PersistencePort):
                 token_material = f"RECOVERY-{task_id}-{source_occupancy_transition_id}-{destination_state}-{recorded_at}-{existing_count + 1}"
                 token = self._crypto.sha256_hex(token_material)
 
-                # Look up static question IDs required for this recovery edge
-                required_qids = [
+                # Look up static question IDs required for this recovery edge. DONE is
+                # excluded from this lookup: every state already has its own dedicated
+                # human_force_done_confirmation/force_close_authorization question,
+                # answered fresh through TransitionCoordinator's own force-close flow
+                # (apply_recovery_transition routes DONE destinations through
+                # coordinate_transition(force_close=True, ...), never through this
+                # recorded decision). Reusing that same question_id here would record
+                # this call's opaque token as if it were the answer to that question,
+                # making the coordinator believe it's already been answered and skip
+                # asking for the real FORCE_DONE/FORCE_CLOSE confirmation entirely.
+                required_qids = [] if destination_state == STATE_DONE else [
                     r[0] for r in conn.execute(
                         "SELECT question_id FROM required_transition_questions WHERE from_state = ? AND to_state = ?",
                         (expected_source_state, destination_state)
@@ -2031,10 +2092,10 @@ class SqlitePersistenceAdapter(PersistencePort):
                 SELECT decision_id FROM transition_decisions
                 WHERE task_id = ? AND source_occupancy_transition_id = ?
                   AND from_state = ? AND to_state = ?
-                  AND answer = ? AND decision_type = 'APPROVAL'
+                  AND answer = ? AND decision_type = ?
                   AND consumed_at IS NULL
                 """,
-                (task_id, source_occupancy_transition_id, expected_source_state, destination_state, approval_receipt_token)
+                (task_id, source_occupancy_transition_id, expected_source_state, destination_state, approval_receipt_token, DECISION_TYPE_APPROVAL)
             ).fetchall()
 
             if not decision_rows:
@@ -2044,10 +2105,10 @@ class SqlitePersistenceAdapter(PersistencePort):
                     SELECT decision_id FROM transition_decisions
                     WHERE task_id = ? AND source_occupancy_transition_id = ?
                       AND from_state = ? AND to_state = ?
-                      AND answer = ? AND decision_type = 'APPROVAL'
+                      AND answer = ? AND decision_type = ?
                       AND consumed_at IS NOT NULL
                     """,
-                    (task_id, source_occupancy_transition_id, expected_source_state, destination_state, approval_receipt_token)
+                    (task_id, source_occupancy_transition_id, expected_source_state, destination_state, approval_receipt_token, DECISION_TYPE_APPROVAL)
                 ).fetchone()
                 if consumed_row:
                     raise ValueError(f"Recovery approval token {approval_receipt_token} has already been consumed.")
@@ -2081,9 +2142,9 @@ class SqlitePersistenceAdapter(PersistencePort):
                 UPDATE transition_decisions
                 SET consumed_at = ?, bound_transition_id = ?
                 WHERE task_id = ? AND source_occupancy_transition_id = ?
-                  AND answer = ? AND decision_type = 'APPROVAL'
+                  AND answer = ? AND decision_type = ?
                 """,
-                (now, new_trans_id, task_id, source_occupancy_transition_id, approval_receipt_token)
+                (now, new_trans_id, task_id, source_occupancy_transition_id, approval_receipt_token, DECISION_TYPE_APPROVAL)
             )
             # Invalidate any remaining unconsumed decisions for this task
             conn.execute(
@@ -2105,8 +2166,8 @@ class SqlitePersistenceAdapter(PersistencePort):
 
             # 8. Clear prior discretionary review skip receipts
             conn.execute(
-                "DELETE FROM verification_receipts WHERE task_id = ? AND gate_name IN ('multi_agent_review_skipped', 'multi_agent_code_review_skipped')",
-                (task_id,)
+                "DELETE FROM verification_receipts WHERE task_id = ? AND gate_name IN (?, ?)",
+                (task_id, GATE_MULTI_AGENT_REVIEW_SKIPPED, GATE_MULTI_AGENT_CODE_REVIEW_SKIPPED)
             )
 
             row = conn.execute(
@@ -2305,7 +2366,7 @@ class SqlitePersistenceAdapter(PersistencePort):
 
             for t in transitions:
                 f_st, t_st = t["from_state"], t["to_state"]
-                if f_st == "NONE" and t_st == "INTAKE":
+                if f_st == "NONE" and t_st == STATE_INTAKE:
                     continue
                 match = conn.execute(
                     "SELECT 1 FROM valid_transitions WHERE from_state = ? AND to_state = ?",
@@ -2317,9 +2378,9 @@ class SqlitePersistenceAdapter(PersistencePort):
             # 3. Check transition chain continuity
             first_f, first_t = transitions[0]["from_state"], transitions[0]["to_state"]
             if not (
-                (first_f == "NONE" and first_t == "INTAKE")
-                or first_f == "INTAKE"
-                or (first_t == "INTAKE" and first_f in ALLOWED_TRANSITIONS)
+                (first_f == "NONE" and first_t == STATE_INTAKE)
+                or first_f == STATE_INTAKE
+                or (first_t == STATE_INTAKE and first_f in ALLOWED_TRANSITIONS)
             ):
                 return f"Transition history does not begin at INTAKE (started at {first_f} -> {first_t})"
 
@@ -2370,9 +2431,9 @@ class ModelCatalogAdapter(ModelCatalogPort):
     def resolve_recommended_model(self, runtime_tool: str, tier: str = "low") -> Dict[str, str]:
         """Resolve a catalog-backed recommendation and fail closed on catalog drift."""
         tier = tier.lower()
-        if tier not in ("low", "medium", "high"):
+        if tier not in COST_TIERS:
             raise ValueError(f"Unsupported capability tier: {tier}")
-        repo_root = Path(__file__).resolve().parent.parent.parent.parent.parent
+        repo_root = _resolve_repo_root()
         cli_refs = repo_root / "plugins" / "cli-agents" / "references"
         tool_key, catalog_file = self._resolve_tool_catalog(runtime_tool, cli_refs)
 
@@ -2392,17 +2453,12 @@ class ModelCatalogAdapter(ModelCatalogPort):
         }
 
     def _resolve_tool_catalog(self, runtime_tool: str, cli_refs: Path):
-        """Resolves tool alias and catalog file path. Moved verbatim from ControlPlane."""
+        """Resolves tool alias and catalog file path via the shared TOOL_CATALOG_ALIASES
+        mapping (control_plane/constants.py). Falls back to "copilot" for any
+        unrecognized tool_key."""
         tool_key = runtime_tool.lower()
-        if tool_key in ("claude", "claude-code"):
-            return "claude", cli_refs / "claude-models.json"
-        if tool_key in ("copilot", "github-copilot"):
-            return "copilot", cli_refs / "copilot-models.json"
-        if tool_key in ("antigravity", "agy", "gemini"):
-            return "agy", cli_refs / "agy-models.json"
-        if tool_key in ("codex", "openai"):
-            return "codex", cli_refs / "codex-models.json"
-        return "copilot", cli_refs / "copilot-models.json"
+        cli_id, catalog_filename = TOOL_CATALOG_ALIASES.get(tool_key, ("copilot", "copilot-models.json"))
+        return cli_id, cli_refs / catalog_filename
 
     def _pick_tier_model(self, cat_data: Dict[str, Any], tier: str, cheapest_model: Optional[str]) -> Optional[str]:
         """Pick an available model from the versioned capability tier, preferring strategy hints."""
@@ -2423,19 +2479,17 @@ class ModelCatalogAdapter(ModelCatalogPort):
 
         def available(model_id: str) -> bool:
             model = models.get(model_id, {})
-            return model.get("available") is not False and str(model.get("status", "")).lower() not in {
-                "withdrawn", "deprecated", "unavailable"
-            }
+            return model.get("available") is not False and str(model.get("status", "")).lower() not in DISALLOWED_MODEL_STATUSES
 
         candidates = [model_id for model_id in candidate_ids if available(model_id)]
         if not candidates:
             raise ValueError(f"No compatible model is available for tier '{tier}'")
 
         strategy = cat_data.get("strategy", {})
-        preferred = cheapest_model if tier == "low" else None
+        preferred = cheapest_model if tier == COST_TIER_LOW else None
         if preferred not in candidates:
             preferred = next(
-                (strategy.get(key) for key in ("complex_reasoning", "architecture", "default") if strategy.get(key) in candidates),
+                (strategy.get(key) for key in STRATEGY_FALLBACK_KEYS if strategy.get(key) in candidates),
                 None,
             )
         if preferred:

@@ -12,6 +12,9 @@ if str(SCRIPTS_DIR) not in sys.path:
 
 from agent_control import ControlPlane, _build_parser, _dispatch_command
 from control_plane.registry import TransitionRegistry
+from control_plane.constants import (
+    STATE_MULTI_AGENT_CODE_REVIEW, STATE_VERIFY_EXIT,
+)
 
 
 @pytest.fixture
@@ -31,6 +34,7 @@ def test_cli_dispatch_persists_canonical_revise_and_reports_it(control_plane, ca
         "--model", "gpt-5-mini",
         "--verdict", "REQUEST_CHANGES",
         "--findings", "Revise the scope.",
+        "--human-confirmed", "HUMAN-CONFIRMED: test fixture",
     ])
 
     _dispatch_command(control_plane, args)
@@ -63,7 +67,7 @@ def test_undeclared_critic_verdict_is_rejected(control_plane):
 def test_code_review_exit_requires_passing_review_or_explicit_skip():
     """The selected code-review stage must not be an unenforced state sink."""
     template = TransitionRegistry.load_default().get_template(
-        "MULTI_AGENT_CODE_REVIEW", "VERIFY_EXIT"
+        STATE_MULTI_AGENT_CODE_REVIEW, STATE_VERIFY_EXIT
     )
     assert template is not None
     assert "code_review_or_skip" in template.deterministic_checks

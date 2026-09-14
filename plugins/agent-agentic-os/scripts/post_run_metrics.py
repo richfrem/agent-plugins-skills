@@ -20,7 +20,7 @@ Supported Object Types:
 CLI Arguments:
     --correlation-id       Scope counting to a single cycle only
 
-Input Files:
+Key Input Dependencies:
     - context/events.jsonl
     - context/memory/hook-errors.log
 

@@ -15,12 +15,16 @@ if str(SCRIPTS_DIR) not in sys.path:
 
 from agent_control import ControlPlane
 from control_plane.coordinator import TransitionCoordinator
+from interview_helpers import REASON_INTERVIEW_COMPLETE
+from control_plane.constants import (
+    STATE_INTERVIEW, STATE_DRAFT_PLAN,
+)
 
 
 def test_interactive_draft_plan_transition_persists_answers_to_outline(tmp_path):
     control_plane = ControlPlane(db_path=tmp_path / "control_plane.db")
     control_plane.create_task("t1", "Test task", "codex")
-    control_plane.transition("t1", "INTERVIEW", "human", "start interview")
+    control_plane.transition("t1", STATE_INTERVIEW, "human", "start interview")
 
     answers = iter([
         "STANDARD",
@@ -29,6 +33,7 @@ def test_interactive_draft_plan_transition_persists_answers_to_outline(tmp_path)
         "Tests pass.",
         "Preserve existing gates.",
         "medium",
+        "YES",
     ])
     coordinator = TransitionCoordinator(
         control_plane,
@@ -37,13 +42,13 @@ def test_interactive_draft_plan_transition_persists_answers_to_outline(tmp_path)
 
     record = coordinator.coordinate_transition(
         task_id="t1",
-        to_state="DRAFT_PLAN",
+        to_state=STATE_DRAFT_PLAN,
         actor="human",
-        reason="interview complete",
+        reason=REASON_INTERVIEW_COMPLETE,
         interactive=True,
     )
 
-    assert record.to_state == "DRAFT_PLAN"
+    assert record.to_state == STATE_DRAFT_PLAN
     outline = control_plane._persistence.get_interview_plan_outline("t1")
     assert outline and outline.get("bullets"), (
         "Interview answers given interactively were never persisted to the "

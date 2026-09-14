@@ -13,6 +13,18 @@ Purpose:
     - Occupancy re-verification immediately before os.replace.
     - Shadow file cleanup on every denial or error.
     - No modification of destination file unless all checks pass.
+
+Key Input Dependencies:
+    - agent_control.py's ControlPlane (phase-capability authorization and
+      destination-path authorization).
+    - The caller-supplied destination_path (must resolve to an authorized plan path).
+
+Key Functions:
+    - ACTION_IDENTITY -- the fixed action identity this wrapper always uses.
+    - _validate_destination_path() -- resolves and authorizes the destination path.
+    - write_plan_document() -- authorizes, writes via a shadow file, re-verifies
+      occupancy, then atomically replaces the destination.
+    - main() -- CLI entry point.
 """
 
 import os

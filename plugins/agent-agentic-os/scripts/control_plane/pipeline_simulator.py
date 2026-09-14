@@ -12,6 +12,10 @@ from control_plane.coordinator import TransitionCoordinator, TransitionCoordinat
 from control_plane.ports import PersistenceInvariantViolation
 from control_plane.registry import TransitionRegistry
 from control_plane.state_machine import ALLOWED_TRANSITIONS, CANONICAL_STATES, InvalidStateTransition
+from control_plane.constants import (
+    STATE_INTAKE, STATE_INTERVIEW, STATE_DRAFT_PLAN, STATE_MULTI_AGENT_REVIEW, STATE_PLAN_REVIEW, STATE_AWAITING_APPROVAL, STATE_APPROVED, STATE_IN_WORKTREE, STATE_WORKTREE_REVIEW, STATE_VERIFY_EXIT, STATE_RETROSPECTIVE, STATE_DONE,
+)
+
 from control_plane.wrappers.record_retrospective import record_retrospective
 from control_plane.wrappers.record_interview_question import record_interview_question
 from control_plane.wrappers.run_exit_verification import run_exit_verification
@@ -41,13 +45,18 @@ class PipelineSimulator:
         return task_id
 
     def enter_interview(self, task_id: str):
-        """Enter INTERVIEW through the production coordinator."""
-        coordinator = TransitionCoordinator(self.control_plane, registry=self.registry, output_stream=io.StringIO())
+        """Enter INTERVIEW through the production coordinator. INTAKE -> INTERVIEW has zero
+        own human_questions, so only the mandatory guidance-compliance confirmation is asked."""
+        coordinator = TransitionCoordinator(
+            self.control_plane, registry=self.registry,
+            input_fn=lambda _prompt: "YES", output_stream=io.StringIO(),
+        )
         return coordinator.coordinate_transition(
             task_id=task_id,
-            to_state="INTERVIEW",
+            to_state=STATE_INTERVIEW,
             actor="simulator",
             reason="simulator interview entry",
+            interactive=True,
         )
 
     def stage_interview_answers(self, task_id: str, *, classification: str, to_state: str) -> None:
@@ -66,10 +75,10 @@ class PipelineSimulator:
             "interview_planning_model_effort": "Use a capable mid-tier model at medium effort for the simulated planning phase.",
             "interview_trivial_evidence": "The focused simulator test proves the smallest route.",
         }
-        template = self.registry.get_template("INTERVIEW", to_state)
+        template = self.registry.get_template(STATE_INTERVIEW, to_state)
         if template is None:
             raise ValueError(f"No interview template for INTERVIEW -> {to_state}")
-        if to_state == "DRAFT_PLAN":
+        if to_state == STATE_DRAFT_PLAN:
             for question_id in template.stage_question_ids or []:
                 record_interview_question(
                     task_id=task_id,
@@ -78,7 +87,7 @@ class PipelineSimulator:
                     recommended="",
                     answer=answers[question_id],
                     actor="human",
-                    target_state="DRAFT_PLAN",
+                    target_state=STATE_DRAFT_PLAN,
                     control_plane=self.control_plane,
                 )
             return
@@ -87,7 +96,7 @@ class PipelineSimulator:
             self.control_plane.record_decision(
                 task_id=task_id,
                 source_occupancy_transition_id=capability.transition_id,
-                from_state="INTERVIEW",
+                from_state=STATE_INTERVIEW,
                 to_state=to_state,
                 question_id=question_id,
                 answer=answers[question_id],
@@ -97,13 +106,25 @@ class PipelineSimulator:
                 task_id, question_id, answers[question_id], actor="human"
             )
 
-    def transition_from_interview(self, task_id: str, to_state: str, *, classification: str):
-        """Attempt an interview route using the production coordinator."""
-        coordinator = TransitionCoordinator(self.control_plane, registry=self.registry, output_stream=io.StringIO())
+    def transition_from_interview(self, task_id: str, to_state: str, *, classification: str, expect_success: bool = False):
+        """Attempt an interview route using the production coordinator. Callers exercising an
+        intentional denial (e.g. incomplete-interview rounds) leave expect_success False -- the
+        coordinator still fails closed for the right reason (missing stage question answers)
+        before ever reaching the guidance-compliance question. Callers driving a genuine,
+        successful route (e.g. the STANDARD happy path) must pass expect_success=True so the
+        mandatory guidance-compliance confirmation is answered too."""
+        if expect_success:
+            coordinator = TransitionCoordinator(
+                self.control_plane, registry=self.registry,
+                input_fn=lambda _prompt: "YES", output_stream=io.StringIO(),
+            )
+        else:
+            coordinator = TransitionCoordinator(self.control_plane, registry=self.registry, output_stream=io.StringIO())
         return coordinator.coordinate_transition(
             task_id=task_id,
             to_state=to_state,
             actor="simulator",
+            interactive=expect_success,
             reason=f"simulator {classification.lower()} interview route",
         )
 
@@ -117,7 +138,7 @@ class PipelineSimulator:
         )
         return coordinator.coordinate_transition(
             task_id=task_id,
-            to_state="DONE",
+            to_state=STATE_DONE,
             actor="human" if authorized else "simulator",
             reason="simulator force close",
             force_close=authorized,
@@ -126,10 +147,11 @@ class PipelineSimulator:
         )
 
     def run_trivial_interview_fast_track(self, task_id: str) -> Dict[str, Any]:
-        """Run INTAKE -> INTERVIEW -> RETROSPECTIVE with real stage enforcement."""
+        """Run INTAKE -> INTERVIEW -> RETROSPECTIVE via the human-authorized emergency-close
+        edge, answering the reason category (planned/trivial, not a failure) then the literal
+        FORCE_RETROSPECTIVE confirmation -- both option 1 on their respective questions."""
         self.enter_interview(task_id)
-        self.stage_interview_answers(task_id, classification="TRIVIAL", to_state="RETROSPECTIVE")
-        answers = iter(["1"])
+        answers = iter(["1", "1", "YES"])
         coordinator = TransitionCoordinator(
             self.control_plane,
             registry=self.registry,
@@ -138,14 +160,14 @@ class PipelineSimulator:
         )
         coordinator.coordinate_transition(
             task_id=task_id,
-            to_state="RETROSPECTIVE",
+            to_state=STATE_RETROSPECTIVE,
             actor="human",
             reason="simulator trivial fast-track",
             interactive=True,
         )
         return {
             "task_id": task_id,
-            "states": ["INTAKE", "INTERVIEW", "RETROSPECTIVE"],
+            "states": [STATE_INTAKE, STATE_INTERVIEW, STATE_RETROSPECTIVE],
             "db_path": str(self.db_path),
         }
 
@@ -155,9 +177,9 @@ class PipelineSimulator:
         repo_root.mkdir(parents=True, exist_ok=True)
         self.control_plane.repo_root = repo_root
         self.enter_interview(task_id)
-        self.stage_interview_answers(task_id, classification="STANDARD", to_state="DRAFT_PLAN")
+        self.stage_interview_answers(task_id, classification="STANDARD", to_state=STATE_DRAFT_PLAN)
         self.control_plane.record_plan_mode_entry(task_id, "simulator")
-        self.transition_from_interview(task_id, "DRAFT_PLAN", classification="STANDARD")
+        self.transition_from_interview(task_id, STATE_DRAFT_PLAN, classification="STANDARD", expect_success=True)
 
         plan_dir = repo_root / "docs" / "plans"
         plan_dir.mkdir(parents=True, exist_ok=True)
@@ -179,19 +201,20 @@ class PipelineSimulator:
             encoding="utf-8",
         )
 
+        plan_review_answers = iter(["1", "YES"])
         TransitionCoordinator(
             self.control_plane,
             registry=self.registry,
-            input_fn=lambda _prompt: "1",
+            input_fn=lambda _prompt: next(plan_review_answers),
             output_stream=io.StringIO(),
         ).coordinate_transition(
             task_id=task_id,
-            to_state="PLAN_REVIEW",
+            to_state=STATE_PLAN_REVIEW,
             actor="human",
             reason="simulator requests plan review",
             interactive=True,
         )
-        review_answers = iter(["1", "3"])
+        review_answers = iter(["1", "3", "YES"])
         TransitionCoordinator(
             self.control_plane,
             registry=self.registry,
@@ -199,7 +222,7 @@ class PipelineSimulator:
             output_stream=io.StringIO(),
         ).coordinate_transition(
             task_id=task_id,
-            to_state="MULTI_AGENT_REVIEW",
+            to_state=STATE_MULTI_AGENT_REVIEW,
             actor="human",
             reason="simulator selects internal plan review",
             interactive=True,
@@ -208,27 +231,30 @@ class PipelineSimulator:
         TransitionCoordinator(
             self.control_plane,
             registry=self.registry,
+            input_fn=lambda _prompt: "YES",  # MULTI_AGENT_REVIEW->PLAN_REVIEW has zero own questions
             output_stream=io.StringIO(),
         ).coordinate_transition(
             task_id=task_id,
-            to_state="PLAN_REVIEW",
+            to_state=STATE_PLAN_REVIEW,
             actor="simulator",
             reason="simulator review passed",
+            interactive=True,
         )
+        awaiting_answers = iter(["1", "YES"])
         TransitionCoordinator(
             self.control_plane,
             registry=self.registry,
-            input_fn=lambda _prompt: "1",
+            input_fn=lambda _prompt: next(awaiting_answers),
             output_stream=io.StringIO(),
         ).coordinate_transition(
             task_id=task_id,
-            to_state="AWAITING_APPROVAL",
+            to_state=STATE_AWAITING_APPROVAL,
             actor="simulator",
             reason="simulator review passed",
             interactive=True,
         )
 
-        approval_inputs = iter(["1", "y"])
+        approval_inputs = iter(["1", "y", "YES"])
         TransitionCoordinator(
             self.control_plane,
             registry=self.registry,
@@ -236,7 +262,7 @@ class PipelineSimulator:
             output_stream=io.StringIO(),
         ).coordinate_transition(
             task_id=task_id,
-            to_state="APPROVED",
+            to_state=STATE_APPROVED,
             actor="human",
             reason="simulator approval",
             interactive=True,
@@ -249,22 +275,25 @@ class PipelineSimulator:
         TransitionCoordinator(
             self.control_plane,
             registry=self.registry,
+            input_fn=lambda _prompt: "YES",  # APPROVED->IN_WORKTREE has zero own questions
             output_stream=io.StringIO(),
         ).coordinate_transition(
             task_id=task_id,
-            to_state="IN_WORKTREE",
+            to_state=STATE_IN_WORKTREE,
             actor="simulator",
             reason="simulator worktree ready",
+            interactive=True,
         )
         self.control_plane.record_verification_receipt(task_id, "test_suite", "pytest -q", 0)
+        worktree_review_answers = iter(["1", "1", "YES"])
         TransitionCoordinator(
             self.control_plane,
             registry=self.registry,
-            input_fn=lambda _prompt: "1",
+            input_fn=lambda _prompt: next(worktree_review_answers),
             output_stream=io.StringIO(),
         ).coordinate_transition(
             task_id=task_id,
-            to_state="WORKTREE_REVIEW",
+            to_state=STATE_WORKTREE_REVIEW,
             actor="human",
             reason="simulator worktree review",
             interactive=True,
@@ -272,14 +301,16 @@ class PipelineSimulator:
         TransitionCoordinator(
             self.control_plane,
             registry=self.registry,
+            input_fn=lambda _prompt: "YES",  # WORKTREE_REVIEW->VERIFY_EXIT (skip path) has zero own questions
             output_stream=io.StringIO(),
         ).coordinate_transition(
             task_id=task_id,
-            to_state="VERIFY_EXIT",
+            to_state=STATE_VERIFY_EXIT,
             actor="simulator",
             reason="simulator verification",
             skip_review=True,
             skip_reason="single deterministic simulator review",
+            interactive=True,
         )
         run_exit_verification(
             task_id,
@@ -311,12 +342,14 @@ class PipelineSimulator:
         TransitionCoordinator(
             self.control_plane,
             registry=self.registry,
+            input_fn=lambda _prompt: "YES",  # VERIFY_EXIT->RETROSPECTIVE has zero own questions
             output_stream=io.StringIO(),
         ).coordinate_transition(
             task_id=task_id,
-            to_state="RETROSPECTIVE",
+            to_state=STATE_RETROSPECTIVE,
             actor="simulator",
             reason="simulator verification passed",
+            interactive=True,
         )
         record_retrospective(
             task_id,
@@ -334,14 +367,15 @@ class PipelineSimulator:
             [],
             control_plane=self.control_plane,
         )
+        done_answers = iter(["1", "YES"])
         TransitionCoordinator(
             self.control_plane,
             registry=self.registry,
-            input_fn=lambda _prompt: "1",
+            input_fn=lambda _prompt: next(done_answers),
             output_stream=io.StringIO(),
         ).coordinate_transition(
             task_id=task_id,
-            to_state="DONE",
+            to_state=STATE_DONE,
             actor="human",
             reason="simulator retrospective complete",
             interactive=True,
@@ -349,16 +383,16 @@ class PipelineSimulator:
         return {
             "task_id": task_id,
             "states": [
-                "INTAKE", "INTERVIEW", "DRAFT_PLAN", "PLAN_REVIEW", "MULTI_AGENT_REVIEW",
-                "AWAITING_APPROVAL", "APPROVED", "IN_WORKTREE", "WORKTREE_REVIEW",
-                "VERIFY_EXIT", "RETROSPECTIVE", "DONE",
+                STATE_INTAKE, STATE_INTERVIEW, STATE_DRAFT_PLAN, STATE_PLAN_REVIEW, STATE_MULTI_AGENT_REVIEW,
+                STATE_AWAITING_APPROVAL, STATE_APPROVED, STATE_IN_WORKTREE, STATE_WORKTREE_REVIEW,
+                STATE_VERIFY_EXIT, STATE_RETROSPECTIVE, STATE_DONE,
             ],
             "db_path": str(self.db_path),
         }
 
     def reset_to_intake(self, task_id: str):
         """Exercise the wildcard reset edge using genuine interactive inputs."""
-        answers = iter(["The simulated task state must be re-run from intake.", "y"])
+        answers = iter(["The simulated task state must be re-run from intake.", "y", "YES"])
         coordinator = TransitionCoordinator(
             self.control_plane,
             registry=self.registry,
@@ -367,7 +401,7 @@ class PipelineSimulator:
         )
         return coordinator.coordinate_transition(
             task_id=task_id,
-            to_state="INTAKE",
+            to_state=STATE_INTAKE,
             actor="human",
             reason="simulator reset",
             interactive=True,
@@ -405,31 +439,33 @@ class PipelineSimulator:
         before_state = self.control_plane._persistence.read_current_state(task_id)
         before_decisions = len(
             self.control_plane._persistence.get_unconsumed_transition_answers(
-                task_id, "INTERVIEW", "RETROSPECTIVE"
+                task_id, STATE_INTERVIEW, STATE_RETROSPECTIVE
             )
         )
         before_receipts = len(self.control_plane.get_verification_receipts(task_id))
 
         try:
             if name == "incomplete_interview":
-                self.transition_from_interview(task_id, "RETROSPECTIVE", classification="TRIVIAL")
+                self.transition_from_interview(task_id, STATE_RETROSPECTIVE, classification="TRIVIAL")
             elif name == "wrong_trivial_route":
-                self.stage_interview_answers(task_id, classification="STANDARD", to_state="RETROSPECTIVE")
+                # Simulates a human/agent supplying an undeclared answer to the reason-category
+                # question on the emergency-close edge -- the coordinator must fail closed
+                # rather than guess at a similar-but-not-exact option.
                 before_decisions = len(
                     self.control_plane._persistence.get_unconsumed_transition_answers(
-                        task_id, "INTERVIEW", "RETROSPECTIVE"
+                        task_id, STATE_INTERVIEW, STATE_RETROSPECTIVE
                     )
                 )
                 before_receipts = len(self.control_plane.get_verification_receipts(task_id))
                 coordinator = TransitionCoordinator(
                     self.control_plane,
                     registry=self.registry,
-                    input_fn=lambda _prompt: "1",
+                    input_fn=lambda _prompt: "STANDARD",
                     output_stream=io.StringIO(),
                 )
                 coordinator.coordinate_transition(
                     task_id=task_id,
-                    to_state="RETROSPECTIVE",
+                    to_state=STATE_RETROSPECTIVE,
                     actor="human",
                     reason="wrong route round",
                     interactive=True,
@@ -439,7 +475,7 @@ class PipelineSimulator:
         except TransitionCoordinatorError as exc:
             after_state = self.control_plane._persistence.read_current_state(task_id)
             after_id = self.control_plane._persistence.get_last_transition(task_id).transition_id
-            after_decisions = len(self.control_plane._persistence.get_unconsumed_transition_answers(task_id, "INTERVIEW", "RETROSPECTIVE"))
+            after_decisions = len(self.control_plane._persistence.get_unconsumed_transition_answers(task_id, STATE_INTERVIEW, STATE_RETROSPECTIVE))
             return {
                 "name": name,
                 "result": "DENIED_AS_EXPECTED",
@@ -489,12 +525,12 @@ class PipelineSimulator:
         before_state = self.control_plane._persistence.read_current_state(task_id)
         before_decisions = len(
             self.control_plane._persistence.get_unconsumed_transition_answers(
-                task_id, "INTAKE", "VERIFY_EXIT"
+                task_id, STATE_INTAKE, STATE_VERIFY_EXIT
             )
         )
         before_receipts = len(self.control_plane.get_verification_receipts(task_id))
         try:
-            self.control_plane.transition(task_id, "DONE", "simulator", "illegal edge round")
+            self.control_plane.transition(task_id, STATE_DONE, "simulator", "illegal edge round")
         except (InvalidStateTransition, PersistenceInvariantViolation):
             pass
         after_state = self.control_plane._persistence.read_current_state(task_id)
@@ -507,7 +543,7 @@ class PipelineSimulator:
             "no_orphan_transition": before_id == last_transition_id(task_id),
             "no_orphan_decision": before_decisions == len(
                 self.control_plane._persistence.get_unconsumed_transition_answers(
-                    task_id, "INTAKE", "VERIFY_EXIT"
+                    task_id, STATE_INTAKE, STATE_VERIFY_EXIT
                 )
             ),
             "no_orphan_receipt": before_receipts == len(self.control_plane.get_verification_receipts(task_id)),
@@ -518,7 +554,7 @@ class PipelineSimulator:
         rounds.append({
             "name": "trivial_fast_track",
             "result": "SUCCESS",
-            "before_state": "INTAKE",
+            "before_state": STATE_INTAKE,
             "after_state": result["states"][-1],
             "state_preserved": False,
             "no_orphan_transition": True,

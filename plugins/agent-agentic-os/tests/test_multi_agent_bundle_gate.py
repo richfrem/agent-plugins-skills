@@ -9,10 +9,13 @@ if str(SCRIPTS_DIR) not in sys.path:
 
 from agent_control import ControlPlane, CANONICAL_STATES, InvalidStateTransition
 from interview_helpers import stage_interview_answers
+from control_plane.constants import (
+    STATE_INTERVIEW, STATE_DRAFT_PLAN, STATE_MULTI_AGENT_REVIEW, STATE_PLAN_REVIEW, STATE_AWAITING_APPROVAL,
+)
 
 def test_draft_plan_and_multi_agent_review_states_exist():
-    assert "DRAFT_PLAN" in CANONICAL_STATES
-    assert "MULTI_AGENT_REVIEW" in CANONICAL_STATES
+    assert STATE_DRAFT_PLAN in CANONICAL_STATES
+    assert STATE_MULTI_AGENT_REVIEW in CANONICAL_STATES
 
 def test_full_intake_to_approval_lifecycle(tmp_path, monkeypatch):
     db_file = tmp_path / "control_plane.db"
@@ -23,14 +26,14 @@ def test_full_intake_to_approval_lifecycle(tmp_path, monkeypatch):
     cp.create_task(task_id=task_id, title="Test Bundle Gate", runtime_tool="antigravity")
     
     # INTAKE -> INTERVIEW
-    cp.transition(task_id=task_id, to_state="INTERVIEW", actor="user", reason="1-question-at-a-time interview")
-    assert cp.get_task(task_id)["state"] == "INTERVIEW"
+    cp.transition(task_id=task_id, to_state=STATE_INTERVIEW, actor="user", reason="1-question-at-a-time interview")
+    assert cp.get_task(task_id)["state"] == STATE_INTERVIEW
     
     # INTERVIEW -> DRAFT_PLAN
     cp.record_plan_mode_entry(task_id=task_id, actor="agent")
     stage_interview_answers(cp, task_id)
-    cp.transition(task_id=task_id, to_state="DRAFT_PLAN", actor="agent", reason="Compiled draft spec and plan")
-    assert cp.get_task(task_id)["state"] == "DRAFT_PLAN"
+    cp.transition(task_id=task_id, to_state=STATE_DRAFT_PLAN, actor="agent", reason="Compiled draft spec and plan")
+    assert cp.get_task(task_id)["state"] == STATE_DRAFT_PLAN
 
     # Task 1's artifact gate is intentional: provide real test-local artifacts
     # instead of weakening the DRAFT_PLAN review contract.
@@ -44,37 +47,37 @@ def test_full_intake_to_approval_lifecycle(tmp_path, monkeypatch):
     from control_plane.coordinator import TransitionCoordinator
     from control_plane.registry import TransitionRegistry
     reg = TransitionRegistry.load_default()
-    inputs = iter(["1", "1", "4", "1"])  # submit, request review, external bundle, accept
+    inputs = iter(["1", "YES", "1", "4", "YES", "1", "YES"])  # submit[+guidance], request review, external bundle[+guidance], accept[+guidance]
     coord = TransitionCoordinator(control_plane=cp, registry=reg, input_fn=lambda prompt: next(inputs))
     monkeypatch.setattr(coord, "_resolve_repo_root", lambda: tmp_path)
     coord.coordinate_transition(
         task_id=task_id,
-        to_state="PLAN_REVIEW",
+        to_state=STATE_PLAN_REVIEW,
         actor="human",
         reason="Submit plan for disposition",
         interactive=True
     )
-    assert cp.get_task(task_id)["state"] == "PLAN_REVIEW"
+    assert cp.get_task(task_id)["state"] == STATE_PLAN_REVIEW
 
     coord.coordinate_transition(
         task_id=task_id,
-        to_state="MULTI_AGENT_REVIEW",
+        to_state=STATE_MULTI_AGENT_REVIEW,
         actor="human",
         reason="User opted for external review bundle",
         interactive=True
     )
-    assert cp.get_task(task_id)["state"] == "MULTI_AGENT_REVIEW"
+    assert cp.get_task(task_id)["state"] == STATE_MULTI_AGENT_REVIEW
 
     cp.record_critic_review(task_id=task_id, iteration=1, model="gpt-5-mini", verdict="PASS", findings="External review passed")
-    cp.transition(task_id=task_id, to_state="PLAN_REVIEW", actor="user", reason="External review iterations complete")
+    cp.transition(task_id=task_id, to_state=STATE_PLAN_REVIEW, actor="user", reason="External review iterations complete")
     coord.coordinate_transition(
         task_id=task_id,
-        to_state="AWAITING_APPROVAL",
+        to_state=STATE_AWAITING_APPROVAL,
         actor="human",
         reason="User accepted reviewed plan",
         interactive=True
     )
-    assert cp.get_task(task_id)["state"] == "AWAITING_APPROVAL"
+    assert cp.get_task(task_id)["state"] == STATE_AWAITING_APPROVAL
 
 def test_skip_multi_agent_review_gate(tmp_path, monkeypatch):
     db_file = tmp_path / "control_plane.db"
@@ -84,10 +87,10 @@ def test_skip_multi_agent_review_gate(tmp_path, monkeypatch):
     task_id = "test-bundle-002"
     cp.create_task(task_id=task_id, title="Test Skip Gate", runtime_tool="claude")
     
-    cp.transition(task_id=task_id, to_state="INTERVIEW", actor="user", reason="Interviewing")
+    cp.transition(task_id=task_id, to_state=STATE_INTERVIEW, actor="user", reason="Interviewing")
     cp.record_plan_mode_entry(task_id=task_id, actor="agent")
     stage_interview_answers(cp, task_id)
-    cp.transition(task_id=task_id, to_state="DRAFT_PLAN", actor="agent", reason="Draft compiled")
+    cp.transition(task_id=task_id, to_state=STATE_DRAFT_PLAN, actor="agent", reason="Draft compiled")
     plan_dir = tmp_path / "docs" / "plans"
     plan_dir.mkdir(parents=True)
     (plan_dir / f"{task_id}-spec.md").write_text("# Test specification\n", encoding="utf-8")
@@ -97,12 +100,12 @@ def test_skip_multi_agent_review_gate(tmp_path, monkeypatch):
     from control_plane.coordinator import TransitionCoordinator
     from control_plane.registry import TransitionRegistry
     reg = TransitionRegistry.load_default()
-    inputs = iter(["1", "1"])  # accept-as-is/skip, accept plan
+    inputs = iter(["1", "YES", "1", "YES"])  # accept-as-is/skip[+guidance], accept plan[+guidance]
     coord = TransitionCoordinator(control_plane=cp, registry=reg, input_fn=lambda prompt: next(inputs))
     monkeypatch.setattr(coord, "_resolve_repo_root", lambda: tmp_path)
     coord.coordinate_transition(
         task_id=task_id,
-        to_state="PLAN_REVIEW",
+        to_state=STATE_PLAN_REVIEW,
         actor="human",
         reason="User opted to skip independent review",
         interactive=True
@@ -110,9 +113,9 @@ def test_skip_multi_agent_review_gate(tmp_path, monkeypatch):
     cp.record_review_skip(task_id=task_id, phase="multi_agent_review", actor="user", reason="User opted to skip multi-agent review")
     coord.coordinate_transition(
         task_id=task_id,
-        to_state="AWAITING_APPROVAL",
+        to_state=STATE_AWAITING_APPROVAL,
         actor="human",
         reason="User accepted unreviewed plan",
         interactive=True
     )
-    assert cp.get_task(task_id)["state"] == "AWAITING_APPROVAL"
+    assert cp.get_task(task_id)["state"] == STATE_AWAITING_APPROVAL

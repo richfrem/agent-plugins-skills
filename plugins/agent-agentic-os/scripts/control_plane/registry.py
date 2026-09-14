@@ -10,6 +10,29 @@ Purpose:
 
 Layer:
     OS Kernel / Execution Control Plane Substrate — Registry (domain layer)
+
+Key Input Dependencies:
+    - control_plane/transition_templates.yaml (the single authoritative registry
+      loaded by load_default()/load_from_file()) — each entry's field set is
+      validated against REQUIRED_TEMPLATE_FIELDS.
+    - control_plane/state_machine.py's ALLOWED_TRANSITIONS/CANONICAL_STATES — every
+      loaded template must have exactly one matching (from_state, to_state) edge.
+
+Key Functions:
+    - TransitionRegistryError — raised on a missing/malformed/schema-violating YAML.
+    - REQUIRED_TEMPLATE_FIELDS — the field set every template entry must declare.
+    - TransitionTemplate — dataclass for one validated transition's full template.
+    - TransitionRegistry — loads and serves the registry:
+        - get_template()/get_template_by_id() — look up one template.
+        - get_all_templates()/get_all_edges()/get_all_declared_check_ids() —
+          registry-wide views.
+        - get_edges_releasing_capability()/get_legal_next_states() — capability and
+          adjacency queries.
+        - get_transition_guidance() — builds the human-readable advisory guidance
+          block for one edge (purpose, checklist, next steps).
+        - get_stage_contract()/get_stage_question() — per-state question contracts.
+        - load_from_file()/load_default() — construct a validated registry from a
+          given YAML path, or the canonical transition_templates.yaml.
 """
 
 from dataclasses import dataclass

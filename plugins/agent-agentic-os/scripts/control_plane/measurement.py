@@ -12,6 +12,31 @@ and P00 specifications:
   cumulative precedence (final supersedes snapshots), and causal corrections
 - Transition attempt versus committed transition identity
 - Privacy: closed allowlist enforcement, sensitive field exclusion, 1 MiB artifact ceiling
+
+Key Input Dependencies:
+    - Raw observation JSON (bytes/str) submitted by producer fixtures -- parsed via
+      parse_strict_json(), never Python's own json.loads (rejects duplicate keys,
+      non-integer bounds, decimals, -0, and other P00-non-canonical forms).
+    - No external I/O beyond the input payload itself -- this module is pure
+      validation/canonicalization/settlement logic, no database or filesystem access.
+
+Key Functions:
+    - Enums (closed vocabularies): CoverageState, MetricProvenance,
+      DurationProvenance, ObservationScope.
+    - Exceptions: MeasurementError, MeasurementValidationError,
+      MeasurementPrivacyViolation, MeasurementSettlementConflict.
+    - Dataclasses: ObservationCapture, ObservationProducer, ObservationCorrelation,
+      ObservationEvent, ObservationExecution, ObservationUsage,
+      MeasurementObservation, SettlementResult.
+    - Strict JSON parsing: parse_strict_json(), _strict_parse_int/_float/_constant(),
+      _strict_pairs_hook() (duplicate-key rejection).
+    - Canonicalization/digest: canonicalize_observation_json(),
+      _serialize_canonical_value(), _escape_canonical_str(),
+      compute_canonical_digest() (SHA-256 over the canonical form).
+    - Validation: _check_allowed_and_sensitive() (closed allowlist + sensitive-field
+      exclusion), validate_observation_dict(), validate_observation_json().
+    - Settlement: settle_observations() -- idempotency, ambiguous-conflict detection,
+      cumulative precedence, and causal corrections across redelivered observations.
 """
 
 from __future__ import annotations

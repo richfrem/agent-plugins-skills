@@ -1,4 +1,29 @@
-"""Read-only Agentic OS installation and SQLite/source-parity classifier."""
+"""
+control_plane/installation_probe.py -- Installation & Schema-Parity Classifier
+===================================================================================
+
+Purpose:
+    Read-only Agentic OS installation and SQLite/source-parity classifier. Checks
+    that the required repo substrates (control_plane.db, hooks.json, pre-commit
+    evolution guard, CI workflow) exist, and that an existing control_plane.db's
+    schema version and valid_transitions rows match the source-of-truth
+    ALLOWED_TRANSITIONS DAG, reporting COMPLETE/PARTIAL/MISSING with the specific
+    findings.
+
+Key Input Dependencies:
+    - `target` -- the repo root to classify (checked for REQUIRED_SUBSTRATES).
+    - context/control_plane.db (if present) -- read-only, compared against
+      CURRENT_SCHEMA_VERSION and ALLOWED_TRANSITIONS.
+
+Key Functions:
+    - REQUIRED_SUBSTRATES -- the 4 repo-relative paths a complete install requires.
+    - InstallationProbeResult -- frozen dataclass of classification state + findings.
+    - _expected_transitions() -- flattens ALLOWED_TRANSITIONS into (from, to) pairs.
+    - _database_findings() -- compares an existing DB's schema/transitions against
+      the source of truth, returning a list of drift findings.
+    - classify_target() -- top-level entry point: runs the full substrate + DB check
+      against `target` and returns the InstallationProbeResult.
+"""
 
 from __future__ import annotations
 

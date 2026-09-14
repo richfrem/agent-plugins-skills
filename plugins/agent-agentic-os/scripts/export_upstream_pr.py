@@ -10,6 +10,14 @@ Purpose:
 
 Key Input Dependencies:
     - Local git repo working tree (diff/changed-files source)
+
+Key Functions:
+    - _get_repo_root() -- resolves the git repo root.
+    - get_changed_files() -- lists changed files via git diff.
+    - sanitize_and_filter_files() -- applies the plugin-file allowlist and target
+      filtering.
+    - main() -- CLI entry point; defaults to --dry-run, requires explicit human
+      sign-off before any remote push.
 """
 
 import argparse

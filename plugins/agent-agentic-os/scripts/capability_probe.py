@@ -1,4 +1,27 @@
-"""Session-aware runtime capability probing for native-first orchestration."""
+"""
+capability_probe.py -- Session-Aware Runtime Capability Probing
+====================================================================
+
+Purpose:
+    Session-aware runtime capability probing for native-first orchestration.
+    Detects which AI CLI runtime (claude-code, agy, copilot, codex) a session is
+    running under from environment markers, and reports that runtime's explicit
+    native-planning/native-worktree/native-subagent support so callers can defer to
+    native host features instead of a portable fallback where available.
+
+Key Input Dependencies:
+    - Environment variables: the marker vars in _RUNTIME_MARKERS (e.g.
+      CLAUDE_CODE_ENTRY, ANTIGRAVITY_IDE, GITHUB_COPILOT_CLI, CODEX_CLI), plus
+      per-runtime explicit capability overrides of the form
+      <RUNTIME>_NATIVE_<CAPABILITY> (see _explicit_capability()).
+
+Key Functions:
+    - RuntimeCapabilities -- frozen dataclass of one runtime's observed facilities.
+    - _explicit_capability() -- reads one boolean env-var override for a capability.
+    - detect_runtime() -- returns the detected runtime_id from environment markers.
+    - probe_runtime() -- builds the full RuntimeCapabilities for the current (or a
+      given) runtime_id.
+"""
 
 from __future__ import annotations
 

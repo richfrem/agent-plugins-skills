@@ -12,6 +12,9 @@ if str(SCRIPTS_DIR) not in sys.path:
 
 from agent_control import ControlPlane
 from control_plane.policy import DelegationContractError
+from control_plane.constants import (
+    STATE_INTAKE,
+)
 
 
 def contract(**overrides):
@@ -111,7 +114,7 @@ def test_delegation_schema_is_idempotent_and_raw_state_write_remains_blocked(cp)
         conn.execute("UPDATE tasks SET state = 'DONE' WHERE task_id = ?", ("delegation-task",))
         conn.commit()
         state = conn.execute("SELECT state FROM tasks WHERE task_id = ?", ("delegation-task",)).fetchone()[0]
-        assert state == "INTAKE"
+        assert state == STATE_INTAKE
         assert conn.execute("SELECT COUNT(*) FROM transition_violations WHERE task_id = ?", ("delegation-task",)).fetchone()[0] >= 1
     finally:
         conn.close()

@@ -39,6 +39,9 @@ Key Input Dependencies:
 from fnmatch import fnmatch
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
+from control_plane.constants import (
+    STATE_INTAKE, STATE_INTERVIEW, STATE_DRAFT_PLAN, STATE_MULTI_AGENT_REVIEW, STATE_PLAN_REVIEW, STATE_AWAITING_APPROVAL, STATE_IN_WORKTREE, STATE_WORKTREE_REVIEW, STATE_MULTI_AGENT_CODE_REVIEW, STATE_VERIFY_EXIT, STATE_DONE, STATE_ROLLED_BACK,
+)
 
 
 class DelegationContractError(ValueError):
@@ -377,7 +380,7 @@ def _worktree_push_check(ctx: Dict[str, Any]) -> Optional[str]:
     the task has cleared all verification gates and is in final state DONE."""
     task_state = ctx["task_state"]
     task_id = ctx["task_id"]
-    if task_state == "DONE":
+    if task_state == STATE_DONE:
         return None
     return (
         f"Cannot mark worktree 'pushed_to_origin' for task '{task_id}': Task state is '{task_state}'. "
@@ -404,8 +407,8 @@ def _task_commit_check(ctx: Dict[str, Any]) -> Optional[str]:
     task_id = ctx.get("task_id", "unknown")
     staged_files: List[str] = ctx.get("staged_files", [])
 
-    implementation_states = ("IN_WORKTREE", "WORKTREE_REVIEW", "MULTI_AGENT_CODE_REVIEW", "VERIFY_EXIT", "DONE")
-    planning_states = ("INTAKE", "INTERVIEW", "DRAFT_PLAN", "PLAN_REVIEW", "MULTI_AGENT_REVIEW", "AWAITING_APPROVAL")
+    implementation_states = (STATE_IN_WORKTREE, STATE_WORKTREE_REVIEW, STATE_MULTI_AGENT_CODE_REVIEW, STATE_VERIFY_EXIT, STATE_DONE)
+    planning_states = (STATE_INTAKE, STATE_INTERVIEW, STATE_DRAFT_PLAN, STATE_PLAN_REVIEW, STATE_MULTI_AGENT_REVIEW, STATE_AWAITING_APPROVAL)
 
     # If in planning states, permit only if ALL staged files are docs/plans/ or docs/superpowers/
     if task_state in planning_states:
@@ -496,10 +499,30 @@ CHECK_REGISTRY: Dict[str, Any] = {
             "Call record_verification_receipt(gate_name='test_suite', ...)."
         )
     ),
+    # Edge-scoped softening for IN_WORKTREE -> WORKTREE_REVIEW ONLY (added
+    # 2026-09-13, explicit human request): accepts either a real test_suite
+    # receipt, or an explicit human-recorded skip decision deferring testing
+    # to the later MULTI_AGENT_CODE_REVIEW/VERIFY_EXIT gate, which re-checks
+    # test_suite/full_test_suite independently and is NOT weakened by this.
+    # This does not touch the generic "test_suite" check above, used by
+    # other edges -- only this specific edge's deterministic_checks entry
+    # points at this function instead.
+    "test_suite_or_deferred_to_review": lambda ctx: (
+        None if (
+            _gate_receipt_exists(ctx, "test_suite")
+            or ctx["count_receipts"]("test_suite_deferred_to_review", 0) > 0
+        ) else (
+            "Cannot advance: no test_suite receipt found, and testing was not explicitly "
+            "deferred. Either record a test_suite verification receipt, or record an "
+            "explicit human test_suite_deferred_to_review decision if the human wants to "
+            "defer testing to the later review/control step."
+        )
+    ),
     "full_test_suite": lambda ctx: (
-        None if _gate_receipt_exists(ctx, "full_test_suite") else (
-            "Cannot advance: no recorded full_test_suite verification receipt found. "
-            "Run the repository-wide pytest -q suite through the approved verifier."
+        None if ctx["count_receipts"]("full_test_suite", 0) > 0 else (
+            "Cannot advance: no recorded passing full_test_suite verification receipt "
+            "found. Run the repository-wide pytest -q suite through the approved "
+            "verifier and ensure it exits 0."
         )
     ),
     "code_review_or_skip": lambda ctx: (
@@ -570,9 +593,9 @@ def evaluate_transition(ctx: Dict[str, Any], from_state: str, to_state: str) -> 
     this local mapping exists only inside this function, routing through the same
     CHECK_REGISTRY functions _prior_art_check/_done_check/_rolled_back_check already use."""
     edge_to_check_fn = {
-        ("INTAKE", "INTERVIEW"): _prior_art_check,
-        ("VERIFY_EXIT", "DONE"): _done_check,
-        ("IN_WORKTREE", "ROLLED_BACK"): _rolled_back_check,
+        (STATE_INTAKE, STATE_INTERVIEW): _prior_art_check,
+        (STATE_VERIFY_EXIT, STATE_DONE): _done_check,
+        (STATE_IN_WORKTREE, STATE_ROLLED_BACK): _rolled_back_check,
     }
     fn = edge_to_check_fn.get((from_state, to_state))
     if fn is not None:

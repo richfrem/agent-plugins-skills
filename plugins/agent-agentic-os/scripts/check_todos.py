@@ -7,8 +7,11 @@ Purpose:
     Audit a specific file for TODO comments, FIXME, HACK, or other technical debt markers.
     Used for pre-commit checks or reviewing task readiness.
 
-Layer: 
+Layer:
     Scripts / Audit
+
+Key Input Dependencies:
+    - `file_path` (CLI arg) -- the single file to scan for TODO/FIXME/HACK markers.
 
 Usage Examples:
     python./scripts/check_todos.py <file_path>

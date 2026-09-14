@@ -9,6 +9,9 @@ if str(SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_DIR))
 
 from control_plane.state_machine import ALLOWED_TRANSITIONS
+from control_plane.constants import (
+    STATE_INTERVIEW, STATE_DRAFT_PLAN, STATE_RETROSPECTIVE, STATE_DONE,
+)
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -37,7 +40,7 @@ def test_happy_path_diagram_is_a_valid_subset_with_required_closeout_path():
     happy_path = DIAGRAM_DIR / "control-plane-pipeline-happy-path.mermaid"
     assert _edges(happy_path) <= expected
     text = happy_path.read_text()
-    for marker in ("INTERVIEW", "DRAFT_PLAN", "RETROSPECTIVE", "DONE"):
+    for marker in (STATE_INTERVIEW, STATE_DRAFT_PLAN, STATE_RETROSPECTIVE, STATE_DONE):
         assert marker in text
 
 

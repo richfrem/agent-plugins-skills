@@ -1,4 +1,30 @@
-"""Bounded implementation-session loop, independent of lifecycle transitions."""
+"""
+control_plane/implementation_loop.py -- Bounded Implementation-Session Loop
+================================================================================
+
+Purpose:
+    Bounded implementation-session loop, independent of the SQLite lifecycle
+    transitions: dispatches a bounded queue of work-package tasks, enforces the
+    focused -> integration -> full test cadence (full suite runs at most once per
+    session), reviews and fixes each task, and watchdog-blocks a stalled session.
+
+Key Input Dependencies:
+    - `queue_path` -- a JSON file backing PersistentTaskQueue (created if absent).
+    - Caller-supplied `dispatch`/`review`/`fix` callables that drive one task through
+      its dispatch -> review -> (optional) fix cycle.
+
+Key Functions:
+    - ImplementationEvent -- frozen dataclass for one emitted session event.
+    - TestCadence -- enforces focused-before-integration-before-full test ordering
+      and a single full-suite run per session.
+    - create_default_controller() -- builds the canonical persistent
+      ImplementationController.
+    - PersistentTaskQueue -- small JSON-backed bounded task queue.
+    - ImplementationController -- runs the bounded dispatch/review/fix loop with a
+      watchdog blocker; run_verification()/heartbeat()/run() drive one session.
+    - run_implementation_session() -- top-level entry point wiring an emit callback
+      into one full session run.
+"""
 
 from __future__ import annotations
 
