@@ -198,7 +198,7 @@ def _create_windows_symlink(src: Path, dst: Path) -> tuple[bool, str, LinkStrate
     """
     # Calculate relative path from dst's parent directory to src
     try:
-        rel_path = os.path.relpath(src, dst.parent).replace("\\", "/")
+        rel_path = os.path.relpath(src, dst.parent)
     except ValueError:
         # On Windows, relpath can fail if src and dst are on different drives
         rel_path = str(src).replace("\\", "/")
@@ -290,6 +290,10 @@ def link_status(src: Path, dst: Path) -> str:
     if not dst.exists() and not dst.is_symlink():
         return "✗ missing"
     if dst.is_symlink():
+        if IS_WINDOWS:
+            raw_target = os.readlink(dst)
+            if "/" in raw_target:
+                return "✗ non-native Windows target"
         target = dst.resolve()
         if not target.exists():
             return "✗ broken symlink"
