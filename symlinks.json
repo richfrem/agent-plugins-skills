@@ -10752,6 +10752,48 @@
       "dst": "plugins/agent-agentic-os/skills/interview-spec/scripts/control_plane/wrappers/record_retrospective.py",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/map-debt.md",
+      "dst": "plugins/agent-agentic-os/skills/issue-resolution-reviewer/references/map-debt.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/map-debt.md",
+      "dst": "plugins/agent-agentic-os/skills/os-evolution-verifier/references/map-debt.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/map-debt.md",
+      "dst": "plugins/agent-agentic-os/skills/os-init/references/map-debt.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/evolution-log.md",
+      "dst": "plugins/agent-agentic-os/skills/os-health-check/references/evolution-log.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/evolution-log.md",
+      "dst": "plugins/agent-agentic-os/skills/os-init/references/evolution-log.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/domain-patterns/README.md",
+      "dst": "plugins/agent-agentic-os/skills/os-evolution-planner/references/domain-patterns-README.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/domain-patterns/routing-skill.md",
+      "dst": "plugins/agent-agentic-os/skills/os-evolution-planner/references/domain-patterns-routing-skill.md",
+      "strategy": "symlink",
+      "description": ""
     }
   ]
 }
