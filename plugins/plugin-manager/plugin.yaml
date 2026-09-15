@@ -16,6 +16,5 @@ provides_tools:
   - sync_with_inventory
 skills:
   - plugin-installer
-  - plugin-pruner
   - plugin-remover
   - plugin-syncer

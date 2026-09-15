@@ -55,6 +55,12 @@ import argparse
 import subprocess
 from pathlib import Path
 
+if sys.platform == "win32":
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    if hasattr(sys.stderr, "reconfigure"):
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 # Removed plugin_inventory import as it is now obsolete.
 
 # --- Configuration ---
@@ -88,7 +94,10 @@ def clean_plugin_artifacts(plugin_name: str, root: Path, dry_run: bool) -> None:
         print(f"    - Using ownership manifest: {ownership_file.relative_to(root)}")
         try:
             data = json.loads(ownership_file.read_text(encoding="utf-8"))
-            artifacts = data.get("artifacts", [])
+            artifacts = list(data.get("artifacts", []))
+            for records in data.get("components", {}).values():
+                for record in records.values():
+                    artifacts.extend(record.get("artifacts", []))
             for art_rel in sorted(artifacts, key=len, reverse=True):
                 art_path = root / art_rel
                 if art_path.exists():
@@ -185,6 +194,34 @@ def sync_source(source_key: str, plugins: list, root: Path, dry_run: bool) -> No
         print(f"  [SYNC] OK: {source_key} -> {plugins}")
     except subprocess.CalledProcessError as e:
         print(f"  [ERROR] Failed syncing source '{source_key}': {e}")
+
+
+def enforce_ownership_state(root: Path, plugin_names: set[str], dry_run: bool) -> None:
+    """Remove every artifact whose ownership record is explicitly disabled."""
+    for plugin_name in sorted(plugin_names):
+        manifest = root / ".agents" / "ownership" / f"{plugin_name}.json"
+        if not manifest.exists():
+            continue
+        try:
+            data = json.loads(manifest.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            print(f"  [WARNING] Cannot read ownership manifest {manifest}: {exc}")
+            continue
+        disabled: list[str] = []
+        for records in data.get("components", {}).values():
+            for record in records.values():
+                if record.get("should_install") is False:
+                    disabled.extend(record.get("artifacts", []))
+        for relative in sorted(set(disabled), key=len, reverse=True):
+            target = root / relative
+            if not (target.exists() or target.is_symlink() or os.path.lexists(str(target))):
+                continue
+            print(f"  [CLEAN] Disabled ownership artifact: {relative}")
+            if not dry_run:
+                if target.is_dir() and not target.is_symlink():
+                    shutil.rmtree(target)
+                else:
+                    target.unlink()
 
 
 def _find_missing_artifacts(root: Path, registered_plugins: set) -> list:
@@ -383,11 +420,14 @@ def main() -> None:
     else:
         print("\nSkipping reinstall (--cleanup-only).")
 
+    print("\n--- 5. Enforcing Ownership Desired State ---")
+    enforce_ownership_state(root, registered_set, args.dry_run)
+
     if not args.cleanup_only and not args.no_prune:
-        print(f"\n--- 5. Enforcing Retention Policy ---")
+        print(f"\n--- 6. Enforcing Retention Policy ---")
         enforce_retention_pruning(root, args.dry_run)
 
-    print("\n--- 6. Post-Sync Validation ---")
+    print("\n--- 7. Post-Sync Validation ---")
     if not args.dry_run:
         validate_agents_state(root, registered_set)
     else:

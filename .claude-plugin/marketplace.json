@@ -71,11 +71,11 @@
     },
     {
       "name": "plugin-manager",
-      "description": "Orchestration hub for the plugin ecosystem. Manages canonical source-keyed installations, component retention pruning, unified package removal, and synchronized updates across all agent environments.",
+      "description": "Orchestration hub for the plugin ecosystem. Manages canonical source-keyed installations, unified package removal, and synchronized updates across all agent environments.",
       "source": "./plugins/plugin-manager",
       "strict": true,
       "category": "agent-infrastructure",
-      "tags": ["orchestration", "sync", "installer", "pruner", "package-manager", "deployment"]
+      "tags": ["orchestration", "sync", "installer", "package-manager", "deployment"]
     },
     {
       "name": "dependency-management",

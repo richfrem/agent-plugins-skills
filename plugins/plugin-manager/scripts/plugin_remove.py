@@ -267,7 +267,10 @@ def _remove_via_ownership_manifest(ownership_file: Path, root: Path, dry_run: bo
     print(f"    - Using ownership manifest: {ownership_file.relative_to(root)}")
     try:
         data = json.loads(ownership_file.read_text(encoding="utf-8"))
-        artifacts = data.get("artifacts", [])
+        artifacts = list(data.get("artifacts", []))
+        for records in data.get("components", {}).values():
+            for record in records.values():
+                artifacts.extend(record.get("artifacts", []))
 
         # Sort artifacts by length in descending order so files are unlinked/removed before parent directories
         for art_rel in sorted(artifacts, key=len, reverse=True):

@@ -8,6 +8,8 @@ allowed-tools: Bash, Read, Write
 # Plugin Remover
 
 Safely uninstalls plugins from agent environments and synchronizes tracking registries.
+Removal reads both legacy `artifacts` entries and the component-level ownership
+manifest, so disabled and enabled assets are fully removed together.
 
 ## Quick Start
 

@@ -12,6 +12,11 @@ allowed-tools: Bash, Write, Read
 
 Deploys agent plugins and skills into the `.agents/` central store and symlinks them across agent environments.
 
+Each install writes `.agents/ownership/<plugin>.json` as a desired-state manifest.
+The manifest lists every source component and gives it a `should_install` flag.
+Existing `false` selections are preserved on reinstall, so sync does not silently
+re-enable disabled skills, rules, agents, hooks, or commands.
+
 ## Quick Start
 
 ### 1. Interactive Installation (Recommended)
