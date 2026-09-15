@@ -1508,6 +1508,48 @@ class SqlitePersistenceAdapter(PersistencePort):
         finally:
             conn.close()
 
+    def get_latest_asymmetric_persistence(
+        self, task_id: str, destination: Optional[str] = None
+    ) -> Optional[Dict[str, Any]]:
+        """Retrieves the latest asymmetric_persistence_log row for a task_id and optional destination."""
+        self.ensure_schema()
+        conn = self.get_connection()
+        try:
+            cursor = conn.cursor()
+            if destination:
+                cursor.execute(
+                    """
+                    SELECT log_id, task_id, destination, status, details, timestamp
+                    FROM asymmetric_persistence_log
+                    WHERE task_id = ? AND destination = ?
+                    ORDER BY log_id DESC LIMIT 1
+                    """,
+                    (task_id, destination),
+                )
+            else:
+                cursor.execute(
+                    """
+                    SELECT log_id, task_id, destination, status, details, timestamp
+                    FROM asymmetric_persistence_log
+                    WHERE task_id = ?
+                    ORDER BY log_id DESC LIMIT 1
+                    """,
+                    (task_id,),
+                )
+            row = cursor.fetchone()
+            if not row:
+                return None
+            return {
+                "log_id": row[0],
+                "task_id": row[1],
+                "destination": row[2],
+                "status": row[3],
+                "details": row[4],
+                "timestamp": row[5],
+            }
+        finally:
+            conn.close()
+
     def get_guidance_block_reason(self, task_id: str) -> Optional[str]:
         """Returns the task's guidance_block_reason (None if not blocked)."""
         self.ensure_schema()

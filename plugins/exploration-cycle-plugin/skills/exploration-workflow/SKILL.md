@@ -317,17 +317,15 @@ Route to the child skill for the active phase:
 | Phase 4 — Handoff & Specs (Auto-runs User Stories & Specs) | `exploration-handoff` |
 | All phases complete or skipped | → Completion Block |
 
-When invoking a child skill, pass this structured context block — do NOT bury it in prose:
+When invoking a child skill, pass this structured session context (managed via `exploration_session.py`) — do NOT bury it in prose:
 
 ```
 ## Session Context (from orchestrator — read and act on before proceeding)
-<ORCHESTRATOR_DISPATCH authorized_skill="[child-skill name, e.g. discovery-planning]" session_id="[session-id-uuid]" phase_number="[N]" phase_name="[phase-name]" strategy="[dispatch-strategy]" expected_output="[path/to/artifact]" return_required="yes">
-- Session type: [exact value from **Session Type:** in dashboard]
+- Session type: [exact value from **Session Type:** in session]
 - Active phase: Phase [N] — [phase name]
 - Discovery Plan: [path to most recent discovery-plan-*.md, or "not yet written"]
 - Current task slice: [the current planned work items for this phase]
 - Return signal: When this phase is complete, announce "PHASE [N] COMPLETE" then invoke the exploration-workflow skill to continue.
-</ORCHESTRATOR_DISPATCH>
 ```
 
 Child skills must read `Session type` and adapt their question tracks and outputs accordingly before doing anything else.
@@ -407,7 +405,7 @@ Using the Write tool, update `exploration/exploration-dashboard.md`:
 3. Update `**Status:**` to `In Progress` (or `Complete` if all phases are done).
 4. In the Session Log table, fill in the completed phase row with today's date and a one-sentence note describing what was produced.
 5. Refresh the living task list to reflect what is now done, what became current, and what new follow-up items were introduced by the phase outcome or SME corrections.
-6. **Token Eviction:** Once the dashboard is updated to `[x]`, the prior `<ORCHESTRATOR_DISPATCH>` block for this phase is now stale. Any subsequent child skill invocation will require a new dispatch tag with the updated `phase_number`. Do not re-use the prior tag.
+6. **Session Synchronization:** Synchronize the active sub-workflow phase via `python3 scripts/exploration_session.py advance-phase --task-id <id> --phase <next_phase>`.
 
 Then loop back to **Block 3** to orient the SME for the next phase.
 

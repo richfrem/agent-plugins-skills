@@ -345,6 +345,12 @@ class PersistencePort(ABC):
         """Inserts an asymmetric_persistence_log row."""
         raise NotImplementedError
 
+    def get_latest_asymmetric_persistence(
+        self, task_id: str, destination: Optional[str] = None
+    ) -> Optional[Dict[str, Any]]:
+        """Retrieves the latest asymmetric_persistence_log row for a task_id and optional destination."""
+        return None
+
     @abstractmethod
     def get_guidance_block_reason(self, task_id: str) -> Optional[str]:
         """Returns the task's guidance_block_reason (None if not blocked)."""

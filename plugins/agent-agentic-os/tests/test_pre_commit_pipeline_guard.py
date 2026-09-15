@@ -440,3 +440,124 @@ def test_git_guards_allow_exact_human_approved_recovery_edge(tmp_path):
     push_check = subprocess.run([str(PUSH_HOOK_PATH)], cwd=str(repo), capture_output=True, text=True)
     assert commit_check.returncode == 0, commit_check.stdout + commit_check.stderr
     assert push_check.returncode == 0, push_check.stdout + push_check.stderr
+
+
+# --- Registered-worktree location-check regression tests -------------------
+# Regression coverage for a confirmed defect (see references/map-debt.md,
+# tracked separately from GitHub issue #621's human-authorization finding):
+# the hook's RESOLVED_TASK_WORKTREE resolution (~line 97) previously resolved
+# a repository-relative registered worktree_path against the *current shell
+# CWD* instead of REPO_ROOT, so a legitimate commit made from inside the
+# correctly registered worktree was misclassified as "Commit Outside
+# Registered Worktree" whenever worktree_path was stored relative (as it
+# normally is in real usage, e.g. ".worktrees/task-<id>"). Only an
+# absolute worktree_path happened to work by accident. Fixed by resolving
+# relative paths against REPO_ROOT explicitly (restoring the case-statement
+# semantics originally reviewed in commit 45b3fe51).
+
+def test_hook_allows_commit_from_relative_registered_worktree(tmp_path):
+    """A: relative registered worktree path + commit from that worktree -> PASS."""
+    repo, db_path = _setup_git_repo_with_db(tmp_path)
+    task_id = "task-relwt-pass-011"
+    branch = "feat/relwt-pass"
+    subprocess.run(["git", "checkout", "-b", branch], cwd=str(repo), check=True, capture_output=True)
+
+    cp = ControlPlane(db_path=db_path)
+    _advance_task_to_in_worktree(cp, task_id, repo, branch)
+
+    # Free `branch` from the main checkout so it can be checked out in the
+    # new worktree (git disallows the same branch in two checkouts at once).
+    subprocess.run(["git", "checkout", "main"], cwd=str(repo), check=True, capture_output=True)
+    worktree_dir = repo / ".worktrees" / "relwt-pass"
+    subprocess.run(
+        ["git", "worktree", "add", str(worktree_dir), branch],
+        cwd=str(repo), check=True, capture_output=True,
+    )
+    # Register the DB path exactly as real usage does: repository-relative.
+    cp.update_worktree(task_id, ".worktrees/relwt-pass", branch, "written_in_worktree")
+
+    code_file = worktree_dir / "feature.py"
+    code_file.write_text("def run(): pass\n", encoding="utf-8")
+    subprocess.run(["git", "add", "feature.py"], cwd=str(worktree_dir), check=True)
+
+    res = subprocess.run([str(HOOK_PATH)], cwd=str(worktree_dir), capture_output=True, text=True)
+    assert res.returncode == 0, res.stdout + res.stderr
+
+
+def test_hook_blocks_commit_from_main_checkout_when_relative_worktree_registered(tmp_path):
+    """B: relative registered worktree path + commit from main checkout -> BLOCK."""
+    repo, db_path = _setup_git_repo_with_db(tmp_path)
+    task_id = "task-relwt-block-012"
+    branch = "feat/relwt-block"
+    subprocess.run(["git", "checkout", "-b", branch], cwd=str(repo), check=True, capture_output=True)
+
+    cp = ControlPlane(db_path=db_path)
+    _advance_task_to_in_worktree(cp, task_id, repo, branch)
+
+    # Register an isolated worktree path that is never actually populated with
+    # this commit -- the commit below happens from the main checkout instead,
+    # which still has `branch` checked out (git's own worktree exclusivity
+    # means the same branch cannot be checked out twice, so the main checkout
+    # is the realistic stand-in for "wrong location" here).
+    cp.update_worktree(task_id, ".worktrees/relwt-block", branch, "written_in_worktree")
+
+    code_file = repo / "feature.py"
+    code_file.write_text("def run(): pass\n", encoding="utf-8")
+    subprocess.run(["git", "add", "feature.py"], cwd=str(repo), check=True)
+
+    res = subprocess.run([str(HOOK_PATH)], cwd=str(repo), capture_output=True, text=True)
+    assert res.returncode == 1
+    assert "Commit Outside Registered Worktree" in res.stdout
+
+
+def test_hook_allows_commit_from_absolute_registered_worktree(tmp_path):
+    """C: absolute registered worktree path + commit from that worktree -> PASS."""
+    repo, db_path = _setup_git_repo_with_db(tmp_path)
+    task_id = "task-abswt-pass-013"
+    branch = "feat/abswt-pass"
+    subprocess.run(["git", "checkout", "-b", branch], cwd=str(repo), check=True, capture_output=True)
+
+    cp = ControlPlane(db_path=db_path)
+    _advance_task_to_in_worktree(cp, task_id, repo, branch)
+
+    subprocess.run(["git", "checkout", "main"], cwd=str(repo), check=True, capture_output=True)
+    worktree_dir = repo / ".worktrees" / "abswt-pass"
+    subprocess.run(
+        ["git", "worktree", "add", str(worktree_dir), branch],
+        cwd=str(repo), check=True, capture_output=True,
+    )
+    cp.update_worktree(task_id, str(worktree_dir), branch, "written_in_worktree")
+
+    code_file = worktree_dir / "feature.py"
+    code_file.write_text("def run(): pass\n", encoding="utf-8")
+    subprocess.run(["git", "add", "feature.py"], cwd=str(worktree_dir), check=True)
+
+    res = subprocess.run([str(HOOK_PATH)], cwd=str(worktree_dir), capture_output=True, text=True)
+    assert res.returncode == 0, res.stdout + res.stderr
+
+
+def test_hook_blocks_commit_from_main_checkout_when_absolute_worktree_registered(tmp_path):
+    """D: absolute registered worktree path + commit from the wrong checkout -> BLOCK."""
+    repo, db_path = _setup_git_repo_with_db(tmp_path)
+    task_id = "task-abswt-block-014"
+    branch = "feat/abswt-block"
+    subprocess.run(["git", "checkout", "-b", branch], cwd=str(repo), check=True, capture_output=True)
+
+    cp = ControlPlane(db_path=db_path)
+    _advance_task_to_in_worktree(cp, task_id, repo, branch)
+
+    worktree_dir = repo / ".worktrees" / "abswt-block"
+    cp.update_worktree(task_id, str(worktree_dir), branch, "written_in_worktree")
+    # Note: worktree_dir is deliberately never created via `git worktree add`
+    # here -- the registered absolute path exists only in the DB, and the
+    # commit below is attempted from the main checkout (which still holds
+    # `branch`), exercising the same "wrong location" path as test B but for
+    # an absolute registered path instead of a relative one.
+
+    code_file = repo / "feature.py"
+    code_file.write_text("def run(): pass\n", encoding="utf-8")
+    subprocess.run(["git", "add", "feature.py"], cwd=str(repo), check=True)
+
+    res = subprocess.run([str(HOOK_PATH)], cwd=str(repo), capture_output=True, text=True)
+    assert res.returncode == 1
+    assert "Commit Outside Registered Worktree" in res.stdout

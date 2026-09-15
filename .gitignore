@@ -116,5 +116,8 @@ context/status.md
 docs/plans/
 docs/superpowers/
 
+# Private research moved out of tracked docs; retain locally for planning only.
+docs/MAF-research-analysis/
+
 .superpowers/
 .context/
