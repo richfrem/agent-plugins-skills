@@ -675,13 +675,80 @@ def write_project_lock(plugin_path: Path, metadata: dict,
     print(f"  ✓ Updated skills-lock.json ({len(installed_skills)} skills)")
 
 
-def write_ownership_manifest(plugin_name: str, root: Path, deployed_paths: list, dry_run: bool = False) -> None:
-    """Writes plugin ownership records mapping deployed artifacts.
+def _load_ownership_manifest(plugin_name: str, root: Path) -> dict:
+    """Load an existing ownership manifest, returning an empty schema on failure."""
+    manifest_file = root / ".agents" / "ownership" / f"{plugin_name}.json"
+    if not manifest_file.exists():
+        return {}
+    try:
+        data = json.loads(manifest_file.read_text(encoding="utf-8"))
+        return data if isinstance(data, dict) else {}
+    except (OSError, json.JSONDecodeError):
+        return {}
+
+
+def _source_components(plugin_path: Path) -> dict[str, set[str]]:
+    """Return every installable component discovered in a plugin source tree."""
+    components: dict[str, set[str]] = {}
+    for kind, directory, pattern in (
+        ("skills", "skills", "*"),
+        ("rules", "rules", "*.md"),
+        ("agents", "agents", "*.md"),
+        ("commands", "commands", "*"),
+    ):
+        source_dir = plugin_path / directory
+        if source_dir.is_dir():
+            components[kind] = {
+                item.stem if kind in {"rules", "agents"} else item.name
+                for item in source_dir.glob(pattern)
+                if item.is_dir() or item.is_file()
+            }
+    hooks_file = plugin_path / "hooks" / "hooks.json"
+    if hooks_file.exists():
+        components["hooks"] = {"hooks"}
+    return components
+
+
+def _component_for_artifact(plugin_name: str, artifact: str) -> tuple[str, str] | None:
+    """Infer the ownership component represented by a deployed artifact path."""
+    parts = Path(artifact).parts
+    if len(parts) >= 3 and parts[:2] == (".agents", "skills"):
+        return "skills", parts[2]
+    if len(parts) >= 3 and parts[:2] == (".agents", "agents"):
+        stem = Path(parts[2]).stem
+        prefix = f"{plugin_name}-"
+        return "agents", stem[len(prefix):] if stem.startswith(prefix) else stem
+    if len(parts) >= 3 and parts[:2] == (".agents", "hooks"):
+        return "hooks", "hooks"
+    if len(parts) >= 3 and parts[:2] == (".agent", "rules"):
+        return "rules", Path(parts[2]).stem
+    return None
+
+
+def _remove_paths(paths: list[str], root: Path, dry_run: bool) -> None:
+    """Remove previously deployed paths without failing on already-missing files."""
+    for relative in sorted(set(paths), key=len, reverse=True):
+        target = root / relative
+        if not (target.exists() or target.is_symlink() or os.path.lexists(str(target))):
+            continue
+        print(f"  {'[DRY RUN] ' if dry_run else ''}Removing disabled artifact: {relative}")
+        if dry_run:
+            continue
+        if target.is_dir() and not target.is_symlink():
+            shutil.rmtree(target)
+        else:
+            target.unlink()
+
+
+def write_ownership_manifest(plugin_name: str, root: Path, plugin_path: Path,
+                             deployed_paths: list, dry_run: bool = False) -> None:
+    """Write a complete desired-state manifest while preserving user selections.
 
     Args:
         plugin_name: Unique name of the plugin.
         root: Workspace root path context.
-        deployed_paths: List of Path objects to active rule/cmd files.
+        plugin_path: Source plugin used to discover the complete inventory.
+        deployed_paths: List of Path objects for currently deployed artifacts.
         dry_run: If True, do not write manifest files.
     """
     if dry_run:
@@ -693,14 +760,43 @@ def write_ownership_manifest(plugin_name: str, root: Path, deployed_paths: list,
     paths_str = []
     for p in deployed_paths:
         try:
-            paths_str.append(str(p.resolve().relative_to(root.resolve())))
+            paths_str.append(str(p.relative_to(root)).replace("\\", "/"))
         except ValueError:
             paths_str.append(str(p))
-            
+
+    old = _load_ownership_manifest(plugin_name, root)
+    old_components = old.get("components", {})
+    inventory = _source_components(plugin_path)
+    deployed_by_component: dict[str, list[str]] = {}
+    for artifact in sorted(set(paths_str)):
+        component = _component_for_artifact(plugin_name, artifact)
+        if component:
+            kind, name = component
+            deployed_by_component.setdefault(f"{kind}:{name}", []).append(artifact)
+
+    components: dict[str, dict] = {}
+    for kind, names in inventory.items():
+        for name in sorted(names):
+            key = f"{kind}:{name}"
+            previous = old_components.get(kind, {}).get(name, {})
+            enabled = bool(previous.get("should_install", True))
+            components.setdefault(kind, {})[name] = {
+                "should_install": enabled,
+                "artifacts": deployed_by_component.get(key, previous.get("artifacts", [])),
+            }
+
+    enabled_artifacts = [
+        artifact
+        for kind_data in components.values()
+        for component in kind_data.values()
+        if component["should_install"]
+        for artifact in component["artifacts"]
+    ]
     data = {
         "plugin": plugin_name,
         "installed_at": datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z"),
-        "artifacts": sorted(list(set(paths_str)))
+        "components": components,
+        "artifacts": sorted(set(enabled_artifacts)),
     }
     manifest_file.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
     print(f"  ✓ Recorded artifact ownership in {manifest_file.relative_to(root)}")
@@ -920,11 +1016,42 @@ def provision_central_and_symlink(plugin_path: Path, metadata: dict, targets: li
     root = Path.cwd()
     plugin_name = metadata.get("name", plugin_path.name)
     agents_root = root / ".agents"
+    existing_manifest = _load_ownership_manifest(plugin_name, root)
+    existing_components = existing_manifest.get("components", {})
+    disabled_skills = [
+        name for name, record in existing_components.get("skills", {}).items()
+        if record.get("should_install") is False
+    ]
+    disabled_artifacts = [
+        artifact
+        for records in existing_components.values()
+        for record in records.values()
+        if record.get("should_install") is False
+        for artifact in record.get("artifacts", [])
+    ]
+    disabled_components = {
+        f"{kind}:{name}"
+        for kind, records in existing_components.items()
+        for name, record in records.items()
+        if record.get("should_install") is False
+    }
     if not dry_run:
         agents_root.mkdir(exist_ok=True)
 
+    requested_skills = skills_filter.split(",") if skills_filter else None
+    if requested_skills is not None:
+        requested_skills = [
+            name for name in requested_skills
+            if name.strip() and name.strip() not in disabled_skills
+        ]
+    else:
+        requested_skills = [
+            item.name for item in (plugin_path / "skills").iterdir()
+            if item.is_dir() and item.name not in disabled_skills
+        ] if (plugin_path / "skills").is_dir() else []
     installed_skills, deployed_paths = _provision_skills(
-        plugin_path, plugin_name, agents_root, targets, dry_run, root, skills_filter=skills_filter
+        plugin_path, plugin_name, agents_root, targets, dry_run, root,
+        skills_filter=",".join(requested_skills)
     )
     deployed_paths.extend(_provision_hooks(
         plugin_path, plugin_name, agents_root, targets, dry_run, root
@@ -935,7 +1062,13 @@ def provision_central_and_symlink(plugin_path: Path, metadata: dict, targets: li
                                            append_rules_to_ide_files))
     deployed_paths.extend(deploy_agents(plugin_path, plugin_name, targets, root, dry_run))
     merge_mcp_config(plugin_path, root, dry_run)
-    write_ownership_manifest(plugin_name, root, deployed_paths, dry_run)
+    for deployed in deployed_paths:
+        relative = str(deployed.relative_to(root)).replace("\\", "/")
+        component = _component_for_artifact(plugin_name, relative)
+        if component and f"{component[0]}:{component[1]}" in disabled_components:
+            disabled_artifacts.append(relative)
+    _remove_paths(disabled_artifacts, root, dry_run)
+    write_ownership_manifest(plugin_name, root, plugin_path, deployed_paths, dry_run)
     _update_retention_manifest_on_install(plugin_name, deployed_paths, root, dry_run)
     return installed_skills
 
@@ -1052,4 +1185,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

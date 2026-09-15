@@ -1,1 +1,0 @@
-../../../scripts/prune_installed_skills.py

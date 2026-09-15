@@ -9,7 +9,10 @@ allowed-tools: Bash, Read, Write
 
 # Plugin Syncer
 
-Synchronizes all plugins registered in `plugin-sources.json` and enforces component retention.
+Synchronizes all plugins registered in `plugin-sources.json`, then enforces each
+`.agents/ownership/<plugin>.json` desired-state manifest. Components marked
+`"should_install": false` are removed; enabled components are restored by the
+normal plugin installation pass.
 
 ## Quick Start
 
