@@ -740,6 +740,41 @@ def _remove_paths(paths: list[str], root: Path, dry_run: bool) -> None:
             target.unlink()
 
 
+def format_ownership_manifest(data: dict) -> str:
+    """Format an ownership manifest with one compact line per component."""
+    lines = [
+        "{",
+        f'  "plugin": {json.dumps(data["plugin"], ensure_ascii=False)},',
+        f'  "installed_at": {json.dumps(data["installed_at"], ensure_ascii=False)},',
+        '  "components": {',
+    ]
+    component_kinds = list(data.get("components", {}).items())
+    for kind_index, (kind, components) in enumerate(component_kinds):
+        lines.append(f'    {json.dumps(kind, ensure_ascii=False)}: {{')
+        component_items = list(components.items())
+        for component_index, (name, component) in enumerate(component_items):
+            suffix = "," if component_index < len(component_items) - 1 else ""
+            compact_component = json.dumps(
+                component,
+                ensure_ascii=False,
+                separators=(", ", ": "),
+            )
+            lines.append(
+                f'      {json.dumps(name, ensure_ascii=False)}: '
+                f"{compact_component}{suffix}"
+            )
+        kind_suffix = "," if kind_index < len(component_kinds) - 1 else ""
+        lines.append(f"    }}{kind_suffix}")
+    lines.extend(
+        [
+            "  },",
+            f'  "artifacts": {json.dumps(data.get("artifacts", []), ensure_ascii=False)}',
+            "}",
+        ]
+    )
+    return "\n".join(lines) + "\n"
+
+
 def write_ownership_manifest(plugin_name: str, root: Path, plugin_path: Path,
                              deployed_paths: list, dry_run: bool = False,
                              enable_all: bool = False) -> None:
@@ -800,7 +835,7 @@ def write_ownership_manifest(plugin_name: str, root: Path, plugin_path: Path,
         "components": components,
         "artifacts": sorted(set(enabled_artifacts)),
     }
-    manifest_file.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+    manifest_file.write_text(format_ownership_manifest(data), encoding="utf-8")
     print(f"  ✓ Recorded artifact ownership in {manifest_file.relative_to(root)}")
 
 

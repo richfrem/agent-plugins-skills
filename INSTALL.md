@@ -31,6 +31,16 @@ all components discovered in that plugin are written with
 `should_install: true` and are installed. `plugin-sync` uses the existing
 ownership flags instead, so disabled components remain disabled during sync.
 
+Ownership manifests under `.agents/ownership/` contain one compact JSON line
+per component, such as:
+
+```json
+"evo-smoketest": {"should_install": false, "artifacts": [".agents/skills/evo-smoketest"]}
+```
+
+This makes large inventories faster to review and update while retaining the
+same machine-readable schema.
+
 ---
 
 ### 2. Prune Unneeded Skills (`plugin-prune`)

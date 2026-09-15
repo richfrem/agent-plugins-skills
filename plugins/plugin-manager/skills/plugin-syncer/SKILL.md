@@ -14,6 +14,10 @@ Synchronizes all plugins registered in `plugin-sources.json`, then enforces each
 `"should_install": false` are removed; enabled components are restored by the
 normal plugin installation pass.
 
+Ownership manifests are intentionally formatted with one compact JSON line per
+component, making it faster to change `should_install` values manually. The
+manifest remains standard JSON and can be edited directly before running sync.
+
 ## Quick Start
 
 ### 1. Run Synchronization

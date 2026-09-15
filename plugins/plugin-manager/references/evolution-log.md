@@ -86,3 +86,4 @@ without a separate `--execute` invocation.
 **Files:** `prune_installed_skills.py`
 
 | 2026-09-15 | Tier 1 | Explicit plugin installation did not restore components disabled in ownership manifests | Added explicit enable-all installation mode while preserving disabled selections during sync | Evolution | SUCCESS |
+| 2026-09-15 | Tier 1 | Ownership manifests were slow to review and edit because each component used expanded JSON formatting | Added compact one-line component serialization, normalized existing local ownership manifests, and added regression coverage | Evolution | SUCCESS |
