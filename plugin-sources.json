@@ -1,13 +1,7 @@
 {
   "sources": [
     {
-      "source": "obra/superpowers",
-      "plugins": [
-        "superpowers"
-      ]
-    },
-    {
-      "source": "C:\\Users\\RICHFREM\\source\\repos\\agent-plugins-skills",
+      "source": "C:\\Users\\RICHFREM\\source\\repos\\agent-plugins-skills\\plugins",
       "plugins": [
         "agent-agentic-os",
         "agent-memory",

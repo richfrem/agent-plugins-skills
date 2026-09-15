@@ -13,7 +13,7 @@
     "agent-agentic-os": {
       "skills": {
         "critical-auditor": true,
-        "work-intake": true,
+        "evo-smoketest": true,
         "issue-resolution-reviewer": true,
         "optimize-agent-instructions": true,
         "os-architect": true,
@@ -35,20 +35,20 @@
         "repository-improvement": true,
         "self-evolution": true,
         "todo-check": true,
-        "worktree-manager": true,
-        "evo-smoketest": false,
-        "transition-guidance-tester": true
+        "transition-guidance-tester": true,
+        "work-intake": true,
+        "worktree-manager": true
       },
       "rules": {
         "adversarial-reasoning-before-agreement-rule.md": true,
+        "config-driven-constants-over-hardcoding.md": true,
         "destructive-action-guard.md": true,
         "github-issue-logging-policy.md": true,
         "self-evolution-policy.md": true,
+        "state-transition-guidance-compliance.md": true,
         "test-driven-development.md": true,
         "worktree-lifecycle-management.md": true,
-        "worktree-subagent-leak-detection.md": true,
-        "state-transition-guidance-compliance.md": true,
-        "config-driven-constants-over-hardcoding.md": true
+        "worktree-subagent-leak-detection.md": true
       },
       "agents": {
         "agent-agentic-os-agentic-os-setup.md": true,
@@ -57,13 +57,65 @@
         "agent-agentic-os-os-architect-tester-agent.md": true
       }
     },
+    "agent-memory": {
+      "skills": {
+        "memory-management": true,
+        "rlm-audit": true,
+        "rlm-cleanup-agent": true,
+        "rlm-curator": true,
+        "rlm-distill-agent": true,
+        "rlm-init": true,
+        "rlm-search": true,
+        "vector-db-audit": true,
+        "vector-db-cleanup": true,
+        "vector-db-ingest": true,
+        "vector-db-init": true,
+        "vector-db-launch": true,
+        "vector-db-search": true
+      },
+      "rules": {},
+      "agents": {
+        "agent-memory-rlm-cleanup-agent.md": true,
+        "agent-memory-rlm-curator.md": true,
+        "agent-memory-rlm-distill-agent.md": true,
+        "agent-memory-rlm-factory-init-agent.md": true,
+        "agent-memory-rlm-init.md": true,
+        "agent-memory-rlm-search.md": true,
+        "agent-memory-vector-db-cleanup.md": true,
+        "agent-memory-vector-db-ingest.md": true,
+        "agent-memory-vector-db-init-agent.md": true
+      }
+    },
+    "agent-orchestration": {
+      "skills": {
+        "agent-swarm": true,
+        "co-pilot-loop": true,
+        "dual-loop": true,
+        "graph-execution": true,
+        "learning-loop": true,
+        "orchestrator": true,
+        "red-team-review": true,
+        "select-loop-strategy": true,
+        "triple-loop-learning": true
+      },
+      "rules": {},
+      "agents": {
+        "agent-orchestration-orchestrator.md": true
+      }
+    },
     "agent-scaffolders": {
       "skills": {
         "analyze-plugin": true,
         "audit-plugin": true,
+        "audit-plugin-l5": true,
         "audit-skill": true,
+        "compile-apm-package": true,
+        "convert-plugin-to-apm": true,
         "create-agentic-workflow": true,
+        "create-apm-package": true,
+        "create-azure-agent": true,
         "create-command": true,
+        "create-docker-skill": true,
         "create-github-action": true,
         "create-hook": true,
         "create-mcp-integration": true,
@@ -72,25 +124,19 @@
         "create-skill": true,
         "create-stateful-skill": true,
         "create-sub-agent": true,
+        "ecosystem-authoritative-sources": true,
+        "ecosystem-standards": true,
         "eval-autoresearch-fit": true,
         "fix-plugin-paths": true,
-        "l5-red-team-auditor": false,
+        "install-apm-package": true,
+        "l5-red-team-auditor": true,
         "manage-marketplace": true,
+        "mine-plugins": true,
+        "mine-skill": true,
         "path-reference-auditor": true,
         "self-audit": true,
-        "synthesize-learnings": false,
-        "update-ecosystem-index": false,
-        "audit-plugin-l5": false,
-        "compile-apm-package": false,
-        "convert-plugin-to-apm": false,
-        "create-apm-package": false,
-        "create-azure-agent": false,
-        "create-docker-skill": false,
-        "ecosystem-authoritative-sources": false,
-        "ecosystem-standards": false,
-        "install-apm-package": false,
-        "mine-plugins": false,
-        "mine-skill": false
+        "synthesize-learnings": true,
+        "update-ecosystem-index": true
       },
       "rules": {
         "plugin-architecture-policy.md": true
@@ -100,16 +146,16 @@
     "cli-agents": {
       "skills": {
         "agent-file-synchronization": true,
+        "agt-security": true,
         "agy-cli-agent": true,
         "claude-cli-agent": true,
         "codex-cli-agent": true,
         "copilot-cli-agent": true,
+        "local-llm-bridge": true,
+        "local-llm-setup": true,
+        "maf-adapter": true,
         "project-setup": true,
-        "update-cli-models": true,
-        "agt-security": false,
-        "local-llm-bridge": false,
-        "local-llm-setup": false,
-        "maf-adapter": false
+        "update-cli-models": true
       },
       "rules": {},
       "agents": {
@@ -127,6 +173,15 @@
         "cli-agents-test-writer.md": true
       }
     },
+    "dependency-management": {
+      "skills": {
+        "dependency-management": true
+      },
+      "rules": {
+        "dependency-management.md": true
+      },
+      "agents": {}
+    },
     "dev-utils": {
       "skills": {
         "adr-management": true,
@@ -135,13 +190,13 @@
         "convert-mermaid": true,
         "github-issue-agent": true,
         "github-issue-backlog-agent": true,
-        "github-issue-prioritizer": true,
-        "hf-download": false,
-        "hf-init": false,
-        "hf-upload": false,
-        "humanize": true,
         "github-issue-pr-lifecycle-agent": true,
+        "github-issue-prioritizer": true,
         "github-issue-worktree-agent": true,
+        "hf-download": true,
+        "hf-init": true,
+        "hf-upload": true,
+        "humanize": true,
         "link-checker-agent": true,
         "optimize-context": true,
         "symlink-manager": true
@@ -156,132 +211,76 @@
         "dev-utils-link-checker-agent.md": true
       }
     },
+    "exploration-cycle-plugin": {
+      "skills": {
+        "business-requirements-capture": true,
+        "business-workflow-doc": true,
+        "discovery-planning": true,
+        "exploration-handoff": true,
+        "exploration-optimizer": true,
+        "exploration-session-brief": true,
+        "exploration-workflow": true,
+        "prototype-builder": true,
+        "subagent-driven-prototyping": true,
+        "user-story-capture": true,
+        "using-exploration-cycle": true,
+        "vibe-behavioral-test-capture": true,
+        "vibe-browser-audit": true,
+        "vibe-domain-extractor": true,
+        "vibe-reengineer": true,
+        "vibe-slice-migrator": true,
+        "vibe-spec-packager": true,
+        "vibe-to-speckit-superpowers": true,
+        "vibe-togaf-architect": true,
+        "visual-companion": true
+      },
+      "rules": {},
+      "agents": {
+        "exploration-cycle-plugin-business-rule-audit-agent.md": true,
+        "exploration-cycle-plugin-certification-verifier.md": true,
+        "exploration-cycle-plugin-discovery-planning-agent.md": true,
+        "exploration-cycle-plugin-domain-purity-auditor.md": true,
+        "exploration-cycle-plugin-exploration-cycle-orchestrator-agent.md": true,
+        "exploration-cycle-plugin-handoff-preparer-agent.md": true,
+        "exploration-cycle-plugin-intake-agent.md": true,
+        "exploration-cycle-plugin-planning-doc-agent.md": true,
+        "exploration-cycle-plugin-problem-framing-agent.md": true,
+        "exploration-cycle-plugin-prototype-builder-agent.md": true,
+        "exploration-cycle-plugin-prototype-companion-agent.md": true,
+        "exploration-cycle-plugin-requirements-doc-agent.md": true,
+        "exploration-cycle-plugin-runtime-observer-agent.md": true,
+        "exploration-cycle-plugin-semantic-drift-auditor.md": true,
+        "exploration-cycle-plugin-vibe-orchestrator-agent.md": true
+      }
+    },
+    "obsidian-wiki-engine": {
+      "skills": {
+        "obsidian-bases-manager": true,
+        "obsidian-canvas-architect": true,
+        "obsidian-graph-traversal": true,
+        "obsidian-init": true,
+        "obsidian-markdown-mastery": true,
+        "obsidian-query-agent": true,
+        "obsidian-rlm-distiller": true,
+        "obsidian-vault-crud": true,
+        "obsidian-wiki-builder": true,
+        "obsidian-wiki-linter": true
+      },
+      "rules": {},
+      "agents": {
+        "obsidian-wiki-engine-README.md": true,
+        "obsidian-wiki-engine-super-rag-setup-agent.md": true,
+        "obsidian-wiki-engine-wiki-init-agent.md": true
+      }
+    },
     "plugin-manager": {
       "skills": {
         "plugin-installer": true,
-        "plugin-pruner": true,
         "plugin-remover": true,
         "plugin-syncer": true
       },
       "rules": {},
       "agents": {}
-    },
-    "agent-memory": {
-      "skills": {
-        "memory-management": false,
-        "rlm-audit": false,
-        "rlm-cleanup-agent": false,
-        "rlm-curator": false,
-        "rlm-distill-agent": false,
-        "rlm-init": false,
-        "rlm-search": false,
-        "vector-db-audit": false,
-        "vector-db-cleanup": false,
-        "vector-db-ingest": false,
-        "vector-db-init": false,
-        "vector-db-launch": false,
-        "vector-db-search": false
-      },
-      "rules": {},
-      "agents": {
-        "agent-memory-rlm-cleanup-agent.md": false,
-        "agent-memory-rlm-curator.md": false,
-        "agent-memory-rlm-distill-agent.md": false,
-        "agent-memory-rlm-factory-init-agent.md": false,
-        "agent-memory-rlm-init.md": false,
-        "agent-memory-rlm-search.md": false,
-        "agent-memory-vector-db-cleanup.md": false,
-        "agent-memory-vector-db-ingest.md": false,
-        "agent-memory-vector-db-init-agent.md": false
-      }
-    },
-    "agent-orchestration": {
-      "skills": {
-        "agent-swarm": false,
-        "co-pilot-loop": false,
-        "dual-loop": false,
-        "graph-execution": true,
-        "learning-loop": true,
-        "orchestrator": true,
-        "red-team-review": false,
-        "select-loop-strategy": true,
-        "triple-loop-learning": true
-      },
-      "rules": {},
-      "agents": {
-        "agent-orchestration-orchestrator.md": true
-      }
-    },
-    "dependency-management": {
-      "skills": {
-        "dependency-management": true
-      },
-      "rules": {
-        "dependency-management.md": true
-      },
-      "agents": {}
-    },
-    "exploration-cycle-plugin": {
-      "skills": {
-        "business-requirements-capture": false,
-        "business-workflow-doc": false,
-        "discovery-planning": false,
-        "exploration-handoff": false,
-        "exploration-optimizer": false,
-        "exploration-session-brief": false,
-        "exploration-workflow": false,
-        "prototype-builder": false,
-        "subagent-driven-prototyping": false,
-        "user-story-capture": false,
-        "using-exploration-cycle": false,
-        "vibe-behavioral-test-capture": false,
-        "vibe-browser-audit": false,
-        "vibe-domain-extractor": false,
-        "vibe-reengineer": false,
-        "vibe-slice-migrator": false,
-        "vibe-spec-packager": false,
-        "vibe-to-speckit-superpowers": false,
-        "vibe-togaf-architect": false,
-        "visual-companion": false
-      },
-      "rules": {},
-      "agents": {
-        "exploration-cycle-plugin-business-rule-audit-agent.md": false,
-        "exploration-cycle-plugin-certification-verifier.md": false,
-        "exploration-cycle-plugin-discovery-planning-agent.md": false,
-        "exploration-cycle-plugin-domain-purity-auditor.md": false,
-        "exploration-cycle-plugin-exploration-cycle-orchestrator-agent.md": false,
-        "exploration-cycle-plugin-handoff-preparer-agent.md": false,
-        "exploration-cycle-plugin-intake-agent.md": false,
-        "exploration-cycle-plugin-planning-doc-agent.md": false,
-        "exploration-cycle-plugin-problem-framing-agent.md": false,
-        "exploration-cycle-plugin-prototype-builder-agent.md": false,
-        "exploration-cycle-plugin-prototype-companion-agent.md": false,
-        "exploration-cycle-plugin-requirements-doc-agent.md": false,
-        "exploration-cycle-plugin-runtime-observer-agent.md": false,
-        "exploration-cycle-plugin-semantic-drift-auditor.md": false,
-        "exploration-cycle-plugin-vibe-orchestrator-agent.md": false
-      }
-    },
-    "obsidian-wiki-engine": {
-      "skills": {
-        "obsidian-bases-manager": false,
-        "obsidian-canvas-architect": false,
-        "obsidian-graph-traversal": false,
-        "obsidian-init": false,
-        "obsidian-markdown-mastery": false,
-        "obsidian-query-agent": false,
-        "obsidian-rlm-distiller": false,
-        "obsidian-vault-crud": false,
-        "obsidian-wiki-builder": false,
-        "obsidian-wiki-linter": false
-      },
-      "rules": {},
-      "agents": {
-        "obsidian-wiki-engine-README.md": false,
-        "obsidian-wiki-engine-super-rag-setup-agent.md": false,
-        "obsidian-wiki-engine-wiki-init-agent.md": false
-      }
     }
   }
 }
