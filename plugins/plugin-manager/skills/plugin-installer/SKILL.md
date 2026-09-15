@@ -45,6 +45,13 @@ An explicit install of an already-registered plugin resets that plugin's
 ownership entries to `should_install: true`. Edit the ownership manifest and
 run `plugin-sync` when you want to preserve disabled selections.
 
+Ownership manifests use one compact JSON line per component, for example:
+```json
+"evo-smoketest": {"should_install": false, "artifacts": [".agents/skills/evo-smoketest"]}
+```
+This keeps large inventories quick to review and edit while preserving the
+same JSON schema used by the installer and syncer.
+
 ## Progressive Disclosure & References
 
 - **CLI Reference & Flags**: See `references/installer-cli-guide.md` for full parameter options and multi-IDE mappings.

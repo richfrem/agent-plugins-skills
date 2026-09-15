@@ -12,6 +12,40 @@ import plugin_add
 from retention_manifest import load_manifest
 
 
+def test_ownership_manifest_uses_one_line_component_records():
+    """Ensure compact ownership formatting preserves the complete JSON data."""
+    data = {
+        "plugin": "sample-plugin",
+        "installed_at": "2026-09-15T00:00:00Z",
+        "components": {
+            "skills": {
+                "skill-a": {
+                    "should_install": True,
+                    "artifacts": [".agents/skills/skill-a"],
+                },
+                "skill-b": {
+                    "should_install": False,
+                    "artifacts": [".agents/skills/skill-b"],
+                },
+            }
+        },
+        "artifacts": [".agents/skills/skill-a"],
+    }
+
+    formatted = plugin_installer.format_ownership_manifest(data)
+    parsed = json.loads(formatted)
+
+    assert parsed == data
+    assert (
+        '"skill-a": {"should_install": true, "artifacts": '
+        '[".agents/skills/skill-a"]}' in formatted
+    )
+    assert (
+        '"skill-b": {"should_install": false, "artifacts": '
+        '[".agents/skills/skill-b"]}' in formatted
+    )
+
+
 def test_installer_filters_skills_and_seeds_retention(tmp_path: Path, monkeypatch):
     root = tmp_path
     plugin_dir = root / "plugins" / "sample-plugin"
