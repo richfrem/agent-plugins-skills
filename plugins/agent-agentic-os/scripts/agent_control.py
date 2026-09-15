@@ -1150,6 +1150,12 @@ class ControlPlane:
         """Logs asymmetric Layer 2 persistence entries into the SQLite audit table."""
         self._persistence.insert_asymmetric_persistence(task_id, destination, status, details)
 
+    def get_latest_asymmetric_persistence(
+        self, task_id: str, destination: Optional[str] = None
+    ) -> Optional[Dict[str, Any]]:
+        """Retrieves the latest asymmetric persistence record for task_id and optional destination."""
+        return self._persistence.get_latest_asymmetric_persistence(task_id, destination)
+
     def get_guidance_block_reason(self, task_id: str) -> Optional[str]:
         """Returns the task's guidance_block_reason (None if not blocked)."""
         return self._persistence.get_guidance_block_reason(task_id)

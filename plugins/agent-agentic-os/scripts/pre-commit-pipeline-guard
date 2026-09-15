@@ -94,8 +94,11 @@ case "$TASK_STATE" in
     IN_WORKTREE|WORKTREE_REVIEW|MULTI_AGENT_CODE_REVIEW|VERIFY_EXIT|DONE)
         TASK_WORKTREE_PATH="$(sqlite3 "$DB_PATH" "SELECT worktree_path FROM tasks WHERE task_id = '$TASK_ID';" 2>/dev/null || true)"
         if [ -n "$TASK_WORKTREE_PATH" ]; then
-            RESOLVED_TASK_WORKTREE="$(cd "$TASK_WORKTREE_PATH" 2>/dev/null && pwd || echo "$TASK_WORKTREE_PATH")"
             RESOLVED_REPO_ROOT="$(cd "$REPO_ROOT" 2>/dev/null && pwd || echo "$REPO_ROOT")"
+            case "$TASK_WORKTREE_PATH" in
+                /*) RESOLVED_TASK_WORKTREE="$(cd "$TASK_WORKTREE_PATH" 2>/dev/null && pwd || echo "$TASK_WORKTREE_PATH")" ;;
+                *)  RESOLVED_TASK_WORKTREE="$(cd "$RESOLVED_REPO_ROOT/$TASK_WORKTREE_PATH" 2>/dev/null && pwd || echo "$RESOLVED_REPO_ROOT/$TASK_WORKTREE_PATH")" ;;
+            esac
             CURRENT_CHECKOUT_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || echo "$REPO_ROOT")"
             if [ "$RESOLVED_TASK_WORKTREE" != "$RESOLVED_REPO_ROOT" ] && [ "$CURRENT_CHECKOUT_ROOT" != "$RESOLVED_TASK_WORKTREE" ]; then
                 echo ""
