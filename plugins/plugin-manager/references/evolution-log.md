@@ -84,3 +84,5 @@ Previously, interactive mode only saved the manifest — files were never touche
 without a separate `--execute` invocation.
 
 **Files:** `prune_installed_skills.py`
+
+| 2026-09-15 | Tier 1 | Explicit plugin installation did not restore components disabled in ownership manifests | Added explicit enable-all installation mode while preserving disabled selections during sync | Evolution | SUCCESS |

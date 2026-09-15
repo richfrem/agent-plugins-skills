@@ -26,6 +26,11 @@ uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richf
 uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills --dry-run
 ```
 
+An explicit `plugin-add <plugin>` treats the request as a re-enable operation:
+all components discovered in that plugin are written with
+`should_install: true` and are installed. `plugin-sync` uses the existing
+ownership flags instead, so disabled components remain disabled during sync.
+
 ---
 
 ### 2. Prune Unneeded Skills (`plugin-prune`)
@@ -117,4 +122,3 @@ python3 plugins/plugin-manager/scripts/plugin_remove.py
 # Sync inventory
 python3 plugins/plugin-manager/scripts/sync_with_inventory.py
 ```
-

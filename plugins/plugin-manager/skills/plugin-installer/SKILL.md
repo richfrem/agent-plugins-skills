@@ -14,8 +14,10 @@ Deploys agent plugins and skills into the `.agents/` central store and symlinks 
 
 Each install writes `.agents/ownership/<plugin>.json` as a desired-state manifest.
 The manifest lists every source component and gives it a `should_install` flag.
-Existing `false` selections are preserved on reinstall, so sync does not silently
-re-enable disabled skills, rules, agents, hooks, or commands.
+An explicit `plugin-add <plugin>` re-enables every component in that plugin and
+updates the manifest flags to `true`. The sync workflow uses an internal
+preserve-ownership mode, so running sync does not silently re-enable components
+that the user disabled.
 
 ## Quick Start
 
@@ -38,6 +40,10 @@ python3 scripts/plugin_add.py plugins/ --select-skills
 ```bash
 python3 scripts/plugin_add.py plugins/ --all -y
 ```
+
+An explicit install of an already-registered plugin resets that plugin's
+ownership entries to `should_install: true`. Edit the ownership manifest and
+run `plugin-sync` when you want to preserve disabled selections.
 
 ## Progressive Disclosure & References
 
