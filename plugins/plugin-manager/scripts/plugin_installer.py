@@ -741,8 +741,9 @@ def _remove_paths(paths: list[str], root: Path, dry_run: bool) -> None:
 
 
 def write_ownership_manifest(plugin_name: str, root: Path, plugin_path: Path,
-                             deployed_paths: list, dry_run: bool = False) -> None:
-    """Write a complete desired-state manifest while preserving user selections.
+                             deployed_paths: list, dry_run: bool = False,
+                             enable_all: bool = False) -> None:
+    """Write a complete desired-state manifest.
 
     Args:
         plugin_name: Unique name of the plugin.
@@ -750,6 +751,7 @@ def write_ownership_manifest(plugin_name: str, root: Path, plugin_path: Path,
         plugin_path: Source plugin used to discover the complete inventory.
         deployed_paths: List of Path objects for currently deployed artifacts.
         dry_run: If True, do not write manifest files.
+        enable_all: If True, explicit installation re-enables every component.
     """
     if dry_run:
         return
@@ -779,7 +781,7 @@ def write_ownership_manifest(plugin_name: str, root: Path, plugin_path: Path,
         for name in sorted(names):
             key = f"{kind}:{name}"
             previous = old_components.get(kind, {}).get(name, {})
-            enabled = bool(previous.get("should_install", True))
+            enabled = True if enable_all else bool(previous.get("should_install", True))
             components.setdefault(kind, {})[name] = {
                 "should_install": enabled,
                 "artifacts": deployed_by_component.get(key, previous.get("artifacts", [])),
@@ -986,7 +988,8 @@ def _update_retention_manifest_on_install(plugin_name: str, deployed_paths: list
 def provision_central_and_symlink(plugin_path: Path, metadata: dict, targets: list,
                                   dry_run: bool = False, install_rules: bool = True,
                                   append_rules_to_ide_files: bool = True,
-                                  skills_filter: str | None = None) -> list:
+                                  skills_filter: str | None = None,
+                                  enable_all: bool = False) -> list:
     """Orchestrate full plugin installation into .agents/ and linked IDE directories.
 
     Copies skills, hooks, commands, agents, rules, and MCP config from the
@@ -1009,6 +1012,7 @@ def provision_central_and_symlink(plugin_path: Path, metadata: dict, targets: li
             .agent/rules/ as sole source of truth and don't want CLAUDE.md
             auto-populated.
         skills_filter: Optional comma-separated list of skill names to install.
+        enable_all: If True, explicit installation re-enables every component.
 
     Returns:
         List of installed skill slug names.
@@ -1018,18 +1022,18 @@ def provision_central_and_symlink(plugin_path: Path, metadata: dict, targets: li
     agents_root = root / ".agents"
     existing_manifest = _load_ownership_manifest(plugin_name, root)
     existing_components = existing_manifest.get("components", {})
-    disabled_skills = [
+    disabled_skills = [] if enable_all else [
         name for name, record in existing_components.get("skills", {}).items()
         if record.get("should_install") is False
     ]
-    disabled_artifacts = [
+    disabled_artifacts = [] if enable_all else [
         artifact
         for records in existing_components.values()
         for record in records.values()
         if record.get("should_install") is False
         for artifact in record.get("artifacts", [])
     ]
-    disabled_components = {
+    disabled_components = set() if enable_all else {
         f"{kind}:{name}"
         for kind, records in existing_components.items()
         for name, record in records.items()
@@ -1068,7 +1072,9 @@ def provision_central_and_symlink(plugin_path: Path, metadata: dict, targets: li
         if component and f"{component[0]}:{component[1]}" in disabled_components:
             disabled_artifacts.append(relative)
     _remove_paths(disabled_artifacts, root, dry_run)
-    write_ownership_manifest(plugin_name, root, plugin_path, deployed_paths, dry_run)
+    write_ownership_manifest(
+        plugin_name, root, plugin_path, deployed_paths, dry_run, enable_all
+    )
     _update_retention_manifest_on_install(plugin_name, deployed_paths, root, dry_run)
     return installed_skills
 
@@ -1153,6 +1159,11 @@ def main() -> None:
                              "(e.g. CLAUDE.md); .agent/rules/ is still written (on by default)")
     parser.add_argument("--skills", type=str, default=None,
                         help="Comma-separated subset of skills to install from this plugin")
+    parser.add_argument(
+        "--enable-all",
+        action="store_true",
+        help="Explicitly re-enable every component in this plugin's ownership manifest",
+    )
     parser.set_defaults(install_rules=True, append_rules_to_ide_files=True)
     args = parser.parse_args()
 
@@ -1173,7 +1184,8 @@ def main() -> None:
     try:
         installed_skills = provision_central_and_symlink(plugin_path, metadata, targets, args.dry_run,
                                                           args.install_rules, args.append_rules_to_ide_files,
-                                                          skills_filter=args.skills)
+                                                          skills_filter=args.skills,
+                                                          enable_all=args.enable_all)
         write_project_lock(plugin_path, metadata, installed_skills, root, args.dry_run)
     except Exception as e:
         import traceback

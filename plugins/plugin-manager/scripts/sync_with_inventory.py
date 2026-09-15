@@ -185,7 +185,15 @@ def sync_source(source_key: str, plugins: list, root: Path, dry_run: bool) -> No
         return
 
     plugins_arg = ",".join(plugins)
-    cmd = [sys.executable, str(plugin_add), source_key, "--plugins", plugins_arg, "--yes"]
+    cmd = [
+        sys.executable,
+        str(plugin_add),
+        source_key,
+        "--plugins",
+        plugins_arg,
+        "--yes",
+        "--preserve-ownership",
+    ]
     if dry_run:
         print(f"  [DRY RUN] Would run: {' '.join(cmd)}")
         return

@@ -58,6 +58,57 @@ def test_installer_filters_skills_and_seeds_retention(tmp_path: Path, monkeypatc
     assert ret_data["plugins"]["sample-plugin"]["skills"]["skill-a"] is True
 
 
+def test_explicit_install_reenables_existing_disabled_components(tmp_path: Path, monkeypatch):
+    root = tmp_path
+    plugin_dir = root / "plugins" / "sample-plugin"
+    skill_dir = plugin_dir / "skills" / "skill-a"
+    skill_dir.mkdir(parents=True)
+    (skill_dir / "SKILL.md").write_text(
+        "---\nname: skill-a\n---\n# Skill A",
+        encoding="utf-8",
+    )
+    (plugin_dir / "plugin.json").write_text(
+        json.dumps({"name": "sample-plugin", "version": "1.0.0"}),
+        encoding="utf-8",
+    )
+    ownership_file = root / ".agents" / "ownership" / "sample-plugin.json"
+    ownership_file.parent.mkdir(parents=True)
+    ownership_file.write_text(
+        json.dumps(
+            {
+                "plugin": "sample-plugin",
+                "components": {
+                    "skills": {
+                        "skill-a": {
+                            "should_install": False,
+                            "artifacts": [".agents/skills/skill-a"],
+                        }
+                    }
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    monkeypatch.chdir(root)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "plugin_installer.py",
+            "--plugin",
+            str(plugin_dir),
+            "--enable-all",
+        ],
+    )
+
+    plugin_installer.main()
+
+    ownership = json.loads(ownership_file.read_text(encoding="utf-8"))
+    assert ownership["components"]["skills"]["skill-a"]["should_install"] is True
+    assert (root / ".agents" / "skills" / "skill-a").exists()
+
+
 def test_customize_plugin_skills_tui_all_toggle(tmp_path: Path):
     # Test helper that processes 'a' key (toggle all)
     skills = ["skill-1", "skill-2", "skill-3"]
@@ -95,4 +146,3 @@ def test_record_install_retention_states_records_false_for_unselected(tmp_path: 
     assert "sample-plugin" in ret_data["plugins"]
     assert ret_data["plugins"]["sample-plugin"]["skills"]["skill-a"] is True
     assert ret_data["plugins"]["sample-plugin"]["skills"]["skill-b"] is False
-

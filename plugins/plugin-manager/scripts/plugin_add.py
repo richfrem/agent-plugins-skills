@@ -843,6 +843,8 @@ def _install_plugins(selected_plugins: list, args, plugin_skills_map: dict | Non
             cmd.append("--no-install-rules")
         if not args.append_rules_to_ide_files:
             cmd.append("--no-append-rules-to-ide-files")
+        if not getattr(args, "preserve_ownership", False):
+            cmd.append("--enable-all")
         if plugin_skills_map and plugin["name"] in plugin_skills_map:
             retained = [s for s, en in plugin_skills_map[plugin["name"]].items() if en]
             cmd.extend(["--skills", ",".join(sorted(retained))])
@@ -993,6 +995,11 @@ def _build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--select-skills", action="store_true",
         help="Interactively select and toggle specific skills within each plugin",
+    )
+    parser.add_argument(
+        "--preserve-ownership",
+        action="store_true",
+        help=argparse.SUPPRESS,
     )
     return parser
 
