@@ -40,7 +40,7 @@ _SCRIPTS_ROOT = Path(__file__).resolve().parent.parent
 if str(_SCRIPTS_ROOT) not in sys.path:
     sys.path.insert(0, str(_SCRIPTS_ROOT))
 
-from control_plane.adapters import CURRENT_SCHEMA_VERSION
+from control_plane.adapters import CURRENT_SCHEMA_VERSION, LEGAL_INITIAL_STATES
 from control_plane.state_machine import ALLOWED_TRANSITIONS
 
 
@@ -58,8 +58,9 @@ class InstallationProbeResult:
     missing: tuple[str, ...]
 
 
-def _expected_transitions() -> set[tuple[str, str]]:
-    return {(source, target) for source, targets in ALLOWED_TRANSITIONS.items() for target in targets}
+def _expected_transitions() -> set[tuple[str | None, str]]:
+    edges: set[tuple[str | None, str]] = {(source, target) for source, targets in ALLOWED_TRANSITIONS.items() for target in targets}
+    return edges | {(None, s) for s in LEGAL_INITIAL_STATES}
 
 
 def _database_findings(db_path: Path) -> list[str]:

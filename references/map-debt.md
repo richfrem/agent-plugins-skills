@@ -15,6 +15,19 @@ Persistent tracking of architectural friction, structural anomalies, and unclose
 - Repeat: NO
 - Status: RESOLVED
 
+## DEBT-20260914-INSTALLATION-PROBE-LEGAL-INITIAL-STATES
+
+- Logged date: 2026-09-14
+- Cycle/Session ID: skill-research-alignment-20260914
+- Artifact affected: `plugins/agent-agentic-os/scripts/control_plane/installation_probe.py`, `plugins/agent-agentic-os/tests/test_installation_probe.py`
+- Friction observed: `installation_probe.py` compared `valid_transitions` rows against `_expected_transitions()` derived solely from `ALLOWED_TRANSITIONS.items()`. But `adapters.py`'s `_sync_valid_transitions` also inserts `[(None, s) for s in LEGAL_INITIAL_STATES]` (from_state IS NULL rows for initial states). Consequently, `installation_probe.py` falsely reported `PARTIAL_OR_DRIFTED` with "valid transition rows drift from state_machine.py" on completely healthy, initialized control plane databases.
+- Why not fixed now: N/A — patched immediately in worktree.
+- Recommended fix / fix applied: Updated `_expected_transitions()` in `installation_probe.py` to union `{(None, s) for s in LEGAL_INITIAL_STATES}`, and synchronized `test_installation_probe.py` scaffold. `classify_target` now accurately reports `COMPLETE`.
+- Evidence/repro: `python3 plugins/agent-agentic-os/scripts/control_plane/installation_probe.py --target .` now returns `{"state": "COMPLETE", "missing": []}`.
+- Severity: S
+- Repeat: NO
+- Status: RESOLVED
+
 ## DEBT-20260914-EXPLORATION-CYCLE-AGENTIC-OS-INTEGRATION
 
 - Logged date: 2026-09-14
@@ -29,6 +42,19 @@ Persistent tracking of architectural friction, structural anomalies, and unclose
 - Status: RESOLVED
 
 
+
+## DEBT-20260914-AMBIGUOUS-DEV-UTILS-DEPENDENCIES
+
+- Logged date: 2026-09-14
+- Cycle/Session ID: skill-research-alignment-20260914
+- Artifact affected: `plugins/dev-utils/skills/coding-conventions-agent`, `context-bundler`, `convert-mermaid`, `hf-init`, `hf-upload`
+- Friction observed: During dependency classification (Target 3), 5 skills in `plugins/dev-utils` contained single-line stand-in pointers `../../requirements.txt` or `../../requirements.in`, but `plugins/dev-utils` lacks a plugin-root `requirements.txt` or `requirements.in`. This creates broken requirement resolution chains that cannot be verified automatically.
+- Why not fixed now: Preserving out-of-scope boundaries — adding new plugin-root requirement manifests or deciding third-party package dependencies for `dev-utils` requires explicit package specification.
+- Recommended fix / fix applied: Scaffolding a canonical `plugins/dev-utils/requirements.in` / `requirements.txt` via `dependency-management` workflow, or adjusting individual skill pointers to point to their own local requirements files.
+- Evidence/repro: `plugins/dev-utils/scripts/classify_skill_dependencies.py` classified these 5 skills as `AMBIGUOUS` with error "File not found: plugins/dev-utils/requirements.txt".
+- Severity: S
+- Repeat: NO
+- Status: OPEN
 
 ## DEBT-20260914-PROGRESSIVE-ELABORATION-SUMMARY-DOC
 
@@ -226,6 +252,7 @@ Persistent tracking of architectural friction, structural anomalies, and unclose
 
 | ID | Title | Status | Severity | Repeat | First Seen | Description | Resolution Commit |
 |---|---|---|---|---|---|---|---|
+| DEBT-20260915-PIPELINE-GUARD-RELATIVE-PATH-REGRESSION | `pre-commit-pipeline-guard`'s registered-worktree location check (~line 97) resolved a repository-relative `worktree_path` against the current shell CWD instead of `REPO_ROOT`, so a legitimate commit from inside the correctly registered worktree was misclassified as "Commit Outside Registered Worktree" and blocked whenever `worktree_path` was stored relative (the normal case, e.g. `.worktrees/task-<id>`). Only an absolute `worktree_path` happened to work. This is a REGRESSION of an already-reviewed fix: the correct case-statement logic (resolve relative paths against `REPO_ROOT` explicitly) existed in commit `45b3fe51` (the reviewed Skill Research Alignment implementation), but a later uncommitted working-tree edit simplified it back to the buggy unconditional form, which was also already live in `.git/hooks/pre-commit-pipeline-guard` at the time of discovery. | RESOLVED | Tier 2 | NO | 2026-09-15 | feature/skill-research-alignment-20260914 | Discovered live while reconstructing task `skill-research-alignment-20260914` after an unauthorized `git reset HEAD~1` (see separate governance findings; tracked independently from GitHub issue #621's human-authorization-provenance finding and from the `git reset HEAD~1` incident itself -- three distinct root causes, not conflated). Not deferred; fixed immediately as part of the same reconstruction session under explicit human authorization for a narrow, canonical-source repair. | Restored the exact case-statement logic from commit `45b3fe51` in `plugins/agent-agentic-os/scripts/pre-commit-pipeline-guard`: compute `RESOLVED_REPO_ROOT` first, then resolve `TASK_WORKTREE_PATH` via `case "$TASK_WORKTREE_PATH" in /*) ... ;; *) cd "$RESOLVED_REPO_ROOT/$TASK_WORKTREE_PATH" ... ;; esac`. Verified byte-for-byte identical to `45b3fe51`'s version via `diff`. Synchronized the installed `.git/hooks/pre-commit-pipeline-guard` copy from the corrected canonical source (matching `init_agentic_os.py`'s own install mechanism: copy + chmod 755, no other changes). Added 4 new regression tests to `plugins/agent-agentic-os/tests/test_pre_commit_pipeline_guard.py` covering relative-path and absolute-path registered worktrees, from both the correct location (PASS) and the wrong location (BLOCK), using real `git worktree add` checkouts. | RED: all 4 new tests run against the pre-fix (buggy) hook -- the two PASS-from-correct-location tests failed exactly as the live incident did (false-positive block), confirming the tests reproduce the regression. GREEN: same 4 tests pass against the restored hook. Full regression: `pytest plugins/agent-agentic-os/tests/test_pre_commit_pipeline_guard.py` = 16 passed. Full `plugins/agent-agentic-os/tests/` suite re-run to confirm no unrelated breakage (see PR for final count). | S | NO | RESOLVED |
 | DEBT-20260910-P0-INTAKE-INSTALL | Installed intake helpers missing; stale detailed reference (details above) | OPEN | Tier 2 | NO | 2026-09-10 | Session p0-observability-foundation: installed engine lacks capability_probe and interview wrapper is absent. Source-helper fallback preserves gates; native planning unavailable. Severity M. | Deferred plugin repair; restore installed dependencies and align reference, then verify installed entry points. |
 | DEBT-20260910-P0-YAML-DB-SYNC | New Standard interview YAML question is not synchronized into the live task’s SQLite question state; transition trigger rejects otherwise complete interview | OPEN | Tier 2 | NO | 2026-09-10 | After adding `interview_planning_model_effort`, policy checklist accepted all six answers but `INTERVIEW -> DRAFT_PLAN` was rejected by the SQLite trigger. Existing wrapper answers also use an `Option ...` prefix that does not match the route check’s canonical classification value. | Provide a migration/registration path for updated stage questions and fix the supported wrapper canonicalization with regression tests; do not bypass trigger or manually rewrite task state. |
 | DEBT-20260910-P0-PLANNING-ONLY-594 | Approved plans had no valid completion path that skipped implementation | OPEN | Tier 1 | NO | 2026-09-10 | GitHub issue #594: `APPROVED` only routed to `IN_WORKTREE`, forcing planning-only work into false implementation ceremony or an incomplete lifecycle. | Add explicit `APPROVED -> RETROSPECTIVE` planning-only edge with human approval, durable planning-only receipt, plan validation, and DONE-path checks. |

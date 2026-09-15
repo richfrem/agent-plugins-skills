@@ -23,10 +23,11 @@ def _scaffold(target: Path, *, version: int = CURRENT_SCHEMA_VERSION, transition
     conn.execute("INSERT INTO schema_version VALUES (?)", (version,))
     conn.execute("CREATE TABLE valid_transitions (from_state TEXT, to_state TEXT)")
     if transitions:
+        from control_plane.adapters import LEGAL_INITIAL_STATES
         from control_plane.state_machine import ALLOWED_TRANSITIONS
-        conn.executemany("INSERT INTO valid_transitions VALUES (?, ?)",
-                         [(source, target_state) for source, targets in ALLOWED_TRANSITIONS.items()
-                          for target_state in targets])
+        valid_rows = [(source, target_state) for source, targets in ALLOWED_TRANSITIONS.items()
+                      for target_state in targets] + [(None, s) for s in LEGAL_INITIAL_STATES]
+        conn.executemany("INSERT INTO valid_transitions VALUES (?, ?)", valid_rows)
     conn.execute("CREATE TRIGGER enforce_valid_transition AFTER INSERT ON schema_version BEGIN SELECT 1; END")
     conn.commit()
     conn.close()

@@ -180,6 +180,10 @@ class _FakePersistencePort(PersistencePort):
     def insert_asymmetric_persistence(self, task_id, destination, status, details) -> None:
         self.calls.append(("insert_asymmetric_persistence", task_id, destination, status, details))
 
+    def get_latest_asymmetric_persistence(self, task_id, destination=None) -> Optional[Dict[str, Any]]:
+        self.calls.append(("get_latest_asymmetric_persistence", task_id, destination))
+        return None
+
     def get_guidance_block_reason(self, task_id):
         self.calls.append(("get_guidance_block_reason", task_id))
         return getattr(self, "_guidance_block_reason", None)

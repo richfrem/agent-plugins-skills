@@ -8,27 +8,10 @@ allowed-tools: Bash, Read, Write
 
 > Architectural patterns adapted from [obra/superpowers](https://github.com/obra/superpowers) (MIT)
 
-## Dashboard Intercept
+## Execution Substrate: Agentic OS Integration
 
-Before doing anything else, silently check for `exploration/exploration-dashboard.md`.
-
-- **If the file EXISTS:**
-  - Read the file and check the status. If status is `Complete`, proceed standalone.
-  - If status is `In Progress` or `TBD`:
-    - **Check for the presence of the `<ORCHESTRATOR_DISPATCH>` tag in the immediate context.**
-    - If the tag is PRESENT:
-      - Extract and verify `authorized_skill`, `phase_number`, and `expected_output`.
-      - If `authorized_skill` matches "subagent-driven-prototyping" AND `phase_number` matches the dashboard phase:
-        - Proceed with this skill's logic. (You are authorized by the orchestrator).
-        - **Note:** The orchestrator manages dispatch token lifecycle. This tag is valid for the current phase only — it becomes stale once the orchestrator advances the dashboard in Block 6.
-      - If verification fails (mismatched name or stale phase):
-        - Stop immediately. Announce: *"Orchestrator dispatch verification failed. Returning to dashboard."*
-        - Return control. Invoke skill: `exploration-workflow`. Stop generating output.
-    - If the tag is ABSENT or malformed:
-      - Stop immediately. Do not continue.
-      - Announce: *"It looks like you have an active Exploration Session. Let me take you back to your session dashboard."*
-      - Return control to the orchestrator. Invoke skill: `exploration-workflow`. Stop generating output from this skill.
-- **If the file DOES NOT exist:** Proceed standalone.
+Exploration Cycle operates on the Agentic OS execution substrate (`os-init`).
+Sub-workflow state is managed programmatically via `plugins/exploration-cycle-plugin/scripts/exploration_session.py`.
 
 <example>
 <commentary>Demonstrates the skill being invoked by prototype-builder after layout has been confirmed by visual-companion.</commentary>

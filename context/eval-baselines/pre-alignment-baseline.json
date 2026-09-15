@@ -1,0 +1,3279 @@
+{
+  "plugins/cli-agents/skills/agent-file-synchronization": {
+    "quality_score": 0.6499999999999999,
+    "accuracy": 0.5,
+    "precision": 0.5,
+    "recall": 1.0,
+    "f1": 0.6666666666666666,
+    "heuristic": 1.0,
+    "routing_detail": [
+      {
+        "input": "sync claude.md to the other agent instruction files",
+        "should_trigger": true,
+        "matched_keywords": [
+          "agent",
+          "claude",
+          "files",
+          "instruction",
+          "sync"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "i just updated claude.md, propagate the changes to gemini.md and copilot-instructions.md",
+        "should_trigger": true,
+        "matched_keywords": [
+          "claude",
+          "copilot",
+          "gemini",
+          "instructions"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "replicate claude.md to agents.md, gemini.md, and copilot-instructions.md",
+        "should_trigger": true,
+        "matched_keywords": [
+          "agents",
+          "claude",
+          "copilot",
+          "gemini",
+          "instructions",
+          "replicate"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "audit my claude.md against karpathy's principles and rewrite the whole thing",
+        "should_trigger": false,
+        "matched_keywords": [
+          "claude"
+        ],
+        "triggered": true,
+        "correct": false,
+        "failure_reason": "false positive \u2014 keywords ['claude'] matched a should_trigger=false input"
+      },
+      {
+        "input": "scaffold agent config for a brand new project, both claude code and gemini cli",
+        "should_trigger": false,
+        "matched_keywords": [
+          "agent",
+          "claude",
+          "gemini",
+          "project"
+        ],
+        "triggered": true,
+        "correct": false,
+        "failure_reason": "false positive \u2014 keywords ['agent', 'claude', 'gemini', 'project'] matched a should_trigger=false input"
+      },
+      {
+        "input": "explain what the coding-conventions-agent skill does",
+        "should_trigger": false,
+        "matched_keywords": [
+          "agent"
+        ],
+        "triggered": true,
+        "correct": false,
+        "failure_reason": "false positive \u2014 keywords ['agent'] matched a should_trigger=false input"
+      }
+    ],
+    "heuristic_detail": [
+      {
+        "check": "folder_name_matches",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "description_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "example_blocks",
+        "penalty": 0.0,
+        "passed": true,
+        "note": "3 blocks found"
+      },
+      {
+        "check": "body_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "references_non_empty",
+        "penalty": 0.0,
+        "passed": true
+      }
+    ]
+  },
+  "plugins/cli-agents/skills/agt-security": {
+    "quality_score": 0.63,
+    "accuracy": 0.6,
+    "precision": 0.6666666666666666,
+    "recall": 0.6666666666666666,
+    "f1": 0.6666666666666666,
+    "heuristic": 0.7,
+    "routing_detail": [
+      {
+        "input": "verify the agt sandbox is properly configured and environment variables are scrubbed.",
+        "should_trigger": true,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": false,
+        "failure_reason": "false negative \u2014 no keywords matched a should_trigger=true input"
+      },
+      {
+        "input": "rotate the hmac key for the local agt control plane.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "hmac"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "check that the allowed path boundaries are enforcing out-of-bounds access exceptions.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "boundaries"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "run a general security audit on my codebase for owasp vulnerabilities.",
+        "should_trigger": false,
+        "matched_keywords": [
+          "security"
+        ],
+        "triggered": true,
+        "correct": false,
+        "failure_reason": "false positive \u2014 keywords ['security'] matched a should_trigger=false input"
+      },
+      {
+        "input": "set up the local gemma llm server.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      }
+    ],
+    "heuristic_detail": [
+      {
+        "check": "folder_name_matches",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "description_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "example_blocks",
+        "penalty": -0.3,
+        "passed": false
+      },
+      {
+        "check": "body_length",
+        "penalty": 0.0,
+        "passed": true
+      }
+    ]
+  },
+  "plugins/cli-agents/skills/agy-cli-agent": {
+    "quality_score": 0.5918181818181818,
+    "accuracy": 0.5454545454545454,
+    "precision": 0.5714285714285714,
+    "recall": 0.6666666666666666,
+    "f1": 0.6153846153846153,
+    "heuristic": 0.7,
+    "routing_detail": [
+      {
+        "input": "use agy to run a security audit on this codebase",
+        "should_trigger": true,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": false,
+        "failure_reason": "false negative \u2014 no keywords matched a should_trigger=true input"
+      },
+      {
+        "input": "dispatch this to antigravity for an architecture review",
+        "should_trigger": true,
+        "matched_keywords": [
+          "antigravity",
+          "dispatch"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "run a code review using the agy cli sub-agent",
+        "should_trigger": true,
+        "matched_keywords": [
+          "agent"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "use a frontier gemini model to analyze this large context",
+        "should_trigger": true,
+        "matched_keywords": [
+          "gemini",
+          "model"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "pipe this bundle to agy for qa analysis",
+        "should_trigger": true,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": false,
+        "failure_reason": "false negative \u2014 no keywords matched a should_trigger=true input"
+      },
+      {
+        "input": "send this to agy with the security-auditor persona",
+        "should_trigger": true,
+        "matched_keywords": [
+          "with"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "run an architecture review using gemini cli",
+        "should_trigger": false,
+        "matched_keywords": [
+          "gemini"
+        ],
+        "triggered": true,
+        "correct": false,
+        "failure_reason": "false positive \u2014 keywords ['gemini'] matched a should_trigger=false input"
+      },
+      {
+        "input": "use gemini-3-flash-preview to review this file",
+        "should_trigger": false,
+        "matched_keywords": [
+          "flash",
+          "gemini"
+        ],
+        "triggered": true,
+        "correct": false,
+        "failure_reason": "false positive \u2014 keywords ['flash', 'gemini'] matched a should_trigger=false input"
+      },
+      {
+        "input": "install the agy cli on my machine",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "what is the antigravity cli?",
+        "should_trigger": false,
+        "matched_keywords": [
+          "antigravity"
+        ],
+        "triggered": true,
+        "correct": false,
+        "failure_reason": "false positive \u2014 keywords ['antigravity'] matched a should_trigger=false input"
+      },
+      {
+        "input": "summarize this file for me",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      }
+    ],
+    "heuristic_detail": [
+      {
+        "check": "folder_name_matches",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "description_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "example_blocks",
+        "penalty": -0.3,
+        "passed": false
+      },
+      {
+        "check": "body_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "references_non_empty",
+        "penalty": 0.0,
+        "passed": true
+      }
+    ]
+  },
+  "plugins/cli-agents/skills/claude-cli-agent": {
+    "quality_score": 0.6766666666666666,
+    "accuracy": 0.6666666666666666,
+    "precision": 0.6,
+    "recall": 1.0,
+    "f1": 0.7499999999999999,
+    "heuristic": 0.7,
+    "routing_detail": [
+      {
+        "input": "use claude cli sub-agent to pipe this large codebase to a fresh model context for a security audit.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "agent",
+          "claude",
+          "context",
+          "fresh",
+          "large",
+          "model",
+          "security"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "run an architecture review on this file using the claude cli sub-agent system with the architect-review persona.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "agent",
+          "architecture",
+          "claude",
+          "persona",
+          "system"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "dispatch a specialized qa analysis task to a claude cli sub-agent using run_agent.py.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "agent",
+          "analysis",
+          "claude",
+          "specialized"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "set up the .claude directory and scaffold claude.md for this project.",
+        "should_trigger": false,
+        "matched_keywords": [
+          "claude"
+        ],
+        "triggered": true,
+        "correct": false,
+        "failure_reason": "false positive \u2014 keywords ['claude'] matched a should_trigger=false input"
+      },
+      {
+        "input": "review this code inline for coding conventions compliance.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "bundle these project files into a markdown context bundle.",
+        "should_trigger": false,
+        "matched_keywords": [
+          "context"
+        ],
+        "triggered": true,
+        "correct": false,
+        "failure_reason": "false positive \u2014 keywords ['context'] matched a should_trigger=false input"
+      }
+    ],
+    "heuristic_detail": [
+      {
+        "check": "folder_name_matches",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "description_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "example_blocks",
+        "penalty": -0.3,
+        "passed": false
+      },
+      {
+        "check": "body_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "references_non_empty",
+        "penalty": 0.0,
+        "passed": true
+      }
+    ]
+  },
+  "plugins/cli-agents/skills/codex-cli-agent": {
+    "quality_score": 0.7699999999999999,
+    "accuracy": 0.8,
+    "precision": 0.75,
+    "recall": 1.0,
+    "f1": 0.8571428571428571,
+    "heuristic": 0.7,
+    "routing_detail": [
+      {
+        "input": "dispatch this code review task to codex cli using gpt-5 codex.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "code",
+          "codex",
+          "task"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "run this refactoring job through the codex binary.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "binary",
+          "codex"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "route this security audit to the openai-compatible endpoint via run_agent.py.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "compatible",
+          "endpoint",
+          "openai",
+          "run_agent"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "dispatch this task to the copilot cli instead.",
+        "should_trigger": false,
+        "matched_keywords": [
+          "task"
+        ],
+        "triggered": true,
+        "correct": false,
+        "failure_reason": "false positive \u2014 keywords ['task'] matched a should_trigger=false input"
+      },
+      {
+        "input": "run this through the local gemma model at localhost.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      }
+    ],
+    "heuristic_detail": [
+      {
+        "check": "folder_name_matches",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "description_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "example_blocks",
+        "penalty": -0.3,
+        "passed": false
+      },
+      {
+        "check": "body_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "references_non_empty",
+        "penalty": 0.0,
+        "passed": true
+      }
+    ]
+  },
+  "plugins/cli-agents/skills/copilot-cli-agent": {
+    "quality_score": 0.6766666666666666,
+    "accuracy": 0.6666666666666666,
+    "precision": 0.6363636363636364,
+    "recall": 1.0,
+    "f1": 0.7777777777777778,
+    "heuristic": 0.7,
+    "routing_detail": [
+      {
+        "input": "run a security audit on this codebase using copilot cli",
+        "should_trigger": true,
+        "matched_keywords": [
+          "copilot",
+          "security"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "use copilot to do an architecture review on this large context",
+        "should_trigger": true,
+        "matched_keywords": [
+          "architecture",
+          "context",
+          "copilot"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "pipe this bundle to copilot for qa analysis",
+        "should_trigger": true,
+        "matched_keywords": [
+          "analysis",
+          "copilot"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "run a persona-based analysis using the copilot cli sub-agent",
+        "should_trigger": true,
+        "matched_keywords": [
+          "agent",
+          "analysis",
+          "based",
+          "copilot",
+          "persona"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "use github copilot cli to review this file for security issues",
+        "should_trigger": true,
+        "matched_keywords": [
+          "copilot",
+          "github",
+          "security"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "send this large context to copilot for a fresh model perspective",
+        "should_trigger": true,
+        "matched_keywords": [
+          "context",
+          "copilot",
+          "fresh",
+          "model"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "run a qa scan using copilot -p on this code bundle",
+        "should_trigger": true,
+        "matched_keywords": [
+          "copilot"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "install the copilot cli tool on my machine",
+        "should_trigger": false,
+        "matched_keywords": [
+          "copilot"
+        ],
+        "triggered": true,
+        "correct": false,
+        "failure_reason": "false positive \u2014 keywords ['copilot'] matched a should_trigger=false input"
+      },
+      {
+        "input": "help me write a github actions workflow",
+        "should_trigger": false,
+        "matched_keywords": [
+          "github"
+        ],
+        "triggered": true,
+        "correct": false,
+        "failure_reason": "false positive \u2014 keywords ['github'] matched a should_trigger=false input"
+      },
+      {
+        "input": "run a security audit using gemini cli instead",
+        "should_trigger": false,
+        "matched_keywords": [
+          "security"
+        ],
+        "triggered": true,
+        "correct": false,
+        "failure_reason": "false positive \u2014 keywords ['security'] matched a should_trigger=false input"
+      },
+      {
+        "input": "summarize this file for me",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "what is github copilot?",
+        "should_trigger": false,
+        "matched_keywords": [
+          "copilot",
+          "github"
+        ],
+        "triggered": true,
+        "correct": false,
+        "failure_reason": "false positive \u2014 keywords ['copilot', 'github'] matched a should_trigger=false input"
+      }
+    ],
+    "heuristic_detail": [
+      {
+        "check": "folder_name_matches",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "description_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "example_blocks",
+        "penalty": -0.3,
+        "passed": false
+      },
+      {
+        "check": "body_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "references_non_empty",
+        "penalty": 0.0,
+        "passed": true
+      }
+    ]
+  },
+  "plugins/cli-agents/skills/local-llm-bridge": {
+    "quality_score": 0.63,
+    "accuracy": 0.6,
+    "precision": 0.6,
+    "recall": 1.0,
+    "f1": 0.7499999999999999,
+    "heuristic": 0.7,
+    "routing_detail": [
+      {
+        "input": "send this task to the local gemma model running at localhost:8089.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "8089",
+          "gemma",
+          "local",
+          "localhost",
+          "task"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "run this code review against the local llm directly using cli=llama.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "directly",
+          "llama",
+          "local"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "dispatch a fast subtask to the local llm \u2014 no proxy, no cloud api.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "cloud",
+          "fast",
+          "local",
+          "proxy",
+          "subtask"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "set up the local llm server and install the routing proxy daemon.",
+        "should_trigger": false,
+        "matched_keywords": [
+          "local",
+          "proxy",
+          "routing",
+          "server"
+        ],
+        "triggered": true,
+        "correct": false,
+        "failure_reason": "false positive \u2014 keywords ['local', 'proxy', 'routing', 'server'] matched a should_trigger=false input"
+      },
+      {
+        "input": "route all claude code requests through the local model via mode a proxy.",
+        "should_trigger": false,
+        "matched_keywords": [
+          "local",
+          "proxy"
+        ],
+        "triggered": true,
+        "correct": false,
+        "failure_reason": "false positive \u2014 keywords ['local', 'proxy'] matched a should_trigger=false input"
+      }
+    ],
+    "heuristic_detail": [
+      {
+        "check": "folder_name_matches",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "description_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "example_blocks",
+        "penalty": -0.3,
+        "passed": false
+      },
+      {
+        "check": "body_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "references_non_empty",
+        "penalty": 0.0,
+        "passed": true
+      }
+    ]
+  },
+  "plugins/cli-agents/skills/local-llm-setup": {
+    "quality_score": 0.72,
+    "accuracy": 0.6,
+    "precision": 0.6,
+    "recall": 1.0,
+    "f1": 0.7499999999999999,
+    "heuristic": 1.0,
+    "routing_detail": [
+      {
+        "input": "set up gemma 4 12b on my m1 mac with metal gpu acceleration.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "gemma",
+          "metal"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "install llama-server and configure the routing proxy daemon.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "daemon",
+          "install",
+          "llama",
+          "proxy",
+          "routing",
+          "server"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "bootstrap the local llm inference stack from scratch.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "bootstrap",
+          "inference",
+          "local",
+          "stack"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "download a model weight file from huggingface.",
+        "should_trigger": false,
+        "matched_keywords": [
+          "download",
+          "model"
+        ],
+        "triggered": true,
+        "correct": false,
+        "failure_reason": "false positive \u2014 keywords ['download', 'model'] matched a should_trigger=false input"
+      },
+      {
+        "input": "send a task to the local gemma model via the llama backend.",
+        "should_trigger": false,
+        "matched_keywords": [
+          "gemma",
+          "llama",
+          "local",
+          "model"
+        ],
+        "triggered": true,
+        "correct": false,
+        "failure_reason": "false positive \u2014 keywords ['gemma', 'llama', 'local', 'model'] matched a should_trigger=false input"
+      }
+    ],
+    "heuristic_detail": [
+      {
+        "check": "folder_name_matches",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "description_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "example_blocks",
+        "penalty": 0.0,
+        "passed": true,
+        "note": "2 blocks found"
+      },
+      {
+        "check": "body_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "references_non_empty",
+        "penalty": 0.0,
+        "passed": true
+      }
+    ]
+  },
+  "plugins/cli-agents/skills/maf-adapter": {
+    "quality_score": 0.49,
+    "accuracy": 0.4,
+    "precision": 0.5,
+    "recall": 0.6666666666666666,
+    "f1": 0.5714285714285715,
+    "heuristic": 0.7,
+    "routing_detail": [
+      {
+        "input": "test my exploration-cycle skill inside the microsoft agent framework locally.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "agent",
+          "framework",
+          "microsoft",
+          "test"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "validate my plugin manifest for maf v1.7 compatibility.",
+        "should_trigger": true,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": false,
+        "failure_reason": "false negative \u2014 no keywords matched a should_trigger=true input"
+      },
+      {
+        "input": "simulate maf execution for this skill using the local test harness.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "harness",
+          "local",
+          "test"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "deploy my plugin to azure agent service.",
+        "should_trigger": false,
+        "matched_keywords": [
+          "agent"
+        ],
+        "triggered": true,
+        "correct": false,
+        "failure_reason": "false positive \u2014 keywords ['agent'] matched a should_trigger=false input"
+      },
+      {
+        "input": "create a new agent skill from scratch.",
+        "should_trigger": false,
+        "matched_keywords": [
+          "agent"
+        ],
+        "triggered": true,
+        "correct": false,
+        "failure_reason": "false positive \u2014 keywords ['agent'] matched a should_trigger=false input"
+      }
+    ],
+    "heuristic_detail": [
+      {
+        "check": "folder_name_matches",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "description_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "example_blocks",
+        "penalty": -0.3,
+        "passed": false
+      },
+      {
+        "check": "body_length",
+        "penalty": 0.0,
+        "passed": true
+      }
+    ]
+  },
+  "plugins/cli-agents/skills/project-setup": {
+    "quality_score": 0.6766666666666666,
+    "accuracy": 0.6666666666666666,
+    "precision": 0.6666666666666666,
+    "recall": 1.0,
+    "f1": 0.8,
+    "heuristic": 0.7,
+    "routing_detail": [
+      {
+        "input": "set up the claude code configuration files for my new project.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "claude",
+          "code",
+          "configuration",
+          "files",
+          "project"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "scaffold the agent configuration for this monorepo \u2014 claude code and google adk.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "agent",
+          "claude",
+          "code",
+          "configuration",
+          "google",
+          "scaffold",
+          "this"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "os-init and os-health-check are complete; discover my available agent runtimes and write my low, medium, and high model preferences before setting up the project.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "agent",
+          "project"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "create claude.md and .claude/settings.json for my python backend project.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "claude",
+          "project",
+          "settings"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "install the agent-scaffolders plugin into this project.",
+        "should_trigger": false,
+        "matched_keywords": [
+          "agent",
+          "project",
+          "this"
+        ],
+        "triggered": true,
+        "correct": false,
+        "failure_reason": "false positive \u2014 keywords ['agent', 'project', 'this'] matched a should_trigger=false input"
+      },
+      {
+        "input": "create a new skill for my plugin.",
+        "should_trigger": false,
+        "matched_keywords": [
+          "skill"
+        ],
+        "triggered": true,
+        "correct": false,
+        "failure_reason": "false positive \u2014 keywords ['skill'] matched a should_trigger=false input"
+      }
+    ],
+    "heuristic_detail": [
+      {
+        "check": "folder_name_matches",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "description_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "example_blocks",
+        "penalty": -0.3,
+        "passed": false
+      },
+      {
+        "check": "body_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "references_non_empty",
+        "penalty": 0.0,
+        "passed": true
+      }
+    ]
+  },
+  "plugins/cli-agents/skills/update-cli-models": {
+    "quality_score": 0.6766666666666666,
+    "accuracy": 0.6666666666666666,
+    "precision": 0.6666666666666666,
+    "recall": 1.0,
+    "f1": 0.8,
+    "heuristic": 0.7,
+    "routing_detail": [
+      {
+        "input": "update cli models \u2014 copilot just added new models and the prices changed",
+        "should_trigger": true,
+        "matched_keywords": [
+          "changed",
+          "copilot",
+          "models",
+          "prices",
+          "update"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "model costs are stale, refresh the model catalog",
+        "should_trigger": true,
+        "matched_keywords": [
+          "catalog",
+          "costs",
+          "model",
+          "refresh",
+          "stale"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "update agy models json with the latest gemini pricing",
+        "should_trigger": true,
+        "matched_keywords": [
+          "json",
+          "models",
+          "pricing",
+          "update",
+          "with"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "sync model catalog and propagate cheapest models to all copies",
+        "should_trigger": true,
+        "matched_keywords": [
+          "catalog",
+          "cheapest",
+          "copies",
+          "model",
+          "models",
+          "sync"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "run a copilot agent to refactor this file",
+        "should_trigger": false,
+        "matched_keywords": [
+          "copilot"
+        ],
+        "triggered": true,
+        "correct": false,
+        "failure_reason": "false positive \u2014 keywords ['copilot'] matched a should_trigger=false input"
+      },
+      {
+        "input": "what is the cheapest copilot model right now",
+        "should_trigger": false,
+        "matched_keywords": [
+          "cheapest",
+          "copilot",
+          "model"
+        ],
+        "triggered": true,
+        "correct": false,
+        "failure_reason": "false positive \u2014 keywords ['cheapest', 'copilot', 'model'] matched a should_trigger=false input"
+      }
+    ],
+    "heuristic_detail": [
+      {
+        "check": "folder_name_matches",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "description_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "example_blocks",
+        "penalty": -0.3,
+        "passed": false
+      },
+      {
+        "check": "body_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "references_non_empty",
+        "penalty": 0.0,
+        "passed": true
+      }
+    ]
+  },
+  "plugins/exploration-cycle-plugin/skills/business-requirements-capture": {
+    "quality_score": 1.0,
+    "accuracy": 1.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "heuristic": 1.0,
+    "routing_detail": [
+      {
+        "input": "generate a brd from our session captures.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "captures",
+          "generate"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "document the business rules we identified during exploration.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "business",
+          "document",
+          "rules"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "list all the constraints and assumptions from our captures.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "assumptions",
+          "captures",
+          "constraints",
+          "list"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "create a requirements document from the problem framing we did.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "create",
+          "document",
+          "requirements"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "let's kick off a new exploration session.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "prioritize the backlog items for next sprint.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "i finished exploration \u2014 help me put together the handoff package.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "deploy the latest build to staging.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "summarize last week's retro notes.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      }
+    ],
+    "heuristic_detail": [
+      {
+        "check": "folder_name_matches",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "description_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "example_blocks",
+        "penalty": 0.0,
+        "passed": true,
+        "note": "3 blocks found"
+      },
+      {
+        "check": "body_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "references_non_empty",
+        "penalty": 0.0,
+        "passed": true
+      }
+    ]
+  },
+  "plugins/exploration-cycle-plugin/skills/business-workflow-doc": {
+    "quality_score": 1.0,
+    "accuracy": 1.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "heuristic": 1.0,
+    "routing_detail": [
+      {
+        "input": "map the business process we identified in our exploration session.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "business",
+          "exploration",
+          "process",
+          "session"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "document the order status workflow as a state diagram.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "diagram",
+          "document",
+          "state",
+          "workflow"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "flowchart the approval process from the session captures.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "approval",
+          "captures",
+          "flowchart",
+          "from",
+          "process",
+          "session"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "visualize the current system state machine before we redesign it.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "machine",
+          "state",
+          "visualize"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "deploy the latest build to staging.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "prioritize the backlog items for next sprint.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "refactor the login module for clarity.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "fix the failing unit test.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      }
+    ],
+    "heuristic_detail": [
+      {
+        "check": "folder_name_matches",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "description_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "example_blocks",
+        "penalty": 0.0,
+        "passed": true,
+        "note": "3 blocks found"
+      },
+      {
+        "check": "body_length",
+        "penalty": 0.0,
+        "passed": true
+      }
+    ]
+  },
+  "plugins/exploration-cycle-plugin/skills/discovery-planning": {
+    "quality_score": 1.0,
+    "accuracy": 1.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "heuristic": 1.0,
+    "routing_detail": [
+      {
+        "input": "start a discovery session for my new idea.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "discovery",
+          "idea",
+          "session",
+          "start"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "let's plan this out before we build anything.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "before",
+          "plan",
+          "this"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "i have an idea i want to explore \u2014 help me figure out what we're actually building.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "building",
+          "explore",
+          "figure",
+          "have",
+          "help",
+          "idea",
+          "want",
+          "what"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "help me think through the scope before we start building.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "before",
+          "building",
+          "help",
+          "start",
+          "through"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "build a working demo of my scheduling app.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "generate user stories using our brd.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "fix the failing unit test in the auth module.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "show me layout options for the dashboard.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "deploy the latest release to staging.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      }
+    ],
+    "heuristic_detail": [
+      {
+        "check": "folder_name_matches",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "description_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "example_blocks",
+        "penalty": 0.0,
+        "passed": true,
+        "note": "3 blocks found"
+      },
+      {
+        "check": "body_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "references_non_empty",
+        "penalty": 0.0,
+        "passed": true
+      }
+    ]
+  },
+  "plugins/exploration-cycle-plugin/skills/exploration-handoff": {
+    "quality_score": 1.0,
+    "accuracy": 1.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "heuristic": 1.0,
+    "routing_detail": [
+      {
+        "input": "i finished my exploration session, help me write the handoff package.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "exploration",
+          "handoff",
+          "package",
+          "session"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "synthesize our session captures into a handoff for the engineering team.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "handoff",
+          "into",
+          "session"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "prepare a handoff document from all our exploration artifacts.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "exploration",
+          "handoff"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "we're done exploring \u2014 let's produce the handoff for the spec authors.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "handoff"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "schedule a code review for tomorrow morning.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "generate a brd from our captures.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "create gherkin acceptance criteria for these stories.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "audit the database schema for compliance issues.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "fix the failing auth test.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      }
+    ],
+    "heuristic_detail": [
+      {
+        "check": "folder_name_matches",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "description_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "example_blocks",
+        "penalty": 0.0,
+        "passed": true,
+        "note": "3 blocks found"
+      },
+      {
+        "check": "body_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "references_non_empty",
+        "penalty": 0.0,
+        "passed": true
+      }
+    ]
+  },
+  "plugins/exploration-cycle-plugin/skills/exploration-optimizer": {
+    "quality_score": 1.0,
+    "accuracy": 1.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "heuristic": 1.0,
+    "routing_detail": [
+      {
+        "input": "evaluate and improve the exploration-session-brief skill.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "exploration"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "run an optimization loop on our exploration workflow to find what to improve.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "exploration"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "the exploration cycle feels slow \u2014 help me identify which skill to optimize first.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "cycle",
+          "exploration",
+          "first"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "iterate on the business-requirements-capture prompts to improve brd quality.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "prompts",
+          "quality"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "generate a brd from our session captures.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "refactor the login module for clarity.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "create user stories from the brd.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "deploy the latest build to production.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      }
+    ],
+    "heuristic_detail": [
+      {
+        "check": "folder_name_matches",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "description_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "example_blocks",
+        "penalty": 0.0,
+        "passed": true,
+        "note": "3 blocks found"
+      },
+      {
+        "check": "body_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "references_non_empty",
+        "penalty": 0.0,
+        "passed": true
+      }
+    ]
+  },
+  "plugins/exploration-cycle-plugin/skills/exploration-session-brief": {
+    "quality_score": 1.0,
+    "accuracy": 1.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "heuristic": 1.0,
+    "routing_detail": [
+      {
+        "input": "let's kick off a new exploration session. i want to capture a brief for the problem i've been thinking about.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "brief",
+          "exploration"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "i have a rough idea to explore \u2014 it's somewhere between a process improvement and a new feature. can you help me think it through and write it up?",
+        "should_trigger": true,
+        "matched_keywords": [
+          "improvement",
+          "process",
+          "through"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "i need to capture a session brief for a research spike we're starting on our data pipeline.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "brief",
+          "research"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "help me draft an exploration brief \u2014 i want to understand the problem before we build anything.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "brief",
+          "exploration"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "deploy the latest build to production.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "fix the failing unit test in the auth module.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "generate a commit message for these changes.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "summarize last week's meeting notes.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "what time is it in new york?",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      }
+    ],
+    "heuristic_detail": [
+      {
+        "check": "folder_name_matches",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "description_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "example_blocks",
+        "penalty": 0.0,
+        "passed": true,
+        "note": "4 blocks found"
+      },
+      {
+        "check": "body_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "references_non_empty",
+        "penalty": 0.0,
+        "passed": true
+      }
+    ]
+  },
+  "plugins/exploration-cycle-plugin/skills/exploration-workflow": {
+    "quality_score": 1.0,
+    "accuracy": 1.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "heuristic": 1.0,
+    "routing_detail": [
+      {
+        "input": "walk me through the full phase a exploration cycle.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "exploration",
+          "phase"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "how do i run the exploration workflow end to end?",
+        "should_trigger": true,
+        "matched_keywords": [
+          "exploration"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "run the exploration workflow on this problem.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "exploration",
+          "this"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "what are the phases of the exploration cycle and how do they connect?",
+        "should_trigger": true,
+        "matched_keywords": [
+          "exploration",
+          "phases"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "build a stakeholder map for the new initiative.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "create a mermaid diagram of the approval process.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "deploy the latest build to production.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "fix the failing unit test in the auth module.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      }
+    ],
+    "heuristic_detail": [
+      {
+        "check": "folder_name_matches",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "description_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "example_blocks",
+        "penalty": 0.0,
+        "passed": true,
+        "note": "3 blocks found"
+      },
+      {
+        "check": "body_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "references_non_empty",
+        "penalty": 0.0,
+        "passed": true
+      }
+    ]
+  },
+  "plugins/exploration-cycle-plugin/skills/prototype-builder": {
+    "quality_score": 1.0,
+    "accuracy": 1.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "heuristic": 1.0,
+    "routing_detail": [
+      {
+        "input": "build an exploratory prototype to make the ambiguous product direction concrete",
+        "should_trigger": true,
+        "matched_keywords": [
+          "build",
+          "exploratory",
+          "prototype"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "create a working frontend prototype to test the concept before we commit to specs",
+        "should_trigger": true,
+        "matched_keywords": [
+          "create",
+          "prototype",
+          "working"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "build or refine a full-stack learning artifact to clarify the scope",
+        "should_trigger": true,
+        "matched_keywords": [
+          "build",
+          "clarify",
+          "full",
+          "scope"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "write up the formal business requirements document from our session",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "coordinate the exploration loop and route to specialized agents",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "prepare the final handoff package for the engineering team",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      }
+    ],
+    "heuristic_detail": [
+      {
+        "check": "folder_name_matches",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "description_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "example_blocks",
+        "penalty": 0.0,
+        "passed": true,
+        "note": "2 blocks found"
+      },
+      {
+        "check": "body_length",
+        "penalty": 0.0,
+        "passed": true
+      }
+    ]
+  },
+  "plugins/exploration-cycle-plugin/skills/subagent-driven-prototyping": {
+    "quality_score": 1.0,
+    "accuracy": 1.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "heuristic": 1.0,
+    "routing_detail": [
+      {
+        "input": "build the prototype now.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "build",
+          "prototype"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "let's build it \u2014 i've approved the layout.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "build",
+          "layout"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "start building the prototype components.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "building",
+          "prototype",
+          "start"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "assemble the prototype from the approved plan.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "plan",
+          "prototype"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "kick off a planning session for this feature.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "generate a brd using our session brief.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "show me wireframe options for the ui.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "fix the broken login form.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "run the test suite.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      }
+    ],
+    "heuristic_detail": [
+      {
+        "check": "folder_name_matches",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "description_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "example_blocks",
+        "penalty": 0.0,
+        "passed": true,
+        "note": "2 blocks found"
+      },
+      {
+        "check": "body_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "references_non_empty",
+        "penalty": 0.0,
+        "passed": true
+      }
+    ]
+  },
+  "plugins/exploration-cycle-plugin/skills/user-story-capture": {
+    "quality_score": 1.0,
+    "accuracy": 1.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "heuristic": 1.0,
+    "routing_detail": [
+      {
+        "input": "generate user stories from our brd.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "from",
+          "generate",
+          "stories",
+          "user"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "create gherkin acceptance criteria for these requirements.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "acceptance",
+          "create",
+          "criteria",
+          "gherkin",
+          "requirements"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "derive a prioritised backlog from our exploration captures.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "backlog",
+          "derive",
+          "exploration",
+          "from"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "write acceptance criteria for the checkout flow stories.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "acceptance",
+          "criteria",
+          "stories",
+          "write"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "deploy the latest build to staging.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "check the ci pipeline status.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "map the checkout flow as a mermaid diagram.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "refactor the login module for clarity.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "fix the failing unit test.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      }
+    ],
+    "heuristic_detail": [
+      {
+        "check": "folder_name_matches",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "description_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "example_blocks",
+        "penalty": 0.0,
+        "passed": true,
+        "note": "3 blocks found"
+      },
+      {
+        "check": "body_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "references_non_empty",
+        "penalty": 0.0,
+        "passed": true
+      }
+    ]
+  },
+  "plugins/exploration-cycle-plugin/skills/using-exploration-cycle": {
+    "quality_score": 0.7699999999999999,
+    "accuracy": 0.8,
+    "precision": 1.0,
+    "recall": 0.6666666666666666,
+    "f1": 0.8,
+    "heuristic": 0.7,
+    "routing_detail": [
+      {
+        "input": "i have an idea i want to explore \u2014 let's start a discovery session.",
+        "should_trigger": true,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": false,
+        "failure_reason": "false negative \u2014 no keywords matched a should_trigger=true input"
+      },
+      {
+        "input": "let's start a new exploration session for this feature.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "exploration"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "there's an active exploration session in progress, what phase are we in?",
+        "should_trigger": true,
+        "matched_keywords": [
+          "exploration"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "build me a react component for a data table.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "run the billing audit on my portfolio.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      }
+    ],
+    "heuristic_detail": [
+      {
+        "check": "folder_name_matches",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "description_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "example_blocks",
+        "penalty": -0.3,
+        "passed": false
+      },
+      {
+        "check": "body_length",
+        "penalty": 0.0,
+        "passed": true
+      }
+    ]
+  },
+  "plugins/exploration-cycle-plugin/skills/vibe-behavioral-test-capture": {
+    "quality_score": 0.97,
+    "accuracy": 1.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "heuristic": 0.9,
+    "routing_detail": [
+      {
+        "input": "capture behavioral tests for my legacy user sign-up flow",
+        "should_trigger": true,
+        "matched_keywords": [
+          "flow",
+          "tests"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "generate characterization tests under tests/characterization/ to lock down calculations",
+        "should_trigger": true,
+        "matched_keywords": [
+          "characterization",
+          "tests"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "record http response status and state mutations from the running prototype",
+        "should_trigger": true,
+        "matched_keywords": [
+          "state"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "build an executable safety net for my local running app behavior",
+        "should_trigger": true,
+        "matched_keywords": [
+          "executable",
+          "safety"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "scaffold a fresh postgresql schema and setup docker containers",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "extract clean domain models and value objects separated from frameworks",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "run vertical slice migration loop to deprecate legacy routes",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      }
+    ],
+    "heuristic_detail": [
+      {
+        "check": "folder_name_matches",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "description_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "example_blocks",
+        "penalty": -0.1,
+        "passed": false,
+        "note": "only 1 block(s) found"
+      },
+      {
+        "check": "body_length",
+        "penalty": 0.0,
+        "passed": true
+      }
+    ]
+  },
+  "plugins/exploration-cycle-plugin/skills/vibe-browser-audit": {
+    "quality_score": 0.97,
+    "accuracy": 1.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "heuristic": 0.9,
+    "routing_detail": [
+      {
+        "input": "launch browser-harness to audit my frontend dashboard at localhost:3000",
+        "should_trigger": true,
+        "matched_keywords": [
+          "audit"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "crawl the prototype using playwright and generate a discovery_report.md",
+        "should_trigger": true,
+        "matched_keywords": [
+          "playwright",
+          "prototype"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "use puppeteer to capture network logs and dom elements from the running prototype",
+        "should_trigger": true,
+        "matched_keywords": [
+          "prototype",
+          "puppeteer"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "perform a visual and functional audit on the active ui local server",
+        "should_trigger": true,
+        "matched_keywords": [
+          "audit",
+          "functional",
+          "visual"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "scaffold a postgresql and redis codebase target repository layout",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "synthesize nfr questions and map out c4 sequence diagrams",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "format our c4 specifications into standard spec-kit and configure superpowers",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "run a link validation scan across the wiki markdown files",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      }
+    ],
+    "heuristic_detail": [
+      {
+        "check": "folder_name_matches",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "description_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "example_blocks",
+        "penalty": -0.1,
+        "passed": false,
+        "note": "only 1 block(s) found"
+      },
+      {
+        "check": "body_length",
+        "penalty": 0.0,
+        "passed": true
+      }
+    ]
+  },
+  "plugins/exploration-cycle-plugin/skills/vibe-domain-extractor": {
+    "quality_score": 0.87,
+    "accuracy": 0.8571428571428571,
+    "precision": 0.8,
+    "recall": 1.0,
+    "f1": 0.888888888888889,
+    "heuristic": 0.9,
+    "routing_detail": [
+      {
+        "input": "extract pure domain models from the active rapid prototype files",
+        "should_trigger": true,
+        "matched_keywords": [
+          "domain",
+          "from",
+          "models",
+          "prototype",
+          "pure",
+          "rapid"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "isolate business invariants and value objects into /domain with zero express imports",
+        "should_trigger": true,
+        "matched_keywords": [
+          "business",
+          "domain",
+          "with"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "refactor legacy calculations into framework-free pure functions",
+        "should_trigger": true,
+        "matched_keywords": [
+          "framework",
+          "free",
+          "pure"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "create pure domain services without any database or i/o imports",
+        "should_trigger": true,
+        "matched_keywords": [
+          "domain",
+          "pure"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "launch browser-harness to audit my frontend dashboard at localhost:3000",
+        "should_trigger": false,
+        "matched_keywords": [
+          "audit"
+        ],
+        "triggered": true,
+        "correct": false,
+        "failure_reason": "false positive \u2014 keywords ['audit'] matched a should_trigger=false input"
+      },
+      {
+        "input": "run vertical slice migration loop to deprecate legacy routes",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "capture behavioral tests for my legacy user sign-up flow",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      }
+    ],
+    "heuristic_detail": [
+      {
+        "check": "folder_name_matches",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "description_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "example_blocks",
+        "penalty": -0.1,
+        "passed": false,
+        "note": "only 1 block(s) found"
+      },
+      {
+        "check": "body_length",
+        "penalty": 0.0,
+        "passed": true
+      }
+    ]
+  },
+  "plugins/exploration-cycle-plugin/skills/vibe-reengineer": {
+    "quality_score": 0.77,
+    "accuracy": 0.7142857142857143,
+    "precision": 1.0,
+    "recall": 0.5,
+    "f1": 0.6666666666666666,
+    "heuristic": 0.9,
+    "routing_detail": [
+      {
+        "input": "clean up and reengineer our rapid prototype at localhost:3000",
+        "should_trigger": true,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": false,
+        "failure_reason": "false negative \u2014 no keywords matched a should_trigger=true input"
+      },
+      {
+        "input": "run the 7-step vibe-reengineer pipeline on my active running local code",
+        "should_trigger": true,
+        "matched_keywords": [
+          "pipeline",
+          "step",
+          "vibe"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "rebuild our prototype into production-grade clean architecture using specs/reqs.md",
+        "should_trigger": true,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": false,
+        "failure_reason": "false negative \u2014 no keywords matched a should_trigger=true input"
+      },
+      {
+        "input": "execute vibe-reengineer to audit, capture tests, extract domain, and migrate slices",
+        "should_trigger": true,
+        "matched_keywords": [
+          "vibe"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "launch browser-harness to audit my frontend dashboard at localhost:3000",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "extract pure domain models from the active rapid prototype files",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "capture behavioral tests for my legacy user sign-up flow",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      }
+    ],
+    "heuristic_detail": [
+      {
+        "check": "folder_name_matches",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "description_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "example_blocks",
+        "penalty": -0.1,
+        "passed": false,
+        "note": "only 1 block(s) found"
+      },
+      {
+        "check": "body_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "references_non_empty",
+        "penalty": 0.0,
+        "passed": true
+      }
+    ]
+  },
+  "plugins/exploration-cycle-plugin/skills/vibe-slice-migrator": {
+    "quality_score": 0.77,
+    "accuracy": 0.7142857142857143,
+    "precision": 0.6666666666666666,
+    "recall": 1.0,
+    "f1": 0.8,
+    "heuristic": 0.9,
+    "routing_detail": [
+      {
+        "input": "run vertical slice migration loop to deprecate legacy routes",
+        "should_trigger": true,
+        "matched_keywords": [
+          "legacy",
+          "routes",
+          "slice"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "progressively migrate portfolio retrieval to clean application layer slice-by-slice",
+        "should_trigger": true,
+        "matched_keywords": [
+          "clean",
+          "layer",
+          "progressively",
+          "slice"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "refactor route handlers to use clean architecture application ports and adapters",
+        "should_trigger": true,
+        "matched_keywords": [
+          "architecture",
+          "clean"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "verify migrated routes against generated safety-net characterization tests",
+        "should_trigger": true,
+        "matched_keywords": [
+          "against",
+          "characterization",
+          "routes",
+          "tests"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "launch browser-harness to audit my frontend dashboard at localhost:3000",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "extract pure domain models from the active rapid prototype files",
+        "should_trigger": false,
+        "matched_keywords": [
+          "prototype"
+        ],
+        "triggered": true,
+        "correct": false,
+        "failure_reason": "false positive \u2014 keywords ['prototype'] matched a should_trigger=false input"
+      },
+      {
+        "input": "capture behavioral tests for my legacy user sign-up flow",
+        "should_trigger": false,
+        "matched_keywords": [
+          "legacy",
+          "tests"
+        ],
+        "triggered": true,
+        "correct": false,
+        "failure_reason": "false positive \u2014 keywords ['legacy', 'tests'] matched a should_trigger=false input"
+      }
+    ],
+    "heuristic_detail": [
+      {
+        "check": "folder_name_matches",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "description_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "example_blocks",
+        "penalty": -0.1,
+        "passed": false,
+        "note": "only 1 block(s) found"
+      },
+      {
+        "check": "body_length",
+        "penalty": 0.0,
+        "passed": true
+      }
+    ]
+  },
+  "plugins/exploration-cycle-plugin/skills/vibe-spec-packager": {
+    "quality_score": 0.7949999999999999,
+    "accuracy": 0.75,
+    "precision": 1.0,
+    "recall": 0.5,
+    "f1": 0.6666666666666666,
+    "heuristic": 0.9,
+    "routing_detail": [
+      {
+        "input": "compile our togaf specs into a standard unified spec-kit.md",
+        "should_trigger": true,
+        "matched_keywords": [
+          "into",
+          "spec",
+          "specs",
+          "standard"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "scaffold the codebase sandbox structure matching the approved tech mapping",
+        "should_trigger": true,
+        "matched_keywords": [
+          "codebase",
+          "sandbox"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "bootstrap empty directory structure for fastapi and postgresql backend app",
+        "should_trigger": true,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": false,
+        "failure_reason": "false negative \u2014 no keywords matched a should_trigger=true input"
+      },
+      {
+        "input": "instruct the user on invoking the obra/superpowers engineering harness",
+        "should_trigger": true,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": false,
+        "failure_reason": "false negative \u2014 no keywords matched a should_trigger=true input"
+      },
+      {
+        "input": "launch browser-harness and extract dom payload from the local server ui",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "conduct a visual audit and log css and tailwind layouts",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "generate system context diagram and mermaid database flows",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "interview the sme one by one to determine security and tenancy baselines",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      }
+    ],
+    "heuristic_detail": [
+      {
+        "check": "folder_name_matches",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "description_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "example_blocks",
+        "penalty": -0.1,
+        "passed": false,
+        "note": "only 1 block(s) found"
+      },
+      {
+        "check": "body_length",
+        "penalty": 0.0,
+        "passed": true
+      }
+    ]
+  },
+  "plugins/exploration-cycle-plugin/skills/vibe-to-speckit-superpowers": {
+    "quality_score": 0.83,
+    "accuracy": 0.8,
+    "precision": 0.75,
+    "recall": 1.0,
+    "f1": 0.8571428571428571,
+    "heuristic": 0.9,
+    "routing_detail": [
+      {
+        "input": "convert my vibe-coded prototype into a spec kit specification package.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "coded",
+          "into",
+          "package",
+          "prototype",
+          "spec",
+          "specification",
+          "vibe"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "transform this undocumented rapid prototype into a certified superpowers-ready handoff.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "handoff",
+          "into",
+          "prototype",
+          "ready",
+          "superpowers",
+          "undocumented"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "run the full vibe-to-speckit pipeline \u2014 discovery, behavioral tests, domain extraction, certification.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "certification",
+          "domain",
+          "extraction",
+          "pipeline",
+          "tests",
+          "vibe"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "create a new feature spec from scratch using spec kitty.",
+        "should_trigger": false,
+        "matched_keywords": [
+          "spec"
+        ],
+        "triggered": true,
+        "correct": false,
+        "failure_reason": "false positive \u2014 keywords ['spec'] matched a should_trigger=false input"
+      },
+      {
+        "input": "start a new exploration discovery session for my idea.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      }
+    ],
+    "heuristic_detail": [
+      {
+        "check": "folder_name_matches",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "description_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "example_blocks",
+        "penalty": -0.1,
+        "passed": false,
+        "note": "only 1 block(s) found"
+      },
+      {
+        "check": "body_length",
+        "penalty": 0.0,
+        "passed": true
+      }
+    ]
+  },
+  "plugins/exploration-cycle-plugin/skills/vibe-togaf-architect": {
+    "quality_score": 0.7949999999999999,
+    "accuracy": 0.75,
+    "precision": 0.75,
+    "recall": 0.75,
+    "f1": 0.75,
+    "heuristic": 0.9,
+    "routing_detail": [
+      {
+        "input": "generate c4 context diagrams and sequence diagrams using mermaid syntax",
+        "should_trigger": true,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": false,
+        "failure_reason": "false negative \u2014 no keywords matched a should_trigger=true input"
+      },
+      {
+        "input": "scaffold the togaf-style spec-kit inside the /specs directory",
+        "should_trigger": true,
+        "matched_keywords": [
+          "specs",
+          "togaf"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "synthesize discovery findings and user nfrs into specs and run through the tier gate",
+        "should_trigger": true,
+        "matched_keywords": [
+          "into",
+          "specs",
+          "synthesize"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "create a system context diagram mapping system boundaries and database servers",
+        "should_trigger": true,
+        "matched_keywords": [
+          "system"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "launch playwright on localhost:5173 to extract dom and run ui audits",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "scaffold the target repository sandbox structure and setup superpowers",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "package our finished c4 specifications into a standard openspec format",
+        "should_trigger": false,
+        "matched_keywords": [
+          "into"
+        ],
+        "triggered": true,
+        "correct": false,
+        "failure_reason": "false positive \u2014 keywords ['into'] matched a should_trigger=false input"
+      },
+      {
+        "input": "audit an existing plugin's file layout and symlinks structure",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      }
+    ],
+    "heuristic_detail": [
+      {
+        "check": "folder_name_matches",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "description_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "example_blocks",
+        "penalty": -0.1,
+        "passed": false,
+        "note": "only 1 block(s) found"
+      },
+      {
+        "check": "body_length",
+        "penalty": 0.0,
+        "passed": true
+      }
+    ]
+  },
+  "plugins/exploration-cycle-plugin/skills/visual-companion": {
+    "quality_score": 1.0,
+    "accuracy": 1.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "heuristic": 1.0,
+    "routing_detail": [
+      {
+        "input": "what should it look like? show me some options.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "like",
+          "look",
+          "options",
+          "should",
+          "show",
+          "some",
+          "what"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "show me layout options before we build.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "before",
+          "build",
+          "layout",
+          "options",
+          "show"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "let me see the design options \u2014 i want to confirm the layout before anything gets built.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "before",
+          "confirm",
+          "design",
+          "layout",
+          "options"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "help me visualise what the interface should look like.",
+        "should_trigger": true,
+        "matched_keywords": [
+          "like",
+          "look",
+          "should",
+          "what"
+        ],
+        "triggered": true,
+        "correct": true
+      },
+      {
+        "input": "deploy the latest release to production.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "generate user stories from our requirements.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "kick off a planning session for this feature.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "deploy the latest release to staging.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      },
+      {
+        "input": "fix the failing tests.",
+        "should_trigger": false,
+        "matched_keywords": [],
+        "triggered": false,
+        "correct": true
+      }
+    ],
+    "heuristic_detail": [
+      {
+        "check": "folder_name_matches",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "description_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "example_blocks",
+        "penalty": 0.0,
+        "passed": true,
+        "note": "2 blocks found"
+      },
+      {
+        "check": "body_length",
+        "penalty": 0.0,
+        "passed": true
+      },
+      {
+        "check": "references_non_empty",
+        "penalty": 0.0,
+        "passed": true
+      }
+    ]
+  }
+}
