@@ -2,6 +2,34 @@
 
 Persistent tracking of architectural friction, structural anomalies, and unclosed loops across sessions.
 
+## DEBT-20260914-PREMATURE-EXECUTION-PROPOSAL-IN-INTERVIEW
+
+- Logged date: 2026-09-14
+- Cycle/Session ID: skill-research-alignment-20260914
+- Artifact affected: `plugins/agent-agentic-os/skills/work-intake/SKILL.md`, control plane task state machine
+- Friction observed: Pipeline violation — during the `INTERVIEW` phase of task `skill-research-alignment-20260914`, the agent prematurely asked "Shall I proceed with Step 1 now?" attempting to jump straight into file modifications on the main branch, violating Proposal Mode and bypassing the required Socratic interview, plan outline completion, `DRAFT_PLAN` compilation, `PLAN_REVIEW`, explicit human `APPROVED` gate, and worktree isolation (`IN_WORKTREE`).
+- Why not fixed now: N/A — execution halted by the human; state remains strictly in `INTERVIEW`.
+- Recommended fix / fix applied: Logged this debt entry, immediately ceased execution proposals, and returned strictly to the `INTERVIEW` Socratic questioning protocol (one question at a time) to capture requirements without touching production code.
+- Evidence/repro: Agent prompted to start Step 1 editing while task was in state `INTERVIEW` (transition_id=248).
+- Severity: M
+- Repeat: NO
+- Status: RESOLVED
+
+## DEBT-20260914-EXPLORATION-CYCLE-AGENTIC-OS-INTEGRATION
+
+- Logged date: 2026-09-14
+- Cycle/Session ID: skill-research-alignment-20260914
+- Artifact affected: `plugins/exploration-cycle-plugin`, `plugins/agent-agentic-os`
+- Friction observed: Architectural boundary misalignment — the Exploration Cycle plugin previously operated as a self-contained, prompt-orchestrated workflow carrying its own prompt-based orchestration machinery (dashboard detection, XML dispatch tokens, prompt phase gates), creating a parallel prompt-based control plane.
+- Why not fixed now: N/A — actively addressed in task `skill-research-alignment-20260914` (Iteration 3 plan).
+- Recommended fix / fix applied: Modernized Exploration Cycle onto Agentic OS as Target 1: make Agentic OS an explicit prerequisite via `exploration_substrate.py` (requiring `os-init`), remove prompt-based dashboard intercept and dispatch tokens from exploration skills, preserve genuine cognitive discovery and prototyping intelligence, and treat exploration stages as sub-workflow session metadata rather than bloating the global 15-state lifecycle machine.
+- Evidence/repro: Iteration 3 specification and implementation plan (`docs/plans/skill-research-alignment-20260914-spec.md`).
+- Severity: M
+- Repeat: NO
+- Status: RESOLVED
+
+
+
 ## DEBT-20260914-PROGRESSIVE-ELABORATION-SUMMARY-DOC
 
 - Logged date: 2026-09-14
