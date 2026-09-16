@@ -374,30 +374,6 @@
       "description": ""
     },
     {
-      "src": "plugins/agent-scaffolders/assets/diagrams/analyze-plugin-flow.mmd",
-      "dst": "plugins/agent-scaffolders/skills/analyze-plugin/assets/resources/analyze-plugin-flow.mmd",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/scripts/inventory_plugin.py",
-      "dst": "plugins/agent-scaffolders/skills/analyze-plugin/scripts/inventory_plugin.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/assets/diagrams/audit-plugin-l5-flow.mmd",
-      "dst": "plugins/agent-scaffolders/skills/audit-plugin-l5/assets/resources/audit-plugin-l5-flow.mmd",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/scripts/audit_plugin_l5_execute.py",
-      "dst": "plugins/agent-scaffolders/skills/audit-plugin-l5/scripts/execute.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
       "src": "plugins/agent-scaffolders/assets/templates/README.md.jinja",
       "dst": "plugins/agent-scaffolders/skills/audit-plugin/assets/templates/README.md.jinja",
       "strategy": "symlink",
@@ -568,36 +544,6 @@
     {
       "src": "plugins/agent-scaffolders/scripts/benchmarking/utils.py",
       "dst": "plugins/agent-scaffolders/skills/create-azure-agent/scripts/utils.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/assets/templates/README.md.jinja",
-      "dst": "plugins/agent-scaffolders/skills/create-command/assets/templates/README.md.jinja",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/assets/templates/SKILL.md.jinja",
-      "dst": "plugins/agent-scaffolders/skills/create-command/assets/templates/SKILL.md.jinja",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/assets/templates/agent.md.jinja",
-      "dst": "plugins/agent-scaffolders/skills/create-command/assets/templates/agent.md.jinja",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/assets/templates/command.md.jinja",
-      "dst": "plugins/agent-scaffolders/skills/create-command/assets/templates/command.md.jinja",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/assets/templates/execute.py.jinja",
-      "dst": "plugins/agent-scaffolders/skills/create-command/assets/templates/execute.py.jinja",
       "strategy": "symlink",
       "description": ""
     },
@@ -952,78 +898,6 @@
     {
       "src": "plugins/agent-scaffolders/assets/diagrams/skill-execution-flow.mmd",
       "dst": "plugins/agent-scaffolders/skills/ecosystem-authoritative-sources/assets/resources/skill-execution-flow.mmd",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/scripts/update_ranked_skills.py",
-      "dst": "plugins/agent-scaffolders/skills/eval-autoresearch-fit/scripts/update_ranked_skills.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/scripts/audit_plugin_paths.py",
-      "dst": "plugins/agent-scaffolders/skills/fix-plugin-paths/scripts/audit_plugin_paths.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/scripts/plugin_paths_whitelist.json",
-      "dst": "plugins/agent-scaffolders/skills/fix-plugin-paths/scripts/plugin_paths_whitelist.json",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/scripts/inventory_plugin.py",
-      "dst": "plugins/agent-scaffolders/skills/mine-plugins/scripts/inventory_plugin.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/scripts/inventory_plugin.py",
-      "dst": "plugins/agent-scaffolders/skills/mine-skill/scripts/inventory_plugin.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/scripts/check_plugin_boundaries.py",
-      "dst": "plugins/agent-scaffolders/skills/path-reference-auditor/scripts/check_plugin_boundaries.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/scripts/check_skill_boundaries.py",
-      "dst": "plugins/agent-scaffolders/skills/path-reference-auditor/scripts/check_skill_boundaries.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/scripts/cleanup_stacked_references.py",
-      "dst": "plugins/agent-scaffolders/skills/path-reference-auditor/scripts/cleanup_stacked_references.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/scripts/fix_inside_plugin_symlinks.py",
-      "dst": "plugins/agent-scaffolders/skills/path-reference-auditor/scripts/fix_inside_plugin_symlinks.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/scripts/path_reference_auditor.py",
-      "dst": "plugins/agent-scaffolders/skills/path-reference-auditor/scripts/path_reference_auditor.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/scripts/assert_audit.py",
-      "dst": "plugins/agent-scaffolders/skills/self-audit/scripts/assert_audit.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/scripts/inventory_plugin.py",
-      "dst": "plugins/agent-scaffolders/skills/self-audit/scripts/inventory_plugin.py",
       "strategy": "symlink",
       "description": ""
     },
@@ -2063,91 +1937,91 @@
       "src": "plugins/dev-utils/skills/coding-conventions-agent/SKILL.md",
       "dst": "plugins/dev-utils/agents/coding-conventions-agent.md",
       "strategy": "symlink",
-      "description": "Agent alias \u2192 coding-conventions-agent skill"
+      "description": "Agent alias → coding-conventions-agent skill"
     },
     {
       "src": "plugins/dev-utils/skills/link-checker-agent/SKILL.md",
       "dst": "plugins/dev-utils/agents/link-checker-agent.md",
       "strategy": "symlink",
-      "description": "Agent alias \u2192 link-checker-agent skill"
+      "description": "Agent alias → link-checker-agent skill"
     },
     {
       "src": "plugins/agent-agentic-os/rules/self-evolution-policy.md",
       "dst": "plugins/agent-agentic-os/skills/self-evolution/references/self-evolution-policy.md",
       "strategy": "symlink",
-      "description": "Plugin reference \u2192 Skill reference"
+      "description": "Plugin reference → Skill reference"
     },
     {
       "src": "plugins/agent-agentic-os/rules/test-driven-development.md",
       "dst": "plugins/agent-agentic-os/skills/self-evolution/references/test-driven-development.md",
       "strategy": "symlink",
-      "description": "Plugin reference \u2192 Skill reference"
+      "description": "Plugin reference → Skill reference"
     },
     {
       "src": "plugins/agent-agentic-os/references/map-debt.md",
       "dst": "plugins/agent-agentic-os/skills/self-evolution/references/map-debt.md",
       "strategy": "symlink",
-      "description": "Plugin reference \u2192 Skill reference"
+      "description": "Plugin reference → Skill reference"
     },
     {
       "src": "plugins/dev-utils/rules/coding-conventions.md",
       "dst": "plugins/dev-utils/skills/coding-conventions-agent/references/coding-conventions.md",
       "strategy": "symlink",
-      "description": "Plugin reference \u2192 Skill reference"
+      "description": "Plugin reference → Skill reference"
     },
     {
       "src": "plugins/dev-utils/scripts/workspace_conventions_auditor.py",
       "dst": "plugins/dev-utils/skills/coding-conventions-agent/scripts/workspace_conventions_auditor.py",
       "strategy": "symlink",
-      "description": "Plugin script \u2192 Skill script"
+      "description": "Plugin script → Skill script"
     },
     {
       "src": "plugins/dependency-management/rules/dependency-management.md",
       "dst": "plugins/dependency-management/skills/dependency-management/references/dependency-management.md",
       "strategy": "symlink",
-      "description": "Plugin reference \u2192 Skill reference"
+      "description": "Plugin reference → Skill reference"
     },
     {
       "src": "plugins/agent-scaffolders/rules/plugin-architecture-policy.md",
       "dst": "plugins/agent-scaffolders/skills/audit-plugin/references/plugin-architecture-policy.md",
       "strategy": "symlink",
-      "description": "Plugin reference \u2192 Skill reference"
+      "description": "Plugin reference → Skill reference"
     },
     {
       "src": "plugins/agent-agentic-os/rules/destructive-action-guard.md",
       "dst": "plugins/agent-agentic-os/skills/self-evolution/references/destructive-action-guard.md",
       "strategy": "symlink",
-      "description": "Plugin reference \u2192 Skill reference"
+      "description": "Plugin reference → Skill reference"
     },
     {
       "src": "plugins/dev-utils/rules/graph-planning-superpowers-policy.md",
       "dst": "plugins/dev-utils/skills/coding-conventions-agent/references/graph-planning-superpowers-policy.md",
       "strategy": "symlink",
-      "description": "Plugin reference \u2192 Skill reference"
+      "description": "Plugin reference → Skill reference"
     },
     {
       "src": "plugins/agent-scaffolders/scripts/validate_agent.py",
       "dst": "plugins/agent-scaffolders/skills/create-sub-agent/scripts/validate_agent.py",
       "strategy": "symlink",
-      "description": "Plugin script \u2192 create-sub-agent skill script (replaces validate-agent.sh)"
+      "description": "Plugin script → create-sub-agent skill script (replaces validate-agent.sh)"
     },
     {
       "src": "plugins/agent-scaffolders/scripts/validate_write.py",
       "dst": "plugins/agent-scaffolders/skills/create-hook/scripts/validate_write.py",
       "strategy": "symlink",
-      "description": "Plugin script \u2192 create-hook skill script (replaces validate-write.sh)"
+      "description": "Plugin script → create-hook skill script (replaces validate-write.sh)"
     },
     {
       "src": "plugins/agent-scaffolders/scripts/hook_linter.py",
       "dst": "plugins/agent-scaffolders/skills/create-hook/scripts/hook_linter.py",
       "strategy": "symlink",
-      "description": "Plugin script \u2192 create-hook skill script (replaces hook-linter.sh)"
+      "description": "Plugin script → create-hook skill script (replaces hook-linter.sh)"
     },
     {
       "src": "plugins/agent-scaffolders/scripts/test_hook.py",
       "dst": "plugins/agent-scaffolders/skills/create-hook/scripts/test_hook.py",
       "strategy": "symlink",
-      "description": "Plugin script \u2192 create-hook skill script (replaces test-hook.sh)"
+      "description": "Plugin script → create-hook skill script (replaces test-hook.sh)"
     },
     {
       "src": "plugins/agent-scaffolders/scripts/scaffold_github_agent.py",
@@ -3387,66 +3261,6 @@
     },
     {
       "src": "plugins/agent-scaffolders/references/acceptance-criteria.md",
-      "dst": "plugins/agent-scaffolders/skills/analyze-plugin/references/acceptance-criteria.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/analysis-framework.md",
-      "dst": "plugins/agent-scaffolders/skills/analyze-plugin/references/analysis-framework.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/analysis-questions-by-type.md",
-      "dst": "plugins/agent-scaffolders/skills/analyze-plugin/references/analysis-questions-by-type.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/diagrams/analyze-plugin-flow.mmd",
-      "dst": "plugins/agent-scaffolders/skills/analyze-plugin/references/diagrams/analyze-plugin-flow.mmd",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/fallback-tree.md",
-      "dst": "plugins/agent-scaffolders/skills/analyze-plugin/references/fallback-tree.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/inventory_plugin.py",
-      "dst": "plugins/agent-scaffolders/skills/analyze-plugin/references/inventory_plugin.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/maturity-model.md",
-      "dst": "plugins/agent-scaffolders/skills/analyze-plugin/references/maturity-model.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/output-templates.md",
-      "dst": "plugins/agent-scaffolders/skills/analyze-plugin/references/output-templates.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/pattern-catalog.md",
-      "dst": "plugins/agent-scaffolders/skills/analyze-plugin/references/pattern-catalog.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/security-checks.md",
-      "dst": "plugins/agent-scaffolders/skills/analyze-plugin/references/security-checks.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/acceptance-criteria.md",
       "dst": "plugins/agent-scaffolders/skills/audit-plugin/references/acceptance-criteria.md",
       "strategy": "symlink",
       "description": ""
@@ -3856,30 +3670,6 @@
     {
       "src": "plugins/agent-scaffolders/references/patterns/zero-sum-addition-gate.md",
       "dst": "plugins/agent-scaffolders/skills/audit-plugin/references/patterns/zero-sum-addition-gate.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/acceptance-criteria.md",
-      "dst": "plugins/agent-scaffolders/skills/audit-plugin-l5/references/acceptance-criteria.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/architecture.md",
-      "dst": "plugins/agent-scaffolders/skills/audit-plugin-l5/references/architecture.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/diagrams/audit-plugin-l5-flow.mmd",
-      "dst": "plugins/agent-scaffolders/skills/audit-plugin-l5/references/diagrams/audit-plugin-l5-flow.mmd",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/fallback-tree.md",
-      "dst": "plugins/agent-scaffolders/skills/audit-plugin-l5/references/fallback-tree.md",
       "strategy": "symlink",
       "description": ""
     },
@@ -4708,480 +4498,6 @@
     {
       "src": "plugins/agent-scaffolders/references/patterns/zero-sum-addition-gate.md",
       "dst": "plugins/agent-scaffolders/skills/create-azure-agent/references/patterns/zero-sum-addition-gate.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/acceptance-criteria.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/acceptance-criteria.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/advanced-workflows.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/advanced-workflows.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/examples/plugin-commands.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/examples/plugin-commands.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/examples/plugin-features-reference.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/examples/plugin-features-reference.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/examples/simple-commands.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/examples/simple-commands.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/fallback-tree.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/fallback-tree.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/frontmatter-reference.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/frontmatter-reference.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/hitl-interaction-design.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/hitl-interaction-design.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/interactive-commands.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/interactive-commands.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/pattern-decision-matrix.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/pattern-decision-matrix.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/action-forcing-output-with-deadline-attribution.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/action-forcing-output-with-deadline-attribution.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/adversarial-objectivity-constraint.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/adversarial-objectivity-constraint.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/anti-pattern-vaccination.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/anti-pattern-vaccination.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/anti-symptom-triage.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/anti-symptom-triage.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/artifact-embedded-execution-audit-trail.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/artifact-embedded-execution-audit-trail.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/artifact-generation-xss-compliance-gate.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/artifact-generation-xss-compliance-gate.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/artifact-lifecycle.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/artifact-lifecycle.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/artifact-state-interrogative-routing.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/artifact-state-interrogative-routing.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/asynchronous-benchmark-metric-capture.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/asynchronous-benchmark-metric-capture.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/audience-segmented-information-filtering.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/audience-segmented-information-filtering.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/category-calibrated-benchmark-anchoring.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/category-calibrated-benchmark-anchoring.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/category-semantic-deferred-tool-binding.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/category-semantic-deferred-tool-binding.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/chained-command-invocation.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/chained-command-invocation.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/chained-commands.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/chained-commands.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/client-side-compute-sandbox-constraint.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/client-side-compute-sandbox-constraint.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/complexity-tiered-output.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/complexity-tiered-output.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/conditional-step-inclusion.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/conditional-step-inclusion.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/connector-placeholders.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/connector-placeholders.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/cyclical-state-propagation-contract.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/cyclical-state-propagation-contract.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/delegated-constraint-verification-loop.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/delegated-constraint-verification-loop.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/dual-mode-degradation.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/dual-mode-degradation.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/dual-mode-meta-skill.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/dual-mode-meta-skill.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/dual-register-communication-enforcement.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/dual-register-communication-enforcement.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/dynamic-specification-fetching.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/dynamic-specification-fetching.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/embedded-deterministic-scoring-formula.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/embedded-deterministic-scoring-formula.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/escalation-taxonomy.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/escalation-taxonomy.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/evals.json",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/evals.json",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/explicit-seed-anchored-determinism.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/explicit-seed-anchored-determinism.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/graduated-autonomy.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/graduated-autonomy.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/graduated-source-attributed-elicitation.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/graduated-source-attributed-elicitation.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/highly-procedural-fallback-trees.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/highly-procedural-fallback-trees.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/iteration-directory-isolation.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/iteration-directory-isolation.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/lifecycle-aware-knowledge.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/lifecycle-aware-knowledge.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/local-interactive-output-viewer-loop.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/local-interactive-output-viewer-loop.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/mandatory-counterfactual-scenario-templating.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/mandatory-counterfactual-scenario-templating.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/mode-invariant-compliance-gate.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/mode-invariant-compliance-gate.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/multi-actor-operational-coordination-manifest.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/multi-actor-operational-coordination-manifest.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/multi-dimensional-tone.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/multi-dimensional-tone.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/multi-modal-routing.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/multi-modal-routing.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/multi-source-synthesis.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/multi-source-synthesis.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/multi-variant-trigger-optimizer.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/multi-variant-trigger-optimizer.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/negative-instruction-constraint.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/negative-instruction-constraint.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/output-classification.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/output-classification.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/passive-style-injection-payload.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/passive-style-injection-payload.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/persistent-plugin-configuration.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/persistent-plugin-configuration.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/population-normative-distribution-constraint.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/population-normative-distribution-constraint.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/pre-committed-rollback-contract.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/pre-committed-rollback-contract.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/pre-execution-input-manifest.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/pre-execution-input-manifest.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/pre-execution-workflow-commitment-diagram.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/pre-execution-workflow-commitment-diagram.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/priority-ordered-scanning.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/priority-ordered-scanning.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/quantification-enforcement.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/quantification-enforcement.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/rigorous-benchmarking-loop.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/rigorous-benchmarking-loop.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/severity-stratified-output.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/severity-stratified-output.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/skill-command-two-tier.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/skill-command-two-tier.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/source-authority.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/source-authority.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/source-transparency.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/source-transparency.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/stage-aware-feedback.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/stage-aware-feedback.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/structured-output-contracts.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/structured-output-contracts.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/sub-action-multiplexing.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/sub-action-multiplexing.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/tainted-context-cleanser.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/tainted-context-cleanser.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/temporal-anchoring.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/temporal-anchoring.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/tiered-source-authority.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/tiered-source-authority.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/trigger-description-optimization-loop.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/trigger-description-optimization-loop.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/ui-degradation-constraint.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/ui-degradation-constraint.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/patterns/zero-sum-addition-gate.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/patterns/zero-sum-addition-gate.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/plugin-commands.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/plugin-commands.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/plugin-features-reference.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/plugin-features-reference.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/simple-commands.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/simple-commands.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/testing-strategies.md",
-      "dst": "plugins/agent-scaffolders/skills/create-command/references/testing-strategies.md",
       "strategy": "symlink",
       "description": ""
     },
@@ -9567,42 +8883,6 @@
     },
     {
       "src": "plugins/agent-scaffolders/references/acceptance-criteria.md",
-      "dst": "plugins/agent-scaffolders/skills/eval-autoresearch-fit/references/acceptance-criteria.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/program.md",
-      "dst": "plugins/agent-scaffolders/skills/eval-autoresearch-fit/references/program.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/acceptance-criteria.md",
-      "dst": "plugins/agent-scaffolders/skills/fix-plugin-paths/references/acceptance-criteria.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/fix-plugin-paths.prompt.md",
-      "dst": "plugins/agent-scaffolders/skills/fix-plugin-paths/references/fix-plugin-paths.prompt.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/program.md",
-      "dst": "plugins/agent-scaffolders/skills/fix-plugin-paths/references/program.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/acceptance-criteria.md",
-      "dst": "plugins/agent-scaffolders/skills/l5-red-team-auditor/references/acceptance-criteria.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/acceptance-criteria.md",
       "dst": "plugins/agent-scaffolders/skills/manage-marketplace/references/acceptance-criteria.md",
       "strategy": "symlink",
       "description": ""
@@ -9616,78 +8896,6 @@
     {
       "src": "plugins/agent-scaffolders/references/marketplace-schema.md",
       "dst": "plugins/agent-scaffolders/skills/manage-marketplace/references/marketplace-schema.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/scripts/build_explicit_inventory.py",
-      "dst": "plugins/agent-scaffolders/skills/path-reference-auditor/scripts/build_explicit_inventory.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/acceptance-criteria.md",
-      "dst": "plugins/agent-scaffolders/skills/path-reference-auditor/references/acceptance-criteria.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/architecture.md",
-      "dst": "plugins/agent-scaffolders/skills/path-reference-auditor/references/architecture.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/check_plugin_boundaries.py",
-      "dst": "plugins/agent-scaffolders/skills/path-reference-auditor/references/check_plugin_boundaries.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/check_skill_boundaries.py",
-      "dst": "plugins/agent-scaffolders/skills/path-reference-auditor/references/check_skill_boundaries.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/path_reference_auditor.py",
-      "dst": "plugins/agent-scaffolders/skills/path-reference-auditor/references/path_reference_auditor.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/usage-guide.md",
-      "dst": "plugins/agent-scaffolders/skills/path-reference-auditor/references/usage-guide.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/acceptance-criteria.md",
-      "dst": "plugins/agent-scaffolders/skills/synthesize-learnings/references/acceptance-criteria.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/fallback-tree.md",
-      "dst": "plugins/agent-scaffolders/skills/synthesize-learnings/references/fallback-tree.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/improvement-mapping.md",
-      "dst": "plugins/agent-scaffolders/skills/synthesize-learnings/references/improvement-mapping.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/input-contract.md",
-      "dst": "plugins/agent-scaffolders/skills/synthesize-learnings/references/input-contract.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-scaffolders/references/open-recommendations.md",
-      "dst": "plugins/agent-scaffolders/skills/synthesize-learnings/references/open-recommendations.md",
       "strategy": "symlink",
       "description": ""
     },
@@ -10193,115 +9401,115 @@
       "src": "plugins/agent-agentic-os/scripts/control_plane/registry.py",
       "dst": "plugins/agent-agentic-os/skills/work-intake/scripts/control_plane/registry.py",
       "strategy": "symlink",
-      "description": "TransitionRegistry, required by agent_control.py \u2014 missing entry caused ModuleNotFoundError (issue-551 work package)"
+      "description": "TransitionRegistry, required by agent_control.py — missing entry caused ModuleNotFoundError (issue-551 work package)"
     },
     {
       "src": "plugins/agent-agentic-os/scripts/control_plane/coordinator.py",
       "dst": "plugins/agent-agentic-os/skills/work-intake/scripts/control_plane/coordinator.py",
       "strategy": "symlink",
-      "description": "TransitionCoordinator, required by agent_control.py \u2014 missing entry caused ModuleNotFoundError (issue-551 work package)"
+      "description": "TransitionCoordinator, required by agent_control.py — missing entry caused ModuleNotFoundError (issue-551 work package)"
     },
     {
       "src": "plugins/agent-agentic-os/scripts/control_plane/transition_templates.yaml",
       "dst": "plugins/agent-agentic-os/skills/work-intake/scripts/control_plane/transition_templates.yaml",
       "strategy": "symlink",
-      "description": "Loaded at runtime by registry.py relative to its own __file__ \u2014 must ship alongside registry.py (issue-551 work package)"
+      "description": "Loaded at runtime by registry.py relative to its own __file__ — must ship alongside registry.py (issue-551 work package)"
     },
     {
       "src": "plugins/agent-agentic-os/scripts/agent_control.py",
       "dst": "plugins/agent-agentic-os/skills/os-init/scripts/agent_control.py",
       "strategy": "symlink",
-      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
+      "description": "Missing symlink for local import found by issue-551 broader scan — ModuleNotFoundError risk"
     },
     {
       "src": "plugins/agent-memory/scripts/operations.py",
       "dst": "plugins/agent-memory/skills/vector-db-cleanup/scripts/operations.py",
       "strategy": "symlink",
-      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
+      "description": "Missing symlink for local import found by issue-551 broader scan — ModuleNotFoundError risk"
     },
     {
       "src": "plugins/agent-memory/scripts/rlm_config.py",
       "dst": "plugins/agent-memory/skills/vector-db-ingest/scripts/rlm_config.py",
       "strategy": "symlink",
-      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
+      "description": "Missing symlink for local import found by issue-551 broader scan — ModuleNotFoundError risk"
     },
     {
       "src": "plugins/agent-memory/scripts/vector_config.py",
       "dst": "plugins/agent-memory/skills/vector-db-init/scripts/vector_config.py",
       "strategy": "symlink",
-      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
+      "description": "Missing symlink for local import found by issue-551 broader scan — ModuleNotFoundError risk"
     },
     {
       "src": "plugins/agent-memory/scripts/operations.py",
       "dst": "plugins/agent-memory/skills/vector-db-init/scripts/operations.py",
       "strategy": "symlink",
-      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
+      "description": "Missing symlink for local import found by issue-551 broader scan — ModuleNotFoundError risk"
     },
     {
       "src": "plugins/agent-memory/scripts/vector_config.py",
       "dst": "plugins/agent-memory/skills/vector-db-launch/scripts/vector_config.py",
       "strategy": "symlink",
-      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
+      "description": "Missing symlink for local import found by issue-551 broader scan — ModuleNotFoundError risk"
     },
     {
       "src": "plugins/agent-memory/scripts/rlm_config.py",
       "dst": "plugins/agent-memory/skills/vector-db-search/scripts/rlm_config.py",
       "strategy": "symlink",
-      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
+      "description": "Missing symlink for local import found by issue-551 broader scan — ModuleNotFoundError risk"
     },
     {
       "src": "plugins/agent-memory/scripts/ingest_code_shim.py",
       "dst": "plugins/agent-memory/skills/vector-db-search/scripts/ingest_code_shim.py",
       "strategy": "symlink",
-      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
+      "description": "Missing symlink for local import found by issue-551 broader scan — ModuleNotFoundError risk"
     },
     {
       "src": "plugins/agent-scaffolders/scripts/audit_skill.py",
       "dst": "plugins/agent-scaffolders/skills/audit-plugin/scripts/audit_skill.py",
       "strategy": "symlink",
-      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
+      "description": "Missing symlink for local import found by issue-551 broader scan — ModuleNotFoundError risk"
     },
     {
       "src": "plugins/cli-agents/scripts/kv_cache_orchestrator.py",
       "dst": "plugins/cli-agents/skills/local-llm-setup/scripts/kv_cache_orchestrator.py",
       "strategy": "symlink",
-      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
+      "description": "Missing symlink for local import found by issue-551 broader scan — ModuleNotFoundError risk"
     },
     {
       "src": "plugins/dev-utils/scripts/gh_issue_create.py",
       "dst": "plugins/dev-utils/skills/github-issue-backlog-agent/scripts/gh_issue_create.py",
       "strategy": "symlink",
-      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
+      "description": "Missing symlink for local import found by issue-551 broader scan — ModuleNotFoundError risk"
     },
     {
       "src": "plugins/dev-utils/scripts/hf_upload.py",
       "dst": "plugins/dev-utils/skills/hf-init/scripts/hf_upload.py",
       "strategy": "symlink",
-      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
+      "description": "Missing symlink for local import found by issue-551 broader scan — ModuleNotFoundError risk"
     },
     {
       "src": "plugins/dev-utils/scripts/issue_worktree_manage.py",
       "dst": "plugins/dev-utils/skills/github-issue-pr-lifecycle-agent/scripts/issue_worktree_manage.py",
       "strategy": "symlink",
-      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
+      "description": "Missing symlink for local import found by issue-551 broader scan — ModuleNotFoundError risk"
     },
     {
       "src": "plugins/exploration-cycle-plugin/scripts/sandbox_runner.py",
       "dst": "plugins/exploration-cycle-plugin/skills/exploration-workflow/scripts/sandbox_runner.py",
       "strategy": "symlink",
-      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
+      "description": "Missing symlink for local import found by issue-551 broader scan — ModuleNotFoundError risk"
     },
     {
       "src": "plugins/exploration-cycle-plugin/scripts/state_engine.py",
       "dst": "plugins/exploration-cycle-plugin/skills/exploration-workflow/scripts/state_engine.py",
       "strategy": "symlink",
-      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
+      "description": "Missing symlink for local import found by issue-551 broader scan — ModuleNotFoundError risk"
     },
     {
       "src": "plugins/obsidian-wiki-engine/scripts/raw_manifest.py",
       "dst": "plugins/obsidian-wiki-engine/skills/obsidian-wiki-linter/scripts/raw_manifest.py",
       "strategy": "symlink",
-      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
+      "description": "Missing symlink for local import found by issue-551 broader scan — ModuleNotFoundError risk"
     },
     {
       "src": "plugins/agent-agentic-os/references/critical-auditor-acceptance-criteria.md",

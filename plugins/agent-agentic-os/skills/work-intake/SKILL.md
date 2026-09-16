@@ -3,16 +3,11 @@ name: work-intake
 plugin: agent-agentic-os
 version: 1.3.0
 description: >
-  CRITICAL INTAKE GATEWAY: Use at the very start of ANY non-trivial engineering task,
-  feature request, architectural refactor, or multi-file bugfix before entering plan mode
-  or modifying code. Also the right starting point when someone wants to start a new
-  work package, task, or piece of work without knowing this skill's name or using the
-  word "interview" — natural phrasings like "I have an idea," "let's explore this,"
-  "help me think through X," "I want to build/fix/change Y," "new task," or a request to
-  brainstorm about a problem all belong here first, before any freeform brainstorming or
-  planning happens. Enforces read-only discovery, Socratic Defaulting (1-3 structured
-  questions with recommended defaults), control plane registration in control_plane.db,
-  and compilation of the immutable 4-Pillar TASK_SPEC.md.
+  CRITICAL INTAKE GATEWAY: Use at the start of any non-trivial engineering task,
+  feature, refactor, multi-file bugfix, work package, or new idea—including requests
+  to explore, brainstorm, build, fix, or change something—before planning or code
+  changes. Enforces read-only discovery, 1–3 structured questions with defaults,
+  control-plane registration, and compilation of the immutable four-pillar TASK_SPEC.md.
 allowed-tools: Bash, Read, Write
 ---
 
@@ -210,9 +205,13 @@ apply to both paths.
 - **If STANDARD**: complete the adaptive interview and its plan-ready outline, then hand that
   outline to `DRAFT_PLAN`, where the full specification and implementation plan are compiled before
   the standard review gates.
-- **If TRIVIAL**: complete the baseline interview and applicable evidence follow-up, then use
-  the `INTERVIEW -> RETROSPECTIVE` transition. Do not fast-track directly from `INTAKE` to
-  `DONE`; the retrospective remains mandatory.
+- **If TRIVIAL**: complete the short baseline interview and smallest-change evidence follow-up,
+  then use the same lightweight implementation route: `INTERVIEW -> DRAFT_PLAN -> PLAN_REVIEW`
+  (review skipped unless requested) -> `AWAITING_APPROVAL -> APPROVED -> IN_WORKTREE ->
+  WORKTREE_REVIEW -> VERIFY_EXIT -> RETROSPECTIVE -> DONE`. Do not run broad research or a
+  repository-wide test suite unless the user asks or explicitly approves it; focused verification,
+  implementation approval, user review, retrospective, and evidence gates remain mandatory.
+  `INTERVIEW -> RETROSPECTIVE` is emergency/early close only, not the normal trivial path.
 - If classification changes or the interview cannot be completed, use the `ESCALATED` escape
   hatch. Detailed commands are in `references/detailed-reference.md`.
 

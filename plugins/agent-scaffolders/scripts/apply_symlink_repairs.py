@@ -47,10 +47,6 @@ def main() -> None:
     """
     print("Repairing symlinks...")
     force_symlink(
-        '../SKILL.md',
-        'plugins/agent-scaffolders/skills/create-command/references/examples/SKILL.md',
-    )
-    force_symlink(
         '../../../references/post-run-survey.md',
         'plugins/exploration-cycle-plugin/skills/deferred/exploration-orchestrator/references/post-run-survey.md',
     )

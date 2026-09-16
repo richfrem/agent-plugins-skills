@@ -1,13 +1,19 @@
 {
   "sources": [
     {
-      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "source": "richfrem/agent-plugins-skills",
+      "plugins": [
+        "dependency-management",
+        "plugin-manager"
+      ]
+    },
+    {
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills",
       "plugins": [
         "agent-agentic-os",
+        "agent-scaffolders",
         "cli-agents",
-        "dependency-management",
-        "dev-utils",
-        "plugin-manager"
+        "dev-utils"
       ]
     }
   ]

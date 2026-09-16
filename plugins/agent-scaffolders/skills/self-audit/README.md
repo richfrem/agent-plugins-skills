@@ -1,1 +1,0 @@
-../../tests/flawed-plugin/README.md

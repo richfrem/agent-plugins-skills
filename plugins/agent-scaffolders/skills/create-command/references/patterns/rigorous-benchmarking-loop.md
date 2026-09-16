@@ -1,1 +1,0 @@
-../../../../references/patterns/rigorous-benchmarking-loop.md

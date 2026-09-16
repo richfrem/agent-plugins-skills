@@ -2,12 +2,11 @@
 name: agent-file-synchronization
 plugin: cli-agents
 description: >
-  Synchronizes project instruction files across AGENTS.md, CLAUDE.md, GEMINI.md, and
-  .github/copilot-instructions.md while preserving platform-specific sections (GEMINI.md tool
-  mapping, copilot authoritative header). Supports AGENTS.md or CLAUDE.md as primary source,
-  and selective target syncing. Also reports drift between .agent/rules/ and matching
-  plugins/*/rules/ sources. Triggers: "sync instructions", "sync CLAUDE.md to GEMINI.md",
-  "sync AGENTS.md", "replicate instruction files", "mirror CLAUDE.md", "check rule drift".
+  Maintains AGENTS.md as the single canonical project instruction file and reports legacy
+  CLAUDE.md, GEMINI.md, and .github/copilot-instructions.md mirrors without copying into them
+  by default. Explicit target syncing remains an opt-in compatibility operation. Also reports
+  drift between .agent/rules/ and matching plugins/*/rules/ sources. Triggers: "sync instructions",
+  "sync AGENTS.md", "check instruction drift", "replicate instruction files", "check rule drift".
 allowed-tools: Bash, Read, Write
 ---
 
@@ -33,17 +32,19 @@ assistant: [triggers optimize-agent-instructions, not agent-file-synchronization
 
 ## Identity
 
-You synchronize project instruction files across modern AI tooling environments.
-Today, **AGENTS.md** is an open cross-tool standard (Codex, Cursor, Antigravity, and portable agents),
-while **CLAUDE.md** is used by Claude Code, **GEMINI.md** is used by Gemini CLI, and
-**.github/copilot-instructions.md** is used by GitHub Copilot.
+You maintain **AGENTS.md** as the canonical project instruction source. It is an open
+cross-tool standard (Codex, Cursor, Antigravity, and portable agents). Claude Code,
+Gemini CLI, and Copilot may still discover legacy platform files, so normal operation
+must not create or refresh duplicate mirrors that inflate context or drift over time.
 
 A blind full-copy destroys platform-specific sections; this skill detects and re-preserves those
 sections automatically instead of requiring a human to re-append them by hand. It also respects
 repos that only want a subset of target files (via `--targets`) rather than forcing all 4 formats.
 
-**Scope**: This skill owns *mechanical replication*. It does not own *content quality*
-(`optimize-agent-instructions`) or *initial project scaffolding* (`project-setup`).
+**Scope**: This skill owns canonical-file maintenance and drift detection. It does not own
+content quality (`optimize-agent-instructions`) or initial project scaffolding (`project-setup`).
+Use `--targets CLAUDE.md,GEMINI.md,.github/copilot-instructions.md` only when a user explicitly
+requests a temporary compatibility mirror.
 
 ## What gets preserved per target
 
@@ -67,7 +68,7 @@ common LLM coding mistakes. Merge with project-specific instructions as needed."
    ```bash
    python3 ./scripts/sync_instruction_files.py --source AGENTS.md --targets GEMINI.md,CLAUDE.md --dry-run
    ```
-   Reports per-target line-count deltas and preserved sections.
+   The default target is AGENTS.md only; legacy mirrors are not written.
 
 2. **If the dry-run summary looks right, execute**:
    ```bash

@@ -193,7 +193,7 @@ def write_report(issues, runtime_issues, report_path: Path):
         if issues:
             f.write("## ⚠️ Standard — Hardcoded Path References\n\n")
             f.write("> The following files contain hardcoded `plugins/` references or absolute machine paths.\n")
-            f.write("> The `fix-plugin-paths` skill must run until this report returns zero violations\n")
+            f.write("> Resolve the reported paths and rerun the audit until this report returns zero violations\n")
             f.write("> by either neutralizing the path or updating `plugin_paths_whitelist.json`.\n\n")
             for file_path in sorted(issues.keys()):
                 f.write(f"### [ ] {file_path}\n")

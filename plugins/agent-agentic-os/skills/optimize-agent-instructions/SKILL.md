@@ -2,10 +2,10 @@
 name: optimize-agent-instructions
 plugin: agent-agentic-os
 description: >
-  Audits and rewrites AI agent instruction files (AGENTS.md, CLAUDE.md, GEMINI.md,
-  .github/copilot-instructions.md) in any repo. Strips stale or foreign content,
-  applies Karpathy's four behavioral principles, ensures platform-specific sections,
-  and makes each file authoritative rather than a copy of another.
+  Audits and rewrites the canonical AGENTS.md instruction file in any repo. Strips stale
+  or foreign content and applies Karpathy's four behavioral principles. It reports legacy
+  CLAUDE.md, GEMINI.md, and .github/copilot-instructions.md mirrors but does not rewrite
+  them by default, preventing instruction duplication and context bloat.
   Trigger when the user says "optimize my CLAUDE.md", "audit agent instructions",
   "improve my AGENTS.md", "apply Karpathy principles to my agent files", "clean up
   my copilot instructions", "review my GEMINI.md", or "update my AI instruction files".
@@ -32,9 +32,10 @@ assistant: [triggers os-improvement-loop, not optimize-agent-instructions]
 
 # optimize-agent-instructions
 
-Audits and rewrites the AI agent instruction files in a repo. Works on any project —
-not just agent-plugins-skills. The goal is files that are authoritative, concise, and
-guide AI behavior through explicit principles rather than hoping for defaults.
+Audits and rewrites the canonical `AGENTS.md` in a repo. Works on any project — not just
+agent-plugins-skills. The goal is one authoritative, concise instruction source. Legacy
+platform files are inventory-only unless the user explicitly authorizes a compatibility
+rewrite; use `agent-file-synchronization` for mechanical, opt-in mirroring.
 
 ---
 
@@ -57,7 +58,7 @@ If instruction files are missing for active platforms, offer to create them.
 
 ## Phase 2 — Audit Each File
 
-Read each file, then score it against the Quality Checklist: structure (Karpathy + project rules
+Read `AGENTS.md`, then inventory the legacy files and score the canonical file against the Quality Checklist: structure (Karpathy + project rules
 merged, no stale AI-session artifacts, no foreign rules from other projects, no self-referential
 "copy of X" framing, current paths/commands, platform notes present), all four Karpathy
 Principles present, and platform-specific checks (Gemini tool-mapping table; Copilot file is
@@ -68,7 +69,7 @@ authoritative, not framed as a copy). Full checklist and the audit-score report 
 
 ## Phase 3 — Rewrite Plan
 
-For each file that scored poorly, propose changes:
+For `AGENTS.md` if it scored poorly, propose changes:
 
 - State what will be **removed** (foreign content, stale artifacts)
 - State what will be **added** (Karpathy section, platform notes)
@@ -80,7 +81,7 @@ Get confirmation before writing. Show the full proposed content for each file.
 
 ## Phase 4 — Write
 
-Read the Karpathy principles at `references/sample-claude-md`. Write each file using the
+Read the Karpathy principles at `references/sample-claude-md`. Write `AGENTS.md` using the
 canonical structure (tradeoff note, the four Karpathy sections, working-if footer, project rules)
 plus platform-specific sections (Gemini CLI Tool Mapping table; copilot-instructions.md
 authoritative title + "Mirrors CLAUDE.md" note). Full templates in `references/detailed-reference.md`.

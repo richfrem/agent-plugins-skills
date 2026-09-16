@@ -19,11 +19,30 @@
   },
   {
     "name": "agent-scaffolders",
-    "description": "Meta-plugin containing the ecosystem generation primitives. Includes scaffolding for Agent Skills, Plugins, CLI sub-agents, autonomous GitHub workflows, Azure Foundry agents, and more.",
-    "version": "2.0.0",
+    "description": "Meta-plugin containing ecosystem generation and auditing primitives.",
+    "version": "2.1.0",
     "path": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/agent-scaffolders",
     "skills": [
-      "audit-skill"
+      "audit-plugin",
+      "audit-skill",
+      "create-agentic-workflow",
+      "create-azure-agent",
+      "create-docker-skill",
+      "create-github-action",
+      "create-hook",
+      "create-mcp-integration",
+      "create-plugin",
+      "create-rule",
+      "create-skill",
+      "create-stateful-skill",
+      "create-sub-agent",
+      "ecosystem-authoritative-sources",
+      "ecosystem-standards",
+      "manage-marketplace",
+      "compile-apm-package",
+      "convert-plugin-to-apm",
+      "create-apm-package",
+      "install-apm-package"
     ]
   },
   {

@@ -1,1 +1,0 @@
-../../../scripts/check_plugin_boundaries.py

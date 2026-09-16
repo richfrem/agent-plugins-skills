@@ -14,4 +14,4 @@ If auditing a skill that requires complex Multi-CLI interactions or nested sub-a
 
 ## 4. Unresolvable Standard Conflict
 If a plugin violates an ecosystem standard to solve a novel edge-case (e.g., massive inline prompt chunking for specific token-dense tasks):
-- **Action**: Flag the violation but label it an "Intentional Deviation". Advise the user to use the `synthesize-learnings` skill to propose an update to the ecosystem specs if this novel edge-case proves valuable.
+- **Action**: Flag the violation but label it an "Intentional Deviation". Record a recommendation in the analysis report and route systemic spec changes through `repository-improvement` if the edge case proves valuable.

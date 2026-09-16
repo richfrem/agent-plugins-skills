@@ -48,7 +48,6 @@ These skills build ecosystem-compliant components from scratch.
 | `create-plugin` | "create a plugin" | Complete plugin structure (`plugin.json`, skills, commands, etc.) |
 | `create-skill` | "scaffold a skill" | Full skill directory with `SKILL.md`, references, and evals |
 | `create-sub-agent` | "add an agent" | Agent `.md` file with validated frontmatter and permission grants |
-| `create-command` | "add a slash command" | Slash command with bash or prompt-driven argument handling |
 | `create-hook` | "add a PreToolUse hook" | Validated `hooks.json` entries or skill-scoped hook frontmatter |
 | `create-mcp-integration` | "setup mcp server" | `.mcp.json` or plugin `mcpServers` block |
 | `create-stateful-skill` | "stateful skill" | L4-pattern skill with epistemic trust and artifact lifecycle |
@@ -66,10 +65,6 @@ These skills ensure your built components don't violate architectural constraint
 | Skill | Purpose |
 |-------|---------|
 | `audit-plugin` | Validates plugin structure, boundaries, and security compliance. |
-| `audit-plugin-l5` | Runs the rigorous L5 Enterprise Red Team Audit against the 39-point matrix. |
-| `path-reference-auditor` | Scans for broken internal references in your markdown documentation. |
-| `fix-plugin-paths` | Automatically repairs broken `plugins/` paths to ensure portability. |
-| `self-audit` | Regression test for the analyzer tools. |
 
 ---
 
@@ -79,9 +74,6 @@ These skills extract knowledge from existing components.
 
 | Skill | Purpose |
 |-------|---------|
-| `mine-plugins` | Systematically analyzes an entire plugin directory to extract design patterns. |
-| `mine-skill` | Targeted analysis on a single skill folder. |
-| `synthesize-learnings`| Converts raw analysis results into actionable improvement recommendations. |
 
 ---
 

@@ -32,7 +32,7 @@ Script Dependencies:
     - sys
 
 Consumed by:
-    audit-plugin-l5 hooks and continuous verification pipelines.
+    the retained L5 audit implementation and continuous verification pipelines.
 """
 
 import argparse
@@ -46,7 +46,7 @@ def main() -> None:
     
     args = parser.parse_args()
     
-    print("Executing audit-plugin-l5 logic...")
+    print("Executing retained L5 audit logic...")
     # Add your logic here
 
 if __name__ == "__main__":

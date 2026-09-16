@@ -1,1 +1,0 @@
-../../../scripts/path_reference_auditor.py

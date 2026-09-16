@@ -756,25 +756,23 @@ templates:
 - transition_id: interview_to_draft_plan
   from_state: INTERVIEW
   to_state: DRAFT_PLAN
-  purpose: Confirm the interview outline is complete and hand it to DRAFT_PLAN, where the full architectural specification and implementation plan are compiled.
-  next_steps_hint: "Record each standard interview answer through the supported interview-question mechanism; each answer updates docs/plans/<task-id>-plan-outline.md. Then review the outline, satisfy interview_standard_complete with verify-interview-question, record-plan-mode-entry or record-socratic-intake as applicable, and run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to DRAFT_PLAN. DRAFT_PLAN then compiles the full specification and implementation plan from the outline."
+  purpose: Confirm the interview outline is complete and hand it to DRAFT_PLAN. STANDARD work receives the full plan contract; TRIVIAL work receives a concise implementation plan without the standard-only planning questions.
+  next_steps_hint: "Record the applicable interview answers through the supported interview-question mechanism; each answer updates docs/plans/<task-id>-plan-outline.md. For TRIVIAL, capture only intent, smallest scope, verification and trivial-change evidence. For STANDARD, complete the full acceptance and planning-model questions. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to DRAFT_PLAN. DRAFT_PLAN compiles the route-appropriate plan."
   checklist:
   - Current task state is persisted as INTERVIEW
-  - Standard interview questions and acceptance criteria are complete
+  - The route-appropriate interview questions and evidence are complete
   - Interview plan outline is persisted and reviewable
   required_artifacts: []
   deterministic_checks:
-  - interview_standard_complete
+  - interview_plan_route_complete
   stage_question_ids:
   - interview_classification
   - interview_summary
   - interview_scope
   - interview_verification
+  - interview_trivial_evidence
   - interview_acceptance_criteria
   - interview_planning_model_effort
-  stage_route:
-    question_id: interview_classification
-    equals: STANDARD
   human_questions: []
   approval:
     required: false
@@ -788,6 +786,9 @@ templates:
   - modify production code
   - create implementation worktree
   - push branch to origin
+  guidance:
+    success: "TRIVIAL uses the short plan route: do not request external reviewers or a full test suite unless the user explicitly asks or the changed surface makes focused verification insufficient. STANDARD retains the full planning contract."
+    denial: "The route-specific interview evidence is incomplete; do not promote TRIVIAL work to implementation until the smallest scope and focused verification are explicit."
   denial_message: 'Transition INTERVIEW -> DRAFT_PLAN denied: preconditions or required decisions not satisfied.'
   authority:
     type: deterministic
@@ -867,6 +868,9 @@ templates:
   from_state: DRAFT_PLAN
   to_state: PLAN_REVIEW
   purpose: Submit the authored plan to the PLAN_REVIEW disposition-and-acceptance gate.
+  guidance:
+    success: "For TRIVIAL work, submit the concise plan for user review and use focused review evidence; skip independent reviewers unless the user requests them or risk warrants escalation. STANDARD work retains the normal review-selection contract."
+    denial: "Keep the task in DRAFT_PLAN until the route-appropriate plan artifact is complete."
   next_steps_hint: "The plan is drafted. Answer whether to submit the current artifacts to PLAN_REVIEW or continue revising, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to PLAN_REVIEW. If submitted, PLAN_REVIEW separately asks whether agents should review the draft and, when requested, which supported review method to use. Explicit review skips and plan revisions use their own target-specific transitions. No plan-review choice approves implementation."
   checklist:
   - Current task state is persisted as DRAFT_PLAN
@@ -1095,6 +1099,9 @@ templates:
   from_state: PLAN_REVIEW
   to_state: AWAITING_APPROVAL
   purpose: Confirm plan acceptance after either the skip path or completed independent review, then enter the separate human implementation-approval gate.
+  guidance:
+    success: "TRIVIAL may use the intentional review-skip receipt and proceed after the user accepts the concise plan; do not dispatch agents or run broad research unless explicitly requested. STANDARD requires its selected review or explicit skip."
+    denial: "Do not treat plan review as implementation approval; return to DRAFT_PLAN for changes or record the required review disposition."
   next_steps_hint: "Review the authored plan or the revised plan returned from independent review. Record the review outcome with record-critic-review, or record an intentional skip with record-review-skip; ensure critic_review_or_skip is satisfied. Then answer whether you accept the plan or require further revisions. If accepted, run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to AWAITING_APPROVAL. Revisions return to DRAFT_PLAN."
   checklist:
   - Current task state is persisted as PLAN_REVIEW
@@ -1219,6 +1226,9 @@ templates:
   from_state: AWAITING_APPROVAL
   to_state: APPROVED
   purpose: Obtain explicit human approval to proceed with task implementation and worktree creation.
+  guidance:
+    success: "TRIVIAL and STANDARD both require explicit implementation approval here. This is the capability boundary that releases worktree/code access; do not infer it from plan acceptance."
+    denial: "Without explicit implementation approval, remain pre-worktree regardless of task size."
   next_steps_hint: "Commit any interim work made during INTAKE/INTERVIEW/DRAFT_PLAN to a small branch and get it reviewed/merged BEFORE this transition, so main is clean before a worktree is created (references/worktree-reconciliation-and-multi-worktree-practices.md Section 1 -- this is now enforced by the main_clean_before_approval check below, not just documented practice). If main is dirty, either commit/push it first or record an explicit human main_dirty_before_approval_exception receipt with the reason. Then answer this edge's YAML questions with --interactive or --answers '<json>'. Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to APPROVED."
   checklist:
   - Current task state is persisted as AWAITING_APPROVAL
@@ -1341,6 +1351,9 @@ templates:
   from_state: APPROVED
   to_state: IN_WORKTREE
   purpose: Create isolated git worktree and begin test-first implementation.
+  guidance:
+    success: "TRIVIAL uses one bounded implementation slice and focused verification only. Run the full suite only when the user requests it or the changed surface makes focused verification insufficient. STANDARD follows its approved verification scope."
+    denial: "Do not create a worktree or edit production code before the approved boundary and isolation checks pass."
   next_steps_hint: "First record human approval with record-human-approval --task-id <task-id> --approver <approver>. Then create or select an isolated feature worktree and branch, record both with update-worktree, and run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to IN_WORKTREE. The transition itself auto-reconciles any dirty source-checkout changes into the worktree (main_worktree_reconciliation deterministic check) — do not manually claim pre-worktree changes were carried over; the check does this by code and fails closed on any unresolved conflict. After entry, report the required delegation summary: agent count, assignments, runtime, model, effort, scope, status, and start time. State queued until an authorized agent dispatch is observed; then state in_progress. Worktree creation alone is not implementation completion. If the user explicitly authorizes implementation in the existing checkout, record it with record-receipt --gate existing_worktree_exception --cmd approved-existing-checkout:<approver> --exit-code 0 before transitioning."
   checklist:
   - Current task state is persisted as APPROVED
@@ -1424,6 +1437,9 @@ templates:
   from_state: IN_WORKTREE
   to_state: WORKTREE_REVIEW
   purpose: "Implementation is complete in the registered worktree; submit the bounded, verified worktree diff to WORKTREE_REVIEW."
+  guidance:
+    success: "For TRIVIAL work, present the focused diff and focused test result to the user; defer broad/full-suite testing unless requested or required by affected-surface risk. STANDARD retains its approved test-suite contract."
+    denial: "Keep implementation bounded and add only the focused evidence needed for the approved change."
   next_steps_hint: "Implementation is complete only after the approved work package is written and focused verification passes; it is not committed, pushed, merged, or DONE. Before every review submission and after every internal fix round, run the session-wide change inventory and ensure every session-owned file is present and content-matched in the registered worktree. Answer this edge's one question with --interactive or --answers '<json>'. First satisfy test_suite; use: record-verification-receipt for test_suite. Before integration, create the reconciliation manifest required by the IN_WORKTREE completion contract, classify worktree-only, main-only-preexisting, shared-task, and untracked paths, then apply the reviewed worktree patch once. After review and final verification, run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to WORKTREE_REVIEW."
   checklist:
   - Current task state is persisted as IN_WORKTREE
@@ -1597,6 +1613,9 @@ templates:
   from_state: WORKTREE_REVIEW
   to_state: VERIFY_EXIT
   purpose: Advance reviewed code to final exit verification and baseline sovereignty checks.
+  guidance:
+    success: "TRIVIAL uses the focused verification receipt and does not run the repository-wide suite unless the user asks or approves it. STANDARD uses the full approved verification contract."
+    denial: "Do not broaden verification silently; record the focused result or obtain explicit approval for broader testing."
   next_steps_hint: "Direct path after an explicit review skip: no additional human question is required here. Record the skip reason and satisfy code_review_or_skip with: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to VERIFY_EXIT --skip-review --skip-reason '<reason>'. If code review is wanted instead, answer the WORKTREE_REVIEW -> MULTI_AGENT_CODE_REVIEW question first; do not infer a review choice from this deterministic edge."
   checklist:
   - Current task state is persisted as WORKTREE_REVIEW
@@ -1847,6 +1866,9 @@ templates:
   from_state: VERIFY_EXIT
   to_state: RETROSPECTIVE
   purpose: Verify clean leak checks and enter the mandatory pipeline-close retrospective gate.
+  guidance:
+    success: "TRIVIAL may satisfy the test requirement with focused_test_suite plus the existing leak and completeness checks; STANDARD requires full_test_suite."
+    denial: "Use the route-appropriate verification contract. A missing focused receipt for TRIVIAL or full-suite receipt for STANDARD blocks closeout."
   next_steps_hint: "STOP: do NOT run `pytest` directly by itself, and do NOT call the individual verifier wrappers one at a time -- a bare pytest run records no receipt, and calling verifiers separately is exactly the slow, error-prone path this hint used to describe (verifier_id=pytest_full_suite, verifier_id=pytest_unit_tests, verifier_id=leak_check, each a separate call). Use the single bundled wrapper instead, which runs all 3 verifiers plus the required asymmetric-persistence log entry in ONE call and fails fast on the first real failure: (1) Confirm docs/plans/<task-id>-implementation-plan.md has a fenced JSON Implementation Task Ledger with every item status=COMPLETE, evidence, and existing artifact paths -- this satisfies implementation_completeness (the bundle does not check this one). (2) Run: python3 plugins/agent-agentic-os/scripts/control_plane/wrappers/run_verify_exit_bundle.py --task-id <task-id> --destination references/map-debt.md --details '<what was logged and why>' -- this alone satisfies full_test_suite, test_suite, leak_check, and done_guard's asymmetric-persistence requirement (default destination is references/map-debt.md; use wiki/decisions/<task-id>.md instead if that's where you logged it). (3) Only after that reports status=COMPLETED: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to RETROSPECTIVE --human-confirmed 'HUMAN-CONFIRMED: <what the human actually said>'."
   checklist:
   - Current task state is persisted as VERIFY_EXIT
@@ -1855,7 +1877,7 @@ templates:
   deterministic_checks:
   - done_guard
   - implementation_completeness
-  - full_test_suite
+  - full_test_suite_or_trivial_focused
   human_questions: []
   approval:
     required: false
@@ -1874,7 +1896,7 @@ templates:
   from_state: RETROSPECTIVE
   to_state: DONE
   purpose: Complete the task after a completed retrospective or an explicitly reasoned skip.
-  next_steps_hint: "First persist the completed retrospective through the supported record_retrospective wrapper with the required entry fields and resolved follow-ups; do this before requesting DONE. Defaults are not inferred. Run the repository-wide pytest -q suite through verify-exit-verification with verifier_id=pytest_full_suite and record its full_test_suite receipt with exit_code=0 -- a non-zero exit code means the task must remain in RETROSPECTIVE until the suite passes or an explicit human exception is recorded. Then answer this edge's retrospective_decision question one at a time with --interactive, satisfy retrospective_done_guard, and run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to DONE."
+  next_steps_hint: "First persist the completed retrospective through the supported record_retrospective wrapper with the required entry fields and resolved follow-ups; do this before requesting DONE. For STANDARD work, run the repository-wide pytest -q suite and record full_test_suite. For TRIVIAL work, record focused_test_suite instead unless the user requests or explicitly approves the full suite. Then answer this edge's retrospective_decision question one at a time with --interactive, satisfy retrospective_done_guard, and run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to DONE."
   checklist:
   - Current task state is persisted as RETROSPECTIVE
   - Retrospective survey is complete or explicitly skipped with a reason
@@ -1882,7 +1904,10 @@ templates:
   required_artifacts: []
   deterministic_checks:
   - retrospective_done_guard
-  - full_test_suite
+  - full_test_suite_or_trivial_focused
+  guidance:
+    success: "TRIVIAL closes with focused verification and the retrospective; STANDARD closes only after full-suite verification. Neither route may skip the user review or retrospective evidence."
+    denial: "Remain in RETROSPECTIVE until the route-appropriate verification receipt and retrospective decision are recorded."
   human_questions:
   - question_id: retrospective_decision
     question: 'Choose the pipeline-close retrospective outcome: complete the survey or skip it with a recorded reason.'

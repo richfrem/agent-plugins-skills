@@ -447,6 +447,22 @@ class TransitionCoordinator:
                     f"{template.denial_message} Reason: {e}"
                 ) from e
 
+        # Persist a route marker from the human-authored interview decision so
+        # later verification gates can distinguish the proportionate TRIVIAL
+        # focused-test contract from STANDARD full-suite enforcement.
+        if (
+            current_state == STATE_INTERVIEW
+            and to_state == STATE_DRAFT_PLAN
+            and stage_answers.get("interview_classification", "").strip() == "TRIVIAL"
+        ):
+            raw = f"{task_id}:trivial_route_selected:{source_occupancy_id}:{self._cp._clock.current_time()}"
+            staged_receipts.append({
+                "gate_name": "trivial_route_selected",
+                "command_executed": "interview_classification=TRIVIAL",
+                "exit_code": 0,
+                "receipt_token": f"TRIVIAL-ROUTE-{self._cp._crypto.sha256_hex(raw)[:12]}",
+            })
+
         # 7. Evaluate approval requirement
         if template.approval.get("required"):
             approver_role = template.approval.get("approver_role", "human")

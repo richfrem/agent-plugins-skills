@@ -1,6 +1,6 @@
 # Goodhart Plugin (Test Fixture)
 
-A deliberately hollow plugin for self-audit regression testing.
+A deliberately hollow plugin retained for analyzer regression testing.
 
 This fixture is **structurally compliant** but **substantively hollow**. It is designed
 to expose the difference between a checklist-passing plugin and a genuinely useful one.

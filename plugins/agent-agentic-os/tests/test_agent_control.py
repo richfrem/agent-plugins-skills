@@ -3557,6 +3557,29 @@ def test_interview_spec_engine_cli_entrypoint_prints_intake_mode():
 # issue-534/#547: TRIVIAL Triage Fast-Track (INTAKE -> INTERVIEW -> RETROSPECTIVE -> DONE)
 # ==============================================================================
 
+def test_trivial_route_can_enter_small_plan_without_full_standard_interview():
+    """TRIVIAL work should get a short plan/approval path, not be forced to close early."""
+    from control_plane.registry import TransitionRegistry
+
+    template = TransitionRegistry.load_default().get_template(STATE_INTERVIEW, STATE_DRAFT_PLAN)
+    assert template is not None
+    assert "interview_plan_route_complete" in template.deterministic_checks
+    assert template.stage_route is None
+
+
+def test_trivial_route_guidance_is_proportionate_across_plan_and_review_edges():
+    """Guidance must distinguish focused TRIVIAL verification from STANDARD review overhead."""
+    from control_plane.registry import TransitionRegistry
+
+    registry = TransitionRegistry.load_default()
+    for edge in ((STATE_DRAFT_PLAN, STATE_PLAN_REVIEW), (STATE_IN_WORKTREE, STATE_WORKTREE_REVIEW)):
+        template = registry.get_template(*edge)
+        assert template is not None
+        guidance = template.guidance
+        assert "TRIVIAL" in guidance.get("success", "")
+        assert "focused" in guidance.get("success", "").lower()
+
+
 def test_trivial_fast_track_enters_retrospective_and_completes(control_plane):
     """A TRIVIAL task skips planning but still enters the mandatory retrospective gate, via the
     human-authorized emergency-close edge answering a planned (not failure) reason category."""

@@ -1,1 +1,0 @@
-../../../references/maturity-model.md

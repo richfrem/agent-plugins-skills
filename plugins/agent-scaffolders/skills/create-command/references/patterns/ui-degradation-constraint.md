@@ -1,1 +1,0 @@
-../../../../references/patterns/ui-degradation-constraint.md

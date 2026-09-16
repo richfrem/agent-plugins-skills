@@ -1,1 +1,0 @@
-../../../scripts/cleanup_stacked_references.py

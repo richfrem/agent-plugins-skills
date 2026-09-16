@@ -4,7 +4,7 @@ update_ranked_skills.py
 
 Purpose:
     CLI utility to update or add entries in summary-ranked-skills.json.
-    Used by the eval-autoresearch-fit skill after completing an assessment.
+    Legacy helper retained for historical data migrations; active evaluation uses os-eval-runner.
 
 Key Input Dependencies:
     - summary-ranked-skills.json — Main database file containing skill scores and eval status
@@ -193,7 +193,7 @@ def print_batch(batch: list, label: str) -> None:
     print()
     print("Evaluate with:")
     for s in batch:
-        print(f"  eval-autoresearch-fit  {s['plugin']}/{s['skill']}")
+        print(f"  legacy-evaluation  {s['plugin']}/{s['skill']}")
     print()
 
 
