@@ -56,6 +56,19 @@ Persistent tracking of architectural friction, structural anomalies, and unclose
 - Repeat: NO
 - Status: OPEN
 
+## DEBT-20260916-SYMLINK-SKILL-PATH
+
+- Logged date: 2026-09-16
+- Cycle/Session ID: skill-pruning-and-symlink-audit
+- Artifact affected: `.agents/skills/symlink-manager/SKILL.md`
+- Friction observed: The skill documents `plugins/link-checker/scripts/symlink_manager.py`, but the executable lives at `plugins/dev-utils/scripts/symlink_manager.py`; the documented command fails immediately.
+- Why not fixed now: The requested audit was completed using the discovered canonical script; synchronizing the installed/source skill documentation is a separate plugin-sync change.
+- Recommended fix: Update the symlink-manager skill's documented script path and add a smoke test that resolves the documented command before release.
+- Evidence/repro: `python3 plugins/link-checker/scripts/symlink_manager.py diagnose` returned `can't open file`; `python3 plugins/dev-utils/scripts/symlink_manager.py diagnose` completed and reported six unrelated plugin-pruner links.
+- Severity: S
+- Repeat: NO
+- Status: OPEN
+
 ## DEBT-20260914-PROGRESSIVE-ELABORATION-SUMMARY-DOC
 
 - Logged date: 2026-09-14

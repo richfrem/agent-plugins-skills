@@ -68,15 +68,12 @@ _SKILL_DIRS = [
     ("agent-memory",             "vector-db-search"),
 
     # agent-scaffolders (30 skills)
-    ("agent-scaffolders",        "analyze-plugin"),
     ("agent-scaffolders",        "audit-plugin"),
-    ("agent-scaffolders",        "audit-plugin-l5"),
     ("agent-scaffolders",        "compile-apm-package"),
     ("agent-scaffolders",        "convert-plugin-to-apm"),
     ("agent-scaffolders",        "create-agentic-workflow"),
     ("agent-scaffolders",        "create-apm-package"),
     ("agent-scaffolders",        "create-azure-agent"),
-    ("agent-scaffolders",        "create-command"),
     ("agent-scaffolders",        "create-docker-skill"),
     ("agent-scaffolders",        "create-github-action"),
     ("agent-scaffolders",        "create-hook"),
@@ -87,17 +84,8 @@ _SKILL_DIRS = [
     ("agent-scaffolders",        "create-sub-agent"),
     ("agent-scaffolders",        "ecosystem-authoritative-sources"),
     ("agent-scaffolders",        "ecosystem-standards"),
-    ("agent-scaffolders",        "eval-autoresearch-fit"),
-    ("agent-scaffolders",        "fix-plugin-paths"),
     ("agent-scaffolders",        "install-apm-package"),
-    ("agent-scaffolders",        "l5-red-team-auditor"),
     ("agent-scaffolders",        "manage-marketplace"),
-    ("agent-scaffolders",        "mine-plugins"),
-    ("agent-scaffolders",        "mine-skill"),
-    ("agent-scaffolders",        "path-reference-auditor"),
-    ("agent-scaffolders",        "self-audit"),
-    ("agent-scaffolders",        "synthesize-learnings"),
-    ("agent-scaffolders",        "update-ecosystem-index"),
 
     # cli-agents (11 skills) — consolidated from deleted claude-cli + copilot-cli + gemini-cli
     ("cli-agents",               "agt-security"),

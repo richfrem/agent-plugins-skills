@@ -1,1 +1,0 @@
-../../../references/fix-plugin-paths.prompt.md

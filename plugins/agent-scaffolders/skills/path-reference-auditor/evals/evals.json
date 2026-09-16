@@ -1,8 +1,0 @@
-[
-  {"prompt": "Audit path references in my plugin skills and find any broken file references.", "should_trigger": true},
-  {"prompt": "Check file references in this plugin — verify each ./references path actually exists.", "should_trigger": true},
-  {"prompt": "Run a path reference audit and generate a report of missing or broken symlinks in the skill directory.", "should_trigger": true},
-  {"prompt": "Validate my plugin structure — check plugin.json, skill frontmatter, and agent descriptions.", "should_trigger": false},
-  {"prompt": "Analyze this plugin and extract its design patterns and architectural decisions.", "should_trigger": false},
-  {"prompt": "Run an L5 red team audit against the 39-point pattern matrix for this plugin.", "should_trigger": false}
-]

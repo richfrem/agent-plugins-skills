@@ -1,1 +1,0 @@
-../../../scripts/fix_inside_plugin_symlinks.py

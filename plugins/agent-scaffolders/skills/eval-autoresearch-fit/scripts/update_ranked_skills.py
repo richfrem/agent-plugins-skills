@@ -1,1 +1,0 @@
-../../../scripts/update_ranked_skills.py

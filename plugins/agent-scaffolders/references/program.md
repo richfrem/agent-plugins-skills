@@ -1,4 +1,6 @@
-# Optimization Program: eval-autoresearch-fit
+# Archived Optimization Program
+
+The former `eval-autoresearch-fit` skill has been removed from this plugin. Retain this reference as historical context only; use `os-eval-runner` for active evaluation work.
 
 Goal: maximize `quality_score` (higher is better, max 1.0).
 

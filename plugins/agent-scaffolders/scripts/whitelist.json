@@ -14,10 +14,10 @@
             "persist_soul.py": "Conceptual name in orchestrator DOES NOT list - script does not exist."
         },
         "agent-scaffolders": {
-            "audit.py": "Documentation reference in synthesize-learnings mapping improvements to agent-scaffolders.",
+            "audit.py": "Historical documentation reference mapping improvements to agent-scaffolders.",
             "qc_analysis.py": "Hypothetical docs example.",
             "qc_core.py": "Hypothetical docs example.",
-            "scaffold.py": "Documentation reference in synthesize-learnings mapping improvements to agent-scaffolders.",
+            "scaffold.py": "Historical documentation reference mapping improvements to agent-scaffolders.",
             "azure_agent.py": "Generated output artifact written by scaffold_azure_agent.py into the target project.",
             "check_environment.py": "Generated output artifact scaffolded by create-docker-skill into the target project.",
             "execute.py": "Generated output artifact rendered from execute.py.jinja template into the target project.",

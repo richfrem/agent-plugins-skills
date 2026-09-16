@@ -1,8 +1,5 @@
 # Agent Plugin Analyzer - Architecture
 
-## audit-plugin-l5
-Put deep context here so it is not loaded into context implicitly.
-
-## path-reference-auditor
-*(Shared architecture description pointing to `audit-plugin-l5`)*
-The `path-reference-auditor` previously referenced this architecture description via local relative paths.
+This reference is retained for the active analyzer and audit skills. The former
+special-purpose path and L5 wrapper skills were removed from the plugin catalog;
+their implementation artifacts are not active skill entry points.

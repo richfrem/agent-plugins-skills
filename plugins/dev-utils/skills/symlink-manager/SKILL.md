@@ -2,16 +2,11 @@
 name: symlink-manager
 plugin: link-checker
 description: >
-  Create, audit, repair, and document cross-platform symlinks that work correctly
-  on both Windows and macOS/Linux. Use this skill whenever the user mentions symlinks,
-  symbolic links, junction points, .gitconfig symlinks, broken links after git pull,
-  cross-platform path issues, or needs help with ln -s equivalents on Windows.
-  Also trigger when the user reports that files are missing or wrong after switching
-  between Mac and Windows machines using Git. This skill solves the common problem
-  where symlinks committed on macOS show up as plain text files on Windows (and vice versa)
-  because of Git's core.symlinks setting or missing Developer Mode / elevated permissions.
-  **IMPORTANT FOR WINDOWS USERS:** Developer Mode must be enabled before creating symlinks.
-  Without it, Git will check out symlinks as plain-text files or hardlinks, breaking cross-platform workflows.
+  Create, audit, repair, and document cross-platform symlinks. Use when the user
+  mentions symlinks, junctions, broken links after git pull, cross-platform path
+  issues, or missing files after switching machines. Supports macOS/Linux and
+  Windows; Windows users need Developer Mode or administrator rights before
+  creating true symlinks.
 ---
 
 # Symlink Manager — Cross-Platform Skill

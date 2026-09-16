@@ -29,7 +29,7 @@ This skill uses **Progressive Disclosure**. Load only what you need:
 
 Identify what the user needs:
 - **Demo**: Show the skill structure and explain the Progressive Disclosure pattern
-- **Validate**: Run `analyze-plugin` against this fixture and confirm expected scores
+- **Validate**: Run `audit-plugin` against this fixture and confirm expected structure
 - **Reference**: Use this SKILL.md as a template baseline for new skill scaffolding
 
 ### Step 2: Execute

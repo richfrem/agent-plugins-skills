@@ -1,7 +1,7 @@
 # Analysis Notes
 
 Design decisions and known patterns in this gold-standard fixture.
-This file is intentionally visible to `analyze-plugin` — it demonstrates
+This file is intentionally visible to the plugin audit tooling — it demonstrates
 the Progressive Disclosure pattern in a reference file.
 
 ## Pattern Inventory

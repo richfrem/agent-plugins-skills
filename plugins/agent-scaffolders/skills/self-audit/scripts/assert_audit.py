@@ -1,1 +1,0 @@
-../../../scripts/assert_audit.py

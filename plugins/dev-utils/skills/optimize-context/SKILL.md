@@ -2,7 +2,7 @@
 name: optimize-context
 plugin: dev-utils
 description: >
-  Reduces AI agent context bloat across three dimensions: duplicate skill deduplication, instruction file optimization (CLAUDE.md, GEMINI.md to <= 80 lines), and session token efficiency.
+  Reduces AI agent context bloat across three dimensions: duplicate skill deduplication, canonical AGENTS.md optimization, and session token efficiency.
   USE ONLY when trimming instruction files, diagnosing duplicate skill loading, or reducing agent token overhead.
 allowed_tools:
   - run_command
@@ -29,14 +29,17 @@ The `optimize-context` skill enforces context hygiene through automated duplicat
    ```bash
    python3 plugins/dev-utils/scripts/optimize_context.py --dry-run
    ```
-   If duplicates are found in `.claude/`, clear them to prevent double-loading while preserving `.agents/`:
+   If duplicates are found in `.claude/`, report them and propose a bounded cleanup. Do not delete
+   duplicate skills or platform instruction files automatically; deletion requires explicit
+   path-scoped authorization and the destructive-action verification protocol.
    ```bash
-   rm -rf .claude/skills/* .claude/agents/* .claude/commands/* .claude/hooks/*
+   # No deletion command is run automatically.
    ```
 
 2. **Phase 2: Instruction File Optimization**
-   Audit `CLAUDE.md`, `GEMINI.md`, and `.github/copilot-instructions.md`.
-   Ensure each file is lean (target ≤ 80 lines), keeping only behavioral gates and removing stale inventory tables.
+   Audit and optimize canonical `AGENTS.md` (target ≤ 80 lines where practical).
+   Inventory legacy `CLAUDE.md`, `GEMINI.md`, and `.github/copilot-instructions.md` as
+   duplicate context surfaces; do not rewrite or remove them without explicit authorization.
 
 3. **Phase 3: Session Token Efficiency**
    Check for delegation opportunities, enforce artifact passing over raw transcripts, and recommend `/compact` between tasks.

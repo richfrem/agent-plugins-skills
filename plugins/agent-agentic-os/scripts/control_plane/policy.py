@@ -212,6 +212,21 @@ def _interview_standard_check(ctx: Dict[str, Any]) -> Optional[str]:
     return _interview_route_check(ctx, "STANDARD", "interview_acceptance_criteria")
 
 
+def _interview_plan_route_check(ctx: Dict[str, Any]) -> Optional[str]:
+    """Allow either interview route to produce a bounded plan artifact.
+
+    TRIVIAL work uses the same lifecycle states as STANDARD work, but omits the
+    standard-only acceptance-detail and planning-model questions.  It still
+    requires the short interview and explicit smallest-change evidence.
+    """
+    classification = str(ctx.get("stage_answers", {}).get("interview_classification", "")).strip()
+    if classification == "TRIVIAL":
+        return _interview_trivial_check(ctx)
+    if classification == "STANDARD":
+        return _interview_standard_check(ctx)
+    return "Interview classification must be TRIVIAL or STANDARD before plan drafting."
+
+
 def _worktree_isolation_check(ctx: Dict[str, Any]) -> Optional[str]:
     """Require isolated worktree metadata unless a human records an exception.
 
@@ -323,7 +338,10 @@ def _done_check(ctx: Dict[str, Any]) -> Optional[str]:
     exception type and message are preserved exactly, unrelated to PolicyViolation."""
     task_id = ctx["task_id"]
     planning_only = ctx["count_receipts"](gate_name="planning_only_completion", exit_code=0) > 0
-    required_test_gate = "plan_validation" if planning_only else "test_suite"
+    # A TRIVIAL implementation still needs focused verification, but does not
+    # require a repository-wide suite unless the user requests/authorizes it.
+    trivial_route = ctx["count_receipts"]("trivial_route_selected", 0) > 0
+    required_test_gate = "plan_validation" if planning_only else ("focused_test_suite" if trivial_route else "test_suite")
     if ctx["count_receipts"](gate_name=required_test_gate, exit_code=0) == 0:
         return (
             f"Cannot complete task '{task_id}': No passing {required_test_gate} verification receipt "
@@ -345,6 +363,21 @@ def _done_check(ctx: Dict[str, Any]) -> Optional[str]:
         return f"Cannot complete task '{task_id}': Missing clean leak check receipt (gate_name='leak_check', exit_code=0)."
 
     return None
+
+
+def _full_test_suite_or_trivial_focused(ctx: Dict[str, Any]) -> Optional[str]:
+    """Keep STANDARD full-suite enforcement while allowing explicit TRIVIAL focus."""
+    if ctx["count_receipts"]("full_test_suite", 0) > 0:
+        return None
+    if (
+        ctx["count_receipts"]("trivial_route_selected", 0) > 0
+        and ctx["count_receipts"]("focused_test_suite", 0) > 0
+    ):
+        return None
+    return (
+        "Cannot advance: record a passing full_test_suite receipt, or for a selected "
+        "TRIVIAL route record a passing focused_test_suite receipt."
+    )
 
 
 def _retrospective_done_check(ctx: Dict[str, Any]) -> Optional[str]:
@@ -455,6 +488,7 @@ CHECK_REGISTRY: Dict[str, Any] = {
     "prior_art_scan": _prior_art_check,
     "interview_trivial_complete": _interview_trivial_check,
     "interview_standard_complete": _interview_standard_check,
+    "interview_plan_route_complete": _interview_plan_route_check,
     "plan_mode_or_socratic": lambda ctx: (
         None if _gate_any_of(ctx, [
             {"type": "receipt", "gate_name": "plan_mode_entry"},
@@ -525,6 +559,7 @@ CHECK_REGISTRY: Dict[str, Any] = {
             "verifier and ensure it exits 0."
         )
     ),
+    "full_test_suite_or_trivial_focused": _full_test_suite_or_trivial_focused,
     "code_review_or_skip": lambda ctx: (
         None if _gate_any_of(ctx, [
             {"type": "critic_review_pass"},

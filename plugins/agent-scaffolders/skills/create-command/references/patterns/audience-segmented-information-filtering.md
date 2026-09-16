@@ -1,1 +1,0 @@
-../../../../references/patterns/audience-segmented-information-filtering.md

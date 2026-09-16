@@ -2,13 +2,11 @@
 name: audit-plugin
 plugin: agent-scaffolders
 description: >
-  This skill should be used when the user asks to "audit a plugin", "validate my plugin",
-  "check plugin structure", "verify plugin is correct", "validate .claude-plugin/plugin.json", "check if
-  my plugin is compliant", "review plugin components", or mentions plugin validation or
-  structure compliance. Also trigger proactively after the user creates or modifies any
-  plugin component (commands, agents, skills, hooks, .claude-plugin/plugin.json). Use this skill even
-  when the user says "check my work" or "make sure this is right" in a plugin context.
-  Do NOT use this for auditing individual skills only (use skill-reviewer for that).
+  Use when the user asks to audit or validate a plugin, check its structure or
+  .claude-plugin/plugin.json, review components, or confirm compliance. Also trigger
+  after plugin components change. Audit the whole plugin here; use audit-skill for
+  one skill. Deeper security review requires an explicitly selected security-review
+  workflow.
 allowed-tools: Bash, Read, Write, Glob, Grep
 ---
 
@@ -397,7 +395,7 @@ description: >
 ---
 
 ## Next Actions
-- **Fix gaps**: Run `create-skill`, `create-command`, or `create-hook` to add missing components
+- **Fix gaps**: Run `create-skill` or `create-hook` to add missing components
 - **Improve skills**: Run `skill-reviewer` on each skill for trigger optimization
-- **Upgrade to L5**: Run `audit-plugin-l5` for advanced red-team structural audit
+- **Deeper security review**: Request a separate security-review workflow when routine plugin validation is insufficient
 - **Distribute**: Push to GitHub — users install via `plugin_add.py richfrem/agent-plugins-skills`

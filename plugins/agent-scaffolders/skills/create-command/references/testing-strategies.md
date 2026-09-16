@@ -1,1 +1,0 @@
-../../../references/testing-strategies.md

@@ -105,16 +105,13 @@
     },
     "agent-scaffolders": {
       "skills": {
-        "analyze-plugin": true,
         "audit-plugin": true,
-        "audit-plugin-l5": true,
         "audit-skill": true,
         "compile-apm-package": true,
         "convert-plugin-to-apm": true,
         "create-agentic-workflow": true,
         "create-apm-package": true,
         "create-azure-agent": true,
-        "create-command": true,
         "create-docker-skill": true,
         "create-github-action": true,
         "create-hook": true,
@@ -126,17 +123,8 @@
         "create-sub-agent": true,
         "ecosystem-authoritative-sources": true,
         "ecosystem-standards": true,
-        "eval-autoresearch-fit": true,
-        "fix-plugin-paths": true,
         "install-apm-package": true,
-        "l5-red-team-auditor": true,
-        "manage-marketplace": true,
-        "mine-plugins": true,
-        "mine-skill": true,
-        "path-reference-auditor": true,
-        "self-audit": true,
-        "synthesize-learnings": true,
-        "update-ecosystem-index": true
+        "manage-marketplace": true
       },
       "rules": {
         "plugin-architecture-policy.md": true

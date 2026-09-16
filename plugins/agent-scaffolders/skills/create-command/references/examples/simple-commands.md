@@ -1,1 +1,0 @@
-../../../../references/examples/simple-commands.md

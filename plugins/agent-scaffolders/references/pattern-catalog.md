@@ -1,6 +1,6 @@
 # Pattern Catalog
 
-A living catalog of reusable design patterns extracted from plugin and skill analyses. This catalog grows with every analysis — new patterns are appended by the `synthesize-learnings` skill.
+A living catalog of reusable design patterns extracted from plugin and skill analyses. This catalog grows with every analysis; maintainers append validated patterns during review.
 
 ## Governance Model
 

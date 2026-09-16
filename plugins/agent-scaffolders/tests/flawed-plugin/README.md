@@ -1,6 +1,6 @@
 # Flawed Test Plugin
 
-A deliberately broken plugin used for self-audit regression testing. The analyzer MUST detect the following issues.
+A deliberately broken plugin retained as an analyzer regression fixture. The analyzer MUST detect the following issues.
 
 ## Expected Scanner Findings (deterministic — `inventory_plugin.py`)
 
@@ -33,7 +33,7 @@ These are structural anti-patterns the scanner doesn't check. The LLM must flag 
 
 ## Regression Assertion
 
-The self-audit command should verify:
+The regression harness should verify:
 ```
 assert len(security_flags) >= 4  # scanner catches network calls + env access (not obfuscated cred)
 assert len(issues) >= 1          # bash script structural violation

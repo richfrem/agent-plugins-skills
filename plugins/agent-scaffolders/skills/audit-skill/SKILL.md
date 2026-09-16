@@ -1,7 +1,7 @@
 ---
 name: audit-skill
 plugin: agent-scaffolders
-description: Audits and aligns individual agent skills and sub-agents against ecosystem evolution standards, verifying line budgets, evals schemas, and hub-and-spoke isolation.
+description: Audits and aligns one individual agent skill or sub-agent against ecosystem evolution standards. Use audit-plugin for whole-plugin structure.
 allowed-tools: Bash, Read, Write, Glob, Grep
 ---
 

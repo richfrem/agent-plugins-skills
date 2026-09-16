@@ -1,1 +1,0 @@
-../../../references/analysis-questions-by-type.md

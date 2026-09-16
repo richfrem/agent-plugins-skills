@@ -14,9 +14,9 @@ Purpose:
     files or require specific platform sections (e.g. GEMINI.md's Gemini CLI Tool
     Mapping table, copilot-instructions.md's authoritative header).
 
-    This script supports CLAUDE.md or AGENTS.md as the source of truth, performs
-    context-aware section preservation, and allows selective syncing (--targets)
-    so repos only generate and maintain the instruction files for tools they actually use.
+    AGENTS.md is the canonical source by default. Context-aware replication to
+    legacy platform files is still available only when explicitly requested with
+    --targets, preventing accidental context duplication during normal syncs.
 
     A second, independent mode (--check-rules) reports content drift between
     `.agent/rules/<name>.md` and its matching `plugins/<plugin>/rules/<name>.md`
@@ -27,7 +27,7 @@ Layer: Investigate / Maintain
 Usage Examples:
     python sync_instruction_files.py --dry-run
     python sync_instruction_files.py --execute
-    python sync_instruction_files.py --source AGENTS.md --execute
+    python sync_instruction_files.py --source AGENTS.md --targets AGENTS.md --execute
     python sync_instruction_files.py --targets AGENTS.md,GEMINI.md --execute
     python sync_instruction_files.py --check-rules
 
@@ -232,7 +232,7 @@ def check_rule_drift(pairs: List[Tuple[str, Path, Optional[Path]]]) -> bool:
 
 
 def _resolve_source_file(root: Path, requested_source: Optional[str]) -> Path:
-    """Resolves authoritative source file (defaulting to CLAUDE.md then AGENTS.md)."""
+    """Resolve the canonical source, preferring AGENTS.md to avoid mirror drift."""
     if requested_source:
         src = root / requested_source
         if not src.exists():
@@ -240,12 +240,12 @@ def _resolve_source_file(root: Path, requested_source: Optional[str]) -> Path:
             sys.exit(1)
         return src
 
-    if (root / "CLAUDE.md").exists():
-        return root / "CLAUDE.md"
     if (root / "AGENTS.md").exists():
         return root / "AGENTS.md"
+    if (root / "CLAUDE.md").exists():
+        return root / "CLAUDE.md"
 
-    print(f"ERROR: Neither CLAUDE.md nor AGENTS.md found in {root}.", file=sys.stderr)
+    print(f"ERROR: Neither AGENTS.md nor CLAUDE.md found in {root}.", file=sys.stderr)
     sys.exit(1)
 
 
@@ -260,12 +260,12 @@ def main() -> None:
     parser.add_argument(
         "--source",
         default=None,
-        help="Source instruction file to replicate from (default: CLAUDE.md if present, else AGENTS.md)",
+        help="Source instruction file (default: AGENTS.md if present, else CLAUDE.md)",
     )
     parser.add_argument(
         "--targets",
         default=None,
-        help="Comma-separated target relative filenames to sync (e.g. 'GEMINI.md,AGENTS.md'). Defaults to all.",
+        help="Comma-separated target filenames. Defaults to AGENTS.md only; pass explicit legacy targets to opt in.",
     )
     parser.add_argument(
         "--check-rules",
@@ -294,7 +294,9 @@ def main() -> None:
         if first_title and not first_title.endswith(".md"):
             project_name = first_title
 
-    selected_targets = [t.strip() for t in args.targets.split(",")] if args.targets else None
+    # Keep the canonical file lean by default. Legacy mirrors are an explicit,
+    # opt-in compatibility operation rather than an automatic copy operation.
+    selected_targets = [t.strip() for t in args.targets.split(",")] if args.targets else ["AGENTS.md"]
 
     for rel_path, title_tmpl, tail_marker in TARGET_TEMPLATES:
         if (root / rel_path).resolve() == source_path.resolve():

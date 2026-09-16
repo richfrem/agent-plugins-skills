@@ -27,8 +27,7 @@ Script Dependencies:
     None (standard library only)
 
 Consumed by:
-    - analyze-plugin (Agent Skill)
-    - mine-plugins (Command)
+    - audit-plugin and audit-skill (review entry points)
 """
 import argparse
 import json

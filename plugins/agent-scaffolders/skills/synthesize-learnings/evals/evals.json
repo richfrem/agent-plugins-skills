@@ -1,8 +1,0 @@
-[
-  {"prompt": "Synthesize the learnings from the pdf-skill analysis and generate improvement recommendations.", "should_trigger": true},
-  {"prompt": "What should we improve in our scaffolders based on the analysis results?", "should_trigger": true},
-  {"prompt": "Update our meta-skills based on these plugin analysis findings.", "should_trigger": true},
-  {"prompt": "Analyze this plugin and extract design patterns from it.", "should_trigger": false},
-  {"prompt": "Run the eval loop to optimize the skill routing description.", "should_trigger": false},
-  {"prompt": "Deploy this skill as an Azure AI Foundry hosted agent.", "should_trigger": false}
-]

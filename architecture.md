@@ -37,10 +37,10 @@ Current scale (read from `plugins/` — verify with `find plugins -name SKILL.md
 │   ├── agent-agentic-os/           # OS improvement loop, memory, evolution planning (20 skills)
 │   ├── agent-orchestration/        # OS-decoupled execution primitives (9 skills)
 │   ├── agent-memory/               # RLM summary cache + ChromaDB vector store (13 skills)
-│   ├── agent-scaffolders/          # Plugin/skill/agent/rule scaffolding & evolution auditing (32 skills)
+│   ├── agent-scaffolders/          # Plugin/skill/agent/rule scaffolding & auditing (20 skills)
 │   ├── cli-agents/                 # Multi-LLM CLI dispatch (Claude/Copilot/Gemini/Agy) (11 skills)
 │   ├── dependency-management/      # pip-compile / dependency tier workflow (1 skill)
-│   ├── dev-utils/                  # ADR mgmt, symlinks, context bundling, GitHub issues, worktrees (17 skills)
+│   ├── dev-utils/                  # ADR mgmt, symlinks, context bundling, GitHub issues, worktrees (16 skills)
 │   ├── exploration-cycle-plugin/   # Business discovery workflow + SQLite control plane (20 skills)
 │   ├── obsidian-wiki-engine/       # Karpathy-style LLM wiki over the codebase (10 skills)
 │   ├── plugin-manager/             # Install/remove/sync plugins into target projects (3 skills)
@@ -112,10 +112,11 @@ plugins: RLM (dense-summary keyword cache, O(1) lookup, zero deps) and vector-db
 embeddings). Can run standalone or combined as part of a "Super-RAG" stack with
 `obsidian-wiki-engine`.
 
-### 4.5. Plugin: agent-scaffolders (v2.1.0, 32 skills)
-Tooling for creating, validating, and auditing ecosystem components: `create-plugin`, `create-skill`,
-`create-rule` (invariant-driven, zero-fluff agent rules), `create-sub-agent`, `audit-plugin`, `audit-skill`
-(evolution alignment), plus APM package conversion, marketplace management, and ecosystem-index maintenance.
+### 4.5. Plugin: agent-scaffolders (v2.1.0, 20 skills)
+Tooling for creating and auditing ecosystem components: `create-plugin`, `create-skill`, `create-rule`
+(invariant-driven, zero-fluff agent rules), `create-sub-agent`, `audit-plugin`, and `audit-skill`
+(evolution alignment), plus APM package conversion and marketplace management. Retired analyzer,
+mining, standalone command, path-repair, deep-audit, and self-audit wrappers are no longer catalogued.
 
 ### 4.6. Plugin: cli-agents (v2.2.0, 11 skills)
 Multi-LLM task router (`run_agent.py`) consolidated from claude-cli/copilot-cli/gemini-cli.
@@ -137,7 +138,7 @@ first — no casual convenience bypasses to the authorization gate or path enfor
 Karpathy-style LLM wiki generation over the codebase; standalone or combined with agent-memory as
 the third leg of the Super-RAG stack.
 
-### 4.9. Plugin: dev-utils (v1.4.0, 17 skills)
+### 4.9. Plugin: dev-utils (v1.4.0, 16 skills)
 Consolidated from 9 former standalone plugins: ADR management, coding-conventions enforcement,
 context bundling (now includes a Multi-Persona Fan-Out mode for parallel adversarial plan
 review), mermaid conversion, HuggingFace init/upload, humanize, link-checking, context

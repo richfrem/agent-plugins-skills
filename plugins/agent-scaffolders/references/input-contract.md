@@ -1,7 +1,7 @@
 # Synthesize Learnings: Input Contract
 
-Defines the required sections that `analyze-plugin` output must contain before
-`synthesize-learnings` can run. If any required section is absent, synthesize-learnings
+Defines the required sections that a plugin-audit report must contain before
+the analysis report can be reviewed. If any required section is absent, the report
 must request a re-run of the relevant analysis phase before proceeding.
 
 ## Required Input Sections
@@ -25,12 +25,12 @@ For single-plugin synthesis, the minimum viable input is:
 3. Maturity score
 4. Security findings (even if empty arrays)
 
-Without these four, synthesize-learnings cannot produce a valid recommendation set
-and must return: `"Insufficient analysis data — re-run analyze-plugin phases [X, Y]"`.
+Without these four, reviewers cannot produce a valid recommendation set
+and must return: `"Insufficient audit data — collect the missing sections [X, Y]"`.
 
 ## Input Format
 
-The analyze-plugin output should be passed as a markdown artifact with the sections
+The audit output should be passed as a markdown artifact with the sections
 listed above as H2 headers. Synthesize-learnings uses header anchors to locate sections:
 
 ```
@@ -58,7 +58,7 @@ Level: L[N]
 
 ## Validation Checklist
 
-Before invoking synthesize-learnings, confirm:
+Before finalizing the analysis report, confirm:
 - [ ] All required sections present
 - [ ] `security_flags`, `issues`, `warnings` are explicitly listed (even as empty `[]`)
 - [ ] At least one pattern detection with confidence level

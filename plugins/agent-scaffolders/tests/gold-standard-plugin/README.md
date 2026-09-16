@@ -1,6 +1,6 @@
 # Gold Standard Test Plugin
 
-A minimal well-structured test plugin used for self-audit regression testing.
+A minimal well-structured test plugin retained as an analyzer regression fixture.
 
 ## File Tree
 

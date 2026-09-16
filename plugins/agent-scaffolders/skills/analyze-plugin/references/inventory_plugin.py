@@ -1,1 +1,0 @@
-../../../references/inventory_plugin.py

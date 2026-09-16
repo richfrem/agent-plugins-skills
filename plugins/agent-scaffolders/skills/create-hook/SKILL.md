@@ -2,7 +2,7 @@
 name: create-hook
 plugin: agent-scaffolders
 description: >
-  Scaffolds a new event-driven hook in a plugin. NOT for creating interactive slash commands (use `create-command`) and NOT for GitHub Actions agentic workflows (use `create-agentic-workflow`).
+  Scaffolds a new event-driven hook in a plugin. NOT for creating skills (use `create-skill`) and NOT for GitHub Actions agentic workflows (use `create-agentic-workflow`).
 argument-hint: "[event-type or use case]"
 allowed-tools: Bash, Read, Write
 ---
