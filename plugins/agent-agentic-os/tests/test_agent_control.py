@@ -732,6 +732,20 @@ def test_cli_transition_parsers_accept_skip_review_flags():
         assert args.skip_review is True
         assert args.skip_reason == "user requested skip"
 
+def test_cli_transition_parsers_expose_human_force_close_flag():
+    """The governed any-state DONE path must be reachable only through an explicit
+    force-close flag; the parser must not leave the coordinator capability unreachable."""
+    from agent_control import _build_parser
+
+    parser = _build_parser()
+    for subcommand in ("transition", "coordinate-transition"):
+        args = parser.parse_args([
+            subcommand, "--task-id", "t1", "--to", STATE_DONE,
+            "--actor", "human", "--force-close", "--interactive",
+            "--human-confirmed", "HUMAN-CONFIRMED: FORCE_CLOSE fixture",
+        ])
+        assert args.force_close is True
+
 def test_worktree_post_implementation_review_stage_gate(control_plane):
     """Test transitions through WORKTREE_REVIEW and MULTI_AGENT_CODE_REVIEW before VERIFY_EXIT."""
     task_id = "task-review-gate-001"
@@ -3531,7 +3545,12 @@ def test_interview_spec_engine_cli_entrypoint_prints_intake_mode():
     )
 
     assert result.returncode == 0
-    assert result.stdout.strip() == "EXECUTE_SOCRATIC_FALLBACK"
+    output_lines = [line.strip() for line in result.stdout.splitlines() if line.strip()]
+    assert output_lines[0] == "EXECUTE_SOCRATIC_FALLBACK"
+    if any(line.startswith("BACKGROUND_DOCUMENT_FOUND:") for line in output_lines[1:]):
+        # A conventional background document is an intentional advisory emitted after
+        # the mode. It must not change the primary intake-mode contract.
+        assert "temp/prompt.md" in "\n".join(output_lines[1:])
 
 
 # ==============================================================================
