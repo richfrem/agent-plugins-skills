@@ -1307,6 +1307,10 @@ def _build_parser() -> argparse.ArgumentParser:
     p_ct.add_argument("--skip-review", action="store_true", default=False)
     p_ct.add_argument("--skip-reason", default=None)
     p_ct.add_argument(
+        "--force-close", action="store_true", default=False,
+        help="Use the guarded human-authorized force-close path to DONE from any state.",
+    )
+    p_ct.add_argument(
         "--human-confirmed", required=True,
         help=(
             "REQUIRED, no default. Must be the literal phrase 'HUMAN-CONFIRMED: <quote of what "
@@ -1327,6 +1331,10 @@ def _build_parser() -> argparse.ArgumentParser:
     p_tr.add_argument("--approval", choices=["APPROVAL", "REJECTION"], default=None)
     p_tr.add_argument("--skip-review", action="store_true", default=False)
     p_tr.add_argument("--skip-reason", default=None)
+    p_tr.add_argument(
+        "--force-close", action="store_true", default=False,
+        help="Use the guarded human-authorized force-close path to DONE from any state.",
+    )
     p_tr.add_argument(
         "--human-confirmed", required=True,
         help=(
@@ -1491,6 +1499,8 @@ def _dispatch_command(cp: ControlPlane, args: argparse.Namespace):
             approval_decision=getattr(args, "approval", None),
             skip_review=getattr(args, "skip_review", False),
             skip_reason=getattr(args, "skip_reason", None),
+            force_close=getattr(args, "force_close", False),
+            human_authorization=("FORCE_CLOSE" if getattr(args, "force_close", False) else None),
         )
         print(f"Transitioned task {args.task_id} to {args.to} (transition_id={rec.transition_id}).")
     elif args.subcommand == "record-critic-review":

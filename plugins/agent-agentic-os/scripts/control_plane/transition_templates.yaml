@@ -2235,7 +2235,7 @@ templates:
   from_state: "*"
   to_state: DONE
   purpose: Close a task from any active lifecycle state when a human explicitly authorizes force closure.
-  next_steps_hint: "Run coordinate-transition --to DONE --force-close --interactive; a genuine human must type the exact authorization FORCE_CLOSE at the prompt before this transition can commit."
+  next_steps_hint: "For planning-only closure, run coordinate-transition --to DONE --actor human --force-close --interactive; a genuine human must type the exact authorization FORCE_CLOSE (or FORCE_DONE) at the prompt. This path releases no implementation capability and does not claim implementation or verification."
   checklist:
   - Current task state is persisted and matches the requested source occupancy
   - Explicit human force-close authorization is recorded
@@ -2259,7 +2259,7 @@ templates:
     requires_justification: false
   capabilities_released: []
   capabilities_prohibited: []
-  denial_message: 'Force close denied: explicit human authorization FORCE_CLOSE is required.'
+  denial_message: 'Planning-only force close denied: explicit interactive human authorization FORCE_CLOSE or FORCE_DONE is required.'
   authority:
     type: human_decision
     explanation: Force closure is available from any non-DONE state only after an interactive human authorization.
