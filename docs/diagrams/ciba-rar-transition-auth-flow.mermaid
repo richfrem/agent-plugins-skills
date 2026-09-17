@@ -1,0 +1,79 @@
+sequenceDiagram
+    autonumber
+    actor Human as Human Approver (Out-of-Band / Auth0 Guardian)
+    participant Agent as AI Agent (agent_control.py)
+    participant Coord as Coordinator (control_plane/coordinator.py)
+    participant Policy as Policy Engine (control_plane/policy.py)
+    participant DB as SQLite DB (control_plane/adapters.py)
+    participant IdP as Auth0 / Stub IdP (CIBA + RAR)
+
+    Note over Agent, Coord: Context: Consequential edge (e.g., AWAITING_APPROVAL -> APPROVED)
+
+    rect rgb(255, 245, 245)
+        Note over Coord: Structural Enforcement (Cases 6 & 7)
+        Agent->>Coord: Attempt transition (caller_context=agent)
+        Coord->>DB: Query valid_transitions for (from_state, to_state)
+        DB-->>Coord: authorized_actor = 'human_only'
+        Coord-->>Agent: 403 Forbidden: Agent-driven attempt refused on human_only edge
+    end
+
+    Note over Agent, Coord: Legitimate Path: Request signed transaction authorization
+
+    Agent->>Policy: Propose transition_request (task_id, from_state, to_state, occupancy_id)
+    critical Policy-Managed Request Registration
+        Policy->>Policy: Generate cryptographic nonce & calculate revision_hash
+        Policy->>DB: INSERT INTO transition_request (status=PENDING, nonce, expiry, revision_hash)
+        DB-->>Policy: Persisted (status: PENDING)
+    end
+    Policy-->>Agent: Approved request params (nonce, revision_hash, RAR authorization_details)
+
+    Agent->>IdP: POST /bc-authorize (CIBA)<br/>[login_hint=user, RAR details bound to task_id, states, nonce]
+    IdP-->>Agent: 200 OK (auth_req_id, expires_in, interval)
+
+    IdP->>Human: Async push notification to device<br/>(Displays bound RAR details: task, target state, nonce)
+
+    loop While authorization_pending (interval)
+        Agent->>IdP: POST /oauth/token (grant_type=ciba, auth_req_id)
+        IdP-->>Agent: 400 Bad Request: error="authorization_pending"
+    end
+
+    alt Human Approves Transaction
+        Human->>IdP: Confirms approval on hardware device
+        Agent->>IdP: POST /oauth/token (grant_type=ciba, auth_req_id)
+        Note over IdP: auth_req_id consumed (single-use exchange)
+        IdP-->>Agent: 200 OK: Signed Proof Token / Stub JWT<br/>(Contains jti, exp, and RAR authorization_details claim)
+
+        Agent->>Coord: Submit transition_commit(task_id, token, nonce)
+        Coord->>Policy: Verify & execute transition(token, nonce)
+
+        critical Independent Policy Verification (Adversarial Matrix Cases 1-5)
+            Policy->>Policy: 1. Validate signature & issuer
+            Policy->>Policy: 2. Assert current_time < exp (Case 4 check)
+            Policy->>DB: 3. Load pending transition_request by nonce
+            DB-->>Policy: Record found (assert not consumed & status == PENDING)
+            Policy->>Policy: 4. Assert token RAR authorization_details == transition_request (Case 3 check)
+            Policy->>DB: 5. Check jti not in consumed_tokens (Case 2 replay check)
+
+            Policy->>DB: ATOMIC: Mark nonce/jti consumed, record decision & execute transition
+            Note over DB: enforce_valid_transition SQLite trigger verifies authorized_actor
+            DB-->>Policy: Commit successful (append-only ledger preserved)
+        end
+
+        Policy-->>Coord: Success confirmation
+        Coord-->>Agent: 200 OK: State transition committed
+    else Human Denies Transaction
+        Human->>IdP: Denies prompt
+        Agent->>IdP: POST /oauth/token (grant_type=ciba, auth_req_id)
+        IdP-->>Agent: 400 Bad Request: error="access_denied"
+        Agent->>Coord: Report denial(nonce)
+        Coord->>Policy: Invalidate request(nonce)
+        Policy->>DB: Mark transition_request DENIED
+        Coord-->>Agent: Transition aborted (no state change)
+    else Timeout / Expired auth_req_id
+        Agent->>IdP: POST /oauth/token (grant_type=ciba, auth_req_id)
+        IdP-->>Agent: 400 Bad Request: error="expired_token"
+        Agent->>Coord: Report expiration(nonce)
+        Coord->>Policy: Invalidate request(nonce)
+        Policy->>DB: Mark transition_request EXPIRED
+        Coord-->>Agent: Transition timed out (no state change)
+    end

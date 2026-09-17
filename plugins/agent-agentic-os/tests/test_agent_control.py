@@ -59,7 +59,7 @@ from agent_control import (
     ConcurrentModificationError,
     CURRENT_SCHEMA_VERSION,
 )
-from control_plane.coordinator import TransitionCoordinatorError
+from control_plane.coordinator import TransitionCoordinator, TransitionCoordinatorError
 from control_plane.constants import (
     STATE_INTAKE, STATE_INTERVIEW, STATE_DRAFT_PLAN, STATE_MULTI_AGENT_REVIEW, STATE_PLAN_REVIEW, STATE_AWAITING_APPROVAL, STATE_APPROVED, STATE_IN_WORKTREE, STATE_WORKTREE_REVIEW, STATE_MULTI_AGENT_CODE_REVIEW, STATE_VERIFY_EXIT, STATE_RETROSPECTIVE, STATE_DONE, STATE_ROLLED_BACK, STATE_ESCALATED,
 )
@@ -3508,6 +3508,29 @@ def test_coordinator_artifact_resolution_inside_registered_worktree(control_plan
 
     # 3. Path traversal / outside authorized roots rejected
     assert coord._resolve_artifact_path("docs/plans/../../outside.md", task={"task_id": "t1"}) is None
+
+
+def test_resolve_artifact_path_falls_back_to_work_tasks_folder(control_plane):
+    """coordinator._resolve_artifact_path must find plan/spec artifacts written under
+    docs/plans/work-tasks/<task-id>/ (the documented convention, see
+    docs/plans/document-layout.md) even though required_artifacts patterns in
+    transition_templates.yaml are still written in the flat docs/plans/<task-id>-spec.md
+    form. Reproduces a live gap found 2026-09-17 (map-debt, plugins/agent-agentic-os/
+    references/map-debt.md): the previous fallback only checked the flat path, causing
+    DRAFT_PLAN -> PLAN_REVIEW's required_artifacts check to report a correctly-placed
+    spec/plan as missing."""
+    coord = TransitionCoordinator(control_plane=control_plane)
+    task_id = "demo-task"
+    work_tasks_dir = control_plane.repo_root / "docs" / "plans" / "work-tasks" / task_id
+    work_tasks_dir.mkdir(parents=True)
+    spec_file = work_tasks_dir / f"{task_id}-spec.md"
+    spec_file.write_text("# spec", encoding="utf-8")
+
+    resolved = coord._resolve_artifact_path(f"docs/plans/{task_id}-spec.md", task={"task_id": task_id})
+
+    assert resolved is not None
+    assert resolved.exists()
+    assert resolved == spec_file
 
 
 def test_no_prior_transition_history_has_clear_error_message(control_plane):

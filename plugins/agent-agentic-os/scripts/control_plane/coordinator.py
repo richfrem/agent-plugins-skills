@@ -778,6 +778,23 @@ class TransitionCoordinator:
                 except ValueError:
                     pass
 
+        # Prefer the documented docs/plans/work-tasks/<task-id>/ grouping
+        # (docs/plans/document-layout.md) over the legacy flat docs/plans/<task-id>-*.md
+        # layout, for any art_rel of the flat form referencing this task's own artifact.
+        # required_artifacts patterns in transition_templates.yaml still declare the
+        # flat form; this keeps that declaration working without requiring a duplicate
+        # flat-path copy of every plan document (see map-debt.md, 2026-09-17).
+        if task_id and art_rel.startswith("docs/plans/") and "/" not in art_rel[len("docs/plans/"):]:
+            basename = art_rel[len("docs/plans/"):]
+            if basename.startswith(f"{task_id}-") or basename == f"{task_id}.md":
+                work_tasks_candidate = (repo_root / "docs" / "plans" / "work-tasks" / task_id / basename).resolve()
+                if self._fs.exists(work_tasks_candidate):
+                    try:
+                        work_tasks_candidate.relative_to(repo_root)
+                        return work_tasks_candidate
+                    except ValueError:
+                        pass
+
         # Fall back to repo_root
         candidate = (repo_root / art_rel).resolve()
         try:
