@@ -2,6 +2,19 @@
 
 Persistent tracking of architectural friction, structural anomalies, and unclosed loops across sessions.
 
+## DEBT-20260917-ARTIFACT-PATH-WORK-TASKS-FALLBACK
+
+- Logged date: 2026-09-17
+- Cycle/Session ID: auth-ciba-poc-transition-mechanics
+- Artifact affected: `plugins/agent-agentic-os/scripts/control_plane/coordinator.py` (`_resolve_artifact_path`)
+- Friction observed: `required_artifacts` checks (`DRAFT_PLAN -> PLAN_REVIEW` and others) only resolved the legacy flat `docs/plans/<task-id>-spec.md` layout, not the documented `docs/plans/work-tasks/<task-id>/` grouping convention (`docs/plans/document-layout.md`). Plan documents written correctly under `work-tasks/<task-id>/` via `write_plan_document.py` were reported missing, denying the transition. Full detail logged in `plugins/agent-agentic-os/references/map-debt.md` (same date).
+- Why not fixed now: Fixed in this same session — see Recommended fix / fix applied.
+- Recommended fix / fix applied: Added a `work-tasks/<task-id>/` lookup before the flat-path fallback in `_resolve_artifact_path`. Failing test written first (`test_resolve_artifact_path_falls_back_to_work_tasks_folder`, `plugins/agent-agentic-os/tests/test_agent_control.py`), confirmed red against prior code, green after the fix. Full `test_agent_control.py` suite (104 tests) green.
+- Evidence/repro: Live reproduction during `auth-ciba-poc-transition-mechanics`'s own governed `DRAFT_PLAN -> PLAN_REVIEW` attempt; unit test reproduces the gap directly.
+- Severity: M
+- Repeat: NO
+- Status: RESOLVED
+
 ## DEBT-20260914-PREMATURE-EXECUTION-PROPOSAL-IN-INTERVIEW
 
 - Logged date: 2026-09-14
