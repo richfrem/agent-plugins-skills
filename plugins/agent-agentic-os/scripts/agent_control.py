@@ -380,7 +380,7 @@ class ControlPlane:
         else:
             bullets.append(bullet)
 
-        artifact_rel = f"docs/plans/{task_id}-plan-outline.md"
+        artifact_rel = f"docs/plans/work-tasks/{task_id}/{task_id}-plan-outline.md"
         revision = self._persistence.upsert_interview_plan_outline(task_id, bullets, artifact_rel)
         artifact_path = self._resolve_plan_outline_path(artifact_rel)
         artifact_path.parent.mkdir(parents=True, exist_ok=True)
@@ -439,7 +439,7 @@ class ControlPlane:
             "text": answer.strip(),
             "actor": actor,
         })
-        artifact_rel = f"docs/plans/{task_id}-plan-outline.md"
+        artifact_rel = f"docs/plans/work-tasks/{task_id}/{task_id}-plan-outline.md"
         decision = TransitionDecision(
             task_id=task_id,
             source_occupancy_transition_id=source_occupancy_transition_id,
@@ -1248,6 +1248,7 @@ class ControlPlane:
             current_state=current_state,
             releasing_edge=(occupancy_trans.from_state, occupancy_trans.to_state),
             transition_id=occupancy_trans.transition_id,
+            authorized_actor=template.authorized_actor,
         )
 
     def record_decision(

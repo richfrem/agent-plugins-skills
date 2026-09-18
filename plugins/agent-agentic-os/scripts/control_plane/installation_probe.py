@@ -42,6 +42,7 @@ if str(_SCRIPTS_ROOT) not in sys.path:
 
 from control_plane.adapters import CURRENT_SCHEMA_VERSION, LEGAL_INITIAL_STATES
 from control_plane.state_machine import ALLOWED_TRANSITIONS
+from control_plane.registry import TransitionRegistry
 
 
 REQUIRED_SUBSTRATES = (
@@ -63,6 +64,19 @@ def _expected_transitions() -> set[tuple[str | None, str]]:
     return edges | {(None, s) for s in LEGAL_INITIAL_STATES}
 
 
+def _expected_authorized_actors() -> dict[tuple[str | None, str], str]:
+    """Source of truth for authorized_actor per edge, keyed the same as
+    _expected_transitions() (from_state, to_state), with None from_state rows
+    (LEGAL_INITIAL_STATES) always 'agent_or_human' per adapters.py's own
+    _sync_valid_transitions insert."""
+    registry = TransitionRegistry.load_default()
+    actors: dict[tuple[str | None, str], str] = {
+        (source, target): actor for source, target, actor in registry.get_all_edges_with_actor()
+    }
+    actors.update({(None, s): "agent_or_human" for s in LEGAL_INITIAL_STATES})
+    return actors
+
+
 def _database_findings(db_path: Path) -> list[str]:
     findings: list[str] = []
     try:
@@ -73,6 +87,15 @@ def _database_findings(db_path: Path) -> list[str]:
         rows = conn.execute("SELECT from_state, to_state FROM valid_transitions").fetchall()
         if set(rows) != _expected_transitions():
             findings.append("valid transition rows drift from state_machine.py")
+        actor_rows = conn.execute("SELECT from_state, to_state, authorized_actor FROM valid_transitions").fetchall()
+        expected_actors = _expected_authorized_actors()
+        actor_drift = [
+            (f, t, actual, expected_actors.get((f, t)))
+            for f, t, actual in actor_rows
+            if (f, t) in expected_actors and actual != expected_actors[(f, t)]
+        ]
+        if actor_drift:
+            findings.append(f"authorized_actor column drift from registry derivation: {actor_drift}")
         trigger = conn.execute(
             "SELECT 1 FROM sqlite_master WHERE type='trigger' AND name='enforce_valid_transition'"
         ).fetchone()

@@ -26,6 +26,8 @@ Usage:
 
 Index:
     - run_case() -- runs one case through the claude CLI and grades it
+    - format_actor_classification_line() -- pure formatter for a case's edge
+      authorized_actor + (for adversarial cases) the expected denial reason
     - main() -- CLI entry point
 """
 
@@ -38,13 +40,23 @@ from typing import List
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from control_plane.registry import TransitionRegistry
+from control_plane.registry import TransitionRegistry, TransitionTemplate
 from control_plane.transition_simulation_cases import (
     SimulationCase,
+    build_agent_spoof_adversarial_cases,
     build_dry_run_prompt,
     build_simulation_cases,
     grade_reply,
 )
+
+
+def format_actor_classification_line(case: SimulationCase, template: TransitionTemplate) -> str:
+    """Pure formatter: shows the edge's authorized_actor classification, and for
+    an adversarial (AGENT_SPOOF_DENIED) case, the expected denial reason."""
+    line = f"  authorized_actor: {template.authorized_actor}"
+    if case.condition == "AGENT_SPOOF_DENIED":
+        line += " -- expected: DENIED (human_only edge, non-interactive agent actor)"
+    return line
 
 
 def run_case(case: SimulationCase, purpose: str, next_steps_hint: str) -> dict:
@@ -60,9 +72,11 @@ def run_case(case: SimulationCase, purpose: str, next_steps_hint: str) -> dict:
     return result
 
 
-def print_result(result: dict) -> None:
+def print_result(result: dict, actor_line: str = "") -> None:
     status = "PASS" if result["overall_pass"] else "FAIL"
     print(f"\n[{status}] {result['case_id']} ({result['elapsed_seconds']}s)")
+    if actor_line:
+        print(actor_line)
     for criterion, passed in result["criteria"].items():
         mark = "OK" if passed else "MISSING"
         print(f"  {criterion}: {mark}")
@@ -80,12 +94,18 @@ def main():
     parser.add_argument("--condition", choices=["HUMAN_APPROVES", "HUMAN_REJECTS"], default=None,
                         help="Restrict to one condition (default: both, where applicable)")
     parser.add_argument("--all", action="store_true", help="Run the full case suite (~25 min)")
+    parser.add_argument("--adversarial", action="store_true",
+                        help="Run only the agent-spoof adversarial matrix (one denial case per human_only edge)")
     args = parser.parse_args()
 
     registry = TransitionRegistry.load_default()
-    all_cases = build_simulation_cases(registry)
+    all_cases = build_agent_spoof_adversarial_cases(registry) if args.adversarial else build_simulation_cases(registry)
 
-    if args.all:
+    if args.adversarial:
+        target_cases = all_cases
+        if args.from_state and args.to_state:
+            target_cases = [c for c in target_cases if c.from_state == args.from_state and c.to_state == args.to_state]
+    elif args.all:
         target_cases = all_cases
     else:
         if not args.from_state or not args.to_state:
@@ -104,7 +124,7 @@ def main():
         template = registry.get_template(case.from_state, case.to_state)
         result = run_case(case, template.purpose, template.next_steps_hint)
         results.append(result)
-        print_result(result)
+        print_result(result, format_actor_classification_line(case, template))
 
     passed = sum(1 for r in results if r["overall_pass"])
     print(f"\n{passed}/{len(results)} cases passed.")

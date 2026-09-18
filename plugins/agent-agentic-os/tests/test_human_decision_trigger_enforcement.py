@@ -122,7 +122,11 @@ def test_all_deterministic_edges_from_valid_transitions_table(test_env):
         ORDER BY vt.from_state, vt.to_state
     """).fetchall()
     assert len(deterministic_edges) > 0, "Source table empty or unsynced: valid_transitions has 0 deterministic edges"
-    assert len(deterministic_edges) >= 30, f"Expected at least 30 deterministic edges in valid_transitions, got {len(deterministic_edges)}"
+    # Floor lowered 30 -> 28 (2026-09-17): WORKTREE_REVIEW->VERIFY_EXIT and
+    # MULTI_AGENT_CODE_REVIEW->VERIFY_EXIT gained real human_questions (Gate 3b/3c
+    # hardening), and IN_WORKTREE->VERIFY_EXIT was removed entirely -- see
+    # references/map-debt.md DEBT-20260917-VERIFY-EXIT-GATE-HARDENING.
+    assert len(deterministic_edges) >= 28, f"Expected at least 28 deterministic edges in valid_transitions, got {len(deterministic_edges)}"
 
     tested_edges = 0
     for idx, (from_s, to_s) in enumerate(deterministic_edges):

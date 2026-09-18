@@ -291,7 +291,7 @@ class TransitionCoordinator:
                 # A validated force-close bypasses ordinary completion gates;
                 # adjacency and explicit human authorization remain enforced.
                 continue
-            if check_id in ("interview_trivial_complete", "interview_standard_complete"):
+            if check_id in ("interview_trivial_complete", "interview_standard_complete", "interview_plan_route_complete"):
                 deferred_checks.append(check_id)
                 continue
             # If skipping review and this is critic_review_or_skip / code_review_or_skip, it passes via staged receipt

@@ -33,7 +33,7 @@ def test_simulator_exercises_standard_interview_enforcement(tmp_path):
     task_id = simulator.create_task("standard-001", "Standard simulator path")
     simulator.enter_interview(task_id)
 
-    with pytest.raises(TransitionCoordinatorError, match="interview_classification"):
+    with pytest.raises(TransitionCoordinatorError, match="Missing required response"):
         simulator.transition_from_interview(task_id, STATE_DRAFT_PLAN, classification="STANDARD")
 
     simulator.stage_interview_answers(task_id, classification="STANDARD", to_state=STATE_DRAFT_PLAN)

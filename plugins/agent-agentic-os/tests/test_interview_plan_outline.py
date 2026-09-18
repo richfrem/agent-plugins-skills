@@ -43,11 +43,11 @@ def test_recording_interview_answer_persists_outline_and_artifact(tmp_path):
     outline = cp._persistence.get_interview_plan_outline("outline-task")
     assert outline["revision"] == 1
     assert outline["bullets"][0]["question_id"] == "interview_summary"
-    assert outline["artifact_path"] == "docs/plans/outline-task-plan-outline.md"
+    assert outline["artifact_path"] == "docs/plans/work-tasks/outline-task/outline-task-plan-outline.md"
     artifact = repo_root / outline["artifact_path"]
     assert artifact.exists()
     assert "Make the pipeline continue after each answer." in artifact.read_text(encoding="utf-8")
-    assert result["outline_artifact"] == "docs/plans/outline-task-plan-outline.md"
+    assert result["outline_artifact"] == "docs/plans/work-tasks/outline-task/outline-task-plan-outline.md"
 
 
 def test_revising_same_outline_question_updates_revision_without_duplicate_decision(tmp_path):

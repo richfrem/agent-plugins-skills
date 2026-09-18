@@ -61,6 +61,11 @@ class TransitionDecision:
     decision_type: str
     actor: str
     recorded_at: float
+    # Optional provenance from control_plane.transition_request's stub-JWT mechanics
+    # (T3): populated only when this decision was authorized by consuming a signed
+    # transition_request token; absent for every other decision path.
+    token_jti: Optional[str] = None
+    token_consumed_at: Optional[float] = None
 
 
 @dataclass(frozen=True)
@@ -93,6 +98,9 @@ class PhaseCapability:
     current_state: str
     releasing_edge: Tuple[str, str]
     transition_id: int
+    # authorized_actor classification (T1) of releasing_edge, carried here so
+    # callers don't need a second registry lookup keyed on the same edge.
+    authorized_actor: str = "agent_or_human"
 
 
 class ClockPort(ABC):

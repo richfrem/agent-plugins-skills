@@ -24,12 +24,16 @@ Index:
       registry
     - force_close_exempt() -- whether an edge is exempt from the mandatory
       guidance-compliance confirmation (force_close/emergency paths)
+    - human_only_edges() -- edges the registry classifies human_only (T1's
+      authorized_actor derivation)
+    - build_agent_spoof_adversarial_cases() -- one denial case per human_only
+      edge for a non-interactive agent-actor spoof attempt
 """
 
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 
 _scripts_dir = str(Path(__file__).resolve().parent.parent)
 if _scripts_dir not in sys.path:
@@ -38,6 +42,7 @@ if _scripts_dir not in sys.path:
 from control_plane.registry import TransitionRegistry
 from control_plane.constants import (
     STATE_INTAKE, STATE_INTERVIEW, STATE_DRAFT_PLAN, STATE_MULTI_AGENT_REVIEW, STATE_PLAN_REVIEW, STATE_AWAITING_APPROVAL, STATE_IN_WORKTREE, STATE_WORKTREE_REVIEW, STATE_MULTI_AGENT_CODE_REVIEW, STATE_VERIFY_EXIT, STATE_DONE,
+    AUTHORIZED_ACTOR_HUMAN_ONLY,
 )
 
 # Named condition constants -- referenced everywhere below instead of retyping the
@@ -91,6 +96,41 @@ def force_close_exempt(transition_id: str) -> bool:
         "force_close_to_done__from_",
         "human_force_done__from_",
     ))
+
+
+def human_only_edges(registry: TransitionRegistry = None) -> List[Tuple[str, str]]:
+    """All (from_state, to_state) edges the registry classifies human_only (T1's
+    authorized_actor derivation: approval.required=True and approver_role='human').
+    Derived live from the registry every call -- never a hand-maintained parallel
+    list that could silently drift as edges gain or lose approval blocks."""
+    registry = registry or TransitionRegistry.load_default()
+    return sorted(
+        (from_state, to_state)
+        for (from_state, to_state), template in registry._templates_by_edge.items()
+        if template.authorized_actor == AUTHORIZED_ACTOR_HUMAN_ONLY
+    )
+
+
+def build_agent_spoof_adversarial_cases(registry: TransitionRegistry = None) -> List[SimulationCase]:
+    """T5 adversarial matrix: one case per human_only edge asserting that a
+    non-interactive agent-actor attempt must be denied. Distinct from
+    build_simulation_cases(), which is scoped to guidance-compliance behavior on
+    every edge regardless of authorized_actor; this matrix targets only the
+    consequential edges where agent spoofing would be a real security bypass."""
+    registry = registry or TransitionRegistry.load_default()
+    cases: List[SimulationCase] = []
+    for from_state, to_state in human_only_edges(registry):
+        template = registry.get_template(from_state, to_state)
+        cases.append(SimulationCase(
+            from_state=from_state,
+            to_state=to_state,
+            transition_id=template.transition_id,
+            condition="AGENT_SPOOF_DENIED",
+            expected_question_ids=[q["question_id"] for q in template.human_questions],
+            expected_guidance_confirmation_answer="(denied -- human_only edge, agent actor rejected)",
+            is_guidance_gate_exempt=False,
+        ))
+    return cases
 
 
 def build_simulation_cases(registry: TransitionRegistry = None) -> List[SimulationCase]:

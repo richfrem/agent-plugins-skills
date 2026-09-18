@@ -2,6 +2,18 @@
 
 Persistent tracking of architectural friction, structural anomalies, and unclosed loops across sessions.
 
+## DEBT-20260918-INTERVIEW-CHECK-DEFERRAL-STALE-NAME
+
+- Logged date: 2026-09-18
+- Cycle/Session ID: auth-ciba-poc-transition-mechanics
+- Artifact affected: `plugins/agent-agentic-os/scripts/control_plane/coordinator.py`
+- Friction observed: `coordinator.py`'s deterministic-check-deferral special-case (`if check_id in ("interview_trivial_complete", "interview_standard_complete"): deferred_checks.append(check_id)`) still matched two old check-id names from before `policy.py`'s `_interview_trivial_check`/`_interview_standard_check` were unified behind a single `interview_plan_route_complete` dispatcher (`_interview_plan_route_check`). Because the current YAML template declares `interview_plan_route_complete`, not the two retired names, this check was never deferred -- it ran at step 5 (before the interactive question-collection loop at step 6) against an empty `stage_answers` dict, and denied every purely-interactive `INTERVIEW -> DRAFT_PLAN` transition that had no answers pre-staged via `record_interview_question`. Found live via the full test suite (`test_draft_plan_interactive_outline_gap.py`) failing only in the full run, not the earlier targeted re-verification runs, because that specific test exercises the pure-interactive path with zero pre-staged answers.
+- Why not fixed now: Fixed live, same session -- one-line addition of `interview_plan_route_complete` to the deferral tuple.
+- Recommended fix / fix applied: Added `"interview_plan_route_complete"` to the deferral tuple. Verified via `test_draft_plan_interactive_outline_gap.py` (fixed to also supply the now-required `interview_trivial_evidence` answer, same root cause as the earlier `interview_classification` rename drift already logged this session) and `test_control_plane_pipeline_simulator.py::test_simulator_exercises_standard_interview_enforcement` (its own `match=` string updated once more, from `interview_plan_route_complete` to `Missing required response`, since the deferral fix changes the failure to occur naturally at question-collection time instead of an early denial -- a more correct failure point, not a regression).
+- Evidence/repro: Full suite run before fix: `1 failed, 500 passed, 1 skipped`. After fix + test corrections: `508 passed, 1 skipped, 0 failed` (`/tmp/full_suite_final.log`).
+- Severity: M (real functional bug affecting live interactive usage, not just tests)
+- Repeat: YES -- third instance this session of a check/field rename not propagating to every reference (see also the `interview_classification` -> `interview_plan_route_complete` test-assertion drift and the `full_test_suite` -> `full_test_suite_or_trivial_focused` drift, both logged separately). Recommend a grep-based CI check cross-referencing `policy.py`'s registered check-id strings against every literal string reference in `coordinator.py` and `tests/`, to catch the next rename before merge rather than after.
+
 ## DEBT-20260917-MAP-DEBT-PLUGIN-SCOPE-SYNC
 
 - Logged date: 2026-09-17

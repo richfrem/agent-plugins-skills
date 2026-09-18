@@ -298,15 +298,16 @@ class PipelineSimulator:
             reason="simulator worktree review",
             interactive=True,
         )
+        worktree_review_exit_answers = iter(["1", "YES"])  # confirm_worktree_review_accept_implementation, then guidance confirmation
         TransitionCoordinator(
             self.control_plane,
             registry=self.registry,
-            input_fn=lambda _prompt: "YES",  # WORKTREE_REVIEW->VERIFY_EXIT (skip path) has zero own questions
+            input_fn=lambda _prompt: next(worktree_review_exit_answers),
             output_stream=io.StringIO(),
         ).coordinate_transition(
             task_id=task_id,
             to_state=STATE_VERIFY_EXIT,
-            actor="simulator",
+            actor="human",  # trigger-enforced: confirm_worktree_review_accept_implementation requires actor='human'
             reason="simulator verification",
             skip_review=True,
             skip_reason="single deterministic simulator review",

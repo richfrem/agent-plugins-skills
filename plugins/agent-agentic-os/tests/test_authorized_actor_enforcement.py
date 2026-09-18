@@ -255,3 +255,46 @@ def test_direct_instantiation_spoofed_actor_denied(tmp_path, registry):
         "Task must remain in AWAITING_APPROVAL -- the spoofed-actor attempt must "
         "not have advanced state to APPROVED under any circumstance."
     )
+
+
+def test_phase_capability_exposes_authorized_actor(tmp_path):
+    """T5: verify_phase_capability's returned PhaseCapability carries the releasing
+    edge's authorized_actor classification directly, so callers don't need a second
+    registry lookup keyed on releasing_edge to learn it."""
+    from control_plane.ports import PhaseCapability
+
+    db_path = tmp_path / "control_plane.db"
+    cp = ControlPlane(db_path=db_path)
+    cp.init_db()
+    task_id = "phase-cap-actor"
+    cp.create_task(task_id=task_id, title="Phase capability actor", runtime_tool="test")
+    cp.transition(task_id, "INTERVIEW", "agent", "begin interview")
+
+    cap = cp.verify_phase_capability(task_id, "interview_question")
+    assert isinstance(cap, PhaseCapability)
+    assert cap.releasing_edge == ("INTAKE", "INTERVIEW")
+    assert cap.authorized_actor == "agent_or_human"
+
+
+def test_transition_decision_supports_optional_token_provenance_fields():
+    """T5: TransitionDecision gains optional token_jti/token_consumed_at fields so a
+    decision recorded via the transition_request stub-JWT mechanics can carry the
+    consumed token's identity for audit, without forcing every other call site
+    (which has no token at all) to supply them."""
+    from control_plane.ports import TransitionDecision
+
+    plain = TransitionDecision(
+        task_id="t1", source_occupancy_transition_id=1, from_state="A", to_state="B",
+        question_id="q1", answer="YES", decision_type="ANSWER", actor="human",
+        recorded_at=0.0,
+    )
+    assert plain.token_jti is None
+    assert plain.token_consumed_at is None
+
+    with_token = TransitionDecision(
+        task_id="t1", source_occupancy_transition_id=1, from_state="A", to_state="B",
+        question_id="q1", answer="YES", decision_type="ANSWER", actor="human",
+        recorded_at=0.0, token_jti="jti-123", token_consumed_at=1758000000.0,
+    )
+    assert with_token.token_jti == "jti-123"
+    assert with_token.token_consumed_at == 1758000000.0
