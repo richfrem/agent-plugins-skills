@@ -2022,6 +2022,7 @@ def test_recovery_approval_issuance(control_plane):
         destination_state=STATE_INTAKE,
         source_occupancy_transition_id=occ_trans.transition_id,
         approver="admin",
+        actor="human",
         decision="APPROVAL",
         reason="Operator approved de-escalation to INTAKE"
     )
@@ -2046,6 +2047,7 @@ def test_recovery_approval_denies_when_stale(control_plane):
         destination_state=STATE_PLAN_REVIEW,
         source_occupancy_transition_id=t1.transition_id,
         approver="admin",
+        actor="human",
         decision="APPROVAL",
         reason="Operator approved move to PLAN_REVIEW"
     )
@@ -2085,6 +2087,7 @@ def test_exact_recovery_occupancy_binding_after_leave_reenter(control_plane):
         destination_state=STATE_INTAKE,
         source_occupancy_transition_id=occ1.transition_id,
         approver="admin",
+        actor="human",
         decision="APPROVAL",
         reason="First approval"
     )
@@ -2134,6 +2137,7 @@ def test_atomic_recovery_transition_success(control_plane):
         destination_state=STATE_INTAKE,
         source_occupancy_transition_id=occ.transition_id,
         approver="admin",
+        actor="human",
         decision="APPROVAL",
         reason="Approved de-escalation"
     )
@@ -2167,6 +2171,7 @@ def test_recovery_approval_denies_on_sequential_and_concurrent_replay(control_pl
         destination_state=STATE_INTAKE,
         source_occupancy_transition_id=occ.transition_id,
         approver="admin",
+        actor="human",
         decision="APPROVAL",
         reason="Approved once"
     )
@@ -2206,6 +2211,7 @@ def test_recovery_approval_denies_on_sequential_and_concurrent_replay(control_pl
         destination_state=STATE_INTAKE,
         source_occupancy_transition_id=occ_c.transition_id,
         approver="admin",
+        actor="human",
         decision="APPROVAL",
         reason="Approved once for concurrent race"
     )

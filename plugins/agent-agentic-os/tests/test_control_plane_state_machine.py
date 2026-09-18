@@ -87,7 +87,8 @@ def test_human_recovery_from_done_to_worktree_requires_and_consumes_approval(tmp
     )
 
     token = cp.record_recovery_approval(
-        "recovery-done-1", STATE_IN_WORKTREE, "human", "Missed implementation fix requires rework"
+        "recovery-done-1", STATE_IN_WORKTREE, "human", actor="human",
+        reason="Missed implementation fix requires rework",
     )
     record = cp.apply_recovery_transition(
         "recovery-done-1", STATE_IN_WORKTREE, token, "human", "Reopen for bounded rework"

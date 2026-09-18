@@ -448,7 +448,8 @@ def test_git_guards_allow_exact_human_approved_recovery_edge(tmp_path):
     cp = ControlPlane(db_path=db_path)
     _advance_task_to_in_worktree(cp, task_id, repo, branch)
     token = cp.record_recovery_approval(
-        task_id, STATE_DONE, "human-reviewer", "Reopen only through the explicitly approved recovery edge."
+        task_id, STATE_DONE, "human-reviewer", actor="human",
+        reason="Reopen only through the explicitly approved recovery edge.",
     )
     cp.apply_recovery_transition(
         task_id, STATE_DONE, token, "human", "Apply the approved recovery edge for closeout verification."

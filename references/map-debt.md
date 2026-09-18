@@ -2,6 +2,40 @@
 
 Persistent tracking of architectural friction, structural anomalies, and unclosed loops across sessions.
 
+## DEBT-20260918-RECOVERY-VERIFY-EXIT-BYPASS (CRITICAL, RESOLVED)
+
+- Logged date: 2026-09-18
+- Cycle/Session ID: auth-ciba-poc-transition-mechanics (MULTI_AGENT_CODE_REVIEW)
+- Artifact affected: `plugins/agent-agentic-os/scripts/control_plane/adapters.py`, `plugins/agent-agentic-os/scripts/agent_control.py`
+- Friction observed: External codex (gpt-5.6-terra) security review of this task's own diff found, and I independently reproduced live, a CRITICAL bypass: `record_recovery_approval()` hardcoded `actor="human"` into the inserted `transition_decisions` row regardless of the real caller, and `enforce_valid_transition`'s recovery-bypass clause permitted ANY transition once a matching decision row existed, with zero re-check of `valid_transitions` DAG membership. Combined, two ordinary Python calls (`record_recovery_approval` + `apply_recovery_transition`, no CLI, no coordinator, no special privilege) let an agent reach `VERIFY_EXIT` directly from any state, completely recreating the `IN_WORKTREE -> VERIFY_EXIT` backdoor this same task's `state_machine.py` edge deletion was supposed to close. Live repro confirmed `FINAL TASK STATE: VERIFY_EXIT` with zero real human involvement. This defeated the task's own headline claim ("there is no direct edge") as actually shipped.
+- Why not fixed later: Fixed immediately, same session, before this review could honestly conclude PASS -- this is exactly the kind of finding that must block sign-off, not get deferred.
+- Recommended fix / fix applied: (1) `RECOVERY_FORBIDDEN_DESTINATIONS = (STATE_VERIFY_EXIT, STATE_APPROVED)` in `adapters.py` -- `record_recovery_approval()` now raises `ValueError` before ever creating an approval row targeting either state, regardless of actor. (2) `record_recovery_approval()`'s `actor` parameter is now required (no default at the persistence layer) and recorded verbatim, replacing the hardcoded `"human"` literal -- the `ControlPlane` facade also requires it explicitly (no default), while the CLI subcommand's own `--actor` flag defaults to `"human"` since that tool is a human-operated administrative entrypoint by design. (3) Defense-in-depth: `enforce_valid_transition`'s trigger SQL (factored into the shared `ENFORCE_VALID_TRANSITION_TRIGGER_SQL` variable, embedded in both `SCHEMA_SQL` and a new `SCHEMA_MIGRATIONS` DROP+CREATE pair so existing databases pick it up, since `CREATE TRIGGER IF NOT EXISTS` silently no-ops against an already-existing trigger) now excludes `RECOVERY_FORBIDDEN_DESTINATIONS` from its recovery-bypass clause, so even a hand-crafted raw-SQL decision row bypassing the Python guard entirely cannot satisfy the bypass condition for these two destinations.
+- Evidence/repro: Live pre-fix reproduction (see git history / session transcript) confirmed `FINAL TASK STATE: VERIFY_EXIT`. New regression test `test_authorized_actor_enforcement.py::test_recovery_approval_cannot_reach_verify_exit_bypassing_worktree_review` covers both the Python-layer guard (Layer 1) and the trigger-layer defense-in-depth (Layer 2, a hand-crafted decision row), confirmed RED against pre-fix code (`TypeError: unexpected keyword argument 'actor'`, proving the guard didn't exist) and GREEN after the fix. Full suite re-verified after the fix (see Verification Summary in the implementation-plan.md for the exact count).
+- Severity: CRITICAL
+- Repeat: NO (first instance of this specific bypass class; the two prior `interview_plan_route_complete`/`test_suite_or_deferred_to_review` findings this session are check-deferral-timing bugs, a different mechanism)
+- Status: RESOLVED
+- Addendum (same verification pass): 4 of the 6 `test_agent_control.py` recovery
+  tests fixed for the new required `actor` parameter initially used
+  `actor="admin"` (mechanically matching `approver="admin"`), which the
+  trigger's recovery bypass correctly refused to honor (`ACTOR_HUMAN` is the
+  literal string `"human"`, not any human-sounding label) -- a bug in the test
+  fixture, not the production fix, confirmed by the fix behaving exactly as
+  designed. Corrected to `actor="human"`. Full suite re-verified:
+  510 passed, 1 skipped, 0 failed.
+
+## DEBT-20260918-TRANSITION-REQUEST-DESIGN-GAPS (Increment B scope, not this POC)
+
+- Logged date: 2026-09-18
+- Cycle/Session ID: auth-ciba-poc-transition-mechanics (MULTI_AGENT_CODE_REVIEW)
+- Artifact affected: `plugins/agent-agentic-os/scripts/control_plane/transition_request.py`
+- Friction observed: A scoped, low-cost external blind-spot review (codex, gpt-6-astra, low reasoning effort, deliberately budget-limited) surfaced several design gaps in the currently-unwired stub-JWT `transition_request` module, worth carrying forward to whenever Increment B (real IdP integration) actually wires this module into a production code path: (1) approval consumption (`verify_and_consume`) is not the same transaction as the actual state transition commit -- a crash between the two could burn a valid approval without ever advancing state; (2) verification checks the stored request, not the task's *live* current state/occupancy at consumption time -- a request could in principle survive a reset/rollback/competing transition and still be honored later; (3) the `revision_hash` binds transition metadata + a nonce, not the actual reviewed content (code diff, plan, evidence) -- it doesn't prove the human approved *this* content, only *a* request shaped like this; (4) `jti` uniqueness is not actually enforced at the schema/query level despite being named as a replay defense; (5) multiple concurrently-pending requests, denial/supersession semantics, and lost-response recovery are all undefined; (6) expiration timing is caller-supplied and sampled before the write lock is acquired, and token claim shapes aren't validated against malformed/adversarial input.
+- Why not fixed now: The module is confirmed fully unwired (zero production call sites), so none of this is a live risk today -- explicitly out of scope for tonight's tightly-scoped recovery-bypass fix, and premature to design against without knowing the real IdP's actual token shape (Increment B).
+- Recommended fix / fix applied: Not fixed. When Increment B begins, design the wiring point (commit_authorized_transition or equivalent) to (a) consume the token and commit the state transition in one atomic transaction, (b) re-validate live occupancy at consumption time, (c) bind revision_hash to an actual content hash of the reviewed artifacts, (d) enforce jti uniqueness via a real UNIQUE constraint, (e) define explicit request-supersession/denial semantics, (f) validate claim shapes defensively.
+- Evidence/repro: `/tmp/codex_astra_blindspot.log` (session-local, not committed).
+- Severity: M (zero live risk today; real risk if Increment B wires this module in without addressing these first)
+- Repeat: NO
+- Status: OPEN (deferred to Increment B by design)
+
 ## DEBT-20260918-WORKTREE-REVIEW-RECEIPT-GUIDANCE-AND-DEFERRED-CHECK-TIMING
 
 - Logged date: 2026-09-18

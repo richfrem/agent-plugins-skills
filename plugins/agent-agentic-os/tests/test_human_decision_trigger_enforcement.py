@@ -663,6 +663,7 @@ def test_recovery_approval_alignment_and_security_guarantees(test_env):
         destination_state=STATE_INTAKE,
         source_occupancy_transition_id=occ1,
         approver="admin",
+        actor="human",
         decision="APPROVAL",
         reason="First approval"
     )
@@ -672,6 +673,7 @@ def test_recovery_approval_alignment_and_security_guarantees(test_env):
         destination_state=STATE_INTAKE,
         source_occupancy_transition_id=occ1,
         approver="admin",
+        actor="human",
         decision="APPROVAL",
         reason="Second approval"
     )

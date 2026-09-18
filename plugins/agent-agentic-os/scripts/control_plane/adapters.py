@@ -73,7 +73,7 @@ from control_plane.ports import (
 )
 from control_plane.state_machine import ALLOWED_TRANSITIONS, CANONICAL_STATES
 from control_plane.constants import (
-    STATE_INTAKE, STATE_DONE, STATE_WORKTREE_REVIEW,
+    STATE_INTAKE, STATE_DONE, STATE_WORKTREE_REVIEW, STATE_VERIFY_EXIT, STATE_APPROVED,
     DECISION_TYPE_APPROVAL, DECISION_TYPES,
     ACTOR_HUMAN, ACTOR_AGENT, ACTOR_SYSTEM,
     COST_TIER_LOW, COST_TIERS,
@@ -158,6 +158,84 @@ class ClockAdapter(ClockPort):
         """Returns the current local time formatted per `fmt`."""
         return time.strftime(fmt)
 
+
+# auth-ciba-poc-transition-mechanics (2026-09-18, live multi-agent code review finding):
+# destinations a recovery approval may never target directly, because at least one
+# normal inbound edge to each of them carries real human authorization (a human_only
+# classification and/or a trigger-enforced human_questions entry) that the recovery
+# path -- by design a non-DAG bypass for legitimate operational recovery -- would
+# otherwise defeat entirely. Confirmed live: an agent calling record_recovery_approval
+# + apply_recovery_transition could reach VERIFY_EXIT directly from any state,
+# recreating the exact IN_WORKTREE -> VERIFY_EXIT backdoor removed from the DAG.
+# Recovery into these two states remains possible only through their normal gated
+# edges (WORKTREE_REVIEW/MULTI_AGENT_CODE_REVIEW -> VERIFY_EXIT,
+# AWAITING_APPROVAL -> APPROVED), never through this recovery side-channel.
+RECOVERY_FORBIDDEN_DESTINATIONS = (STATE_VERIFY_EXIT, STATE_APPROVED)
+_RECOVERY_FORBIDDEN_SQL_LIST = ", ".join(f"'{s}'" for s in RECOVERY_FORBIDDEN_DESTINATIONS)
+
+# Factored out of SCHEMA_SQL so the identical trigger definition can also be applied
+# as a migration (DROP + CREATE) for databases created before this fix, since
+# `CREATE TRIGGER IF NOT EXISTS` is a silent no-op against an already-existing
+# (and, before this fix, vulnerable) trigger of the same name.
+ENFORCE_VALID_TRANSITION_TRIGGER_SQL = f"""
+CREATE TRIGGER IF NOT EXISTS enforce_valid_transition
+AFTER UPDATE ON tasks
+WHEN NEW.state != OLD.state
+ AND (
+    NOT EXISTS (
+        SELECT 1 FROM transition_decisions recovery_td
+        WHERE recovery_td.task_id = OLD.task_id
+          AND recovery_td.source_occupancy_transition_id = (
+              SELECT MAX(current_td.transition_id)
+              FROM task_transitions current_td
+              WHERE current_td.task_id = OLD.task_id
+          )
+          AND recovery_td.from_state = OLD.state
+          AND recovery_td.to_state = NEW.state
+          AND recovery_td.to_state NOT IN ({_RECOVERY_FORBIDDEN_SQL_LIST})
+          AND recovery_td.decision_type = '{DECISION_TYPE_APPROVAL}'
+          AND recovery_td.actor = '{ACTOR_HUMAN}'
+          AND recovery_td.answer IS NOT NULL
+          AND trim(recovery_td.answer) != ''
+          AND recovery_td.consumed_at IS NULL
+    )
+    AND (
+        NOT EXISTS (
+            SELECT 1 FROM valid_transitions WHERE from_state = OLD.state AND to_state = NEW.state
+        )
+        OR EXISTS (
+            SELECT 1 FROM required_transition_questions rq
+            WHERE rq.from_state = OLD.state AND rq.to_state = NEW.state
+              AND NOT EXISTS (
+                  SELECT 1 FROM transition_decisions td
+                  WHERE td.task_id = OLD.task_id
+                    AND td.from_state = OLD.state
+                    AND td.to_state = NEW.state
+                    AND td.question_id = rq.question_id
+                    AND td.answer IS NOT NULL
+                    AND trim(td.answer) != ''
+                    AND (td.actor = '{ACTOR_HUMAN}' OR (rq.question_id = '{QUESTION_ID_RETROSPECTIVE_DECISION}' AND td.actor = '{ACTOR_AGENT}'))
+                    AND td.consumed_at IS NULL
+              )
+              AND NOT EXISTS (
+                  SELECT 1 FROM transition_decisions force_td
+                  WHERE force_td.task_id = OLD.task_id
+                    AND force_td.from_state = OLD.state
+                    AND force_td.to_state = NEW.state
+                    AND force_td.question_id IN ('{QUESTION_ID_FORCE_CLOSE_AUTHORIZATION}', '{QUESTION_ID_HUMAN_FORCE_DONE_CONFIRMATION}')
+                    AND force_td.answer IN ('{ANSWER_FORCE_CLOSE}', '{ANSWER_FORCE_DONE}')
+                    AND force_td.actor = '{ACTOR_HUMAN}'
+                    AND force_td.consumed_at IS NULL
+              )
+        )
+    )
+ )
+BEGIN
+    INSERT INTO transition_violations (task_id, attempted_from_state, attempted_to_state)
+    VALUES (OLD.task_id, OLD.state, NEW.state);
+    UPDATE tasks SET state = OLD.state, updated_at = OLD.updated_at WHERE task_id = NEW.task_id;
+END;
+"""
 
 SCHEMA_SQL = f"""
 PRAGMA foreign_keys = ON;
@@ -433,62 +511,7 @@ CREATE INDEX IF NOT EXISTS idx_interview_plan_outlines_artifact
 -- required human decisions on state transitions. Checks both adjacency-legality (valid_transitions)
 -- and human question requirements (required_transition_questions -> transition_decisions with actor='human').
 -- Reverts silently (no SQL error), logs to transition_violations. Both state and updated_at are restored.
-CREATE TRIGGER IF NOT EXISTS enforce_valid_transition
-AFTER UPDATE ON tasks
-WHEN NEW.state != OLD.state
- AND (
-    NOT EXISTS (
-        SELECT 1 FROM transition_decisions recovery_td
-        WHERE recovery_td.task_id = OLD.task_id
-          AND recovery_td.source_occupancy_transition_id = (
-              SELECT MAX(current_td.transition_id)
-              FROM task_transitions current_td
-              WHERE current_td.task_id = OLD.task_id
-          )
-          AND recovery_td.from_state = OLD.state
-          AND recovery_td.to_state = NEW.state
-          AND recovery_td.decision_type = '{DECISION_TYPE_APPROVAL}'
-          AND recovery_td.actor = '{ACTOR_HUMAN}'
-          AND recovery_td.answer IS NOT NULL
-          AND trim(recovery_td.answer) != ''
-          AND recovery_td.consumed_at IS NULL
-    )
-    AND (
-        NOT EXISTS (
-            SELECT 1 FROM valid_transitions WHERE from_state = OLD.state AND to_state = NEW.state
-        )
-        OR EXISTS (
-            SELECT 1 FROM required_transition_questions rq
-            WHERE rq.from_state = OLD.state AND rq.to_state = NEW.state
-              AND NOT EXISTS (
-                  SELECT 1 FROM transition_decisions td
-                  WHERE td.task_id = OLD.task_id
-                    AND td.from_state = OLD.state
-                    AND td.to_state = NEW.state
-                    AND td.question_id = rq.question_id
-                    AND td.answer IS NOT NULL
-                    AND trim(td.answer) != ''
-                    AND (td.actor = '{ACTOR_HUMAN}' OR (rq.question_id = '{QUESTION_ID_RETROSPECTIVE_DECISION}' AND td.actor = '{ACTOR_AGENT}'))
-                    AND td.consumed_at IS NULL
-              )
-              AND NOT EXISTS (
-                  SELECT 1 FROM transition_decisions force_td
-                  WHERE force_td.task_id = OLD.task_id
-                    AND force_td.from_state = OLD.state
-                    AND force_td.to_state = NEW.state
-                    AND force_td.question_id IN ('{QUESTION_ID_FORCE_CLOSE_AUTHORIZATION}', '{QUESTION_ID_HUMAN_FORCE_DONE_CONFIRMATION}')
-                    AND force_td.answer IN ('{ANSWER_FORCE_CLOSE}', '{ANSWER_FORCE_DONE}')
-                    AND force_td.actor = '{ACTOR_HUMAN}'
-                    AND force_td.consumed_at IS NULL
-              )
-        )
-    )
- )
-BEGIN
-    INSERT INTO transition_violations (task_id, attempted_from_state, attempted_to_state)
-    VALUES (OLD.task_id, OLD.state, NEW.state);
-    UPDATE tasks SET state = OLD.state, updated_at = OLD.updated_at WHERE task_id = NEW.task_id;
-END;
+{ENFORCE_VALID_TRANSITION_TRIGGER_SQL}
 
 -- issue-523: closes the cheaper INSERT/DELETE+INSERT bypass identified by external security
 -- review (finding #5) — deletes an illegally-seeded initial-state row. Revised from an
@@ -612,6 +635,14 @@ SCHEMA_MIGRATIONS = [
     END;""",
     # Migration: add authorized_actor column to valid_transitions (auth-ciba-poc-transition-mechanics, issues #621/#626/#634)
     "ALTER TABLE valid_transitions ADD COLUMN authorized_actor TEXT NOT NULL DEFAULT 'agent_or_human';",
+    # Migration: harden enforce_valid_transition's recovery bypass against forbidden
+    # destinations (auth-ciba-poc-transition-mechanics, 2026-09-18 review finding).
+    # CREATE TRIGGER IF NOT EXISTS is a no-op against an already-existing trigger, so
+    # a database created before this fix must have its stale trigger explicitly
+    # dropped before the hardened definition (same ENFORCE_VALID_TRANSITION_TRIGGER_SQL
+    # embedded in SCHEMA_SQL, applied here for pre-existing databases) is recreated.
+    "DROP TRIGGER IF EXISTS enforce_valid_transition;",
+    ENFORCE_VALID_TRANSITION_TRIGGER_SQL,
 ]
 
 
@@ -2064,8 +2095,32 @@ class SqlitePersistenceAdapter(PersistencePort):
         approver: str,
         decision: str,
         reason: str,
+        actor: str,
     ) -> str:
-        """Issues and persists an unconsumed recovery approval decision record bound to the current source occupancy ID."""
+        """Issues and persists an unconsumed recovery approval decision record bound to the
+        current source occupancy ID.
+
+        actor is required (no default) and is recorded verbatim -- it is NOT assumed to be
+        'human' regardless of caller. Prior to 2026-09-18 this method hardcoded actor='human'
+        unconditionally, which combined with the trigger's recovery bypass to let any caller
+        (agent or human) forge a fully-trusted human recovery approval for any destination,
+        including states with real human-authorization requirements. Callers asserting a false
+        actor value are making a false claim in their own audit trail, not exploiting a code
+        gap -- the enforce_valid_transition trigger's recovery bypass only honors a row whose
+        actor column is literally 'human', so a caller must now knowingly lie in a column it
+        directly controls, rather than the code lying on its behalf by default.
+
+        destination_state may never be one of RECOVERY_FORBIDDEN_DESTINATIONS -- states
+        with a real human-authorization requirement on their only normal inbound edges
+        (VERIFY_EXIT, APPROVED) -- regardless of actor. Recovery into these states must go
+        through their normal gated edges; see RECOVERY_FORBIDDEN_DESTINATIONS's own comment
+        for the live exploit this closes."""
+        if destination_state in RECOVERY_FORBIDDEN_DESTINATIONS:
+            raise ValueError(
+                f"Recovery into '{destination_state}' is not permitted -- this state has a real "
+                "human-authorization requirement on its normal inbound edge(s) that the recovery "
+                "path would bypass entirely. Route through the normal gated edge instead."
+            )
         self.ensure_schema()
         conn = self.get_connection()
         try:
@@ -2118,7 +2173,7 @@ class SqlitePersistenceAdapter(PersistencePort):
                         """,
                         (
                             task_id, source_occupancy_transition_id, expected_source_state, destination_state,
-                            qid, token, decision, "human", recorded_at
+                            qid, token, decision, actor, recorded_at
                         )
                     )
                 return token
