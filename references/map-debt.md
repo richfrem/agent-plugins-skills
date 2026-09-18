@@ -2,6 +2,19 @@
 
 Persistent tracking of architectural friction, structural anomalies, and unclosed loops across sessions.
 
+## DEBT-20260918-VERIFY-EXIT-BUNDLE-REDUNDANT-PYTEST-RUN (RESOLVED)
+
+- Logged date: 2026-09-18
+- Cycle/Session ID: auth-ciba-poc-transition-mechanics (VERIFY_EXIT)
+- Artifact affected: `plugins/agent-agentic-os/scripts/control_plane/wrappers/run_verify_exit_bundle.py`, `plugins/agent-agentic-os/scripts/control_plane/wrappers/run_exit_verification.py`
+- Friction observed: While actually running this task's own `VERIFY_EXIT` bundle live, the run took roughly double the expected ~13-15 min full-suite time. Root cause: `run_exit_verification.py`'s `VERIFIER_CATALOG` defines `pytest_unit_tests` as bare `["pytest"]` with no path/marker scoping -- since this repo has no actual unit/integration marker split (`grep -rn "@pytest.mark\." tests/` finds only `parametrize`), it silently collects and runs the EXACT SAME test set as `pytest_full_suite`'s `["pytest", "-q"]`. `run_verify_exit_bundle.py` ran both sequentially, doubling every real `VERIFY_EXIT` pass's wall-clock time for zero additional coverage.
+- Why not fixed later: Fixed live, same session, while the real task's bundle run was in flight (safe to edit -- the already-running process had already loaded the old code into memory; the fix only affects future invocations).
+- Recommended fix / fix applied: `run_verify_exit_bundle.py` now runs `pytest_full_suite`'s command exactly once and records its single result under BOTH the `full_test_suite` and `test_suite` gate names (the latter via a direct `record_verification_receipt` call, no second subprocess) -- every downstream check keyed on either gate name still sees a real receipt, just without a second real pytest invocation producing it. `pytest_unit_tests` is no longer separately invoked by the bundle.
+- Evidence/repro: New `tests/test_run_verify_exit_bundle.py` (previously no test coverage existed for this wrapper at all) -- `test_bundle_runs_pytest_full_suite_command_only_once` confirmed RED (2 pytest invocations) before the fix, GREEN (1) after; `test_bundle_records_both_test_suite_and_full_test_suite_receipts` and `test_bundle_fails_fast_and_records_neither_receipt_on_nonzero_exit` cover the receipt-duplication and fail-fast semantics respectively.
+- Severity: M (real, measurable time waste on every VERIFY_EXIT pass; not a correctness/security issue)
+- Repeat: NO
+- Status: RESOLVED
+
 ## DEBT-20260918-RECOVERY-VERIFY-EXIT-BYPASS (CRITICAL, RESOLVED)
 
 - Logged date: 2026-09-18

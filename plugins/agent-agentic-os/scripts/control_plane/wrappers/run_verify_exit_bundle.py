@@ -47,10 +47,22 @@ def run_verify_exit_bundle(
     asymmetric_persistence_destination: str = "references/map-debt.md",
     control_plane: Optional[ControlPlane] = None,
 ) -> Dict[str, Any]:
-    """Runs pytest_full_suite, pytest_unit_tests, and leak_check verifiers in
-    sequence, then logs the required asymmetric persistence entry -- the 4
-    things VERIFY_EXIT -> RETROSPECTIVE's done_guard/full_test_suite/leak_check
-    checks require, satisfied in one call instead of 4 separate ones.
+    """Runs pytest once plus leak_check, then logs the required asymmetric
+    persistence entry -- the 4 things VERIFY_EXIT -> RETROSPECTIVE's
+    done_guard/full_test_suite/leak_check checks require, satisfied in one call
+    instead of 4 separate ones.
+
+    pytest_full_suite and pytest_unit_tests previously ran as two SEPARATE
+    subprocess invocations (VERIFIER_CATALOG: ["pytest", "-q"] and ["pytest"]
+    respectively) -- since this repo has no actual unit/integration marker
+    split, both silently collected and ran the identical full test set, doubling
+    every VERIFY_EXIT bundle run's wall-clock time for zero additional coverage
+    (found live 2026-09-18). Fixed: pytest now runs exactly once
+    (pytest_full_suite's command), and its single result is recorded under
+    BOTH gate names ("full_test_suite" and "test_suite") -- test_suite_or_
+    deferred_to_review and other checks keyed on the "test_suite" gate still
+    see a real receipt, just without a second real pytest invocation producing
+    it.
 
     Stops immediately and returns on the first verifier that exits non-zero;
     does not log asymmetric persistence for a run containing a genuine failure.
@@ -58,13 +70,32 @@ def run_verify_exit_bundle(
     cp = control_plane or ControlPlane()
     results: Dict[str, Any] = {"task_id": task_id, "steps": []}
 
-    for verifier_id in ("pytest_full_suite", "pytest_unit_tests", "leak_check"):
-        step_result = run_exit_verification(task_id=task_id, verifier_id=verifier_id, control_plane=cp)
-        results["steps"].append({"verifier_id": verifier_id, **step_result})
-        if step_result["exit_code"] != 0:
-            results["status"] = "FAILED"
-            results["failed_verifier"] = verifier_id
-            return results
+    full_suite_result = run_exit_verification(task_id=task_id, verifier_id="pytest_full_suite", control_plane=cp)
+    results["steps"].append({"verifier_id": "pytest_full_suite", **full_suite_result})
+    if full_suite_result["exit_code"] != 0:
+        results["status"] = "FAILED"
+        results["failed_verifier"] = "pytest_full_suite"
+        return results
+
+    test_suite_receipt_token = cp.record_verification_receipt(
+        task_id=task_id,
+        gate_name="test_suite",
+        command_executed="pytest -q (same run recorded under full_test_suite -- see that receipt for the actual invocation)",
+        exit_code=full_suite_result["exit_code"],
+    )
+    results["steps"].append({
+        "verifier_id": "pytest_unit_tests_same_run_as_full_suite",
+        "status": "COMPLETED",
+        "exit_code": full_suite_result["exit_code"],
+        "receipt_token": test_suite_receipt_token,
+    })
+
+    leak_check_result = run_exit_verification(task_id=task_id, verifier_id="leak_check", control_plane=cp)
+    results["steps"].append({"verifier_id": "leak_check", **leak_check_result})
+    if leak_check_result["exit_code"] != 0:
+        results["status"] = "FAILED"
+        results["failed_verifier"] = "leak_check"
+        return results
 
     cp.log_asymmetric_persistence(
         task_id=task_id,
