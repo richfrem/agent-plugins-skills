@@ -41,6 +41,7 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 import yaml
 
 from control_plane.state_machine import ALLOWED_TRANSITIONS, CANONICAL_STATES
+from control_plane.constants import AUTHORIZED_ACTOR_HUMAN_ONLY, AUTHORIZED_ACTOR_AGENT_OR_HUMAN
 
 
 class TransitionRegistryError(Exception):
@@ -108,6 +109,23 @@ class TransitionTemplate:
     stage_question_ids: List[str] = None
     stage_route: Optional[Dict[str, Any]] = None
     guidance: Optional[Dict[str, Any]] = None
+
+    @property
+    def authorized_actor(self) -> str:
+        """Derived, not a hand-maintained parallel field (round-1 review finding,
+        auth-ciba-poc-transition-mechanics): 'human_only' iff this edge's own
+        approval block requires human approval, otherwise 'agent_or_human'.
+        Force-close/force-done edges intentionally derive as 'agent_or_human'
+        here even though their approver_role is 'human' -- their real gate is
+        the separate FORCE_CLOSE/FORCE_DONE literal-value check in
+        coordinator.py, not this generic approval block, and required=False
+        for those templates reflects that they are not scoped by this
+        derivation."""
+        return (
+            AUTHORIZED_ACTOR_HUMAN_ONLY
+            if self.approval.get("required") and self.approval.get("approver_role", "human") == "human"
+            else AUTHORIZED_ACTOR_AGENT_OR_HUMAN
+        )
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -177,6 +195,16 @@ class TransitionRegistry:
 
     def get_all_edges(self) -> Set[Tuple[str, str]]:
         return set(self._templates_by_edge.keys())
+
+    def get_all_edges_with_actor(self) -> List[Tuple[str, str, str]]:
+        """Same edges as get_all_edges(), paired with each template's derived
+        authorized_actor. Added for auth-ciba-poc-transition-mechanics (T1);
+        kept separate from get_all_edges() to avoid changing that method's
+        existing return shape for its one existing caller."""
+        return [
+            (from_s, to_s, tmpl.authorized_actor)
+            for (from_s, to_s), tmpl in self._templates_by_edge.items()
+        ]
 
     def get_all_declared_check_ids(self) -> Set[str]:
         check_ids: Set[str] = set()

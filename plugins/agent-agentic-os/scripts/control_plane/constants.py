@@ -88,6 +88,12 @@ ACTOR_HUMAN = "human"
 ACTOR_AGENT = "agent"
 ACTOR_SYSTEM = "system"
 
+# --- Per-edge authorized-actor classification (auth-ciba-poc-transition-mechanics,
+# issues #621/#626/#634) -- derived from each edge's approval block at registry-load
+# time (TransitionTemplate.authorized_actor), not a hand-maintained parallel field.
+AUTHORIZED_ACTOR_HUMAN_ONLY = "human_only"
+AUTHORIZED_ACTOR_AGENT_OR_HUMAN = "agent_or_human"
+
 # --- Model capability cost tiers ---------------------------------------------------
 COST_TIER_LOW = "low"
 COST_TIER_MEDIUM = "medium"

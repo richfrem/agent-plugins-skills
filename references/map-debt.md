@@ -2,6 +2,104 @@
 
 Persistent tracking of architectural friction, structural anomalies, and unclosed loops across sessions.
 
+## DEBT-20260918-VERIFY-EXIT-BUNDLE-REDUNDANT-PYTEST-RUN (RESOLVED)
+
+- Logged date: 2026-09-18
+- Cycle/Session ID: auth-ciba-poc-transition-mechanics (VERIFY_EXIT)
+- Artifact affected: `plugins/agent-agentic-os/scripts/control_plane/wrappers/run_verify_exit_bundle.py`, `plugins/agent-agentic-os/scripts/control_plane/wrappers/run_exit_verification.py`
+- Friction observed: While actually running this task's own `VERIFY_EXIT` bundle live, the run took roughly double the expected ~13-15 min full-suite time. Root cause: `run_exit_verification.py`'s `VERIFIER_CATALOG` defines `pytest_unit_tests` as bare `["pytest"]` with no path/marker scoping -- since this repo has no actual unit/integration marker split (`grep -rn "@pytest.mark\." tests/` finds only `parametrize`), it silently collects and runs the EXACT SAME test set as `pytest_full_suite`'s `["pytest", "-q"]`. `run_verify_exit_bundle.py` ran both sequentially, doubling every real `VERIFY_EXIT` pass's wall-clock time for zero additional coverage.
+- Why not fixed later: Fixed live, same session, while the real task's bundle run was in flight (safe to edit -- the already-running process had already loaded the old code into memory; the fix only affects future invocations).
+- Recommended fix / fix applied: `run_verify_exit_bundle.py` now runs `pytest_full_suite`'s command exactly once and records its single result under BOTH the `full_test_suite` and `test_suite` gate names (the latter via a direct `record_verification_receipt` call, no second subprocess) -- every downstream check keyed on either gate name still sees a real receipt, just without a second real pytest invocation producing it. `pytest_unit_tests` is no longer separately invoked by the bundle.
+- Evidence/repro: New `tests/test_run_verify_exit_bundle.py` (previously no test coverage existed for this wrapper at all) -- `test_bundle_runs_pytest_full_suite_command_only_once` confirmed RED (2 pytest invocations) before the fix, GREEN (1) after; `test_bundle_records_both_test_suite_and_full_test_suite_receipts` and `test_bundle_fails_fast_and_records_neither_receipt_on_nonzero_exit` cover the receipt-duplication and fail-fast semantics respectively.
+- Severity: M (real, measurable time waste on every VERIFY_EXIT pass; not a correctness/security issue)
+- Repeat: NO
+- Status: RESOLVED
+
+## DEBT-20260918-RECOVERY-VERIFY-EXIT-BYPASS (CRITICAL, RESOLVED)
+
+- Logged date: 2026-09-18
+- Cycle/Session ID: auth-ciba-poc-transition-mechanics (MULTI_AGENT_CODE_REVIEW)
+- Artifact affected: `plugins/agent-agentic-os/scripts/control_plane/adapters.py`, `plugins/agent-agentic-os/scripts/agent_control.py`
+- Friction observed: External codex (gpt-5.6-terra) security review of this task's own diff found, and I independently reproduced live, a CRITICAL bypass: `record_recovery_approval()` hardcoded `actor="human"` into the inserted `transition_decisions` row regardless of the real caller, and `enforce_valid_transition`'s recovery-bypass clause permitted ANY transition once a matching decision row existed, with zero re-check of `valid_transitions` DAG membership. Combined, two ordinary Python calls (`record_recovery_approval` + `apply_recovery_transition`, no CLI, no coordinator, no special privilege) let an agent reach `VERIFY_EXIT` directly from any state, completely recreating the `IN_WORKTREE -> VERIFY_EXIT` backdoor this same task's `state_machine.py` edge deletion was supposed to close. Live repro confirmed `FINAL TASK STATE: VERIFY_EXIT` with zero real human involvement. This defeated the task's own headline claim ("there is no direct edge") as actually shipped.
+- Why not fixed later: Fixed immediately, same session, before this review could honestly conclude PASS -- this is exactly the kind of finding that must block sign-off, not get deferred.
+- Recommended fix / fix applied: (1) `RECOVERY_FORBIDDEN_DESTINATIONS = (STATE_VERIFY_EXIT, STATE_APPROVED)` in `adapters.py` -- `record_recovery_approval()` now raises `ValueError` before ever creating an approval row targeting either state, regardless of actor. (2) `record_recovery_approval()`'s `actor` parameter is now required (no default at the persistence layer) and recorded verbatim, replacing the hardcoded `"human"` literal -- the `ControlPlane` facade also requires it explicitly (no default), while the CLI subcommand's own `--actor` flag defaults to `"human"` since that tool is a human-operated administrative entrypoint by design. (3) Defense-in-depth: `enforce_valid_transition`'s trigger SQL (factored into the shared `ENFORCE_VALID_TRANSITION_TRIGGER_SQL` variable, embedded in both `SCHEMA_SQL` and a new `SCHEMA_MIGRATIONS` DROP+CREATE pair so existing databases pick it up, since `CREATE TRIGGER IF NOT EXISTS` silently no-ops against an already-existing trigger) now excludes `RECOVERY_FORBIDDEN_DESTINATIONS` from its recovery-bypass clause, so even a hand-crafted raw-SQL decision row bypassing the Python guard entirely cannot satisfy the bypass condition for these two destinations.
+- Evidence/repro: Live pre-fix reproduction (see git history / session transcript) confirmed `FINAL TASK STATE: VERIFY_EXIT`. New regression test `test_authorized_actor_enforcement.py::test_recovery_approval_cannot_reach_verify_exit_bypassing_worktree_review` covers both the Python-layer guard (Layer 1) and the trigger-layer defense-in-depth (Layer 2, a hand-crafted decision row), confirmed RED against pre-fix code (`TypeError: unexpected keyword argument 'actor'`, proving the guard didn't exist) and GREEN after the fix. Full suite re-verified after the fix (see Verification Summary in the implementation-plan.md for the exact count).
+- Severity: CRITICAL
+- Repeat: NO (first instance of this specific bypass class; the two prior `interview_plan_route_complete`/`test_suite_or_deferred_to_review` findings this session are check-deferral-timing bugs, a different mechanism)
+- Status: RESOLVED
+- Addendum (same verification pass): 4 of the 6 `test_agent_control.py` recovery
+  tests fixed for the new required `actor` parameter initially used
+  `actor="admin"` (mechanically matching `approver="admin"`), which the
+  trigger's recovery bypass correctly refused to honor (`ACTOR_HUMAN` is the
+  literal string `"human"`, not any human-sounding label) -- a bug in the test
+  fixture, not the production fix, confirmed by the fix behaving exactly as
+  designed. Corrected to `actor="human"`. Full suite re-verified:
+  510 passed, 1 skipped, 0 failed.
+
+## DEBT-20260918-TRANSITION-REQUEST-DESIGN-GAPS (Increment B scope, not this POC)
+
+- Logged date: 2026-09-18
+- Cycle/Session ID: auth-ciba-poc-transition-mechanics (MULTI_AGENT_CODE_REVIEW)
+- Artifact affected: `plugins/agent-agentic-os/scripts/control_plane/transition_request.py`
+- Friction observed: A scoped, low-cost external blind-spot review (codex, gpt-6-astra, low reasoning effort, deliberately budget-limited) surfaced several design gaps in the currently-unwired stub-JWT `transition_request` module, worth carrying forward to whenever Increment B (real IdP integration) actually wires this module into a production code path: (1) approval consumption (`verify_and_consume`) is not the same transaction as the actual state transition commit -- a crash between the two could burn a valid approval without ever advancing state; (2) verification checks the stored request, not the task's *live* current state/occupancy at consumption time -- a request could in principle survive a reset/rollback/competing transition and still be honored later; (3) the `revision_hash` binds transition metadata + a nonce, not the actual reviewed content (code diff, plan, evidence) -- it doesn't prove the human approved *this* content, only *a* request shaped like this; (4) `jti` uniqueness is not actually enforced at the schema/query level despite being named as a replay defense; (5) multiple concurrently-pending requests, denial/supersession semantics, and lost-response recovery are all undefined; (6) expiration timing is caller-supplied and sampled before the write lock is acquired, and token claim shapes aren't validated against malformed/adversarial input.
+- Why not fixed now: The module is confirmed fully unwired (zero production call sites), so none of this is a live risk today -- explicitly out of scope for tonight's tightly-scoped recovery-bypass fix, and premature to design against without knowing the real IdP's actual token shape (Increment B).
+- Recommended fix / fix applied: Not fixed. When Increment B begins, design the wiring point (commit_authorized_transition or equivalent) to (a) consume the token and commit the state transition in one atomic transaction, (b) re-validate live occupancy at consumption time, (c) bind revision_hash to an actual content hash of the reviewed artifacts, (d) enforce jti uniqueness via a real UNIQUE constraint, (e) define explicit request-supersession/denial semantics, (f) validate claim shapes defensively.
+- Evidence/repro: `/tmp/codex_astra_blindspot.log` (session-local, not committed).
+- Severity: M (zero live risk today; real risk if Increment B wires this module in without addressing these first)
+- Repeat: NO
+- Status: OPEN (deferred to Increment B by design)
+
+## DEBT-20260918-WORKTREE-REVIEW-RECEIPT-GUIDANCE-AND-DEFERRED-CHECK-TIMING
+
+- Logged date: 2026-09-18
+- Cycle/Session ID: auth-ciba-poc-transition-mechanics
+- Artifact affected: `plugins/agent-agentic-os/scripts/control_plane/transition_templates.yaml` (`in_worktree_to_worktree_review` template) and `plugins/agent-agentic-os/scripts/control_plane/coordinator.py`
+- Friction observed: Two related problems found live, while the user attempted to actually run `IN_WORKTREE -> WORKTREE_REVIEW` for real on this task. (1) The edge's `next_steps_hint` told the agent to run a command, `record-verification-receipt`, that does not exist as a CLI verb -- it's a garbled hybrid of the real verb `record-receipt` and the internal Python method name `record_verification_receipt()`. Fixed live (see plugin-scoped `map-debt.md` for detail). (2) Deeper: the edge's own `confirm_test_suite_or_defer` human question is structurally unreachable -- the `test_suite_or_deferred_to_review` deterministic check runs at coordinator.py step 5, before the step-6 question-collection loop that would ever present it, and `coordinator.py` has zero handling wiring that question's "Defer" answer into the `test_suite_deferred_to_review` receipt the check needs. This is the same architectural bug class as `DEBT-20260918-INTERVIEW-CHECK-DEFERRAL-STALE-NAME` below, applied to a different check/edge.
+- Why not fixed now: The guidance-text fix (1) was safe and immediate. The deeper fix (2) -- adding `test_suite_or_deferred_to_review` to the deferred-checks tuple plus wiring the answer to auto-record the receipt -- needs its own TDD cycle and full-suite re-verification, not a late-night patch made while a live pipeline run is mid-flight and blocking on it.
+- Recommended fix / fix applied: (1) applied live: corrected `next_steps_hint` to name the real `record-receipt` command and explain the pre-transition receipt requirement. (2) recommended, not yet applied: mirror the `interview_plan_route_complete` fix exactly -- add the check-id to the deferral tuple, then add the same-call auto-receipt wiring for the "Defer" answer path.
+- Evidence/repro: Live terminal reproduction: `coordinate-transition --to WORKTREE_REVIEW` denied by `test_suite_or_deferred_to_review` with zero prompt ever shown, despite the edge declaring a human question that appears (from the YAML alone) to handle exactly this case.
+- Severity: M
+- Repeat: YES -- second confirmed instance of a deterministic check not wired into the deferred-checks mechanism despite depending on that same edge's own interactive answer. See the recommended CI cross-reference check in the sibling entry below; extend it to flag any `deterministic_checks` entry whose only real satisfaction path is that same edge's own `human_questions` answer.
+- Status: OPEN (guidance-text half fixed and RESOLVED; the deferred-check-timing half remains OPEN)
+
+## DEBT-20260918-INTERVIEW-CHECK-DEFERRAL-STALE-NAME
+
+- Logged date: 2026-09-18
+- Cycle/Session ID: auth-ciba-poc-transition-mechanics
+- Artifact affected: `plugins/agent-agentic-os/scripts/control_plane/coordinator.py`
+- Friction observed: `coordinator.py`'s deterministic-check-deferral special-case (`if check_id in ("interview_trivial_complete", "interview_standard_complete"): deferred_checks.append(check_id)`) still matched two old check-id names from before `policy.py`'s `_interview_trivial_check`/`_interview_standard_check` were unified behind a single `interview_plan_route_complete` dispatcher (`_interview_plan_route_check`). Because the current YAML template declares `interview_plan_route_complete`, not the two retired names, this check was never deferred -- it ran at step 5 (before the interactive question-collection loop at step 6) against an empty `stage_answers` dict, and denied every purely-interactive `INTERVIEW -> DRAFT_PLAN` transition that had no answers pre-staged via `record_interview_question`. Found live via the full test suite (`test_draft_plan_interactive_outline_gap.py`) failing only in the full run, not the earlier targeted re-verification runs, because that specific test exercises the pure-interactive path with zero pre-staged answers.
+- Why not fixed now: Fixed live, same session -- one-line addition of `interview_plan_route_complete` to the deferral tuple.
+- Recommended fix / fix applied: Added `"interview_plan_route_complete"` to the deferral tuple. Verified via `test_draft_plan_interactive_outline_gap.py` (fixed to also supply the now-required `interview_trivial_evidence` answer, same root cause as the earlier `interview_classification` rename drift already logged this session) and `test_control_plane_pipeline_simulator.py::test_simulator_exercises_standard_interview_enforcement` (its own `match=` string updated once more, from `interview_plan_route_complete` to `Missing required response`, since the deferral fix changes the failure to occur naturally at question-collection time instead of an early denial -- a more correct failure point, not a regression).
+- Evidence/repro: Full suite run before fix: `1 failed, 500 passed, 1 skipped`. After fix + test corrections: `508 passed, 1 skipped, 0 failed` (`/tmp/full_suite_final.log`).
+- Severity: M (real functional bug affecting live interactive usage, not just tests)
+- Repeat: YES -- third instance this session of a check/field rename not propagating to every reference (see also the `interview_classification` -> `interview_plan_route_complete` test-assertion drift and the `full_test_suite` -> `full_test_suite_or_trivial_focused` drift, both logged separately). Recommend a grep-based CI check cross-referencing `policy.py`'s registered check-id strings against every literal string reference in `coordinator.py` and `tests/`, to catch the next rename before merge rather than after.
+
+## DEBT-20260917-MAP-DEBT-PLUGIN-SCOPE-SYNC
+
+- Logged date: 2026-09-17
+- Cycle/Session ID: auth-ciba-poc-transition-mechanics
+- Artifact affected: `plugins/agent-agentic-os/references/map-debt.md`
+- Friction observed: The `_resolve_plan_outline_path` cwd-fallback finding (see `plugins/agent-agentic-os/references/map-debt.md`) was recorded directly on the main checkout mid-session and never copied into this task's worktree until now -- a small instance of the same worktree/main-checkout content-drift pattern this session hit repeatedly with code files.
+- Why not fixed now: This entry documents the sync itself; no further fix needed.
+- Recommended fix / fix applied: Copied the missing row into the worktree's plugin-scoped `map-debt.md` so both copies match before the worktree branch is reviewed.
+- Evidence/repro: `diff` between the worktree's and main checkout's plugin-scoped `map-debt.md` before this commit.
+- Severity: L
+- Repeat: NO
+- Status: RESOLVED
+
+## DEBT-20260917-VERIFY-EXIT-GATE-HARDENING
+
+- Logged date: 2026-09-17
+- Cycle/Session ID: auth-ciba-poc-transition-mechanics
+- Artifact affected: `plugins/agent-agentic-os/scripts/control_plane/transition_templates.yaml`, `control_plane/state_machine.py`
+- Friction observed: Live diagram review surfaced three edges converging on `VERIFY_EXIT` with weak or zero human authorization: (1) `WORKTREE_REVIEW -> VERIFY_EXIT` and (2) `MULTI_AGENT_CODE_REVIEW -> VERIFY_EXIT` both declared zero `human_questions`, reachable via `code_review_or_skip`'s own receipt check which has no actor verification at all (`record_review_skip`'s `actor` parameter is an unvalidated free-text string). (3) `IN_WORKTREE -> VERIFY_EXIT` was worse still: zero `human_questions` AND zero `deterministic_checks` -- a fully open backdoor letting an agent skip `WORKTREE_REVIEW` and code review entirely.
+- Why not fixed now: Fixed live in this same session -- see Recommended fix / fix applied.
+- Recommended fix / fix applied: (1) and (2) fixed by adding real `human_questions` entries (`confirm_worktree_review_accept_implementation`, `confirm_multi_agent_code_review_accept_outcome`), which get genuine SQLite-trigger-level `actor='human'` enforcement via the existing `required_transition_questions` mechanism -- no coordinator.py/policy.py changes needed. (3) was first mis-fixed the same way (a "Gate 3d" human question), then correctly fixed by **removing the edge entirely** from both `state_machine.py`'s `ALLOWED_TRANSITIONS` and the YAML template: a human answering a "bypass review?" question at that point would be approving a bypass of the one step (`WORKTREE_REVIEW`) whose entire purpose is to show them the diff first -- correctly attributed to a human, but not an informed decision. All work must now pass through `WORKTREE_REVIEW` before `VERIFY_EXIT`. Failing tests written first for all three (TDW); full ripple across `test_agent_control.py`, `test_agent_control_gate_characterization.py`, `test_pre_commit_pipeline_guard.py`, `test_transition_guidance.py` fixed and re-verified green.
+- Evidence/repro: `test_worktree_review_verify_exit_gate.py` (5 tests: 3 for the two hardened edges, 2 confirming the removed edge no longer exists and is rejected by the state machine).
+- Severity: H
+- Repeat: NO
+- Status: RESOLVED
+
 ## DEBT-20260917-ARTIFACT-PATH-WORK-TASKS-FALLBACK
 
 - Logged date: 2026-09-17

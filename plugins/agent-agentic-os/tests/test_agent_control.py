@@ -436,8 +436,18 @@ def test_transition_to_done_blocked_without_persistence_receipt(control_plane):
     control_plane.update_worktree(task_id=task_id, worktree_path=".worktrees/task-done-001", worktree_branch="b1", worktree_state="written_in_worktree")
     control_plane.record_human_approval(task_id=task_id, approver="human")
     control_plane.transition(task_id=task_id, to_state=STATE_IN_WORKTREE, actor="controller", reason=REASON_WORKTREE_ISOLATED)
+    # Deliberately no test_suite receipt here -- this test's own point is that
+    # RETROSPECTIVE is blocked without one. IN_WORKTREE -> WORKTREE_REVIEW's own
+    # test_suite_or_deferred_to_review check requires a distinct
+    # test_suite_deferred_to_review RECEIPT (not just a decision answer) --
+    # recording that defers testing without satisfying the later test_suite check.
+    control_plane.record_verification_receipt(task_id=task_id, gate_name="test_suite_deferred_to_review", command_executed="deferred", exit_code=0)
+    stage_human_decisions(control_plane, task_id, STATE_IN_WORKTREE, STATE_WORKTREE_REVIEW)
+    control_plane.transition(task_id=task_id, to_state=STATE_WORKTREE_REVIEW, actor="controller", reason="Implementation done")
+    control_plane.record_review_skip(task_id=task_id, phase="multi_agent_code_review", actor="user", reason="test setup")
+    stage_human_decisions(control_plane, task_id, STATE_WORKTREE_REVIEW, STATE_VERIFY_EXIT)
     control_plane.transition(task_id=task_id, to_state=STATE_VERIFY_EXIT, actor="controller", reason="Verifying")
-    
+
     # Attempt transition to RETROSPECTIVE with no receipts or persistence log. The exit guard requires
     # a receipt specifically for gate_name='test_suite' — the human_approval receipt recorded
     # above (needed for the APPROVED->IN_WORKTREE gate) does NOT satisfy this, closing the gap
@@ -489,6 +499,11 @@ def test_transition_to_done_succeeds_with_valid_receipts_and_wiki_log(control_pl
     control_plane.update_worktree(task_id=task_id, worktree_path=".worktrees/task-done-success", worktree_branch="b2", worktree_state="written_in_worktree")
     control_plane.record_human_approval(task_id=task_id, approver="human")
     control_plane.transition(task_id=task_id, to_state=STATE_IN_WORKTREE, actor="controller", reason=REASON_WORKTREE_ISOLATED)
+    control_plane.record_verification_receipt(task_id=task_id, gate_name="test_suite", command_executed="pytest", exit_code=0)
+    stage_human_decisions(control_plane, task_id, STATE_IN_WORKTREE, STATE_WORKTREE_REVIEW)
+    control_plane.transition(task_id=task_id, to_state=STATE_WORKTREE_REVIEW, actor="controller", reason="Implementation done")
+    control_plane.record_review_skip(task_id=task_id, phase="multi_agent_code_review", actor="user", reason="test setup")
+    stage_human_decisions(control_plane, task_id, STATE_WORKTREE_REVIEW, STATE_VERIFY_EXIT)
     control_plane.transition(task_id=task_id, to_state=STATE_VERIFY_EXIT, actor="controller", reason="Verifying")
     
     # Add requirements
@@ -527,6 +542,11 @@ def test_transition_to_done_blocked_when_locked_verifier_mutated(control_plane, 
     control_plane.record_human_approval(task_id=task_id, approver="human")
     stage_worktree_metadata(control_plane, task_id)
     control_plane.transition(task_id=task_id, to_state=STATE_IN_WORKTREE, actor="controller", reason=REASON_WORKTREE_ISOLATED)
+    control_plane.record_verification_receipt(task_id=task_id, gate_name="test_suite", command_executed="pytest", exit_code=0)
+    stage_human_decisions(control_plane, task_id, STATE_IN_WORKTREE, STATE_WORKTREE_REVIEW)
+    control_plane.transition(task_id=task_id, to_state=STATE_WORKTREE_REVIEW, actor="controller", reason="Implementation done")
+    control_plane.record_review_skip(task_id=task_id, phase="multi_agent_code_review", actor="user", reason="test setup")
+    stage_human_decisions(control_plane, task_id, STATE_WORKTREE_REVIEW, STATE_VERIFY_EXIT)
     control_plane.transition(task_id=task_id, to_state=STATE_VERIFY_EXIT, actor="controller", reason="Verifying")
     control_plane.record_verification_receipt(task_id=task_id, gate_name="test_suite", command_executed="pytest", exit_code=0)
     control_plane.record_verification_receipt(task_id=task_id, gate_name="full_test_suite", command_executed="pytest -q", exit_code=0)
@@ -796,6 +816,7 @@ def test_worktree_post_implementation_review_stage_gate(control_plane):
     assert control_plane.get_task(task_id)["state"] == STATE_WORKTREE_REVIEW
 
     control_plane.record_review_skip(task_id=task_id, phase="multi_agent_code_review", actor="user", reason=REASON_NOT_NEEDED_FOR_TEST)
+    stage_human_decisions(control_plane, task_id, STATE_WORKTREE_REVIEW, STATE_VERIFY_EXIT)
     control_plane.transition(
         task_id=task_id,
         to_state=STATE_VERIFY_EXIT,
@@ -851,6 +872,7 @@ def test_worktree_push_barrier_enforcement(control_plane):
 
     # Only once the task actually reaches DONE does the push barrier clear.
     control_plane.record_review_skip(task_id=task_id, phase="multi_agent_code_review", actor="user", reason=REASON_NOT_NEEDED_FOR_TEST)
+    stage_human_decisions(control_plane, task_id, STATE_WORKTREE_REVIEW, STATE_VERIFY_EXIT)
     control_plane.transition(task_id=task_id, to_state=STATE_VERIFY_EXIT, actor="controller", reason="Ready to verify exit receipts")
     control_plane.log_asymmetric_persistence(
         task_id=task_id,
@@ -2000,6 +2022,7 @@ def test_recovery_approval_issuance(control_plane):
         destination_state=STATE_INTAKE,
         source_occupancy_transition_id=occ_trans.transition_id,
         approver="admin",
+        actor="human",
         decision="APPROVAL",
         reason="Operator approved de-escalation to INTAKE"
     )
@@ -2024,6 +2047,7 @@ def test_recovery_approval_denies_when_stale(control_plane):
         destination_state=STATE_PLAN_REVIEW,
         source_occupancy_transition_id=t1.transition_id,
         approver="admin",
+        actor="human",
         decision="APPROVAL",
         reason="Operator approved move to PLAN_REVIEW"
     )
@@ -2063,6 +2087,7 @@ def test_exact_recovery_occupancy_binding_after_leave_reenter(control_plane):
         destination_state=STATE_INTAKE,
         source_occupancy_transition_id=occ1.transition_id,
         approver="admin",
+        actor="human",
         decision="APPROVAL",
         reason="First approval"
     )
@@ -2112,6 +2137,7 @@ def test_atomic_recovery_transition_success(control_plane):
         destination_state=STATE_INTAKE,
         source_occupancy_transition_id=occ.transition_id,
         approver="admin",
+        actor="human",
         decision="APPROVAL",
         reason="Approved de-escalation"
     )
@@ -2145,6 +2171,7 @@ def test_recovery_approval_denies_on_sequential_and_concurrent_replay(control_pl
         destination_state=STATE_INTAKE,
         source_occupancy_transition_id=occ.transition_id,
         approver="admin",
+        actor="human",
         decision="APPROVAL",
         reason="Approved once"
     )
@@ -2184,6 +2211,7 @@ def test_recovery_approval_denies_on_sequential_and_concurrent_replay(control_pl
         destination_state=STATE_INTAKE,
         source_occupancy_transition_id=occ_c.transition_id,
         approver="admin",
+        actor="human",
         decision="APPROVAL",
         reason="Approved once for concurrent race"
     )
@@ -2345,6 +2373,11 @@ def test_wrapper_success_path(control_plane, tmp_path):
     control_plane.transition(task_id, STATE_APPROVED, "approver", "approved")
     stage_worktree_metadata(control_plane, task_id)
     control_plane.transition(task_id, STATE_IN_WORKTREE, "tester", "created worktree")
+    control_plane.record_verification_receipt(task_id=task_id, gate_name="test_suite", command_executed="pytest", exit_code=0)
+    stage_human_decisions(control_plane, task_id, STATE_IN_WORKTREE, STATE_WORKTREE_REVIEW)
+    control_plane.transition(task_id, STATE_WORKTREE_REVIEW, "tester", "implementation done")
+    control_plane.record_review_skip(task_id, "multi_agent_code_review", "tester", "test setup")
+    stage_human_decisions(control_plane, task_id, STATE_WORKTREE_REVIEW, STATE_VERIFY_EXIT)
     control_plane.transition(task_id, STATE_VERIFY_EXIT, "tester", "running verification")
 
     exit_res = run_exit_verification(
@@ -3304,6 +3337,7 @@ def test_run_exit_verification_verifier_allowlist_and_worktree_cwd_binding(contr
     stage_human_decisions(control_plane, task_id, STATE_IN_WORKTREE, STATE_WORKTREE_REVIEW)
     control_plane.transition(task_id, STATE_WORKTREE_REVIEW, "tester", "review")
     control_plane.record_review_skip(task_id, "multi_agent_code_review", "tester", "skip")
+    stage_human_decisions(control_plane, task_id, STATE_WORKTREE_REVIEW, STATE_VERIFY_EXIT)
     control_plane.transition(task_id, STATE_VERIFY_EXIT, "tester", "verify exit")
 
     worktree_dir = tmp_path / ".worktrees" / task_id

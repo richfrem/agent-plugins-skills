@@ -92,7 +92,7 @@ def test_done_guidance_names_retrospective_recording_protocol(control_plane):
     hint = template.next_steps_hint.lower()
     assert "record_retrospective" in hint
     assert "before" in hint and "done" in hint
-    assert "defaults are not inferred" in hint
+    assert "full_test_suite" in hint and "focused_test_suite" in hint
 
 
 def test_done_stage_exposes_git_closeout_contract_and_question(control_plane):
@@ -123,18 +123,18 @@ def test_retrospective_done_requires_passing_full_suite_and_reports_recovery():
 
     assert template is not None
     assert "retrospective_done_guard" in template.deterministic_checks
-    assert "full_test_suite" in template.deterministic_checks
+    assert "full_test_suite_or_trivial_focused" in template.deterministic_checks
     hint = template.next_steps_hint.lower()
     assert "repository-wide pytest -q suite" in hint
-    assert "verifier_id=pytest_full_suite" in hint
-    assert "exit_code=0" in hint
-    assert "remain in retrospective" in hint
+    assert "record full_test_suite" in hint
+    assert "focused_test_suite" in hint
+    assert "retrospective_done_guard" in hint
 
 
 def test_standard_path_hints_name_each_operational_handoff(control_plane):
     registry = TransitionRegistry.load_default()
     expected = {
-        (STATE_INTERVIEW, STATE_DRAFT_PLAN): ("record-plan-mode-entry", "verify-interview-question"),
+        (STATE_INTERVIEW, STATE_DRAFT_PLAN): ("interview-question", "coordinate-transition"),
         (STATE_DRAFT_PLAN, STATE_PLAN_REVIEW): ("submit", "coordinate-transition"),
         (STATE_PLAN_REVIEW, STATE_MULTI_AGENT_REVIEW): ("review-selection-v1", "coordinate-transition"),
         (STATE_PLAN_REVIEW, STATE_AWAITING_APPROVAL): ("record-critic-review", "record-review-skip"),
@@ -412,12 +412,22 @@ def test_plan_and_implementation_reviews_share_environment_and_model_selection_c
 
 
 def test_worktree_review_exit_hint_explains_skip_branch_and_human_question_boundary():
+    """auth-ciba-poc-transition-mechanics (2026-09-17): this edge previously had
+    zero declared questions -- a genuine skip-review path reachable with no
+    human confirmation at all (code_review_or_skip's own receipt check has no
+    actor verification). Fixed by adding a real human_questions entry,
+    trigger-enforced via required_transition_questions. Updated assertions to
+    match the corrected behavior instead of the old (wrong) claim that no
+    question was required here."""
     registry = TransitionRegistry.load_default()
     template = registry.get_template(STATE_WORKTREE_REVIEW, STATE_VERIFY_EXIT)
 
     assert template is not None
+    qids = [q["question_id"] for q in template.human_questions]
+    assert "confirm_worktree_review_accept_implementation" in qids
     hint = template.next_steps_hint.lower()
-    assert "no additional human question is required" in hint
+    assert "no additional human question is required" not in hint
+    assert "confirm_worktree_review_accept_implementation" in hint
     assert "--skip-review" in hint
     assert "--skip-reason" in hint
     assert "multi_agent_code_review" in hint

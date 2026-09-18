@@ -1,99 +1,131 @@
 flowchart TB
-    Callers["CLI, agents, and Python consumers"]
-    Facade["ControlPlane compatibility facade"]
-    Coordinator["TransitionCoordinator"]
-    Registry["TransitionRegistry"]
-    Templates["transition_templates.yaml: edge and stage contracts"]
-    Guidance["Transition guidance: versioned advisory snapshot"]
-    ForceClose["Force close: any active state to DONE; interactive human authorization required"]
-    ArtifactGate["Plan artifact identity/revision gate"]
-    Delegation["DelegationContract: scope, authority, budget, receipts"]
-    ReviewDispatch["Review dispatch: required source + canonical verdict"]
-    ReviewSelection["review-selection-v1: decision → method → internal runtime/model/effort"]
-    ReviewReports["Task-scoped raw reviewer reports + receipts"]
-    ReviewSynthesis["Canonical review synthesis / revision brief"]
-    PlanBranch["Plan branch: skip review or request review"]
-    PlanAcceptance["PLAN_REVIEW convergence: accept plan or return to DRAFT_PLAN"]
-    InterviewOutline["Atomic interview answer + revisioned outline projection"]
-    Inventory["Session-wide change inventory + reconciliation manifest"]
-    Worktree["Registered implementation worktree"]
-    MainReconciliation["main_worktree_reconciliation: force-copies dirty source-checkout files into worktree; blocks on conflict (issue #609)"]
-    Lifecycle["Canonical lifecycle states: [INTAKE] → [INTERVIEW] → [DRAFT_PLAN] → [PLAN_REVIEW] → [MULTI_AGENT_REVIEW] → [AWAITING_APPROVAL] → [APPROVED] → [IN_WORKTREE] → [WORKTREE_REVIEW] → [MULTI_AGENT_CODE_REVIEW] → [VERIFY_EXIT] → [RETROSPECTIVE] → [DONE]"]
+    %% Entry Layer
+    subgraph Layer_Entry["Entry Points & Orchestration"]
+        Callers["CLI, agents, and Python consumers"]
+        Facade["ControlPlane compatibility facade"]
+        Coordinator["TransitionCoordinator"]
+        Guidance["Transition guidance: versioned advisory snapshot"]
+        Lifecycle["Canonical lifecycle states: 13-stage sequence"]
+    end
 
-    State["StateMachine (control_plane/state_machine.py)"]
-    Policy["Unified policy engine (control_plane/policy.py)"]
-    HumanClose["Human-authorized force close\n(any state → DONE; agent forbidden)"]
+    %% Governance & Gates
+    subgraph Layer_Governance["Governance, Policies & Human Boundaries"]
+        State["StateMachine (control_plane/state_machine.py)"]
+        Policy["Unified policy engine (control_plane/policy.py)"]
+        TransitionRequest["transition_request: nonce, revision_hash & token verification"]
+        Registry["TransitionRegistry"]
+        Templates["transition_templates.yaml: edge contracts & authorized_actor"]
+        ForceClose["Force close: any active state to DONE (HITL)"]
+        HumanClose["Human-authorized force close\n(any state → DONE; agent forbidden)"]
+        ArtifactGate["Plan artifact identity/revision gate"]
+        MainReconciliation["main_worktree_reconciliation (issue #609)"]
+        Delegation["DelegationContract: scope, authority, budget, receipts"]
+    end
 
-    PersistencePort["PersistencePort"]
-    CryptoPort["CryptoPort"]
-    FilesystemPort["FilesystemPort"]
-    ModelPort["ModelCatalogPort"]
-    ClockPort["ClockPort"]
+    %% Review Subsystem
+    subgraph Layer_Review["Review Dispatch & Worktree Convergence"]
+        ReviewDispatch["Review dispatch: required source + canonical verdict"]
+        ReviewSelection["review-selection-v1: decision → method → internal runtime/model/effort"]
+        ReviewReports["Task-scoped raw reviewer reports + receipts"]
+        ReviewSynthesis["Canonical review synthesis / revision brief"]
+        PlanBranch["Plan branch: skip review or request review"]
+        PlanAcceptance["PLAN_REVIEW convergence: accept plan or return to DRAFT_PLAN"]
+        InterviewOutline["Atomic interview answer + revisioned outline projection"]
+        Inventory["Session-wide change inventory + reconciliation manifest"]
+        Worktree["Registered implementation worktree"]
+    end
 
-    SQLiteAdapter["SqlitePersistenceAdapter"]
-    CryptoAdapter["CryptoAdapter"]
-    FilesystemAdapter["FilesystemAdapter"]
-    ModelAdapter["ModelCatalogAdapter"]
-    ClockAdapter["ClockAdapter"]
+    %% Hexagonal Ports
+    subgraph Layer_Ports["System Ports (Hexagonal Abstraction)"]
+        PersistencePort["PersistencePort"]
+        CryptoPort["CryptoPort"]
+        FilesystemPort["FilesystemPort"]
+        ModelPort["ModelCatalogPort"]
+        ClockPort["ClockPort"]
+    end
 
-    DB[(control_plane.db)]
-    Receipts["verification_receipts: gate and artifact identities"]
-    RepoFiles["Repository and verifier files"]
-    CatalogFiles["Model catalog JSON files"]
-    Clock["Wall clock"]
+    %% Concrete Adapters
+    subgraph Layer_Adapters["Infrastructure Adapters"]
+        SQLiteAdapter["SqlitePersistenceAdapter"]
+        CryptoAdapter["CryptoAdapter"]
+        FilesystemAdapter["FilesystemAdapter"]
+        ModelAdapter["ModelCatalogAdapter"]
+        ClockAdapter["ClockAdapter"]
+    end
 
+    %% Physical Storage & OS Targets
+    subgraph Layer_Storage["Storage, Filesystem & Wall Clock"]
+        DB[(control_plane.db)]
+        Receipts["verification_receipts: gate and artifact identities"]
+        RepoFiles["Repository and verifier files"]
+        CatalogFiles["Model catalog JSON files"]
+        Clock["Wall clock"]
+    end
+
+    %% Relationships: Entry to Orchestration & Governance
     Callers --> Facade
     Facade --> Lifecycle
-
     Facade --> State
     Facade --> Policy
     Facade --> Coordinator
+    Facade --> Delegation
+
     Coordinator --> Registry
     Coordinator --> Guidance
-    Coordinator --> ReviewSelection
     Coordinator --> ForceClose
     Coordinator --> ArtifactGate
     Coordinator --> PlanBranch
     Coordinator --> PlanAcceptance
-    Facade --> Delegation
+    Coordinator --> ReviewSelection
     Coordinator --> ReviewDispatch
+
+    %% Governance & Policy Interactions
+    Registry --> Templates
+    Registry -.->|"syncs authorized_actor & questions"| SQLiteAdapter
+    Policy -.->|"requests policy facts via ctx callables"| PersistencePort
+    Policy -->|"enforces at APPROVED to IN_WORKTREE"| MainReconciliation
+    Policy --> TransitionRequest
+    TransitionRequest --> PersistencePort
+    MainReconciliation --> Worktree
+    HumanClose --> State
+    HumanClose -.->|"explicit HITL approval recorded"| Receipts
+
+    %% Review Flow Interactions
     ReviewDispatch --> ReviewReports
     ReviewReports --> ReviewSynthesis
     ReviewSynthesis --> PlanAcceptance
     ReviewSynthesis --> Worktree
-    Policy -->|"enforces at APPROVED to IN_WORKTREE"| MainReconciliation
-    MainReconciliation --> Worktree
+    PlanBranch --> PlanAcceptance
+    PlanAcceptance --> ArtifactGate
+    Worktree --> Inventory
+    Inventory --> ReviewDispatch
+    Inventory --> PersistencePort
+
+    %% Ports Wiring
     Facade --> PersistencePort
     Facade --> CryptoPort
     Facade --> FilesystemPort
     Facade --> ModelPort
     Facade --> ClockPort
 
-    Policy -.->|"requests policy facts via ctx callables"| PersistencePort
-    Registry --> Templates
+    ArtifactGate --> FilesystemPort
+    ArtifactGate --> PersistencePort
+    InterviewOutline --> PersistencePort
+    InterviewOutline --> FilesystemPort
+    ReviewDispatch --> ModelPort
+    Delegation --> PersistencePort
 
+    %% Adapters Wiring
     PersistencePort --> SQLiteAdapter
     CryptoPort --> CryptoAdapter
     FilesystemPort --> FilesystemAdapter
     ModelPort --> ModelAdapter
     ClockPort --> ClockAdapter
 
+    %% Storage Wiring
     SQLiteAdapter --> DB
-    Delegation --> PersistencePort
-    ReviewDispatch --> ModelPort
-    PlanBranch --> PlanAcceptance
-    PlanAcceptance --> ArtifactGate
-    ArtifactGate --> FilesystemPort
-    ArtifactGate --> PersistencePort
-    InterviewOutline --> PersistencePort
-    InterviewOutline --> FilesystemPort
-    Worktree --> Inventory
-    Inventory --> ReviewDispatch
-    Inventory --> PersistencePort
     DB -.-> Receipts
-    DB -.->|"trigger-enforced required questions: stage, edge, approval"| Coordinator
-    HumanClose --> State
-    HumanClose -.->|"explicit HITL approval recorded"| Receipts
+    DB -.->|"trigger-enforces valid_transitions & required questions"| State
     CryptoAdapter --> RepoFiles
     FilesystemAdapter --> RepoFiles
     ModelAdapter --> CatalogFiles

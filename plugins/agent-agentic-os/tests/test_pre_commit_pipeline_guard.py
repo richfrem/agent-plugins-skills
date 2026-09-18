@@ -397,6 +397,28 @@ def test_push_hook_allows_when_done_with_valid_history(tmp_path):
     conn.close()
     cp.transition(task_id, STATE_WORKTREE_REVIEW, "tester", "review")
     cp.record_review_skip(task_id, "multi_agent_code_review", "tester", "skip")
+
+    # auth-ciba-poc-transition-mechanics (2026-09-17): WORKTREE_REVIEW -> VERIFY_EXIT
+    # now declares a real human_questions entry, trigger-enforced via
+    # required_transition_questions -- stage it the same way as the other
+    # decisions above.
+    conn = sqlite3.connect(cp.db_path)
+    wt_review_occ = conn.execute(
+        "SELECT transition_id FROM task_transitions WHERE task_id = ? ORDER BY transition_id DESC LIMIT 1", (task_id,)
+    ).fetchone()[0]
+    conn.execute(
+        """
+        INSERT INTO transition_decisions (
+            task_id, source_occupancy_transition_id, from_state, to_state,
+            question_id, answer, decision_type, actor, recorded_at
+        ) VALUES (?, ?, 'WORKTREE_REVIEW', 'VERIFY_EXIT',
+                 'confirm_worktree_review_accept_implementation',
+                 'Yes, I accept the implementation and skip code review [Recommended]', 'ANSWER', 'human', 12346.0)
+        """,
+        (task_id, wt_review_occ),
+    )
+    conn.commit()
+    conn.close()
     cp.transition(task_id, STATE_VERIFY_EXIT, "tester", "verify")
     cp.record_verification_receipt(task_id, "leak_check", "git status", 0)
     cp.log_asymmetric_persistence(task_id, "references/map-debt.md", "RESOLVED", "test")
@@ -426,7 +448,8 @@ def test_git_guards_allow_exact_human_approved_recovery_edge(tmp_path):
     cp = ControlPlane(db_path=db_path)
     _advance_task_to_in_worktree(cp, task_id, repo, branch)
     token = cp.record_recovery_approval(
-        task_id, STATE_DONE, "human-reviewer", "Reopen only through the explicitly approved recovery edge."
+        task_id, STATE_DONE, "human-reviewer", actor="human",
+        reason="Reopen only through the explicitly approved recovery edge.",
     )
     cp.apply_recovery_transition(
         task_id, STATE_DONE, token, "human", "Apply the approved recovery edge for closeout verification."

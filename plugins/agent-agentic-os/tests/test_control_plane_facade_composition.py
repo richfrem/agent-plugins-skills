@@ -233,10 +233,10 @@ class _FakePersistencePort(PersistencePort):
         raise NotImplementedError("Fake does not implement occupancy-bound transition commits")
 
     def record_recovery_approval(self, task_id, expected_source_state, destination_state,
-                                  source_occupancy_transition_id, approver, decision, reason) -> str:
+                                  source_occupancy_transition_id, approver, decision, reason, actor) -> str:
         self.calls.append((
             "record_recovery_approval", task_id, expected_source_state, destination_state,
-            source_occupancy_transition_id, approver, decision, reason,
+            source_occupancy_transition_id, approver, decision, reason, actor,
         ))
         return "fake-recovery-token"
 

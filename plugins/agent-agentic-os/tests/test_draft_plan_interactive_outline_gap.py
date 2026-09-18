@@ -31,6 +31,7 @@ def test_interactive_draft_plan_transition_persists_answers_to_outline(tmp_path)
         "Fix the bug.",
         "agent_control.py only.",
         "Tests pass.",
+        "Not applicable; this route is STANDARD, not TRIVIAL.",
         "Preserve existing gates.",
         "medium",
         "YES",

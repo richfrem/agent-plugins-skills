@@ -1440,7 +1440,7 @@ templates:
   guidance:
     success: "For TRIVIAL work, present the focused diff and focused test result to the user; defer broad/full-suite testing unless requested or required by affected-surface risk. STANDARD retains its approved test-suite contract."
     denial: "Keep implementation bounded and add only the focused evidence needed for the approved change."
-  next_steps_hint: "Implementation is complete only after the approved work package is written and focused verification passes; it is not committed, pushed, merged, or DONE. Before every review submission and after every internal fix round, run the session-wide change inventory and ensure every session-owned file is present and content-matched in the registered worktree. Answer this edge's one question with --interactive or --answers '<json>'. First satisfy test_suite; use: record-verification-receipt for test_suite. Before integration, create the reconciliation manifest required by the IN_WORKTREE completion contract, classify worktree-only, main-only-preexisting, shared-task, and untracked paths, then apply the reviewed worktree patch once. After review and final verification, run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to WORKTREE_REVIEW."
+  next_steps_hint: "Implementation is complete only after the approved work package is written and focused verification passes; it is not committed, pushed, merged, or DONE. Before every review submission and after every internal fix round, run the session-wide change inventory and ensure every session-owned file is present and content-matched in the registered worktree. The test_suite_or_deferred_to_review deterministic check runs before this edge's own questions are ever presented, so it must be satisfied by a receipt recorded BEFORE calling coordinate-transition, not by answering confirm_test_suite_or_defer in the same call: run python3 plugins/agent-agentic-os/scripts/agent_control.py record-receipt --task-id <task-id> --gate test_suite --cmd '<the pytest command actually run>' --exit-code 0 --human-confirmed 'HUMAN-CONFIRMED: <quote>' if the suite already passed, or the same command with --gate test_suite_deferred_to_review if deferring to the later MULTI_AGENT_CODE_REVIEW/VERIFY_EXIT gate instead. Before integration, create the reconciliation manifest required by the IN_WORKTREE completion contract, classify worktree-only, main-only-preexisting, shared-task, and untracked paths, then apply the reviewed worktree patch once. After review and final verification, run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to WORKTREE_REVIEW."
   checklist:
   - Current task state is persisted as IN_WORKTREE
   - 'Deterministic check satisfied: test_suite_or_deferred_to_review'
@@ -1481,31 +1481,6 @@ templates:
   authority:
     type: human_review
     explanation: Entry into WORKTREE_REVIEW requires human confirmation of review scope and artifacts.
-- transition_id: in_worktree_to_verify_exit
-  from_state: IN_WORKTREE
-  to_state: VERIFY_EXIT
-  purpose: Advance lifecycle state from IN_WORKTREE to VERIFY_EXIT upon satisfying phase requirements and verifications.
-  next_steps_hint: "Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to VERIFY_EXIT."
-  checklist:
-  - Current task state is persisted as IN_WORKTREE
-  - Structural DAG transition from IN_WORKTREE to VERIFY_EXIT is legal
-  required_artifacts:
-  - .worktrees/<task-id>
-  deterministic_checks: []
-  human_questions: []
-  approval:
-    required: false
-    approver_role: agent_or_human
-  skip:
-    allowed: false
-    requires_justification: false
-  capabilities_released:
-  - exit_verification
-  capabilities_prohibited: []
-  denial_message: 'Transition IN_WORKTREE -> VERIFY_EXIT denied: preconditions or required decisions not satisfied.'
-  authority:
-    type: deterministic
-    explanation: Transition from IN_WORKTREE to VERIFY_EXIT is deterministically governed by automated checks and artifacts.
 - transition_id: in_worktree_to_rolled_back
   from_state: IN_WORKTREE
   to_state: ROLLED_BACK
@@ -1616,15 +1591,23 @@ templates:
   guidance:
     success: "TRIVIAL uses the focused verification receipt and does not run the repository-wide suite unless the user asks or approves it. STANDARD uses the full approved verification contract."
     denial: "Do not broaden verification silently; record the focused result or obtain explicit approval for broader testing."
-  next_steps_hint: "Direct path after an explicit review skip: no additional human question is required here. Record the skip reason and satisfy code_review_or_skip with: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to VERIFY_EXIT --skip-review --skip-reason '<reason>'. If code review is wanted instead, answer the WORKTREE_REVIEW -> MULTI_AGENT_CODE_REVIEW question first; do not infer a review choice from this deterministic edge."
+  next_steps_hint: "Human accept-and-skip decision required (auth-ciba-poc-transition-mechanics, 2026-09-17: this edge previously had zero declared questions -- a genuine skip-review path with no human confirmation at all). Answer confirm_worktree_review_accept_implementation with --interactive so SQLite records actor=human, then satisfy code_review_or_skip: --skip-review --skip-reason '<reason>'. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to VERIFY_EXIT. If code review is wanted instead, answer the WORKTREE_REVIEW -> MULTI_AGENT_CODE_REVIEW question first; do not infer a review choice from this edge."
   checklist:
   - Current task state is persisted as WORKTREE_REVIEW
+  - 'Human question answered: confirm_worktree_review_accept_implementation'
   - 'Deterministic check satisfied: code_review_or_skip'
   required_artifacts:
   - .worktrees/<task-id>
   deterministic_checks:
   - code_review_or_skip
-  human_questions: []
+  human_questions:
+  - question_id: confirm_worktree_review_accept_implementation
+    question: 'Do you accept this implementation as-is and want to skip agent code review, proceeding directly to exit verification?'
+    options:
+    - Yes, I accept the implementation and skip code review [Recommended]
+    - No, I want agent code review first
+    accepted_answers:
+    - Yes, I accept the implementation and skip code review [Recommended]
   approval:
     required: false
     approver_role: agent_or_human
@@ -1756,15 +1739,23 @@ templates:
   from_state: MULTI_AGENT_CODE_REVIEW
   to_state: VERIFY_EXIT
   purpose: Advance lifecycle state from MULTI_AGENT_CODE_REVIEW to VERIFY_EXIT upon satisfying phase requirements and verifications.
-  next_steps_hint: "First satisfy code_review_or_skip; use: record-critic-review with verdict PASS or record-review-skip with a justification. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to VERIFY_EXIT."
+  next_steps_hint: "Human accept decision required (auth-ciba-poc-transition-mechanics, 2026-09-17: this edge previously had zero declared questions -- code_review_or_skip's own receipt check has no actor verification, so this was reachable with no human confirmation at all). Answer confirm_multi_agent_code_review_accept_outcome with --interactive so SQLite records actor=human. First satisfy code_review_or_skip; use: record-critic-review with verdict PASS or record-review-skip with a justification. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to VERIFY_EXIT."
   checklist:
   - Current task state is persisted as MULTI_AGENT_CODE_REVIEW
+  - 'Human question answered: confirm_multi_agent_code_review_accept_outcome'
   - Structural DAG transition from MULTI_AGENT_CODE_REVIEW to VERIFY_EXIT is legal
   required_artifacts:
   - .worktrees/<task-id>
   deterministic_checks:
   - code_review_or_skip
-  human_questions: []
+  human_questions:
+  - question_id: confirm_multi_agent_code_review_accept_outcome
+    question: 'Do you accept the code review outcome and want to proceed to exit verification?'
+    options:
+    - Yes, I accept the review outcome [Recommended]
+    - No, I want further changes first
+    accepted_answers:
+    - Yes, I accept the review outcome [Recommended]
   approval:
     required: false
     approver_role: agent_or_human

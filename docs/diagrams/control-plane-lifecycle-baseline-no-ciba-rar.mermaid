@@ -1,0 +1,57 @@
+flowchart TB
+    %% BASELINE: 13-stage canonical lifecycle
+    %% Visualizes:
+    %% - Coded human gates (enforced by SQLite trigger for actor='human', 
+    %%   but vulnerable to interactive=True / input_fn spoofing prior to CIBA+RAR)
+    %% - Deterministic gates (VERIFY_EXIT -> RETROSPECTIVE)
+
+    subgraph Phase1["1. Planning & Spec"]
+        S1["(1) INTAKE"] --> S2["(2) INTERVIEW"]
+        S2 --> S3["(3) DRAFT_PLAN"]
+        S3 --> S4["(4) PLAN_REVIEW"]
+    end
+
+    subgraph Phase2["2. Plan Review & Human Gate 1"]
+        S4 --> S5["(5) MULTI_AGENT_REVIEW"]
+        S5 --> S6["(6) AWAITING_APPROVAL"]
+        S6 ==>|"Gate 1: Human Plan Approval<br/>(approval.required=True,<br/>approver_role='human')"| S7["(7) APPROVED"]
+    end
+
+    subgraph Phase3["3. Execution, Verification & Human Gate 3"]
+        S7 --> S8["(8) IN_WORKTREE"]
+        S8 --> S9["(9) WORKTREE_REVIEW"]
+
+        %% Gate 3 Branch Decisions (Coded in YAML & trigger-backed). No direct
+        %% IN_WORKTREE -> VERIFY_EXIT edge exists: an earlier fix ("Gate 3d")
+        %% added a human question there instead of removing the edge, but a
+        %% human answering that question would be approving a bypass of
+        %% WORKTREE_REVIEW -- the step whose purpose is to show them the diff
+        %% first. Correctly attributed to a human, not an informed decision.
+        %% The edge was removed entirely (2026-09-17): all work must pass
+        %% through WORKTREE_REVIEW before VERIFY_EXIT.
+        S9 ==>|"Gate 3a: Route via agent review<br/>(confirm_review question)"| S10["(10) MULTI_AGENT_CODE_REVIEW"]
+        S9 ==>|"Gate 3b: Accept & Skip Review<br/>(confirm_worktree_review_accept_implementation)"| S11["(11) VERIFY_EXIT"]
+        S10 ==>|"Gate 3c: Accept Review Outcome<br/>(confirm_multi_agent_code_review_accept_outcome)"| S11
+    end
+
+    subgraph Phase4["4. Closure"]
+        S11 -->|"Deterministic check:<br/>tests + leak/ledger checks<br/>(approval.required=False)"| S12["(12) RETROSPECTIVE"]
+        S12 --> S13["(13) DONE"]
+    end
+
+    %% Phase-to-phase vertical layout flow
+    Phase1 --> Phase2
+    Phase2 --> Phase3
+    Phase3 --> Phase4
+
+    %% Emergency Bypass Path
+    HumanClose{{"Human Force-Close<br/>(Any State)<br/>(approval.required=True,<br/>approver_role='human')"}} -.->|Emergency Bypass| S13
+
+    %% Styling definitions:
+    %% All human gates are coded in YAML and SQLite-enforced, but remain vulnerable 
+    %% to actor='human' spoofing until CIBA+RAR signed tokens are introduced.
+    classDef vulnerable fill:#ffe0e0,stroke:#c00,stroke-width:2px
+    classDef deterministic fill:#f5f5f5,stroke:#999,stroke-width:1px
+
+    class S6,S7,S9,S10,HumanClose vulnerable
+    class S11,S12 deterministic

@@ -1,0 +1,65 @@
+flowchart TB
+    %% HARDENED: 13-stage canonical lifecycle
+    %% - Gates 1 & Force-Close backed by authorized_actor='human_only' and local transition_request mechanics (T1-T3)
+    %% - CIBA+RAR external push visually styled as Increment B (future IdP)
+    %% - Gate 3 (WORKTREE_REVIEW & MULTI_AGENT_CODE_REVIEW -> VERIFY_EXIT) hardened
+    %%   with human_questions + SQLite trigger. No direct IN_WORKTREE -> VERIFY_EXIT
+    %%   edge exists: an earlier fix ("Gate 3d") gated it with a human question
+    %%   instead of removing it, but answering that question would approve a
+    %%   bypass of WORKTREE_REVIEW -- the step whose purpose is to show the diff
+    %%   first. Correctly attributed to a human, not an informed decision. The
+    %%   edge was removed entirely (2026-09-17), not gated.
+    %% - Deterministic gates remain non-HITL
+
+    subgraph Phase1["1. Planning & Spec"]
+        S1["(1) INTAKE"] --> S2["(2) INTERVIEW"]
+        S2 --> S3["(3) DRAFT_PLAN"]
+        S3 --> S4["(4) PLAN_REVIEW"]
+    end
+
+    subgraph Phase2["2. Plan Review & Human Gate 1 (Hardened)"]
+        S4 --> S5["(5) MULTI_AGENT_REVIEW"]
+        S5 --> S6["(6) AWAITING_APPROVAL"]
+        S6 --> TR1["transition_request created<br/>by Policy Engine (not agent)<br/>nonce + revision_hash + expiry"]
+        TR1 --> CIBA1{{"CIBA+RAR async push<br/>to human's own device<br/>(Increment B: future IdP)"}}
+        CIBA1 ==>|"Gate 1: signed proof verified<br/>(jti, expiry, payload-match,<br/>atomic consume-and-commit)"| S7["(7) APPROVED"]
+    end
+
+    subgraph Phase3["3. Execution & Human Gate 3 (Trigger-Enforced)"]
+        S7 --> S8["(8) IN_WORKTREE"]
+        S8 --> S9["(9) WORKTREE_REVIEW"]
+
+        %% Gate 3 Branch Decisions into VERIFY_EXIT -- both real paths trigger-enforced
+        S9 ==>|"Gate 3a: Route to review<br/>(confirm_review question)"| S10["(10) MULTI_AGENT_CODE_REVIEW"]
+        S9 ==>|"Gate 3b: Accept & Skip Review<br/>(confirm_worktree_review_accept_implementation)<br/>actor='human' trigger enforced"| S11["(11) VERIFY_EXIT"]
+        S10 ==>|"Gate 3c: Accept Review Outcome<br/>(confirm_multi_agent_code_review_accept_outcome)<br/>actor='human' trigger enforced"| S11
+    end
+
+    subgraph Phase4["4. Closure"]
+        S11 -->|"Deterministic check:<br/>tests + leak/ledger checks<br/>(unchanged — not a human gate)"| S12["(12) RETROSPECTIVE"]
+        S12 --> S13["(13) DONE"]
+    end
+
+    %% Phase-to-phase vertical layout flow
+    Phase1 --> Phase2
+    Phase2 --> Phase3
+    Phase3 --> Phase4
+
+    %% Emergency Bypass Path
+    HumanClose{{"Human Force-Close<br/>(Any State)"}} --> TR2["transition_request created<br/>by Policy Engine"]
+    TR2 --> CIBA2{{"CIBA+RAR async push<br/>(Increment B: future IdP)"}}
+    CIBA2 -.->|"Gate: signed proof verified,<br/>same mechanics as Gate 1"| S13
+
+    %% Styling definitions
+    classDef hardened fill:#e0ffe0,stroke:#080,stroke-width:2px
+    classDef localMechanics fill:#e0e8ff,stroke:#336699,stroke-width:1.5px
+    classDef futureIdp fill:#f3e8ff,stroke:#7b2cbf,stroke-dasharray: 4 4,stroke-width:1.5px
+    classDef triggerEnforced fill:#d4edda,stroke:#28a745,stroke-width:2px
+    classDef deterministic fill:#f5f5f5,stroke:#999,stroke-width:1px
+
+    %% Node assignments
+    class S6,S7,HumanClose hardened
+    class TR1,TR2 localMechanics
+    class CIBA1,CIBA2 futureIdp
+    class S9,S10 triggerEnforced
+    class S11,S12 deterministic

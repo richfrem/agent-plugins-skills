@@ -3,15 +3,15 @@ stateDiagram-v2
     state "Step 2: Interview — understanding what you want [INTERVIEW]" as INTERVIEW
     state "Step 3: Draft plan authored [DRAFT_PLAN]" as DRAFT_PLAN
     state "Step 4: Plan disposition & acceptance gate [PLAN_REVIEW]" as PLAN_REVIEW
-    state "Step 4a: Independent plan review — 0 or more rounds [MULTI_AGENT_REVIEW]" as MULTI_AGENT_REVIEW
-    state "Step 5: Awaiting your approval [AWAITING_APPROVAL]" as AWAITING_APPROVAL
-    state "Step 6: Approved — you said go [APPROVED]" as APPROVED
-    state "Step 7: Implementation (isolated worktree) [IN_WORKTREE]" as IN_WORKTREE
-    state "Step 8: Here's what changed — please review [WORKTREE_REVIEW]" as WORKTREE_REVIEW
-    state "Step 8a: Multi-agent review of the code — 1 or N rounds (your choice) [MULTI_AGENT_CODE_REVIEW]" as MULTI_AGENT_CODE_REVIEW
-    state "Step 9: Verifying (tests, checks) [VERIFY_EXIT]" as VERIFY_EXIT
-    state "Step 10: Retrospective — complete survey or explicitly skip with reason [RETROSPECTIVE]" as RETROSPECTIVE
-    state "Step 11: Done [DONE]" as DONE
+    state "Step 5: Independent plan review — 0 or more rounds [MULTI_AGENT_REVIEW]" as MULTI_AGENT_REVIEW
+    state "Step 6: Awaiting your approval [AWAITING_APPROVAL]" as AWAITING_APPROVAL
+    state "Step 7: Approved — you said go [APPROVED]" as APPROVED
+    state "Step 8: Implementation (isolated worktree) [IN_WORKTREE]" as IN_WORKTREE
+    state "Step 9: Here's what changed — initial review [WORKTREE_REVIEW]" as WORKTREE_REVIEW
+    state "Step 10: Multi-agent code review — 1 or N rounds [MULTI_AGENT_CODE_REVIEW]" as MULTI_AGENT_CODE_REVIEW
+    state "Step 11: Verifying (tests, checks) [VERIFY_EXIT]" as VERIFY_EXIT
+    state "Step 12: Retrospective — survey questions [RETROSPECTIVE]" as RETROSPECTIVE
+    state "Step 13: Done [DONE]" as DONE
     state "Rolled back — problem found, documented [ROLLED_BACK]" as ROLLED_BACK
     state "Escalated to you for a decision [ESCALATED]" as ESCALATED
 
@@ -49,7 +49,8 @@ stateDiagram-v2
     MULTI_AGENT_REVIEW --> INTAKE : human-approved recovery reset
     MULTI_AGENT_REVIEW --> DONE : force close — interactive human authorization
 
-    AWAITING_APPROVAL --> APPROVED : you say Proceed / Go<br/>(this step can never be skipped)
+    %% CRITICAL HUMAN GATE 1
+    AWAITING_APPROVAL --> APPROVED : CRITICAL HUMAN GATE 1:<br/>Human Plan Approval (Proceed / Go)<br/>Releases worktree & coding authority
     AWAITING_APPROVAL --> DRAFT_PLAN : needs more work
     AWAITING_APPROVAL --> PLAN_REVIEW : needs more work
     AWAITING_APPROVAL --> ESCALATED
@@ -63,14 +64,15 @@ stateDiagram-v2
     APPROVED --> DONE : force close — interactive human authorization
 
     IN_WORKTREE --> WORKTREE_REVIEW : implementation + tests done
-    IN_WORKTREE --> VERIFY_EXIT
     IN_WORKTREE --> ROLLED_BACK
     IN_WORKTREE --> ESCALATED
     IN_WORKTREE --> INTAKE : human-approved recovery reset
     IN_WORKTREE --> DONE : force close — interactive human authorization
 
     WORKTREE_REVIEW --> MULTI_AGENT_CODE_REVIEW : yes — choose method<br/>then internal runtime/model/effort one at a time
-    WORKTREE_REVIEW --> VERIFY_EXIT : Proceed straight<br/>to verification? Yes<br/>(skip recorded, never silent)
+    
+    %% CRITICAL HUMAN GATE 3b
+    WORKTREE_REVIEW --> VERIFY_EXIT : CRITICAL HUMAN GATE 3b:<br/>Human Implementation Acceptance<br/>(confirm_worktree_review_accept_implementation)
     WORKTREE_REVIEW --> IN_WORKTREE : more changes needed
     WORKTREE_REVIEW --> ROLLED_BACK
     WORKTREE_REVIEW --> ESCALATED
@@ -78,7 +80,9 @@ stateDiagram-v2
     WORKTREE_REVIEW --> DONE : force close — interactive human authorization
 
     MULTI_AGENT_CODE_REVIEW --> WORKTREE_REVIEW : review package ready<br/>for artifact/scope confirmation
-    MULTI_AGENT_CODE_REVIEW --> VERIFY_EXIT
+    
+    %% CRITICAL HUMAN GATE 3c
+    MULTI_AGENT_CODE_REVIEW --> VERIFY_EXIT : CRITICAL HUMAN GATE 3c:<br/>Human accepts review outcome<br/>(confirm_multi_agent_code_review_accept_outcome)
     MULTI_AGENT_CODE_REVIEW --> IN_WORKTREE : synthesis says bounded changes<br/>human approves rework
     MULTI_AGENT_CODE_REVIEW --> ROLLED_BACK
     MULTI_AGENT_CODE_REVIEW --> ESCALATED
@@ -119,6 +123,19 @@ stateDiagram-v2
     MULTI_AGENT_CODE_REVIEW --> RETROSPECTIVE : human-approved recovery reset
     DONE --> [*]
 
+    note right of APPROVED
+        Critical Gate 1:
+        Unlocks file write authority and
+        isolated worktree execution.
+    end note
+
+    note right of WORKTREE_REVIEW
+        Critical Gate 3b & 3c:
+        Entering VERIFY_EXIT requires explicit
+        human acceptance (diff accept or review accept).
+        Trigger blocks agent self-skip via receipts.
+    end note
+
     note right of DONE
         Force-close from any state requires
         explicit human authorization.
@@ -132,6 +149,15 @@ stateDiagram-v2
         asking for routine lifecycle transitions.
         Re-enter review only after focused tests and
         the session-wide change inventory pass.
+
+        No direct IN_WORKTREE -> VERIFY_EXIT edge exists.
+        A "Gate 3d" fix once gated that edge with a human
+        question instead of removing it, but answering that
+        question would approve a bypass of WORKTREE_REVIEW --
+        the step whose purpose is to show the diff first.
+        Correctly attributed to a human, not an informed
+        decision. The edge was removed entirely (2026-09-17):
+        all work passes through WORKTREE_REVIEW first.
     end note
 
     note right of MULTI_AGENT_CODE_REVIEW

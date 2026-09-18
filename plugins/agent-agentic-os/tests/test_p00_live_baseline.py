@@ -30,6 +30,7 @@ QUESTION_ANSWERS = {
     "interview_summary": "Make the handoff self-proving.",
     "interview_scope": "Only the bounded P00 pipeline path.",
     "interview_verification": "Focused production-path evidence is captured.",
+    "interview_trivial_evidence": "Not applicable; this route is STANDARD, not TRIVIAL.",
     "interview_acceptance_criteria": "Preserve approval and authority boundaries.",
     "interview_planning_model_effort": "gpt-5.6-luna at high effort.",
 }
@@ -228,7 +229,7 @@ def test_duplicate_answer_is_rejected_without_revision(tmp_path):
     assert len(outline["bullets"]) == 1
 
 
-def test_six_answers_use_supported_path_before_one_lifecycle_transition(tmp_path):
+def test_seven_answers_use_supported_path_before_one_lifecycle_transition(tmp_path):
     cp = _interview_cp(tmp_path)
 
     for question_id, answer in QUESTION_ANSWERS.items():
@@ -255,12 +256,12 @@ def test_six_answers_use_supported_path_before_one_lifecycle_transition(tmp_path
         ("p00-test",),
     ).fetchall()
     conn.close()
-    # 6 pre-staged interview answers + 1 mandatory guidance-compliance confirmation
-    assert len(rows) == 7
+    # 7 pre-staged interview answers + 1 mandatory guidance-compliance confirmation
+    assert len(rows) == 8
     assert all(row["bound_transition_id"] == transition.transition_id for row in rows)
     assert all(row["consumed_at"] is not None for row in rows)
 
     outline = cp._persistence.get_interview_plan_outline("p00-test")
-    assert outline["revision"] == 6
-    assert len(outline["bullets"]) == 6
+    assert outline["revision"] == 7
+    assert len(outline["bullets"]) == 7
     assert len(cp._persistence.get_verification_receipts("p00-test")) == 0

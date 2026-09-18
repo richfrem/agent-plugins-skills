@@ -380,7 +380,7 @@ class ControlPlane:
         else:
             bullets.append(bullet)
 
-        artifact_rel = f"docs/plans/{task_id}-plan-outline.md"
+        artifact_rel = f"docs/plans/work-tasks/{task_id}/{task_id}-plan-outline.md"
         revision = self._persistence.upsert_interview_plan_outline(task_id, bullets, artifact_rel)
         artifact_path = self._resolve_plan_outline_path(artifact_rel)
         artifact_path.parent.mkdir(parents=True, exist_ok=True)
@@ -439,7 +439,7 @@ class ControlPlane:
             "text": answer.strip(),
             "actor": actor,
         })
-        artifact_rel = f"docs/plans/{task_id}-plan-outline.md"
+        artifact_rel = f"docs/plans/work-tasks/{task_id}/{task_id}-plan-outline.md"
         decision = TransitionDecision(
             task_id=task_id,
             source_occupancy_transition_id=source_occupancy_transition_id,
@@ -990,6 +990,7 @@ class ControlPlane:
         task_id: str,
         destination_state: str,
         approver: str,
+        actor: str,
         reason: str = "",
         decision: str = "APPROVAL",
         expected_source_state: Optional[str] = None,
@@ -1003,7 +1004,16 @@ class ControlPlane:
         not explicitly supplied -- the common case (a caller who just wants "approve
         recovery from wherever this task currently is") shouldn't have to look those up
         itself; explicit overrides remain available for callers (e.g. the CLI) that
-        already have them on hand and want the stricter occupancy-staleness check."""
+        already have them on hand and want the stricter occupancy-staleness check.
+
+        actor has no default (2026-09-18 review finding): this facade's callers must state
+        who they actually are, not inherit a convenient 'human' default that a non-human
+        caller could silently ride on. It is recorded verbatim into the decision row, and
+        the persistence layer independently refuses destination_state values in
+        RECOVERY_FORBIDDEN_DESTINATIONS (VERIFY_EXIT, APPROVED) regardless of what actor
+        claims, since those states require real human authorization on their normal inbound
+        edges that this recovery path must never bypass -- see adapters.py's
+        RECOVERY_FORBIDDEN_DESTINATIONS."""
         if expected_source_state is None or source_occupancy_transition_id is None:
             task = self.get_task(task_id)
             if not task:
@@ -1021,6 +1031,7 @@ class ControlPlane:
             approver=approver,
             decision=decision,
             reason=reason,
+            actor=actor,
         )
 
     def apply_recovery_transition(
@@ -1248,6 +1259,7 @@ class ControlPlane:
             current_state=current_state,
             releasing_edge=(occupancy_trans.from_state, occupancy_trans.to_state),
             transition_id=occupancy_trans.transition_id,
+            authorized_actor=template.authorized_actor,
         )
 
     def record_decision(
@@ -1419,6 +1431,7 @@ def _build_parser() -> argparse.ArgumentParser:
     p_rra.add_argument("--approver", required=True)
     p_rra.add_argument("--decision", default="APPROVAL")
     p_rra.add_argument("--reason", required=True)
+    p_rra.add_argument("--actor", default="human", help="Who is actually invoking this CLI command (default: human, since this is a human-operated administrative recovery tool).")
 
     p_cgb = sub.add_parser("clear-guidance-block")
     p_cgb.add_argument("--task-id", required=True)
@@ -1556,6 +1569,7 @@ def _dispatch_command(cp: ControlPlane, args: argparse.Namespace):
             approver=args.approver,
             decision=args.decision,
             reason=args.reason,
+            actor=args.actor,
         )
         print(f"Recovery approval recorded: {token}")
     elif args.subcommand == "clear-guidance-block":

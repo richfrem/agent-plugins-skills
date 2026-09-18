@@ -73,3 +73,36 @@ def test_approve_and_reject_conditions_both_present_for_every_non_exempt_edge():
             if c.from_state == from_state and c.to_state == to_state
         }
         assert conditions == {"HUMAN_APPROVES", "HUMAN_REJECTS"}
+
+
+def test_human_only_edges_returns_only_human_only_classified_edges():
+    """T5: human_only_edges() must return exactly the edges the registry itself
+    classifies human_only (mirrors control_plane.constants.AUTHORIZED_ACTOR_HUMAN_ONLY),
+    never a hand-maintained parallel list that could drift from the real derivation."""
+    from control_plane.transition_simulation_cases import human_only_edges
+    from control_plane.constants import AUTHORIZED_ACTOR_HUMAN_ONLY
+
+    registry = TransitionRegistry.load_default()
+    edges = human_only_edges(registry)
+    assert len(edges) > 0
+    assert ("AWAITING_APPROVAL", "APPROVED") in edges
+    assert ("INTAKE", "INTERVIEW") not in edges
+    for from_state, to_state in edges:
+        template = registry.get_template(from_state, to_state)
+        assert template.authorized_actor == AUTHORIZED_ACTOR_HUMAN_ONLY
+
+
+def test_agent_spoof_adversarial_cases_cover_every_human_only_edge():
+    """T5: the adversarial matrix must have exactly one case per human_only edge,
+    so every consequential edge gets a spoofed-actor regression case."""
+    from control_plane.transition_simulation_cases import (
+        build_agent_spoof_adversarial_cases, human_only_edges,
+    )
+
+    registry = TransitionRegistry.load_default()
+    cases = build_agent_spoof_adversarial_cases(registry)
+    edges = human_only_edges(registry)
+    assert len(cases) == len(edges)
+    case_edges = {(c.from_state, c.to_state) for c in cases}
+    assert case_edges == set(edges)
+    assert all(c.condition == "AGENT_SPOOF_DENIED" for c in cases)
