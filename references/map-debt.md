@@ -2,6 +2,19 @@
 
 Persistent tracking of architectural friction, structural anomalies, and unclosed loops across sessions.
 
+## DEBT-20260918-WORKTREE-REVIEW-RECEIPT-GUIDANCE-AND-DEFERRED-CHECK-TIMING
+
+- Logged date: 2026-09-18
+- Cycle/Session ID: auth-ciba-poc-transition-mechanics
+- Artifact affected: `plugins/agent-agentic-os/scripts/control_plane/transition_templates.yaml` (`in_worktree_to_worktree_review` template) and `plugins/agent-agentic-os/scripts/control_plane/coordinator.py`
+- Friction observed: Two related problems found live, while the user attempted to actually run `IN_WORKTREE -> WORKTREE_REVIEW` for real on this task. (1) The edge's `next_steps_hint` told the agent to run a command, `record-verification-receipt`, that does not exist as a CLI verb -- it's a garbled hybrid of the real verb `record-receipt` and the internal Python method name `record_verification_receipt()`. Fixed live (see plugin-scoped `map-debt.md` for detail). (2) Deeper: the edge's own `confirm_test_suite_or_defer` human question is structurally unreachable -- the `test_suite_or_deferred_to_review` deterministic check runs at coordinator.py step 5, before the step-6 question-collection loop that would ever present it, and `coordinator.py` has zero handling wiring that question's "Defer" answer into the `test_suite_deferred_to_review` receipt the check needs. This is the same architectural bug class as `DEBT-20260918-INTERVIEW-CHECK-DEFERRAL-STALE-NAME` below, applied to a different check/edge.
+- Why not fixed now: The guidance-text fix (1) was safe and immediate. The deeper fix (2) -- adding `test_suite_or_deferred_to_review` to the deferred-checks tuple plus wiring the answer to auto-record the receipt -- needs its own TDD cycle and full-suite re-verification, not a late-night patch made while a live pipeline run is mid-flight and blocking on it.
+- Recommended fix / fix applied: (1) applied live: corrected `next_steps_hint` to name the real `record-receipt` command and explain the pre-transition receipt requirement. (2) recommended, not yet applied: mirror the `interview_plan_route_complete` fix exactly -- add the check-id to the deferral tuple, then add the same-call auto-receipt wiring for the "Defer" answer path.
+- Evidence/repro: Live terminal reproduction: `coordinate-transition --to WORKTREE_REVIEW` denied by `test_suite_or_deferred_to_review` with zero prompt ever shown, despite the edge declaring a human question that appears (from the YAML alone) to handle exactly this case.
+- Severity: M
+- Repeat: YES -- second confirmed instance of a deterministic check not wired into the deferred-checks mechanism despite depending on that same edge's own interactive answer. See the recommended CI cross-reference check in the sibling entry below; extend it to flag any `deterministic_checks` entry whose only real satisfaction path is that same edge's own `human_questions` answer.
+- Status: OPEN (guidance-text half fixed and RESOLVED; the deferred-check-timing half remains OPEN)
+
 ## DEBT-20260918-INTERVIEW-CHECK-DEFERRAL-STALE-NAME
 
 - Logged date: 2026-09-18
