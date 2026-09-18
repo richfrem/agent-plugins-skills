@@ -2,6 +2,19 @@
 
 Persistent tracking of architectural friction, structural anomalies, and unclosed loops across sessions.
 
+## DEBT-20260917-MAP-DEBT-PLUGIN-SCOPE-SYNC
+
+- Logged date: 2026-09-17
+- Cycle/Session ID: auth-ciba-poc-transition-mechanics
+- Artifact affected: `plugins/agent-agentic-os/references/map-debt.md`
+- Friction observed: The `_resolve_plan_outline_path` cwd-fallback finding (see `plugins/agent-agentic-os/references/map-debt.md`) was recorded directly on the main checkout mid-session and never copied into this task's worktree until now -- a small instance of the same worktree/main-checkout content-drift pattern this session hit repeatedly with code files.
+- Why not fixed now: This entry documents the sync itself; no further fix needed.
+- Recommended fix / fix applied: Copied the missing row into the worktree's plugin-scoped `map-debt.md` so both copies match before the worktree branch is reviewed.
+- Evidence/repro: `diff` between the worktree's and main checkout's plugin-scoped `map-debt.md` before this commit.
+- Severity: L
+- Repeat: NO
+- Status: RESOLVED
+
 ## DEBT-20260917-VERIFY-EXIT-GATE-HARDENING
 
 - Logged date: 2026-09-17
