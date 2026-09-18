@@ -383,8 +383,25 @@ CREATE TABLE IF NOT EXISTS schema_version (
 CREATE TABLE IF NOT EXISTS valid_transitions (
     from_state TEXT,
     to_state TEXT NOT NULL,
+    authorized_actor TEXT NOT NULL DEFAULT 'agent_or_human',
     PRIMARY KEY (from_state, to_state)
 );
+
+CREATE TABLE IF NOT EXISTS transition_request (
+    request_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    task_id TEXT NOT NULL REFERENCES tasks(task_id) ON DELETE CASCADE,
+    from_state TEXT NOT NULL,
+    to_state TEXT NOT NULL,
+    occupancy_id INTEGER NOT NULL,
+    nonce TEXT NOT NULL UNIQUE,
+    expiration REAL NOT NULL,
+    revision_hash TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'PENDING' CHECK(status IN ('PENDING', 'CONSUMED', 'DENIED', 'EXPIRED')),
+    jti TEXT,
+    consumed_at REAL,
+    created_at REAL NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_transition_request_task ON transition_request(task_id);
 
 CREATE TABLE IF NOT EXISTS required_transition_questions (
     from_state TEXT NOT NULL,
@@ -593,6 +610,8 @@ SCHEMA_MIGRATIONS = [
         VALUES (NEW.task_id, NULL, NEW.state);
         DELETE FROM tasks WHERE task_id = NEW.task_id;
     END;""",
+    # Migration: add authorized_actor column to valid_transitions (auth-ciba-poc-transition-mechanics, issues #621/#626/#634)
+    "ALTER TABLE valid_transitions ADD COLUMN authorized_actor TEXT NOT NULL DEFAULT 'agent_or_human';",
 ]
 
 
@@ -732,17 +751,23 @@ class SqlitePersistenceAdapter(PersistencePort):
         """issue-523: resyncs valid_transitions from TransitionRegistry.get_all_edges() plus
         LEGAL_INITIAL_STATES (as from_state IS NULL rows) on every ensure_schema() call —
         self-maintaining, zero manual migration step per DAG change (spec guardrail table).
-        Uses parameterized INSERTs, not string-formatted SQL (finding #1)."""
+        Uses parameterized INSERTs, not string-formatted SQL (finding #1).
+
+        auth-ciba-poc-transition-mechanics (T1): also populates authorized_actor per edge,
+        derived from TransitionRegistry/TransitionTemplate.authorized_actor (itself derived
+        from each edge's approval block, not a hand-maintained parallel field). Initial-state
+        rows (from_state IS NULL) are not edges with an approval block and default to
+        'agent_or_human', matching the column's schema default."""
         from control_plane.registry import TransitionRegistry
         registry = TransitionRegistry.load_default()
-        edges = registry.get_all_edges()
+        edges_with_actor = registry.get_all_edges_with_actor()
 
         conn.execute("BEGIN IMMEDIATE;")
         try:
             conn.execute("DELETE FROM valid_transitions;")
             conn.executemany(
-                "INSERT INTO valid_transitions (from_state, to_state) VALUES (?, ?)",
-                list(edges) + [(None, s) for s in LEGAL_INITIAL_STATES]
+                "INSERT INTO valid_transitions (from_state, to_state, authorized_actor) VALUES (?, ?, ?)",
+                list(edges_with_actor) + [(None, s, "agent_or_human") for s in LEGAL_INITIAL_STATES]
             )
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS required_transition_questions (

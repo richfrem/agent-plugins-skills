@@ -24,7 +24,7 @@ from control_plane.registry import TransitionRegistry, TransitionTemplate, Trans
 from control_plane.policy import evaluate_check, PolicyViolation, PolicyConfigurationError
 from control_plane.constants import (
     STATE_INTERVIEW, STATE_DRAFT_PLAN, STATE_MULTI_AGENT_REVIEW, STATE_PLAN_REVIEW, STATE_AWAITING_APPROVAL, STATE_RETROSPECTIVE, STATE_DONE,
-    GUIDANCE_COMPLIANCE_CONFIRM_ANSWER,
+    GUIDANCE_COMPLIANCE_CONFIRM_ANSWER, AUTHORIZED_ACTOR_AGENT_OR_HUMAN,
 )
 from control_plane.ports import (
     FilesystemPort,
@@ -522,17 +522,37 @@ class TransitionCoordinator:
             if interactive:
                 guidance_answer = self._input_fn(guidance_prompt).strip()
                 guidance_decision_actor = "human"
+            elif template.authorized_actor == AUTHORIZED_ACTOR_AGENT_OR_HUMAN:
+                # auth-ciba-poc-transition-mechanics (T7): on an agent_or_human edge,
+                # this confirmation is not gating a consequential decision -- it is
+                # gating routine pipeline plumbing (e.g. INTAKE -> INTERVIEW). The
+                # 2026-09-14 self-certification concern below applies specifically to
+                # human_only edges, where this confirmation stands in for real human
+                # authorization; on agent_or_human edges an agent-provided answer is
+                # exactly as legitimate as any other answer the agent supplies for
+                # this edge's own questions, and is recorded honestly as actor="agent",
+                # never actor="human".
+                answer_value = answers.get("guidance_compliance_confirmation")
+                if not answer_value or not str(answer_value).strip():
+                    raise TransitionCoordinatorError(
+                        "guidance_compliance_confirmation requires an explicit answer -- "
+                        "pass --interactive or --answers "
+                        "'{\"guidance_compliance_confirmation\": \"YES\"}'."
+                    )
+                guidance_answer = str(answer_value).strip()
+                guidance_decision_actor = "agent"
             else:
-                # This question may NEVER be satisfied programmatically (found by
+                # human_only edge (e.g. AWAITING_APPROVAL -> APPROVED, force-close family):
+                # this question may NEVER be satisfied programmatically (found by
                 # external review, 2026-09-14: an agent could otherwise self-certify
                 # via --answers '{"guidance_compliance_confirmation": "YES"}' with
                 # actor="agent", defeating the entire purpose of a human-in-the-loop
-                # confirmation). Unlike every other question on an edge, this one
-                # requires a real live human -- interactive=True is mandatory, no
-                # provided_answers escape hatch. A missing/non-interactive attempt is
-                # a usage error -- fail loud with no side effect (no block set) --
-                # not an implicit "NO". Only a genuine, explicit "NO" typed by a real
-                # human at the prompt may ever set guidance_block_reason.
+                # confirmation). Unlike an agent_or_human edge, this one requires a
+                # real live human -- interactive=True is mandatory, no provided_answers
+                # escape hatch. A missing/non-interactive attempt is a usage error --
+                # fail loud with no side effect (no block set) -- not an implicit "NO".
+                # Only a genuine, explicit "NO" typed by a real human at the prompt may
+                # ever set guidance_block_reason.
                 raise TransitionCoordinatorError(
                     "guidance_compliance_confirmation requires a real human answer -- "
                     "pass --interactive. It cannot be supplied via provided_answers/--answers."

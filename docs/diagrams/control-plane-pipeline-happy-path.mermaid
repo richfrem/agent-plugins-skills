@@ -1,59 +1,84 @@
 stateDiagram-v2
-    state "Step 1: Intake — task registered [INTAKE]" as INTAKE
-    state "Step 2: Interview — baseline and adaptive questions [INTERVIEW]" as INTERVIEW
-    state "Step 3: Draft plan authored [DRAFT_PLAN]" as DRAFT_PLAN
-    state "Step 4: Plan disposition & acceptance gate [PLAN_REVIEW]" as PLAN_REVIEW
-    state "Step 5: Independent plan review — 1 or N rounds [MULTI_AGENT_REVIEW]" as MULTI_AGENT_REVIEW
-    state "Step 6: Awaiting your approval [AWAITING_APPROVAL]" as AWAITING_APPROVAL
-    state "Step 7: Approved — you said go [APPROVED]" as APPROVED
-    state "Step 8: Implementation (isolated worktree) [IN_WORKTREE]" as IN_WORKTREE
-    state "Step 9: Here's what changed — initial review [WORKTREE_REVIEW]" as WORKTREE_REVIEW
-    state "Step 10: Multi-agent code review — 1 or N rounds [MULTI_AGENT_CODE_REVIEW]" as MULTI_AGENT_CODE_REVIEW
-    state "Step 11: Verifying (tests, checks) [VERIFY_EXIT]" as VERIFY_EXIT
-    state "Step 12: Retrospective — survey questions [RETROSPECTIVE]" as RETROSPECTIVE
-    state "Step 13: Done [DONE]" as DONE
+    %% Grouping into 4 logical phases matching the lifecycle architecture
 
+    state "1. Planning & Spec" as Phase1 {
+        state "Step 1: Intake — task registered [INTAKE]" as INTAKE
+        state "Step 2: Interview — baseline and adaptive questions [INTERVIEW]" as INTERVIEW
+        state "Step 3: Draft plan authored [DRAFT_PLAN]" as DRAFT_PLAN
+    }
+
+    state "2. Plan Review & Gate 1" as Phase2 {
+        state "Step 4: Plan disposition & acceptance gate [PLAN_REVIEW]" as PLAN_REVIEW
+        state "Step 5: Independent plan review — 1 or N rounds [MULTI_AGENT_REVIEW]" as MULTI_AGENT_REVIEW
+        state "Step 6: Awaiting your approval [AWAITING_APPROVAL]" as AWAITING_APPROVAL
+        state "Step 7: Approved — you said go [APPROVED]" as APPROVED
+    }
+
+    state "3. Execution & Gate 3" as Phase3 {
+        state "Step 8: Implementation (isolated worktree) [IN_WORKTREE]" as IN_WORKTREE
+        state "Step 9: Here's what changed — initial review [WORKTREE_REVIEW]" as WORKTREE_REVIEW
+        state "Step 10: Multi-agent code review — 1 or N rounds [MULTI_AGENT_CODE_REVIEW]" as MULTI_AGENT_CODE_REVIEW
+        state "Step 11: Verifying (tests, checks) [VERIFY_EXIT]" as VERIFY_EXIT
+    }
+
+    state "4. Closure" as Phase4 {
+        state "Step 12: Retrospective — survey questions [RETROSPECTIVE]" as RETROSPECTIVE
+        state "Step 13: Done [DONE]" as DONE
+    }
+
+    %% Phase 1 Transitions
     [*] --> INTAKE
     INTAKE --> INTERVIEW
     INTERVIEW --> DRAFT_PLAN : trivial path — short interview<br/>and smallest-change evidence complete
     INTERVIEW --> DRAFT_PLAN : standard path — full interview complete
-    INTERVIEW --> RETROSPECTIVE : emergency trivial/early close only
     DRAFT_PLAN --> PLAN_REVIEW : submit concise/full plan<br/>trivial skips reviewers by default
+
+    %% Phase 2 Transitions & Loops
     PLAN_REVIEW --> MULTI_AGENT_REVIEW : yes — choose review method
     PLAN_REVIEW --> AWAITING_APPROVAL : no / plan accepted<br/>skip or review outcome recorded
     PLAN_REVIEW --> DRAFT_PLAN : changes requested<br/>revise artifacts and resubmit
-    MULTI_AGENT_REVIEW --> PLAN_REVIEW : review complete<br/>merge outcome - repeat or accept
+    MULTI_AGENT_REVIEW --> PLAN_REVIEW : review complete<br/>merge outcome — repeat or accept
     MULTI_AGENT_REVIEW --> DRAFT_PLAN : changes requested<br/>revise artifacts and resubmit
-    AWAITING_APPROVAL --> APPROVED : you say Proceed / Go<br/>(mandatory gate)
+
+    %% CRITICAL HUMAN GATE 1
+    AWAITING_APPROVAL --> APPROVED : CRITICAL HUMAN GATE 1:<br/>Human Plan Approval (Proceed / Go)<br/>Releases worktree & coding authority
+
+    %% Phase 3 Transitions & Loops
     APPROVED --> IN_WORKTREE
-    APPROVED --> RETROSPECTIVE : approved plan — human skips implementation
     IN_WORKTREE --> WORKTREE_REVIEW : implementation + focused tests + inventory done
     WORKTREE_REVIEW --> MULTI_AGENT_CODE_REVIEW : you say yes<br/>then choose method/runtime/model/effort
-    WORKTREE_REVIEW --> VERIFY_EXIT : you say no — skip straight ahead
+
+    %% CRITICAL HUMAN GATE 3
+    WORKTREE_REVIEW --> VERIFY_EXIT : CRITICAL HUMAN GATE 3:<br/>Human Implementation Acceptance<br/>(accepts diff & explicitly skips review)
+
     MULTI_AGENT_CODE_REVIEW --> WORKTREE_REVIEW : review package ready for re-submission
     MULTI_AGENT_CODE_REVIEW --> IN_WORKTREE : bounded changes<br/>synthesis + human approval
-    MULTI_AGENT_CODE_REVIEW --> VERIFY_EXIT : review passed or explicitly skipped
-    VERIFY_EXIT --> RETROSPECTIVE : trivial: focused test + leak/ledger checks<br/>standard: full suite + leak/ledger checks
+    MULTI_AGENT_CODE_REVIEW --> VERIFY_EXIT : human accepts review outcome<br/>(confirm_multi_agent_code_review_accept_outcome)
+
+    %% Phase 4 Transitions
+    VERIFY_EXIT --> RETROSPECTIVE : deterministic: tests + leak/ledger checks
     RETROSPECTIVE --> DONE : survey complete or explicitly skipped<br/>with reason
-    INTAKE --> DONE : force close — interactive human authorization<br/>(available from any active state)
     DONE --> [*]
+
+    %% Bypass & Planning-Only Edges
+    APPROVED --> RETROSPECTIVE : approved plan — human skips implementation
+    INTERVIEW --> RETROSPECTIVE : emergency trivial/early close only
+    INTAKE --> DONE : force close — interactive human authorization<br/>(available from any active state)
+
+    note right of APPROVED
+        Critical Gate 1:
+        Unlocks file write authority and
+        isolated worktree execution.
+    end note
+
+    note right of WORKTREE_REVIEW
+        Critical Gate 3:
+        Direct exit to VERIFY_EXIT requires explicit
+        human acceptance of the working tree diff.
+        Agent self-skip via receipts is blocked by SQLite trigger.
+    end note
 
     note right of DONE
         Any-state force-close is available only
         with explicit human authorization.
-    end note
-
-    note right of IN_WORKTREE
-        Implementation dispatch, review, synthesis, and
-        bounded fixes continue under controller ownership.
-        Rework returns through IN_WORKTREE and review;
-        no commit, push, or merge is implied.
-    end note
-
-    note right of INTERVIEW
-        TRIVIAL is a lighter route through the same states:
-        no external reviewers, no broad research, and no full
-        test suite unless the user asks or explicitly approves it.
-        Approval, isolation, user review, retrospective, and
-        evidence gates remain mandatory.
     end note

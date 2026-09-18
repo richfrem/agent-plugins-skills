@@ -2,6 +2,19 @@
 
 Persistent tracking of architectural friction, structural anomalies, and unclosed loops across sessions.
 
+## DEBT-20260917-VERIFY-EXIT-GATE-HARDENING
+
+- Logged date: 2026-09-17
+- Cycle/Session ID: auth-ciba-poc-transition-mechanics
+- Artifact affected: `plugins/agent-agentic-os/scripts/control_plane/transition_templates.yaml`, `control_plane/state_machine.py`
+- Friction observed: Live diagram review surfaced three edges converging on `VERIFY_EXIT` with weak or zero human authorization: (1) `WORKTREE_REVIEW -> VERIFY_EXIT` and (2) `MULTI_AGENT_CODE_REVIEW -> VERIFY_EXIT` both declared zero `human_questions`, reachable via `code_review_or_skip`'s own receipt check which has no actor verification at all (`record_review_skip`'s `actor` parameter is an unvalidated free-text string). (3) `IN_WORKTREE -> VERIFY_EXIT` was worse still: zero `human_questions` AND zero `deterministic_checks` -- a fully open backdoor letting an agent skip `WORKTREE_REVIEW` and code review entirely.
+- Why not fixed now: Fixed live in this same session -- see Recommended fix / fix applied.
+- Recommended fix / fix applied: (1) and (2) fixed by adding real `human_questions` entries (`confirm_worktree_review_accept_implementation`, `confirm_multi_agent_code_review_accept_outcome`), which get genuine SQLite-trigger-level `actor='human'` enforcement via the existing `required_transition_questions` mechanism -- no coordinator.py/policy.py changes needed. (3) was first mis-fixed the same way (a "Gate 3d" human question), then correctly fixed by **removing the edge entirely** from both `state_machine.py`'s `ALLOWED_TRANSITIONS` and the YAML template: a human answering a "bypass review?" question at that point would be approving a bypass of the one step (`WORKTREE_REVIEW`) whose entire purpose is to show them the diff first -- correctly attributed to a human, but not an informed decision. All work must now pass through `WORKTREE_REVIEW` before `VERIFY_EXIT`. Failing tests written first for all three (TDW); full ripple across `test_agent_control.py`, `test_agent_control_gate_characterization.py`, `test_pre_commit_pipeline_guard.py`, `test_transition_guidance.py` fixed and re-verified green.
+- Evidence/repro: `test_worktree_review_verify_exit_gate.py` (5 tests: 3 for the two hardened edges, 2 confirming the removed edge no longer exists and is rejected by the state machine).
+- Severity: H
+- Repeat: NO
+- Status: RESOLVED
+
 ## DEBT-20260917-ARTIFACT-PATH-WORK-TASKS-FALLBACK
 
 - Logged date: 2026-09-17

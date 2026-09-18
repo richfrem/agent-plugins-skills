@@ -128,7 +128,7 @@ def test_push_barrier_permits_done(control_plane, tmp_path):
     control_plane.record_verification_receipt(task_id=task_id, gate_name="test_suite", command_executed="pytest", exit_code=0)
     _coordinate_transition(control_plane, task_id, STATE_WORKTREE_REVIEW, actor="controller", reason="Implementation done")
     control_plane.record_review_skip(task_id=task_id, phase="multi_agent_code_review", actor="user", reason="characterization test")
-    control_plane.transition(task_id=task_id, to_state=STATE_VERIFY_EXIT, actor="controller", reason="Ready to verify exit")
+    _coordinate_transition(control_plane, task_id, STATE_VERIFY_EXIT, actor="controller", reason="Ready to verify exit")
     control_plane.record_verification_receipt(task_id=task_id, gate_name="leak_check", command_executed="git status", exit_code=0)
     control_plane.log_asymmetric_persistence(task_id=task_id, destination="references/map-debt.md", status="RESOLVED", details="Resolved")
     _complete_retrospective(control_plane, task_id)
@@ -153,7 +153,7 @@ def test_push_barrier_blocks_intermediate_states(control_plane, intermediate_sta
             _coordinate_transition(control_plane, task_id, STATE_MULTI_AGENT_CODE_REVIEW, actor="controller", reason="Adversarial code review")
         else:
             control_plane.record_review_skip(task_id=task_id, phase="multi_agent_code_review", actor="user", reason="characterization test")
-            control_plane.transition(task_id=task_id, to_state=STATE_VERIFY_EXIT, actor="controller", reason="Ready to verify exit")
+            _coordinate_transition(control_plane, task_id, STATE_VERIFY_EXIT, actor="controller", reason="Ready to verify exit")
 
     with pytest.raises(PersistenceInvariantViolation, match="Pushing to origin requires full pipeline completion"):
         control_plane.update_worktree(
@@ -212,6 +212,7 @@ def test_done_guard_locked_verifier_sovereignty_branch_passes_when_intact(contro
     (plans_dir / f"{task_id}-spec.md").write_text("# Spec", encoding="utf-8")
     (plans_dir / f"{task_id}-implementation-plan.md").write_text("# Plan", encoding="utf-8")
     stage_implementation_ledger(control_plane, task_id, tmp_path)
+    (tmp_path / ".worktrees" / task_id).mkdir(parents=True, exist_ok=True)
 
     control_plane.create_task(task_id=task_id, title="Done sovereignty intact", runtime_tool="claude")
 
@@ -227,7 +228,10 @@ def test_done_guard_locked_verifier_sovereignty_branch_passes_when_intact(contro
     control_plane.record_human_approval(task_id=task_id, approver="user")
     control_plane.update_worktree(task_id, f".worktrees/{task_id}", f"feature/{task_id}", "written_in_worktree")
     control_plane.transition(task_id=task_id, to_state=STATE_IN_WORKTREE, actor="controller", reason="Worktree created")
-    control_plane.transition(task_id=task_id, to_state=STATE_VERIFY_EXIT, actor="controller", reason="Verifying")
+    control_plane.record_verification_receipt(task_id=task_id, gate_name="test_suite", command_executed="pytest", exit_code=0)
+    _coordinate_transition(control_plane, task_id, STATE_WORKTREE_REVIEW, actor="controller", reason="Implementation done")
+    control_plane.record_review_skip(task_id=task_id, phase="multi_agent_code_review", actor="user", reason="characterization test")
+    _coordinate_transition(control_plane, task_id, STATE_VERIFY_EXIT, actor="controller", reason="Verifying")
 
     control_plane.record_verification_receipt(task_id=task_id, gate_name="test_suite", command_executed="pytest", exit_code=0)
     control_plane.log_asymmetric_persistence(

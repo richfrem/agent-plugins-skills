@@ -412,12 +412,22 @@ def test_plan_and_implementation_reviews_share_environment_and_model_selection_c
 
 
 def test_worktree_review_exit_hint_explains_skip_branch_and_human_question_boundary():
+    """auth-ciba-poc-transition-mechanics (2026-09-17): this edge previously had
+    zero declared questions -- a genuine skip-review path reachable with no
+    human confirmation at all (code_review_or_skip's own receipt check has no
+    actor verification). Fixed by adding a real human_questions entry,
+    trigger-enforced via required_transition_questions. Updated assertions to
+    match the corrected behavior instead of the old (wrong) claim that no
+    question was required here."""
     registry = TransitionRegistry.load_default()
     template = registry.get_template(STATE_WORKTREE_REVIEW, STATE_VERIFY_EXIT)
 
     assert template is not None
+    qids = [q["question_id"] for q in template.human_questions]
+    assert "confirm_worktree_review_accept_implementation" in qids
     hint = template.next_steps_hint.lower()
-    assert "no additional human question is required" in hint
+    assert "no additional human question is required" not in hint
+    assert "confirm_worktree_review_accept_implementation" in hint
     assert "--skip-review" in hint
     assert "--skip-reason" in hint
     assert "multi_agent_code_review" in hint

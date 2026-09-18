@@ -1,0 +1,74 @@
+flowchart LR
+    %% BASELINE: 13-stage canonical lifecycle as it exists TODAY, before any
+    %% authorized_actor / transition_request / CIBA+RAR hardening.
+    %% Compare against control-plane-lifecycle-hardened-with-ciba-rar.mermaid.
+    %%
+    %% Correction vs. the originally drafted version of this diagram: the edge
+    %% VERIFY_EXIT -> RETROSPECTIVE is NOT a human approval gate. Verified this
+    %% session by direct code read of transition_templates.yaml: it is
+    %% deterministic (test-suite + leak/ledger checks), approval.required=False.
+    %%
+    %% Three important human decision points exist in this lifecycle, not two --
+    %% corrected after direct user feedback:
+    %%   Gate 1 (AWAITING_APPROVAL -> APPROVED) and Human Force-Close are coded
+    %%   approval.required=True/approver_role='human' -- real, but weakly enforced
+    %%   (see vulnerability note below).
+    %%   Gate 3 (WORKTREE_REVIEW's branch decision -- accept the diff and choose
+    %%   push vs. code-review, regardless of whether an agent review ran) is
+    %%   OPERATIONALLY required by worktree-lifecycle-management.md rule 8, but is
+    %%   NOT coded as human_only today: approval.required=False,
+    %%   approver_role='agent_or_human' in transition_templates.yaml. This is a
+    %%   distinct, currently-open gap -- the policy says a human must decide, the
+    %%   code does not yet require it.
+    %%
+    %% Verified directly against transition_templates.yaml (not memory):
+    %% WORKTREE_REVIEW actually has 6 outgoing edges; only 2 are happy-path,
+    %% matching control-plane-pipeline-happy-path.mermaid's own scope choice.
+    %% Path A (-> MULTI_AGENT_CODE_REVIEW) has real declared questions.
+    %% Path B (-> VERIFY_EXIT, skip) has ZERO declared questions in the YAML --
+    %% "you say no" is advisory prose only, not an enforced question at all.
+
+    subgraph Phase1["1. Planning & Spec"]
+        direction TB
+        S1["(1) INTAKE"] --> S2["(2) INTERVIEW"]
+        S2 --> S3["(3) DRAFT_PLAN"]
+    end
+
+    subgraph Phase2["2. Plan Review & Human Gate 1"]
+        direction TB
+        S4["(4) PLAN_REVIEW"] --> S5["(5) MULTI_AGENT_REVIEW"]
+        S5 --> S6["(6) AWAITING_APPROVAL"]
+        S6 ==>|"Gate 1: Human Plan Approval<br/>(coded: approval.required=True,<br/>approver_role='human')"| S7["(7) APPROVED"]
+    end
+
+    subgraph Phase3["3. Execution, Verification & Human Gate 3"]
+        direction TB
+        S8["(8) IN_WORKTREE"] --> S9["(9) WORKTREE_REVIEW"]
+        S9 ==>|"Gate 3, path A: you say yes --<br/>request agent code review<br/>(POLICY-required, NOT code-enforced:<br/>at least asks a declared question)"| S10["(10) MULTI_AGENT_CODE_REVIEW"]
+        S9 -.->|"Gate 3, path B: SILENT BYPASS --<br/>9 can skip 10 entirely straight to 11.<br/>ZERO declared questions in the YAML for<br/>this edge -- not weakly enforced, UNASKED."| S11["(11) VERIFY_EXIT"]
+        S10 --> S11
+    end
+
+    subgraph Phase4["4. Closure"]
+        direction TB
+        S11 -->|"deterministic: test suite +<br/>leak/ledger checks<br/>(NOT a human gate)"| S12["(12) RETROSPECTIVE"]
+        S12 --> S13["(13) DONE"]
+    end
+
+    Phase1 --> Phase2
+    Phase2 --> Phase3
+    Phase3 --> Phase4
+
+    HumanClose{{"Human Force-Close<br/>(Any State)<br/>Gate: coded approval.required=True,<br/>approver_role='human'"}} -.->|Emergency Bypass| S13
+
+    %% THE ACTUAL VULNERABILITY THIS BASELINE HAS (issue #621):
+    %% Gate 1 and Human Force-Close are enforced ONLY by coordinator.py checking
+    %% `interactive=True` and trusting whatever self._input_fn(...) returns as
+    %% human-originated. There is no isatty() check, no signature, no independent
+    %% channel. An agent piping stdin or injecting a custom input_fn satisfies
+    %% both gates identically to a real human typing at a terminal -- confirmed
+    %% live this session.
+    classDef vulnerable fill:#ffe0e0,stroke:#c00,stroke-width:2px
+    classDef uncoded fill:#fff3cd,stroke:#b8860b,stroke-width:2px
+    class S6,S7,HumanClose,S9 vulnerable
+    class S10 uncoded
