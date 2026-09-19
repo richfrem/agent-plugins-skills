@@ -1,0 +1,63 @@
+%% CRITICAL CORRECTION (2026-09-18, external adversarial review — codex/gpt-6-astra):
+%% This diagram alone does NOT hardening anything if the Agent and Human run under
+%% the SAME OS account/session. An agent with equal filesystem/process privilege can:
+%%   (a) enroll its own key into allowed_signers and self-sign,
+%%   (b) use an unlocked ssh-agent as a signing oracle without ever touching the
+%%       passphrase or key file,
+%%   (c) request a signature from an attached FIDO token with no-touch signing
+%%       enabled (ssh-keygen's verify path logs UP/UV flags but does not enforce them),
+%%   (d) substitute the shared /tmp challenge file with a different pending request
+%%       between the human's read and the signing tool's read (a real race, not
+%%       just tampering-that-fails).
+%% The load-bearing precondition this diagram assumes but does not draw: the Agent
+%% process runs under a RESTRICTED, SEPARATE OS identity (or sandboxed/VM'd) from
+%% the Human's own session -- it cannot write allowed_signers, cannot read/access
+%% the human's ssh-agent or key material, and cannot write to the challenge-file
+%% directory. Without that isolation, switching from input() to ssh-keygen signing
+%% changes the mechanism, not the trust boundary. See GitHub issue #639's review
+%% comment for full findings, and DEBT-20260918-TRANSITION-REQUEST-DESIGN-GAPS in
+%% references/map-debt.md.
+
+sequenceDiagram
+    autonumber
+    actor Agent as Autonomous Agent<br/>(runs under a RESTRICTED OS account,<br/>not the Human's own session)
+    participant CP as Control Plane (coordinator.py)
+    participant DB as SQLite DB (transition_request)
+    participant Notif as Notification Channel (TTY / Desktop Alert)
+    actor Human as Human Operator
+    participant Tool as ssh-keygen CLI (OpenSSH 8.1+<br/>FIDO -sk needs Win32-OpenSSH 8.9+)
+    participant Key as Protected SSH Key (~/.ssh/id_ed25519 or FIDO2 -sk,<br/>readable only by the Human's account)
+
+    Note over Agent,CP: Attempting AWAITING_APPROVAL -> APPROVED<br/>(a real human_only edge - authorized_actor='human_only')
+    Agent->>CP: coordinate_transition(to_state=APPROVED)
+    CP->>CP: Check authorized_actor == 'human_only'<br/>(derived from approval.required/approver_role at load time)
+
+    Note over CP,DB: Step 1: Create RAR-shaped challenge (Policy-side only)<br/>The agent's OS account has no write access to this table or to allowed_signers
+    CP->>DB: INSERT transition_request<br/>(request_id, task_id, from_state, to_state, occupancy_id,<br/>nonce, expiration, revision_hash bound to content snapshot, status='PENDING')
+    CP-->>Agent: Blocks transition call - task remains AWAITING_APPROVAL
+    CP->>CP: Begin polling for a per-request signature file<br/>(unique path keyed by request_id, not a fixed /tmp name -<br/>closes the substitution race)
+
+    Note over CP,Human: Step 2: The challenge dispatch
+    CP->>Notif: Writes the challenge to a per-request file, exact byte<br/>sequence captured once for display+sign+verify (no re-read)
+    Notif->>Human: Presents challenge (screen banner / terminal stdout)
+
+    Note over Human,Key: Step 3: Responding to the challenge
+    Human->>Human: Inspects challenge: task ID, states, occupancy, request_id,<br/>and revision_hash bound to the actual reviewed content snapshot
+    Human->>Tool: ssh-keygen -Y sign -f ~/.ssh/id_ed25519 -n "control-plane" [challenge-file]<br/>(absolute protected path passed via stdin/arg - no shell redirection assumptions)
+    Tool->>Human: Prompts "Enter passphrase for key:" (or requires FIDO touch -<br/>UP/UV flags must be verified, not just signature validity)
+    Human->>Key: Enters passphrase / taps hardware key
+    Key-->>Tool: Unlocks private key in-memory - computes signature<br/>(key file/agent socket not accessible to the Agent's restricted account)
+    Tool->>Tool: Writes signature to the same per-request path + ".sig"
+
+    Note over CP,DB: Step 4: Verification and transition
+    CP->>CP: Poller detects the per-request signature file
+    CP->>Tool: ssh-keygen -Y verify -f allowed_signers -I operator@local -n "control-plane"<br/>-s [sig-file], stdin=[challenge-file] (identical bytes as Step 2/3)
+    Tool-->>CP: Signature valid AND UP/UV flags present if FIDO-backed<br/>(matches allowed_signers, owned by a directory the Agent cannot write)
+
+    CP->>DB: verify_and_consume(): compare signed payload against<br/>STORED request row - never self-reported claims
+    CP->>DB: Check nonce unconsumed, not expired, revision_hash matches<br/>current occupancy_id AND the content snapshot has not changed since approval
+    CP->>DB: Single atomic transaction:<br/>transition_request.status='CONSUMED' AND tasks.state='APPROVED'
+    Note right of DB: Atomicity is the Increment B fix (design gap #1)<br/>Prevents crash window from burning tokens without state advance.<br/>Still requires OS-level isolation above to be a real trust boundary.
+
+    CP-->>Human: Approval confirmed
+    CP-->>Agent: Transition to APPROVED committed - pipeline resumes
