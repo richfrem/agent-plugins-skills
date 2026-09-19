@@ -149,7 +149,7 @@ stages:
       include_remaining_summary: true
     entry_questions:
     - question_id: interview_classification
-      question: Is this a trivial fix or a standard task?
+      question: "Is this a trivial fix or a standard task? Note: TRIVIAL does NOT skip pipeline stages -- it only lightens evidence at each stage (focused verification, no external reviewers, concise plan). There is no INTAKE/INTERVIEW -> DONE shortcut edge; the only such edges are the human_force_done_* force-close family, requiring live interactive human authorization. If a change is small enough that even the lightened full sequence is disproportionate, the correct choice is to skip this control plane entirely (direct commit/push with the user's explicit authorization), not to answer TRIVIAL expecting a shortcut through it."
       options:
       - TRIVIAL
       - STANDARD
