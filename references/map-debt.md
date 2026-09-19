@@ -2,6 +2,19 @@
 
 Persistent tracking of architectural friction, structural anomalies, and unclosed loops across sessions.
 
+## DEBT-20260919-TRIVIAL-FASTTRACK-DOC-CODE-MISMATCH (RESOLVED)
+
+- Logged date: 2026-09-19
+- Cycle/Session ID: docs-increment-b-ssh-diagram (trivial task)
+- Artifact affected: `plugins/dev-utils/rules/graph-planning-superpowers-policy.md` (canonical) + 2 known duplicate copies (`.agent/rules/`, `.agents/skills/coding-conventions-agent/references/`); `plugins/agent-agentic-os/scripts/control_plane/transition_templates.yaml`'s `interview_classification` question text.
+- Friction observed: `graph-planning-superpowers-policy.md` claimed a TRIVIAL-classified task can "fast-track directly to INTAKE -> DONE, skipping Phases 1-3 entirely." Verified directly against `state_machine.py`/`registry.py`: no such edge exists. The only `INTAKE -> DONE` and `INTERVIEW -> DONE` edges are `human_force_done__from_INTAKE`/`human_force_done__from_INTERVIEW` — the force-close family, requiring live interactive human authorization, not a distinct trivial shortcut. Every `TRIVIAL`-related `next_steps_hint` actually in the YAML only lightens evidence requirements at each pipeline stage; none skip stages. An agent (this session) trusted the policy doc's claim over the real code, registered a task, and got stuck at the force-close family's human-only gate trying to reach a shortcut that was never implemented -- significant live friction and user frustration resulted.
+- Why not fixed later: Fixed immediately, live, as its own small task once identified.
+- Recommended fix / fix applied: Corrected the policy document's claim to accurately state no skip-edge exists, TRIVIAL only lightens evidence, and that skipping the control plane entirely (direct commit/push, `--no-verify` with explicit user authorization) is the correct choice when even the lightened full sequence is disproportionate -- not answering TRIVIAL expecting a shortcut. Added an explicit warning to the same effect directly in the `interview_classification` question text in `transition_templates.yaml`, so the guidance reaches an agent at the earliest possible point (before it ever picks a wrong route), not just in a separately-loaded policy file.
+- Evidence/repro: Live reproduction this session (see conversation transcript); direct code verification via `ALLOWED_TRANSITIONS`/`registry.get_template()` showing only the force-close edges exist. `tests/test_transition_guidance.py`, `tests/test_p00_live_baseline.py`, `tests/test_control_plane_interview_guidance.py` (36 tests) re-verified green after the YAML wording change.
+- Severity: M (real live friction and wasted effort, not a security/correctness bug)
+- Repeat: NO
+- Status: RESOLVED
+
 ## DEBT-20260918-VERIFY-EXIT-BUNDLE-REDUNDANT-PYTEST-RUN (RESOLVED)
 
 - Logged date: 2026-09-18

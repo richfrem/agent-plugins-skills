@@ -23,12 +23,24 @@ All STANDARD-classified engineering tasks MUST progress through the 4-phase life
 Phase 0: Intake & Socratic Gate (exploration-cycle-plugin + work-intake)
    │
    ├─ TRIVIAL classification (single-file/few-line, no architectural impact):
-   │    fast-track directly to INTAKE -> DONE, skipping Phases 1-3 entirely.
-   │    No spec/plan compilation, no worktree isolation, no multi-agent review —
-   │    the triage answer itself is the sole recorded audit artifact. Work still
-   │    happens on a feature branch followed by a normal PR; only ceremony is
-   │    skipped, never branch discipline or the push-to-origin gate.
-   │    See work-intake/SKILL.md and GitHub Issue #534 for the full design.
+   │    CORRECTED 2026-09-19 (verified against the real state machine — see
+   │    references/map-debt.md): there is NO dedicated stage-skipping edge for
+   │    TRIVIAL work. The only edges reaching DONE directly from INTAKE or
+   │    INTERVIEW are human_force_done__from_INTAKE/INTERVIEW — the force-close
+   │    family, requiring live interactive human authorization, not a distinct
+   │    trivial shortcut. TRIVIAL still walks every stage of the same pipeline
+   │    (INTERVIEW -> DRAFT_PLAN -> PLAN_REVIEW -> AWAITING_APPROVAL -> APPROVED
+   │    -> IN_WORKTREE -> WORKTREE_REVIEW -> VERIFY_EXIT -> RETROSPECTIVE ->
+   │    DONE); it only LIGHTENS the evidence required at each stage (focused
+   │    verification instead of full-suite, skip external reviewers, concise
+   │    plan instead of the full contract) — it does not skip stages. If a
+   │    change is small enough that even that full-but-lightened sequence is
+   │    disproportionate, the correct choice is NOT a fabricated shortcut
+   │    through this pipeline — it is to skip this control plane entirely
+   │    (direct commit/push, `--no-verify` if the push hook blocks it) with the
+   │    user's explicit authorization. See work-intake/SKILL.md and GitHub
+   │    Issue #534 for the original (aspirational, never implemented) design
+   │    this correction supersedes.
    │
    └─ STANDARD classification: continue below.
    │
