@@ -512,7 +512,7 @@
       "installedAt": "2026-09-16T04:33:03.031751Z",
       "updatedAt": "2026-09-16T14:43:04.986312Z"
     },
-    "transition-guidance-tester": {
+    "transition-simulator": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",

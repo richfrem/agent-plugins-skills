@@ -158,6 +158,32 @@ class TransitionTemplate:
         }
 
 
+EXECUTION_CLASS_AGENT = "AGENT"
+EXECUTION_CLASS_SOFT = "SOFT"
+EXECUTION_CLASS_HARD = "HARD"
+
+EXECUTION_CLASS_INSTRUCTIONS = {
+    EXECUTION_CLASS_AGENT: "You (the agent) run this once the human has said go in chat. Put their words in --human-confirmed. There is no question to ask.",
+    EXECUTION_CLASS_SOFT: "Ask the human in chat, then you run this. Do not hand the command to the human.",
+    EXECUTION_CLASS_HARD: "Only the human can run this. Give them the complete command; you cannot run it.",
+}
+
+
+def classify_edge(template: TransitionTemplate) -> Tuple[str, str, str]:
+    """Return (run_by, basis, why) for one registry template.
+
+    Rules, in order: signed edge -> HARD/crypto; human_only -> HARD/policy;
+    has human questions -> SOFT; otherwise AGENT.
+    """
+    if template.requires_cryptographic_proof:
+        return EXECUTION_CLASS_HARD, "crypto", "Needs the human's SSH signature (passphrase prompt); no typed word or flag can replace it."
+    if template.authorized_actor == AUTHORIZED_ACTOR_HUMAN_ONLY:
+        return EXECUTION_CLASS_HARD, "policy", "Repo policy reserves this human-typed decision to the human."
+    if template.human_questions:
+        return EXECUTION_CLASS_SOFT, "none", "Has a human question: the human answers in chat, then the agent runs the edge."
+    return EXECUTION_CLASS_AGENT, "none", "Deterministic checks only; no human decision is needed."
+
+
 class TransitionRegistry:
     """Authoritative registry for all transition templates loaded from YAML."""
 
@@ -298,10 +324,23 @@ class TransitionRegistry:
 
     @staticmethod
     def _edge_guidance(template: TransitionTemplate, task_id_placeholder: str) -> Dict[str, Any]:
-        command = (
-            "python3 plugins/agent-agentic-os/scripts/agent_control.py "
-            f"coordinate-transition --task-id {task_id_placeholder} --to {template.to_state}"
-        )
+        if template.requires_cryptographic_proof:
+            command = (
+                "python3 plugins/agent-agentic-os/scripts/agent_control.py "
+                f"coordinate-transition --task-id {task_id_placeholder} --to {template.to_state} "
+                "--interactive --key <path-to-signing-key>"
+            )
+        elif template.authorized_actor == AUTHORIZED_ACTOR_HUMAN_ONLY:
+            command = (
+                "python3 plugins/agent-agentic-os/scripts/agent_control.py "
+                f"coordinate-transition --task-id {task_id_placeholder} --to {template.to_state} --interactive"
+            )
+        else:
+            command = (
+                "python3 plugins/agent-agentic-os/scripts/agent_control.py "
+                f"coordinate-transition --task-id {task_id_placeholder} --to {template.to_state} "
+                "--human-confirmed 'HUMAN-CONFIRMED: <quote>'"
+            )
         configured = dict(template.guidance or {})
         helpers = list(configured.get("helper_commands", []))
         if template.approval.get("required"):
@@ -309,10 +348,13 @@ class TransitionRegistry:
                 "python3 plugins/agent-agentic-os/scripts/agent_control.py "
                 f"record-human-approval --task-id {task_id_placeholder} --approver <name>"
             )
+        run_by, basis, why = classify_edge(template)
         return {
             "from_state": template.from_state,
             "to_state": template.to_state,
             "transition_id": template.transition_id,
+            "execution_class": run_by,
+            "execution_instruction": EXECUTION_CLASS_INSTRUCTIONS[run_by],
             "command": command,
             "helper_commands": helpers,
             "success_guidance": configured.get("success", template.next_steps_hint),

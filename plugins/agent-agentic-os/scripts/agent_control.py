@@ -879,6 +879,7 @@ class ControlPlane:
         skip_review: bool = False,
         skip_reason: Optional[str] = None,
         human_signer: Optional[Callable[..., Any]] = None,
+        human_confirmed: Optional[str] = None,
     ) -> TransitionRecord:
         """Public orchestration entry point: coordinates transition via TransitionCoordinator."""
         if not hasattr(self, "_transition_registry"):
@@ -895,6 +896,7 @@ class ControlPlane:
             skip_decision=skip_decision,
             skip_review=skip_review,
             skip_reason=skip_reason,
+            human_confirmed=human_confirmed,
         )
 
     def commit_authorized_transition(self, commit_request: TransitionCommitRequest) -> TransitionRecord:
@@ -1631,6 +1633,7 @@ def _dispatch_command(cp: ControlPlane, args: argparse.Namespace):
             provided_answers=answers_dict,
             approval_decision=getattr(args, "approval", None),
             human_signer=signer,
+            human_confirmed=getattr(args, "human_confirmed", None),
         )
         print(f"Transitioned task {args.task_id} to {args.to} (transition_id={rec.transition_id}).")
     elif args.subcommand == "record-critic-review":

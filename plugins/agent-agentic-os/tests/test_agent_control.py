@@ -1697,7 +1697,7 @@ def test_legacy_policy_migration_parity():
     REQUIRED_EDGE_CHECKS = {
         (STATE_INTAKE, STATE_INTERVIEW): "prior_art_scan",
         (STATE_INTERVIEW, STATE_PLAN_REVIEW): "plan_mode_or_socratic",
-        (STATE_PLAN_REVIEW, STATE_AWAITING_APPROVAL): "critic_review_or_skip",
+        # T4b (start-here-cleanup): agent review is optional; human plan acceptance advances without review or skip
         (STATE_APPROVED, STATE_IN_WORKTREE): "human_approval",
         # DEBT-20260913: softened to accept an explicit human-recorded defer decision too
         # (testing is re-checked, not skipped, at the later MULTI_AGENT_CODE_REVIEW/VERIFY_EXIT gate).
@@ -3221,13 +3221,13 @@ def test_coordinator_stale_skip_invalidated_after_leave_and_reenter(control_plan
     stage_human_decisions(control_plane, task_id, STATE_DRAFT_PLAN, STATE_PLAN_REVIEW)
     control_plane.transition(task_id, STATE_PLAN_REVIEW, "tester", "Ready for review again")
 
-    # Now attempting to enter AWAITING_APPROVAL without providing new skip or review must fail
-    with pytest.raises(TransitionCoordinatorError, match="critic review or explicit recorded skip"):
+    # Now attempting to enter AWAITING_APPROVAL without fresh human plan acceptance in the new occupancy must fail
+    with pytest.raises(TransitionCoordinatorError, match="confirm_plan_acceptance"):
         coord.coordinate_transition(
             task_id=task_id,
             to_state=STATE_AWAITING_APPROVAL,
             actor="tester",
-            reason="Attempting transition without fresh skip",
+            reason="Attempting transition without fresh plan acceptance",
             skip_review=False,
         )
 

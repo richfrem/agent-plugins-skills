@@ -6,7 +6,7 @@ Extracted from SKILL.md per Layer-1 procedural-core line budget (issue #551).
 
 Register the task in `context/control_plane.db`:
 ```bash
-python3 scripts/agent_control.py init --task-id "<task-id>" --title "<title>" --runtime "<runtime>" --spec-path "docs/plans/<task-id>-spec.md"
+python3 scripts/agent_control.py init --task-id "<task-id>" --title "<title>" --runtime "<runtime>" --spec-path "docs/plans/work-tasks/<task-id>/<task-id>-spec.md"
 ```
 
 ## Triage Heuristics & Commands
@@ -47,7 +47,7 @@ Present the User Stage Gate:
 python3 scripts/agent_control.py coordinate-transition --task-id "<task-id>" --to "MULTI_AGENT_REVIEW" --reason "User requested multi-agent review bundle"
 ```
 Package with `context-bundler`:
-- Target files: `docs/plans/<task-id>-spec.md`, `implementation_plan.md`, relevant architectural references.
+- Target files: `docs/plans/work-tasks/<task-id>/<task-id>-spec.md`, `docs/plans/work-tasks/<task-id>/<task-id>-implementation-plan.md`, relevant architectural references.
 - Persona template: `assets/templates/plan-critique-reviewer.md` or Multi-Persona Fan-Out.
 - Output location: `temp/review_<task-id>/`.
 - Present bundle path to user for browser review (ChatGPT, Claude Web, Grok). Ingest feedback, iterate, and transition to `AWAITING_APPROVAL`.

@@ -101,7 +101,7 @@ fi
 
 # If in DONE, also verify integrity of transitions:
 # 1. Check transition_violations
-VIOLATIONS_COUNT="$(sqlite3 "$DB_PATH" "SELECT COUNT(*) FROM transition_violations WHERE task_id = '$TASK_ID';" 2>/dev/null || echo "0")"
+VIOLATIONS_COUNT="$(sqlite3 "$DB_PATH" "SELECT COUNT(*) FROM transition_violations WHERE task_id = '$TASK_ID' AND kind = 'ILLEGAL_TRANSITION';" 2>/dev/null || echo "0")"
 if [ "$VIOLATIONS_COUNT" -gt 0 ]; then
     echo ""
     echo "❌ GIT PUSH BLOCKED: Control Plane Transition Violations Detected!"

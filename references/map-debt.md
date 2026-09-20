@@ -2,6 +2,32 @@
 
 Persistent tracking of architectural friction, structural anomalies, and unclosed loops across sessions.
 
+## DEBT-20260920-POST-DONE-PROTOCOL-CODIFICATION (RESOLVED)
+
+- Logged date: 2026-09-20
+- Cycle/Session ID: start-here-cleanup
+- Artifact affected: `AGENTS.md`, `plugins/agent-agentic-os/rules/worktree-lifecycle-management.md`, `plugins/agent-agentic-os/scripts/control_plane/transition_templates.yaml`, `plugins/agent-agentic-os/scripts/control_plane/pipeline_simulator.py`, `plugins/agent-agentic-os/scripts/control_plane/transition_simulation_cases.py`, `plugins/agent-agentic-os/skills/transition-simulator/SKILL.md`, `plugins/agent-agentic-os/references/cheap-agent-transition-simulation.md`
+- Friction observed: Agents reaching final state DONE frequently froze, dropped context, or failed to execute the post-completion Git convergence lifecycle without explicit human re-prompting because the exact 5-step post-DONE protocol (Push -> PR -> Merge -> Sync -> Prune) was not codified in transition guidance, rules, or simulator tests.
+- Why not fixed now: Fixed immediately.
+- Recommended fix / fix applied: Added Section 10 ("The Standard Post-DONE Protocol") to `worktree-lifecycle-management.md` and `AGENTS.md`; codified `post_done_protocol` under `stages.DONE.closeout_contract` in `transition_templates.yaml` with explicit execution classes; added `PipelineSimulator.get_post_done_convergence_protocol()` and `grade_post_done_convergence_plan()` in `transition_simulation_cases.py` along with deterministic contract tests in `test_control_plane_pipeline_simulator.py`; documented Mode 3 post-DONE convergence verification and harness-agnostic execution in `transition-simulator/SKILL.md` and `cheap-agent-transition-simulation.md`.
+- Evidence/repro: Verified via `pytest -q plugins/agent-agentic-os/tests/test_control_plane_pipeline_simulator.py` (12 passed) and `agent_control.py transition-guidance` output in DONE state.
+- Severity: M
+- Repeat: NO
+- Status: RESOLVED
+
+## DEBT-20260920-HUMAN-CONFIRMED-PROVENANCE (RESOLVED)
+
+- Logged date: 2026-09-20
+- Cycle/Session ID: start-here-cleanup
+- Artifact affected: `plugins/agent-agentic-os/scripts/control_plane/coordinator.py`, `plugins/agent-agentic-os/scripts/agent_control.py`
+- Friction observed: Non-interactive soft transitions run by the agent with verified `--human-confirmed` were assigning `decision_actor = "agent"` when recording transition decisions, causing the SQLite trigger `enforce_valid_transition` to reject the transition because `required_transition_questions` requires `actor = 'human'`.
+- Why not fixed now: Fixed immediately.
+- Recommended fix / fix applied: In `coordinator.py`, when `--human-confirmed` has been validated and accepted, set `decision_actor = "human" if human_confirmed else "agent"`, establishing correct human provenance for soft transitions authorized by the user in chat.
+- Evidence/repro: Verified via `pytest -q plugins/agent-agentic-os/tests` (888 passed) and successful execution of soft transitions with `--human-confirmed`.
+- Severity: M
+- Repeat: NO
+- Status: RESOLVED
+
 ## DEBT-20260920-REVIEW-SELECTION-PROFILE-VALIDATION (OPEN)
 
 - Logged date: 2026-09-20
@@ -935,3 +961,69 @@ Persistent tracking of architectural friction, structural anomalies, and unclose
 - Severity: M
 - Repeat: NO
 - Status: RESOLVED
+
+## DEBT-20260920-HANDWRITTEN-DOCS-PLANS-ROOT-ARTIFACTS
+
+- Logged date: 2026-09-20
+- Cycle/Session ID: start-here-cleanup
+- Artifact affected: `docs/plans/`, `plugins/agent-agentic-os/skills/work-intake/SKILL.md`
+- Friction observed: Hand-wrote artifacts into `docs/plans/` root, bypassing `update_interview_plan_outline()` and nested `docs/plans/work-tasks/<task-id>/` directory structure.
+- Why not fixed now: Fixed now in `start-here-cleanup` by adding explicit artifact location rule to `work-intake/SKILL.md` and correcting YAML templates.
+- Recommended fix: Keep all task artifacts strictly isolated inside `docs/plans/work-tasks/<task-id>/`.
+- Evidence/repro: `test_work_intake_guidance.py::test_artifacts_live_under_nested_task_folder` passes.
+- Severity: S
+- Repeat: YES
+- Status: RESOLVED
+
+## DEBT-20260920-STALE-TEMP-PROMPT-MD
+
+- Logged date: 2026-09-20
+- Cycle/Session ID: start-here-cleanup
+- Artifact affected: `temp/prompt.md`, `interview_spec_engine.py`
+- Friction observed: `temp/prompt.md` is an untracked background scratch file from prior sessions that can mislead `interview_spec_engine.py` if not cleared between tasks.
+- Why not fixed now: Cleaned up manually in current session; permanent cleanup hook deferred.
+- Recommended fix: Add session/task initialization purge for ephemeral scratch files under `temp/` or isolate per task.
+- Evidence/repro: Observed during start-here-cleanup intake.
+- Severity: S
+- Repeat: NO
+- Status: OPEN
+
+## DEBT-20260920-INIT-MODEL-TIER-RECORDED-WRONG-MODEL
+
+- Logged date: 2026-09-20
+- Cycle/Session ID: start-here-cleanup
+- Artifact affected: `plugins/agent-agentic-os/scripts/agent_control.py::create_task`
+- Friction observed: Running `init --model-tier low` recorded `model_id: claude-haiku-4-5` even when the running CLI agent was Gemini/Sonnet.
+- Why not fixed now: Model resolution logic is in `adapters.py:resolve_recommended_model` using default tool catalogs; dynamic active CLI detection is deferred.
+- Recommended fix: Inspect active runtime environment or allow explicit `--runtime-model` override flag during task creation.
+- Evidence/repro: Task metadata in test SQLite database recorded haiku model ID for non-haiku runner.
+- Severity: S
+- Repeat: NO
+- Status: OPEN
+
+## DEBT-20260920-NO-CLI-CONFIRM-CANDIDATES
+
+- Logged date: 2026-09-20
+- Cycle/Session ID: start-here-cleanup
+- Artifact affected: `plugins/agent-agentic-os/scripts/agent_control.py`
+- Friction observed: There was no dedicated CLI sub-command to confirm or reject source-assisted question candidates, requiring manual script invocation (`confirm_candidates.py`).
+- Why not fixed now: Candidate confirmation is part of the broader socratic intake engine review; adding a full CLI verb is deferred to next tooling cycle.
+- Recommended fix: Add `agent_control.py confirm-candidates --task-id <id> --candidate-ids <id1,id2>` subcommand.
+- Evidence/repro: Required Python wrapper execution in start-here-cleanup intake.
+- Severity: S
+- Repeat: NO
+- Status: OPEN
+
+## DEBT-20260920-SOFT-EDGE-HUMAN-ASKED-TWICE
+
+- Logged date: 2026-09-20
+- Cycle/Session ID: start-here-cleanup
+- Artifact affected: `plugins/agent-agentic-os/scripts/control_plane/coordinator.py`, `transition_templates.yaml`, `edge_matrix.py`
+- Friction observed: On soft approval edges carrying human questions, the human answered in chat, but coordinator subsequently re-asked questions because answers were not staged or actor was unverified, causing the human to answer twice.
+- Why not fixed now: Resolved in `start-here-cleanup` by establishing the 3-class edge taxonomy (`edge-matrix.md`), updating guidance hints, adding `test_work_intake_guidance.py` assertions, and eliminating redundant review requirements on `PLAN_REVIEW -> AWAITING_APPROVAL`.
+- Recommended fix: Maintain clear edge classification; agent asks once in chat, stages answers or coordinates transition, and never prompts for questions already answered in context.
+- Evidence/repro: `test_work_intake_guidance.py` and `test_control_plane_pipeline_simulator.py` pass.
+- Severity: M
+- Repeat: YES
+- Status: RESOLVED
+

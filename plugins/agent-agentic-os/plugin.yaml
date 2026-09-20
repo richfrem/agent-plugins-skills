@@ -37,6 +37,7 @@ skills:
   - os-skill-improvement
   - self-evolution
   - todo-check
+  - transition-simulator
 agents:
   - agentic-os-setup
   - improvement-intake-agent

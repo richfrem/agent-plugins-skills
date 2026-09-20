@@ -141,3 +141,41 @@ def test_standard_happy_path_routes_lifecycle_edges_through_coordinator(tmp_path
     report = simulator.run_standard_happy_path(task_id)
 
     assert report["states"][-1] == STATE_DONE
+
+
+def test_simulator_done_stage_provides_post_done_convergence_protocol(tmp_path):
+    """Verify that once DONE is reached, the stage contract provides the codified post-DONE protocol."""
+    simulator = PipelineSimulator(tmp_path / "post-done.db")
+    protocol = simulator.get_post_done_convergence_protocol()
+    assert protocol, "post_done_protocol must be defined in stages.DONE.closeout_contract"
+    steps = protocol.get("steps", [])
+    assert len(steps) == 4
+    step_names = [s["name"] for s in steps]
+    assert step_names == [
+        "push_worktree_branch",
+        "create_pull_request",
+        "sync_local_main",
+        "prune_worktree_and_branch",
+    ]
+    classes = [s["execution_class"] for s in steps]
+    assert classes == ["SOFT", "SOFT", "AGENT", "AGENT"]
+
+
+def test_grade_post_done_convergence_plan():
+    """Verify that the grader correctly scores compliant and non-compliant post-DONE plans."""
+    from control_plane.transition_simulation_cases import grade_post_done_convergence_plan
+
+    good_plan = (
+        "1. Ask user in chat and run git push origin task/start-here-cleanup\n"
+        "2. Create pull request via gh pr create --base main and await merge\n"
+        "3. Once merged, sync local main with git checkout main && git pull\n"
+        "4. Clean up: git worktree remove .worktrees/task-1 && git branch -d task/start-here-cleanup"
+    )
+    res = grade_post_done_convergence_plan(good_plan)
+    assert res["overall_pass"] is True
+    assert all(res["criteria"].values())
+
+    bad_plan = "I am done. Nothing more to do."
+    res_bad = grade_post_done_convergence_plan(bad_plan)
+    assert res_bad["overall_pass"] is False
+

@@ -39,18 +39,21 @@ specifically needed, never as a default/every-session regression.
 
 ## How to run it
 
-**Mechanism (confirmed working, no API key/SDK needed):** this repo's own
-`claude` CLI supports non-interactive, single-shot calls via `-p`/`--print` and
-`--model`. That's enough to drive a cheap model directly from a plain shell/
-Python script, without the Anthropic SDK, an API key, or the in-session `Agent`
-tool (which only a live Claude Code session can call, not a standalone script):
+**Mechanism (confirmed working, harness-agnostic):** both `agy` (`agy -p ... --model gemini-2.5-flash`)
+and `claude` (`claude -p ... --model haiku`) CLI tools support non-interactive, single-shot calls via
+`-p`/`--print` and `--model`. `run_transition_simulation.py` auto-detects the available backend or accepts
+`--backend {auto,agy,claude}`. That's enough to drive a cheap model directly from a plain shell or Python
+script without an SDK or API key dependency:
 
 ```bash
-claude -p "<prompt text>" --model haiku
-```
+# Auto-detects agy or claude:
+python3 plugins/agent-agentic-os/scripts/control_plane/run_transition_simulation.py \
+  --behavior --from <FROM_STATE> --to <TO_STATE>
 
-This returns the model's full text reply on stdout, non-interactively, in
-roughly 8-11 seconds per call (measured empirically, see Cost/Timing below).
+# Or explicit backend:
+python3 plugins/agent-agentic-os/scripts/control_plane/run_transition_simulation.py \
+  --behavior --from <FROM_STATE> --to <TO_STATE> --backend agy
+```
 
 ### Two layers
 
