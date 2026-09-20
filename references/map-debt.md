@@ -935,3 +935,69 @@ Persistent tracking of architectural friction, structural anomalies, and unclose
 - Severity: M
 - Repeat: NO
 - Status: RESOLVED
+
+## DEBT-20260920-HANDWRITTEN-DOCS-PLANS-ROOT-ARTIFACTS
+
+- Logged date: 2026-09-20
+- Cycle/Session ID: start-here-cleanup
+- Artifact affected: `docs/plans/`, `plugins/agent-agentic-os/skills/work-intake/SKILL.md`
+- Friction observed: Hand-wrote artifacts into `docs/plans/` root, bypassing `update_interview_plan_outline()` and nested `docs/plans/work-tasks/<task-id>/` directory structure.
+- Why not fixed now: Fixed now in `start-here-cleanup` by adding explicit artifact location rule to `work-intake/SKILL.md` and correcting YAML templates.
+- Recommended fix: Keep all task artifacts strictly isolated inside `docs/plans/work-tasks/<task-id>/`.
+- Evidence/repro: `test_work_intake_guidance.py::test_artifacts_live_under_nested_task_folder` passes.
+- Severity: S
+- Repeat: YES
+- Status: RESOLVED
+
+## DEBT-20260920-STALE-TEMP-PROMPT-MD
+
+- Logged date: 2026-09-20
+- Cycle/Session ID: start-here-cleanup
+- Artifact affected: `temp/prompt.md`, `interview_spec_engine.py`
+- Friction observed: `temp/prompt.md` is an untracked background scratch file from prior sessions that can mislead `interview_spec_engine.py` if not cleared between tasks.
+- Why not fixed now: Cleaned up manually in current session; permanent cleanup hook deferred.
+- Recommended fix: Add session/task initialization purge for ephemeral scratch files under `temp/` or isolate per task.
+- Evidence/repro: Observed during start-here-cleanup intake.
+- Severity: S
+- Repeat: NO
+- Status: OPEN
+
+## DEBT-20260920-INIT-MODEL-TIER-RECORDED-WRONG-MODEL
+
+- Logged date: 2026-09-20
+- Cycle/Session ID: start-here-cleanup
+- Artifact affected: `plugins/agent-agentic-os/scripts/agent_control.py::create_task`
+- Friction observed: Running `init --model-tier low` recorded `model_id: claude-haiku-4-5` even when the running CLI agent was Gemini/Sonnet.
+- Why not fixed now: Model resolution logic is in `adapters.py:resolve_recommended_model` using default tool catalogs; dynamic active CLI detection is deferred.
+- Recommended fix: Inspect active runtime environment or allow explicit `--runtime-model` override flag during task creation.
+- Evidence/repro: Task metadata in test SQLite database recorded haiku model ID for non-haiku runner.
+- Severity: S
+- Repeat: NO
+- Status: OPEN
+
+## DEBT-20260920-NO-CLI-CONFIRM-CANDIDATES
+
+- Logged date: 2026-09-20
+- Cycle/Session ID: start-here-cleanup
+- Artifact affected: `plugins/agent-agentic-os/scripts/agent_control.py`
+- Friction observed: There was no dedicated CLI sub-command to confirm or reject source-assisted question candidates, requiring manual script invocation (`confirm_candidates.py`).
+- Why not fixed now: Candidate confirmation is part of the broader socratic intake engine review; adding a full CLI verb is deferred to next tooling cycle.
+- Recommended fix: Add `agent_control.py confirm-candidates --task-id <id> --candidate-ids <id1,id2>` subcommand.
+- Evidence/repro: Required Python wrapper execution in start-here-cleanup intake.
+- Severity: S
+- Repeat: NO
+- Status: OPEN
+
+## DEBT-20260920-SOFT-EDGE-HUMAN-ASKED-TWICE
+
+- Logged date: 2026-09-20
+- Cycle/Session ID: start-here-cleanup
+- Artifact affected: `plugins/agent-agentic-os/scripts/control_plane/coordinator.py`, `transition_templates.yaml`, `edge_matrix.py`
+- Friction observed: On soft approval edges carrying human questions, the human answered in chat, but coordinator subsequently re-asked questions because answers were not staged or actor was unverified, causing the human to answer twice.
+- Why not fixed now: Resolved in `start-here-cleanup` by establishing the 3-class edge taxonomy (`edge-matrix.md`), updating guidance hints, adding `test_work_intake_guidance.py` assertions, and eliminating redundant review requirements on `PLAN_REVIEW -> AWAITING_APPROVAL`.
+- Recommended fix: Maintain clear edge classification; agent asks once in chat, stages answers or coordinates transition, and never prompts for questions already answered in context.
+- Evidence/repro: `test_work_intake_guidance.py` and `test_control_plane_pipeline_simulator.py` pass.
+- Severity: M
+- Repeat: YES
+- Status: RESOLVED
+

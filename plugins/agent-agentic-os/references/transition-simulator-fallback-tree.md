@@ -1,4 +1,4 @@
-# Fallback Tree: transition-guidance-tester
+# Fallback Tree: transition-simulator
 
 1. If the requested transition is unknown, stop and report the valid transition names.
 2. If deterministic simulation fails, inspect the raw reply and identify whether the

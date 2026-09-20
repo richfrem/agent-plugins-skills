@@ -6,6 +6,8 @@ Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-s
 
 This is the authoritative instruction file for agents working in this repository. Preserve the project-specific rules below while applying the behavioral guidelines and platform-specific conventions.
 
+For local planning, backlog status, and current task handoffs, consult `docs/plans/start-here.md` (a local-only, gitignored planning file; if absent on fresh clones, start directly with `work-intake`).
+
 <!-- plugin: agent-agentic-os / adversarial-reasoning-before-agreement-rule -->
 ---
 description: >

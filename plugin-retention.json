@@ -35,7 +35,7 @@
         "repository-improvement": true,
         "self-evolution": true,
         "todo-check": true,
-        "transition-guidance-tester": true,
+        "transition-simulator": true,
         "work-intake": true,
         "worktree-manager": true,
         "os-signing-setup": true

@@ -10173,19 +10173,19 @@
     },
     {
       "src": "plugins/agent-agentic-os/scripts/control_plane/transition_simulation_cases.py",
-      "dst": "plugins/agent-agentic-os/skills/transition-guidance-tester/scripts/control_plane/transition_simulation_cases.py",
+      "dst": "plugins/agent-agentic-os/skills/transition-simulator/scripts/control_plane/transition_simulation_cases.py",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-agentic-os/scripts/control_plane/run_transition_simulation.py",
-      "dst": "plugins/agent-agentic-os/skills/transition-guidance-tester/scripts/control_plane/run_transition_simulation.py",
+      "dst": "plugins/agent-agentic-os/skills/transition-simulator/scripts/control_plane/run_transition_simulation.py",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-agentic-os/references/cheap-agent-transition-simulation.md",
-      "dst": "plugins/agent-agentic-os/skills/transition-guidance-tester/references/cheap-agent-transition-simulation.md",
+      "dst": "plugins/agent-agentic-os/skills/transition-simulator/references/cheap-agent-transition-simulation.md",
       "strategy": "symlink",
       "description": "Design doc for the cheap-agent transition simulation harness, symlinked into its skill"
     },
@@ -10257,85 +10257,85 @@
     },
     {
       "src": "plugins/agent-agentic-os/scripts/control_plane/__init__.py",
-      "dst": "plugins/agent-agentic-os/skills/transition-guidance-tester/scripts/control_plane/__init__.py",
+      "dst": "plugins/agent-agentic-os/skills/transition-simulator/scripts/control_plane/__init__.py",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-agentic-os/scripts/control_plane/adapters.py",
-      "dst": "plugins/agent-agentic-os/skills/transition-guidance-tester/scripts/control_plane/adapters.py",
+      "dst": "plugins/agent-agentic-os/skills/transition-simulator/scripts/control_plane/adapters.py",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-agentic-os/scripts/control_plane/constants.py",
-      "dst": "plugins/agent-agentic-os/skills/transition-guidance-tester/scripts/control_plane/constants.py",
+      "dst": "plugins/agent-agentic-os/skills/transition-simulator/scripts/control_plane/constants.py",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-agentic-os/scripts/control_plane/coordinator.py",
-      "dst": "plugins/agent-agentic-os/skills/transition-guidance-tester/scripts/control_plane/coordinator.py",
+      "dst": "plugins/agent-agentic-os/skills/transition-simulator/scripts/control_plane/coordinator.py",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-agentic-os/scripts/control_plane/implementation_loop.py",
-      "dst": "plugins/agent-agentic-os/skills/transition-guidance-tester/scripts/control_plane/implementation_loop.py",
+      "dst": "plugins/agent-agentic-os/skills/transition-simulator/scripts/control_plane/implementation_loop.py",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-agentic-os/scripts/control_plane/implementation.py",
-      "dst": "plugins/agent-agentic-os/skills/transition-guidance-tester/scripts/control_plane/implementation.py",
+      "dst": "plugins/agent-agentic-os/skills/transition-simulator/scripts/control_plane/implementation.py",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-agentic-os/scripts/control_plane/installation_probe.py",
-      "dst": "plugins/agent-agentic-os/skills/transition-guidance-tester/scripts/control_plane/installation_probe.py",
+      "dst": "plugins/agent-agentic-os/skills/transition-simulator/scripts/control_plane/installation_probe.py",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-agentic-os/scripts/control_plane/measurement.py",
-      "dst": "plugins/agent-agentic-os/skills/transition-guidance-tester/scripts/control_plane/measurement.py",
+      "dst": "plugins/agent-agentic-os/skills/transition-simulator/scripts/control_plane/measurement.py",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-agentic-os/scripts/control_plane/pipeline_simulator.py",
-      "dst": "plugins/agent-agentic-os/skills/transition-guidance-tester/scripts/control_plane/pipeline_simulator.py",
+      "dst": "plugins/agent-agentic-os/skills/transition-simulator/scripts/control_plane/pipeline_simulator.py",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-agentic-os/scripts/control_plane/policy.py",
-      "dst": "plugins/agent-agentic-os/skills/transition-guidance-tester/scripts/control_plane/policy.py",
+      "dst": "plugins/agent-agentic-os/skills/transition-simulator/scripts/control_plane/policy.py",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-agentic-os/scripts/control_plane/ports.py",
-      "dst": "plugins/agent-agentic-os/skills/transition-guidance-tester/scripts/control_plane/ports.py",
+      "dst": "plugins/agent-agentic-os/skills/transition-simulator/scripts/control_plane/ports.py",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-agentic-os/scripts/control_plane/registry.py",
-      "dst": "plugins/agent-agentic-os/skills/transition-guidance-tester/scripts/control_plane/registry.py",
+      "dst": "plugins/agent-agentic-os/skills/transition-simulator/scripts/control_plane/registry.py",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-agentic-os/scripts/control_plane/state_machine.py",
-      "dst": "plugins/agent-agentic-os/skills/transition-guidance-tester/scripts/control_plane/state_machine.py",
+      "dst": "plugins/agent-agentic-os/skills/transition-simulator/scripts/control_plane/state_machine.py",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-agentic-os/scripts/control_plane/transition_templates.yaml",
-      "dst": "plugins/agent-agentic-os/skills/transition-guidance-tester/scripts/control_plane/transition_templates.yaml",
+      "dst": "plugins/agent-agentic-os/skills/transition-simulator/scripts/control_plane/transition_templates.yaml",
       "strategy": "symlink",
       "description": ""
     },
@@ -10400,20 +10400,20 @@
       "description": ""
     },
     {
-      "src": "plugins/agent-agentic-os/references/transition-guidance-tester-acceptance-criteria.md",
-      "dst": "plugins/agent-agentic-os/skills/transition-guidance-tester/acceptance-criteria.md",
+      "src": "plugins/agent-agentic-os/references/transition-simulator-acceptance-criteria.md",
+      "dst": "plugins/agent-agentic-os/skills/transition-simulator/acceptance-criteria.md",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-agentic-os/references/transition-guidance-tester-acceptance-criteria.md",
-      "dst": "plugins/agent-agentic-os/skills/transition-guidance-tester/references/acceptance-criteria.md",
+      "src": "plugins/agent-agentic-os/references/transition-simulator-acceptance-criteria.md",
+      "dst": "plugins/agent-agentic-os/skills/transition-simulator/references/acceptance-criteria.md",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-agentic-os/references/transition-guidance-tester-fallback-tree.md",
-      "dst": "plugins/agent-agentic-os/skills/transition-guidance-tester/references/fallback-tree.md",
+      "src": "plugins/agent-agentic-os/references/transition-simulator-fallback-tree.md",
+      "dst": "plugins/agent-agentic-os/skills/transition-simulator/references/fallback-tree.md",
       "strategy": "symlink",
       "description": ""
     },
@@ -10572,6 +10572,18 @@
       "dst": "plugins/agent-agentic-os/skills/os-signing-setup/references/isolation-setup.md",
       "strategy": "symlink",
       "description": "Plugin reference -> Skill reference (os-signing-setup isolation setup guide)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/work-intake-healthy-transcript.md",
+      "dst": "plugins/agent-agentic-os/skills/work-intake/references/work-intake-healthy-transcript.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/edge-matrix.md",
+      "dst": "plugins/agent-agentic-os/skills/work-intake/references/edge-matrix.md",
+      "strategy": "symlink",
+      "description": ""
     }
   ]
 }

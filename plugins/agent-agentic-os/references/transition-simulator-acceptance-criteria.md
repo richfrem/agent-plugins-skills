@@ -1,4 +1,4 @@
-# Acceptance Criteria: transition-guidance-tester
+# Acceptance Criteria: transition-simulator
 
 ## Positive scenarios
 

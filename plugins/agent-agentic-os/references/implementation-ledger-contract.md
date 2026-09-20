@@ -1,6 +1,6 @@
 # Implementation Task Ledger Contract
 
-The implementation plan at `docs/plans/<task-id>-implementation-plan.md` must include:
+The implementation plan at `docs/plans/work-tasks/<task-id>/<task-id>-implementation-plan.md` must include:
 
 ```markdown
 ## Implementation Task Ledger

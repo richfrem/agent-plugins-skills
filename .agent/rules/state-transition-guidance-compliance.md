@@ -119,8 +119,8 @@ refusing all further transitions, commits, and pushes until a human explicitly
 runs `clear-guidance-block --human-confirmed ...`.
 
 **Before changing any transition's YAML guidance or the coordinator's
-question-handling logic**, use the `transition-guidance-tester` skill
-(`plugins/agent-agentic-os/skills/transition-guidance-tester/`) to verify the
+question-handling logic**, use the `transition-simulator` skill
+(`plugins/agent-agentic-os/skills/transition-simulator/`) to verify the
 guidance is still followable by an agent reading it cold — run
 `run_transition_simulation.py --from <STATE> --to <STATE>` for the specific
 edge you changed. This is opt-in (costs real time via LLM calls), not part of

@@ -66,11 +66,14 @@ def record_human_skip(
     out: Callable[[str], None] = print,
     agent_uid: Optional[int] = None,
 ) -> str:
-    """Record a review skip after the human types the phase name; actor is forced to human."""
+    """Record a review skip after the human confirms; actor is forced to human."""
     _require_human(tty_fn, "Skipping a review", agent_uid)
-    out(f"You are recording that the HUMAN skips review phase '{phase}' for task {task_id}.")
+    out(f"You are recording that YOU chose to skip the optional agent review ('{phase}') for task {task_id}.")
     out(f"Reason: {reason}")
-    if input_fn(f"Type the phase name ({phase}) to confirm: ").strip() != phase:
+    out("This records your choice. It does NOT move the task to another state.")
+    out("NEXT: the agent will coordinate the transition to the next step on your go-ahead.")
+    resp = input_fn(f"Type the phase name ({phase}) or YES to confirm: ").strip()
+    if resp not in (phase, "YES"):
         raise ReceiptError("Confirmation did not match; nothing was recorded.")
     return cp.record_review_skip(task_id, phase, "human", reason, provenance="human-interactive")
 

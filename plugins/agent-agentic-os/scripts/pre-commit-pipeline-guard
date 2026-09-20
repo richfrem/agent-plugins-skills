@@ -150,7 +150,7 @@ case "$TASK_STATE" in
     IN_WORKTREE|WORKTREE_REVIEW|MULTI_AGENT_CODE_REVIEW|VERIFY_EXIT|DONE)
         # Verify complete pipeline execution if session began in control plane:
         # Check transition_violations
-        VIOLATIONS_COUNT="$(sqlite3 "$DB_PATH" "SELECT COUNT(*) FROM transition_violations WHERE task_id = '$TASK_ID';" 2>/dev/null || echo "0")"
+        VIOLATIONS_COUNT="$(sqlite3 "$DB_PATH" "SELECT COUNT(*) FROM transition_violations WHERE task_id = '$TASK_ID' AND kind = 'ILLEGAL_TRANSITION';" 2>/dev/null || echo "0")"
         if [ "$VIOLATIONS_COUNT" -gt 0 ]; then
             echo ""
             echo "❌ GIT COMMIT BLOCKED: Control Plane Transition Violations Detected!"

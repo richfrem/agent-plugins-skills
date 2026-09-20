@@ -1,0 +1,26 @@
+[
+  {
+    "id": "transition-simulator-positive-named-edge",
+    "type": "positive",
+    "prompt": "Simulate the INTAKE -> INTERVIEW transition to make sure it's followable and checks pass.",
+    "should_trigger": true
+  },
+  {
+    "id": "transition-simulator-positive-verify-request",
+    "type": "positive",
+    "prompt": "Did I break the transition guidance or edge rules for VERIFY_EXIT -> RETROSPECTIVE?",
+    "should_trigger": true
+  },
+  {
+    "id": "transition-simulator-unrelated-negative",
+    "type": "negative",
+    "prompt": "Explain how Python decorators work.",
+    "should_trigger": false
+  },
+  {
+    "id": "transition-simulator-unrelated-skill-improvement-negative",
+    "type": "negative",
+    "prompt": "Run the autoresearch loop to optimize this skill's wording.",
+    "should_trigger": false
+  }
+]

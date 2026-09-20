@@ -503,13 +503,15 @@ CHECK_REGISTRY: Dict[str, Any] = {
             {"type": "critic_review_pass"},
             {"type": "receipt", "gate_name": "multi_agent_review_skipped"},
         ]) else (
-            "Cannot advance: no passing critic review or explicit recorded skip found. "
-            "Call record_critic_review(verdict='PASS') or record_review_skip()."
+            "Cannot advance: no passing review or recorded skip found. "
+            "To record a review pass: YOU (the agent) run python3 plugins/agent-agentic-os/scripts/agent_control.py record-critic-review --task-id <task-id> --verdict PASS. "
+            "To skip review: the HUMAN runs python3 plugins/agent-agentic-os/scripts/agent_control.py record-review-skip --task-id <task-id> --phase multi_agent_review --interactive."
         )
     ),
     "critic_review_pass": lambda ctx: (
         None if _gate_critic_review_pass(ctx) else (
-            "Cannot advance: no passing critic review found. Call record_critic_review(verdict='PASS')."
+            "Cannot advance: no passing critic review found. "
+            "YOU (the agent) run: python3 plugins/agent-agentic-os/scripts/agent_control.py record-critic-review --task-id <task-id> --verdict PASS."
         )
     ),
     "human_approval": lambda ctx: (
@@ -565,8 +567,9 @@ CHECK_REGISTRY: Dict[str, Any] = {
             {"type": "critic_review_pass"},
             {"type": "receipt", "gate_name": "multi_agent_code_review_skipped"},
         ]) else (
-            "Cannot advance: no passing critic review or explicit recorded skip found. "
-            "Call record_critic_review(verdict='PASS') or record_review_skip()."
+            "Cannot advance: no passing code review or recorded skip found. "
+            "To record a review pass: YOU (the agent) run python3 plugins/agent-agentic-os/scripts/agent_control.py record-critic-review --task-id <task-id> --verdict PASS. "
+            "To skip review: the HUMAN runs python3 plugins/agent-agentic-os/scripts/agent_control.py record-review-skip --task-id <task-id> --phase multi_agent_code_review --interactive."
         )
     ),
     "done_guard": _done_check,

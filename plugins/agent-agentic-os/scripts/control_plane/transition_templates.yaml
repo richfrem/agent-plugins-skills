@@ -114,7 +114,7 @@ stages:
       purpose: Capture the plan-ready bullets discovered during the interview before drafting the full plan.
       update_after_each_answer: true
       user_visibility: Show a concise outline summary or a link to the current outline; do not make the user reconstruct it from chat.
-      artifact_path: docs/plans/<task-id>-plan-outline.md
+      artifact_path: docs/plans/work-tasks/<task-id>/<task-id>-plan-outline.md
       link_rule: When the outline artifact exists, provide its repository-relative clickable path in the response.
       bullet_types:
       - purpose
@@ -223,6 +223,20 @@ stages:
     - Every adaptive rule matching the recorded answers has been evaluated.
     - All generated follow-up questions have an answer or an explicit human refusal.
     - The agent has not inferred an answer on the user's behalf.
+  PLAN_REVIEW:
+    purpose: "The human decides about the authored or revised plan: accept and advance, request revisions, or optionally dispatch an independent review."
+    question_policy: one_at_a_time
+    entry_questions: []
+    adaptive_follow_up_rules: []
+    exit_requirements:
+    - "The human either accepted the plan (proceed to AWAITING_APPROVAL), requested revisions (return to DRAFT_PLAN), or requested independent review (proceed to MULTI_AGENT_REVIEW)."
+    guidance:
+      summary: "Agent review is optional. When the human accepts the plan, you run coordinate-transition --to AWAITING_APPROVAL. No review or skip receipt is needed."
+      next_steps:
+      - Ask the human in chat if they accept the plan, want changes, or want an optional agent review.
+      - If accepted, run coordinate-transition --to AWAITING_APPROVAL.
+      - If changes requested, run coordinate-transition --to DRAFT_PLAN.
+      - If review requested, run coordinate-transition --to MULTI_AGENT_REVIEW.
   MULTI_AGENT_REVIEW:
     purpose: Execute the selected independent review of the current plan before returning to plan acceptance.
     question_policy: one_at_a_time
@@ -327,7 +341,7 @@ stages:
       test_cadence_rule: "For each micro-slice, run only focused tests covering the changed contract. Run the subsystem suite at an integration checkpoint and the full plugin suite only once before the P01 acceptance gate or equivalent release checkpoint; do not repeat long full-suite runs after every small edit unless a focused failure requires it."
       subagent_review_test_sequence: "Subagents must follow this order: focused tests for the slice; independent agent review after implementation; bounded fix/re-review rounds for findings; then one final full test and parity check before acceptance. A passing slice test is not an acceptance result, and a full-suite run does not replace independent review."
       simulator_acceptance_rule: "Any new lifecycle or authorization contract must add simulator scenarios before acceptance. The final check must execute the acceptance matrix through production ControlPlane/TransitionCoordinator paths, including every wildcard/override edge, normal-path preservation, authorized success, unauthorized denial, persistence consumption, and error contract; simulator success is required evidence, not optional regression coverage."
-      session_continuity_rule: "Keep the implementing agy or Claude session alive through bounded review-fix rounds whenever the runtime supports continuation. Relay concrete reviewer findings into that same session immediately; do not close and reopen the implementation context for ordinary corrections. Independent reviews must be narrowly targeted to the changed contract and acceptance matrix."
+      session_continuity_rule: "Keep the implementing agent session alive through bounded review-fix rounds whenever the runtime supports continuation. Relay concrete reviewer findings into that same session immediately; do not close and reopen the implementation context for ordinary corrections. Independent reviews must be narrowly targeted to the changed contract and acceptance matrix."
       user_update_rule: Immediately after entry, report queued preparation. Immediately after the first dispatch, report in_progress with the delegation summary. After each task boundary, report completed/reviewed/blocked work and the next dispatch or gate.
     exit_requirements:
     - Implementation evidence and tests are recorded before reporting complete.
@@ -757,7 +771,7 @@ templates:
   from_state: INTERVIEW
   to_state: DRAFT_PLAN
   purpose: Confirm the interview outline is complete and hand it to DRAFT_PLAN. STANDARD work receives the full plan contract; TRIVIAL work receives a concise implementation plan without the standard-only planning questions.
-  next_steps_hint: "Record the applicable interview answers through the supported interview-question mechanism; each answer updates docs/plans/<task-id>-plan-outline.md. For TRIVIAL, capture only intent, smallest scope, verification and trivial-change evidence. For STANDARD, complete the full acceptance and planning-model questions. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to DRAFT_PLAN. DRAFT_PLAN compiles the route-appropriate plan."
+  next_steps_hint: "Record the applicable interview answers through the supported interview-question mechanism; each answer updates docs/plans/work-tasks/<task-id>/<task-id>-plan-outline.md. For TRIVIAL, capture only intent, smallest scope, verification and trivial-change evidence. For STANDARD, complete the full acceptance and planning-model questions. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to DRAFT_PLAN. DRAFT_PLAN compiles the route-appropriate plan."
   checklist:
   - Current task state is persisted as INTERVIEW
   - The route-appropriate interview questions and evidence are complete
@@ -871,7 +885,7 @@ templates:
   guidance:
     success: "For TRIVIAL work, submit the concise plan for user review and use focused review evidence; skip independent reviewers unless the user requests them or risk warrants escalation. STANDARD work retains the normal review-selection contract."
     denial: "Keep the task in DRAFT_PLAN until the route-appropriate plan artifact is complete."
-  next_steps_hint: "The plan is drafted. Answer whether to submit the current artifacts to PLAN_REVIEW or continue revising, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to PLAN_REVIEW. If submitted, PLAN_REVIEW separately asks whether agents should review the draft and, when requested, which supported review method to use. Explicit review skips and plan revisions use their own target-specific transitions. No plan-review choice approves implementation."
+  next_steps_hint: "The plan is drafted. This is a SOFT edge: (1) In chat, ask the human: 'Would you like to submit the drafted plan for review?'. (2) Once the human approves in chat, YOU run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to PLAN_REVIEW --human-confirmed 'HUMAN-CONFIRMED: <quote>'. If submitted, PLAN_REVIEW separately asks whether agents should review the draft and, when requested, which supported review method to use. Explicit review skips and plan revisions use their own target-specific transitions. No plan-review choice approves implementation."
   checklist:
   - Current task state is persisted as DRAFT_PLAN
   - Structural DAG transition from DRAFT_PLAN to PLAN_REVIEW is legal
@@ -1124,17 +1138,22 @@ templates:
 - transition_id: plan_review_to_awaiting_approval
   from_state: PLAN_REVIEW
   to_state: AWAITING_APPROVAL
-  purpose: Confirm plan acceptance after either the skip path or completed independent review, then enter the separate human implementation-approval gate.
+  purpose: "Record plan acceptance and move the task to AWAITING_APPROVAL. There the human (not you) signs to approve implementation."
   guidance:
-    success: "TRIVIAL may use the intentional review-skip receipt and proceed after the user accepts the concise plan; do not dispatch agents or run broad research unless explicitly requested. STANDARD requires its selected review or explicit skip."
-    denial: "Do not treat plan review as implementation approval; return to DRAFT_PLAN for changes or record the required review disposition."
-  next_steps_hint: "Review the authored plan or the revised plan returned from independent review. Record the review outcome with record-critic-review, or, when the human chose to skip review, confirm the HUMAN recorded that skip (record-review-skip, run by the human through the interactive command --interactive); the agent never records a skip on the human's behalf; ensure critic_review_or_skip is satisfied. Then answer whether you accept the plan or require further revisions. If accepted, run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to AWAITING_APPROVAL. Revisions return to DRAFT_PLAN."
+    success: "Agent review is optional. When the human accepts the plan, you (the agent) run this transition. No review or skip receipt is needed."
+    denial: "Do not advance without human acceptance of the plan. Return to DRAFT_PLAN for changes or ask the human."
+  next_steps_hint: |
+    YOU ARE IN PLAN_REVIEW. This is where the HUMAN decides about the plan. Do exactly this:
+    1. Ask the human in chat: "Do you accept the plan, or do you want changes, or an agent review?" Ask ONCE. If they already said, do not ask again.
+    2. If they ACCEPT: YOU run `python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to AWAITING_APPROVAL`. Do NOT hand this command to the human. No agent review and no skip is needed. Skipping the review is not a bypass; it is a normal path. (If an agent review was conducted, record with record-critic-review, or if skipped by human decision record-review-skip, but review is strictly optional).
+    3. If they want CHANGES: you run `python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to DRAFT_PLAN`.
+    4. If they want an AGENT REVIEW (optional): you run `python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to MULTI_AGENT_REVIEW`.
+    WHAT HAPPENS NEXT: in AWAITING_APPROVAL the HUMAN signs with their SSH key (they type their passphrase). You cannot do that step. Give them the complete command then.
   checklist:
   - Current task state is persisted as PLAN_REVIEW
-  - 'Deterministic check satisfied: critic_review_or_skip'
+  - The human said they ACCEPT the plan (in chat, or by answering confirm_plan_acceptance).
   required_artifacts: []
-  deterministic_checks:
-  - critic_review_or_skip
+  deterministic_checks: []
   human_questions:
   - question_id: confirm_plan_acceptance
     question: Do you accept the plan as it is, or do you require further revisions?
@@ -1155,7 +1174,7 @@ templates:
   - modify production code
   - create implementation worktree
   - push branch to origin
-  denial_message: 'Transition PLAN_REVIEW -> AWAITING_APPROVAL denied: preconditions or required decisions not satisfied.'
+  denial_message: "Denied: the human has not accepted the plan yet. Ask them in chat (step 1), then run this again. You do not need a review or a skip."
   authority:
     type: deterministic
     explanation: Transition from PLAN_REVIEW to AWAITING_APPROVAL is deterministically governed by automated checks and artifacts.
@@ -1889,7 +1908,7 @@ templates:
   guidance:
     success: "TRIVIAL may satisfy the test requirement with focused_test_suite plus the existing leak and completeness checks; STANDARD requires full_test_suite."
     denial: "Use the route-appropriate verification contract. A missing focused receipt for TRIVIAL or full-suite receipt for STANDARD blocks closeout."
-  next_steps_hint: "STOP: do NOT run `pytest` directly by itself, and do NOT call the individual verifier wrappers one at a time -- a bare pytest run records no receipt, and calling verifiers separately is exactly the slow, error-prone path this hint used to describe (verifier_id=pytest_full_suite, verifier_id=pytest_unit_tests, verifier_id=leak_check, each a separate call). Use the single bundled wrapper instead, which runs all 3 verifiers plus the required asymmetric-persistence log entry in ONE call and fails fast on the first real failure: (1) Confirm docs/plans/<task-id>-implementation-plan.md has a fenced JSON Implementation Task Ledger with every item status=COMPLETE, evidence, and existing artifact paths -- this satisfies implementation_completeness (the bundle does not check this one). (2) Run: python3 plugins/agent-agentic-os/scripts/control_plane/wrappers/run_verify_exit_bundle.py --task-id <task-id> --destination references/map-debt.md --details '<what was logged and why>' -- this alone satisfies full_test_suite, test_suite, leak_check, and done_guard's asymmetric-persistence requirement (default destination is references/map-debt.md; use wiki/decisions/<task-id>.md instead if that's where you logged it). (3) Only after that reports status=COMPLETED: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to RETROSPECTIVE --human-confirmed 'HUMAN-CONFIRMED: <what the human actually said>'."
+  next_steps_hint: "STOP: do NOT run `pytest` directly by itself, and do NOT call the individual verifier wrappers one at a time -- a bare pytest run records no receipt, and calling verifiers separately is exactly the slow, error-prone path this hint used to describe (verifier_id=pytest_full_suite, verifier_id=pytest_unit_tests, verifier_id=leak_check, each a separate call). Use the single bundled wrapper instead, which runs all 3 verifiers plus the required asymmetric-persistence log entry in ONE call and fails fast on the first real failure: (1) Confirm docs/plans/work-tasks/<task-id>/<task-id>-implementation-plan.md has a fenced JSON Implementation Task Ledger with every item status=COMPLETE, evidence, and existing artifact paths -- this satisfies implementation_completeness (the bundle does not check this one). (2) Run: python3 plugins/agent-agentic-os/scripts/control_plane/wrappers/run_verify_exit_bundle.py --task-id <task-id> --destination references/map-debt.md --details '<what was logged and why>' -- this alone satisfies full_test_suite, test_suite, leak_check, and done_guard's asymmetric-persistence requirement (default destination is references/map-debt.md; use wiki/decisions/<task-id>.md instead if that's where you logged it). (3) Only after that reports status=COMPLETED: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to RETROSPECTIVE --human-confirmed 'HUMAN-CONFIRMED: <what the human actually said>'."
   checklist:
   - Current task state is persisted as VERIFY_EXIT
   - 'Deterministic checks satisfied: full_test_suite, test_suite, leak_check, and asymmetric persistence'
