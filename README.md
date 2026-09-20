@@ -1,6 +1,6 @@
 # Agentic OS Control Plane
 
-<!-- ECOSYSTEM_STATS_START -->**Current Scale:** 10 Plugins · 129 Skills · 46 Sub-Agents<!-- ECOSYSTEM_STATS_END -->
+<!-- ECOSYSTEM_STATS_START -->**Current Scale:** 10 Plugins · 130 Skills · 46 Sub-Agents<!-- ECOSYSTEM_STATS_END -->
 
 **A governed execution harness for AI coding agents.** This repository lets Claude Code, Codex,
 GitHub Copilot, Agy, and compatible tools use their native planning, coding, orchestration, and
@@ -70,7 +70,7 @@ uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richf
 
 Then ask your agent to set up Agentic OS for the repository, or use `os-init`, followed by
 `os-health-check`. Start a governed task through `work-intake` when the work needs a
-plan-to-completion lifecycle. [Installation and onboarding](INSTALL.md) has platform-specific and
+plan-to-completion lifecycle. Approving a plan, accepting the code and closing a task each require a signature from a human-held SSH key (`ssh-keygen -Y sign`); the `os-signing-setup` skill walks you through creating and testing it. [Installation and onboarding](INSTALL.md) has platform-specific and
 local-development instructions.
 
 ### I want one capability or plugin

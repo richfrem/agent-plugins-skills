@@ -52,7 +52,7 @@ transition's guidance/questions, not on every commit.
    (From the repo root instead, use the canonical path:
    `plugins/agent-agentic-os/scripts/control_plane/run_transition_simulation.py`.)
    This runs both conditions (or all valid-reason cases, for exempt
-   force-close/force-retrospective edges) and grades each reply against 5
+   cryptographic-proof and force-retrospective edges) and grades each reply against 5
    fixed criteria: confirmed user approval, summarized guidance, asked all
    required questions, planned the correct target state, and correct
    commit-authorization behavior. See `transition_simulation_cases.py` for

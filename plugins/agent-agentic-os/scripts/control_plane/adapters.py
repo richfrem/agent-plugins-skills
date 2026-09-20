@@ -51,6 +51,7 @@ Key Functions:
 """
 
 import hashlib
+import inspect
 import json
 import sqlite3
 import warnings
@@ -71,6 +72,9 @@ from control_plane.ports import (
     PhaseCapability,
     PersistenceInvariantViolation,
 )
+from control_plane.snapshot import SnapshotError
+from control_plane.ssh_signing import SigningError
+from control_plane.transition_request import TransitionRequestError, consume_with_signature, preverify_signature
 from control_plane.state_machine import ALLOWED_TRANSITIONS, CANONICAL_STATES
 from control_plane.constants import (
     STATE_INTAKE, STATE_DONE, STATE_WORKTREE_REVIEW, STATE_VERIFY_EXIT, STATE_APPROVED,
@@ -82,8 +86,6 @@ from control_plane.constants import (
     TASK_TYPE_GENERAL, TASK_TYPES,
     WORKTREE_STATES,
     QUESTION_ID_RETROSPECTIVE_DECISION,
-    QUESTION_ID_FORCE_CLOSE_AUTHORIZATION, QUESTION_ID_HUMAN_FORCE_DONE_CONFIRMATION,
-    ANSWER_FORCE_CLOSE, ANSWER_FORCE_DONE,
     CRITIC_VERDICTS,
     PERSISTENCE_LOG_STATUSES,
     RETROSPECTIVE_DECISION_OPT_IN, RETROSPECTIVE_DECISION_SKIP, RETROSPECTIVE_DECISIONS,
@@ -170,7 +172,7 @@ class ClockAdapter(ClockPort):
 # Recovery into these two states remains possible only through their normal gated
 # edges (WORKTREE_REVIEW/MULTI_AGENT_CODE_REVIEW -> VERIFY_EXIT,
 # AWAITING_APPROVAL -> APPROVED), never through this recovery side-channel.
-RECOVERY_FORBIDDEN_DESTINATIONS = (STATE_VERIFY_EXIT, STATE_APPROVED)
+RECOVERY_FORBIDDEN_DESTINATIONS = (STATE_VERIFY_EXIT, STATE_APPROVED, STATE_DONE)
 _RECOVERY_FORBIDDEN_SQL_LIST = ", ".join(f"'{s}'" for s in RECOVERY_FORBIDDEN_DESTINATIONS)
 
 # Factored out of SCHEMA_SQL so the identical trigger definition can also be applied
@@ -214,19 +216,26 @@ WHEN NEW.state != OLD.state
                     AND td.question_id = rq.question_id
                     AND td.answer IS NOT NULL
                     AND trim(td.answer) != ''
-                    AND (td.actor = '{ACTOR_HUMAN}' OR (rq.question_id = '{QUESTION_ID_RETROSPECTIVE_DECISION}' AND td.actor = '{ACTOR_AGENT}'))
+                    AND td.actor = '{ACTOR_HUMAN}'
                     AND td.consumed_at IS NULL
               )
-              AND NOT EXISTS (
-                  SELECT 1 FROM transition_decisions force_td
-                  WHERE force_td.task_id = OLD.task_id
-                    AND force_td.from_state = OLD.state
-                    AND force_td.to_state = NEW.state
-                    AND force_td.question_id IN ('{QUESTION_ID_FORCE_CLOSE_AUTHORIZATION}', '{QUESTION_ID_HUMAN_FORCE_DONE_CONFIRMATION}')
-                    AND force_td.answer IN ('{ANSWER_FORCE_CLOSE}', '{ANSWER_FORCE_DONE}')
-                    AND force_td.actor = '{ACTOR_HUMAN}'
-                    AND force_td.consumed_at IS NULL
-              )
+        )
+    )
+    OR (
+        -- Cryptographic-proof edges (APPROVED, VERIFY_EXIT, DONE): the ONLY authority is a transition_request
+        -- that a verified OpenSSH signature consumed for THIS edge and THIS occupancy. No decision row, actor
+        -- string or typed word can substitute; the recovery bypass above cannot reach these destinations.
+        EXISTS (
+            SELECT 1 FROM valid_transitions vt
+            WHERE vt.from_state = OLD.state AND vt.to_state = NEW.state AND vt.requires_proof = 1
+        )
+        AND NOT EXISTS (
+            SELECT 1 FROM transition_request tr
+            WHERE tr.task_id = OLD.task_id
+              AND tr.from_state = OLD.state
+              AND tr.to_state = NEW.state
+              AND tr.status = 'CONSUMED'
+              AND tr.occupancy_id = (SELECT MAX(x.transition_id) FROM task_transitions x WHERE x.task_id = OLD.task_id AND x.to_state = OLD.state)
         )
     )
  )
@@ -302,8 +311,28 @@ CREATE TABLE IF NOT EXISTS verification_receipts (
     command_executed TEXT NOT NULL,
     exit_code INTEGER NOT NULL,
     receipt_token TEXT NOT NULL,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    actor TEXT,
+    provenance TEXT NOT NULL DEFAULT 'api',
+    invalidated_at TIMESTAMP,
+    invalidation_reason TEXT
+);
+
+CREATE TABLE IF NOT EXISTS receipt_audit (
+    audit_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    receipt_id INTEGER NOT NULL,
+    task_id TEXT NOT NULL,
+    gate_name TEXT NOT NULL,
+    event TEXT NOT NULL CHECK (event IN ('created', 'invalidated')),
+    actor TEXT,
+    provenance TEXT,
+    reason TEXT,
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+CREATE TRIGGER IF NOT EXISTS receipt_audit_no_update BEFORE UPDATE ON receipt_audit
+BEGIN SELECT RAISE(ABORT, 'receipt_audit is append-only'); END;
+CREATE TRIGGER IF NOT EXISTS receipt_audit_no_delete BEFORE DELETE ON receipt_audit
+BEGIN SELECT RAISE(ABORT, 'receipt_audit is append-only'); END;
 
 CREATE TABLE IF NOT EXISTS asymmetric_persistence_log (
     log_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -462,6 +491,7 @@ CREATE TABLE IF NOT EXISTS valid_transitions (
     from_state TEXT,
     to_state TEXT NOT NULL,
     authorized_actor TEXT NOT NULL DEFAULT 'agent_or_human',
+    requires_proof INTEGER NOT NULL DEFAULT 0,
     PRIMARY KEY (from_state, to_state)
 );
 
@@ -477,7 +507,9 @@ CREATE TABLE IF NOT EXISTS transition_request (
     status TEXT NOT NULL DEFAULT 'PENDING' CHECK(status IN ('PENDING', 'CONSUMED', 'DENIED', 'EXPIRED')),
     jti TEXT,
     consumed_at REAL,
-    created_at REAL NOT NULL
+    created_at REAL NOT NULL,
+    challenge_version TEXT,
+    content_snapshot TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_transition_request_task ON transition_request(task_id);
 
@@ -493,7 +525,11 @@ CREATE TABLE IF NOT EXISTS transition_violations (
     task_id TEXT NOT NULL,
     attempted_from_state TEXT,
     attempted_to_state TEXT NOT NULL,
-    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    actor TEXT,
+    reason TEXT,
+    detail TEXT,
+    kind TEXT NOT NULL DEFAULT 'ILLEGAL_TRANSITION'
 );
 
 CREATE INDEX IF NOT EXISTS idx_tasks_state ON tasks(state);
@@ -643,7 +679,49 @@ SCHEMA_MIGRATIONS = [
     # embedded in SCHEMA_SQL, applied here for pre-existing databases) is recreated.
     "DROP TRIGGER IF EXISTS enforce_valid_transition;",
     ENFORCE_VALID_TRANSITION_TRIGGER_SQL,
+    # Migration: content-bound approvals (auth-ciba-increment-b T2, issue #639). Nullable
+    # so existing rows and Increment A callers are untouched; ensure_schema() ignores
+    # "duplicate column" on a database that already has them.
+    "ALTER TABLE transition_request ADD COLUMN challenge_version TEXT;",
+    "ALTER TABLE transition_request ADD COLUMN content_snapshot TEXT;",
+    # Migration: receipt provenance and revocation (auth-ciba-increment-b T15, issue #639). receipt_audit has
+    # no FK so it survives the deletion of receipts on occupancy exit; its triggers abort UPDATE/DELETE. The
+    # append-only receipt_audit table and its triggers are created by SCHEMA_SQL (IF NOT EXISTS).
+    "ALTER TABLE verification_receipts ADD COLUMN actor TEXT;",
+    "ALTER TABLE verification_receipts ADD COLUMN provenance TEXT NOT NULL DEFAULT 'api';",
+    "ALTER TABLE verification_receipts ADD COLUMN invalidated_at TIMESTAMP;",
+    "ALTER TABLE verification_receipts ADD COLUMN invalidation_reason TEXT;",
+    # Migration: autonomous rejection audit context (auth-ciba-increment-b U2, issue #639).
+    "ALTER TABLE transition_violations ADD COLUMN actor TEXT;",
+    "ALTER TABLE transition_violations ADD COLUMN reason TEXT;",
+    "ALTER TABLE transition_violations ADD COLUMN detail TEXT;",
+    # Migration: classify violation rows (round-4 finding N1). Rows written by the enforce_valid_transition
+    # trigger keep the default 'ILLEGAL_TRANSITION' and block commit validation; the autonomous audit
+    # writes 'REJECTED_ATTEMPT' rows, which are kept for history but do not block.
+    "ALTER TABLE transition_violations ADD COLUMN kind TEXT NOT NULL DEFAULT 'ILLEGAL_TRANSITION';",
+    # Migration: cryptographic-proof edges (auth-ciba-increment-b, human decision 2026-09-20). valid_transitions gains
+    # requires_proof; the trigger is rebuilt so APPROVED / VERIFY_EXIT / DONE need a CONSUMED transition_request
+    # (a verified signature record), not an actor string or a typed word.
+    "ALTER TABLE valid_transitions ADD COLUMN requires_proof INTEGER NOT NULL DEFAULT 0;",
+    "DROP TRIGGER IF EXISTS enforce_valid_transition;",
+    ENFORCE_VALID_TRANSITION_TRIGGER_SQL,
 ]
+
+
+# Rejections of a commit that must leave a transition_violations audit row: the database trigger's
+# invariant violation plus Gate 1 signature / request / snapshot failures (bad signature, replay, expiry,
+# changed content). Kept as a tuple so the two commit-path wrappers agree.
+_AUDITED_REJECTIONS = (PersistenceInvariantViolation, SigningError, TransitionRequestError, SnapshotError)
+
+
+def _expire_pending_requests(conn: sqlite3.Connection, task_id: str) -> None:
+    """A committed transition changes the task's occupancy, so any still-PENDING
+    transition_request for it is stale: expire it (defense in depth; consume_with_signature
+    also re-checks the live occupancy inside the commit transaction)."""
+    conn.execute(
+        "UPDATE transition_request SET status = 'EXPIRED' WHERE task_id = ? AND status = 'PENDING'",
+        (task_id,),
+    )
 
 
 def _split_schema_sql_statements(sql: str) -> List[str]:
@@ -753,6 +831,8 @@ class SqlitePersistenceAdapter(PersistencePort):
         conn = self.get_connection()
         try:
             self._check_no_orphaned_migration_tables(conn)
+            if self._schema_is_current(conn):
+                return  # read-only fast path: no DDL, no YAML parse, no write lock
             conn.execute("PRAGMA journal_mode = WAL;")
             conn.executescript(SCHEMA_SQL)
             # Apply idempotent migrations for existing databases
@@ -791,14 +871,14 @@ class SqlitePersistenceAdapter(PersistencePort):
         'agent_or_human', matching the column's schema default."""
         from control_plane.registry import TransitionRegistry
         registry = TransitionRegistry.load_default()
-        edges_with_actor = registry.get_all_edges_with_actor()
+        edges_with_actor = registry.get_all_edges_with_proof()
 
         conn.execute("BEGIN IMMEDIATE;")
         try:
             conn.execute("DELETE FROM valid_transitions;")
             conn.executemany(
-                "INSERT INTO valid_transitions (from_state, to_state, authorized_actor) VALUES (?, ?, ?)",
-                list(edges_with_actor) + [(None, s, "agent_or_human") for s in LEGAL_INITIAL_STATES]
+                "INSERT INTO valid_transitions (from_state, to_state, authorized_actor, requires_proof) VALUES (?, ?, ?, ?)",
+                list(edges_with_actor) + [(None, s, "agent_or_human", 0) for s in LEGAL_INITIAL_STATES]
             )
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS required_transition_questions (
@@ -814,6 +894,8 @@ class SqlitePersistenceAdapter(PersistencePort):
                 for question_id in (tmpl.stage_question_ids or []):
                     req_q.append((from_s, to_s, question_id))
                 for q in tmpl.human_questions:
+                    if q.get("asked_when"):
+                        continue  # conditional (review-selection internal runtime/model/effort): enforced by review_selection.py
                     req_q.append((from_s, to_s, q["question_id"]))
                 if tmpl.approval.get("required") and tmpl.approval.get("approver_role", "human") == "human":
                     req_q.append((from_s, to_s, f"approval_{tmpl.transition_id}"))
@@ -822,10 +904,65 @@ class SqlitePersistenceAdapter(PersistencePort):
                     "INSERT INTO required_transition_questions (from_state, to_state, question_id) VALUES (?, ?, ?)",
                     req_q
                 )
+            conn.execute(
+                "CREATE TABLE IF NOT EXISTS registry_sync_state ("
+                "id INTEGER PRIMARY KEY CHECK (id = 1), inputs_fingerprint TEXT NOT NULL, tables_digest TEXT NOT NULL);"
+            )
+            conn.execute(
+                "INSERT OR REPLACE INTO registry_sync_state (id, inputs_fingerprint, tables_digest) VALUES (1, ?, ?)",
+                (self._sync_inputs_fingerprint(), self._derived_state_digest(conn)),
+            )
             conn.execute("COMMIT;")
         except Exception:
             conn.execute("ROLLBACK;")
             raise
+
+    @staticmethod
+    def _sync_inputs_fingerprint() -> str:
+        """Everything the schema and registry-derived tables are a pure function of: the schema version,
+        the DDL and migration text, the legal initial states, the YAML bytes, and the registry code that
+        interprets them. A change to any input invalidates the fast path and forces a full resync.
+        Reading and hashing files is cheap; only the YAML *parse* was expensive."""
+        from control_plane.registry import TransitionRegistry
+
+        h = hashlib.sha256()
+        for part in (str(CURRENT_SCHEMA_VERSION), SCHEMA_SQL, "\n".join(SCHEMA_MIGRATIONS), repr(sorted(LEGAL_INITIAL_STATES)),
+                     TransitionRegistry.default_source_digest()):
+            h.update(part.encode("utf-8"))
+            h.update(b"\x00")
+        h.update((Path(__file__).resolve().parent / "registry.py").read_bytes())
+        return h.hexdigest()
+
+    @staticmethod
+    def _derived_state_digest(conn: sqlite3.Connection) -> str:
+        """Digest of the registry-derived rows plus the names of the enforcement triggers, so drift
+        (deleted/edited rows, a dropped trigger) still self-heals on the next ensure_schema() exactly as the
+        old resync-on-every-call did, without paying for a write transaction when nothing drifted."""
+        h = hashlib.sha256()
+        for sql in (
+            "SELECT from_state, to_state, authorized_actor, requires_proof FROM valid_transitions ORDER BY 1, 2, 3, 4",
+            "SELECT from_state, to_state, question_id FROM required_transition_questions ORDER BY 1, 2, 3",
+            "SELECT name FROM sqlite_master WHERE type = 'trigger' ORDER BY name",
+        ):
+            for row in conn.execute(sql).fetchall():
+                h.update(repr(tuple(row)).encode("utf-8"))
+            h.update(b"\x00")
+        return h.hexdigest()
+
+    def _schema_is_current(self, conn: sqlite3.Connection) -> bool:
+        """True when the database provably matches what a full ensure_schema() would produce: schema
+        version current, sync inputs unchanged since the last sync, and the derived tables/triggers
+        undrifted. Strictly read-only; any error (fresh DB, missing sync table) means 'not current'."""
+        try:
+            version_row = conn.execute("SELECT version FROM schema_version").fetchone()
+            if not version_row or version_row[0] != CURRENT_SCHEMA_VERSION:
+                return False
+            stored = conn.execute("SELECT inputs_fingerprint, tables_digest FROM registry_sync_state WHERE id = 1").fetchone()
+            if stored is None or stored[0] != self._sync_inputs_fingerprint():
+                return False
+            return stored[1] == self._derived_state_digest(conn)
+        except sqlite3.OperationalError:
+            return False
 
     def _schema_needs_rebuild(self, conn: sqlite3.Connection) -> bool:
         """Detects a stale schema_version, a legacy tasks schema, or FK-corrupted/orphaned
@@ -1408,6 +1545,7 @@ class SqlitePersistenceAdapter(PersistencePort):
                     "UPDATE transition_decisions SET consumed_at = CURRENT_TIMESTAMP WHERE task_id = ? AND consumed_at IS NULL",
                     (task_id,)
                 )
+                _expire_pending_requests(conn, task_id)
                 return True
         finally:
             conn.close()
@@ -1444,11 +1582,11 @@ class SqlitePersistenceAdapter(PersistencePort):
         try:
             if exit_code is None:
                 return conn.execute(
-                    "SELECT COUNT(*) FROM verification_receipts WHERE task_id = ? AND gate_name = ?",
+                    "SELECT COUNT(*) FROM verification_receipts WHERE task_id = ? AND gate_name = ? AND invalidated_at IS NULL",
                     (task_id, gate_name)
                 ).fetchone()[0]
             return conn.execute(
-                "SELECT COUNT(*) FROM verification_receipts WHERE task_id = ? AND gate_name = ? AND exit_code = ?",
+                "SELECT COUNT(*) FROM verification_receipts WHERE task_id = ? AND gate_name = ? AND exit_code = ? AND invalidated_at IS NULL",
                 (task_id, gate_name, exit_code)
             ).fetchone()[0]
         finally:
@@ -1496,25 +1634,78 @@ class SqlitePersistenceAdapter(PersistencePort):
         conn = self.get_connection()
         try:
             return conn.execute(
-                "SELECT COUNT(*) FROM verification_receipts WHERE task_id = ? AND gate_name = ?",
+                "SELECT COUNT(*) FROM verification_receipts WHERE task_id = ? AND gate_name = ? AND invalidated_at IS NULL",
                 (task_id, gate_name)
             ).fetchone()[0] > 0
         finally:
             conn.close()
 
     def insert_verification_receipt(self, task_id: str, gate_name: str, command_executed: str,
-                                     exit_code: int, receipt_token: str) -> None:
-        """Inserts a verification_receipts row."""
+                                     exit_code: int, receipt_token: str,
+                                     actor: Optional[str] = None, provenance: str = "api") -> None:
+        """Inserts a verification_receipts row and its append-only 'created' audit row (same transaction)."""
         self.ensure_schema()
         conn = self.get_connection()
         try:
             with conn:
-                conn.execute(
+                cursor = conn.execute(
                     """
-                    INSERT INTO verification_receipts (task_id, gate_name, command_executed, exit_code, receipt_token)
-                    VALUES (?, ?, ?, ?, ?)
+                    INSERT INTO verification_receipts (task_id, gate_name, command_executed, exit_code, receipt_token, actor, provenance)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
                     """,
-                    (task_id, gate_name, command_executed, exit_code, receipt_token)
+                    (task_id, gate_name, command_executed, exit_code, receipt_token, actor, provenance)
+                )
+                conn.execute(
+                    "INSERT INTO receipt_audit (receipt_id, task_id, gate_name, event, actor, provenance) VALUES (?, ?, ?, 'created', ?, ?)",
+                    (cursor.lastrowid, task_id, gate_name, actor or "system", provenance)
+                )
+        finally:
+            conn.close()
+
+    def pending_human_questions(self, task_id: str, from_state: str, to_state: str) -> List[str]:
+        """Required question ids of the edge that still lack an unconsumed, non-empty human decision
+        (the database trigger's own test; used for actionable rejections and readiness guidance)."""
+        self.ensure_schema()
+        conn = self.get_connection()
+        try:
+            return [r[0] for r in conn.execute(
+                "SELECT rq.question_id FROM required_transition_questions rq WHERE rq.from_state = ? AND rq.to_state = ? "
+                "AND NOT EXISTS (SELECT 1 FROM transition_decisions td WHERE td.task_id = ? AND td.from_state = rq.from_state "
+                "AND td.to_state = rq.to_state AND td.question_id = rq.question_id AND td.actor = ? "
+                "AND td.answer IS NOT NULL AND trim(td.answer) != '' AND td.consumed_at IS NULL)",
+                (from_state, to_state, task_id, ACTOR_HUMAN))]
+        finally:
+            conn.close()
+
+    def review_selection_gaps(self, registry: Any, task_id: str, from_state: str, to_state: str) -> List[str]:
+        """Conditional review-selection question ids the recorded method requires but that lack a human decision."""
+        from control_plane.review_selection import review_selection_gaps
+
+        self.ensure_schema()
+        conn = self.get_connection()
+        try:
+            return review_selection_gaps(conn, registry, task_id, from_state, to_state)
+        finally:
+            conn.close()
+
+    def invalidate_receipt(self, receipt_id: int, actor: str, reason: str) -> None:
+        """Marks a receipt invalid (it stops satisfying gates) and appends the 'invalidated' audit row."""
+        self.ensure_schema()
+        conn = self.get_connection()
+        try:
+            with conn:
+                row = conn.execute(
+                    "SELECT task_id, gate_name FROM verification_receipts WHERE receipt_id = ? AND invalidated_at IS NULL", (receipt_id,)
+                ).fetchone()
+                if row is None:
+                    raise ValueError(f"receipt {receipt_id} does not exist or is already invalidated")
+                conn.execute(
+                    "UPDATE verification_receipts SET invalidated_at = CURRENT_TIMESTAMP, invalidation_reason = ? WHERE receipt_id = ?",
+                    (reason, receipt_id)
+                )
+                conn.execute(
+                    "INSERT INTO receipt_audit (receipt_id, task_id, gate_name, event, actor, provenance, reason) VALUES (?, ?, ?, 'invalidated', ?, 'human-interactive', ?)",
+                    (receipt_id, row[0], row[1], actor, reason)
                 )
         finally:
             conn.close()
@@ -1723,6 +1914,66 @@ class SqlitePersistenceAdapter(PersistencePort):
         finally:
             conn.close()
 
+    def _proof_required_edges(self) -> frozenset:
+        """Edges declaring requires_cryptographic_proof in the YAML registry (cached per adapter)."""
+        if getattr(self, "_proof_edges_cache", None) is None:
+            from control_plane.registry import TransitionRegistry
+
+            self._proof_edges_cache = TransitionRegistry.load_default().proof_required_edges()
+        return self._proof_edges_cache
+
+    def _preverify_proof_outside_write_lock(self, request: TransitionCommitRequest):
+        """For proof-required edges, runs the slow external verification (live snapshot hashing, the
+        `ssh-keygen -Y verify` subprocess) on a short-lived read connection BEFORE the commit takes its
+        `BEGIN IMMEDIATE`, so the write lock is never held across a subprocess. Returns None when the edge
+        takes no proof or none was supplied (the commit transaction then raises the precise refusal).
+        The commit transaction re-checks the request row and the challenge before consuming."""
+        edge = (request.expected_from_state, request.to_state)
+        proof = request.proof
+        if edge not in self._proof_required_edges() or proof is None or proof.kind != "sshsig":
+            return None
+        conn = self.get_connection()
+        try:
+            return preverify_signature(
+                conn, task_id=request.task_id, from_state=edge[0], to_state=edge[1],
+                occupancy_id=request.source_occupancy_transition_id, proof=proof,
+                now=self._clock.current_time(),
+            )
+        finally:
+            conn.close()
+
+    @staticmethod
+    def _stored_snapshot(conn: sqlite3.Connection, request_id: int):
+        """The content snapshot stored on a transition_request row (already verified against the signature)."""
+        from control_plane.snapshot import snapshot_from_json
+
+        row = conn.execute("SELECT content_snapshot FROM transition_request WHERE request_id = ?", (request_id,)).fetchone()
+        return snapshot_from_json(row[0]) if row and row[0] else ()
+
+    def get_retrospective_summary(self, task_id: str) -> Optional[Dict[str, Any]]:
+        """The recorded retrospective as {decision: 'complete'|'skip', digest}, or None. The digest is a SHA-256 over
+        every content field and follow-up (not timestamps), so a human signature binds exactly what was recorded."""
+        self.ensure_schema()
+        conn = self.get_connection()
+        try:
+            row = conn.execute(
+                "SELECT retrospective_id, decision, completion_mode, actor, outcome, strengths, friction, learning, improvement, "
+                "follow_up, skip_reason FROM retrospective_entries WHERE task_id = ?", (task_id,),
+            ).fetchone()
+            if row is None:
+                return None
+            follow_ups = [
+                [r["kind"], r["description"], r["status"], r["duplicate_checked"], r["issue_url"], r["issue_number"]]
+                for r in conn.execute(
+                    "SELECT kind, description, status, duplicate_checked, issue_url, issue_number FROM retrospective_follow_ups "
+                    "WHERE retrospective_id = ? ORDER BY follow_up_id", (row["retrospective_id"],))
+            ]
+            body = {k: row[k] for k in row.keys() if k != "retrospective_id"}
+            digest = hashlib.sha256(json.dumps([body, follow_ups], sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
+            return {"decision": "skip" if row["decision"] == RETROSPECTIVE_DECISION_SKIP else "complete", "digest": digest}
+        finally:
+            conn.close()
+
     def has_complete_retrospective(self, task_id: str) -> bool:
         """Returns true for a completed survey or a reasoned skip with no open issue candidates."""
         self.ensure_schema()
@@ -1892,7 +2143,35 @@ class SqlitePersistenceAdapter(PersistencePort):
         finally:
             conn.close()
 
-    def apply_transition_with_receipts(
+    def _write_violation_autonomously(self, task_id: str, from_state: Optional[str], to_state: str,
+                                      actor: Optional[str], reason: Optional[str], detail: str) -> None:
+        """Write a rejection into transition_violations on a SEPARATE connection and transaction, after
+        the aborted transaction has rolled back (the trigger's own row is rolled back with it)."""
+        conn = self.get_connection()
+        try:
+            with conn:
+                conn.execute(
+                    "INSERT INTO transition_violations (task_id, attempted_from_state, attempted_to_state, actor, reason, detail, kind) "
+                    "VALUES (?, ?, ?, ?, ?, ?, 'REJECTED_ATTEMPT')",
+                    (task_id, from_state, to_state, actor, reason, detail[:1000]),
+                )
+        finally:
+            conn.close()
+
+    def apply_transition_with_receipts(self, request: TransitionCommitRequest) -> TransitionRecord:
+        """Commit path with an autonomous rejection audit (see _apply_transition_with_receipts)."""
+        try:
+            return self._apply_transition_with_receipts(request)
+        except _AUDITED_REJECTIONS as exc:
+            try:
+                self._write_violation_autonomously(
+                    request.task_id, request.expected_from_state, request.to_state, request.actor, request.reason, str(exc)
+                )
+            except Exception:
+                pass  # the audit must never mask the original rejection
+            raise
+
+    def _apply_transition_with_receipts(
         self,
         request: TransitionCommitRequest,
     ) -> TransitionRecord:
@@ -1908,6 +2187,7 @@ class SqlitePersistenceAdapter(PersistencePort):
            bound to the new transition_id, and inserts verification_receipts.
         """
         self.ensure_schema()
+        preverified = self._preverify_proof_outside_write_lock(request)
         conn = self.get_connection()
         try:
             conn.execute("BEGIN IMMEDIATE;")
@@ -1963,10 +2243,44 @@ class SqlitePersistenceAdapter(PersistencePort):
                     f"Allowed: {allowed_next}."
                 )
 
+            # 3b. Cryptographic-proof edges (APPROVED, VERIFY_EXIT, DONE; requires_cryptographic_proof in the
+            # YAML): the commit needs a verified OpenSSH signature over a content-bound transition_request,
+            # verified and CONSUMED inside this transaction. There are no human decision rows for these edges:
+            # the consumed request is the authority, and the trigger requires it. Nothing the caller stages
+            # (answers, receipts of intent, actor strings) can substitute.
+            staged = list(request.staged_decisions)
+            edge = (request.expected_from_state, request.to_state)
+            proof_audit = None
+            if edge in self._proof_required_edges():
+                proof = request.proof
+                if proof is None or proof.kind != "sshsig":
+                    raise PersistenceInvariantViolation(
+                        f"Edge {edge[0]} -> {edge[1]} requires a verified OpenSSH signature (requires_cryptographic_proof); "
+                        "a prompt, typed word, flag or actor string cannot authorize it."
+                    )
+                if staged:
+                    raise PersistenceInvariantViolation(
+                        f"Edge {edge[0]} -> {edge[1]} takes no caller-staged decisions; the verified signature is the authority."
+                    )
+                signed_at = self._clock.current_time()
+                verified = consume_with_signature(
+                    conn, task_id=request.task_id, from_state=edge[0], to_state=edge[1],
+                    occupancy_id=latest_trans_id, proof=proof, now=signed_at,
+                    preverified=preverified,
+                )
+                proof_audit = (
+                    f"proof=sshsig;edge={edge[0]}->{edge[1]};request={proof.request_id};"
+                    f"principal={verified.principal};key={verified.fingerprint}"
+                )
+            elif request.proof is not None:
+                raise PersistenceInvariantViolation(
+                    f"An authorization proof was supplied for {edge[0]} -> {edge[1]}, which does not take one."
+                )
+
             # 4. Structural validation of staged decisions
             valid_types = set(DECISION_TYPES)
             seen_questions = set()
-            for d in request.staged_decisions:
+            for d in staged:
                 if d.task_id != request.task_id:
                     raise ValueError(f"Structural mismatch: decision task_id '{d.task_id}' != '{request.task_id}'.")
                 if d.source_occupancy_transition_id != request.source_occupancy_transition_id:
@@ -1987,7 +2301,7 @@ class SqlitePersistenceAdapter(PersistencePort):
             new_trans_id = cursor.lastrowid
 
             # 6. Insert staged decisions bound to new_trans_id
-            for d in request.staged_decisions:
+            for d in staged:
                 conn.execute(
                     """
                     INSERT INTO transition_decisions (
@@ -2065,6 +2379,15 @@ class SqlitePersistenceAdapter(PersistencePort):
                     (request.task_id, r["gate_name"], r["command_executed"], r["exit_code"], r["receipt_token"])
                 )
 
+            if proof_audit is not None:
+                audit_token = "EVO-INTEGRITY-{}-{}".format(
+                    request.task_id, self._crypto.sha256_hex(f"{request.task_id}:{proof_audit}:{new_trans_id}")[:12]
+                )
+                conn.execute(
+                    "INSERT INTO verification_receipts (task_id, gate_name, command_executed, exit_code, receipt_token) VALUES (?, ?, ?, ?, ?)",
+                    (request.task_id, "human_gate_proof", proof_audit, 0, audit_token),
+                )
+            _expire_pending_requests(conn, request.task_id)
             row = conn.execute(
                 "SELECT transition_id, task_id, from_state, to_state, actor, reason, timestamp FROM task_transitions WHERE transition_id = ?",
                 (new_trans_id,)
@@ -2144,17 +2467,9 @@ class SqlitePersistenceAdapter(PersistencePort):
                 token_material = f"RECOVERY-{task_id}-{source_occupancy_transition_id}-{destination_state}-{recorded_at}-{existing_count + 1}"
                 token = self._crypto.sha256_hex(token_material)
 
-                # Look up static question IDs required for this recovery edge. DONE is
-                # excluded from this lookup: every state already has its own dedicated
-                # human_force_done_confirmation/force_close_authorization question,
-                # answered fresh through TransitionCoordinator's own force-close flow
-                # (apply_recovery_transition routes DONE destinations through
-                # coordinate_transition(force_close=True, ...), never through this
-                # recorded decision). Reusing that same question_id here would record
-                # this call's opaque token as if it were the answer to that question,
-                # making the coordinator believe it's already been answered and skip
-                # asking for the real FORCE_DONE/FORCE_CLOSE confirmation entirely.
-                required_qids = [] if destination_state == STATE_DONE else [
+                # Look up static question IDs required for this recovery edge. DONE never reaches this point:
+                # recovery into DONE is refused above (every inbound edge to DONE is a cryptographic gate).
+                required_qids = [
                     r[0] for r in conn.execute(
                         "SELECT question_id FROM required_transition_questions WHERE from_state = ? AND to_state = ?",
                         (expected_source_state, destination_state)
@@ -2180,7 +2495,22 @@ class SqlitePersistenceAdapter(PersistencePort):
         finally:
             conn.close()
 
-    def apply_recovery_transition(
+    def apply_recovery_transition(self, *args: Any, **kwargs: Any) -> Any:
+        """Recovery commit path with the same autonomous rejection audit as apply_transition_with_receipts."""
+        try:
+            return self._apply_recovery_transition(*args, **kwargs)
+        except _AUDITED_REJECTIONS as exc:
+            try:
+                bound = inspect.signature(self._apply_recovery_transition).bind(*args, **kwargs).arguments
+                self._write_violation_autonomously(
+                    bound["task_id"], bound.get("expected_source_state"), bound["destination_state"],
+                    bound.get("actor"), bound.get("reason"), str(exc),
+                )
+            except Exception:
+                pass  # the audit must never mask the original rejection
+            raise
+
+    def _apply_recovery_transition(
         self,
         task_id: str,
         expected_source_state: str,
@@ -2292,6 +2622,7 @@ class SqlitePersistenceAdapter(PersistencePort):
                 (task_id, GATE_MULTI_AGENT_REVIEW_SKIPPED, GATE_MULTI_AGENT_CODE_REVIEW_SKIPPED)
             )
 
+            _expire_pending_requests(conn, task_id)
             row = conn.execute(
                 "SELECT transition_id, task_id, from_state, to_state, actor, reason, timestamp FROM task_transitions WHERE transition_id = ?",
                 (new_trans_id,)
@@ -2472,7 +2803,8 @@ class SqlitePersistenceAdapter(PersistencePort):
         try:
             # 1. Check transition_violations
             viol = conn.execute(
-                "SELECT violation_id, attempted_from_state, attempted_to_state FROM transition_violations WHERE task_id = ?",
+                "SELECT violation_id, attempted_from_state, attempted_to_state FROM transition_violations "
+                "WHERE task_id = ? AND kind = 'ILLEGAL_TRANSITION'",
                 (task_id,)
             ).fetchone()
             if viol:

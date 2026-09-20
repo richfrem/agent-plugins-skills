@@ -1,0 +1,11 @@
+[
+  {"prompt": "set up my approval key for the control plane", "should_trigger": true},
+  {"prompt": "create the ssh key I need to approve gate 1", "should_trigger": true},
+  {"prompt": "I got HUMAN_PROOF_REQUIRED, how do I set up my signing identity?", "should_trigger": true},
+  {"prompt": "test my signing key works before I approve", "should_trigger": true},
+  {"prompt": "add a second key to allowed_signers", "should_trigger": true},
+  {"prompt": "approve the task and move it to APPROVED", "should_trigger": false},
+  {"prompt": "run a health check on the OS", "should_trigger": false},
+  {"prompt": "log this friction to map debt", "should_trigger": false},
+  {"prompt": "generate an ssh key for my github account", "should_trigger": false}
+]

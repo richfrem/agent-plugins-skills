@@ -1937,91 +1937,91 @@
       "src": "plugins/dev-utils/skills/coding-conventions-agent/SKILL.md",
       "dst": "plugins/dev-utils/agents/coding-conventions-agent.md",
       "strategy": "symlink",
-      "description": "Agent alias → coding-conventions-agent skill"
+      "description": "Agent alias \u2192 coding-conventions-agent skill"
     },
     {
       "src": "plugins/dev-utils/skills/link-checker-agent/SKILL.md",
       "dst": "plugins/dev-utils/agents/link-checker-agent.md",
       "strategy": "symlink",
-      "description": "Agent alias → link-checker-agent skill"
+      "description": "Agent alias \u2192 link-checker-agent skill"
     },
     {
       "src": "plugins/agent-agentic-os/rules/self-evolution-policy.md",
       "dst": "plugins/agent-agentic-os/skills/self-evolution/references/self-evolution-policy.md",
       "strategy": "symlink",
-      "description": "Plugin reference → Skill reference"
+      "description": "Plugin reference \u2192 Skill reference"
     },
     {
       "src": "plugins/agent-agentic-os/rules/test-driven-development.md",
       "dst": "plugins/agent-agentic-os/skills/self-evolution/references/test-driven-development.md",
       "strategy": "symlink",
-      "description": "Plugin reference → Skill reference"
+      "description": "Plugin reference \u2192 Skill reference"
     },
     {
       "src": "plugins/agent-agentic-os/references/map-debt.md",
       "dst": "plugins/agent-agentic-os/skills/self-evolution/references/map-debt.md",
       "strategy": "symlink",
-      "description": "Plugin reference → Skill reference"
+      "description": "Plugin reference \u2192 Skill reference"
     },
     {
       "src": "plugins/dev-utils/rules/coding-conventions.md",
       "dst": "plugins/dev-utils/skills/coding-conventions-agent/references/coding-conventions.md",
       "strategy": "symlink",
-      "description": "Plugin reference → Skill reference"
+      "description": "Plugin reference \u2192 Skill reference"
     },
     {
       "src": "plugins/dev-utils/scripts/workspace_conventions_auditor.py",
       "dst": "plugins/dev-utils/skills/coding-conventions-agent/scripts/workspace_conventions_auditor.py",
       "strategy": "symlink",
-      "description": "Plugin script → Skill script"
+      "description": "Plugin script \u2192 Skill script"
     },
     {
       "src": "plugins/dependency-management/rules/dependency-management.md",
       "dst": "plugins/dependency-management/skills/dependency-management/references/dependency-management.md",
       "strategy": "symlink",
-      "description": "Plugin reference → Skill reference"
+      "description": "Plugin reference \u2192 Skill reference"
     },
     {
       "src": "plugins/agent-scaffolders/rules/plugin-architecture-policy.md",
       "dst": "plugins/agent-scaffolders/skills/audit-plugin/references/plugin-architecture-policy.md",
       "strategy": "symlink",
-      "description": "Plugin reference → Skill reference"
+      "description": "Plugin reference \u2192 Skill reference"
     },
     {
       "src": "plugins/agent-agentic-os/rules/destructive-action-guard.md",
       "dst": "plugins/agent-agentic-os/skills/self-evolution/references/destructive-action-guard.md",
       "strategy": "symlink",
-      "description": "Plugin reference → Skill reference"
+      "description": "Plugin reference \u2192 Skill reference"
     },
     {
       "src": "plugins/dev-utils/rules/graph-planning-superpowers-policy.md",
       "dst": "plugins/dev-utils/skills/coding-conventions-agent/references/graph-planning-superpowers-policy.md",
       "strategy": "symlink",
-      "description": "Plugin reference → Skill reference"
+      "description": "Plugin reference \u2192 Skill reference"
     },
     {
       "src": "plugins/agent-scaffolders/scripts/validate_agent.py",
       "dst": "plugins/agent-scaffolders/skills/create-sub-agent/scripts/validate_agent.py",
       "strategy": "symlink",
-      "description": "Plugin script → create-sub-agent skill script (replaces validate-agent.sh)"
+      "description": "Plugin script \u2192 create-sub-agent skill script (replaces validate-agent.sh)"
     },
     {
       "src": "plugins/agent-scaffolders/scripts/validate_write.py",
       "dst": "plugins/agent-scaffolders/skills/create-hook/scripts/validate_write.py",
       "strategy": "symlink",
-      "description": "Plugin script → create-hook skill script (replaces validate-write.sh)"
+      "description": "Plugin script \u2192 create-hook skill script (replaces validate-write.sh)"
     },
     {
       "src": "plugins/agent-scaffolders/scripts/hook_linter.py",
       "dst": "plugins/agent-scaffolders/skills/create-hook/scripts/hook_linter.py",
       "strategy": "symlink",
-      "description": "Plugin script → create-hook skill script (replaces hook-linter.sh)"
+      "description": "Plugin script \u2192 create-hook skill script (replaces hook-linter.sh)"
     },
     {
       "src": "plugins/agent-scaffolders/scripts/test_hook.py",
       "dst": "plugins/agent-scaffolders/skills/create-hook/scripts/test_hook.py",
       "strategy": "symlink",
-      "description": "Plugin script → create-hook skill script (replaces test-hook.sh)"
+      "description": "Plugin script \u2192 create-hook skill script (replaces test-hook.sh)"
     },
     {
       "src": "plugins/agent-scaffolders/scripts/scaffold_github_agent.py",
@@ -9401,115 +9401,115 @@
       "src": "plugins/agent-agentic-os/scripts/control_plane/registry.py",
       "dst": "plugins/agent-agentic-os/skills/work-intake/scripts/control_plane/registry.py",
       "strategy": "symlink",
-      "description": "TransitionRegistry, required by agent_control.py — missing entry caused ModuleNotFoundError (issue-551 work package)"
+      "description": "TransitionRegistry, required by agent_control.py \u2014 missing entry caused ModuleNotFoundError (issue-551 work package)"
     },
     {
       "src": "plugins/agent-agentic-os/scripts/control_plane/coordinator.py",
       "dst": "plugins/agent-agentic-os/skills/work-intake/scripts/control_plane/coordinator.py",
       "strategy": "symlink",
-      "description": "TransitionCoordinator, required by agent_control.py — missing entry caused ModuleNotFoundError (issue-551 work package)"
+      "description": "TransitionCoordinator, required by agent_control.py \u2014 missing entry caused ModuleNotFoundError (issue-551 work package)"
     },
     {
       "src": "plugins/agent-agentic-os/scripts/control_plane/transition_templates.yaml",
       "dst": "plugins/agent-agentic-os/skills/work-intake/scripts/control_plane/transition_templates.yaml",
       "strategy": "symlink",
-      "description": "Loaded at runtime by registry.py relative to its own __file__ — must ship alongside registry.py (issue-551 work package)"
+      "description": "Loaded at runtime by registry.py relative to its own __file__ \u2014 must ship alongside registry.py (issue-551 work package)"
     },
     {
       "src": "plugins/agent-agentic-os/scripts/agent_control.py",
       "dst": "plugins/agent-agentic-os/skills/os-init/scripts/agent_control.py",
       "strategy": "symlink",
-      "description": "Missing symlink for local import found by issue-551 broader scan — ModuleNotFoundError risk"
+      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
     },
     {
       "src": "plugins/agent-memory/scripts/operations.py",
       "dst": "plugins/agent-memory/skills/vector-db-cleanup/scripts/operations.py",
       "strategy": "symlink",
-      "description": "Missing symlink for local import found by issue-551 broader scan — ModuleNotFoundError risk"
+      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
     },
     {
       "src": "plugins/agent-memory/scripts/rlm_config.py",
       "dst": "plugins/agent-memory/skills/vector-db-ingest/scripts/rlm_config.py",
       "strategy": "symlink",
-      "description": "Missing symlink for local import found by issue-551 broader scan — ModuleNotFoundError risk"
+      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
     },
     {
       "src": "plugins/agent-memory/scripts/vector_config.py",
       "dst": "plugins/agent-memory/skills/vector-db-init/scripts/vector_config.py",
       "strategy": "symlink",
-      "description": "Missing symlink for local import found by issue-551 broader scan — ModuleNotFoundError risk"
+      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
     },
     {
       "src": "plugins/agent-memory/scripts/operations.py",
       "dst": "plugins/agent-memory/skills/vector-db-init/scripts/operations.py",
       "strategy": "symlink",
-      "description": "Missing symlink for local import found by issue-551 broader scan — ModuleNotFoundError risk"
+      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
     },
     {
       "src": "plugins/agent-memory/scripts/vector_config.py",
       "dst": "plugins/agent-memory/skills/vector-db-launch/scripts/vector_config.py",
       "strategy": "symlink",
-      "description": "Missing symlink for local import found by issue-551 broader scan — ModuleNotFoundError risk"
+      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
     },
     {
       "src": "plugins/agent-memory/scripts/rlm_config.py",
       "dst": "plugins/agent-memory/skills/vector-db-search/scripts/rlm_config.py",
       "strategy": "symlink",
-      "description": "Missing symlink for local import found by issue-551 broader scan — ModuleNotFoundError risk"
+      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
     },
     {
       "src": "plugins/agent-memory/scripts/ingest_code_shim.py",
       "dst": "plugins/agent-memory/skills/vector-db-search/scripts/ingest_code_shim.py",
       "strategy": "symlink",
-      "description": "Missing symlink for local import found by issue-551 broader scan — ModuleNotFoundError risk"
+      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
     },
     {
       "src": "plugins/agent-scaffolders/scripts/audit_skill.py",
       "dst": "plugins/agent-scaffolders/skills/audit-plugin/scripts/audit_skill.py",
       "strategy": "symlink",
-      "description": "Missing symlink for local import found by issue-551 broader scan — ModuleNotFoundError risk"
+      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
     },
     {
       "src": "plugins/cli-agents/scripts/kv_cache_orchestrator.py",
       "dst": "plugins/cli-agents/skills/local-llm-setup/scripts/kv_cache_orchestrator.py",
       "strategy": "symlink",
-      "description": "Missing symlink for local import found by issue-551 broader scan — ModuleNotFoundError risk"
+      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
     },
     {
       "src": "plugins/dev-utils/scripts/gh_issue_create.py",
       "dst": "plugins/dev-utils/skills/github-issue-backlog-agent/scripts/gh_issue_create.py",
       "strategy": "symlink",
-      "description": "Missing symlink for local import found by issue-551 broader scan — ModuleNotFoundError risk"
+      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
     },
     {
       "src": "plugins/dev-utils/scripts/hf_upload.py",
       "dst": "plugins/dev-utils/skills/hf-init/scripts/hf_upload.py",
       "strategy": "symlink",
-      "description": "Missing symlink for local import found by issue-551 broader scan — ModuleNotFoundError risk"
+      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
     },
     {
       "src": "plugins/dev-utils/scripts/issue_worktree_manage.py",
       "dst": "plugins/dev-utils/skills/github-issue-pr-lifecycle-agent/scripts/issue_worktree_manage.py",
       "strategy": "symlink",
-      "description": "Missing symlink for local import found by issue-551 broader scan — ModuleNotFoundError risk"
+      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
     },
     {
       "src": "plugins/exploration-cycle-plugin/scripts/sandbox_runner.py",
       "dst": "plugins/exploration-cycle-plugin/skills/exploration-workflow/scripts/sandbox_runner.py",
       "strategy": "symlink",
-      "description": "Missing symlink for local import found by issue-551 broader scan — ModuleNotFoundError risk"
+      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
     },
     {
       "src": "plugins/exploration-cycle-plugin/scripts/state_engine.py",
       "dst": "plugins/exploration-cycle-plugin/skills/exploration-workflow/scripts/state_engine.py",
       "strategy": "symlink",
-      "description": "Missing symlink for local import found by issue-551 broader scan — ModuleNotFoundError risk"
+      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
     },
     {
       "src": "plugins/obsidian-wiki-engine/scripts/raw_manifest.py",
       "dst": "plugins/obsidian-wiki-engine/skills/obsidian-wiki-linter/scripts/raw_manifest.py",
       "strategy": "symlink",
-      "description": "Missing symlink for local import found by issue-551 broader scan — ModuleNotFoundError risk"
+      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
     },
     {
       "src": "plugins/agent-agentic-os/references/critical-auditor-acceptance-criteria.md",
@@ -10416,6 +10416,156 @@
       "dst": "plugins/agent-agentic-os/skills/transition-guidance-tester/references/fallback-tree.md",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/setup_ciba_identity.py",
+      "dst": "plugins/agent-agentic-os/skills/os-signing-setup/scripts/setup_ciba_identity.py",
+      "strategy": "symlink",
+      "description": "os-signing-setup skill: setup_ciba_identity.py CLI (hub-and-spoke)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/__init__.py",
+      "dst": "plugins/agent-agentic-os/skills/os-signing-setup/scripts/control_plane/__init__.py",
+      "strategy": "symlink",
+      "description": "os-signing-setup skill: control_plane/__init__.py (hub-and-spoke)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/identity_layout.py",
+      "dst": "plugins/agent-agentic-os/skills/os-signing-setup/scripts/control_plane/identity_layout.py",
+      "strategy": "symlink",
+      "description": "os-signing-setup skill: control_plane/identity_layout.py (hub-and-spoke)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/identity_setup.py",
+      "dst": "plugins/agent-agentic-os/skills/os-signing-setup/scripts/control_plane/identity_setup.py",
+      "strategy": "symlink",
+      "description": "os-signing-setup skill: control_plane/identity_setup.py (hub-and-spoke)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/isolation_check.py",
+      "dst": "plugins/agent-agentic-os/skills/os-signing-setup/scripts/control_plane/isolation_check.py",
+      "strategy": "symlink",
+      "description": "os-signing-setup skill: control_plane/isolation_check.py (hub-and-spoke)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/ssh_signing.py",
+      "dst": "plugins/agent-agentic-os/skills/os-signing-setup/scripts/control_plane/ssh_signing.py",
+      "strategy": "symlink",
+      "description": "os-signing-setup skill: control_plane/ssh_signing.py (hub-and-spoke)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/snapshot.py",
+      "dst": "plugins/agent-agentic-os/skills/os-signing-setup/scripts/control_plane/snapshot.py",
+      "strategy": "symlink",
+      "description": "os-signing-setup skill: control_plane/snapshot.py (hub-and-spoke)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/identity_layout.py",
+      "dst": "plugins/agent-agentic-os/skills/os-init/scripts/control_plane/identity_layout.py",
+      "strategy": "symlink",
+      "description": "os-init skill: control_plane/identity_layout.py (hub-and-spoke)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/identity_setup.py",
+      "dst": "plugins/agent-agentic-os/skills/os-init/scripts/control_plane/identity_setup.py",
+      "strategy": "symlink",
+      "description": "os-init skill: control_plane/identity_setup.py (hub-and-spoke)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/isolation_check.py",
+      "dst": "plugins/agent-agentic-os/skills/os-init/scripts/control_plane/isolation_check.py",
+      "strategy": "symlink",
+      "description": "os-init skill: control_plane/isolation_check.py (hub-and-spoke)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/ssh_signing.py",
+      "dst": "plugins/agent-agentic-os/skills/os-init/scripts/control_plane/ssh_signing.py",
+      "strategy": "symlink",
+      "description": "os-init skill: control_plane/ssh_signing.py (hub-and-spoke)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/snapshot.py",
+      "dst": "plugins/agent-agentic-os/skills/os-init/scripts/control_plane/snapshot.py",
+      "strategy": "symlink",
+      "description": "os-init skill: control_plane/snapshot.py (hub-and-spoke)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/setup_ciba_identity.py",
+      "dst": "plugins/agent-agentic-os/skills/os-health-check/scripts/setup_ciba_identity.py",
+      "strategy": "symlink",
+      "description": "os-health-check skill: setup_ciba_identity.py --check (read-only status, hub-and-spoke)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/__init__.py",
+      "dst": "plugins/agent-agentic-os/skills/os-health-check/scripts/control_plane/__init__.py",
+      "strategy": "symlink",
+      "description": "os-health-check skill: control_plane package (hub-and-spoke)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/identity_layout.py",
+      "dst": "plugins/agent-agentic-os/skills/os-health-check/scripts/control_plane/identity_layout.py",
+      "strategy": "symlink",
+      "description": "os-health-check skill: control_plane/identity_layout.py (hub-and-spoke)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/identity_setup.py",
+      "dst": "plugins/agent-agentic-os/skills/os-health-check/scripts/control_plane/identity_setup.py",
+      "strategy": "symlink",
+      "description": "os-health-check skill: control_plane/identity_setup.py (hub-and-spoke)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/isolation_check.py",
+      "dst": "plugins/agent-agentic-os/skills/os-health-check/scripts/control_plane/isolation_check.py",
+      "strategy": "symlink",
+      "description": "os-health-check skill: control_plane/isolation_check.py (hub-and-spoke)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/ssh_signing.py",
+      "dst": "plugins/agent-agentic-os/skills/os-health-check/scripts/control_plane/ssh_signing.py",
+      "strategy": "symlink",
+      "description": "os-health-check skill: control_plane/ssh_signing.py (hub-and-spoke)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/snapshot.py",
+      "dst": "plugins/agent-agentic-os/skills/os-health-check/scripts/control_plane/snapshot.py",
+      "strategy": "symlink",
+      "description": "os-health-check skill: control_plane/snapshot.py (hub-and-spoke)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/test_signing_mechanics.py",
+      "dst": "plugins/agent-agentic-os/skills/os-signing-setup/scripts/test_signing_mechanics.py",
+      "strategy": "symlink",
+      "description": "os-signing-setup skill: standalone signing self-test CLI (hub-and-spoke)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/signing_selftest.py",
+      "dst": "plugins/agent-agentic-os/skills/os-signing-setup/scripts/control_plane/signing_selftest.py",
+      "strategy": "symlink",
+      "description": "os-signing-setup skill: signing self-test module (hub-and-spoke)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/SIGNING_WORKFLOW_OVERVIEW.md",
+      "dst": "plugins/agent-agentic-os/skills/os-signing-setup/references/SIGNING_WORKFLOW_OVERVIEW.md",
+      "strategy": "symlink",
+      "description": "os-signing-setup skill: signing workflow overview (hub-and-spoke)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-signing-setup-acceptance-criteria.md",
+      "dst": "plugins/agent-agentic-os/skills/os-signing-setup/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": "Plugin reference -> Skill reference (os-signing-setup acceptance criteria)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-signing-setup-acceptance-criteria.md",
+      "dst": "plugins/agent-agentic-os/skills/os-signing-setup/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": "Plugin reference -> Skill reference (os-signing-setup acceptance criteria)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-signing-setup-fallback-tree.md",
+      "dst": "plugins/agent-agentic-os/skills/os-signing-setup/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": "Plugin reference -> Skill reference (os-signing-setup fallback tree)"
     }
   ]
 }

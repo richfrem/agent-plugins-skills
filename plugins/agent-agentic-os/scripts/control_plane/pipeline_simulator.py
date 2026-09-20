@@ -4,8 +4,9 @@ from __future__ import annotations
 
 import io
 import json
+import subprocess
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Callable, Dict, Optional
 
 from agent_control import ControlPlane
 from control_plane.coordinator import TransitionCoordinator, TransitionCoordinatorError
@@ -30,7 +31,13 @@ class PipelineSimulator:
     graph or write authorization rows directly.
     """
 
-    def __init__(self, db_path: Path, *, registry: Optional[TransitionRegistry] = None):
+    def __init__(self, db_path: Path, *, registry: Optional[TransitionRegistry] = None,
+                 human_signer: Optional[Callable[..., Any]] = None):
+        """`human_signer` completes the cryptographic gates (APPROVED, VERIFY_EXIT, DONE): it is called with the
+        control plane and a transition_request id and must return the committed TransitionRecord, exactly as a
+        human running `ssh-keygen -Y sign` would. Without one the simulator halts at the first such gate with
+        HUMAN_PROOF_REQUIRED -- it never fabricates authority."""
+        self.human_signer = human_signer
         self.db_path = Path(db_path).resolve()
         self.repository_root = Path(__file__).resolve().parents[3]
         if self.db_path == (self.repository_root / "context" / "control_plane.db").resolve():
@@ -128,22 +135,47 @@ class PipelineSimulator:
             reason=f"simulator {classification.lower()} interview route",
         )
 
-    def force_close(self, task_id: str, *, authorized: bool = False):
-        """Exercise the explicit human force-close boundary."""
+    def _seed_gate1_content(self, task_id: str) -> None:
+        """Write the reviewed spec and plan that Gate 1's transition_request binds (the human signs their hashes)."""
+        from control_plane.snapshot import gate1_artifact_paths
+
+        for label, path in gate1_artifact_paths(self.control_plane.repo_root, task_id):
+            if not path.exists():
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(f"# {label} for {task_id} (simulated)\n")
+
+    @staticmethod
+    def _init_git_worktree(worktree: Path) -> Path:
+        """A one-commit git repository at `worktree`: Gate 3 signs its commit SHA, diff and untracked-file hashes."""
+        worktree.mkdir(parents=True, exist_ok=True)
+        if (worktree / ".git").exists():
+            return worktree
+        env = {"GIT_AUTHOR_NAME": "sim", "GIT_AUTHOR_EMAIL": "sim@local", "GIT_COMMITTER_NAME": "sim", "GIT_COMMITTER_EMAIL": "sim@local"}
+        import os as _os
+
+        env["PATH"] = _os.environ.get("PATH", "")
+        env["HOME"] = str(worktree)
+        (worktree / "simulated.txt").write_text("simulated\n")
+        for args in (["init", "-q"], ["add", "."], ["commit", "-q", "-m", "simulated base"]):
+            subprocess.run(["git", "-C", str(worktree), *args], check=True, env=env, capture_output=True)
+        return worktree
+
+    def signed_close(self, task_id: str, *, signed: bool = False):
+        """Exercise the closure boundary: every edge into DONE takes a human signature. With signed=False the
+        attempt is non-interactive and must halt with HUMAN_PROOF_REQUIRED; with signed=True the configured
+        human_signer completes the request."""
         coordinator = TransitionCoordinator(
             self.control_plane,
             registry=self.registry,
-            input_fn=lambda _prompt: "FORCE_CLOSE",
             output_stream=io.StringIO(),
+            human_signer=self.human_signer,
         )
         return coordinator.coordinate_transition(
             task_id=task_id,
             to_state=STATE_DONE,
-            actor="human" if authorized else "simulator",
-            reason="simulator force close",
-            force_close=authorized,
-            human_authorization="FORCE_CLOSE" if authorized else None,
-            interactive=authorized,
+            actor="human" if signed else "simulator",
+            reason="simulator signed close",
+            interactive=signed,
         )
 
     def run_trivial_interview_fast_track(self, task_id: str) -> Dict[str, Any]:
@@ -214,7 +246,7 @@ class PipelineSimulator:
             reason="simulator requests plan review",
             interactive=True,
         )
-        review_answers = iter(["1", "3", "YES"])
+        review_answers = iter(["1", "3", "claude-cli", "test-model", "medium", "YES"])
         TransitionCoordinator(
             self.control_plane,
             registry=self.registry,
@@ -254,12 +286,12 @@ class PipelineSimulator:
             interactive=True,
         )
 
-        approval_inputs = iter(["1", "y", "YES"])
+        self._seed_gate1_content(task_id)
         TransitionCoordinator(
             self.control_plane,
             registry=self.registry,
-            input_fn=lambda _prompt: next(approval_inputs),
             output_stream=io.StringIO(),
+            human_signer=self.human_signer,
         ).coordinate_transition(
             task_id=task_id,
             to_state=STATE_APPROVED,
@@ -269,8 +301,7 @@ class PipelineSimulator:
         )
         self.control_plane.record_human_approval(task_id, "simulator")
 
-        worktree = repo_root / ".worktrees" / task_id
-        worktree.mkdir(parents=True, exist_ok=True)
+        worktree = self._init_git_worktree(repo_root / ".worktrees" / task_id)
         self.control_plane.update_worktree(task_id, str(worktree), f"sim/{task_id}", "written_in_worktree")
         TransitionCoordinator(
             self.control_plane,
@@ -298,19 +329,16 @@ class PipelineSimulator:
             reason="simulator worktree review",
             interactive=True,
         )
-        worktree_review_exit_answers = iter(["1", "YES"])  # confirm_worktree_review_accept_implementation, then guidance confirmation
         TransitionCoordinator(
             self.control_plane,
             registry=self.registry,
-            input_fn=lambda _prompt: next(worktree_review_exit_answers),
             output_stream=io.StringIO(),
+            human_signer=self.human_signer,  # Gate 3 is a human signature over commit SHA + diff + untracked hashes
         ).coordinate_transition(
             task_id=task_id,
             to_state=STATE_VERIFY_EXIT,
-            actor="human",  # trigger-enforced: confirm_worktree_review_accept_implementation requires actor='human'
+            actor="human",
             reason="simulator verification",
-            skip_review=True,
-            skip_reason="single deterministic simulator review",
             interactive=True,
         )
         run_exit_verification(

@@ -35,6 +35,7 @@ Key Functions:
           given YAML path, or the canonical transition_templates.yaml.
 """
 
+import hashlib
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
@@ -42,6 +43,9 @@ import yaml
 
 from control_plane.state_machine import ALLOWED_TRANSITIONS, CANONICAL_STATES
 from control_plane.constants import AUTHORIZED_ACTOR_HUMAN_ONLY, AUTHORIZED_ACTOR_AGENT_OR_HUMAN
+
+# load_default() memo: {sha256 of the YAML bytes: parsed registry}; see TransitionRegistry.load_default().
+_DEFAULT_REGISTRY_CACHE: Dict[str, "TransitionRegistry"] = {}
 
 
 class TransitionRegistryError(Exception):
@@ -109,18 +113,21 @@ class TransitionTemplate:
     stage_question_ids: List[str] = None
     stage_route: Optional[Dict[str, Any]] = None
     guidance: Optional[Dict[str, Any]] = None
+    # True on every edge into APPROVED, VERIFY_EXIT and DONE: only a verified OpenSSH signature over a
+    # content-bound transition_request (consumed in the commit transaction) may commit it.
+    requires_cryptographic_proof: bool = False
 
     @property
     def authorized_actor(self) -> str:
         """Derived, not a hand-maintained parallel field (round-1 review finding,
         auth-ciba-poc-transition-mechanics): 'human_only' iff this edge's own
         approval block requires human approval, otherwise 'agent_or_human'.
-        Force-close/force-done edges intentionally derive as 'agent_or_human'
-        here even though their approver_role is 'human' -- their real gate is
-        the separate FORCE_CLOSE/FORCE_DONE literal-value check in
-        coordinator.py, not this generic approval block, and required=False
-        for those templates reflects that they are not scoped by this
-        derivation."""
+        An edge declaring requires_cryptographic_proof is always 'human_only'
+        (checked first below): closure edges into DONE take a human signature,
+        not a FORCE_CLOSE/FORCE_DONE literal, so they no longer derive as
+        'agent_or_human' (changed 2026-09-20)."""
+        if self.requires_cryptographic_proof:
+            return AUTHORIZED_ACTOR_HUMAN_ONLY
         return (
             AUTHORIZED_ACTOR_HUMAN_ONLY
             if self.approval.get("required") and self.approval.get("approver_role", "human") == "human"
@@ -195,6 +202,17 @@ class TransitionRegistry:
 
     def get_all_edges(self) -> Set[Tuple[str, str]]:
         return set(self._templates_by_edge.keys())
+
+    def get_all_edges_with_proof(self) -> List[Tuple[str, str, str, int]]:
+        """(from, to, authorized_actor, requires_proof 0/1) per edge; synced into valid_transitions."""
+        return [
+            (from_s, to_s, tmpl.authorized_actor, 1 if tmpl.requires_cryptographic_proof else 0)
+            for (from_s, to_s), tmpl in self._templates_by_edge.items()
+        ]
+
+    def proof_required_edges(self) -> frozenset:
+        """The edges whose template declares requires_cryptographic_proof (the single source of truth)."""
+        return frozenset(edge for edge, tmpl in self._templates_by_edge.items() if tmpl.requires_cryptographic_proof)
 
     def get_all_edges_with_actor(self) -> List[Tuple[str, str, str]]:
         """Same edges as get_all_edges(), paired with each template's derived
@@ -439,6 +457,24 @@ class TransitionRegistry:
                         raise TransitionRegistryError(
                             f"Human question must be a mapping in template '{item.get('transition_id')}'"
                         )
+                    asked_when = question.get("asked_when")
+                    if asked_when is not None:
+                        earlier = [q.get("question_id") for q in item["human_questions"]]
+                        if (not isinstance(asked_when, dict) or set(asked_when) != {"question_id", "answer_contains"}
+                                or asked_when["question_id"] not in earlier[:earlier.index(question.get("question_id"))]):
+                            raise TransitionRegistryError(
+                                f"Field 'asked_when' must be {{question_id, answer_contains}} naming an EARLIER question in template '{item.get('transition_id')}'"
+                            )
+                    choices_from = question.get("choices_from")
+                    if choices_from is not None:
+                        earlier_ids = [q.get("question_id") for q in item["human_questions"]]
+                        runtime_qid = choices_from.get("runtime_question") if isinstance(choices_from, dict) else None
+                        if (not isinstance(choices_from, dict) or choices_from.get("kind") not in ("runtime", "model", "effort")
+                                or set(choices_from) - {"kind", "runtime_question"}
+                                or (choices_from["kind"] != "runtime" and runtime_qid not in earlier_ids[:earlier_ids.index(question.get("question_id"))])):
+                            raise TransitionRegistryError(
+                                f"Field 'choices_from' must be {{kind: runtime|model|effort[, runtime_question: <earlier question id>]}} in template '{item.get('transition_id')}'"
+                            )
                     accepted_answers = question.get("accepted_answers")
                     if accepted_answers is not None:
                         if not isinstance(accepted_answers, list) or not accepted_answers:
@@ -503,12 +539,41 @@ class TransitionRegistry:
                     stage_question_ids=item.get("stage_question_ids", []),
                     stage_route=item.get("stage_route"),
                     guidance=item.get("guidance", {}),
+                    requires_cryptographic_proof=bool(item.get("requires_cryptographic_proof", False)),
                 )
+                if "requires_cryptographic_proof" in item and not isinstance(item["requires_cryptographic_proof"], bool):
+                    raise TransitionRegistryError(
+                        f"Field 'requires_cryptographic_proof' must be a boolean in template '{item.get('transition_id')}'"
+                    )
                 parsed.append(t)
 
         return cls(parsed, stage_contracts, execution_guidance, model_effort_guidance)
 
     @classmethod
+    def default_path(cls) -> Path:
+        return Path(__file__).resolve().parent / "transition_templates.yaml"
+
+    @classmethod
+    def default_source_digest(cls) -> str:
+        """sha256 of the default YAML's bytes: the cache key for load_default() and an input to the
+        persistence adapter's schema-sync fingerprint. Cheap (a file read + hash), unlike a parse."""
+        try:
+            return hashlib.sha256(cls.default_path().read_bytes()).hexdigest()
+        except OSError as e:
+            raise TransitionRegistryError(f"Transition templates file not found: {cls.default_path()}") from e
+
+    @classmethod
     def load_default(cls) -> "TransitionRegistry":
-        default_path = Path(__file__).resolve().parent / "transition_templates.yaml"
-        return cls.load_from_file(default_path)
+        """The default registry, parsed at most once per distinct YAML content in this process.
+
+        Parsing the 158KB YAML with the pure-Python loader costs ~0.13s and load_default() sits on every
+        persistence call's path, so it is memoized on the file's content hash (an edited YAML is a new key,
+        never stale). The returned instance is shared: treat it as read-only -- nothing in the repo mutates
+        a loaded registry, and callers needing a variant build one via load_from_file()."""
+        key = cls.default_source_digest()
+        cached = _DEFAULT_REGISTRY_CACHE.get(key)
+        if cached is None:
+            cached = cls.load_from_file(cls.default_path())
+            _DEFAULT_REGISTRY_CACHE.clear()  # only the current content is ever reachable
+            _DEFAULT_REGISTRY_CACHE[key] = cached
+        return cached

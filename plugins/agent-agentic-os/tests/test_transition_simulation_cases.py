@@ -12,7 +12,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 
 from control_plane.registry import TransitionRegistry
-from control_plane.transition_simulation_cases import build_simulation_cases, force_close_exempt
+from control_plane.transition_simulation_cases import build_simulation_cases, proof_gate_exempt
 
 
 def test_expected_case_count_per_edge():
@@ -23,7 +23,7 @@ def test_expected_case_count_per_edge():
     cases = build_simulation_cases(registry)
     expected = 0
     for template in registry.get_all_templates():
-        if not force_close_exempt(template.transition_id):
+        if not proof_gate_exempt(template):
             expected += 2
         elif template.transition_id.startswith("force_retrospective_from_"):
             reason_q = next(
@@ -50,12 +50,13 @@ def test_non_exempt_cases_expect_guidance_confirmation_question():
             assert case.expected_guidance_confirmation_answer in ("YES", "NO")
 
 
-def test_exempt_cases_are_force_close_edges_only():
+def test_exempt_cases_are_cryptographic_proof_edges_only():
     registry = TransitionRegistry.load_default()
     cases = build_simulation_cases(registry)
     for case in cases:
         if case.is_guidance_gate_exempt:
-            assert force_close_exempt(case.transition_id)
+            assert (case.from_state, case.to_state) in registry.proof_required_edges()
+            assert proof_gate_exempt(registry.get_template(case.from_state, case.to_state))
 
 
 def test_approve_and_reject_conditions_both_present_for_every_non_exempt_edge():

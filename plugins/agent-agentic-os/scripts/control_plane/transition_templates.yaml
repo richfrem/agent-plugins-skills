@@ -1044,7 +1044,7 @@ templates:
   from_state: PLAN_REVIEW
   to_state: MULTI_AGENT_REVIEW
   purpose: Select the requested independent review method after the plan was submitted for review.
-  next_steps_hint: "PLAN_REVIEW uses review-selection-v1. Ask one question at a time using the same sequence as implementation review: (1) ask whether the user wants agents to review the draft plan; (2) only after Yes, show all four review methods together—single-agent internal, single-agent external bundle, multi-agent internal, and multi-agent external bundle; (3) only for an internal method, ask separately for the CLI/runtime, model, and effort, resolving each from the confirmed profile and update-cli-models catalog. Do not dispatch an internal reviewer before all three explicit selections are recorded. Persist chat answers through --interactive so SQLite records actor=human. If No, record the explicit skip receipt and use PLAN_REVIEW -> AWAITING_APPROVAL. For an accepted review choice, run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to MULTI_AGENT_REVIEW, then immediately execute the MULTI_AGENT_REVIEW.kickoff.required_sequence through outcome recording; do not stop after acknowledging the transition."
+  next_steps_hint: "PLAN_REVIEW uses review-selection-v1. Ask one question at a time using the same sequence as implementation review: (1) ask whether the user wants agents to review the draft plan; (2) only after Yes, show all four review methods together—single-agent internal, single-agent external bundle, multi-agent internal, and multi-agent external bundle; (3) only for an internal method, ask separately for the CLI/runtime, model, and effort, resolving each from the confirmed profile and update-cli-models catalog. Before asking, run agent_control.py inspect-decisions --task-id <task-id> to re-read what is already recorded instead of relying on memory. If context/agent-capability-profile.json is missing or unreadable, say so and route the human to project-setup (os-init); do not assume any runtime or model. Run agent_control.py list-review-options (read-only) so the human can copy the exact runtime and model identifiers instead of retyping them from memory. For an internal method the coordinator asks the three selections interactively and the human types each one; agents cannot supply them or apply defaults. Do not dispatch an internal reviewer before all three explicit selections are recorded. Persist chat answers through --interactive so SQLite records actor=human. If No, the HUMAN records the skip decision through the interactive command (--interactive); the agent never runs record-review-skip from a chat message or on the human's behalf. Then use PLAN_REVIEW -> AWAITING_APPROVAL. For an accepted review choice, run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to MULTI_AGENT_REVIEW, then immediately execute the MULTI_AGENT_REVIEW.kickoff.required_sequence through outcome recording; do not stop after acknowledging the transition."
   review_selection_contract: review-selection-v1
   review_selection:
     scope: draft_plan
@@ -1080,6 +1080,32 @@ templates:
     - Multi-agent review — internal [Recommended]
     - Multi-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)
     default: Multi-agent review — internal [Recommended]
+  - question_id: plan_review_internal_cli_runtime
+    question: 'Which CLI/runtime should run the internal review? Type one that is confirmed available in context/agent-capability-profile.json; do not assume the host agent.'
+    options: []
+    choices_from:
+      kind: runtime
+    asked_when:
+      question_id: plan_review_method
+      answer_contains: '— internal'
+  - question_id: plan_review_internal_model
+    question: 'Which model should the internal review use? Type one from the current update-cli-models catalog for that runtime; no default is applied.'
+    options: []
+    choices_from:
+      kind: model
+      runtime_question: plan_review_internal_cli_runtime
+    asked_when:
+      question_id: plan_review_method
+      answer_contains: '— internal'
+  - question_id: plan_review_internal_effort
+    question: 'Which reasoning effort should the internal review use? Type the level; no default is applied.'
+    options: []
+    choices_from:
+      kind: effort
+      runtime_question: plan_review_internal_cli_runtime
+    asked_when:
+      question_id: plan_review_method
+      answer_contains: '— internal'
   approval:
     required: false
     approver_role: agent_or_human
@@ -1102,7 +1128,7 @@ templates:
   guidance:
     success: "TRIVIAL may use the intentional review-skip receipt and proceed after the user accepts the concise plan; do not dispatch agents or run broad research unless explicitly requested. STANDARD requires its selected review or explicit skip."
     denial: "Do not treat plan review as implementation approval; return to DRAFT_PLAN for changes or record the required review disposition."
-  next_steps_hint: "Review the authored plan or the revised plan returned from independent review. Record the review outcome with record-critic-review, or record an intentional skip with record-review-skip; ensure critic_review_or_skip is satisfied. Then answer whether you accept the plan or require further revisions. If accepted, run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to AWAITING_APPROVAL. Revisions return to DRAFT_PLAN."
+  next_steps_hint: "Review the authored plan or the revised plan returned from independent review. Record the review outcome with record-critic-review, or, when the human chose to skip review, confirm the HUMAN recorded that skip (record-review-skip, run by the human through the interactive command --interactive); the agent never records a skip on the human's behalf; ensure critic_review_or_skip is satisfied. Then answer whether you accept the plan or require further revisions. If accepted, run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to AWAITING_APPROVAL. Revisions return to DRAFT_PLAN."
   checklist:
   - Current task state is persisted as PLAN_REVIEW
   - 'Deterministic check satisfied: critic_review_or_skip'
@@ -1225,11 +1251,12 @@ templates:
 - transition_id: awaiting_approval_to_approved
   from_state: AWAITING_APPROVAL
   to_state: APPROVED
+  requires_cryptographic_proof: true
   purpose: Obtain explicit human approval to proceed with task implementation and worktree creation.
   guidance:
     success: "TRIVIAL and STANDARD both require explicit implementation approval here. This is the capability boundary that releases worktree/code access; do not infer it from plan acceptance."
     denial: "Without explicit implementation approval, remain pre-worktree regardless of task size."
-  next_steps_hint: "Commit any interim work made during INTAKE/INTERVIEW/DRAFT_PLAN to a small branch and get it reviewed/merged BEFORE this transition, so main is clean before a worktree is created (references/worktree-reconciliation-and-multi-worktree-practices.md Section 1 -- this is now enforced by the main_clean_before_approval check below, not just documented practice). If main is dirty, either commit/push it first or record an explicit human main_dirty_before_approval_exception receipt with the reason. Then answer this edge's YAML questions with --interactive or --answers '<json>'. Complete this edge's checklist and required gates, then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to APPROVED."
+  next_steps_hint: "Human-signed gate. Run coordinate-transition --task-id <task-id> --to APPROVED. In an interactive terminal (--interactive) the CLI prints the exact challenge (task, transition, hashes of the reviewed spec and plan, nonce, expiry), runs ssh-keygen -Y sign so OpenSSH prompts for your private-key passphrase, verifies the signature against allowed_signers and consumes the request in the commit transaction. Without a terminal it stops with HUMAN_PROOF_REQUIRED and a request_id; the human then runs agent_control.py show-challenge --request-id N, signs, and runs approve-transition --request-id N. No prompt, typed word, --answers, --human-confirmed or flag can authorize this edge."
   checklist:
   - Current task state is persisted as AWAITING_APPROVAL
   - Structural DAG transition from AWAITING_APPROVAL to APPROVED is legal
@@ -1237,17 +1264,10 @@ templates:
   required_artifacts: []
   deterministic_checks:
   - main_clean_before_approval
-  human_questions:
-  - question_id: human_implementation_approval
-    question: Approve task implementation and worktree creation?
-    options:
-    - Yes, approve implementation [Recommended]
-    accepted_answers:
-    - Yes, approve implementation [Recommended]
-    default: Yes, approve implementation [Recommended]
+  human_questions: []
   approval:
-    required: true
-    approver_role: human
+    required: false
+    approver_role: agent_or_human
   skip:
     allowed: false
     requires_justification: false
@@ -1257,8 +1277,8 @@ templates:
   - push branch to origin
   denial_message: 'Transition AWAITING_APPROVAL -> APPROVED denied: preconditions or required decisions not satisfied.'
   authority:
-    type: human_decision
-    explanation: Advancing to APPROVED requires explicit human review and authorization gate decision.
+    type: cryptographic_proof
+    explanation: Only a verified OpenSSH signature over a content-bound transition_request, consumed in the commit transaction, can commit this edge.
 - transition_id: awaiting_approval_to_plan_review
   from_state: AWAITING_APPROVAL
   to_state: PLAN_REVIEW
@@ -1534,7 +1554,7 @@ templates:
   from_state: WORKTREE_REVIEW
   to_state: MULTI_AGENT_CODE_REVIEW
   purpose: Submit worktree code diff for independent multi-agent adversarial code review.
-  next_steps_hint: "WORKTREE_REVIEW uses review-selection-v1. Ask one question at a time: (1) ask whether the user wants agents to review the implementation; (2) only after Yes, show all four review methods together—single-agent internal, single-agent external bundle, multi-agent internal, and multi-agent external bundle; (3) only for an internal method, ask separately for the CLI/runtime, model, and effort, resolving each from the confirmed profile and update-cli-models catalog. Do not dispatch an internal reviewer before all three explicit selections are recorded. Persist chat answers through --interactive so SQLite records actor=human. Then complete this edge's checklist and run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to MULTI_AGENT_CODE_REVIEW."
+  next_steps_hint: "WORKTREE_REVIEW uses review-selection-v1. Ask one question at a time: (1) ask whether the user wants agents to review the implementation; (2) only after Yes, show all four review methods together—single-agent internal, single-agent external bundle, multi-agent internal, and multi-agent external bundle; (3) only for an internal method, ask separately for the CLI/runtime, model, and effort, resolving each from the confirmed profile and update-cli-models catalog. Before asking, run agent_control.py inspect-decisions --task-id <task-id> to re-read what is already recorded instead of relying on memory. If context/agent-capability-profile.json is missing or unreadable, say so and route the human to project-setup (os-init); do not assume any runtime or model. Run agent_control.py list-review-options (read-only) so the human can copy the exact runtime and model identifiers instead of retyping them from memory. For an internal method the coordinator asks the three selections interactively and the human types each one; agents cannot supply them or apply defaults. Do not dispatch an internal reviewer before all three explicit selections are recorded. Persist chat answers through --interactive so SQLite records actor=human. Then complete this edge's checklist and run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to MULTI_AGENT_CODE_REVIEW."
   review_selection_contract: review-selection-v1
   review_selection:
     scope: implementation
@@ -1570,6 +1590,32 @@ templates:
     - Multi-agent review — internal [Recommended]
     - Multi-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)
     default: Multi-agent review — internal [Recommended]
+  - question_id: implementation_review_internal_cli_runtime
+    question: 'Which CLI/runtime should run the internal review? Type one that is confirmed available in context/agent-capability-profile.json; do not assume the host agent.'
+    options: []
+    choices_from:
+      kind: runtime
+    asked_when:
+      question_id: implementation_review_method
+      answer_contains: '— internal'
+  - question_id: implementation_review_internal_model
+    question: 'Which model should the internal review use? Type one from the current update-cli-models catalog for that runtime; no default is applied.'
+    options: []
+    choices_from:
+      kind: model
+      runtime_question: implementation_review_internal_cli_runtime
+    asked_when:
+      question_id: implementation_review_method
+      answer_contains: '— internal'
+  - question_id: implementation_review_internal_effort
+    question: 'Which reasoning effort should the internal review use? Type the level; no default is applied.'
+    options: []
+    choices_from:
+      kind: effort
+      runtime_question: implementation_review_internal_cli_runtime
+    asked_when:
+      question_id: implementation_review_method
+      answer_contains: '— internal'
   approval:
     required: false
     approver_role: agent_or_human
@@ -1587,40 +1633,31 @@ templates:
 - transition_id: worktree_review_to_verify_exit
   from_state: WORKTREE_REVIEW
   to_state: VERIFY_EXIT
+  requires_cryptographic_proof: true
   purpose: Advance reviewed code to final exit verification and baseline sovereignty checks.
   guidance:
     success: "TRIVIAL uses the focused verification receipt and does not run the repository-wide suite unless the user asks or approves it. STANDARD uses the full approved verification contract."
     denial: "Do not broaden verification silently; record the focused result or obtain explicit approval for broader testing."
-  next_steps_hint: "Human accept-and-skip decision required (auth-ciba-poc-transition-mechanics, 2026-09-17: this edge previously had zero declared questions -- a genuine skip-review path with no human confirmation at all). Answer confirm_worktree_review_accept_implementation with --interactive so SQLite records actor=human, then satisfy code_review_or_skip: --skip-review --skip-reason '<reason>'. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to VERIFY_EXIT. If code review is wanted instead, answer the WORKTREE_REVIEW -> MULTI_AGENT_CODE_REVIEW question first; do not infer a review choice from this edge."
+  next_steps_hint: "Human-signed gate. Run coordinate-transition --task-id <task-id> --to VERIFY_EXIT. In an interactive terminal (--interactive) the CLI prints the exact challenge (task, transition, commit SHA, tracked-diff hash, untracked-files hash, nonce, expiry), runs ssh-keygen -Y sign so OpenSSH prompts for your private-key passphrase, verifies the signature against allowed_signers and consumes the request in the commit transaction. Without a terminal it stops with HUMAN_PROOF_REQUIRED and a request_id; the human then runs agent_control.py show-challenge --request-id N, signs, and runs approve-transition --request-id N. If the code changes after the request the approval is refused and a new request is needed. No prompt, typed word, --answers, --human-confirmed or flag can authorize this edge."
   checklist:
   - Current task state is persisted as WORKTREE_REVIEW
-  - 'Human question answered: confirm_worktree_review_accept_implementation'
-  - 'Deterministic check satisfied: code_review_or_skip'
   required_artifacts:
   - .worktrees/<task-id>
-  deterministic_checks:
-  - code_review_or_skip
-  human_questions:
-  - question_id: confirm_worktree_review_accept_implementation
-    question: 'Do you accept this implementation as-is and want to skip agent code review, proceeding directly to exit verification?'
-    options:
-    - Yes, I accept the implementation and skip code review [Recommended]
-    - No, I want agent code review first
-    accepted_answers:
-    - Yes, I accept the implementation and skip code review [Recommended]
+  deterministic_checks: []
+  human_questions: []
   approval:
     required: false
     approver_role: agent_or_human
   skip:
-    allowed: true
-    requires_justification: true
+    allowed: false
+    requires_justification: false
   capabilities_released:
   - exit_verification
   capabilities_prohibited: []
   denial_message: 'Transition WORKTREE_REVIEW -> VERIFY_EXIT denied: preconditions or required decisions not satisfied.'
   authority:
-    type: deterministic
-    explanation: Transition from WORKTREE_REVIEW to VERIFY_EXIT is deterministically governed by automated checks and artifacts.
+    type: cryptographic_proof
+    explanation: Only a verified OpenSSH signature over a content-bound transition_request, consumed in the commit transaction, can commit this edge.
 - transition_id: worktree_review_to_in_worktree
   from_state: WORKTREE_REVIEW
   to_state: IN_WORKTREE
@@ -1738,24 +1775,17 @@ templates:
 - transition_id: multi_agent_code_review_to_verify_exit
   from_state: MULTI_AGENT_CODE_REVIEW
   to_state: VERIFY_EXIT
+  requires_cryptographic_proof: true
   purpose: Advance lifecycle state from MULTI_AGENT_CODE_REVIEW to VERIFY_EXIT upon satisfying phase requirements and verifications.
-  next_steps_hint: "Human accept decision required (auth-ciba-poc-transition-mechanics, 2026-09-17: this edge previously had zero declared questions -- code_review_or_skip's own receipt check has no actor verification, so this was reachable with no human confirmation at all). Answer confirm_multi_agent_code_review_accept_outcome with --interactive so SQLite records actor=human. First satisfy code_review_or_skip; use: record-critic-review with verdict PASS or record-review-skip with a justification. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to VERIFY_EXIT."
+  next_steps_hint: "Human-signed gate. Run coordinate-transition --task-id <task-id> --to VERIFY_EXIT. In an interactive terminal (--interactive) the CLI prints the exact challenge (task, transition, commit SHA, tracked-diff hash, untracked-files hash, nonce, expiry), runs ssh-keygen -Y sign so OpenSSH prompts for your private-key passphrase, verifies the signature against allowed_signers and consumes the request in the commit transaction. Without a terminal it stops with HUMAN_PROOF_REQUIRED and a request_id; the human then runs agent_control.py show-challenge --request-id N, signs, and runs approve-transition --request-id N. If the code changes after the request the approval is refused and a new request is needed. No prompt, typed word, --answers, --human-confirmed or flag can authorize this edge."
   checklist:
   - Current task state is persisted as MULTI_AGENT_CODE_REVIEW
-  - 'Human question answered: confirm_multi_agent_code_review_accept_outcome'
   - Structural DAG transition from MULTI_AGENT_CODE_REVIEW to VERIFY_EXIT is legal
   required_artifacts:
   - .worktrees/<task-id>
   deterministic_checks:
-  - code_review_or_skip
-  human_questions:
-  - question_id: confirm_multi_agent_code_review_accept_outcome
-    question: 'Do you accept the code review outcome and want to proceed to exit verification?'
-    options:
-    - Yes, I accept the review outcome [Recommended]
-    - No, I want further changes first
-    accepted_answers:
-    - Yes, I accept the review outcome [Recommended]
+  - critic_review_pass
+  human_questions: []
   approval:
     required: false
     approver_role: agent_or_human
@@ -1767,9 +1797,8 @@ templates:
   capabilities_prohibited: []
   denial_message: 'Transition MULTI_AGENT_CODE_REVIEW -> VERIFY_EXIT denied: preconditions or required decisions not satisfied.'
   authority:
-    type: deterministic
-    explanation: Transition from MULTI_AGENT_CODE_REVIEW to VERIFY_EXIT is deterministically governed by automated checks
-      and artifacts.
+    type: cryptographic_proof
+    explanation: Only a verified OpenSSH signature over a content-bound transition_request, consumed in the commit transaction, can commit this edge.
 - transition_id: multi_agent_code_review_to_in_worktree
   from_state: MULTI_AGENT_CODE_REVIEW
   to_state: IN_WORKTREE
@@ -1886,8 +1915,9 @@ templates:
 - transition_id: retrospective_to_done
   from_state: RETROSPECTIVE
   to_state: DONE
+  requires_cryptographic_proof: true
   purpose: Complete the task after a completed retrospective or an explicitly reasoned skip.
-  next_steps_hint: "First persist the completed retrospective through the supported record_retrospective wrapper with the required entry fields and resolved follow-ups; do this before requesting DONE. For STANDARD work, run the repository-wide pytest -q suite and record full_test_suite. For TRIVIAL work, record focused_test_suite instead unless the user requests or explicitly approves the full suite. Then answer this edge's retrospective_decision question one at a time with --interactive, satisfy retrospective_done_guard, and run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to DONE."
+  next_steps_hint: "First persist the completed retrospective through the supported record_retrospective wrapper with the required entry fields and resolved follow-ups; do this before requesting DONE. For STANDARD work, run the repository-wide pytest -q suite and record full_test_suite. For TRIVIAL work, record focused_test_suite instead unless the user requests or explicitly approves the full suite. Satisfy retrospective_done_guard (if it denies the request, the denial names the recovery). Then request closure: Human-signed closure. Run coordinate-transition --task-id <task-id> --to DONE. In an interactive terminal (--interactive) the CLI prints the exact challenge (task, transition, worktree commit SHA and diff hashes when a worktree is registered, and for normal completion the recorded retrospective decision and digest, nonce, expiry), runs ssh-keygen -Y sign so OpenSSH prompts for your private-key passphrase, verifies the signature against allowed_signers and consumes the request in the commit transaction. Without a terminal it stops with HUMAN_PROOF_REQUIRED and a request_id; the human then runs show-challenge, signs, and runs approve-transition. There is no force-close word, flag or prompt: closure of any task from any state takes the same signature."
   checklist:
   - Current task state is persisted as RETROSPECTIVE
   - Retrospective survey is complete or explicitly skipped with a reason
@@ -1899,13 +1929,7 @@ templates:
   guidance:
     success: "TRIVIAL closes with focused verification and the retrospective; STANDARD closes only after full-suite verification. Neither route may skip the user review or retrospective evidence."
     denial: "Remain in RETROSPECTIVE until the route-appropriate verification receipt and retrospective decision are recorded."
-  human_questions:
-  - question_id: retrospective_decision
-    question: 'Choose the pipeline-close retrospective outcome: complete the survey or skip it with a recorded reason.'
-    options:
-    - complete
-    - skip
-    default: complete
+  human_questions: []
   approval:
     required: false
     approver_role: agent_or_human
@@ -1916,8 +1940,8 @@ templates:
   capabilities_prohibited: []
   denial_message: 'Transition RETROSPECTIVE -> DONE denied: retrospective is incomplete or has unresolved issue follow-ups.'
   authority:
-    type: deterministic
-    explanation: Completion is controlled by the persisted retrospective record and follow-up statuses.
+    type: cryptographic_proof
+    explanation: Only a verified OpenSSH signature over a content-bound transition_request, consumed in the commit transaction, can commit this edge.
 - transition_id: retrospective_to_escalated
   from_state: RETROSPECTIVE
   to_state: ESCALATED
@@ -2183,27 +2207,18 @@ templates:
 - transition_id: human_force_done
   from_state: "*"
   to_state: DONE
+  requires_cryptographic_proof: true
   purpose: Allow a human-in-the-loop to terminate any non-DONE task as DONE without claiming implementation occurred.
-  next_steps_hint: "This is an exceptional human-forced completion. Answer FORCE_DONE interactively, provide a reason, and run coordinate-transition --task-id <task-id> --to DONE --interactive. The decision is permanent for this task incarnation and must explain why remaining work is intentionally closed."
+  next_steps_hint: "Human-signed closure. Run coordinate-transition --task-id <task-id> --to DONE. In an interactive terminal (--interactive) the CLI prints the exact challenge (task, transition, worktree commit SHA and diff hashes when a worktree is registered, and for normal completion the recorded retrospective decision and digest, nonce, expiry), runs ssh-keygen -Y sign so OpenSSH prompts for your private-key passphrase, verifies the signature against allowed_signers and consumes the request in the commit transaction. Without a terminal it stops with HUMAN_PROOF_REQUIRED and a request_id; the human then runs show-challenge, signs, and runs approve-transition. There is no force-close word, flag or prompt: closure of any task from any state takes the same signature."
   checklist:
   - Current task state is not DONE
   - Human confirmation is provided interactively
   required_artifacts: []
   deterministic_checks: []
-  human_questions:
-  - question_id: human_force_done_confirmation
-    question: 'Force this task to DONE now, acknowledging that this does not claim implementation or verification occurred?'
-    options:
-    - FORCE_DONE
-    - FORCE_CLOSE
-    - CANCEL
-    accepted_answers:
-    - FORCE_DONE
-    - FORCE_CLOSE
-    default: CANCEL
+  human_questions: []
   approval:
     required: false
-    approver_role: human
+    approver_role: agent_or_human
   skip:
     allowed: false
     requires_justification: false
@@ -2213,10 +2228,10 @@ templates:
   - claim verification completion
   - create implementation worktree
   - push branch to origin
-  denial_message: 'Human-forced DONE denied: interactive FORCE_DONE confirmation is required.'
+  denial_message: 'Closure denied: a human-signed transition_request (ssh-keygen -Y sign, verified against allowed_signers) is required; no typed word or flag authorizes it.'
   authority:
-    type: human_decision
-    explanation: Only an interactive human confirmation can take this exceptional terminal path; the recorded reason must distinguish administrative closure from implementation completion.
+    type: cryptographic_proof
+    explanation: Only a verified OpenSSH signature over a content-bound transition_request, consumed in the commit transaction, can commit this edge.
 - transition_id: reset_to_intake
   from_state: "*"
   to_state: INTAKE
@@ -2250,36 +2265,27 @@ templates:
 - transition_id: force_close_to_done
   from_state: "*"
   to_state: DONE
+  requires_cryptographic_proof: true
   purpose: Close a task from any active lifecycle state when a human explicitly authorizes force closure.
-  next_steps_hint: "For planning-only closure, run coordinate-transition --to DONE --actor human --force-close --interactive; a genuine human must type the exact authorization FORCE_CLOSE (or FORCE_DONE) at the prompt. This path releases no implementation capability and does not claim implementation or verification."
+  next_steps_hint: "Human-signed closure. Run coordinate-transition --task-id <task-id> --to DONE. In an interactive terminal (--interactive) the CLI prints the exact challenge (task, transition, worktree commit SHA and diff hashes when a worktree is registered, and for normal completion the recorded retrospective decision and digest, nonce, expiry), runs ssh-keygen -Y sign so OpenSSH prompts for your private-key passphrase, verifies the signature against allowed_signers and consumes the request in the commit transaction. Without a terminal it stops with HUMAN_PROOF_REQUIRED and a request_id; the human then runs show-challenge, signs, and runs approve-transition. There is no force-close word, flag or prompt: closure of any task from any state takes the same signature."
   checklist:
   - Current task state is persisted and matches the requested source occupancy
-  - Explicit human force-close authorization is recorded
+  - A human-signed transition_request for this edge is verified and consumed
   required_artifacts: []
   deterministic_checks: []
-  human_questions:
-  - question_id: force_close_authorization
-    question: Type FORCE_CLOSE to authorize closing this task immediately.
-    options:
-    - FORCE_CLOSE
-    - FORCE_DONE
-    default: ''
-    accepted_answers:
-    - FORCE_CLOSE
-    - FORCE_DONE
+  human_questions: []
   approval:
     required: false
-    approver_role: human
+    approver_role: agent_or_human
   skip:
     allowed: false
     requires_justification: false
   capabilities_released: []
   capabilities_prohibited: []
-  denial_message: 'Planning-only force close denied: explicit interactive human authorization FORCE_CLOSE or FORCE_DONE is required.'
+  denial_message: 'Planning-only close denied: a human-signed transition_request (ssh-keygen -Y sign, verified against allowed_signers) is required; no typed word or flag authorizes it.'
   authority:
-    type: human_decision
-    explanation: Force closure is available from any non-DONE state only after an interactive human authorization.
-
+    type: cryptographic_proof
+    explanation: Only a verified OpenSSH signature over a content-bound transition_request, consumed in the commit transaction, can commit this edge.
 - transition_id: force_retrospective_from_intake
   from_state: INTAKE
   to_state: RETROSPECTIVE

@@ -152,6 +152,7 @@ Start here for all evolution and improvement work. Everything else is called by 
 |-------|---------|
 | `optimize-agent-instructions` | Audits and rewrites AI agent instruction files |
 | `os-clean-locks` | Removes stale lock files to resolve deadlocked agents |
+| `os-signing-setup` | Guides the human through creating the SSH signing key that authorizes the plan-approval, code-acceptance and closure gates, plus the interactive signing self-test (see the skill's README.md) |
 | `os-health-check` | System diagnostics — inspects event log, memory state, lock status (migrated from agent, 2026-09-05) |
 | `todo-check` | Audits files for TODO comments |
 | `os-guide` | Full OS reference — layers, interactions, patterns |

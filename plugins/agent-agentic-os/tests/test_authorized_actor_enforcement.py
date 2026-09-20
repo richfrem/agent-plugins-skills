@@ -74,17 +74,17 @@ def test_authorized_actor_derived_human_only_for_force_close_family(registry):
     assert tmpl.authorized_actor == "human_only"
 
 
-def test_authorized_actor_derived_agent_or_human_for_force_done(registry):
-    """Negative case: '* -> DONE' (force-done) has approval.required=False even
-    though approver_role='human' -- its real gate is the separate
-    FORCE_CLOSE/FORCE_DONE literal-value check in coordinator.py, not the
-    generic approval block this derivation reads. Confirms the derivation
-    does not accidentally over-classify this edge. Same wildcard-expansion
-    note as above applies: INTERVIEW -> DONE is one of the expanded edges."""
+def test_authorized_actor_derived_human_only_and_proof_gated_for_closure_edges(registry):
+    """auth-ciba-increment-b (2026-09-20): every edge into DONE is human_only AND requires_cryptographic_proof.
+    The earlier 'force-done is agent_or_human, gated only by a FORCE_CLOSE/FORCE_DONE literal' contract is gone:
+    there is no literal to type. INTERVIEW -> DONE is one of the wildcard-expanded closure edges."""
     tmpl = registry.get_template("INTERVIEW", "DONE")
     assert tmpl is not None
-    assert tmpl.approval.get("required") is False
-    assert tmpl.authorized_actor == "agent_or_human"
+    assert tmpl.authorized_actor == "human_only"
+    assert ("INTERVIEW", "DONE") in registry.proof_required_edges()
+    assert not any(
+        {"FORCE_DONE", "FORCE_CLOSE"} & set(q.get("accepted_answers", [])) for q in tmpl.human_questions
+    )
 
 
 def test_valid_transitions_table_has_authorized_actor_column(tmp_path):
@@ -168,7 +168,7 @@ def _reach_awaiting_approval(tmp_path, registry, task_id: str) -> PipelineSimula
         task_id=task_id, to_state="PLAN_REVIEW", actor="human",
         reason="shared setup", interactive=True,
     )
-    review_answers = iter(["1", "3", "YES"])
+    review_answers = iter(["1", "3", "claude-cli", "test-model", "medium", "YES"])
     TransitionCoordinator(
         sim.control_plane, registry=sim.registry,
         input_fn=lambda _p: next(review_answers), output_stream=io.StringIO(),
@@ -203,8 +203,13 @@ def test_guidance_confirmation_still_human_only_on_consequential_edge(tmp_path, 
     task_id = "case9-consequential-edge"
     sim = _reach_awaiting_approval(tmp_path, registry, task_id)
 
+    from control_plane.snapshot import gate1_artifact_paths
     coord = TransitionCoordinator(sim.control_plane, registry=sim.registry, output_stream=io.StringIO())
-    with pytest.raises(TransitionCoordinatorError, match="requires a real human answer"):
+    for _label, _path in gate1_artifact_paths(coord._resolve_repo_root(), task_id):  # reviewed content exists: the refusal is about authority
+        _path.parent.mkdir(parents=True, exist_ok=True)
+        _path.write_text("reviewed\n")
+    # Programmatic answers on a human_only, proof-gated edge never authorize it: the coordinator halts for a signature.
+    with pytest.raises(TransitionCoordinatorError, match="HUMAN_PROOF_REQUIRED"):
         coord.coordinate_transition(
             task_id=task_id,
             to_state="APPROVED",

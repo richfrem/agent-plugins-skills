@@ -14,8 +14,6 @@ Key Input Dependencies:
     - A ControlPlane instance and sqlite3 access to its db_path, passed in by callers
 
 Key Functions:
-    - force_close_exempt_transition_id() -- whether an edge is exempt from the
-      mandatory guidance-compliance confirmation by transition_id name pattern.
     - sequential_answers_for_edge() -- builds an interactive input_fn for one
       coordinate_transition() call, deriving the guidance-confirmation requirement
       from the live TransitionRegistry rather than hardcoding it per test.
@@ -44,22 +42,12 @@ from control_plane.constants import (  # noqa: F401
 )
 
 
-def force_close_exempt_transition_id(transition_id: str) -> bool:
-    """Emergency/force-close edges are exempt from the mandatory guidance-compliance
-    confirmation (see coordinator.py's `if not force_close:` gate)."""
-    return transition_id.startswith((
-        "force_close_to_done__from_",
-        "human_force_done__from_",
-    ))
-
-
 def sequential_answers_for_edge(
     from_state: str,
     to_state: str,
     own_answers: List[str],
     *,
     registry: Optional[TransitionRegistry] = None,
-    force_close: bool = False,
 ):
     """Builds an interactive input_fn for one coordinate_transition() call, deriving
     whether the mandatory guidance-compliance confirmation is needed from the LIVE
@@ -71,14 +59,15 @@ def sequential_answers_for_edge(
     declared `human_questions`, THEN the approval y/n prompt if `template.approval`
     is required (the coordinator asks that immediately after human_questions). Only
     the trailing mandatory guidance-compliance confirmation is appended
-    automatically by this helper (and only when the edge isn't force-close-exempt).
+    automatically by this helper (and only when the edge isn't a cryptographic-proof edge, which takes a signature
+    instead of typed answers).
     """
     reg = registry or TransitionRegistry.load_default()
     template = reg.get_template(from_state, to_state)
     assert template is not None, f"No template registered for {from_state} -> {to_state}"
 
     answers = list(own_answers)
-    if not force_close and not force_close_exempt_transition_id(template.transition_id):
+    if not template.requires_cryptographic_proof:
         answers.append("YES")
 
     it = iter(answers)

@@ -479,7 +479,9 @@ def test_transition_to_done_blocked_without_persistence_receipt(control_plane):
     stage_implementation_ledger(control_plane, task_id)
     control_plane.transition(task_id=task_id, to_state=STATE_RETROSPECTIVE, actor="controller", reason="Exit gates passed")
     stage_human_decisions(control_plane, task_id, STATE_RETROSPECTIVE, STATE_DONE, actor="human", answer="skip")
-    with pytest.raises(PersistenceInvariantViolation, match="retrospective is incomplete"):
+    # DONE is a cryptographic gate: the closure guard now refuses in the coordinator's preflight, before any
+    # signature request exists (the persistence layer raises the same message when reached directly).
+    with pytest.raises((PersistenceInvariantViolation, TransitionCoordinatorError), match="retrospective is incomplete"):
         control_plane.transition(task_id=task_id, to_state=STATE_DONE, actor="controller", reason="Attempt without retrospective")
 
 
@@ -719,7 +721,12 @@ def test_facade_rejects_noninteractive_human_provenance(control_plane):
             answer="Accept plan and proceed to human approval [Recommended]",
         )
         control_plane.transition(task_id=task_id, to_state=STATE_AWAITING_APPROVAL, actor="human", reason="Review skipped for provenance test setup")
-        with pytest.raises(TransitionCoordinatorError, match="interactive human provenance"):
+        from control_plane.snapshot import gate1_artifact_paths
+        _gate1_files = [path for _label, path in gate1_artifact_paths(TransitionCoordinator(control_plane)._resolve_repo_root(), task_id)]
+        for _path in _gate1_files:  # the reviewed content exists, so the refusal below is about authority
+            _path.parent.mkdir(parents=True, exist_ok=True)
+            _path.write_text("reviewed")
+        with pytest.raises(TransitionCoordinatorError, match="HUMAN_PROOF_REQUIRED"):
             control_plane.coordinate_transition(
                 task_id=task_id,
                 to_state=STATE_APPROVED,
@@ -731,40 +738,23 @@ def test_facade_rejects_noninteractive_human_provenance(control_plane):
     finally:
         spec_path.unlink(missing_ok=True)
         plan_path.unlink(missing_ok=True)
+        for _path in _gate1_files:
+            _path.unlink(missing_ok=True)
 
 
-def test_cli_transition_parsers_accept_skip_review_flags():
-    """Regression test: the 'transition' and 'coordinate-transition' argparse subparsers
-    must expose --skip-review/--skip-reason — _dispatch_command() reads them via
-    getattr(args, "skip_review", False) with a silent False/None fallback, which means
-    an unregistered flag doesn't fail loudly; it silently no-ops. A user passing
-    --skip-review on the actual CLI got 'unrecognized arguments' before this fix,
-    since neither subparser declared the flag at all."""
+def test_cli_transition_parsers_refuse_the_removed_skip_and_force_close_flags():
+    """auth-ciba-increment-b: --skip-review/--skip-reason and --force-close no longer exist on the CLI. An
+    unregistered flag must fail loudly (argparse exit 2, 'unrecognized arguments'), never silently no-op --
+    the three human authorities (APPROVED, VERIFY_EXIT, DONE) take a signature and nothing else."""
     from agent_control import _build_parser
 
     parser = _build_parser()
     for subcommand in ("transition", "coordinate-transition"):
-        args = parser.parse_args([
-            subcommand, "--task-id", "t1", "--to", STATE_AWAITING_APPROVAL,
-            "--skip-review", "--skip-reason", "user requested skip",
-            "--human-confirmed", "HUMAN-CONFIRMED: test fixture",
-        ])
-        assert args.skip_review is True
-        assert args.skip_reason == "user requested skip"
+        for removed in (["--skip-review", "--skip-reason", "user requested skip"], ["--force-close"]):
+            with pytest.raises(SystemExit) as excinfo:
+                parser.parse_args([subcommand, "--task-id", "t1", "--to", STATE_DONE, *removed])
+            assert excinfo.value.code == 2, (subcommand, removed)
 
-def test_cli_transition_parsers_expose_human_force_close_flag():
-    """The governed any-state DONE path must be reachable only through an explicit
-    force-close flag; the parser must not leave the coordinator capability unreachable."""
-    from agent_control import _build_parser
-
-    parser = _build_parser()
-    for subcommand in ("transition", "coordinate-transition"):
-        args = parser.parse_args([
-            subcommand, "--task-id", "t1", "--to", STATE_DONE,
-            "--actor", "human", "--force-close", "--interactive",
-            "--human-confirmed", "HUMAN-CONFIRMED: FORCE_CLOSE fixture",
-        ])
-        assert args.force_close is True
 
 def test_worktree_post_implementation_review_stage_gate(control_plane):
     """Test transitions through WORKTREE_REVIEW and MULTI_AGENT_CODE_REVIEW before VERIFY_EXIT."""
@@ -1480,8 +1470,11 @@ def test_migration_swallows_only_duplicate_column_not_other_errors(control_plane
 
     monkeypatch.setattr(sqlite3_module, "connect", _fake_connect)
 
+    # A FRESH database: an already-initialized one takes ensure_schema()'s read-only fast path and never re-runs
+    # the migration loop (the intended optimization), so this must target a DB that still needs migrating.
+    fresh_db_path = temp_db_path.with_name("fresh-migration-target.db")
     with pytest.raises(sqlite3_module.OperationalError, match="disk I/O error"):
-        ControlPlane(db_path=temp_db_path).init_db()
+        ControlPlane(db_path=fresh_db_path).init_db()
 
 
 def test_critic_review_iteration_not_capped_at_three(control_plane):
@@ -1709,7 +1702,6 @@ def test_legacy_policy_migration_parity():
         # DEBT-20260913: softened to accept an explicit human-recorded defer decision too
         # (testing is re-checked, not skipped, at the later MULTI_AGENT_CODE_REVIEW/VERIFY_EXIT gate).
         (STATE_IN_WORKTREE, STATE_WORKTREE_REVIEW): "test_suite_or_deferred_to_review",
-        (STATE_WORKTREE_REVIEW, STATE_VERIFY_EXIT): "code_review_or_skip",
         (STATE_VERIFY_EXIT, STATE_RETROSPECTIVE): "done_guard",
         (STATE_RETROSPECTIVE, STATE_DONE): "retrospective_done_guard",
         (STATE_VERIFY_EXIT, STATE_ROLLED_BACK): "rolled_back_guard",
@@ -1725,6 +1717,14 @@ def test_legacy_policy_migration_parity():
             f"Gated edge ({from_state} -> {to_state}) missing required check '{expected_check}'. "
             f"Found: {template.deterministic_checks}"
         )
+
+    # Gate 3 (auth-ciba-increment-b): the edges into VERIFY_EXIT have no receipt-based skip path. Their authority
+    # is the human's signature, so a code_review_or_skip check must NOT reappear on them.
+    for from_state in (STATE_WORKTREE_REVIEW, STATE_MULTI_AGENT_CODE_REVIEW):
+        template = registry.get_template(from_state, STATE_VERIFY_EXIT)
+        assert template is not None
+        assert (from_state, STATE_VERIFY_EXIT) in registry.proof_required_edges()
+        assert "code_review_or_skip" not in template.deterministic_checks
 
 
 def test_action_capability_mapping():
@@ -2684,8 +2684,9 @@ def test_sequential_question_pacing(control_plane, tmp_path):
     inputs = [
         "Yes — continue to review method selection [Recommended]",
         "Multi-agent review — internal [Recommended]",
+        "claude-cli", "test-model", "medium",
         "YES",
-    ]  # agent-review decision, review-method answer, then guidance-compliance confirmation
+    ]  # agent-review decision, review-method answer, internal runtime/model/effort, then guidance-compliance confirmation
     input_prompts = []
 
     def mock_input(prompt: str) -> str:
@@ -2711,9 +2712,9 @@ def test_sequential_question_pacing(control_plane, tmp_path):
     )
     assert rec.to_state == STATE_MULTI_AGENT_REVIEW
     # Verify input prompts were invoked individually, one question at a time (not batched)
-    assert len(input_prompts) == 3
-    assert all("Select option" in p for p in input_prompts[:2])
-    assert "guidance_compliance_confirmation" in input_prompts[2]
+    assert len(input_prompts) == 6  # decision, method, internal runtime, model, effort, guidance confirmation
+    assert all("Select option" in p for p in input_prompts[:5])
+    assert "guidance_compliance_confirmation" in input_prompts[5]
 
 
 def test_coordinator_rejection_on_failed_check_no_orphan_receipts(control_plane):
@@ -3403,7 +3404,7 @@ def test_transition_templates_semantic_quality_no_boilerplate():
         raw_dict = template.to_dict()
         assert "authority" in raw_dict, f"Template {template.transition_id} missing authority declaration"
         auth = raw_dict["authority"]
-        assert auth.get("type") in ("deterministic", "human_decision", "human_review"), (
+        assert auth.get("type") in ("deterministic", "human_decision", "human_review", "cryptographic_proof"), (
             f"Template {template.transition_id} invalid authority type: {auth.get('type')}"
         )
         assert len(auth.get("explanation", "")) > 10, (
@@ -3477,6 +3478,7 @@ def test_coordinator_artifact_resolution_inside_registered_worktree(control_plan
         input_fn=_sequential_answers(
             "Yes — continue to review method selection [Recommended]",
             "Multi-agent review — internal [Recommended]",
+            "claude-cli", "test-model", "medium",
             "YES",
         ),
     )
@@ -3528,20 +3530,124 @@ def test_coordinator_artifact_resolution_inside_registered_worktree(control_plan
     missing_spec.unlink()
     missing_plan.unlink()
 
+    # The internal runtime/model/effort answers are the human's own typed selection, so the attempt is interactive.
+    missing_coord = TransitionCoordinator(
+        control_plane=control_plane,
+        output_stream=io.StringIO(),
+        input_fn=_sequential_answers(
+            "Yes — continue to review method selection [Recommended]",
+            "Multi-agent review — internal [Recommended]",
+            "claude-cli", "test-model", "medium",
+            "YES",
+        ),
+    )
+    # plan submission also staged canonical copies of the plan artifacts, so "missing" is modelled by the task's
+    # registered worktree (which the plan/spec/worktree artifacts resolve against) no longer existing on disk
+    control_plane.update_worktree(
+        task_id=task_id_missing,
+        worktree_path=str(tmp_path / "vanished-worktree"),
+        worktree_branch=f"worktree-{task_id_missing}",
+        worktree_state="written_in_worktree",
+    )
     with pytest.raises(TransitionCoordinatorError, match="Missing required artifact"):
-        coord.coordinate_transition(
+        missing_coord.coordinate_transition(
             task_id=task_id_missing,
             to_state=STATE_MULTI_AGENT_CODE_REVIEW,
             actor="tester",
             reason="Attempt with missing spec/plan",
-            provided_answers={
-                "confirm_review_worktree_review_to_multi_agent_code_review": "Yes — continue to review method selection [Recommended]",
-                "implementation_review_method": "Multi-agent review — internal [Recommended]",
-            },
+            interactive=True,
         )
 
     # 3. Path traversal / outside authorized roots rejected
     assert coord._resolve_artifact_path("docs/plans/../../outside.md", task={"task_id": "t1"}) is None
+
+
+def _write_ledger_plan(path, entries):
+    import json as _json
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        "# Implementation plan\n\n## Implementation Task Ledger\n\n```json\n" + _json.dumps(entries) + "\n```\n",
+        encoding="utf-8",
+    )
+
+
+def _completeness_check(control_plane, task_id):
+    task = control_plane.get_task(task_id)
+    ctx = control_plane._build_transition_policy_ctx(task_id, task, STATE_VERIFY_EXIT, STATE_RETROSPECTIVE)
+    return ctx["check_implementation_completeness"]()
+
+
+def test_implementation_completeness_resolves_the_plan_under_work_tasks_folder(control_plane):
+    """implementation_completeness must find the ledger where plans actually live under the documented layout
+    (docs/plans/work-tasks/<task-id>/, commit a42df236), not only at the legacy flat docs/plans/<task-id>-*.md.
+    Reproduces the live gap: with the plan in the work-tasks folder the check said the ledger was 'missing'."""
+    task_id = "ledger-wt-001"
+    control_plane.create_task(task_id=task_id, title="Ledger", runtime_tool="claude")
+    (control_plane.repo_root / "artifact.txt").write_text("done", encoding="utf-8")
+    plan = control_plane.repo_root / "docs" / "plans" / "work-tasks" / task_id / f"{task_id}-implementation-plan.md"
+    _write_ledger_plan(plan, [{"id": "T1", "status": "COMPLETE", "evidence": "tests green", "artifacts": ["artifact.txt"]}])
+
+    assert _completeness_check(control_plane, task_id) is None
+
+
+def test_implementation_completeness_reads_the_work_tasks_ledger_not_just_its_existence(control_plane):
+    """The ledger found under work-tasks/ is validated, not merely located: a PENDING item there is still denied."""
+    task_id = "ledger-wt-002"
+    control_plane.create_task(task_id=task_id, title="Ledger", runtime_tool="claude")
+    plan = control_plane.repo_root / "docs" / "plans" / "work-tasks" / task_id / f"{task_id}-implementation-plan.md"
+    _write_ledger_plan(plan, [{"id": "T1", "status": "PENDING", "evidence": "", "artifacts": []}])
+
+    reason = _completeness_check(control_plane, task_id)
+    assert reason is not None and "not COMPLETE" in reason and "ledger missing" not in reason
+
+
+def test_implementation_completeness_checks_artifacts_in_the_registered_worktree_when_the_plan_lives_in_the_main_checkout(control_plane):
+    """The plan (docs/plans is not tracked) usually lives in the main checkout, while the implementation and its
+    artifacts exist only in the task's registered worktree. Artifact existence must be judged against the worktree,
+    not against the checkout the plan happened to be found in."""
+    task_id = "ledger-wt-003"
+    control_plane.create_task(task_id=task_id, title="Ledger", runtime_tool="claude")
+    worktree = control_plane.repo_root / ".worktrees" / task_id
+    worktree.mkdir(parents=True)
+    (worktree / "only_in_worktree.py").write_text("x = 1\n", encoding="utf-8")
+    control_plane.update_worktree(task_id, str(worktree), f"feature/{task_id}", "written_in_worktree")
+    plan = control_plane.repo_root / "docs" / "plans" / "work-tasks" / task_id / f"{task_id}-implementation-plan.md"
+    _write_ledger_plan(plan, [{"id": "T1", "status": "COMPLETE", "evidence": "commit abc", "artifacts": ["only_in_worktree.py"]}])
+
+    assert _completeness_check(control_plane, task_id) is None
+
+
+def test_implementation_completeness_accepts_a_valid_ledger_in_either_layout_when_the_other_copy_is_a_stub(control_plane):
+    """The coordinator's plan submission can leave a stub copy under work-tasks/ while the ledger is completed in the
+    flat file (or the reverse): the check passes if SOME candidate plan has a valid COMPLETE ledger, and stays closed
+    when none does."""
+    task_id = "ledger-both-001"
+    control_plane.create_task(task_id=task_id, title="Ledger", runtime_tool="claude")
+    (control_plane.repo_root / "artifact.txt").write_text("done", encoding="utf-8")
+    stub = control_plane.repo_root / "docs" / "plans" / "work-tasks" / task_id / f"{task_id}-implementation-plan.md"
+    stub.parent.mkdir(parents=True)
+    stub.write_text("# Plan (stub, no ledger)\n", encoding="utf-8")
+    assert "Implementation ledger invalid" in _completeness_check(control_plane, task_id)
+
+    _write_ledger_plan(
+        control_plane.repo_root / "docs" / "plans" / f"{task_id}-implementation-plan.md",
+        [{"id": "T1", "status": "COMPLETE", "evidence": "ok", "artifacts": ["artifact.txt"]}],
+    )
+    assert _completeness_check(control_plane, task_id) is None
+
+
+def test_implementation_completeness_still_resolves_the_legacy_flat_plan_and_fails_closed_when_absent(control_plane):
+    flat_id, none_id = "ledger-flat-001", "ledger-none-001"
+    control_plane.create_task(task_id=flat_id, title="Ledger", runtime_tool="claude")
+    control_plane.create_task(task_id=none_id, title="Ledger", runtime_tool="claude")
+    (control_plane.repo_root / "artifact.txt").write_text("done", encoding="utf-8")
+    _write_ledger_plan(
+        control_plane.repo_root / "docs" / "plans" / f"{flat_id}-implementation-plan.md",
+        [{"id": "T1", "status": "COMPLETE", "evidence": "ok", "artifacts": ["artifact.txt"]}],
+    )
+    assert _completeness_check(control_plane, flat_id) is None
+    assert "ledger missing" in _completeness_check(control_plane, none_id)
 
 
 def test_resolve_artifact_path_falls_back_to_work_tasks_folder(control_plane):

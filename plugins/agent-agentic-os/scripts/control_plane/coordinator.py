@@ -16,12 +16,21 @@ Purpose:
 """
 
 import hashlib
+import json
 import sys
 from dataclasses import replace
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, TextIO, Tuple
 from control_plane.registry import TransitionRegistry, TransitionTemplate, TransitionRegistryError
 from control_plane.policy import evaluate_check, PolicyViolation, PolicyConfigurationError
+from control_plane import review_options as _review_options
+from control_plane.review_selection import condition_holds
+from control_plane.identity_layout import default_layout
+from control_plane.isolation_check import check_isolation
+from control_plane.proof_edges import snapshot_for_edge
+from control_plane.snapshot import SnapshotError, snapshot_from_json
+from control_plane.ssh_signing import SIGN_NAMESPACE
+from control_plane.transition_request import DEFAULT_GATE1_TTL_SECONDS, create_transition_request
 from control_plane.constants import (
     STATE_INTERVIEW, STATE_DRAFT_PLAN, STATE_MULTI_AGENT_REVIEW, STATE_PLAN_REVIEW, STATE_AWAITING_APPROVAL, STATE_RETROSPECTIVE, STATE_DONE,
     GUIDANCE_COMPLIANCE_CONFIRM_ANSWER, AUTHORIZED_ACTOR_AGENT_OR_HUMAN,
@@ -37,6 +46,20 @@ from control_plane.ports import (
 class TransitionCoordinatorError(Exception):
     """Raised when transition coordination preconditions or decisions are incomplete or rejected."""
     pass
+
+
+class HumanProofRequired(TransitionCoordinatorError):
+    """Gate 1 needs a cryptographic human approval; nothing was changed.
+
+    `remediation` is a machine-readable dict (edge, request id, what the human must confirm,
+    the exact commands, failed isolation checks) so an agent knows precisely what to ask the
+    human for; the message carries the same content as JSON."""
+
+    def __init__(self, remediation: Dict[str, Any]):
+        self.remediation = remediation
+        super().__init__(
+            "HUMAN_PROOF_REQUIRED: " + remediation["why"] + "\n" + json.dumps(remediation, indent=2)
+        )
 
 
 def _normalize_declared_option(value: str) -> str:
@@ -77,8 +100,18 @@ class TransitionCoordinator:
         output_stream: Optional[TextIO] = None,
         fs: Optional[FilesystemPort] = None,
         repo_root: Optional[Path] = None,
+        human_signer: Optional[Callable[..., Any]] = None,
+        review_choices_fn: Optional[Callable[..., Any]] = None,
     ):
         self._cp = control_plane
+        # Menus for the internal review runtime/model/effort questions (choices_from in the YAML). The default
+        # resolves review_options.choices_for at call time; tests inject a fake-CLI resolver here.
+        self._review_choices_fn = review_choices_fn or (lambda kind, runtime=None: _review_options.choices_for(kind, runtime=runtime))
+        # The human's signing step for a cryptographic-proof edge: a callable(control_plane, request_id) that
+        # shows the challenge, runs `ssh-keygen -Y sign` (the CLI attaches the terminal so OpenSSH prompts for
+        # the private-key passphrase) and commits through approve_transition. None (agents, pipes, CI) means
+        # the coordinator stops with HUMAN_PROOF_REQUIRED and the human runs the three commands themselves.
+        self._human_signer = human_signer
         self._registry = registry or getattr(control_plane, "_transition_registry", None) or TransitionRegistry.load_default()
         self._input_fn = input_fn or input
         self._out = output_stream or sys.stdout
@@ -100,8 +133,6 @@ class TransitionCoordinator:
         skip_decision: Optional[Tuple[str, str]] = None,  # (skip_chosen, reason)
         skip_review: bool = False,
         skip_reason: Optional[str] = None,
-        force_close: bool = False,
-        human_authorization: Optional[str] = None,
     ) -> TransitionRecord:
         """Coordinates and commits a transition according to the template contract."""
         # 1. State machine validation
@@ -111,19 +142,15 @@ class TransitionCoordinator:
         if not task:
             raise TransitionCoordinatorError(f"Task not found: {task_id}")
 
-        # F-08 fix (external review, 2026-09-14): force_close is the deliberate emergency
-        # escape hatch and must remain usable on a guidance-blocked task -- otherwise an
-        # operator has no way to force-abort a genuinely stuck/broken task at all. Its own
-        # authorization (actor=="human", explicit FORCE_CLOSE/FORCE_DONE, interactive=True)
-        # is independently, strictly validated later in this method regardless.
-        if not force_close:
-            block_reason = self._cp.get_guidance_block_reason(task_id)
-            if block_reason:
-                raise TransitionCoordinatorError(
-                    f"BLOCKED: task '{task_id}' is guidance-blocked ({block_reason}). "
-                    "No further transitions are permitted until clear-guidance-block is run "
-                    "with explicit human authorization."
-                )
+        # A guidance-blocked task takes NO transition, including closure: there is no emergency bypass. The
+        # human clears the block (clear-guidance-block) or signs the closure after clearing it.
+        block_reason = self._cp.get_guidance_block_reason(task_id)
+        if block_reason:
+            raise TransitionCoordinatorError(
+                f"BLOCKED: task '{task_id}' is guidance-blocked ({block_reason}). "
+                "No further transitions are permitted until clear-guidance-block is run "
+                "with explicit human authorization."
+            )
 
         current_state = self._cp._read_current_state_for_update(task_id)
         if current_state is None:
@@ -134,53 +161,23 @@ class TransitionCoordinator:
         # masking them as an authorization denial.
         self._cp._state_machine.validate_adjacency(task_id, current_state, to_state)
 
-        if to_state == STATE_DONE and not force_close and current_state != STATE_RETROSPECTIVE:
-            raise TransitionCoordinatorError(
-                "Force close denied: explicit human authorization FORCE_CLOSE is required."
-            )
-        if force_close and (
-            actor != "human" or human_authorization not in ("FORCE_CLOSE", "FORCE_DONE") or not interactive
-        ):
-            raise TransitionCoordinatorError(
-                "Force close denied: explicit interactive human authorization FORCE_CLOSE is required."
-            )
+        # Cryptographic-proof edges (requires_cryptographic_proof in the YAML: every edge into APPROVED,
+        # VERIFY_EXIT and DONE, including closure from any state). No prompt, typed word, flag, --answers or
+        # actor string authorizes them: the transition is committed only by a verified OpenSSH signature over
+        # a content-bound transition_request, consumed in the commit transaction. See _signed_transition.
+        if (current_state, to_state) in self._registry.proof_required_edges():
+            if skip_review:
+                raise TransitionCoordinatorError(
+                    f"{current_state} -> {to_state} requires a cryptographic signature; it cannot be skipped and no flag can bypass it."
+                )
+            return self._signed_transition(task_id, current_state, to_state, actor, interactive)
 
         # 2. Resolve template from registry
-        # Force-close is an explicit authorization override. Resolve its
-        # wildcard contract deliberately so an exact ordinary DONE template
-        # (notably RETROSPECTIVE -> DONE) cannot shadow the override.
         template = self._registry.get_template(current_state, to_state)
-        if force_close and to_state == STATE_DONE:
-            template = (
-                self._registry.get_template_by_id(f"force_close_to_done__from_{current_state}")
-                or self._registry.get_template_by_id(f"human_force_done__from_{current_state}")
-            )
-            if template is None:
-                prototype = next(
-                    (candidate for candidate in self._registry.get_all_templates()
-                     if candidate.transition_id.startswith(("force_close_to_done__from_", "human_force_done__from_"))),
-                    None,
-                )
-                if prototype is not None:
-                    template = replace(
-                        prototype,
-                        from_state=current_state,
-                        transition_id=f"human_force_done__from_{current_state}",
-                    )
         if not template:
             raise TransitionCoordinatorError(
                 f"No template registered for transition ({current_state} -> {to_state})."
             )
-
-        if force_close:
-            if to_state != STATE_DONE:
-                raise TransitionCoordinatorError("force_close is only valid for transitions to DONE.")
-            if actor != "human" or not human_authorization:
-                raise TransitionCoordinatorError("Force-close requires explicit human authorization.")
-            if human_authorization not in ("FORCE_CLOSE", "FORCE_DONE"):
-                raise TransitionCoordinatorError(f"Invalid force_close authorization: {human_authorization}")
-            provided_answers = dict(provided_answers or {})
-            provided_answers.setdefault("human_force_done_confirmation", "FORCE_DONE")
 
         # Programmatic answers must never be presented as interactive human
         # provenance.  The SQLite trigger remains the final authority, but
@@ -191,7 +188,7 @@ class TransitionCoordinator:
             template.approval.get("required")
             and template.approval.get("approver_role", "human") == "human"
         )
-        if actor == "human" and not interactive and provided_answers and human_gated and not force_close:
+        if actor == "human" and not interactive and provided_answers and human_gated:
             raise TransitionCoordinatorError(
                 "Non-interactive answers cannot claim interactive human provenance; "
                 "use --interactive for a genuine human decision."
@@ -287,10 +284,6 @@ class TransitionCoordinator:
             checklist_status.append((True, chk_item))
 
         for check_id in template.deterministic_checks:
-            if force_close:
-                # A validated force-close bypasses ordinary completion gates;
-                # adjacency and explicit human authorization remain enforced.
-                continue
             if check_id in ("interview_trivial_complete", "interview_standard_complete", "interview_plan_route_complete"):
                 deferred_checks.append(check_id)
                 continue
@@ -319,8 +312,6 @@ class TransitionCoordinator:
 
         # 6. Collect human questions sequentially
         answers = dict(provided_answers or {})
-        if force_close:
-            answers["force_close_authorization"] = "FORCE_CLOSE"
         persisted_answers = dict(ctx.get("stage_answers", {}))
         stage_answers = dict(persisted_answers)
         questions_to_ask = []
@@ -344,24 +335,26 @@ class TransitionCoordinator:
             options = q.get("options", [])
             default_opt = q.get("default", "")
 
+            if q.get("asked_when"):
+                # review-selection-v1: internal runtime/model/effort are asked only for an internal
+                # method, and only the human can answer them (never provided_answers, never a default).
+                if not condition_holds(q, {d.question_id: d.answer for d in staged_decisions}):
+                    continue
+                if not interactive:
+                    raise TransitionCoordinatorError(
+                        f"'{qid}' is the human's selection (internal review runtime/model/effort) and must be typed "
+                        "interactively (--interactive); an agent cannot supply it or pick a default."
+                    )
+
+            if q.get("choices_from"):
+                options = self._resolve_review_menu(q, staged_decisions)
+
             self._out.write(f"Question: {q_text}\n")
             for idx, opt in enumerate(options, 1):
                 self._out.write(f"  {idx}. {opt}\n")
             self._out.write("\n")
 
-            if force_close and qid in ("force_close_authorization", "human_force_done_confirmation") and qid in answers:
-                # The force-close gate above already required actor == "human",
-                # an explicit human_authorization value, and interactive == True
-                # as structural proof of live human authorization -- prompting
-                # again here would either re-read real stdin (breaking
-                # programmatic force-close callers like
-                # apply_recovery_transition, which pre-computes this answer)
-                # or force every caller to fake an input_fn just to answer a
-                # question whose value is already fixed by the authorization
-                # already validated above.
-                chosen_ans = answers[qid]
-                decision_actor = "human"
-            elif interactive:
+            if interactive:
                 # Sequential presentation: prompt 1 question at a time
                 prompt_str = f"{qid}: Select option [Recommended: {default_opt}]: "
                 user_input = self._input_fn(prompt_str).strip()
@@ -380,7 +373,7 @@ class TransitionCoordinator:
                 chosen_ans = answers[qid]
                 # Non-interactive provided_answers are supplied programmatically by an agent,
                 # not by a human at an interactive prompt.
-                decision_actor = "human" if force_close and qid == "force_close_authorization" else "agent"
+                decision_actor = "agent"
             else:
                 # Non-interactive without provided answer -> must fail closed despite default
                 raise TransitionCoordinatorError(
@@ -409,7 +402,7 @@ class TransitionCoordinator:
                     to_state=to_state,
                     question_id=qid,
                     answer=chosen_ans,
-                    decision_type="CONFIRMATION" if force_close else ("RESET" if template.transition_id.startswith("reset_to_intake") else "ANSWER"),
+                    decision_type="RESET" if template.transition_id.startswith("reset_to_intake") else "ANSWER",
                     actor=decision_actor,
                     recorded_at=self._cp._clock.current_time(),
                 )
@@ -499,21 +492,20 @@ class TransitionCoordinator:
             )
 
         # 7b. Mandatory per-transition guidance-compliance confirmation (added per explicit
-        # human request, 2026-09-13): every non-force-close transition requires an explicit,
+        # human request, 2026-09-13): every non-proof transition requires an explicit,
         # separate confirmation that the advisory guidance/checklist/questions above were
         # actually read and followed -- not inferred from having answered the edge's own
         # questions. A "no" answer, or no answer at all in interactive mode, blocks ALL
         # further transitions for this task (guidance_block_reason) until a human explicitly
-        # clears it via clear-guidance-block. force_close is exempt: its own literal
-        # FORCE_CLOSE/FORCE_DONE authorization is already a stricter, separate confirmation.
-        if not force_close and "guidance_compliance_confirmation" in persisted_answers:
+        # clears it via clear-guidance-block.
+        if "guidance_compliance_confirmation" in persisted_answers:
             # Already answered and persisted from an earlier staged decision for this
             # exact occupancy (the same mechanism every other question already honors
             # via persisted_answers/ctx["stage_answers"]) -- consistent with the rest
             # of this method, not a bypass: an explicit affirmative answer must still
             # already exist somewhere, it's just not re-asked if it does.
             pass
-        elif not force_close:
+        else:
             guidance_prompt = (
                 "guidance_compliance_confirmation: Have you read and followed this "
                 "transition's YAML guidance (advisory text, checklist, and questions) "
@@ -542,7 +534,7 @@ class TransitionCoordinator:
                 guidance_answer = str(answer_value).strip()
                 guidance_decision_actor = "agent"
             else:
-                # human_only edge (e.g. AWAITING_APPROVAL -> APPROVED, force-close family):
+                # human_only edge that is not a cryptographic-proof edge (e.g. reset-to-INTAKE recovery family):
                 # this question may NEVER be satisfied programmatically (found by
                 # external review, 2026-09-14: an agent could otherwise self-certify
                 # via --answers '{"guidance_compliance_confirmation": "YES"}' with
@@ -594,8 +586,6 @@ class TransitionCoordinator:
             reason=reason,
             staged_decisions=staged_decisions,
             staged_receipts=staged_receipts,
-            force_close=force_close,
-            interactive_human_authorization=(force_close and interactive and actor == "human"),
         )
 
         # 9. Atomic commit via ControlPlane -> SqlitePersistenceAdapter
@@ -627,6 +617,126 @@ class TransitionCoordinator:
         self._print_banner("", end="\n")
 
         return record
+
+    def _resolve_review_menu(self, question: Dict[str, Any], staged_decisions: List[Any]) -> List[str]:
+        """Options for a choices_from question: the selectable menu ids, or [] (free text) with a printed
+        warning when no probe/profile can build one. Typed answers must then match a menu id exactly."""
+        spec = question["choices_from"]
+        runtime = None
+        if spec.get("runtime_question"):
+            runtime = next((d.answer for d in staged_decisions if d.question_id == spec["runtime_question"]), None)
+        choice_set = self._review_choices_fn(spec["kind"], runtime=runtime)
+        selectable = [i["id"] for i in choice_set.items if i.get("installed", True)]
+        for item in choice_set.items:
+            if not item.get("installed", True):
+                self._out.write(f"  (not available: {item['id']} - not found on PATH)\n")
+        if not selectable:
+            self._out.write(f"  WARNING: {choice_set.warning or 'no menu available; the answer cannot be validated'}\n")
+        return selectable
+
+    def authorization_preflight(self, task_id: str, to_state: str) -> List[str]:
+        """Re-run this edge's policy WITHOUT committing anything and return the reasons it would be
+        denied (empty list = passes). Used by approve-transition so a valid signature cannot bypass
+        conditions that changed after the request was made (guidance block, missing artifacts,
+        dirty main, or any other deterministic check of the edge)."""
+        reasons: List[str] = []
+        block = self._cp.get_guidance_block_reason(task_id)
+        if block:
+            reasons.append(f"task is guidance-blocked ({block})")
+        task = self._cp.get_task(task_id)
+        current = self._cp._read_current_state_for_update(task_id)
+        if task is None or current is None:
+            return reasons + [f"task not found: {task_id}"]
+        template = self._registry.get_template(current, to_state)
+        if template is None:
+            return reasons + [f"no template registered for {current} -> {to_state}"]
+        for pattern in template.required_artifacts:
+            rel = pattern.replace("<task-id>", task_id)
+            path = self._resolve_artifact_path(rel, task)
+            if path is None or not self._fs.exists(path):
+                reasons.append(f"missing required artifact: {rel}")
+        ctx = self._cp._build_transition_policy_ctx(task_id, task, current, to_state)
+        deferred = ("interview_trivial_complete", "interview_standard_complete", "interview_plan_route_complete")
+        for check_id in template.deterministic_checks:
+            if check_id in deferred:
+                continue
+            try:
+                evaluate_check(check_id, ctx)
+            except (PolicyViolation, PolicyConfigurationError) as exc:
+                reasons.append(f"{check_id}: {exc}")
+        return reasons
+
+    def _signed_transition(self, task_id: str, from_state: str, to_state: str, actor: str, interactive: bool) -> TransitionRecord:
+        """Commit a cryptographic-proof edge. Runs the edge's checks first (so nothing is signed that could not
+        commit), creates the content-bound transition_request, then either lets the human's signer complete it
+        (interactive terminal) or stops with HUMAN_PROOF_REQUIRED and the request_id."""
+        reasons = self.authorization_preflight(task_id, to_state)
+        if reasons:
+            raise TransitionCoordinatorError(
+                f"Transition {from_state} -> {to_state} denied before any request was created: " + "; ".join(reasons)
+            )
+        repo_root = self._resolve_repo_root()
+        _last = self._cp._persistence.get_last_transition(task_id)
+        record, error = self._create_proof_request(task_id, from_state, to_state, _last.transition_id if _last else None, repo_root)
+        if error is not None:
+            raise error
+        if interactive and self._human_signer is not None:
+            return self._human_signer(self._cp, record.request_id)
+        raise self._human_proof_required(record, task_id, from_state, to_state, repo_root)
+
+    def _create_proof_request(self, task_id, from_state, to_state, occupancy_id, repo_root):
+        """Build the content snapshot and store the PENDING request. Returns (record, None) or (None, error)."""
+        try:
+            snapshot = snapshot_for_edge(self._cp, repo_root, task_id, from_state, to_state)
+        except SnapshotError as exc:
+            return None, TransitionCoordinatorError(
+                f"{from_state} -> {to_state} needs the content the human will sign (plan artifacts under "
+                f"docs/plans/work-tasks/{task_id}/, or the registered git worktree) before a request can be created: {exc}"
+            )
+        conn = self._cp._persistence.get_connection()
+        try:
+            record = create_transition_request(
+                conn, task_id=task_id, from_state=from_state, to_state=to_state, occupancy_id=occupancy_id,
+                ttl_seconds=DEFAULT_GATE1_TTL_SECONDS, content_snapshot=snapshot,
+            )
+        finally:
+            conn.close()
+        return record, None
+
+    def _human_proof_required(self, record, task_id: str, from_state: str, to_state: str, repo_root: Path) -> HumanProofRequired:
+        """The structured HUMAN_PROOF_REQUIRED error for an already-created request."""
+        layout = default_layout(repo_root)
+        preflight = check_isolation(
+            allowed_signers=layout.allowed_signers, allowed_signers_selftest=layout.allowed_signers_selftest,
+            challenge_dir=layout.challenge_dir,
+        )
+        control = "python3 plugins/agent-agentic-os/scripts/agent_control.py"
+        return HumanProofRequired({
+            "code": "HUMAN_PROOF_REQUIRED",
+            "edge": f"{from_state} -> {to_state}",
+            "task_id": task_id,
+            "request_id": record.request_id,
+            "expires_at": int(record.expiration),
+            "why": (
+                "This gate needs a cryptographic approval from a human's signing key. Prompts, piped input, "
+                "injected input functions and --answers cannot authorize it. Nothing was changed: the task is "
+                f"still in {from_state}."
+            ),
+            "binds": [entry.label for entry in snapshot_from_json(record.content_snapshot)] if record.content_snapshot else [],
+            "commands": {
+                "show_challenge": f"{control} show-challenge --request-id {record.request_id}",
+                "sign": f"printed by show-challenge (an ssh-keygen -Y sign -n {SIGN_NAMESPACE} command for your key)",
+                "approve": f"{control} approve-transition --request-id {record.request_id}",
+                "setup_identity": "python3 plugins/agent-agentic-os/scripts/setup_ciba_identity.py",
+                "setup_docs": "plugins/agent-agentic-os/references/isolation-setup.md",
+            },
+            "failed_checks": [{"code": f.code, "path": f.path, "message": f.message} for f in preflight.failures],
+            "note": (
+                "Ask the human to run the three commands in order. The signature authorizes exactly this edge "
+                "and the content listed in `binds`, once, and nothing else. If failed_checks is not empty, the "
+                "human must complete the identity setup first."
+            ),
+        })
 
     def _write_transition_guidance(self, current_state: str, to_state: str, phase: str) -> None:
         """Render advisory guidance from the read-only registry snapshot."""

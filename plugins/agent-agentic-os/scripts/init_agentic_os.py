@@ -825,6 +825,41 @@ def create_global_kernel(dry_run: bool, force: bool) -> None:
 
 
 # External comment: Print initialization completion summary and next steps
+def signing_identity_notice(target: Path) -> List[str]:
+    """READ-ONLY report of cryptographic-verification readiness for `target` (auth-ciba-increment-b T13, Item C).
+
+    Reports whether ssh-keygen can verify SSHSIG, whether `allowed_signers` holds a key scoped to the gate
+    namespace, and prints the exact command a HUMAN runs to set the identity up. It never creates a key, never writes `context/identity/` and never runs the
+    setup: os-init is an agent-run surface, so enrolling a key from here would be an enrollment path
+    for an agent."""
+    lines = ["\n6. Signing identity (cryptographic gates: APPROVED, VERIFY_EXIT, DONE):"]
+    try:
+        from control_plane.identity_layout import default_layout
+        from control_plane.identity_setup import identity_status
+
+        status = identity_status(default_layout(target))
+    except Exception as exc:  # older installed copies may not ship the signing modules
+        return lines + [f"   (signing status unavailable: {exc}; see the os-signing-setup skill)"]
+    cap = status["ssh_keygen"]
+    lines.append(
+        "   ssh-keygen: " + (f"OpenSSH {cap['version']}, SSHSIG {'supported' if cap['supports_sshsig'] else 'NOT supported (needs >= 8.1)'}"
+                             if cap["available"] else f"unavailable ({cap['reason']}); install OpenSSH >= 8.1")
+    )
+    if status["enrolled_keys"]:
+        lines.append(f"   {status['enrolled_keys']} enrolled key(s):")
+        for key in status["keys"]:
+            lines.append(f"   - {key['principal']}  {key['key_type']}  {key['fingerprint']}")
+    if status["ready"]:
+        lines.append("   Signing identity is set up and safely isolated.")
+    else:
+        lines.append("   Signing identity is not set up yet (needed to approve Gate 1). A HUMAN runs, in their own terminal:")
+        lines.append("     python3 plugins/agent-agentic-os/scripts/setup_ciba_identity.py")
+        lines.append("   os-init never runs this and never creates or enrolls a key; agents must not either (see the os-signing-setup skill).")
+        for failure in status["failures"][:3]:
+            lines.append(f"   - {failure}")
+    return lines
+
+
 def print_next_steps(target: Path, did_global: bool, did_retrofit: bool) -> None:
     """Displays user guidance, next steps, and plugin installation commands."""
     print("\n" + "=" * 60)
@@ -854,6 +889,8 @@ def print_next_steps(target: Path, did_global: bool, did_retrofit: bool) -> None
     print("   • Slash command / Skill: /os-health-check")
     print("   • Deterministic substrate check:")
     print("     test -f context/control_plane.db && test -f .claude/hooks/hooks.json && test -f .git/hooks/pre-commit-evolution-guard && test -f .github/workflows/verify-evolution-integrity.yml && echo 'OK: All OS substrates active'")
+    for line in signing_identity_notice(target):
+        print(line)
 
     if _CREATED_BACKUPS:
         print("\n" + "!" * 60)

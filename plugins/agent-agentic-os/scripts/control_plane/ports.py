@@ -31,7 +31,9 @@ Key Functions:
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
+
+from control_plane.snapshot import SnapshotEntry
 
 
 class PersistenceInvariantViolation(Exception):
@@ -77,6 +79,27 @@ class InterviewAnswerRecord:
 
 
 @dataclass(frozen=True)
+class AuthorizationProof:
+    """Proof that a human authorized a proof-required edge (Gate 1), verified INSIDE the
+    commit transaction by the persistence adapter (auth-ciba-increment-b T4).
+
+    kind: only "sshsig" is accepted (the audited legacy_input fallback was removed on 2026-09-20).
+    signature: the raw armored SSHSIG bytes, read once by the caller.
+    allowed_signers / principal: the production trust anchor (namespace control-plane@agentic-os.local).
+    live_snapshot_fn: called inside the transaction to read the live reviewed files."""
+
+    kind: str
+    request_id: int
+    signature: bytes = b""
+    allowed_signers: Optional[Path] = None
+    principal: Optional[str] = None
+    require_uv: bool = True
+    live_snapshot_fn: Optional[Callable[[], Sequence[SnapshotEntry]]] = None
+    binary: str = "ssh-keygen"
+    timeout: float = 10.0
+
+
+@dataclass(frozen=True)
 class TransitionCommitRequest:
     task_id: str
     expected_from_state: str
@@ -87,8 +110,9 @@ class TransitionCommitRequest:
     reason: str
     staged_decisions: List[TransitionDecision]
     staged_receipts: List[Dict[str, Any]]
-    force_close: bool = False
     interactive_human_authorization: bool = False
+    # Verified inside the commit transaction for edges declaring requires_cryptographic_proof.
+    proof: Optional[AuthorizationProof] = None
 
 
 @dataclass(frozen=True)
@@ -334,8 +358,13 @@ class PersistencePort(ABC):
 
     @abstractmethod
     def insert_verification_receipt(self, task_id: str, gate_name: str, command_executed: str,
-                                     exit_code: int, receipt_token: str) -> None:
-        """Inserts a verification_receipts row."""
+                                     exit_code: int, receipt_token: str,
+                                     actor: Optional[str] = None, provenance: str = "api") -> None:
+        """Inserts a verification_receipts row (with actor/provenance and an append-only audit row)."""
+        raise NotImplementedError
+
+    def invalidate_receipt(self, receipt_id: int, actor: str, reason: str) -> None:
+        """Marks a receipt invalid and appends an 'invalidated' audit row (T15). Optional capability."""
         raise NotImplementedError
 
     @abstractmethod
@@ -382,6 +411,10 @@ class PersistencePort(ABC):
     @abstractmethod
     def save_retrospective(self, task_id: str, entry: Dict[str, Any], follow_ups: List[Dict[str, Any]]) -> None:
         """Creates or replaces the single task retrospective and its follow-up rows."""
+        raise NotImplementedError
+
+    def get_retrospective_summary(self, task_id: str) -> Optional[Dict[str, Any]]:
+        """{decision, digest} of the recorded retrospective, or None (used to bind a human's closure signature)."""
         raise NotImplementedError
 
     @abstractmethod

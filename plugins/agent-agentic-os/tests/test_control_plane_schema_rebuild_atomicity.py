@@ -131,7 +131,7 @@ def test_splitter_preserves_trigger_bodies_intact():
     from control_plane.adapters import _split_schema_sql_statements
 
     statements = _split_schema_sql_statements(SCHEMA_SQL)
-    trigger_statements = [s for s in statements if "CREATE TRIGGER" in s.upper()]
+    trigger_statements = [s for s in statements if "CREATE TRIGGER" in s.upper() and "TRANSITION_VIOLATIONS" in s.upper()]
 
     assert len(trigger_statements) == 2
     for stmt in trigger_statements:

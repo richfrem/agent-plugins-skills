@@ -12,11 +12,12 @@ flowchart TB
     subgraph Layer_Governance["Governance, Policies & Human Boundaries"]
         State["StateMachine (control_plane/state_machine.py)"]
         Policy["Unified policy engine (control_plane/policy.py)"]
-        TransitionRequest["transition_request: nonce, revision_hash & token verification"]
+        TransitionRequest["transition_request: nonce, expiry & content snapshot (commit SHA, diff hash, untracked hash, retrospective digest)"]
+        SigningGate["Cryptographic gates: APPROVED, VERIFY_EXIT, DONE\nssh-keygen -Y sign (TTY passphrase) verified vs allowed_signers"]
         Registry["TransitionRegistry"]
         Templates["transition_templates.yaml: edge contracts & authorized_actor"]
-        ForceClose["Force close: any active state to DONE (HITL)"]
-        HumanClose["Human-authorized force close\n(any state → DONE; agent forbidden)"]
+        ForceClose["Early close: any active state to DONE (same signed closure gate)"]
+        HumanClose["Human-signed closure\n(any state → DONE; no force-close string or flag)"]
         ArtifactGate["Plan artifact identity/revision gate"]
         MainReconciliation["main_worktree_reconciliation (issue #609)"]
         Delegation["DelegationContract: scope, authority, budget, receipts"]
@@ -28,7 +29,7 @@ flowchart TB
         ReviewSelection["review-selection-v1: decision → method → internal runtime/model/effort"]
         ReviewReports["Task-scoped raw reviewer reports + receipts"]
         ReviewSynthesis["Canonical review synthesis / revision brief"]
-        PlanBranch["Plan branch: skip review or request review"]
+        PlanBranch["Plan-review disposition only: accept plan or request review\n(not a human gate; Gates 1, 3 and closure have no skip)"]
         PlanAcceptance["PLAN_REVIEW convergence: accept plan or return to DRAFT_PLAN"]
         InterviewOutline["Atomic interview answer + revisioned outline projection"]
         Inventory["Session-wide change inventory + reconciliation manifest"]
@@ -85,10 +86,13 @@ flowchart TB
     Policy -.->|"requests policy facts via ctx callables"| PersistencePort
     Policy -->|"enforces at APPROVED to IN_WORKTREE"| MainReconciliation
     Policy --> TransitionRequest
+    TransitionRequest --> SigningGate
+    SigningGate -->|"verified outside the write lock, consumed once in the commit transaction"| PersistencePort
     TransitionRequest --> PersistencePort
     MainReconciliation --> Worktree
     HumanClose --> State
-    HumanClose -.->|"explicit HITL approval recorded"| Receipts
+    HumanClose --> SigningGate
+    SigningGate -.->|"proof=sshsig audit receipt: principal + key fingerprint"| Receipts
 
     %% Review Flow Interactions
     ReviewDispatch --> ReviewReports
@@ -125,7 +129,7 @@ flowchart TB
     %% Storage Wiring
     SQLiteAdapter --> DB
     DB -.-> Receipts
-    DB -.->|"trigger-enforces valid_transitions & required questions"| State
+    DB -.->|"enforces valid_transitions & required questions; proof edges require a consumed transition_request (no actor-column trust)"| State
     CryptoAdapter --> RepoFiles
     FilesystemAdapter --> RepoFiles
     ModelAdapter --> CatalogFiles

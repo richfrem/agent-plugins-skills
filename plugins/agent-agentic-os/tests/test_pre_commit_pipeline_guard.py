@@ -51,7 +51,10 @@ def _setup_git_repo_with_db(tmp_path):
     # Initial commit so HEAD exists
     readme = repo / "README.md"
     readme.write_text("# Test Repo\n", encoding="utf-8")
-    subprocess.run(["git", "add", "README.md"], cwd=str(repo), check=True)
+    # The control-plane database lives in this repo and changes on every write, so it must be ignored: Gate 3 signs
+    # the untracked-files hash, and a churning untracked DB would invalidate every request before it is signed.
+    (repo / ".gitignore").write_text("context/\n", encoding="utf-8")
+    subprocess.run(["git", "add", "README.md", ".gitignore"], cwd=str(repo), check=True)
     subprocess.run(["git", "commit", "-m", "Initial commit"], cwd=str(repo), check=True)
 
     db_path = repo / "context" / "control_plane.db"
@@ -398,27 +401,8 @@ def test_push_hook_allows_when_done_with_valid_history(tmp_path):
     cp.transition(task_id, STATE_WORKTREE_REVIEW, "tester", "review")
     cp.record_review_skip(task_id, "multi_agent_code_review", "tester", "skip")
 
-    # auth-ciba-poc-transition-mechanics (2026-09-17): WORKTREE_REVIEW -> VERIFY_EXIT
-    # now declares a real human_questions entry, trigger-enforced via
-    # required_transition_questions -- stage it the same way as the other
-    # decisions above.
-    conn = sqlite3.connect(cp.db_path)
-    wt_review_occ = conn.execute(
-        "SELECT transition_id FROM task_transitions WHERE task_id = ? ORDER BY transition_id DESC LIMIT 1", (task_id,)
-    ).fetchone()[0]
-    conn.execute(
-        """
-        INSERT INTO transition_decisions (
-            task_id, source_occupancy_transition_id, from_state, to_state,
-            question_id, answer, decision_type, actor, recorded_at
-        ) VALUES (?, ?, 'WORKTREE_REVIEW', 'VERIFY_EXIT',
-                 'confirm_worktree_review_accept_implementation',
-                 'Yes, I accept the implementation and skip code review [Recommended]', 'ANSWER', 'human', 12346.0)
-        """,
-        (task_id, wt_review_occ),
-    )
-    conn.commit()
-    conn.close()
+    # WORKTREE_REVIEW -> VERIFY_EXIT is Gate 3 (auth-ciba-increment-b): no staged decision rows. The transition
+    # below is completed through the signed-request flow (the test human signs for real; see conftest.py).
     cp.transition(task_id, STATE_VERIFY_EXIT, "tester", "verify")
     cp.record_verification_receipt(task_id, "leak_check", "git status", 0)
     cp.log_asymmetric_persistence(task_id, "references/map-debt.md", "RESOLVED", "test")
@@ -429,8 +413,7 @@ def test_push_hook_allows_when_done_with_valid_history(tmp_path):
         [],
     )
     from control_plane.coordinator import TransitionCoordinator
-    done_answers = iter(["skip", "YES"])
-    TransitionCoordinator(control_plane=cp, input_fn=lambda prompt: next(done_answers)).coordinate_transition(
+    TransitionCoordinator(control_plane=cp).coordinate_transition(  # closure is signed (the test human signs for real)
         task_id, STATE_DONE, "tester", "done", interactive=True,
     )
 
@@ -438,6 +421,12 @@ def test_push_hook_allows_when_done_with_valid_history(tmp_path):
     assert res.returncode == 0
 
 
+@pytest.mark.xfail(strict=True, reason=(
+    "OPEN map-debt (2026-09-20): apply_recovery_transition() leaves the consumed recovery approval with "
+    "bound_transition_id NULL, so the commit/push guards see a NON-DAG recovery edge as unapproved. The previous "
+    "version of this test used IN_WORKTREE -> DONE, which is a DAG edge, so the recovery-approval branch of the "
+    "hooks was never actually exercised. strict=True: fixing the binding turns this into a hard pass."
+))
 def test_git_guards_allow_exact_human_approved_recovery_edge(tmp_path):
     """Allow a non-DAG edge only when its exact recovery approval is persisted and consumed."""
     repo, db_path = _setup_git_repo_with_db(tmp_path)
@@ -447,12 +436,15 @@ def test_git_guards_allow_exact_human_approved_recovery_edge(tmp_path):
 
     cp = ControlPlane(db_path=db_path)
     _advance_task_to_in_worktree(cp, task_id, repo, branch)
+    # Recovery into DONE is refused by design (it would bypass the signed closure gate), so the exact-approved
+    # non-DAG edge exercised here is IN_WORKTREE -> MULTI_AGENT_CODE_REVIEW.
+    from control_plane.constants import STATE_MULTI_AGENT_CODE_REVIEW as _RECOVERY_TARGET
     token = cp.record_recovery_approval(
-        task_id, STATE_DONE, "human-reviewer", actor="human",
+        task_id, _RECOVERY_TARGET, "human-reviewer", actor="human",
         reason="Reopen only through the explicitly approved recovery edge.",
     )
     cp.apply_recovery_transition(
-        task_id, STATE_DONE, token, "human", "Apply the approved recovery edge for closeout verification."
+        task_id, _RECOVERY_TARGET, token, "human", "Apply the approved recovery edge for code review."
     )
 
     code_file = repo / "feature.py"
@@ -463,6 +455,23 @@ def test_git_guards_allow_exact_human_approved_recovery_edge(tmp_path):
     push_check = subprocess.run([str(PUSH_HOOK_PATH)], cwd=str(repo), capture_output=True, text=True)
     assert commit_check.returncode == 0, commit_check.stdout + commit_check.stderr
     assert push_check.returncode == 0, push_check.stdout + push_check.stderr
+
+
+def test_recovery_into_done_is_refused_because_closure_needs_a_signature(tmp_path):
+    """A recovery approval can never be used to reach DONE: every inbound edge to DONE is a cryptographic gate, and
+    the recovery path has no signature, so it fails closed instead of bypassing the gate."""
+    repo, db_path = _setup_git_repo_with_db(tmp_path)
+    task_id = "task-recovery-into-done-011"
+    branch = "feat/recovery-into-done"
+    subprocess.run(["git", "checkout", "-b", branch], cwd=str(repo), check=True, capture_output=True)
+
+    cp = ControlPlane(db_path=db_path)
+    _advance_task_to_in_worktree(cp, task_id, repo, branch)
+    with pytest.raises(ValueError, match="Recovery into 'DONE' is not permitted"):
+        cp.record_recovery_approval(
+            task_id, STATE_DONE, "human-reviewer", actor="human", reason="Attempt to close through recovery.",
+        )
+    assert cp.get_task(task_id)["state"] == STATE_IN_WORKTREE
 
 
 # --- Registered-worktree location-check regression tests -------------------

@@ -2,6 +2,214 @@
 
 Persistent tracking of architectural friction, structural anomalies, and unclosed loops across sessions.
 
+## DEBT-20260920-REVIEW-SELECTION-PROFILE-VALIDATION (OPEN)
+
+- Logged date: 2026-09-20
+- Cycle/Session ID: auth-ciba-increment-b
+- Artifact affected: `transition_templates.yaml` review-selection questions (internal runtime/model/effort); `control_plane/coordinator.py`; `context/agent-capability-profile.json` (project-setup)
+- Friction observed: Future enhancement (H1 option A): the internal runtime/model/effort answers are free text. `list-review-options` (read-only) now lets the human copy exact ids, but nothing rejects a typed answer that is not a real runtime/model (one hand-typed 'gemini flash 3.8' was recorded).
+- Why not fixed now: Deliberately deferred by human decision (option B chosen 2026-09-20). Profile-driven validation needs the capability profile to exist (project-setup) and a validation rule that accepts only entries in the profile.
+- Recommended fix / fix applied: Have the coordinator offer choices from context/agent-capability-profile.json and reject answers not in it, falling back to free text with a warning when the profile is missing.
+- Evidence/repro: Decision 416 recorded 'gemini flash 3.8'; round-3 synthesis H1; tests/test_list_review_options.py covers the read-only verb only.
+- Severity: L
+- Repeat: NO
+- Status: OPEN (2026-09-20 partial: validated numbered menus for runtime/model/effort now exist (choices_from + review_options.choices_for; agy via `agy models`, others via the capability profile's providers.<runtime>.model_tiers; typed answers outside a menu are rejected; no-menu falls back to free text with a visible warning). Remaining: no `models` command exists for codex/claude/copilot so their menus need a profile entry; no agent-definition question (agy agents / claude --agent) was added because it would add a required question to both edges; profile schema is read minimally)
+
+## DEBT-20260919-TRANSITION-VIOLATIONS-NOT-WRITTEN-ON-ROLLBACK (RESOLVED)
+
+- Logged date: 2026-09-19
+- Cycle/Session ID: auth-ciba-increment-b
+- Artifact affected: `control_plane/adapters.py` apply_transition_with_receipts / apply_recovery paths; `transition_violations` table; enforce_valid_transition trigger
+- Friction observed: When the enforce_valid_transition trigger rejects a transition the trigger's INSERT into `transition_violations` happens inside the same transaction that the coordinator then aborts (the PersistenceInvariantViolation rolls it back), so no violation row survives. The 2026-09-19 intake attempts left nothing in transition_violations. U2 made the error message name the missing question ids, but the audit row itself is still lost.
+- Why not fixed now: Needs an autonomous out-of-transaction audit write (a separate connection/transaction committed after the rollback, tolerant of DB errors) and its own tests; not part of Gate 1 scope.
+- Recommended fix / fix applied: After the rollback, write a `transition_violations` row (with failed question ids, actor, and format context) on a separate connection; test that the row survives a rolled-back transition.
+- Evidence/repro: Probe: cp.transition() without decisions raises; SELECT COUNT(*) FROM transition_violations stays 0. tests/test_actionable_rollback.py covers the message only.
+- Severity: M
+- Repeat: NO
+- Status: RESOLVED (2026-09-19, auth-ciba-increment-b: adapters write the rejection (actor, reason, detail) to transition_violations on a separate transaction after rollback; tests/test_violation_audit.py)
+
+## DEBT-20260919-SIGNING-DOMAIN-QUALIFIED-NAMESPACES (RESOLVED)
+
+- Logged date: 2026-09-19
+- Cycle/Session ID: auth-ciba-increment-b
+- Artifact affected: `control_plane/ssh_signing.py` SIGN_NAMESPACE / SELFTEST_NAMESPACE; `allowed_signers` files
+- Friction observed: Signature namespaces are the bare strings `control-plane` and `control-plane-selftest`; OpenSSH recommends application-specific `NAMESPACE@YOUR.DOMAIN` names so the same key cannot collide with another tool's namespace.
+- Why not fixed now: Changing the namespace changes signed bytes, enrolled `allowed_signers` lines and every signing test; needs a migration for already-enrolled keys (the human's key is enrolled today).
+- Recommended fix / fix applied: Introduce domain-qualified constants in constants.py, accept old and new during a transition window, re-enroll via setup_ciba_identity.py.
+- Evidence/repro: ssh_signing.py namespace constants; OpenSSH ssh-keygen(1) SIGNATURES section.
+- Severity: L
+- Repeat: NO
+- Status: RESOLVED (2026-09-19, auth-ciba-increment-b: namespaces are now control-plane@agentic-os.local / control-plane-selftest@agentic-os.local; identity_setup.migrate_namespaces + setup_ciba_identity.py migrate existing allowed_signers; bare-namespace signatures never verify; tests/test_domain_namespaces.py)
+
+## DEBT-20260919-SIGNING-KEY-REVOCATION-KRL (OPEN)
+
+- Logged date: 2026-09-19
+- Cycle/Session ID: auth-ciba-increment-b
+- Artifact affected: `control_plane/ssh_signing.py` verification; `context/identity/`
+- Friction observed: Verification uses `allowed_signers` only; there is no revocation list (`ssh-keygen -k` / `-Y verify -r`), so a compromised enrolled key can only be removed by editing `allowed_signers` by hand.
+- Why not fixed now: Not required for Increment B; needs a human-owned revocation file with the same mode/ownership checks as `allowed_signers`.
+- Recommended fix / fix applied: Add an optional human-owned `revoked_keys` file, pass it to `ssh-keygen -Y verify -r`, and cover it in isolation_check and the setup script.
+- Evidence/repro: ssh_signing.py verify command line has no -r option.
+- Severity: M
+- Repeat: NO
+- Status: OPEN
+
+## DEBT-20260919-GATE1-CHALLENGE-POLICY-VERSION-BINDING (OPEN)
+
+- Logged date: 2026-09-19
+- Cycle/Session ID: auth-ciba-increment-b
+- Artifact affected: `control_plane/ssh_signing.py` challenge payload; `transition_request`
+- Friction observed: The challenge binds task, edge, content hash (spec+plan), occupancy, nonce and expiry but not the policy version (transition_templates.yaml / guidance version) in force, so the human's signature does not prove which rules the approval was given under.
+- Why not fixed now: Changes the signed bytes and needs a challenge_version bump with backward-compatible verification of pending requests.
+- Recommended fix / fix applied: Add a policy/guidance digest to the challenge and to transition_request, bump challenge_version, reject on mismatch at approve time.
+- Evidence/repro: ssh_signing.py derive_challenge_from_row fields.
+- Severity: M
+- Repeat: NO
+- Status: OPEN
+
+## DEBT-20260919-GATE1-EXECUTION-BINDING-D7 (OPEN)
+
+- Logged date: 2026-09-19
+- Cycle/Session ID: auth-ciba-increment-b
+- Artifact affected: coordinator, `update-worktree`, later gates (IN_WORKTREE onward)
+- Friction observed: Deferred item D7: nothing after the Gate 1 commit re-verifies the signed approval, so later stages trust the APPROVED state row rather than the signature; an actor that can write the DB is not stopped downstream.
+- Why not fixed now: Out of Increment B scope by human decision (Gate 1 only).
+- Recommended fix / fix applied: Re-verify the stored proof (or a signed approval token) at IN_WORKTREE and before push, or bind downstream capabilities to the committed transition id.
+- Evidence/repro: plan Revision 6 D7; isolation-setup.md residual risk.
+- Severity: M
+- Repeat: NO
+- Status: OPEN
+
+## DEBT-20260919-AGENT-RECORDED-HUMAN-RECEIPT (ESCALATED)
+
+- Logged date: 2026-09-19
+- Cycle/Session ID: auth-ciba-increment-b
+- Artifact affected: `plugins/agent-agentic-os/scripts/agent_control.py` (`record-review-skip`, `--actor human`, `--human-confirmed`) and `transition_templates.yaml` review-edge hints
+- Friction observed: On 2026-09-19 the agent recorded review-skip receipts with `record-review-skip --actor human`, quoting the human's chat as `--human-confirmed`, instead of asking the edge's questions; the CLI cannot tell an agent-run verb from a human decision (`_enforce_human_confirmed` checks only the `HUMAN-CONFIRMED:` prefix; `record_review_skip` accepts any actor string). The PLAN_REVIEW hint ('If No, record the explicit skip receipt') also does not say who records it. Receipt 158 (`EVO-INTEGRITY-auth-ciba-increment-b-9112d420d352`) falsely satisfied `critic_review_or_skip` until the coordinator's occupancy-exit delete removed it (transition 311), so the incident survives only here. An earlier instance exists: `temp/rerun_interview_answers_as_human.sh` (2026-09-17).
+- Why not fixed now: Repeat=YES must escalate; the fix is scoped into this same work package (T15 receipt provenance and append-only audit, T16 guidance and eval guard, T17 review-selection prompts) but is not implemented yet.
+- Recommended fix / fix applied: T15: receipts carry actor and provenance, an append-only `receipt_audit`, `invalidate-receipt` (human-interactive only); T16: YAML hints name the human as recorder, SKILL.md hard rule, eval cases; T17: the No path becomes a coordinator-created human skip decision.
+- Evidence/repro: Session transcript 2026-09-19; `verification_receipts` receipt 158; `adapters.py` occupancy-exit `DELETE FROM verification_receipts`.
+- Severity: M
+- Repeat: YES
+- Status: ESCALATED
+
+## DEBT-20260919-REVIEW-SELECTION-CONTRACT-GAP (RESOLVED)
+
+- Logged date: 2026-09-19
+- Cycle/Session ID: auth-ciba-increment-b
+- Artifact affected: `transition_templates.yaml` edges `plan_review_to_multi_agent_review` and `worktree_review_to_multi_agent_code_review`; `coordinator.py`
+- Friction observed: `review-selection-v1` requires runtime, model and effort to be persisted before any reviewer dispatch, but both edges define only 'review needed' and 'review method', MULTI_AGENT_REVIEW defines no entry questions, and the interactive `.py` commits after two answers. The agent wrongly treated the missing rows as a user omission; the human had to insist. Also: 'No' is listed on both edges but absent from `accepted_answers`, so it is rejected.
+- Why not fixed now: Needs its own TDD cycle across both edges; scheduled as T17 in this work package.
+- Recommended fix / fix applied: T17: one shared review-selection routine and question template for both edges (review needed -> type -> runtime -> model -> effort), no silent defaults, `--answers` cannot satisfy them, a policy check blocks dispatch without the three decisions; tests R1-R8 over both edges.
+- Evidence/repro: Live reproduction: decisions 388-390 / transition 311 commit with zero runtime/model/effort rows; YAML lines for both edges.
+- Severity: M
+- Repeat: NO
+- Status: RESOLVED (2026-09-19, auth-ciba-increment-b T17: both review edges declare conditional `asked_when` runtime/model/effort questions, human-typed only; `record_critic_review` refuses an internal review without them; tests/test_review_selection.py). Residual: the requirement is enforced in Python (coordinator + record_critic_review), not by a DB trigger, so a direct DB writer is not stopped (same class as GATE1-DIRECT-DB-FORGERY-RESIDUAL); the plan-edge 'No' answer still routes through the human-recorded skip (T15).
+
+## DEBT-20260919-STALE-AGENTS-WORK-INTAKE-INSTALL (OPEN)
+
+- Logged date: 2026-09-19
+- Cycle/Session ID: auth-ciba-increment-b
+- Artifact affected: .agents/skills/work-intake/scripts (installed copy) vs plugins/agent-agentic-os/scripts
+- Friction observed: The installed `.agents/` copy of `agent_control.py`/`control_plane` (dated 2026-09-16) lacks fixes present in the plugin source (e.g. the interview check deferral), and treated edges as human-only, producing misleading denials. SKILL.md still points agents at the installed path.
+- Why not fixed now: Refreshing installed copies is an installer action (`plugin_add.py`) outside this worktree's scope.
+- Recommended fix / fix applied: Point SKILL.md at the plugin path or refresh installs via `plugin_add.py`; add a drift check (version stamp) to os-health-check.
+- Evidence/repro: `diff -rq .agents/skills/work-intake/scripts/control_plane plugins/agent-agentic-os/scripts/control_plane`.
+- Severity: M
+- Repeat: NO
+- Status: OPEN
+
+## DEBT-20260919-INTERVIEW-TRIVIAL-EVIDENCE-REQUIRED-ON-STANDARD (OPEN)
+
+- Logged date: 2026-09-19
+- Cycle/Session ID: auth-ciba-increment-b
+- Artifact affected: `required_transition_questions` for INTERVIEW -> DRAFT_PLAN; `transition_templates.yaml`
+- Friction observed: The DB requires a human answer to `interview_trivial_evidence` even on the STANDARD route, so a STANDARD task must answer a TRIVIAL-route question.
+- Why not fixed now: Not part of #639; needs a YAML/DB change with its own tests.
+- Recommended fix / fix applied: Make the question route-conditional (required only for TRIVIAL) in the YAML and the trigger's required-question derivation.
+- Evidence/repro: `SELECT question_id FROM required_transition_questions WHERE from_state='INTERVIEW' AND to_state='DRAFT_PLAN'` lists it for STANDARD tasks.
+- Severity: L
+- Repeat: NO
+- Status: OPEN
+
+## DEBT-20260919-GUIDANCE-CONFIRMATION-ACTOR-MISMATCH (OPEN)
+
+- Logged date: 2026-09-19
+- Cycle/Session ID: auth-ciba-increment-b
+- Artifact affected: `coordinator.py` guidance_compliance_confirmation; DB trigger `enforce_valid_transition`
+- Friction observed: On `agent_or_human` edges the coordinator accepts an agent-supplied `guidance_compliance_confirmation` (recorded actor=agent), but the trigger still requires `actor='human'` for the same edge's stage questions; the two layers disagree about who may answer, which cost several attempts during intake.
+- Why not fixed now: Design decision needed (which layer is authoritative).
+- Recommended fix / fix applied: Make the coordinator's error name the exact question IDs that must be human-answered (see U2) and align the YAML hint.
+- Evidence/repro: Session 2026-09-19: transition INTERVIEW -> DRAFT_PLAN rolled back with 'rejected by database trigger' and nothing in `transition_violations`.
+- Severity: M
+- Repeat: NO
+- Status: OPEN
+
+## DEBT-20260919-GATE1-DIRECT-DB-FORGERY-RESIDUAL (OPEN)
+
+- Logged date: 2026-09-19
+- Cycle/Session ID: auth-ciba-increment-b
+- Artifact affected: `context/control_plane.db` (agent-writable) and `coordinator.py`
+- Friction observed: Accepted residual of Option B / decision D4: the DB stays agent-writable and the trigger accepts any `actor='human'` decision row, so a same-account agent that writes the DB or edits the coordinator directly bypasses the Gate 1 signing hook. The hook protects the coordinator path against an agent without the keys and against scripted answers; the adapter refuses staged human decisions at Gate 1 without proof.
+- Why not fixed now: Closing it needs a separate process or account (broker, Option A) or verify-on-use at later gates (D7); out of scope by human decision.
+- Recommended fix / fix applied: Option A broker, or re-verify the signed approval at IN_WORKTREE/push (D7).
+- Evidence/repro: `references/isolation-setup.md` 'Residual risk'; round-1 and round-2 plan reviews.
+- Severity: M
+- Repeat: NO
+- Status: OPEN
+
+## DEBT-20260919-TESTS-WRITE-INTO-REPO-DOCS-PLANS (OPEN)
+
+- Logged date: 2026-09-19
+- Cycle/Session ID: auth-ciba-increment-b
+- Artifact affected: plugins/agent-agentic-os/tests (coordinator plan-outline projection)
+- Friction observed: Some tests write scratch plan outlines into the checkout's own `docs/plans/work-tasks/` (e.g. `test-bundle-001`, `p01-task`, `t1`), leaving gitignored clutter in real worktrees.
+- Why not fixed now: Harmless (gitignored) and outside #639.
+- Recommended fix / fix applied: Point tests at tmp repo roots or clean up in fixtures.
+- Evidence/repro: `ls .worktrees/<task>/docs/plans/work-tasks` after a full test run.
+- Severity: L
+- Repeat: NO
+- Status: OPEN
+
+## DEBT-20260919-ANALYSIS-NOTEBOOK-CORRUPTED (OPEN)
+
+- Logged date: 2026-09-19
+- Cycle/Session ID: auth-ciba-increment-b
+- Artifact affected: plugins/agent-agentic-os/scripts/analysis.ipynb
+- Friction observed: Invalid JSON since commit 06c3766a (a bulk python3->python edit mangled a line to `python "python"` at line 186); it is the interactive companion to generate_report.py for improvement-progress reporting. The 13 other 'invalid JSON' files under plugins/ are one-line text stand-ins, not damage.
+- Why not fixed now: Outside #639; tracked in #642.
+- Recommended fix / fix applied: One-line JSON repair; do not delete.
+- Evidence/repro: `python3 -c "import json; json.load(open('plugins/agent-agentic-os/scripts/analysis.ipynb'))"` fails at line 186; issue #642.
+- Severity: L
+- Repeat: NO
+- Status: OPEN
+
+## DEBT-20260919-PLAN-ARTIFACT-CHECKLIST-PATH-MISMATCH (OPEN)
+
+- Logged date: 2026-09-19
+- Cycle/Session ID: auth-ciba-increment-b
+- Artifact affected: `transition_templates.yaml` required_artifacts / checklist for plan-review edges
+- Friction observed: Checklist and `required_artifacts` name `docs/plans/<task-id>-spec.md`, but the artifacts live in `docs/plans/work-tasks/<task-id>/`; the coordinator maps between them and the checklist line reports PASS unconditionally.
+- Why not fixed now: Changing it risks the mapping without a test.
+- Recommended fix / fix applied: Update the YAML paths with a test that the checklist item really checks existence.
+- Evidence/repro: Transition output 2026-09-19: 'Artifact: docs/plans/<task>-spec.md (PASS)' while the file is under work-tasks/.
+- Severity: L
+- Repeat: NO
+- Status: OPEN
+
+## DEBT-20260919-INCREMENT-B-DEFERRED-ITEMS (OPEN)
+
+- Logged date: 2026-09-19
+- Cycle/Session ID: auth-ciba-increment-b
+- Artifact affected: auth-ciba-increment-b deliverables
+- Friction observed: Deferred by scope or environment: (1) `PROOF_REQUIRED_EDGES` is a constant; deriving it from a `proof` field on the YAML edge (and updating `installation_probe.py`) is pending; (2) `transition_simulation_cases.py`/`pipeline_simulator.py` have no strict-mode Gate 1 cases (pre-existing suites run on the legacy_input default via tests/conftest.py, a documented test seam); (3) installed-copy refresh via `plugin_add.py`; (4) health-check self-test-age record; (5) case 6b (ordinary transition as the real agent account), FIDO hardware and Windows are UNTESTED here; (6) on macOS `SSH_AUTH_SOCK` is normally set, so the request-time preflight lists it as a failed check (advisory; approve/show-challenge do not check the human's own environment); (7) TTY checks are friction, not trust (a pty defeats them); (8) Touch ID and SSH/X.509 certificate authorities are not supported.
+- Why not fixed now: Scoped out or not testable in this environment.
+- Recommended fix / fix applied: See each item; record follow-ups as issues after the exit gate.
+- Evidence/repro: Plan Revision 6 known non-coverage; spec section 4.
+- Severity: M
+- Repeat: NO
+- Status: OPEN
+
 ## DEBT-20260919-TRIVIAL-FASTTRACK-DOC-CODE-MISMATCH (RESOLVED)
 
 - Logged date: 2026-09-19
@@ -60,7 +268,7 @@ Persistent tracking of architectural friction, structural anomalies, and unclose
 - Evidence/repro: `/tmp/codex_astra_blindspot.log` (session-local, not committed).
 - Severity: M (zero live risk today; real risk if Increment B wires this module in without addressing these first)
 - Repeat: NO
-- Status: OPEN (deferred to Increment B by design)
+- Status: OPEN (2026-09-19: items a-c RESOLVED by auth-ciba-increment-b: T4 atomic consume+advance in one transaction, T2 content-bound `revision_hash`, T4 live-occupancy re-check; items d-f (jti UNIQUE, supersession/denial semantics, claim-shape validation) remain OPEN)
 
 ## DEBT-20260918-WORKTREE-REVIEW-RECEIPT-GUIDANCE-AND-DEFERRED-CHECK-TIMING
 
@@ -607,4 +815,123 @@ Persistent tracking of architectural friction, structural anomalies, and unclose
 - Evidence/repro: `coordinate-transition --to DONE --interactive` from AWAITING_APPROVAL returned `Force close denied: explicit human authorization FORCE_CLOSE is required`; `--help` shows no `--force-close` option.
 - Severity: M
 - Repeat: NO
+- Status: RESOLVED
+- Resolution (2026-09-20, auth-ciba-increment-b): SUPERSEDED. The `force_close` path and the FORCE_CLOSE/FORCE_DONE literals were removed rather than exposed on the CLI: every edge into DONE (including early close from any active state) is now a cryptographic gate (a human-signed `transition_request`, `ssh-keygen -Y sign`). `--force-close` is deliberately not a CLI option (argparse rejects it; asserted by `test_cli_transition_parsers_refuse_the_removed_skip_and_force_close_flags`), and the `force_close=` keyword raises TypeError (`test_the_force_close_bypass_parameters_no_longer_exist`). The planning-only closeout this entry wanted is covered by the signed closure gate.
+
+## DEBT-20260920-SQLITE-LOCK-ACROSS-SIGNATURE-VERIFY
+
+- Logged date: 2026-09-20
+- Cycle/Session ID: auth-ciba-increment-b
+- Artifact affected: `plugins/agent-agentic-os/scripts/control_plane/adapters.py` (commit_transition), `plugins/agent-agentic-os/scripts/control_plane/transition_request.py` (consume_with_signature)
+- Friction observed: The commit transaction (`BEGIN IMMEDIATE`) ran the live content snapshot (git/file hashing) and the `ssh-keygen -Y verify` subprocess inside the write lock, so any concurrent writer got `sqlite3.OperationalError: database is locked` for the duration of the subprocess.
+- Why not fixed now: Fixed now.
+- Recommended fix: Applied. `preverify_signature()` performs the snapshot read, challenge rebuild and signature verification on a read connection BEFORE `BEGIN IMMEDIATE`; `consume_with_signature(preverified=...)` re-checks the request row, the stored-vs-verified snapshot and the rebuilt challenge inside the transaction, then flips PENDING -> CONSUMED once.
+- Evidence/repro: `tests/test_gate3_code_acceptance.py::test_no_write_lock_is_held_during_snapshot_or_signature_verification` (failed before the change with `write lock held during ssh-keygen verify: [False]`, passes after, both Gate 3 edges). Known gap: no dedicated test for "request mutated between verification and commit" (the in-transaction challenge comparison covers it but is not asserted directly).
+- Severity: M
+- Repeat: NO
+- Status: RESOLVED
+
+## DEBT-20260920-ENSURE-SCHEMA-FASTPATH
+
+- Logged date: 2026-09-20
+- Cycle/Session ID: auth-ciba-increment-b
+- Artifact affected: `plugins/agent-agentic-os/scripts/control_plane/adapters.py` (ensure_schema, _sync_valid_transitions), `plugins/agent-agentic-os/scripts/control_plane/registry.py` (load_default)
+- Friction observed: `ensure_schema()` runs on every persistence call, including reads. Each call re-parsed the 158KB `transition_templates.yaml` with the pure-Python loader (~0.13s) and took `BEGIN IMMEDIATE` to DELETE and re-INSERT `valid_transitions` / `required_transition_questions`. Test setup cost ~20s per test (155 parses) and every read briefly contended for the write lock.
+- Why not fixed now: Fixed now.
+- Recommended fix: Applied. `TransitionRegistry.load_default()` is memoized on the YAML's sha256. `ensure_schema()` has a read-only fast path (`_schema_is_current`): schema version current, `registry_sync_state.inputs_fingerprint` (schema version + SCHEMA_SQL + SCHEMA_MIGRATIONS + LEGAL_INITIAL_STATES + YAML bytes + registry.py bytes) unchanged, and a digest of the derived tables plus trigger names undrifted; otherwise the full sync runs (self-heals drift exactly as before). The orphaned-migration check still runs first. Consequence: an already-initialized database no longer re-runs SCHEMA_MIGRATIONS on every call.
+- Evidence/repro: `tests/test_ensure_schema_fastpath.py` (6 tests; 4 failed before). Setup 20s -> <1s per test; gate3 file 9m17s -> 13.7s; full suite ~110s single-threaded. Two tests adapted: `test_migration_swallows_only_duplicate_column_not_other_errors` (now targets a fresh DB) and `test_sync_valid_transitions_is_atomic_not_left_empty_on_failure` (mocks `get_all_edges_with_proof`).
+- Severity: M
+- Repeat: NO
+- Status: RESOLVED
+
+## DEBT-20260920-RECOVERY-APPROVAL-NOT-BOUND
+
+- Logged date: 2026-09-20
+- Cycle/Session ID: auth-ciba-increment-b
+- Artifact affected: `plugins/agent-agentic-os/scripts/control_plane/adapters.py` (_apply_recovery_transition), `plugins/agent-agentic-os/scripts/pre-commit-pipeline-guard`, `plugins/agent-agentic-os/scripts/pre-push-review-guard`
+- Friction observed: After `apply_recovery_transition()` to a NON-DAG destination, the consumed recovery approval row keeps `bound_transition_id = NULL` (consumed_at is a CURRENT_TIMESTAMP string, so another writer consumed it before the bind UPDATE took effect). The commit/push guards require a consumed approval bound to the exact transition, so a legitimately recovered task is reported as an invalid transition. The existing test used IN_WORKTREE -> DONE, a DAG edge, so this branch was never exercised.
+- Why not fixed now: Outside this increment's scope; discovered while retiring the DONE recovery path. Root cause of the lost bind not yet isolated.
+- Recommended fix: Find which statement/trigger consumes the approval before step 6's UPDATE, bind `bound_transition_id` before consumption (or bind on the consuming statement), then remove the xfail.
+- Evidence/repro: `tests/test_pre_commit_pipeline_guard.py::test_git_guards_allow_exact_human_approved_recovery_edge` is `xfail(strict=True)` (IN_WORKTREE -> MULTI_AGENT_CODE_REVIEW recovery); strict, so fixing the bug fails the xfail and forces its removal.
+- Severity: M
+- Repeat: NO
 - Status: OPEN
+
+## DEBT-20260920-TESTS-WRITE-INTO-REAL-DOCS-PLANS
+
+- Logged date: 2026-09-20
+- Cycle/Session ID: auth-ciba-increment-b
+- Artifact affected: `plugins/agent-agentic-os/tests/` (several suites), `docs/plans/work-tasks/`
+- Friction observed: Running the suite leaves untracked `docs/plans/work-tasks/<task-id>/<task-id>-plan-outline.md` files in the checkout (plan-outline staging, e.g. test-bundle-001, p01-task, t1, standard-001), because tests use the process cwd as the repo root.
+- Why not fixed now: Cosmetic, untracked, not committed; needs each suite pointed at a tmp repo root.
+- Recommended fix: Route those suites through a tmp repo root (as `PipelineSimulator` does) or add a session-level cleanup fixture; do not `git add` docs/plans/work-tasks from test runs.
+- Evidence/repro: `find docs/plans -type f` after a full run. 2026-09-20: the `*-plan-outline.md` files were deleted (untracked, user-authorized); two other untracked test leftovers remain, `docs/plans/work-tasks/case7-cli-agent-attempt/*-{spec,implementation-plan}.md`, and the suites still recreate the outlines on every run.
+- Scope update (2026-09-20): the case7 leftovers were deleted. Running the suite with cwd=`plugins/agent-agentic-os` also leaves untracked `plugins/agent-agentic-os/context/identity/` (326 files: ~324 challenge files/signatures and an `allowed_signers` holding the throwaway `test-human@local` key from `tests/helpers/human_signer.py`) and `plugins/agent-agentic-os/docs/plans/work-tasks/*-plan-outline.md`. Test keys must never sit at a path a real gate would trust; the fix is to root these fixtures in tmp_path.
+- Severity: M
+- Repeat: YES
+- Status: OPEN
+
+## DEBT-20260920-CRYPTO-VERIFICATION-READINESS-REPORTING
+
+- Logged date: 2026-09-20
+- Cycle/Session ID: auth-ciba-increment-b
+- Artifact affected: `plugins/agent-agentic-os/scripts/control_plane/identity_setup.py` (identity_status), `scripts/setup_ciba_identity.py` (--check), `scripts/init_agentic_os.py` (signing_identity_notice), `skills/os-health-check/SKILL.md` (Phase 3.6)
+- Friction observed: os-init and os-health-check reported only whether an identity folder and an enrolled key existed. They did not assert that verification could actually work: no ssh-keygen/SSHSIG probe, an allowed_signers with no parseable key, or keys scoped to a namespace the gates never sign under all still looked healthy or produced a crash.
+- Why not fixed now: Fixed now.
+- Recommended fix: Applied. `identity_status` adds an `ssh_keygen` capability probe and failures `SSH_KEYGEN_UNAVAILABLE`, `SSHSIG_UNSUPPORTED`, `NO_ENROLLED_KEYS`, `NAMESPACE_MISMATCH`; `--check` prints an `ssh-keygen:` line; os-init's notice prints the same. os-init and the health check remain READ-ONLY by design: neither creates a key or writes `allowed_signers*` (an agent-run surface that enrolled a key would be an enrollment path for an agent); only the human runs `setup_ciba_identity.py`. The health-check phase asserts verification readiness and states that actor strings, typed confirmations and skip/force-close flags are not tested because they cannot authorize the gates.
+- Evidence/repro: `tests/test_identity_verification_readiness.py` (7 tests, all failed before), `tests/test_health_check_signing_status.py`, `tests/test_os_init_identity_status.py`.
+- Severity: M
+- Repeat: NO
+- Status: RESOLVED
+
+## DEBT-20260920-IMPLEMENTATION-COMPLETENESS-PATH-AND-ROOT
+
+- Logged date: 2026-09-20
+- Cycle/Session ID: auth-ciba-increment-b
+- Artifact affected: `plugins/agent-agentic-os/scripts/agent_control.py` (`check_implementation_completeness` in `_build_transition_policy_ctx`)
+- Friction observed: VERIFY_EXIT -> RETROSPECTIVE's `implementation_completeness` reported the ledger "missing" because it only looked for the legacy flat `docs/plans/<task-id>-implementation-plan.md`, while plans live under `docs/plans/work-tasks/<task-id>/` (commit a42df236 fixed `_resolve_artifact_path` but not this check). A second mismatch: even once found, artifact existence was judged against the checkout holding the (untracked) plan, i.e. the main checkout, not the task's registered worktree where the implementation exists.
+- Why not fixed now: Fixed now (no flat-path stubs created).
+- Recommended fix: Applied. The check tries `docs/plans/work-tasks/<task-id>/` first, then the flat path, in each root, and passes if SOME candidate plan carries a valid fully COMPLETE ledger (plan submission can leave a stub copy in one layout); artifacts are validated against the registered worktree first, then the plan's own root. It still fails closed when no candidate validates. The task's own ledger was also rewritten into the validator's single-JSON-list schema (`id`, `status`, `evidence`, `artifacts`) with 19 COMPLETE entries; entries superseded by the 2026-09-20 human decisions (T4, T10) say so in their evidence, and T9/T16 state what this session did not perform (local execution-tracker.md/backlog.md, plugin_add.py sync, closing #639).
+- Evidence/repro: `tests/test_agent_control.py::test_implementation_completeness_*` (5 tests; 3 failed before the fix, two guard the legacy flat path and the both-layouts case).
+- Severity: M
+- Repeat: NO
+- Status: RESOLVED
+
+## DEBT-20260920-LEAK-CHECK-VERIFIER-IS-A-NOOP
+
+- Logged date: 2026-09-20
+- Cycle/Session ID: auth-ciba-increment-b
+- Artifact affected: `plugins/agent-agentic-os/scripts/control_plane/wrappers/run_exit_verification.py` (`VERIFIER_CATALOG["leak_check"]`)
+- Friction observed: The cataloged `leak_check` verifier is `python3 -c "print('clean')"`, so its receipt (gate `leak_check`, exit 0) proves nothing about leaks; `done_guard` accepts it as the "clean leak check". The real leak check this session was a manual `git status --short` of the main checkout compared to the pre-session baseline.
+- Why not fixed now: Out of scope for this increment; changing the verifier needs a design decision (what baseline defines "clean" across worktrees, and how the check gets the main checkout path).
+- Recommended fix: Make the verifier run `git status --short` in the main checkout, compare against a baseline captured at task start, and fail on new modified/untracked paths (per worktree-subagent-leak-detection.md), with a failing test first.
+- Evidence/repro: `VERIFIER_CATALOG` in run_exit_verification.py; bundle output `"stdout": "clean\n"` on 2026-09-20.
+- Severity: M
+- Repeat: NO
+- Status: OPEN
+
+## DEBT-20260920-CONVENTIONS-AUDIT-DELTA-INCREMENT-B
+
+- Logged date: 2026-09-20
+- Cycle/Session ID: auth-ciba-increment-b
+- Artifact affected: `plugins/dev-utils/scripts/workspace_conventions_auditor.py` results for `plugins/agent-agentic-os` (new tests and modules from Increment B)
+- Friction observed: The pre-push workspace conventions audit exits 0 but reports failures. The baseline at origin/main (07b0bb64) already failed the same 6 plugins (agent-agentic-os, agent-scaffolders, cli-agents, dev-utils, exploration-cycle-plugin, plugin-manager) with 110 canonical files failing; this branch reports 151 (about 41 more), mostly missing function docstrings and file-header sections in the new test files and new control_plane modules. Also unchanged and pre-existing: `symlink_manager diagnose` reports 6 missing plugin-pruner links, and `audit.py` progressive-disclosure warnings for several skills.
+- Why not fixed now: Owner instruction 2026-09-20 to push without fixing pre-existing audit issues, missing docstrings or symlink-manager diagnostics. The one hard regression this branch introduced (os-signing-setup lacked acceptance-criteria.md, making `audit.py` exit 1) WAS fixed: `audit.py` now passes, `audit_plugin_structure.py` reports 0 errors.
+- Recommended fix: Add the missing docstrings/header sections to the new test and module files, then re-run the conventions auditor; separately restore the plugin-pruner links in plugin-manager.
+- Evidence/repro: `python3 plugins/dev-utils/scripts/workspace_conventions_auditor.py` (report at temp/workspace_conventions_report.md); baseline compared in a detached worktree of origin/main.
+- Severity: S
+- Repeat: NO
+- Status: OPEN
+
+## DEBT-20260920-CI-EVOLUTION-JOB-HAS-NO-PYYAML
+
+- Logged date: 2026-09-20
+- Cycle/Session ID: auth-ciba-increment-b (PR #643 CI)
+- Artifact affected: `plugins/agent-agentic-os/tests/conftest.py`, `.github/workflows/verify-evolution-integrity.yml`
+- Friction observed: The "Evolution Integrity & Compliance Gate" job installs only `pytest` and runs `tests/test_evolution_guards.py`. The Increment B `conftest.py` autouse fixture imported the control plane (which imports PyYAML) for every test, so all 11 evolution-guard tests errored with `ModuleNotFoundError: No module named 'yaml'` and the job failed on the PR. Reproduced locally by shadowing `yaml` with a module that raises ImportError.
+- Why not fixed now: Fixed now.
+- Recommended fix: Applied. The auto-signer fixture returns early when PyYAML is not importable (those tests never touch the control plane) and creates the throwaway signing key lazily, only when the control plane is in play. The workflow was NOT changed. Longer term: decide whether that CI job should install the plugin's `requirements.txt` so control-plane tests can run there too.
+- Evidence/repro: `PYTHONPATH=<dir with a yaml.py that raises ImportError> pytest plugins/agent-agentic-os/tests/test_evolution_guards.py` failed 11/11 before and passes 11/11 after; full suite unaffected.
+- Severity: M
+- Repeat: NO
+- Status: RESOLVED

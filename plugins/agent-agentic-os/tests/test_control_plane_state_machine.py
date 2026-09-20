@@ -80,11 +80,7 @@ def test_human_recovery_from_done_to_worktree_requires_and_consumes_approval(tmp
 
     cp = ControlPlane(db_path=tmp_path / "control_plane.db")
     cp.create_task(task_id="recovery-done-1", title="Reopen", runtime_tool="claude")
-    from control_plane.coordinator import TransitionCoordinator
-    TransitionCoordinator(cp, input_fn=lambda _: "FORCE_CLOSE").coordinate_transition(
-        "recovery-done-1", STATE_DONE, "human", "Close fixture", force_close=True,
-        human_authorization="FORCE_CLOSE", interactive=True,
-    )
+    cp.coordinate_transition("recovery-done-1", STATE_DONE, "human", "Close fixture", interactive=True)  # signed close
 
     token = cp.record_recovery_approval(
         "recovery-done-1", STATE_IN_WORKTREE, "human", actor="human",
@@ -98,110 +94,110 @@ def test_human_recovery_from_done_to_worktree_requires_and_consumes_approval(tmp
     assert record.to_state == STATE_IN_WORKTREE
     assert cp.get_task("recovery-done-1")["state"] == STATE_IN_WORKTREE
 
-def test_every_non_done_state_has_human_force_close_edge():
-    for state in CANONICAL_STATES:
-        if state != STATE_DONE:
-            assert STATE_DONE in ALLOWED_TRANSITIONS[state]
-
-def test_direct_force_close_requires_explicit_human_authorization(tmp_path):
-    from agent_control import ControlPlane
-    from control_plane.ports import PersistenceInvariantViolation
-    cp = ControlPlane(db_path=tmp_path / "control_plane.db")
-    cp.create_task(task_id="force-1", title="Force close", runtime_tool="claude")
-    with pytest.raises(PersistenceInvariantViolation, match="explicit human authorization"):
-        cp.transition("force-1", STATE_DONE, "agent", "close now")
-
-def test_human_authorized_force_close_is_persisted_from_any_state(tmp_path):
-    from agent_control import ControlPlane
-    cp = ControlPlane(db_path=tmp_path / "control_plane.db")
-    cp.create_task(task_id="force-2", title="Force close", runtime_tool="claude")
-    from control_plane.coordinator import TransitionCoordinator
-    record = TransitionCoordinator(cp, input_fn=lambda _: "FORCE_CLOSE").coordinate_transition(
-        "force-2", STATE_DONE, "human", "Emergency close", force_close=True,
-        human_authorization="FORCE_CLOSE", interactive=True,
-    )
-    assert record.from_state == STATE_INTAKE
-    assert cp.get_task("force-2")["state"] == STATE_DONE
-
-
-def test_force_close_checks_adjacency_before_authorization(tmp_path):
-    from agent_control import ControlPlane
-    from control_plane.coordinator import TransitionCoordinator
-    cp = ControlPlane(db_path=tmp_path / "control_plane.db")
-    cp.create_task("force-illegal", "Force close", "claude")
-    TransitionCoordinator(cp, input_fn=lambda _: "FORCE_CLOSE").coordinate_transition(
-        "force-illegal", STATE_DONE, "human", "close", force_close=True,
-        human_authorization="FORCE_CLOSE", interactive=True,
-    )
-    with pytest.raises(InvalidStateTransition):
-        cp.coordinate_transition(
-            "force-illegal", STATE_DONE, "human", "close", force_close=True,
-            human_authorization="FORCE_CLOSE", interactive=False,
-        )
-
-
-def test_force_close_rejects_noninteractive_human_spoof(tmp_path):
-    from agent_control import ControlPlane
-    cp = ControlPlane(db_path=tmp_path / "control_plane.db")
-    cp.create_task("force-spoof", "Force close", "claude")
-    with pytest.raises(Exception, match="interactive"):
-        cp.coordinate_transition(
-            "force-spoof", STATE_DONE, "human", "close", force_close=True,
-            human_authorization="FORCE_CLOSE", interactive=False,
-        )
-
-
-def test_every_non_done_state_has_human_force_close_edge():
+def test_every_non_done_state_has_a_signed_closure_edge():
     for state in CANONICAL_STATES:
         if state != STATE_DONE:
             assert STATE_DONE in ALLOWED_TRANSITIONS[state]
 
 
-def test_direct_force_close_requires_explicit_human_authorization(tmp_path):
+@pytest.mark.no_auto_signer
+def test_direct_agent_close_is_refused_without_an_openssh_signature(tmp_path):
+    """auth-ciba-increment-b: closing a task is a cryptographic gate. An agent (or anyone) calling the facade
+    without a signed transition_request fails closed: the state does not move."""
     from agent_control import ControlPlane
-    from control_plane.ports import PersistenceInvariantViolation
+    from control_plane.coordinator import HumanProofRequired
 
     cp = ControlPlane(db_path=tmp_path / "control_plane.db")
-    cp.create_task(task_id="force-1", title="Force close", runtime_tool="claude")
-    with pytest.raises(PersistenceInvariantViolation, match="explicit human authorization"):
+    cp.create_task(task_id="force-1", title="Close", runtime_tool="claude")
+    with pytest.raises((HumanProofRequired, Exception)) as excinfo:
         cp.transition("force-1", STATE_DONE, "agent", "close now")
+    assert "signature" in str(excinfo.value).lower() or "HUMAN_PROOF_REQUIRED" in str(excinfo.value)
+    assert cp.get_task("force-1")["state"] == STATE_INTAKE
 
 
-def test_human_authorized_force_close_is_persisted_from_any_state(tmp_path):
+def test_the_force_close_bypass_parameters_no_longer_exist(tmp_path):
+    """The force_close / human_authorization keyword bypass was removed; passing it is a TypeError, not a
+    quiet fallback, on both the coordinator and the ControlPlane facade."""
+    from agent_control import ControlPlane
+    from control_plane.coordinator import TransitionCoordinator
+
+    cp = ControlPlane(db_path=tmp_path / "control_plane.db")
+    cp.create_task("force-kw", "Close", "claude")
+    with pytest.raises(TypeError, match="force_close"):
+        TransitionCoordinator(cp).coordinate_transition(
+            "force-kw", STATE_DONE, "human", "close", force_close=True, human_authorization="FORCE_CLOSE", interactive=True,
+        )
+    with pytest.raises(TypeError, match="force_close"):
+        cp.coordinate_transition(
+            "force-kw", STATE_DONE, "human", "close", force_close=True, human_authorization="FORCE_CLOSE", interactive=True,
+        )
+    assert cp.get_task("force-kw")["state"] == STATE_INTAKE
+
+
+@pytest.mark.no_auto_signer
+@pytest.mark.parametrize("typed", ["FORCE_CLOSE", "FORCE_DONE", "YES", "1"])
+def test_a_typed_word_at_an_interactive_prompt_cannot_close_a_task(tmp_path, typed):
+    """Even a real interactive terminal and the old magic words do nothing without a signature: the coordinator
+    halts with HUMAN_PROOF_REQUIRED and the task does not move."""
+    from agent_control import ControlPlane
+    from control_plane.coordinator import HumanProofRequired, TransitionCoordinator
+
+    cp = ControlPlane(db_path=tmp_path / "control_plane.db")
+    cp.create_task("force-typed", "Close", "claude")
+    prompts = []
+    coord = TransitionCoordinator(cp, input_fn=lambda p: prompts.append(p) or typed, output_stream=io.StringIO())
+    with pytest.raises(HumanProofRequired):
+        coord.coordinate_transition("force-typed", STATE_DONE, "human", "close", interactive=True)
+    assert cp.get_task("force-typed")["state"] == STATE_INTAKE
+    assert prompts == []  # nothing was offered as an authorizing prompt
+
+
+@pytest.mark.no_auto_signer
+def test_a_noninteractive_human_actor_string_cannot_close_a_task(tmp_path):
+    from agent_control import ControlPlane
+    from control_plane.coordinator import HumanProofRequired
+
+    cp = ControlPlane(db_path=tmp_path / "control_plane.db")
+    cp.create_task("force-spoof", "Close", "claude")
+    with pytest.raises(HumanProofRequired):
+        cp.coordinate_transition("force-spoof", STATE_DONE, "human", "close", interactive=False)
+    assert cp.get_task("force-spoof")["state"] == STATE_INTAKE
+
+
+def test_a_signed_close_persists_from_any_state(tmp_path):
+    """The positive path: with the (test) human signing the real request, closure commits."""
     from agent_control import ControlPlane
 
     cp = ControlPlane(db_path=tmp_path / "control_plane.db")
-    cp.create_task(task_id="force-2", title="Force close", runtime_tool="claude")
-    from control_plane.coordinator import TransitionCoordinator
-    record = TransitionCoordinator(cp, input_fn=lambda _: "FORCE_CLOSE").coordinate_transition(
-        "force-2", STATE_DONE, "human", "Emergency close",
-        force_close=True, human_authorization="FORCE_CLOSE",
-        interactive=True,
-    )
+    cp.create_task(task_id="force-2", title="Close", runtime_tool="claude")
+    record = cp.coordinate_transition("force-2", STATE_DONE, "human", "Emergency close", interactive=True)
     assert record.from_state == STATE_INTAKE
     assert cp.get_task("force-2")["state"] == STATE_DONE
     assert cp._persistence.get_last_transition("force-2").to_state == STATE_DONE
 
 
-def test_every_non_done_state_exposes_human_force_done_edge():
-    """HITL force completion is legal from every non-terminal state."""
+def test_every_non_done_state_exposes_a_proof_gated_closure_edge():
+    """Closure is legal from every non-terminal state, and every such edge is cryptographic: it declares
+    requires_cryptographic_proof, authority type cryptographic_proof, and no FORCE_* accepted-answer question."""
     registry = TransitionRegistry.load_default()
+    proof_edges = registry.proof_required_edges()
     for state in CANONICAL_STATES:
         if state == STATE_DONE:
             continue
-        if state == STATE_RETROSPECTIVE:
-            continue  # Existing retrospective completion edge remains governed separately.
         assert STATE_DONE in ALLOWED_TRANSITIONS[state]
         template = registry.get_template(state, STATE_DONE)
         assert template is not None
-        assert template.authority.get("type") == "human_decision"
-        assert set(template.human_questions[0]["accepted_answers"]) >= {"FORCE_DONE", "FORCE_CLOSE"}
+        assert (state, STATE_DONE) in proof_edges
+        assert template.authority.get("type") == "cryptographic_proof"
+        for question in template.human_questions:
+            assert not {"FORCE_DONE", "FORCE_CLOSE"} & set(question.get("accepted_answers", []))
 
 
-def test_user_authorized_force_close_reaches_done_from_every_nonterminal_state(tmp_path):
-    """Exercise every force-close source edge through the coordinator and SQLite guard."""
+def test_signed_close_reaches_done_from_every_nonterminal_state(tmp_path):
+    """Exercise every closure source edge through the coordinator, real SQLite and the real (test) signer."""
     from agent_control import ControlPlane
     from control_plane.coordinator import TransitionCoordinator
+    from helpers.gate1_fixtures import init_git_worktree
 
     paths = {
         STATE_INTAKE: [],
@@ -215,45 +211,50 @@ def test_user_authorized_force_close_reaches_done_from_every_nonterminal_state(t
         STATE_WORKTREE_REVIEW: [STATE_INTERVIEW, STATE_DRAFT_PLAN, STATE_PLAN_REVIEW, STATE_AWAITING_APPROVAL, STATE_APPROVED, STATE_IN_WORKTREE, STATE_WORKTREE_REVIEW],
         STATE_MULTI_AGENT_CODE_REVIEW: [STATE_INTERVIEW, STATE_DRAFT_PLAN, STATE_PLAN_REVIEW, STATE_AWAITING_APPROVAL, STATE_APPROVED, STATE_IN_WORKTREE, STATE_WORKTREE_REVIEW, STATE_MULTI_AGENT_CODE_REVIEW],
         STATE_VERIFY_EXIT: [STATE_INTERVIEW, STATE_DRAFT_PLAN, STATE_PLAN_REVIEW, STATE_AWAITING_APPROVAL, STATE_APPROVED, STATE_IN_WORKTREE, STATE_WORKTREE_REVIEW, STATE_VERIFY_EXIT],
-        STATE_RETROSPECTIVE: [STATE_INTERVIEW, STATE_DRAFT_PLAN, STATE_PLAN_REVIEW, STATE_AWAITING_APPROVAL, STATE_APPROVED, STATE_RETROSPECTIVE],
+        # RETROSPECTIVE is closed by retrospective_to_done, which adds retrospective_done_guard and the full-suite
+        # receipt on top of the signature; those guards are covered by test_transition_guidance / test_agent_control.
         STATE_ROLLED_BACK: [STATE_INTERVIEW, STATE_DRAFT_PLAN, STATE_PLAN_REVIEW, STATE_AWAITING_APPROVAL, STATE_APPROVED, STATE_IN_WORKTREE, STATE_ROLLED_BACK],
         STATE_ESCALATED: [STATE_ESCALATED],
     }
     registry = TransitionRegistry.load_default()
 
-    for authorization in ("FORCE_CLOSE", "FORCE_DONE"):
-        for state, path in paths.items():
-            control_plane = ControlPlane(db_path=tmp_path / f"{authorization.lower()}-{state.lower()}.db")
-            control_plane.init_db()
-            task_id = f"{authorization.lower()}-{state.lower()}"
-            control_plane.create_task(task_id, "Force-close simulation", "simulator")
-            current = STATE_INTAKE
-            for next_state in path:
-                template = registry.get_template(current, next_state)
-                assert template is not None
-                source_transition = control_plane._persistence.get_last_transition(task_id)
-                question_ids = list(template.stage_question_ids or [])
-                question_ids += [question["question_id"] for question in template.human_questions]
-                if template.approval.get("required") and template.approval.get("approver_role", "human") == "human":
-                    question_ids.append(f"approval_{template.transition_id}")
-                for question_id in question_ids:
-                    control_plane.record_decision(
-                        task_id, source_transition.transition_id, current, next_state,
-                        question_id, "SIMULATED_HUMAN_CONFIRMATION", actor="human",
-                    )
+    for state, path in paths.items():
+        # <repo>/context/control_plane.db makes tmp the repo root, so the dirty-main check does not inspect the real checkout
+        (tmp_path / state.lower() / "context").mkdir(parents=True)
+        control_plane = ControlPlane(db_path=tmp_path / state.lower() / "context" / "control_plane.db")
+        control_plane.init_db()
+        task_id = f"close-{state.lower()}"
+        control_plane.create_task(task_id, "Closure simulation", "simulator")
+        current = STATE_INTAKE
+        for next_state in path:
+            template = registry.get_template(current, next_state)
+            assert template is not None
+            source_transition = control_plane._persistence.get_last_transition(task_id)
+            question_ids = list(template.stage_question_ids or [])
+            question_ids += [question["question_id"] for question in template.human_questions]
+            if template.approval.get("required") and template.approval.get("approver_role", "human") == "human":
+                question_ids.append(f"approval_{template.transition_id}")
+            for question_id in question_ids:
+                control_plane.record_decision(
+                    task_id, source_transition.transition_id, current, next_state,
+                    question_id, "SIMULATED_HUMAN_CONFIRMATION", actor="human",
+                )
+            if (current, next_state) in registry.proof_required_edges():
+                # a cryptographic gate: setup walks it through the real signed flow, never a direct persistence write
+                if next_state == STATE_VERIFY_EXIT:
+                    control_plane.update_worktree(task_id, str(init_git_worktree(tmp_path / f"wt-{task_id}")), f"sim/{task_id}", "written_in_worktree")
+                control_plane.coordinate_transition(task_id, next_state, "human", f"legal setup for {state}", interactive=True)
+            else:
                 assert control_plane._persistence.apply_transition(
                     task_id, current, next_state, "simulator", f"legal setup for {state}"
                 )
-                current = next_state
+            current = next_state
 
-            record = TransitionCoordinator(
-                control_plane, registry=registry, input_fn=lambda _: authorization, output_stream=io.StringIO(),
-            ).coordinate_transition(
-                task_id, STATE_DONE, "human", f"User-authorized close from {state}",
-                force_close=True, human_authorization=authorization, interactive=True,
-            )
-            assert (record.from_state, record.to_state) == (state, STATE_DONE)
-            assert control_plane.get_task(task_id)["state"] == STATE_DONE
+        record = TransitionCoordinator(control_plane, registry=registry, output_stream=io.StringIO()).coordinate_transition(
+            task_id, STATE_DONE, "human", f"Signed close from {state}", interactive=True,
+        )
+        assert (record.from_state, record.to_state) == (state, STATE_DONE)
+        assert control_plane.get_task(task_id)["state"] == STATE_DONE
 
 
 def test_control_plane_transition_delegates_to_state_machine(tmp_path, monkeypatch):
