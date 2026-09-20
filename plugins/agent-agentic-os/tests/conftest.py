@@ -44,7 +44,7 @@ def _test_human():
 
 
 @pytest.fixture(autouse=True)
-def _auto_human_signer(request, monkeypatch, _test_human):
+def _auto_human_signer(request, monkeypatch):
     """Test-only stand-in for the human at the three cryptographic-proof gates (APPROVED, VERIFY_EXIT, DONE).
 
     Production has no legacy or typed path for those edges: the coordinator halts with HUMAN_PROOF_REQUIRED unless a
@@ -55,6 +55,14 @@ def _auto_human_signer(request, monkeypatch, _test_human):
     if request.node.get_closest_marker("no_auto_signer"):
         yield
         return
+    try:
+        import yaml  # noqa: F401  (the control plane loads transition_templates.yaml)
+    except ImportError:
+        # The evolution-guard CI job installs only pytest, and its tests never touch the control plane. Without PyYAML
+        # a control-plane test would fail at its own import anyway, so do not break the unrelated ones here.
+        yield
+        return
+    _test_human = request.getfixturevalue("_test_human")  # lazy: no throwaway key unless the control plane is in play
     from control_plane.coordinator import TransitionCoordinator
     import agent_control
 

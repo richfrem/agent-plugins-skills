@@ -922,3 +922,16 @@ Persistent tracking of architectural friction, structural anomalies, and unclose
 - Severity: S
 - Repeat: NO
 - Status: OPEN
+
+## DEBT-20260920-CI-EVOLUTION-JOB-HAS-NO-PYYAML
+
+- Logged date: 2026-09-20
+- Cycle/Session ID: auth-ciba-increment-b (PR #643 CI)
+- Artifact affected: `plugins/agent-agentic-os/tests/conftest.py`, `.github/workflows/verify-evolution-integrity.yml`
+- Friction observed: The "Evolution Integrity & Compliance Gate" job installs only `pytest` and runs `tests/test_evolution_guards.py`. The Increment B `conftest.py` autouse fixture imported the control plane (which imports PyYAML) for every test, so all 11 evolution-guard tests errored with `ModuleNotFoundError: No module named 'yaml'` and the job failed on the PR. Reproduced locally by shadowing `yaml` with a module that raises ImportError.
+- Why not fixed now: Fixed now.
+- Recommended fix: Applied. The auto-signer fixture returns early when PyYAML is not importable (those tests never touch the control plane) and creates the throwaway signing key lazily, only when the control plane is in play. The workflow was NOT changed. Longer term: decide whether that CI job should install the plugin's `requirements.txt` so control-plane tests can run there too.
+- Evidence/repro: `PYTHONPATH=<dir with a yaml.py that raises ImportError> pytest plugins/agent-agentic-os/tests/test_evolution_guards.py` failed 11/11 before and passes 11/11 after; full suite unaffected.
+- Severity: M
+- Repeat: NO
+- Status: RESOLVED
