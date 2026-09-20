@@ -539,6 +539,13 @@
       "computedHash": "",
       "installedAt": "2026-09-16T04:33:03.031751Z",
       "updatedAt": "2026-09-16T14:43:04.986312Z"
+    },
+    "os-signing-setup": {
+      "source": "https://github.com/richfrem/agent-plugins-skills",
+      "sourceType": "local",
+      "computedHash": "",
+      "installedAt": "2026-09-20T09:06:05.602756Z",
+      "updatedAt": "2026-09-20T09:06:05.602756Z"
     }
   }
 }

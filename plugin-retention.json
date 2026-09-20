@@ -37,7 +37,8 @@
         "todo-check": true,
         "transition-guidance-tester": true,
         "work-intake": true,
-        "worktree-manager": true
+        "worktree-manager": true,
+        "os-signing-setup": true
       },
       "rules": {
         "adversarial-reasoning-before-agreement-rule.md": true,
