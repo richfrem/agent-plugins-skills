@@ -711,13 +711,32 @@ class ControlPlane:
                     worktree_root = Path(repo_root) / worktree_root
                 roots.append(worktree_root.resolve())
             roots.append(Path(repo_root).resolve())
+            # Plans may exist in both layouts (the coordinator's plan submission stages a copy under work-tasks/ while
+            # later ledger updates land in the file a caller edits), and docs/plans is untracked, so it usually lives in
+            # the main checkout while the implementation's artifacts exist only in the task's registered worktree.
+            # Fail closed: the check passes only if SOME candidate plan carries a valid, fully COMPLETE ledger whose
+            # artifacts exist in the registered worktree or in the checkout that holds that plan; otherwise the first
+            # denial reason is returned. Order: documented docs/plans/work-tasks/<task-id>/ (commit a42df236), then flat.
+            first_denial: Optional[str] = None
             for root in roots:
-                plan_path = root / "docs" / "plans" / f"{task_id}-implementation-plan.md"
-                if plan_path.exists():
-                    return validate_implementation_ledger(plan_path, root)
+                for plan_path in (
+                    root / "docs" / "plans" / "work-tasks" / task_id / f"{task_id}-implementation-plan.md",
+                    root / "docs" / "plans" / f"{task_id}-implementation-plan.md",
+                ):
+                    if not plan_path.exists():
+                        continue
+                    artifact_roots = [root] if roots[0] == root or not task_worktree or not roots[0].is_dir() else [roots[0], root]
+                    for artifact_root in artifact_roots:
+                        denial = validate_implementation_ledger(plan_path, artifact_root)
+                        if denial is None:
+                            return None
+                        first_denial = first_denial or denial
+            if first_denial is not None:
+                return first_denial
             return (
                 f"Implementation plan ledger missing for task '{task_id}': "
-                f"expected docs/plans/{task_id}-implementation-plan.md with a fenced JSON "
+                f"expected docs/plans/work-tasks/{task_id}/{task_id}-implementation-plan.md (or the legacy "
+                f"docs/plans/{task_id}-implementation-plan.md) with a fenced JSON "
                 "Implementation Task Ledger; add COMPLETE entries with evidence and existing "
                 "artifact paths before retrying VERIFY_EXIT -> RETROSPECTIVE."
             )

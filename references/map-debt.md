@@ -883,3 +883,29 @@ Persistent tracking of architectural friction, structural anomalies, and unclose
 - Severity: M
 - Repeat: NO
 - Status: RESOLVED
+
+## DEBT-20260920-IMPLEMENTATION-COMPLETENESS-PATH-AND-ROOT
+
+- Logged date: 2026-09-20
+- Cycle/Session ID: auth-ciba-increment-b
+- Artifact affected: `plugins/agent-agentic-os/scripts/agent_control.py` (`check_implementation_completeness` in `_build_transition_policy_ctx`)
+- Friction observed: VERIFY_EXIT -> RETROSPECTIVE's `implementation_completeness` reported the ledger "missing" because it only looked for the legacy flat `docs/plans/<task-id>-implementation-plan.md`, while plans live under `docs/plans/work-tasks/<task-id>/` (commit a42df236 fixed `_resolve_artifact_path` but not this check). A second mismatch: even once found, artifact existence was judged against the checkout holding the (untracked) plan, i.e. the main checkout, not the task's registered worktree where the implementation exists.
+- Why not fixed now: Fixed now (no flat-path stubs created).
+- Recommended fix: Applied. The check tries `docs/plans/work-tasks/<task-id>/` first, then the flat path, in each root, and passes if SOME candidate plan carries a valid fully COMPLETE ledger (plan submission can leave a stub copy in one layout); artifacts are validated against the registered worktree first, then the plan's own root. It still fails closed when no candidate validates. The task's own ledger was also rewritten into the validator's single-JSON-list schema (`id`, `status`, `evidence`, `artifacts`) with 19 COMPLETE entries; entries superseded by the 2026-09-20 human decisions (T4, T10) say so in their evidence, and T9/T16 state what this session did not perform (local execution-tracker.md/backlog.md, plugin_add.py sync, closing #639).
+- Evidence/repro: `tests/test_agent_control.py::test_implementation_completeness_*` (5 tests; 3 failed before the fix, two guard the legacy flat path and the both-layouts case).
+- Severity: M
+- Repeat: NO
+- Status: RESOLVED
+
+## DEBT-20260920-LEAK-CHECK-VERIFIER-IS-A-NOOP
+
+- Logged date: 2026-09-20
+- Cycle/Session ID: auth-ciba-increment-b
+- Artifact affected: `plugins/agent-agentic-os/scripts/control_plane/wrappers/run_exit_verification.py` (`VERIFIER_CATALOG["leak_check"]`)
+- Friction observed: The cataloged `leak_check` verifier is `python3 -c "print('clean')"`, so its receipt (gate `leak_check`, exit 0) proves nothing about leaks; `done_guard` accepts it as the "clean leak check". The real leak check this session was a manual `git status --short` of the main checkout compared to the pre-session baseline.
+- Why not fixed now: Out of scope for this increment; changing the verifier needs a design decision (what baseline defines "clean" across worktrees, and how the check gets the main checkout path).
+- Recommended fix: Make the verifier run `git status --short` in the main checkout, compare against a baseline captured at task start, and fail on new modified/untracked paths (per worktree-subagent-leak-detection.md), with a failing test first.
+- Evidence/repro: `VERIFIER_CATALOG` in run_exit_verification.py; bundle output `"stdout": "clean\n"` on 2026-09-20.
+- Severity: M
+- Repeat: NO
+- Status: OPEN

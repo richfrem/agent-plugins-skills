@@ -3562,6 +3562,94 @@ def test_coordinator_artifact_resolution_inside_registered_worktree(control_plan
     assert coord._resolve_artifact_path("docs/plans/../../outside.md", task={"task_id": "t1"}) is None
 
 
+def _write_ledger_plan(path, entries):
+    import json as _json
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        "# Implementation plan\n\n## Implementation Task Ledger\n\n```json\n" + _json.dumps(entries) + "\n```\n",
+        encoding="utf-8",
+    )
+
+
+def _completeness_check(control_plane, task_id):
+    task = control_plane.get_task(task_id)
+    ctx = control_plane._build_transition_policy_ctx(task_id, task, STATE_VERIFY_EXIT, STATE_RETROSPECTIVE)
+    return ctx["check_implementation_completeness"]()
+
+
+def test_implementation_completeness_resolves_the_plan_under_work_tasks_folder(control_plane):
+    """implementation_completeness must find the ledger where plans actually live under the documented layout
+    (docs/plans/work-tasks/<task-id>/, commit a42df236), not only at the legacy flat docs/plans/<task-id>-*.md.
+    Reproduces the live gap: with the plan in the work-tasks folder the check said the ledger was 'missing'."""
+    task_id = "ledger-wt-001"
+    control_plane.create_task(task_id=task_id, title="Ledger", runtime_tool="claude")
+    (control_plane.repo_root / "artifact.txt").write_text("done", encoding="utf-8")
+    plan = control_plane.repo_root / "docs" / "plans" / "work-tasks" / task_id / f"{task_id}-implementation-plan.md"
+    _write_ledger_plan(plan, [{"id": "T1", "status": "COMPLETE", "evidence": "tests green", "artifacts": ["artifact.txt"]}])
+
+    assert _completeness_check(control_plane, task_id) is None
+
+
+def test_implementation_completeness_reads_the_work_tasks_ledger_not_just_its_existence(control_plane):
+    """The ledger found under work-tasks/ is validated, not merely located: a PENDING item there is still denied."""
+    task_id = "ledger-wt-002"
+    control_plane.create_task(task_id=task_id, title="Ledger", runtime_tool="claude")
+    plan = control_plane.repo_root / "docs" / "plans" / "work-tasks" / task_id / f"{task_id}-implementation-plan.md"
+    _write_ledger_plan(plan, [{"id": "T1", "status": "PENDING", "evidence": "", "artifacts": []}])
+
+    reason = _completeness_check(control_plane, task_id)
+    assert reason is not None and "not COMPLETE" in reason and "ledger missing" not in reason
+
+
+def test_implementation_completeness_checks_artifacts_in_the_registered_worktree_when_the_plan_lives_in_the_main_checkout(control_plane):
+    """The plan (docs/plans is not tracked) usually lives in the main checkout, while the implementation and its
+    artifacts exist only in the task's registered worktree. Artifact existence must be judged against the worktree,
+    not against the checkout the plan happened to be found in."""
+    task_id = "ledger-wt-003"
+    control_plane.create_task(task_id=task_id, title="Ledger", runtime_tool="claude")
+    worktree = control_plane.repo_root / ".worktrees" / task_id
+    worktree.mkdir(parents=True)
+    (worktree / "only_in_worktree.py").write_text("x = 1\n", encoding="utf-8")
+    control_plane.update_worktree(task_id, str(worktree), f"feature/{task_id}", "written_in_worktree")
+    plan = control_plane.repo_root / "docs" / "plans" / "work-tasks" / task_id / f"{task_id}-implementation-plan.md"
+    _write_ledger_plan(plan, [{"id": "T1", "status": "COMPLETE", "evidence": "commit abc", "artifacts": ["only_in_worktree.py"]}])
+
+    assert _completeness_check(control_plane, task_id) is None
+
+
+def test_implementation_completeness_accepts_a_valid_ledger_in_either_layout_when_the_other_copy_is_a_stub(control_plane):
+    """The coordinator's plan submission can leave a stub copy under work-tasks/ while the ledger is completed in the
+    flat file (or the reverse): the check passes if SOME candidate plan has a valid COMPLETE ledger, and stays closed
+    when none does."""
+    task_id = "ledger-both-001"
+    control_plane.create_task(task_id=task_id, title="Ledger", runtime_tool="claude")
+    (control_plane.repo_root / "artifact.txt").write_text("done", encoding="utf-8")
+    stub = control_plane.repo_root / "docs" / "plans" / "work-tasks" / task_id / f"{task_id}-implementation-plan.md"
+    stub.parent.mkdir(parents=True)
+    stub.write_text("# Plan (stub, no ledger)\n", encoding="utf-8")
+    assert "Implementation ledger invalid" in _completeness_check(control_plane, task_id)
+
+    _write_ledger_plan(
+        control_plane.repo_root / "docs" / "plans" / f"{task_id}-implementation-plan.md",
+        [{"id": "T1", "status": "COMPLETE", "evidence": "ok", "artifacts": ["artifact.txt"]}],
+    )
+    assert _completeness_check(control_plane, task_id) is None
+
+
+def test_implementation_completeness_still_resolves_the_legacy_flat_plan_and_fails_closed_when_absent(control_plane):
+    flat_id, none_id = "ledger-flat-001", "ledger-none-001"
+    control_plane.create_task(task_id=flat_id, title="Ledger", runtime_tool="claude")
+    control_plane.create_task(task_id=none_id, title="Ledger", runtime_tool="claude")
+    (control_plane.repo_root / "artifact.txt").write_text("done", encoding="utf-8")
+    _write_ledger_plan(
+        control_plane.repo_root / "docs" / "plans" / f"{flat_id}-implementation-plan.md",
+        [{"id": "T1", "status": "COMPLETE", "evidence": "ok", "artifacts": ["artifact.txt"]}],
+    )
+    assert _completeness_check(control_plane, flat_id) is None
+    assert "ledger missing" in _completeness_check(control_plane, none_id)
+
+
 def test_resolve_artifact_path_falls_back_to_work_tasks_folder(control_plane):
     """coordinator._resolve_artifact_path must find plan/spec artifacts written under
     docs/plans/work-tasks/<task-id>/ (the documented convention, see
