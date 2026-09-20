@@ -124,3 +124,6 @@ docs/MAF-research-analysis/
 
 # macOS Finder metadata
 .DS_Store
+
+# Per-machine signing identity (allowed_signers*, challenges): trust anchors and throwaway challenges, never committed
+context/identity/

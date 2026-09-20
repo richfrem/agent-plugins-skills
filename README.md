@@ -73,6 +73,17 @@ Then ask your agent to set up Agentic OS for the repository, or use `os-init`, f
 plan-to-completion lifecycle. Approving a plan, accepting the code and closing a task each require a signature from a human-held SSH key (`ssh-keygen -Y sign`); the `os-signing-setup` skill walks you through creating and testing it. [Installation and onboarding](INSTALL.md) has platform-specific and
 local-development instructions.
 
+### Human approval gates: SSH signing (do this once per machine)
+
+The pipeline's three human authorities (plan approval, code acceptance, closure) are cryptographic
+gates, so an agent can never approve its own work. Only an out-of-band OpenSSH signature from *your*
+key advances them. This follows the CIBA/RAR idea (approve one exact, structured request out of band),
+done locally with SSH instead of an identity provider.
+
+1. Run `python3 plugins/agent-agentic-os/scripts/setup_ciba_identity.py` in your own terminal (the `os-signing-setup` skill explains each prompt); `--check` reports readiness.
+2. Your private key stays in `~/.ssh`; `allowed_signers` and `context/identity/` are per-machine and never committed.
+3. When the agent stops with `HUMAN_PROOF_REQUIRED`, run its `coordinate-transition ... --interactive --key <your key>` command (with `SSH_AUTH_SOCK` unset) and enter your passphrase.
+
 ### I want one capability or plugin
 
 Plugins are independently installable. Choose only the parts you need—the control plane is not a
