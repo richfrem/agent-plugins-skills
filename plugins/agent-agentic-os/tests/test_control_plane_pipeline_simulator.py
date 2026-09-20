@@ -86,6 +86,7 @@ def test_simulator_reports_isolation_contract(tmp_path):
     assert report["uses_worktree"] is False
 
 
+@pytest.mark.no_auto_signer  # the illegal_edge round asserts a non-human close is REFUSED; the stand-in signer would sign it
 def test_simulator_can_play_reproducible_adversarial_rounds(tmp_path):
     simulator = PipelineSimulator(tmp_path / "game.db")
 

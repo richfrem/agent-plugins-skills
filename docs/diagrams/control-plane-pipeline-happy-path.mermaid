@@ -40,45 +40,49 @@ stateDiagram-v2
     MULTI_AGENT_REVIEW --> PLAN_REVIEW : review complete<br/>merge outcome — repeat or accept
     MULTI_AGENT_REVIEW --> DRAFT_PLAN : changes requested<br/>revise artifacts and resubmit
 
-    %% CRITICAL HUMAN GATE 1
-    AWAITING_APPROVAL --> APPROVED : CRITICAL HUMAN GATE 1:<br/>Human Plan Approval (Proceed / Go)<br/>Releases worktree & coding authority
+    %% CRITICAL HUMAN GATE 1 (cryptographic: signed transition_request)
+    AWAITING_APPROVAL --> APPROVED : CRITICAL HUMAN GATE 1 (signed) -<br/>human signs the transition_request with<br/>ssh-keygen -Y sign (passphrase prompt)<br/>Releases worktree & coding authority
 
     %% Phase 3 Transitions & Loops
     APPROVED --> IN_WORKTREE
     IN_WORKTREE --> WORKTREE_REVIEW : implementation + focused tests + inventory done
     WORKTREE_REVIEW --> MULTI_AGENT_CODE_REVIEW : you say yes<br/>then choose method/runtime/model/effort
 
-    %% CRITICAL HUMAN GATE 3
-    WORKTREE_REVIEW --> VERIFY_EXIT : CRITICAL HUMAN GATE 3:<br/>Human Implementation Acceptance<br/>(accepts diff & explicitly skips review)
+    %% CRITICAL HUMAN GATE 3 (cryptographic: signed transition_request, two edges)
+    WORKTREE_REVIEW --> VERIFY_EXIT : CRITICAL HUMAN GATE 3 (signed) -<br/>human signs a request bound to commit SHA,<br/>tracked-diff hash and untracked-files hash<br/>(direct acceptance, no skip flag exists)
 
     MULTI_AGENT_CODE_REVIEW --> WORKTREE_REVIEW : review package ready for re-submission
     MULTI_AGENT_CODE_REVIEW --> IN_WORKTREE : bounded changes<br/>synthesis + human approval
-    MULTI_AGENT_CODE_REVIEW --> VERIFY_EXIT : human accepts review outcome<br/>(confirm_multi_agent_code_review_accept_outcome)
+    MULTI_AGENT_CODE_REVIEW --> VERIFY_EXIT : CRITICAL HUMAN GATE 3 (signed) -<br/>human signs acceptance of the reviewed code<br/>(same bound request as the direct edge)
 
     %% Phase 4 Transitions
-    VERIFY_EXIT --> RETROSPECTIVE : deterministic: tests + leak/ledger checks
-    RETROSPECTIVE --> DONE : survey complete or explicitly skipped<br/>with reason
+    VERIFY_EXIT --> RETROSPECTIVE : deterministic - tests + leak/ledger checks
+    RETROSPECTIVE --> DONE : CLOSURE GATE (signed) -<br/>human signs a request that also binds<br/>the retrospective digest
     DONE --> [*]
 
     %% Bypass & Planning-Only Edges
     APPROVED --> RETROSPECTIVE : approved plan — human skips implementation
     INTERVIEW --> RETROSPECTIVE : emergency trivial/early close only
-    INTAKE --> DONE : force close — interactive human authorization<br/>(available from any active state)
+    INTAKE --> DONE : early close — same signed closure gate<br/>(any active state, no force-close string or flag)
 
     note right of APPROVED
-        Critical Gate 1:
-        Unlocks file write authority and
-        isolated worktree execution.
+        Critical Gate 1 (cryptographic):
+        Unlocks file write authority and isolated
+        worktree execution. Only a verified OpenSSH
+        signature over the transition_request advances it.
     end note
 
     note right of WORKTREE_REVIEW
-        Critical Gate 3:
-        Direct exit to VERIFY_EXIT requires explicit
-        human acceptance of the working tree diff.
-        Agent self-skip via receipts is blocked by SQLite trigger.
+        Critical Gate 3 (cryptographic):
+        Both edges into VERIFY_EXIT (direct and post-review)
+        require a human signature over commit SHA + diff hash
+        + untracked-files hash. The signature is verified and
+        the request consumed once, in the commit transaction.
+        Receipts, typed words, flags and actor strings cannot
+        substitute.
     end note
 
     note right of DONE
-        Any-state force-close is available only
-        with explicit human authorization.
+        Every edge into DONE (normal closure and early close)
+        needs the same human-signed transition_request.
     end note

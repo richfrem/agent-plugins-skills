@@ -75,7 +75,7 @@ def _task_at_verify_exit(tmp_path, monkeypatch, task_id: str) -> ControlPlane:
         task_id=task_id, to_state=STATE_PLAN_REVIEW, actor="human",
         reason="setup", interactive=True,
     )
-    review_answers = iter(["1", "3", "YES"])
+    review_answers = iter(["1", "3", "claude-cli", "test-model", "medium", "YES"])
     TransitionCoordinator(
         sim.control_plane, registry=sim.registry,
         input_fn=lambda _p: next(review_answers), output_stream=io.StringIO(),
@@ -130,13 +130,13 @@ def _task_at_verify_exit(tmp_path, monkeypatch, task_id: str) -> ControlPlane:
         task_id=task_id, to_state=STATE_WORKTREE_REVIEW, actor="human",
         reason="setup", interactive=True,
     )
-    verify_exit_answers = iter(["1", "YES"])
+    # Gate 3 is a human signature over the worktree's commit/diff/untracked hashes; no skip flag or typed answer exists.
+    # The (test) human signer is supplied by conftest.py and signs the real request with a throwaway key.
     TransitionCoordinator(
-        sim.control_plane, registry=sim.registry,
-        input_fn=lambda _p: next(verify_exit_answers), output_stream=io.StringIO(),
+        sim.control_plane, registry=sim.registry, output_stream=io.StringIO(),
     ).coordinate_transition(
         task_id=task_id, to_state=STATE_VERIFY_EXIT, actor="human",
-        reason="setup", skip_review=True, skip_reason="setup", interactive=True,
+        reason="setup", interactive=True,
     )
     assert sim.control_plane.get_task(task_id)["state"] == STATE_VERIFY_EXIT
     return sim.control_plane

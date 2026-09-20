@@ -18,5 +18,9 @@
   {
     "input": "Fix this git merge conflict in skills-lock.json.",
     "should_trigger": false
+  },
+  {
+    "input": "The user said no plan review is needed for this task; continue the work-intake pipeline to approval and handle the review-skip decision for the task.",
+    "should_trigger": true
   }
 ]

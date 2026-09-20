@@ -22,5 +22,13 @@
   {
     "prompt": "summarize what the agentic OS ecosystem does",
     "should_trigger": false
+  },
+  {
+    "prompt": "set up my approval signing key",
+    "should_trigger": false
+  },
+  {
+    "prompt": "is my signing identity ready? run the status check",
+    "should_trigger": true
   }
 ]

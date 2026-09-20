@@ -22,8 +22,8 @@ Index:
       expected question_ids/options a compliant agent should see
     - build_simulation_cases() -- generates the full case list from the
       registry
-    - force_close_exempt() -- whether an edge is exempt from the mandatory
-      guidance-compliance confirmation (force_close/emergency paths)
+    - proof_gate_exempt() -- whether an edge is exempt from the mandatory
+      guidance-compliance confirmation (cryptographic-proof edges take a signature, not typed answers)
     - human_only_edges() -- edges the registry classifies human_only (T1's
       authorized_actor derivation)
     - build_agent_spoof_adversarial_cases() -- one denial case per human_only
@@ -81,21 +81,12 @@ class SimulationCase:
         return f"{self.from_state}->{self.to_state}::{self.condition}"
 
 
-def force_close_exempt(transition_id: str) -> bool:
-    """Exemption from the mandatory guidance-compliance confirmation is driven purely
-    by the `force_close` BOOLEAN PARAMETER passed to coordinate_transition() (see
-    coordinator.py's `if not force_close:` gate) -- never by transition_id name.
-    Corrected 2026-09-14: force_retrospective_from_* edges were previously assumed
-    exempt by name, but no real call site anywhere in this codebase ever passes
-    force_close=True for them (confirmed via `grep -rn "force_close=True"`) -- their
-    FORCE_RETROSPECTIVE literal is just an ordinary human_questions answer, so they
-    DO also require the trailing guidance-compliance question like any other edge.
-    Only the genuine force_close=True pathways (force_close_to_done__from_*,
-    human_force_done__from_*) are actually exempt in practice."""
-    return transition_id.startswith((
-        "force_close_to_done__from_",
-        "human_force_done__from_",
-    ))
+def proof_gate_exempt(template) -> bool:
+    """Exemption from the mandatory guidance-compliance confirmation. The coordinator asks that question on every
+    ordinary edge, but a cryptographic-proof edge (requires_cryptographic_proof: APPROVED, VERIFY_EXIT, DONE inbound)
+    takes no typed answers at all -- the human's signature is the whole authority, so there is nothing to confirm by
+    typing. Derived from the template's own flag, never from a transition_id naming convention."""
+    return bool(template.requires_cryptographic_proof)
 
 
 def human_only_edges(registry: TransitionRegistry = None) -> List[Tuple[str, str]]:
@@ -135,14 +126,14 @@ def build_agent_spoof_adversarial_cases(registry: TransitionRegistry = None) -> 
 
 def build_simulation_cases(registry: TransitionRegistry = None) -> List[SimulationCase]:
     """Builds one HUMAN_APPROVES + one HUMAN_REJECTS case per non-exempt edge, and
-    one HUMAN_APPROVES-only case per exempt (force-close) edge (rejecting a
+    one HUMAN_APPROVES-only case per exempt (cryptographic-proof) edge (rejecting a
     guidance question that doesn't exist for that edge has nothing to test)."""
     registry = registry or TransitionRegistry.load_default()
     cases: List[SimulationCase] = []
 
     for (from_state, to_state), template in sorted(registry._templates_by_edge.items()):
         question_ids = [q["question_id"] for q in template.human_questions]
-        exempt = force_close_exempt(template.transition_id)
+        exempt = proof_gate_exempt(template)
         trailing = [] if exempt else [GUIDANCE_CONFIRMATION_QUESTION_ID]
 
         if exempt:
@@ -164,9 +155,9 @@ def build_simulation_cases(registry: TransitionRegistry = None) -> List[Simulati
         # human is frustrated with agent/pipeline execution and is forcing an exit
         # that needs documentation for follow-up. Both are VALID uses of this edge
         # -- neither should be treated as a rejection/failure case. These edges are
-        # NOT exempt from the guidance-compliance question (confirmed 2026-09-14:
-        # no real call site ever passes force_close=True for them), so both cases
-        # also expect the trailing guidance question, answered YES. Pulled
+        # NOT exempt from the guidance-compliance question (they are ordinary,
+        # non-proof edges), so both cases also expect the trailing guidance
+        # question, answered YES. Pulled
         # data-driven from the question's actual declared options, not hardcoded,
         # so a future wording change here is caught automatically.
         reason_q = next(

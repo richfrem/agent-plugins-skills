@@ -1,0 +1,1 @@
+../../../../scripts/control_plane/ssh_signing.py

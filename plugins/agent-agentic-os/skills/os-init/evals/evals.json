@@ -58,5 +58,13 @@
     "type": "edge",
     "prompt": "I already have a CLAUDE.md but want to add the context folder structure and sub-agents",
     "should_trigger": true
+  },
+  {
+    "prompt": "set up my approval signing key and allowed_signers",
+    "should_trigger": false
+  },
+  {
+    "prompt": "test that my ssh signing key works before I approve",
+    "should_trigger": false
   }
 ]

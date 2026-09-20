@@ -64,10 +64,13 @@ def test_undeclared_critic_verdict_is_rejected(control_plane):
         control_plane.record_critic_review(task_id, 1, "gpt-5-mini", "APPROVE", "bad")
 
 
-def test_code_review_exit_requires_passing_review_or_explicit_skip():
-    """The selected code-review stage must not be an unenforced state sink."""
-    template = TransitionRegistry.load_default().get_template(
-        STATE_MULTI_AGENT_CODE_REVIEW, STATE_VERIFY_EXIT
-    )
+def test_code_review_exit_requires_a_passing_review_and_a_human_signature_never_a_skip():
+    """The selected code-review stage must not be an unenforced state sink, and (auth-ciba-increment-b) it has no
+    skip: the edge keeps the passing-review check and the human's signed acceptance, and the old
+    code_review_or_skip receipt path (which an agent could satisfy by recording a skip) is gone."""
+    registry = TransitionRegistry.load_default()
+    template = registry.get_template(STATE_MULTI_AGENT_CODE_REVIEW, STATE_VERIFY_EXIT)
     assert template is not None
-    assert "code_review_or_skip" in template.deterministic_checks
+    assert "critic_review_pass" in template.deterministic_checks
+    assert "code_review_or_skip" not in template.deterministic_checks
+    assert (STATE_MULTI_AGENT_CODE_REVIEW, STATE_VERIFY_EXIT) in registry.proof_required_edges()

@@ -55,6 +55,28 @@ any agent that emitted `intent` without a matching `result` (crash signal).
 Check `context/memory.md` length (`wc -l`), scan `context/.locks/` for leaked stale locks, and
 determine whether `memory_gc_due` should be flagged.
 
+### Phase 3.6: Cryptographic Verification Readiness (read-only)
+
+The three human authorities (APPROVED, VERIFY_EXIT, DONE) are cryptographic gates: only an `ssh-keygen -Y sign`
+signature over a `transition_request`, verified against `allowed_signers`, advances them. Assert that
+verification can actually work. Read-only, no terminal needed:
+
+```bash
+python3 scripts/setup_ciba_identity.py --check
+```
+
+Exit 0 means ready. It asserts: (1) `ssh-keygen` is present and supports SSHSIG (OpenSSH >= 8.1, line
+`ssh-keygen: OpenSSH ...`); (2) `allowed_signers` parses to at least one enrolled key; (3) every key is
+scoped to the production namespace (otherwise no gate signature can verify); (4) the trust anchors are safely
+owned and isolated from the agent account. Exit 1 lists each failure with a code (`SSH_KEYGEN_UNAVAILABLE`,
+`SSHSIG_UNSUPPORTED`, `NO_ENROLLED_KEYS`, `NAMESPACE_MISMATCH`, isolation codes). Do **not** test or report on
+`actor` strings, typed confirmations or skip/force-close flags: they cannot authorize these gates and no
+longer exist. A green status shows the trust anchors are safely owned and a key is enrolled; it is
+**not proof of human presence**. A failure is a Tier 1 finding: tell the human to run
+`python3 scripts/setup_ciba_identity.py` themselves (see the `os-signing-setup` skill). **Never run the
+setup or the self-test yourself, never create, read or move a private key, and never edit
+`allowed_signers*`**; only the human enrolls a key.
+
 ### Phase 3.5: os-init Substrate Completeness Check
 
 Verify the scaffolding artifacts `os-init --retrofit` is responsible for creating

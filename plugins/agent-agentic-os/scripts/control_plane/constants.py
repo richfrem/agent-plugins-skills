@@ -123,6 +123,8 @@ WORKTREE_STATES = (
     WORKTREE_STATE_LOCAL_BRANCH_REF_UPDATED, WORKTREE_STATE_CHECKED_OUT_ON_DISK,
 )
 
+# --- proof-required edges (auth-ciba-increment-b T4, issue #639) -------------------------
+
 # --- verification_receipts gate names (multi-agent review skip path) ---------------
 GATE_MULTI_AGENT_REVIEW_SKIPPED = "multi_agent_review_skipped"
 GATE_MULTI_AGENT_CODE_REVIEW_SKIPPED = "multi_agent_code_review_skipped"
@@ -201,15 +203,13 @@ TOOL_CATALOG_ALIASES = {
     "openai": ("codex", "codex-models.json"),
 }
 
-# --- Special transition_decisions question IDs / force-close answers referenced from
+# --- Special transition_decisions question IDs referenced from
 # the enforce_valid_transition trigger (defined twice in adapters.py: once in the
 # fresh-create SCHEMA_SQL, once in _rebuild_schema_transactional()'s trigger
 # recreation) -- both derive from these so they can never drift apart from each other.
 QUESTION_ID_RETROSPECTIVE_DECISION = "retrospective_decision"
-QUESTION_ID_FORCE_CLOSE_AUTHORIZATION = "force_close_authorization"
-QUESTION_ID_HUMAN_FORCE_DONE_CONFIRMATION = "human_force_done_confirmation"
-ANSWER_FORCE_CLOSE = "FORCE_CLOSE"
-ANSWER_FORCE_DONE = "FORCE_DONE"
+# (Removed 2026-09-20: QUESTION_ID_FORCE_CLOSE_AUTHORIZATION, QUESTION_ID_HUMAN_FORCE_DONE_CONFIRMATION,
+# ANSWER_FORCE_CLOSE, ANSWER_FORCE_DONE -- every edge into DONE now takes a cryptographic signature.)
 
 # --- record_interview_question.py denial-envelope error codes ----------------------
 ERROR_CODE_CAPABILITY_DENIED = "CAPABILITY_DENIED"

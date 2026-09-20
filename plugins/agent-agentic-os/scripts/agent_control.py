@@ -600,9 +600,31 @@ class ControlPlane:
             raise ValueError(f"Task not found: {task_id}")
         if not hasattr(self, "_transition_registry"):
             self._transition_registry = TransitionRegistry.load_default()
-        return self._transition_registry.get_transition_guidance(
-            current_state, requested_to_state
-        )
+        guidance = self._transition_registry.get_transition_guidance(current_state, requested_to_state)
+        if requested_to_state and guidance.get("legal"):
+            guidance["readiness"] = self._edge_readiness(task_id, current_state, requested_to_state, guidance)
+        return guidance
+
+    def _edge_readiness(self, task_id: str, from_state: str, to_state: str, guidance: Dict[str, Any]) -> Dict[str, Any]:
+        """U1: separate DATA readiness (artifacts/checks the edge names; verified by the coordinator at
+        transition time) from EXECUTION readiness (no human-actor question is still without an
+        unconsumed human decision). Read-only; it never authorizes a transition."""
+        template = self._transition_registry.get_template(from_state, to_state)
+        pending: List[str] = []
+        if hasattr(self._persistence, "pending_human_questions"):
+            pending = self._persistence.pending_human_questions(task_id, from_state, to_state)
+        return {
+            "data_readiness": {
+                "required_artifacts": list(template.required_artifacts),
+                "deterministic_checks": list(template.deterministic_checks),
+                "note": "Artifacts and checks are verified by the coordinator when the transition is attempted; this only lists them.",
+            },
+            "execution_readiness": {
+                "ready": not pending,
+                "pending_human_question_ids": pending,
+                "note": "Human-actor questions are answered by the human through --interactive. This readiness view does not authorize any transition.",
+            },
+        }
 
     def _reconcile_main_into_worktree(self, repo_root: Path, worktree_path: Path) -> Dict[str, List[str]]:
         """Force-copies dirty (modified/untracked) files from the source checkout into the
@@ -739,7 +761,6 @@ class ControlPlane:
         }
 
     def transition(self, task_id: str, to_state: str, actor: str, reason: str,
-                   force_close: bool = False, human_authorization: Optional[str] = None,
                    bypass_adjacency: bool = False):
         """INTERNAL USE ONLY: Validates and applies a deterministic state transition according to the canonical DAG.
 
@@ -778,11 +799,12 @@ class ControlPlane:
 
         if to_state == STATE_DONE:
             # Check edge legality first so callers receive the domain
-            # InvalidStateTransition for illegal edges, including force-close.
+            # InvalidStateTransition for illegal edges.
             self._state_machine.validate_adjacency(task_id, current_state, to_state)
-        if to_state == STATE_DONE and (current_state != STATE_RETROSPECTIVE or force_close):
+        if to_state == STATE_DONE:
             raise PersistenceInvariantViolation(
-                "Transition to DONE requires explicit human authorization FORCE_CLOSE via coordinate_transition."
+                "Closing a task (any transition to DONE) requires the human's OpenSSH signature over a transition_request: "
+                "run coordinate-transition --to DONE, then show-challenge, ssh-keygen -Y sign and approve-transition."
             )
         if not bypass_adjacency:
             self._state_machine.validate_adjacency(task_id, current_state, to_state)
@@ -806,8 +828,23 @@ class ControlPlane:
 
         applied = self._persistence.apply_transition(task_id, current_state, to_state, actor, reason)
         if not applied:
+            self._raise_actionable_rejection(task_id, current_state, to_state)
             raise ConcurrentModificationError(
                 f"Task '{task_id}' state changed concurrently (expected '{current_state}'). Retry."
+            )
+
+    def _raise_actionable_rejection(self, task_id: str, from_state: str, to_state: str) -> None:
+        """U2: when the guarded write did not apply and the task is STILL in from_state, the database
+        trigger rejected it (missing human decisions), not a concurrent writer: name the missing
+        question ids instead of the misleading 'changed concurrently ... Retry.'"""
+        if self._persistence.read_current_state(task_id) != from_state or not hasattr(self._persistence, "pending_human_questions"):
+            return
+        missing = self._persistence.pending_human_questions(task_id, from_state, to_state)
+        if missing:
+            raise PersistenceInvariantViolation(
+                f"Transition {from_state} -> {to_state} for task '{task_id}' was rejected: no unconsumed human decision exists for "
+                f"{', '.join(missing)}. The human answers these through: python3 plugins/agent-agentic-os/scripts/agent_control.py "
+                f"coordinate-transition --task-id {task_id} --to {to_state} --interactive (an agent must not record them)."
             )
 
     def coordinate_transition(
@@ -822,13 +859,12 @@ class ControlPlane:
         skip_decision: Optional[Tuple[str, str]] = None,
         skip_review: bool = False,
         skip_reason: Optional[str] = None,
-        force_close: bool = False,
-        human_authorization: Optional[str] = None,
+        human_signer: Optional[Callable[..., Any]] = None,
     ) -> TransitionRecord:
         """Public orchestration entry point: coordinates transition via TransitionCoordinator."""
         if not hasattr(self, "_transition_registry"):
             self._transition_registry = TransitionRegistry.load_default()
-        coord = TransitionCoordinator(control_plane=self, registry=self._transition_registry)
+        coord = TransitionCoordinator(control_plane=self, registry=self._transition_registry, human_signer=human_signer)
         return coord.coordinate_transition(
             task_id=task_id,
             to_state=to_state,
@@ -840,8 +876,6 @@ class ControlPlane:
             skip_decision=skip_decision,
             skip_review=skip_review,
             skip_reason=skip_reason,
-            force_close=force_close,
-            human_authorization=human_authorization,
         )
 
     def commit_authorized_transition(self, commit_request: TransitionCommitRequest) -> TransitionRecord:
@@ -853,19 +887,10 @@ class ControlPlane:
                 commit_request.expected_from_state,
                 commit_request.to_state,
             )
-        if (commit_request.to_state == STATE_DONE and commit_request.expected_from_state != STATE_RETROSPECTIVE
-            and not (
-            commit_request.force_close and commit_request.actor == "human"
-            and commit_request.interactive_human_authorization
-            and any(
-                d.question_id in {"force_close_authorization", "human_force_done_confirmation"}
-                and d.answer in {"FORCE_CLOSE", "FORCE_DONE"}
-                and d.actor == "human"
-                for d in commit_request.staged_decisions
-            )
-        )):
+        signed = commit_request.proof is not None and commit_request.proof.kind == "sshsig"  # verified inside the commit transaction
+        if commit_request.to_state == STATE_DONE and not signed:
             raise PersistenceInvariantViolation(
-                "Transition to DONE requires explicit human authorization FORCE_CLOSE."
+                "Closing a task requires the human's OpenSSH signature over a transition_request (no typed word, flag or prompt)."
             )
         force_retrospective = any(
             d.question_id == "force_retrospective_authorization"
@@ -947,14 +972,39 @@ class ControlPlane:
             verdict = "REVISE"
         if verdict not in ("PASS", "REVISE", "REJECT"):
             raise ValueError(f"Invalid verdict: {verdict}")
+        self._assert_review_selection_recorded(task_id)
         self._persistence.insert_critic_review(task_id, iteration, model, verdict, findings)
 
-    def record_verification_receipt(self, task_id: str, gate_name: str, command_executed: str, exit_code: int) -> str:
-        """Records a deterministic exit receipt and returns an immutable receipt token."""
+    def _assert_review_selection_recorded(self, task_id: str) -> None:
+        """review-selection-v1 (T17): an internal review's runtime/model/effort must be recorded as the
+        human's decisions before any reviewer outcome. No effect when the method was not internal."""
+        from control_plane.registry import TransitionRegistry
+        from control_plane.review_selection import review_edge_into
+
+        state = self._persistence.read_current_state(task_id)
+        edge = review_edge_into(state) if state else None
+        if edge is None or not hasattr(self._persistence, "review_selection_gaps"):
+            return
+        gaps = self._persistence.review_selection_gaps(TransitionRegistry.load_default(), task_id, edge[0], edge[1])
+        if gaps:
+            raise ValueError(
+                "Reviewer outcome refused: the internal review selection is not recorded as the human's decision "
+                f"(missing: {', '.join(gaps)}). Re-run the review edge interactively so the human chooses runtime, model and effort."
+            )
+
+    def record_verification_receipt(self, task_id: str, gate_name: str, command_executed: str, exit_code: int,
+                                    actor: Optional[str] = None, provenance: str = "api") -> str:
+        """Records a deterministic exit receipt and returns an immutable receipt token. The actor and
+        provenance are stored on the receipt and in the append-only receipt_audit trail (T15)."""
         raw = f"{task_id}:{gate_name}:{command_executed}:{exit_code}:{self._clock.current_time()}"
         h = self._crypto.sha256_hex(raw)[:12]
         token = f"EVO-INTEGRITY-{task_id}-{h}"
-        self._persistence.insert_verification_receipt(task_id, gate_name, command_executed, exit_code, token)
+        if actor is None and provenance == "api":
+            self._persistence.insert_verification_receipt(task_id, gate_name, command_executed, exit_code, token)
+        else:
+            self._persistence.insert_verification_receipt(
+                task_id, gate_name, command_executed, exit_code, token, actor=actor, provenance=provenance
+            )
         return token
 
     def save_retrospective(self, task_id: str, entry: Dict[str, Any], follow_ups: List[Dict[str, Any]]) -> None:
@@ -1044,12 +1094,9 @@ class ControlPlane:
         skipping record_recovery_approval and calling this directly, which would still
         fail at the SQLite trigger since no matching APPROVAL decision would exist.
 
-        DONE is special-cased: self.transition() hard-rejects any DONE destination
-        outside the normal RETROSPECTIVE->DONE path regardless of DAG legality, requiring
-        the coordinate_transition FORCE_CLOSE path instead -- a recorded recovery approval
-        is exactly the explicit human authorization that check exists to require, so this
-        routes DONE recoveries through coordinate_transition(force_close=True) rather than
-        failing on the same check apply_recovery_transition exists to satisfy.
+        DONE is not a recovery target: every edge into DONE is a cryptographic gate (a human-signed
+        transition_request), and the recovery path carries no signature, so record_recovery_approval refuses DONE
+        destinations outright instead of routing around the closure gate.
 
         Recovery edges are, by definition, outside the normal ALLOWED_TRANSITIONS DAG
         (e.g. DONE -> IN_WORKTREE to reopen a closed task for bounded rework) -- that is
@@ -1062,18 +1109,19 @@ class ControlPlane:
         if not token or not token.strip():
             raise ValueError("apply_recovery_transition requires a non-empty token from record_recovery_approval.")
         if destination_state == STATE_DONE:
-            return self.coordinate_transition(
-                task_id=task_id, to_state=STATE_DONE, actor=actor, reason=reason,
-                interactive=True, force_close=True, human_authorization="FORCE_CLOSE",
+            raise PersistenceInvariantViolation(
+                "A recovery approval cannot close a task: closure takes the human's OpenSSH signature (coordinate-transition --to DONE)."
             )
         self.transition(task_id, destination_state, actor, reason, bypass_adjacency=True)
         return self._persistence.get_last_transition(task_id)
 
-    def record_review_skip(self, task_id: str, phase: str, actor: str, reason: str) -> str:
+    def record_review_skip(self, task_id: str, phase: str, actor: str, reason: str, provenance: str = "api") -> str:
         """Records an explicit, auditable decision to skip a user-discretionary review phase
-        (e.g. multi_agent_review, multi_agent_code_review) — makes the skip visible, never silent."""
+        (e.g. multi_agent_review, multi_agent_code_review) — makes the skip visible, never silent.
+        The CLI path is human-only (receipt_provenance.record_human_skip); this API records provenance 'api'."""
         return self.record_verification_receipt(
-            task_id, gate_name=f"{phase}_skipped", command_executed=f"user-skip:{actor}:{reason}", exit_code=0
+            task_id, gate_name=f"{phase}_skipped", command_executed=f"user-skip:{actor}:{reason}", exit_code=0,
+            actor=actor, provenance=provenance,
         )
 
     def _read_current_state_for_update(self, task_id: str) -> Optional[str]:
@@ -1316,21 +1364,15 @@ def _build_parser() -> argparse.ArgumentParser:
     p_ct.add_argument("--interactive", action="store_true", default=False)
     p_ct.add_argument("--answers", default=None, help="JSON dict of question answers")
     p_ct.add_argument("--approval", choices=["APPROVAL", "REJECTION"], default=None)
-    p_ct.add_argument("--skip-review", action="store_true", default=False)
-    p_ct.add_argument("--skip-reason", default=None)
     p_ct.add_argument(
-        "--force-close", action="store_true", default=False,
-        help="Use the guarded human-authorized force-close path to DONE from any state.",
-    )
-    p_ct.add_argument(
-        "--human-confirmed", required=True,
+        "--human-confirmed", required=False, default=None,
         help=(
-            "REQUIRED, no default. Must be the literal phrase 'HUMAN-CONFIRMED: <quote of what "
-            "the human actually typed authorizing this specific transition>'. Blanket gate added "
-            "2026-09-13 after an agent transitioned INTAKE->INTERVIEW without any human "
-            "authorization at all -- every transition, deterministic or not, now requires this."
+            "Required for every transition EXCEPT those into APPROVED, VERIFY_EXIT and DONE, which are authorized "
+            "only by the human's OpenSSH signature and ignore (and do not require) this flag. Otherwise it must be the "
+            "literal phrase 'HUMAN-CONFIRMED: <quote of what the human actually typed authorizing this transition>'."
         ),
     )
+    p_ct.add_argument("--key", default="~/.ssh/agentic-os_signing", help="Your private signing key (proof edges, interactive terminal)")
 
     # Compatibility alias: transition routes directly through TransitionCoordinator
     p_tr = sub.add_parser("transition")
@@ -1341,21 +1383,15 @@ def _build_parser() -> argparse.ArgumentParser:
     p_tr.add_argument("--interactive", action="store_true", default=False)
     p_tr.add_argument("--answers", default=None, help="JSON dict of question answers")
     p_tr.add_argument("--approval", choices=["APPROVAL", "REJECTION"], default=None)
-    p_tr.add_argument("--skip-review", action="store_true", default=False)
-    p_tr.add_argument("--skip-reason", default=None)
     p_tr.add_argument(
-        "--force-close", action="store_true", default=False,
-        help="Use the guarded human-authorized force-close path to DONE from any state.",
-    )
-    p_tr.add_argument(
-        "--human-confirmed", required=True,
+        "--human-confirmed", required=False, default=None,
         help=(
-            "REQUIRED, no default. Must be the literal phrase 'HUMAN-CONFIRMED: <quote of what "
-            "the human actually typed authorizing this specific transition>'. Blanket gate added "
-            "2026-09-13 after an agent transitioned INTAKE->INTERVIEW without any human "
-            "authorization at all -- every transition, deterministic or not, now requires this."
+            "Required for every transition EXCEPT those into APPROVED, VERIFY_EXIT and DONE, which are authorized "
+            "only by the human's OpenSSH signature and ignore (and do not require) this flag. Otherwise it must be the "
+            "literal phrase 'HUMAN-CONFIRMED: <quote of what the human actually typed authorizing this transition>'."
         ),
     )
+    p_tr.add_argument("--key", default="~/.ssh/agentic-os_signing", help="Your private signing key (proof edges, interactive terminal)")
 
     p_lock = sub.add_parser("lock-verifiers")
     p_lock.add_argument("--task-id", required=True)
@@ -1403,8 +1439,13 @@ def _build_parser() -> argparse.ArgumentParser:
     p_rs = sub.add_parser("record-review-skip")
     p_rs.add_argument("--task-id", required=True)
     p_rs.add_argument("--phase", required=True, help="e.g. multi_agent_review, multi_agent_code_review")
-    p_rs.add_argument("--actor", required=True)
+    p_rs.add_argument("--actor", default="human", help="Ignored: a review skip is always recorded as the human's, interactively")
     p_rs.add_argument("--reason", required=True)
+    p_rs.add_argument("--interactive", action="store_true", help="Required: the HUMAN types the confirmation at a terminal")
+
+    p_ir = sub.add_parser("invalidate-receipt", help="Human-only: invalidate a receipt (it stops satisfying gates); audited")
+    p_ir.add_argument("--receipt-id", type=int, required=True)
+    p_ir.add_argument("--reason", required=True)
 
     p_cr = sub.add_parser("record-critic-review")
     p_cr.add_argument("--task-id", required=True)
@@ -1437,6 +1478,34 @@ def _build_parser() -> argparse.ArgumentParser:
     p_cgb.add_argument("--task-id", required=True)
     p_cgb.add_argument("--reason", required=True, help="Why this block is being cleared")
 
+    # Gate 1 human-side verbs (auth-ciba-increment-b T6): no --human-confirmed (the signature is the
+    # proof) and deliberately no --signature argument (the path is derived from the request row).
+    p_sc = sub.add_parser("show-challenge", help="Render and display the Gate 1 challenge to sign")
+    p_sc.add_argument("--request-id", type=int, required=True)
+    p_sc.add_argument("--key", default="~/.ssh/agentic-os_signing", help="Path of your private signing key (shown in the sign command)")
+    p_at = sub.add_parser("approve-transition", help="Verify your signature and approve Gate 1")
+    p_at.add_argument("--request-id", type=int, required=True)
+    p_at.add_argument("--principal", default=None, help="Enrolled principal (default: discovered from allowed_signers)")
+
+    # Interactive signing self-test (auth-ciba-increment-b T12): a human tool; handled in main()
+    # BEFORE a ControlPlane/DB is constructed, and it never creates a transition_request.
+    p_ts = sub.add_parser("test-signing-mechanics", help="Interactive self-test of your approval-signing key")
+    p_ts.add_argument("--key", default="~/.ssh/agentic-os_signing", help="Path of your private signing key")
+    p_ts.add_argument("--repo-root", default=None, help="Repository root (default: the canonical repo root, shared by worktrees)")
+
+    # Read-only helper (auth-ciba-increment-b H1): exact runtime/model ids for the review-selection questions.
+    sub.add_parser("list-review-options", help="Read-only: list the runtime/model/effort identifiers to type at the review questions")
+
+    # Canonical read-only inspection (auth-ciba-increment-b U3): use these, not ad-hoc SQL.
+    p_id = sub.add_parser("inspect-decisions", help="Read-only: recorded decisions for a task (actor, answer, edge)")
+    p_id.add_argument("--task-id", required=True)
+    p_id.add_argument("--from-state", default=None)
+    p_id.add_argument("--to-state", default=None)
+    p_id.add_argument("--json", action="store_true", help="Machine-readable JSON output")
+    p_ic = sub.add_parser("inspect-candidates", help="Read-only: source-assisted answer candidates for a task")
+    p_ic.add_argument("--task-id", required=True)
+    p_ic.add_argument("--json", action="store_true", help="Machine-readable JSON output")
+
     p_vc = sub.add_parser("verify-commit")
     p_vc.add_argument("--branch", required=True, help="Git branch to verify commit authorization for")
     p_vc.add_argument("--staged-files", nargs="*", default=[], help="List of staged files")
@@ -1447,7 +1516,7 @@ def _build_parser() -> argparse.ArgumentParser:
     # approval.required=false. Read-only/verification subcommands (status,
     # transition-guidance, recommend-model, verify-*) are exempt.
     for _mutating_parser in (
-        p_init, p_lock, p_rc, p_wt, p_lap, p_pme, p_sic, p_ha, p_rs, p_cr, p_rra, p_cgb,
+        p_init, p_lock, p_rc, p_wt, p_lap, p_pme, p_sic, p_ha, p_cr, p_rra, p_cgb,
     ):
         _mutating_parser.add_argument(
             "--human-confirmed", required=True,
@@ -1462,12 +1531,28 @@ def _build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+# record-review-skip is deliberately NOT here: a --human-confirmed string proves nothing about who typed
+# it (2026-09-19 incident), so that verb requires --interactive and a real terminal instead (T15).
 _HUMAN_CONFIRMED_GATED_COMMANDS = frozenset({
     "init", "coordinate-transition", "transition", "lock-verifiers", "record-receipt",
     "update-worktree", "log-prior-art", "record-plan-mode-entry", "record-socratic-intake",
-    "record-human-approval", "record-review-skip", "record-critic-review",
+    "record-human-approval", "record-critic-review",
     "record-recovery-approval", "clear-guidance-block",
 })
+
+
+def _require_human_interactive_skip(args: argparse.Namespace) -> None:
+    """`record-review-skip` is a human decision (T15): it needs --interactive and a real terminal;
+    --actor human / --human-confirmed on the command line prove nothing about who typed them."""
+    if not getattr(args, "interactive", False):
+        raise SystemExit(
+            "REFUSED: record-review-skip is a human decision. The human runs it in their own terminal "
+            "with --interactive and types the confirmation; an agent must not record it on their behalf."
+        )
+
+
+# Destinations whose every inbound edge requires an OpenSSH signature (requires_cryptographic_proof in the YAML).
+_PROOF_TARGET_STATES = frozenset({"APPROVED", "VERIFY_EXIT", "DONE"})
 
 
 def _enforce_human_confirmed(args: argparse.Namespace) -> None:
@@ -1477,6 +1562,17 @@ def _enforce_human_confirmed(args: argparse.Namespace) -> None:
     zero human authorization -- that edge's approval.required=false made it legal per
     the YAML, which is exactly the gap this closes: the YAML's per-edge setting is no
     longer sufficient on its own, this check applies uniformly on top of it."""
+    if args.subcommand in ("coordinate-transition", "transition"):
+        if getattr(args, "to", None) in _PROOF_TARGET_STATES:
+            return  # cryptographic-proof edges: the signature is the only authority; this flag is ignored
+        human_confirmed = getattr(args, "human_confirmed", None)
+        if not human_confirmed or not human_confirmed.strip().startswith("HUMAN-CONFIRMED:"):
+            raise SystemExit(
+                f"BLOCKED: --human-confirmed is required for '{args.subcommand}' to {args.to} (it must start with the literal "
+                "marker 'HUMAN-CONFIRMED:'). Transitions into APPROVED, VERIFY_EXIT and DONE do not take it: they need "
+                "the human's OpenSSH signature instead."
+            )
+        return
     if args.subcommand not in _HUMAN_CONFIRMED_GATED_COMMANDS:
         return
     human_confirmed = getattr(args, "human_confirmed", None)
@@ -1502,6 +1598,11 @@ def _dispatch_command(cp: ControlPlane, args: argparse.Namespace):
         print(json.dumps(cp.resolve_recommended_model(args.runtime, args.tier), indent=2))
     elif args.subcommand in ("coordinate-transition", "transition"):
         answers_dict = json.loads(args.answers) if getattr(args, "answers", None) else None
+        from control_plane.tty_signer import make_tty_signer, terminal_is_interactive
+
+        # In a real terminal with --interactive the human's signing step runs inline (ssh-keygen prompts for the
+        # passphrase); otherwise a proof edge stops with HUMAN_PROOF_REQUIRED for the human to complete.
+        signer = make_tty_signer(key=getattr(args, "key", "~/.ssh/agentic-os_signing")) if (getattr(args, "interactive", False) and terminal_is_interactive()) else None
         rec = cp.coordinate_transition(
             task_id=args.task_id,
             to_state=args.to,
@@ -1510,10 +1611,7 @@ def _dispatch_command(cp: ControlPlane, args: argparse.Namespace):
             interactive=getattr(args, "interactive", False),
             provided_answers=answers_dict,
             approval_decision=getattr(args, "approval", None),
-            skip_review=getattr(args, "skip_review", False),
-            skip_reason=getattr(args, "skip_reason", None),
-            force_close=getattr(args, "force_close", False),
-            human_authorization=("FORCE_CLOSE" if getattr(args, "force_close", False) else None),
+            human_signer=signer,
         )
         print(f"Transitioned task {args.task_id} to {args.to} (transition_id={rec.transition_id}).")
     elif args.subcommand == "record-critic-review":
@@ -1533,6 +1631,30 @@ def _dispatch_command(cp: ControlPlane, args: argparse.Namespace):
     elif args.subcommand == "update-worktree":
         cp.update_worktree(args.task_id, args.path, args.branch, args.state)
         print(f"Task {args.task_id} worktree state set to {args.state}.")
+    elif args.subcommand in ("inspect-decisions", "inspect-candidates"):
+        from control_plane.inspection import format_rows, inspect_candidates, inspect_decisions, open_readonly
+
+        conn = open_readonly(cp.db_path)
+        try:
+            if args.subcommand == "inspect-decisions":
+                rows = inspect_decisions(conn, args.task_id, from_state=args.from_state, to_state=args.to_state)
+                columns = ("decision_id", "edge", "question_id", "actor", "answer", "decision_type", "consumed")
+            else:
+                rows = inspect_candidates(conn, args.task_id)
+                columns = ("candidate_id", "stage", "question_id", "confirmation_status", "confirmed_by", "source_path", "answer")
+        finally:
+            conn.close()
+        print(json.dumps(rows, indent=2) if args.json else format_rows(rows, columns))
+    elif args.subcommand in ("show-challenge", "approve-transition"):
+        from control_plane.gate1_approval import GateApprovalError, approve_transition, show_challenge
+
+        try:
+            if args.subcommand == "show-challenge":
+                show_challenge(cp, args.request_id, key_hint=args.key)
+            else:
+                approve_transition(cp, args.request_id, principal=args.principal)
+        except GateApprovalError as exc:
+            raise SystemExit(f"REFUSED: {exc}")
     elif args.subcommand == "status":
         print(json.dumps(cp.get_task(args.task_id), indent=2, default=str))
     elif args.subcommand == "transition-guidance":
@@ -1548,7 +1670,8 @@ def _dispatch_command(cp: ControlPlane, args: argparse.Namespace):
         )
         print(f"Prior art scan logged for task {args.task_id}.")
     elif args.subcommand in (
-        "record-plan-mode-entry", "record-socratic-intake", "record-human-approval", "record-review-skip"
+        "record-plan-mode-entry", "record-socratic-intake", "record-human-approval", "record-review-skip",
+        "invalidate-receipt",
     ):
         _dispatch_gate_record_command(cp, args)
     elif args.subcommand == "verify-interview-question":
@@ -1592,8 +1715,20 @@ def _dispatch_gate_record_command(cp: ControlPlane, args: argparse.Namespace):
         token = cp.record_human_approval(args.task_id, args.approver)
         print(f"Human approval recorded: {token}")
     elif args.subcommand == "record-review-skip":
-        token = cp.record_review_skip(args.task_id, args.phase, args.actor, args.reason)
-        print(f"Review skip recorded: {token}")
+        from control_plane.receipt_provenance import ReceiptError, record_human_skip
+        _require_human_interactive_skip(args)
+        try:
+            token = record_human_skip(cp, args.task_id, args.phase, args.reason)
+        except ReceiptError as exc:
+            raise SystemExit(f"REFUSED: {exc}")
+        print(f"Review skip recorded (human, interactive): {token}")
+    elif args.subcommand == "invalidate-receipt":
+        from control_plane.receipt_provenance import ReceiptError, invalidate_receipt
+        try:
+            invalidate_receipt(cp, args.receipt_id, args.reason)
+        except ReceiptError as exc:
+            raise SystemExit(f"REFUSED: {exc}")
+        print(f"Receipt {args.receipt_id} invalidated (audited).")
 
 
 def main():
@@ -1603,6 +1738,21 @@ def main():
     if not args.subcommand:
         parser.print_help()
         sys.exit(1)
+
+    if args.subcommand == "list-review-options":
+        from control_plane.review_options import collect_review_options, format_review_options
+
+        print(format_review_options(collect_review_options()))
+        sys.exit(0)
+
+    if args.subcommand == "test-signing-mechanics":
+        from control_plane.identity_layout import default_layout
+        from control_plane.signing_selftest import run_selftest
+
+        from control_plane.identity_layout import canonical_repo_root
+
+        root = Path(args.repo_root).resolve() if args.repo_root else canonical_repo_root(".")
+        sys.exit(run_selftest(default_layout(root), Path(args.key).expanduser()))
 
     cp = ControlPlane()
     try:

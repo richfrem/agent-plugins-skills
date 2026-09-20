@@ -298,13 +298,13 @@ def test_sync_valid_transitions_is_atomic_not_left_empty_on_failure(tmp_path):
         assert before_count > 0
 
         from control_plane.registry import TransitionRegistry
-        real_edges = TransitionRegistry.load_default().get_all_edges_with_actor()
+        real_edges = TransitionRegistry.load_default().get_all_edges_with_proof()
         fake_registry = unittest.mock.MagicMock()
         # Good rows first, then one NOT NULL-violating row (to_state=None) to force a
-        # mid-batch failure rather than an immediate one. _sync_valid_transitions now
-        # reads get_all_edges_with_actor() (auth-ciba-poc-transition-mechanics, T1) --
-        # 3-tuples including authorized_actor, not the 2-tuples get_all_edges() returns.
-        fake_registry.get_all_edges_with_actor.return_value = real_edges + [(STATE_INTAKE, None, "agent_or_human")]
+        # mid-batch failure rather than an immediate one. _sync_valid_transitions reads
+        # get_all_edges_with_proof() (auth-ciba-increment-b) -- 4-tuples
+        # (from, to, authorized_actor, requires_proof) -- not the earlier 2-/3-tuple accessors.
+        fake_registry.get_all_edges_with_proof.return_value = real_edges + [(STATE_INTAKE, None, "agent_or_human", 0)]
 
         with unittest.mock.patch.object(TransitionRegistry, "load_default", return_value=fake_registry):
             with pytest.raises(sqlite3.IntegrityError):

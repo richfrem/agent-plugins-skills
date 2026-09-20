@@ -2,6 +2,24 @@
 
 All notable changes to `agent-agentic-os` are documented here.
 
+## v1.10.0 — 2026-09-20
+
+### Added
+- Three human authorities are cryptographic gates: Gate 1 (`AWAITING_APPROVAL -> APPROVED`), Gate 3 (`WORKTREE_REVIEW` / `MULTI_AGENT_CODE_REVIEW` `-> VERIFY_EXIT`) and closure (every edge into `DONE`, including early close). Each declares `requires_cryptographic_proof`; only an out-of-band OpenSSH signature (`ssh-keygen -Y sign`, passphrase prompted on a TTY) over a content-bound `transition_request` advances them, verified and consumed once in the commit transaction (auth-ciba-increment-b, #639). Gate 3 binds the commit SHA, tracked-diff hash and untracked-files hash; closure also binds the retrospective digest. New verbs: `show-challenge`, `approve-transition`, `test-signing-mechanics`, `inspect-decisions`, `inspect-candidates`.
+- `skills/os-signing-setup/` (with a human README) plus `scripts/setup_ciba_identity.py` and `scripts/test_signing_mechanics.py`: cross-platform key creation, enrollment and interactive self-test.
+- Read-only cryptographic-verification readiness in `os-init` and `os-health-check`: `ssh-keygen` with SSHSIG support (OpenSSH >= 8.1), a parseable `allowed_signers`, and namespace-scoped keys (`setup_ciba_identity.py --check`).
+- `references/isolation-setup.md`; dev-only `requirements-dev.in/.txt` (pytest, pytest-xdist, cryptography).
+
+### Changed
+- Signature verification (live snapshot hashing and the `ssh-keygen -Y verify` subprocess) runs before the commit's `BEGIN IMMEDIATE`; the transaction re-checks the request and challenge and consumes it once, so no write lock is held across a subprocess.
+- `ensure_schema()` has a read-only fast path (memoized registry, fingerprinted sync) instead of re-parsing the YAML and taking the write lock on every call; test setup dropped from about 20 s to under 1 s.
+- Closure guidance keeps the retrospective and full-suite requirements ahead of the signature step.
+- Gate 1 guidance: the human records approval and any review skip; the agent never records them on the human's behalf.
+- `plugin.yaml` version synced to 1.10.0 (was 1.8.0).
+
+### Removed
+- `--skip-review` / `--skip-reason` on the proof edges, the `--force-close` flag, the `force_close=` / `human_authorization=` coordinator parameters, the `FORCE_CLOSE` / `FORCE_DONE` answers and constants, and the `confirm_worktree_review_accept_implementation` / `confirm_multi_agent_code_review_accept_outcome` questions. Recovery into `DONE` is refused. Edge ids such as `human_force_done__from_*` are kept for now; they are proof-gated.
+
 ## v1.9.0 — 2026-09-05
 
 ### Added

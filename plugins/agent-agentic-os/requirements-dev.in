@@ -1,0 +1,13 @@
+# Dev-only requirements for plugins/agent-agentic-os (NOT shipped to consumers; the
+# runtime dependencies stay in requirements.in). Compile with:
+#   pip-compile --output-file=plugins/agent-agentic-os/requirements-dev.txt plugins/agent-agentic-os/requirements-dev.in
+# Constrained by the runtime lockfile so dev tooling never moves a runtime pin.
+-c requirements.txt
+
+pytest>=9,<10
+# Parallel test runs (pytest -n 8); the full suite takes ~13 minutes serially.
+# Added for the auth-ciba-increment-b session's pipeline optimization.
+pytest-xdist>=3.6
+# Test-only: builds valid synthetic sk-ssh-ed25519 signatures (no hardware key here) so the
+# FIDO user-presence/verification policy is tested against ssh-keygen-verified signatures.
+cryptography>=44

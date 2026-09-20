@@ -15,7 +15,7 @@
     },
     {
       "name": "agent-agentic-os",
-      "description": "Eval-gated continuous improvement OS — structured memory hierarchy, improvement loops, session lifecycle, and ecosystem evolution orchestration.",
+      "description": "Eval-gated continuous improvement OS — structured memory hierarchy, improvement loops, session lifecycle, ecosystem evolution orchestration, and out-of-band cryptographic (OpenSSH-signed) human authorization at the control plane's plan-approval, code-acceptance and closure gates.",
       "source": "./plugins/agent-agentic-os",
       "strict": true,
       "category": "agent-infrastructure",

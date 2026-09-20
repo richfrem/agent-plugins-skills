@@ -20,74 +20,74 @@ stateDiagram-v2
     INTAKE --> DRAFT_PLAN : skip straight to planning
     INTAKE --> PLAN_REVIEW : skip straight to planning
     INTAKE --> ESCALATED
-    INTAKE --> DONE : force close — interactive human authorization
+    INTAKE --> DONE : CLOSURE GATE — human-signed transition_request
 
     INTERVIEW --> DRAFT_PLAN : interview complete<br/>no plan artifacts required yet
     INTERVIEW --> PLAN_REVIEW : legacy/direct plan submission path<br/>(artifacts required)
     INTERVIEW --> RETROSPECTIVE : trivial path — interview baseline<br/>and adaptive follow-ups complete
     INTERVIEW --> ESCALATED
     INTERVIEW --> INTAKE : human-approved recovery reset
-    INTERVIEW --> DONE : force close — interactive human authorization
+    INTERVIEW --> DONE : CLOSURE GATE — human-signed transition_request
 
     DRAFT_PLAN --> PLAN_REVIEW : submit plan<br/>ask additional review? yes/no
     PLAN_REVIEW --> DRAFT_PLAN : changes requested<br/>revise artifact identity
     DRAFT_PLAN --> INTERVIEW : needs more questions
     PLAN_REVIEW --> INTERVIEW : needs more questions
 
-    PLAN_REVIEW --> MULTI_AGENT_REVIEW : yes — ask method, then internal runtime/model/effort<br/>one at a time; repeat if needed
+    PLAN_REVIEW --> MULTI_AGENT_REVIEW : yes — ask method, then internal runtime/model/effort<br/>one at a time, repeat if needed
     PLAN_REVIEW --> AWAITING_APPROVAL : no / plan accepted<br/>continue to human approval
     DRAFT_PLAN --> ESCALATED
     DRAFT_PLAN --> INTAKE : human-approved recovery reset
-    DRAFT_PLAN --> DONE : force close — interactive human authorization
+    DRAFT_PLAN --> DONE : CLOSURE GATE — human-signed transition_request
     PLAN_REVIEW --> ESCALATED
     PLAN_REVIEW --> INTAKE : human-approved recovery reset
-    PLAN_REVIEW --> DONE : force close — interactive human authorization
+    PLAN_REVIEW --> DONE : CLOSURE GATE — human-signed transition_request
 
     MULTI_AGENT_REVIEW --> PLAN_REVIEW : review complete<br/>merge outcomes for plan acceptance
     MULTI_AGENT_REVIEW --> DRAFT_PLAN : reviewer requested changes<br/>new identity required before resubmission
     MULTI_AGENT_REVIEW --> ESCALATED
     MULTI_AGENT_REVIEW --> INTAKE : human-approved recovery reset
-    MULTI_AGENT_REVIEW --> DONE : force close — interactive human authorization
+    MULTI_AGENT_REVIEW --> DONE : CLOSURE GATE — human-signed transition_request
 
-    %% CRITICAL HUMAN GATE 1
-    AWAITING_APPROVAL --> APPROVED : CRITICAL HUMAN GATE 1:<br/>Human Plan Approval (Proceed / Go)<br/>Releases worktree & coding authority
+    %% CRITICAL HUMAN GATE 1 (cryptographic)
+    AWAITING_APPROVAL --> APPROVED : CRITICAL HUMAN GATE 1 (signed) -<br/>human signs the transition_request<br/>(ssh-keygen -Y sign, passphrase prompt)<br/>Releases worktree & coding authority
     AWAITING_APPROVAL --> DRAFT_PLAN : needs more work
     AWAITING_APPROVAL --> PLAN_REVIEW : needs more work
     AWAITING_APPROVAL --> ESCALATED
     AWAITING_APPROVAL --> INTAKE : human-approved recovery reset
-    AWAITING_APPROVAL --> DONE : force close — interactive human authorization
+    AWAITING_APPROVAL --> DONE : CLOSURE GATE — human-signed transition_request
 
     APPROVED --> IN_WORKTREE
     APPROVED --> RETROSPECTIVE : human-approved skip implementation
     APPROVED --> ESCALATED
     APPROVED --> INTAKE : human-approved recovery reset
-    APPROVED --> DONE : force close — interactive human authorization
+    APPROVED --> DONE : CLOSURE GATE — human-signed transition_request
 
     IN_WORKTREE --> WORKTREE_REVIEW : implementation + tests done
     IN_WORKTREE --> ROLLED_BACK
     IN_WORKTREE --> ESCALATED
     IN_WORKTREE --> INTAKE : human-approved recovery reset
-    IN_WORKTREE --> DONE : force close — interactive human authorization
+    IN_WORKTREE --> DONE : CLOSURE GATE — human-signed transition_request
 
     WORKTREE_REVIEW --> MULTI_AGENT_CODE_REVIEW : yes — choose method<br/>then internal runtime/model/effort one at a time
     
-    %% CRITICAL HUMAN GATE 3b
-    WORKTREE_REVIEW --> VERIFY_EXIT : CRITICAL HUMAN GATE 3b:<br/>Human Implementation Acceptance<br/>(confirm_worktree_review_accept_implementation)
+    %% CRITICAL HUMAN GATE 3b (cryptographic)
+    WORKTREE_REVIEW --> VERIFY_EXIT : CRITICAL HUMAN GATE 3b (signed) -<br/>human signs acceptance bound to commit SHA,<br/>diff hash and untracked-files hash
     WORKTREE_REVIEW --> IN_WORKTREE : more changes needed
     WORKTREE_REVIEW --> ROLLED_BACK
     WORKTREE_REVIEW --> ESCALATED
     WORKTREE_REVIEW --> INTAKE : human-approved recovery reset
-    WORKTREE_REVIEW --> DONE : force close — interactive human authorization
+    WORKTREE_REVIEW --> DONE : CLOSURE GATE — human-signed transition_request
 
     MULTI_AGENT_CODE_REVIEW --> WORKTREE_REVIEW : review package ready<br/>for artifact/scope confirmation
     
-    %% CRITICAL HUMAN GATE 3c
-    MULTI_AGENT_CODE_REVIEW --> VERIFY_EXIT : CRITICAL HUMAN GATE 3c:<br/>Human accepts review outcome<br/>(confirm_multi_agent_code_review_accept_outcome)
+    %% CRITICAL HUMAN GATE 3c (cryptographic)
+    MULTI_AGENT_CODE_REVIEW --> VERIFY_EXIT : CRITICAL HUMAN GATE 3c (signed) -<br/>human signs acceptance of the reviewed code<br/>(same bound request as 3b)
     MULTI_AGENT_CODE_REVIEW --> IN_WORKTREE : synthesis says bounded changes<br/>human approves rework
     MULTI_AGENT_CODE_REVIEW --> ROLLED_BACK
     MULTI_AGENT_CODE_REVIEW --> ESCALATED
     MULTI_AGENT_CODE_REVIEW --> INTAKE : human-approved recovery reset
-    MULTI_AGENT_CODE_REVIEW --> DONE : force close — interactive human authorization
+    MULTI_AGENT_CODE_REVIEW --> DONE : CLOSURE GATE — human-signed transition_request
 
     VERIFY_EXIT --> RETROSPECTIVE : ledger + full/task tests + leak check<br/>and map-debt evidence pass
     VERIFY_EXIT --> IN_WORKTREE : verification failed
@@ -95,20 +95,20 @@ stateDiagram-v2
     VERIFY_EXIT --> ROLLED_BACK
     VERIFY_EXIT --> ESCALATED
     VERIFY_EXIT --> INTAKE : human-approved recovery reset
-    VERIFY_EXIT --> DONE : force close — interactive human authorization
+    VERIFY_EXIT --> DONE : CLOSURE GATE — human-signed transition_request
 
-    RETROSPECTIVE --> DONE : survey complete or explicitly skipped<br/>with reason<br/>follow-ups resolved
+    RETROSPECTIVE --> DONE : CLOSURE GATE — human-signed transition_request<br/>binds the retrospective digest<br/>follow-ups resolved
     RETROSPECTIVE --> ESCALATED : retrospective blocked
     RETROSPECTIVE --> INTAKE : human-approved recovery reset
     ROLLED_BACK --> ESCALATED
     ROLLED_BACK --> PLAN_REVIEW : restart planning
     ROLLED_BACK --> INTAKE : human-approved recovery reset
-    ROLLED_BACK --> DONE : force close — interactive human authorization
+    ROLLED_BACK --> DONE : CLOSURE GATE — human-signed transition_request
     ROLLED_BACK --> RETROSPECTIVE : human-approved recovery reset
 
     ESCALATED --> INTAKE : start over
     ESCALATED --> PLAN_REVIEW : restart planning
-    ESCALATED --> DONE : force close — interactive human authorization
+    ESCALATED --> DONE : CLOSURE GATE — human-signed transition_request
     ESCALATED --> RETROSPECTIVE : human-approved recovery reset
 
     DONE --> INTAKE : human-approved recovery reset
@@ -124,22 +124,28 @@ stateDiagram-v2
     DONE --> [*]
 
     note right of APPROVED
-        Critical Gate 1:
-        Unlocks file write authority and
-        isolated worktree execution.
+        Critical Gate 1 (cryptographic):
+        Unlocks file write authority and isolated
+        worktree execution. Only a verified OpenSSH
+        signature (ssh-keygen -Y sign) over the
+        transition_request advances this edge.
     end note
 
     note right of WORKTREE_REVIEW
-        Critical Gate 3b & 3c:
-        Entering VERIFY_EXIT requires explicit
-        human acceptance (diff accept or review accept).
-        Trigger blocks agent self-skip via receipts.
+        Critical Gate 3b & 3c (cryptographic):
+        Entering VERIFY_EXIT requires a human signature over
+        commit SHA + tracked-diff hash + untracked-files hash.
+        The request is verified and consumed once, inside the
+        commit transaction. No skip flag, receipt, typed word
+        or actor string can substitute; there is no SQLite
+        trigger that trusts an actor column for this gate.
     end note
 
     note right of DONE
-        Force-close from any state requires
-        explicit human authorization.
-        Agents cannot invoke this bypass.
+        Every edge into DONE -- normal closure and early
+        close from any active state -- requires the same
+        human-signed transition_request. There is no
+        force-close string, flag or confirmation question.
     end note
 
     note right of IN_WORKTREE
@@ -152,12 +158,9 @@ stateDiagram-v2
 
         No direct IN_WORKTREE -> VERIFY_EXIT edge exists.
         A "Gate 3d" fix once gated that edge with a human
-        question instead of removing it, but answering that
-        question would approve a bypass of WORKTREE_REVIEW --
-        the step whose purpose is to show the diff first.
-        Correctly attributed to a human, not an informed
-        decision. The edge was removed entirely (2026-09-17):
-        all work passes through WORKTREE_REVIEW first.
+        question instead of removing it; the edge was removed
+        entirely (2026-09-17): all work passes through
+        WORKTREE_REVIEW first.
     end note
 
     note right of MULTI_AGENT_CODE_REVIEW

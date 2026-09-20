@@ -89,6 +89,7 @@ def test_valid_transitions_table_matches_registry(test_env):
         (edge[0], edge[1], q["question_id"])
         for edge, tmpl in reg._templates_by_edge.items()
         for q in tmpl.human_questions
+        if not q.get("asked_when")  # conditional review-selection questions are enforced by review_selection.py, not the DB
     } | {
         (edge[0], edge[1], question_id)
         for edge, tmpl in reg._templates_by_edge.items()
@@ -115,6 +116,7 @@ def test_all_deterministic_edges_from_valid_transitions_table(test_env):
         SELECT vt.from_state, vt.to_state
         FROM valid_transitions vt
         WHERE vt.from_state IS NOT NULL
+          AND vt.requires_proof = 0
           AND NOT EXISTS (
               SELECT 1 FROM required_transition_questions rq
               WHERE rq.from_state = vt.from_state AND rq.to_state = vt.to_state
@@ -122,11 +124,10 @@ def test_all_deterministic_edges_from_valid_transitions_table(test_env):
         ORDER BY vt.from_state, vt.to_state
     """).fetchall()
     assert len(deterministic_edges) > 0, "Source table empty or unsynced: valid_transitions has 0 deterministic edges"
-    # Floor lowered 30 -> 28 (2026-09-17): WORKTREE_REVIEW->VERIFY_EXIT and
-    # MULTI_AGENT_CODE_REVIEW->VERIFY_EXIT gained real human_questions (Gate 3b/3c
-    # hardening), and IN_WORKTREE->VERIFY_EXIT was removed entirely -- see
-    # references/map-debt.md DEBT-20260917-VERIFY-EXIT-GATE-HARDENING.
-    assert len(deterministic_edges) >= 28, f"Expected at least 28 deterministic edges in valid_transitions, got {len(deterministic_edges)}"
+    # Proof edges (requires_proof = 1: APPROVED, VERIFY_EXIT and DONE inbound) are not "deterministic": they are
+    # cryptographic gates, blocked by the trigger without a consumed transition_request (asserted below).
+    # Floor lowered 28 -> 20 (2026-09-20): the closure edges into DONE joined the proof set.
+    assert len(deterministic_edges) >= 20, f"Expected at least 20 deterministic edges in valid_transitions, got {len(deterministic_edges)}"
 
     tested_edges = 0
     for idx, (from_s, to_s) in enumerate(deterministic_edges):
@@ -152,6 +153,23 @@ def test_all_deterministic_edges_from_valid_transitions_table(test_env):
     assert tested_edges > 0, "Zero deterministic edges were executed"
     conn.close()
 
+    conn = sqlite3.connect(db_path)
+    proof_edges = conn.execute(
+        "SELECT from_state, to_state FROM valid_transitions WHERE from_state IS NOT NULL AND requires_proof = 1 ORDER BY 1, 2"
+    ).fetchall()
+    assert len(proof_edges) > 0
+    for idx, (from_s, to_s) in enumerate(proof_edges):
+        task_id = f"task-proof-{idx:03d}"
+        _seed_task_at_state(conn, task_id, from_s)
+        conn.execute("UPDATE tasks SET state = ? WHERE task_id = ?", (to_s, task_id))
+        conn.commit()
+        assert conn.execute("SELECT state FROM tasks WHERE task_id = ?", (task_id,)).fetchone()[0] == from_s, (
+            f"Proof edge {from_s} -> {to_s} must be reverted by the trigger without a consumed transition_request"
+        )
+        assert conn.execute(
+            "SELECT COUNT(*) FROM transition_violations WHERE task_id = ? AND attempted_from_state = ? AND attempted_to_state = ?",
+            (task_id, from_s, to_s),
+        ).fetchone()[0] >= 1
 
 def test_all_question_edges_from_valid_transitions_table(test_env):
     """Dynamically tests ALL question-requiring edges directly queried from SQLite tables.
@@ -352,6 +370,7 @@ def test_dynamically_added_transitions_enforced_without_test_suite_changes(test_
     conn.close()
 
 
+@pytest.mark.no_auto_signer
 def test_reproduce_live_self_approval_bypass_rejected(test_env):
     """Slice: Literal reproduction of the live bypass.
     An agent programmatically executes record-human-approval / transition to APPROVED
@@ -396,7 +415,14 @@ def test_reproduce_live_self_approval_bypass_rejected(test_env):
     reg = TransitionRegistry.load_default()
     coord = TransitionCoordinator(control_plane=cp, registry=reg)
 
-    with pytest.raises(TransitionCoordinatorError, match="interactive human provenance"):
+    from control_plane.coordinator import HumanProofRequired
+    from control_plane.snapshot import gate1_artifact_paths
+    for _label, _path in gate1_artifact_paths(coord._resolve_repo_root(), task_id):  # reviewed content exists, so the refusal is about authority
+        _path.parent.mkdir(parents=True, exist_ok=True)
+        _path.write_text("reviewed\n")
+
+    # Programmatic answers and an actor string are not authority: the coordinator halts and asks for a signature.
+    with pytest.raises(HumanProofRequired):
         coord.coordinate_transition(
             task_id=task_id,
             to_state=STATE_APPROVED,
@@ -412,10 +438,10 @@ def test_reproduce_live_self_approval_bypass_rejected(test_env):
     conn.close()
 
 
-def test_interactive_coordinator_prompts_and_succeeds_with_human_decision(test_env):
-    """Slice: Interactive coordinator session with genuine stdin input.
-    When interactive=True and input_fn provides the selection, decision is recorded
-    with actor='human' and database trigger allows transition to commit."""
+def test_interactive_coordinator_commits_approval_via_a_signed_request_and_writes_no_decision_rows(test_env):
+    """auth-ciba-increment-b: APPROVED is a cryptographic gate. An interactive coordinator session completes it
+    only through a signed transition_request (the test human signs for real); the consumed request is the
+    authority, so no transition_decisions rows (and no actor='human' strings) are written for the edge."""
     cp = test_env["cp"]
     db_path = test_env["db_path"]
     task_id = "task-interactive-success-003"
@@ -424,10 +450,7 @@ def test_interactive_coordinator_prompts_and_succeeds_with_human_decision(test_e
     conn.close()
 
     reg = TransitionRegistry.load_default()
-    # Mock interactive stdin input selecting option 1 ("Yes, approve implementation")
-    # and approving the transition ("y")
-    inputs = iter(["1", "y", "YES"])
-    coord = TransitionCoordinator(control_plane=cp, registry=reg, input_fn=lambda prompt: next(inputs))
+    coord = TransitionCoordinator(control_plane=cp, registry=reg)  # signer supplied by the test human (conftest)
 
     record = coord.coordinate_transition(
         task_id=task_id,
@@ -442,17 +465,15 @@ def test_interactive_coordinator_prompts_and_succeeds_with_human_decision(test_e
     state = conn.execute("SELECT state FROM tasks WHERE task_id = ?", (task_id,)).fetchone()[0]
     assert state == STATE_APPROVED
 
-    # Verify decision rows exist with actor='human'
-    decisions = conn.execute(
-        "SELECT question_id, actor, answer FROM transition_decisions WHERE task_id = ? AND to_state = 'APPROVED'",
-        (task_id,)
+    consumed = conn.execute(
+        "SELECT status FROM transition_request WHERE task_id = ? AND to_state = 'APPROVED'", (task_id,)
     ).fetchall()
-    assert len(decisions) >= 1
-    for qid, actor, ans in decisions:
-        assert actor == "human"
-        assert ans != ""
+    assert consumed == [("CONSUMED",)]
+    decisions = conn.execute(
+        "SELECT COUNT(*) FROM transition_decisions WHERE task_id = ? AND to_state = 'APPROVED'", (task_id,)
+    ).fetchone()[0]
+    assert decisions == 0
     conn.close()
-
 
 def test_schema_rebuild_preserves_augmented_trigger_and_required_questions(test_env):
     """Slice: Verifies that _rebuild_schema_transactional drops and recreates the

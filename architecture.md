@@ -96,12 +96,12 @@ unmodified, into any number of target projects.
 - `plugins/plugin-manager/scripts/plugin_add.py` / `plugin_installer.py` / `plugin_remove.py` / `sync_with_inventory.py` — interactive and scripted install/remove/sync of individual or bulk plugins into a target project's `.agents/` folder.
 - `pyproject.toml` exposes these as console scripts: `plugin-add`, `plugin-remove`, `plugin-sync`.
 
-### 4.2. Plugin: agent-agentic-os (v1.8.0)
+### 4.2. Plugin: agent-agentic-os (v1.10.0)
 The self-improvement kernel. Core loop: `os-architect → os-improvement-loop → os-eval-runner →
 os-eval-backport → os-experiment-log`. Owns memory management (`os-memory-manager`), evolution
 planning (`os-evolution-planner`/`os-evolution-verifier`), setup (`os-init`, `agentic-os-setup` agent),
 and Layer 2 Wiki & Map Debt governance (`distill_playbook`, `audit_map_debt`, `pre-commit-evolution-guard`,
-and `turn_evolution_guard`).
+and `turn_evolution_guard`). Three control-plane edges are cryptographic human gates: Gate 1 (`AWAITING_APPROVAL -> APPROVED`), Gate 3 (`WORKTREE_REVIEW` or `MULTI_AGENT_CODE_REVIEW` `-> VERIFY_EXIT`) and closure (any edge into `DONE`). Each declares `requires_cryptographic_proof`: the coordinator halts with `HUMAN_PROOF_REQUIRED` and a pending, content-bound `transition_request` (Gate 3 binds the commit SHA, tracked-diff hash and untracked-files hash; closure also binds the retrospective digest); the human signs it out of band with `ssh-keygen -Y sign` (OpenSSH prompts for the private-key passphrase) via `show-challenge` and `approve-transition`; the signature is verified outside the database write lock and the request is consumed exactly once in the commit transaction. No prompt, typed word, flag, receipt or actor string can authorize these edges, and there is no skip or force-close path. `os-signing-setup` creates the key; residual risk (a same-account agent with direct DB or coordinator access) is documented in `plugins/agent-agentic-os/references/isolation-setup.md`.
 
 ### 4.3. Plugin: agent-orchestration/ (v2.3.0)
 Execution primitives for loops and deterministic state graphs (orchestrator, select-loop-strategy, co-pilot-loop, learning-loop, dual-loop, agent-swarm, red-team-review, triple-loop-learning, graph-execution). Provides execution patterns only — no eval gate, no memory; `os-improvement-loop` delegates its inner loop to `triple-loop-learning` as substrate.

@@ -34,8 +34,8 @@ Key Input Dependencies:
     - A temporary, isolated SQLite database per test
 
 Key Functions:
-    - test_worktree_review_to_verify_exit_now_has_declared_question
-    - test_multi_agent_code_review_to_verify_exit_now_has_declared_question
+    - test_gate3_edges_require_cryptographic_proof_not_a_soft_question (both edges)
+    - test_gate3_soft_questions_are_not_synced_and_the_edges_are_proof_gated_in_sqlite
     - test_in_worktree_direct_verify_exit_edge_removed
     - test_in_worktree_direct_verify_exit_rejected_by_state_machine
 """
@@ -58,23 +58,28 @@ def registry():
     return TransitionRegistry.load_default()
 
 
-def test_worktree_review_to_verify_exit_now_has_declared_question(registry):
-    tmpl = registry.get_template("WORKTREE_REVIEW", "VERIFY_EXIT")
+GATE3_EDGES = [("WORKTREE_REVIEW", "VERIFY_EXIT"), ("MULTI_AGENT_CODE_REVIEW", "VERIFY_EXIT")]
+REMOVED_SOFT_QUESTIONS = ("confirm_worktree_review_accept_implementation", "confirm_multi_agent_code_review_accept_outcome")
+
+
+@pytest.mark.parametrize("from_state,to_state", GATE3_EDGES)
+def test_gate3_edges_require_cryptographic_proof_not_a_soft_question(registry, from_state, to_state):
+    """auth-ciba-increment-b (2026-09-20) supersedes the 2026-09-17 fix that gave these edges a human_questions
+    entry (trigger-enforced on actor='human'). A typed answer, or an actor string, can no longer authorize code
+    acceptance: both edges declare requires_cryptographic_proof, carry no soft confirmation question, and their
+    guidance names the signature flow and no skip flag."""
+    tmpl = registry.get_template(from_state, to_state)
     assert tmpl is not None
+    assert (from_state, to_state) in registry.proof_required_edges()
     qids = [q["question_id"] for q in tmpl.human_questions]
-    assert "confirm_worktree_review_accept_implementation" in qids
-    # Guidance text must no longer claim no question is required (stale-text finding).
-    assert "no additional human question is required" not in tmpl.next_steps_hint.lower()
+    assert not set(qids) & set(REMOVED_SOFT_QUESTIONS), qids
+    hint = tmpl.next_steps_hint.lower()
+    assert "ssh-keygen -y sign" in hint and "allowed_signers" in hint
+    assert "--skip-review" not in hint and "--skip-reason" not in hint
+    assert "no additional human question is required" not in hint  # the original stale-text finding stays fixed
 
 
-def test_multi_agent_code_review_to_verify_exit_now_has_declared_question(registry):
-    tmpl = registry.get_template("MULTI_AGENT_CODE_REVIEW", "VERIFY_EXIT")
-    assert tmpl is not None
-    qids = [q["question_id"] for q in tmpl.human_questions]
-    assert "confirm_multi_agent_code_review_accept_outcome" in qids
-
-
-def test_required_transition_questions_synced_for_both_edges(tmp_path):
+def test_gate3_soft_questions_are_not_synced_and_the_edges_are_proof_gated_in_sqlite(tmp_path):
     import sys as _sys
     _sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
     from agent_control import ControlPlane
@@ -84,15 +89,17 @@ def test_required_transition_questions_synced_for_both_edges(tmp_path):
     cp.init_db()
     conn = sqlite3.connect(db_path)
 
-    for from_state, to_state, qid in [
-        ("WORKTREE_REVIEW", "VERIFY_EXIT", "confirm_worktree_review_accept_implementation"),
-        ("MULTI_AGENT_CODE_REVIEW", "VERIFY_EXIT", "confirm_multi_agent_code_review_accept_outcome"),
-    ]:
+    for from_state, to_state in GATE3_EDGES:
+        soft = conn.execute(
+            "SELECT question_id FROM required_transition_questions WHERE from_state=? AND to_state=? AND question_id LIKE 'confirm_%'",
+            (from_state, to_state),
+        ).fetchall()
+        assert soft == [], f"soft confirmation question synced for {from_state}->{to_state}: {soft}"
         row = conn.execute(
-            "SELECT 1 FROM required_transition_questions WHERE from_state=? AND to_state=? AND question_id=?",
-            (from_state, to_state, qid),
+            "SELECT authorized_actor, requires_proof FROM valid_transitions WHERE from_state=? AND to_state=?",
+            (from_state, to_state),
         ).fetchone()
-        assert row is not None, f"{qid} not synced into required_transition_questions for {from_state}->{to_state}"
+        assert row == ("human_only", 1), f"{from_state}->{to_state} must be human_only and requires_proof, got {row}"
 
 
 def test_in_worktree_direct_verify_exit_edge_removed(registry):

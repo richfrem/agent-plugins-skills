@@ -121,3 +121,6 @@ docs/MAF-research-analysis/
 
 .superpowers/
 .context/
+
+# macOS Finder metadata
+.DS_Store

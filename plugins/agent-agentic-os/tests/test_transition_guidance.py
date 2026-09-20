@@ -76,7 +76,8 @@ def test_guidance_cannot_authorize_illegal_requested_edge(control_plane):
     assert guidance["legal"] is True
     force_edge = next(t for t in guidance["transitions"] if t["to_state"] == STATE_DONE)
     assert force_edge["transition_id"] == "human_force_done__from_INTAKE"
-    assert "FORCE_DONE" in force_edge["success_guidance"]
+    assert "FORCE_DONE" not in force_edge["success_guidance"] and "FORCE_CLOSE" not in force_edge["success_guidance"]
+    assert "ssh-keygen -Y sign" in force_edge["success_guidance"]  # closure takes the same human signature
     assert guidance["command"] == force_edge["command"]
     assert guidance["denial_guidance"]
     assert guidance["legal_next_states"] == ALLOWED_TRANSITIONS[STATE_INTAKE]
@@ -411,26 +412,19 @@ def test_plan_and_implementation_reviews_share_environment_and_model_selection_c
         assert edge["review_selection"]["catalog_source"] == "review_selection_contract.catalog_resolution"
 
 
-def test_worktree_review_exit_hint_explains_skip_branch_and_human_question_boundary():
-    """auth-ciba-poc-transition-mechanics (2026-09-17): this edge previously had
-    zero declared questions -- a genuine skip-review path reachable with no
-    human confirmation at all (code_review_or_skip's own receipt check has no
-    actor verification). Fixed by adding a real human_questions entry,
-    trigger-enforced via required_transition_questions. Updated assertions to
-    match the corrected behavior instead of the old (wrong) claim that no
-    question was required here."""
+def test_worktree_review_exit_hint_names_the_signature_flow_and_no_skip_branch():
+    """auth-ciba-increment-b (2026-09-20): this edge's guidance used to describe a --skip-review/--skip-reason
+    branch and a confirm_worktree_review_accept_implementation question. Both are gone: the hint must name the
+    signed flow and must not advertise any skip flag or soft question."""
     registry = TransitionRegistry.load_default()
     template = registry.get_template(STATE_WORKTREE_REVIEW, STATE_VERIFY_EXIT)
 
     assert template is not None
-    qids = [q["question_id"] for q in template.human_questions]
-    assert "confirm_worktree_review_accept_implementation" in qids
+    assert [q["question_id"] for q in template.human_questions] == []
     hint = template.next_steps_hint.lower()
-    assert "no additional human question is required" not in hint
-    assert "confirm_worktree_review_accept_implementation" in hint
-    assert "--skip-review" in hint
-    assert "--skip-reason" in hint
-    assert "multi_agent_code_review" in hint
+    assert "confirm_worktree_review_accept_implementation" not in hint
+    assert "--skip-review" not in hint and "--skip-reason" not in hint
+    assert "ssh-keygen -y sign" in hint and "allowed_signers" in hint
 
 
 def test_stale_yaml_next_state_claim_is_ignored_for_guidance_legality(control_plane):
