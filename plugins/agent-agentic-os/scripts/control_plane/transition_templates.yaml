@@ -515,6 +515,25 @@ stages:
       feature_branch_policy: Reuse the task's existing registered feature branch (worktree_branch) -- never create a new branch at DONE, and never commit directly to main.
       commit_policy: Create exactly one commit for the verified work, with an evolution-check/map-debt reference per the Evolution Integrity Gate, before any push is discussed.
       push_policy: Ask separately, as an explicit isolated instruction, before running git push -- committing and pushing are never bundled into one authorization.
+      post_done_protocol:
+        overview: "When DONE is signed, the task lifecycle in SQLite is complete. The final repository convergence sequence follows: DONE -> Push Worktree Branch -> PR / Merge to Main -> Sync Main Locally -> Prune Worktree & Branch."
+        steps:
+        - step: 1
+          name: push_worktree_branch
+          execution_class: SOFT
+          instruction: "Ask the human in chat: 'Task is marked DONE. Would you like me to push <worktree_branch> and create the pull request to main?' Upon confirmation, run `git push origin <worktree_branch>` and update SQLite worktree state to pushed_to_origin via `agent_control.py update-worktree`."
+        - step: 2
+          name: create_pull_request
+          execution_class: SOFT
+          instruction: "Open the PR via `gh pr create --base main --head <worktree_branch> ...`. State the PR URL and 'not yet merged', and await the user's review/merge on GitHub."
+        - step: 3
+          name: sync_local_main
+          execution_class: AGENT
+          instruction: "Once merged into origin/main, checkout main in the repository root and pull: `cd <repo_root> && git checkout main && git pull origin main`. Update SQLite worktree state to merged_into_origin_main."
+        - step: 4
+          name: prune_worktree_and_branch
+          execution_class: AGENT
+          instruction: "Verify clean state on main, then remove the worktree and delete the local task branch: `git worktree remove .worktrees/<task-id> && git branch -d <worktree_branch>`."
 
 intake_guidance:
   source_documents:

@@ -451,3 +451,26 @@ def append_iteration_log(log_path: Path, *, iteration: int, row: Dict[str, str],
     }
     with Path(log_path).open("a", encoding="utf-8") as handle:
         handle.write(json.dumps(entry) + "\n")
+
+
+def grade_post_done_convergence_plan(reply_text: str) -> Dict[str, Any]:
+    """Grade an agent's plan for post-DONE repository convergence.
+    Verifies that the plan correctly identifies the 4 post-DONE steps:
+    1. Push worktree branch to remote (SOFT: ask confirmation before pushing)
+    2. Open pull request (gh pr create) and await merge
+    3. Sync local main (checkout main && git pull)
+    4. Prune worktree and delete local branch (git worktree remove, git branch -d)
+    """
+    text = reply_text.lower()
+    criteria = {
+        "PUSH_BRANCH": ("git push" in text) or ("push" in text and "origin" in text),
+        "CREATE_PR": ("gh pr create" in text) or ("pull request" in text) or ("pr" in text),
+        "SYNC_MAIN": ("git pull" in text) or ("checkout main" in text) or ("sync" in text and "main" in text),
+        "PRUNE_WORKTREE": ("worktree remove" in text) or ("branch -d" in text) or ("prune" in text),
+    }
+    return {
+        "criteria": criteria,
+        "overall_pass": all(criteria.values()),
+        "raw_reply": reply_text,
+    }
+

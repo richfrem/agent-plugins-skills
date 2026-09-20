@@ -2,6 +2,19 @@
 
 Persistent tracking of architectural friction, structural anomalies, and unclosed loops across sessions.
 
+## DEBT-20260920-POST-DONE-PROTOCOL-CODIFICATION (RESOLVED)
+
+- Logged date: 2026-09-20
+- Cycle/Session ID: start-here-cleanup
+- Artifact affected: `AGENTS.md`, `plugins/agent-agentic-os/rules/worktree-lifecycle-management.md`, `plugins/agent-agentic-os/scripts/control_plane/transition_templates.yaml`, `plugins/agent-agentic-os/scripts/control_plane/pipeline_simulator.py`, `plugins/agent-agentic-os/scripts/control_plane/transition_simulation_cases.py`
+- Friction observed: Agents reaching final state DONE frequently froze, dropped context, or failed to execute the post-completion Git convergence lifecycle without explicit human re-prompting because the exact 5-step post-DONE protocol (Push -> PR -> Merge -> Sync -> Prune) was not codified in transition guidance, rules, or simulator tests.
+- Why not fixed now: Fixed immediately.
+- Recommended fix / fix applied: Added Section 10 ("The Standard Post-DONE Protocol") to `worktree-lifecycle-management.md` and `AGENTS.md`; codified `post_done_protocol` under `stages.DONE.closeout_contract` in `transition_templates.yaml` with explicit execution classes; added `PipelineSimulator.get_post_done_convergence_protocol()` and `grade_post_done_convergence_plan()` in `transition_simulation_cases.py` along with deterministic contract tests in `test_control_plane_pipeline_simulator.py`.
+- Evidence/repro: Verified via `pytest -q plugins/agent-agentic-os/tests/test_control_plane_pipeline_simulator.py` (12 passed) and `agent_control.py transition-guidance` output in DONE state.
+- Severity: M
+- Repeat: NO
+- Status: RESOLVED
+
 ## DEBT-20260920-HUMAN-CONFIRMED-PROVENANCE (RESOLVED)
 
 - Logged date: 2026-09-20

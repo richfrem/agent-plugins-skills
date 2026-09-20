@@ -419,6 +419,12 @@ class PipelineSimulator:
             "db_path": str(self.db_path),
         }
 
+    def get_post_done_convergence_protocol(self) -> Dict[str, Any]:
+        """Return the codified post-DONE Git convergence protocol from the stage contract."""
+        done_stage = self.registry.get_stage_contract(STATE_DONE)
+        closeout = done_stage.get("closeout_contract", {})
+        return closeout.get("post_done_protocol", {})
+
     def reset_to_intake(self, task_id: str):
         """Exercise the wildcard reset edge using genuine interactive inputs."""
         answers = iter(["The simulated task state must be re-run from intake.", "y", "YES"])
