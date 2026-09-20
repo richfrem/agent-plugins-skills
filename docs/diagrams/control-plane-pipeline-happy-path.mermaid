@@ -34,8 +34,8 @@ stateDiagram-v2
     DRAFT_PLAN --> PLAN_REVIEW : submit concise/full plan<br/>trivial skips reviewers by default
 
     %% Phase 2 Transitions & Loops
-    PLAN_REVIEW --> MULTI_AGENT_REVIEW : yes — choose review method
-    PLAN_REVIEW --> AWAITING_APPROVAL : no / plan accepted<br/>skip or review outcome recorded
+    PLAN_REVIEW --> MULTI_AGENT_REVIEW : optional agent review (0 or more rounds)
+    PLAN_REVIEW --> AWAITING_APPROVAL : plan accepted by the human (no review required)
     PLAN_REVIEW --> DRAFT_PLAN : changes requested<br/>revise artifacts and resubmit
     MULTI_AGENT_REVIEW --> PLAN_REVIEW : review complete<br/>merge outcome — repeat or accept
     MULTI_AGENT_REVIEW --> DRAFT_PLAN : changes requested<br/>revise artifacts and resubmit

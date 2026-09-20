@@ -34,8 +34,8 @@ stateDiagram-v2
     DRAFT_PLAN --> INTERVIEW : needs more questions
     PLAN_REVIEW --> INTERVIEW : needs more questions
 
-    PLAN_REVIEW --> MULTI_AGENT_REVIEW : yes — ask method, then internal runtime/model/effort<br/>one at a time, repeat if needed
-    PLAN_REVIEW --> AWAITING_APPROVAL : no / plan accepted<br/>continue to human approval
+    PLAN_REVIEW --> MULTI_AGENT_REVIEW : optional agent review (0 or more rounds)<br/>ask method, then internal runtime/model/effort
+    PLAN_REVIEW --> AWAITING_APPROVAL : plan accepted by the human (no review required)<br/>continue to human approval
     DRAFT_PLAN --> ESCALATED
     DRAFT_PLAN --> INTAKE : human-approved recovery reset
     DRAFT_PLAN --> DONE : CLOSURE GATE — human-signed transition_request
