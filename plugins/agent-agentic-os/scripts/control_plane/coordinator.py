@@ -133,6 +133,7 @@ class TransitionCoordinator:
         skip_decision: Optional[Tuple[str, str]] = None,  # (skip_chosen, reason)
         skip_review: bool = False,
         skip_reason: Optional[str] = None,
+        human_confirmed: Optional[str] = None,
     ) -> TransitionRecord:
         """Coordinates and commits a transition according to the template contract."""
         # 1. State machine validation
@@ -372,8 +373,8 @@ class TransitionCoordinator:
             elif qid in answers:
                 chosen_ans = answers[qid]
                 # Non-interactive provided_answers are supplied programmatically by an agent,
-                # not by a human at an interactive prompt.
-                decision_actor = "agent"
+                # but when verified via --human-confirmed, the human authorized these answers.
+                decision_actor = "human" if human_confirmed else "agent"
             else:
                 # Non-interactive without provided answer -> must fail closed despite default
                 raise TransitionCoordinatorError(

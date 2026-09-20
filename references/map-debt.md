@@ -2,6 +2,19 @@
 
 Persistent tracking of architectural friction, structural anomalies, and unclosed loops across sessions.
 
+## DEBT-20260920-HUMAN-CONFIRMED-PROVENANCE (RESOLVED)
+
+- Logged date: 2026-09-20
+- Cycle/Session ID: start-here-cleanup
+- Artifact affected: `plugins/agent-agentic-os/scripts/control_plane/coordinator.py`, `plugins/agent-agentic-os/scripts/agent_control.py`
+- Friction observed: Non-interactive soft transitions run by the agent with verified `--human-confirmed` were assigning `decision_actor = "agent"` when recording transition decisions, causing the SQLite trigger `enforce_valid_transition` to reject the transition because `required_transition_questions` requires `actor = 'human'`.
+- Why not fixed now: Fixed immediately.
+- Recommended fix / fix applied: In `coordinator.py`, when `--human-confirmed` has been validated and accepted, set `decision_actor = "human" if human_confirmed else "agent"`, establishing correct human provenance for soft transitions authorized by the user in chat.
+- Evidence/repro: Verified via `pytest -q plugins/agent-agentic-os/tests` (888 passed) and successful execution of soft transitions with `--human-confirmed`.
+- Severity: M
+- Repeat: NO
+- Status: RESOLVED
+
 ## DEBT-20260920-REVIEW-SELECTION-PROFILE-VALIDATION (OPEN)
 
 - Logged date: 2026-09-20
