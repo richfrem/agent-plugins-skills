@@ -10548,6 +10548,24 @@
       "dst": "plugins/agent-agentic-os/skills/os-signing-setup/references/SIGNING_WORKFLOW_OVERVIEW.md",
       "strategy": "symlink",
       "description": "os-signing-setup skill: signing workflow overview (hub-and-spoke)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-signing-setup-acceptance-criteria.md",
+      "dst": "plugins/agent-agentic-os/skills/os-signing-setup/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": "Plugin reference -> Skill reference (os-signing-setup acceptance criteria)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-signing-setup-acceptance-criteria.md",
+      "dst": "plugins/agent-agentic-os/skills/os-signing-setup/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": "Plugin reference -> Skill reference (os-signing-setup acceptance criteria)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-signing-setup-fallback-tree.md",
+      "dst": "plugins/agent-agentic-os/skills/os-signing-setup/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": "Plugin reference -> Skill reference (os-signing-setup fallback tree)"
     }
   ]
 }

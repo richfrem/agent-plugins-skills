@@ -909,3 +909,16 @@ Persistent tracking of architectural friction, structural anomalies, and unclose
 - Severity: M
 - Repeat: NO
 - Status: OPEN
+
+## DEBT-20260920-CONVENTIONS-AUDIT-DELTA-INCREMENT-B
+
+- Logged date: 2026-09-20
+- Cycle/Session ID: auth-ciba-increment-b
+- Artifact affected: `plugins/dev-utils/scripts/workspace_conventions_auditor.py` results for `plugins/agent-agentic-os` (new tests and modules from Increment B)
+- Friction observed: The pre-push workspace conventions audit exits 0 but reports failures. The baseline at origin/main (07b0bb64) already failed the same 6 plugins (agent-agentic-os, agent-scaffolders, cli-agents, dev-utils, exploration-cycle-plugin, plugin-manager) with 110 canonical files failing; this branch reports 151 (about 41 more), mostly missing function docstrings and file-header sections in the new test files and new control_plane modules. Also unchanged and pre-existing: `symlink_manager diagnose` reports 6 missing plugin-pruner links, and `audit.py` progressive-disclosure warnings for several skills.
+- Why not fixed now: Owner instruction 2026-09-20 to push without fixing pre-existing audit issues, missing docstrings or symlink-manager diagnostics. The one hard regression this branch introduced (os-signing-setup lacked acceptance-criteria.md, making `audit.py` exit 1) WAS fixed: `audit.py` now passes, `audit_plugin_structure.py` reports 0 errors.
+- Recommended fix: Add the missing docstrings/header sections to the new test and module files, then re-run the conventions auditor; separately restore the plugin-pruner links in plugin-manager.
+- Evidence/repro: `python3 plugins/dev-utils/scripts/workspace_conventions_auditor.py` (report at temp/workspace_conventions_report.md); baseline compared in a detached worktree of origin/main.
+- Severity: S
+- Repeat: NO
+- Status: OPEN

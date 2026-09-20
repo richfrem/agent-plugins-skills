@@ -2,7 +2,7 @@
 name: os-signing-setup
 plugin: agent-agentic-os
 description: >
-  Guide a human through creating the SSH signing key that authorizes the Gate 1 human approval:
+  Guide a human through creating the SSH signing key that authorizes the human approval gates (plan approval, code acceptance, closure):
   passphrase-protected key or FIDO hardware key, the allowed_signers files, the isolation
   status, and the interactive signing self-test, on macOS or Windows. Trigger with "set up my
   approval key", "create the ssh signing key", "set up signing identity", "HUMAN_PROOF_REQUIRED",
