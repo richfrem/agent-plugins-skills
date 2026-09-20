@@ -17,11 +17,12 @@ allowed-tools: Bash, Read, Edit
 
 ## Purpose
 
-The **Transition Simulator** provides comprehensive verification of the control-plane pipeline lifecycle. It proves transitions across two critical dimensions:
+The **Transition Simulator** provides comprehensive verification of the control-plane pipeline lifecycle. It proves transitions across three critical dimensions:
 1. **Structural & Deterministic Simulation** (`PipelineSimulator`): Proves the state machine accepts and rejects transitions given programmatic conditions, enforces receipt provenance, validates SQLite triggers, and enforces the 3-class edge taxonomy without running LLM calls.
-2. **Behavioral Simulation** (`run_transition_simulation.py`): Proves the printed YAML guidance, question prompts, and human interactions are followable by an agent reading them cold, with no prior context.
+2. **Behavioral Simulation** (`run_transition_simulation.py`): Proves the printed YAML guidance, question prompts, and human interactions are followable by an agent reading them cold, with no prior context across supported CLI backends (`agy`, `claude`).
+3. **Post-DONE Convergence Verification** (`PipelineSimulator.get_post_done_convergence_protocol`, `grade_post_done_convergence_plan`): Verifies the 4-step git convergence sequence (`PUSH_AND_PR` -> `WAIT_FOR_MERGE` -> `SYNC_LOCAL_MAIN` -> `PRUNE_WORKTREE`) codified in the `DONE` stage closeout contract.
 
-Both modes verify that the agent knows:
+All modes verify that the agent knows:
 - What it must do itself (read-first rules, deterministic pre-checks, artifact generation).
 - What questions to ask the human (single question per turn, non-repetitive, ELI5 clarity).
 - Who runs what command (enforcing the 3-class taxonomy so humans are never handed agent-runnable or soft commands).
@@ -31,7 +32,7 @@ Both modes verify that the agent knows:
 
 ## When to use this
 
-- After editing `transition_templates.yaml` for any edge (`next_steps_hint`, `human_questions`, `checklist`, `purpose`, or `guidance`).
+- After editing `transition_templates.yaml` for any edge (`next_steps_hint`, `human_questions`, `checklist`, `purpose`, `guidance`, or `closeout_contract`).
 - After modifying `coordinator.py`, `policy.py`, or question-handling logic.
 - When verifying that a new or modified state transition does not introduce friction or re-ask recorded answers.
 - When the user asks to "simulate transition", "test this transition", or "dry run transition".
@@ -57,10 +58,23 @@ Run behavioral simulation for a specific edge (`FROM_STATE -> TO_STATE`):
 python3 plugins/agent-agentic-os/scripts/control_plane/run_transition_simulation.py \
   --behavior --from <FROM_STATE> --to <TO_STATE> --print-prompt
 
-# Execute behavioral check against Claude model:
+# Execute behavioral check (harness-agnostic: auto-detects agy, claude, or explicit --backend):
 python3 plugins/agent-agentic-os/scripts/control_plane/run_transition_simulation.py \
-  --behavior --from <FROM_STATE> --to <TO_STATE>
+  --behavior --from <FROM_STATE> --to <TO_STATE> [--backend auto|agy|claude]
 ```
+
+### Mode 3: Post-DONE Convergence Protocol Verification
+
+Verify that post-`DONE` convergence plans conform to the codified closeout contract:
+```bash
+pytest -q plugins/agent-agentic-os/tests/test_control_plane_pipeline_simulator.py -k test_post_done_protocol
+```
+- Protocol extraction: `PipelineSimulator.get_post_done_convergence_protocol()` reads `stages.DONE.closeout_contract.post_done_protocol` from `transition_templates.yaml`.
+- Plan grading: `grade_post_done_convergence_plan(reply_text)` validates that an agent's completion plan includes all 4 required phases:
+  1. `PUSH_BRANCH` (`SOFT`: ask in chat, then push)
+  2. `CREATE_PR` (`gh pr create` and await merge)
+  3. `SYNC_MAIN` (`git checkout main && git pull origin main`)
+  4. `PRUNE_WORKTREE` (`git worktree remove` and `git branch -d`)
 
 ### Evaluation & Remediation Protocol
 
@@ -82,11 +96,11 @@ Every transition edge conforms to the 3-class taxonomy in `plugins/agent-agentic
 
 ## Files Involved
 
-- `plugins/agent-agentic-os/scripts/control_plane/pipeline_simulator.py`: Core deterministic pipeline simulator.
-- `plugins/agent-agentic-os/scripts/control_plane/transition_simulation_cases.py`: Simulation cases generator and reply graders.
-- `plugins/agent-agentic-os/scripts/control_plane/run_transition_simulation.py`: CLI driver for behavioral and dry-run execution.
+- `plugins/agent-agentic-os/scripts/control_plane/pipeline_simulator.py`: Core deterministic pipeline simulator & post-DONE convergence extractor.
+- `plugins/agent-agentic-os/scripts/control_plane/transition_simulation_cases.py`: Simulation cases generator, reply graders, and `grade_post_done_convergence_plan`.
+- `plugins/agent-agentic-os/scripts/control_plane/run_transition_simulation.py`: Harness-agnostic CLI driver for behavioral execution (`--backend {auto,agy,claude}`).
 - `plugins/agent-agentic-os/scripts/control_plane/edge_matrix.py`: Edge classification generator.
-- `plugins/agent-agentic-os/references/cheap-agent-transition-simulation.md`: Design rationale, cost benchmarks, and test harness details.
+- `plugins/agent-agentic-os/references/cheap-agent-transition-simulation.md`: Design rationale, cost benchmarks, and multi-backend execution.
 - `plugins/agent-agentic-os/references/transition-simulator-acceptance-criteria.md`: Skill acceptance criteria.
 - `plugins/agent-agentic-os/references/transition-simulator-fallback-tree.md`: Fallback and escalation protocols.
 
