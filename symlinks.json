@@ -10584,6 +10584,84 @@
       "dst": "plugins/agent-agentic-os/skills/work-intake/references/edge-matrix.md",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "docs/diagrams/ciba-rar-transition-auth-flow.mermaid",
+      "dst": "plugins/agent-agentic-os/skills/os-init/references/ciba-rar-transition-auth-flow.mermaid",
+      "strategy": "symlink",
+      "description": "Control-plane/CIBA-RAR diagram linked into os-init"
+    },
+    {
+      "src": "docs/diagrams/control-plane-lifecycle-baseline-no-ciba-rar.mermaid",
+      "dst": "plugins/agent-agentic-os/skills/os-init/references/control-plane-lifecycle-baseline-no-ciba-rar.mermaid",
+      "strategy": "symlink",
+      "description": "Control-plane/CIBA-RAR diagram linked into os-init"
+    },
+    {
+      "src": "docs/diagrams/control-plane-lifecycle-hardened-with-ciba-rar.mermaid",
+      "dst": "plugins/agent-agentic-os/skills/os-init/references/control-plane-lifecycle-hardened-with-ciba-rar.mermaid",
+      "strategy": "symlink",
+      "description": "Control-plane/CIBA-RAR diagram linked into os-init"
+    },
+    {
+      "src": "docs/diagrams/increment-b-human-only-transition-ssh-signing.mermaid",
+      "dst": "plugins/agent-agentic-os/skills/os-init/references/increment-b-human-only-transition-ssh-signing.mermaid",
+      "strategy": "symlink",
+      "description": "Control-plane/CIBA-RAR diagram linked into os-init"
+    },
+    {
+      "src": "docs/diagrams/ciba-rar-transition-auth-flow.mermaid",
+      "dst": "plugins/agent-agentic-os/skills/work-intake/references/ciba-rar-transition-auth-flow.mermaid",
+      "strategy": "symlink",
+      "description": "Control-plane/CIBA-RAR diagram linked into work-intake"
+    },
+    {
+      "src": "docs/diagrams/control-plane-lifecycle-baseline-no-ciba-rar.mermaid",
+      "dst": "plugins/agent-agentic-os/skills/work-intake/references/control-plane-lifecycle-baseline-no-ciba-rar.mermaid",
+      "strategy": "symlink",
+      "description": "Control-plane/CIBA-RAR diagram linked into work-intake"
+    },
+    {
+      "src": "docs/diagrams/control-plane-lifecycle-hardened-with-ciba-rar.mermaid",
+      "dst": "plugins/agent-agentic-os/skills/work-intake/references/control-plane-lifecycle-hardened-with-ciba-rar.mermaid",
+      "strategy": "symlink",
+      "description": "Control-plane/CIBA-RAR diagram linked into work-intake"
+    },
+    {
+      "src": "docs/diagrams/increment-b-human-only-transition-ssh-signing.mermaid",
+      "dst": "plugins/agent-agentic-os/skills/work-intake/references/increment-b-human-only-transition-ssh-signing.mermaid",
+      "strategy": "symlink",
+      "description": "Control-plane/CIBA-RAR diagram linked into work-intake"
+    },
+    {
+      "src": "docs/diagrams/control-plane-architecture.mermaid",
+      "dst": "plugins/agent-agentic-os/skills/os-init/references/control-plane-architecture.mermaid",
+      "strategy": "symlink",
+      "description": "Control-plane architecture diagram linked into os-init"
+    },
+    {
+      "src": "plugins/agent-agentic-os/assets/diagrams/sibling-repo-labs.mmd",
+      "dst": "plugins/agent-agentic-os/skills/os-eval-lab-setup/assets/diagrams/sibling-repo-labs.mmd",
+      "strategy": "symlink",
+      "description": "Lab/master repo eval flow diagram linked into os-eval-lab-setup"
+    },
+    {
+      "src": "plugins/agent-agentic-os/assets/diagrams/sibling-repo-labs.mmd",
+      "dst": "plugins/agent-agentic-os/skills/os-eval-backport/assets/diagrams/sibling-repo-labs.mmd",
+      "strategy": "symlink",
+      "description": "Lab/master repo eval flow diagram linked into os-eval-backport"
+    },
+    {
+      "src": "plugins/agent-agentic-os/assets/diagrams/os-eval-backport-phases.mmd",
+      "dst": "plugins/agent-agentic-os/skills/os-eval-backport/assets/diagrams/os-eval-backport-phases.mmd",
+      "strategy": "symlink",
+      "description": "Backport phase-flow diagram linked into os-eval-backport"
+    },
+    {
+      "src": "plugins/agent-agentic-os/assets/diagrams/os-eval-backport-sequence.mmd",
+      "dst": "plugins/agent-agentic-os/skills/os-eval-backport/assets/diagrams/os-eval-backport-sequence.mmd",
+      "strategy": "symlink",
+      "description": "Backport sequence diagram linked into os-eval-backport"
     }
   ]
 }
