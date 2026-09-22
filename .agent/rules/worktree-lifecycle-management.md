@@ -79,6 +79,15 @@ Worktree-related changes frequently suffer from ambiguity when multiple git stat
    review gate and receiving user authorization is an operational violation. Pre-push hooks and
    `agent_control.py update-worktree` will reject any attempt to mark a worktree as `pushed_to_origin`
    unless the task has transitioned through `WORKTREE_REVIEW`.
+10. **The Standard Post-`DONE` Protocol**: When `DONE` is signed, the task lifecycle in SQLite is complete. Agents must never freeze, guess, or abandon the worktree. Execute the repository convergence sequence in order:
+    - **Step 1: Push Worktree Branch to Remote (SOFT)**: Ask the human in chat for confirmation: *"Task is marked DONE. Would you like me to push `<worktree_branch>` and create the pull request to `main`?"* Upon confirmation, run `git push origin <worktree_branch>` and update SQLite worktree state to `pushed_to_origin` via `agent_control.py update-worktree`.
+    - **Step 2: Create PR / Merge into `origin/main` (SOFT)**: Open the PR via `gh pr create --base main --head <worktree_branch> ...`. State the PR URL and "not yet merged", and await the user's review/merge on GitHub.
+    - **Step 3: Sync Local `main` (AGENT / SOFT)**: Once merged into `origin/main`, checkout `main` in the repository root and pull: `cd <repo_root> && git checkout main && git pull origin main`. Update SQLite worktree state to `merged_into_origin_main`.
+    - **Step 4: Prune Worktree and Delete Local Task Branch (AGENT / SOFT)**: Verify clean state on `main`, then remove the worktree and delete the local task branch:
+      ```bash
+      git worktree remove .worktrees/<task-id>
+      git branch -d <worktree_branch>
+      ```
 
 ## Where This Applies
 

@@ -1027,3 +1027,16 @@ Persistent tracking of architectural friction, structural anomalies, and unclose
 - Repeat: YES
 - Status: RESOLVED
 
+## DEBT-20260921-DIAGRAM-SYMLINK-GAPS
+
+- Logged date: 2026-09-21
+- Cycle/Session ID: docs-diagram-symlink-audit
+- Artifact affected: `plugins/agent-agentic-os/assets/diagrams/architecture-overview.mmd`, `event-bus-architecture.mmd`, `agentic-os-memory-subsystem.mmd`, `agent-agentic-os-architecture.mmd`
+- Friction observed: A user-prompted audit found `docs/diagrams/` had 4 of 7 files (CIBA/RAR + SSH-signing diagrams) never symlinked into any skill (`os-init`/`work-intake`), same gap shape as the already-RESOLVED `DEBT-20260907-08`. Fixed this session via `symlink_manager.py create`. A second, older orphan set was also found in `plugins/agent-agentic-os/assets/diagrams/`: 3 of 7 files there were never linked into any skill either. Of those 3, `sibling-repo-labs.mmd`, `os-eval-backport-phases.mmd`, and `os-eval-backport-sequence.mmd` were current and symlinked into `os-eval-backport`/`os-eval-lab-setup` this session. The remaining 4 are NOT fixed: `event-bus-architecture.mmd` and `agentic-os-memory-subsystem.mmd` reference a skill node named `os-learning-loop`/`session-memory-manager` that no longer exists under those names (current skills are `os-improvement-loop`/`os-memory-manager`) — content is stale, not just unlinked. `architecture-overview.mmd` has the same stale naming in its edges and describes a kernel/event-bus design (lease locks, guest tokens, inboxes) not yet verified against the as-built `kernel.py`/`os-state.json`. `agent-agentic-os-architecture.mmd` is an 8-line plugin-folder listing, too low-value to warrant a symlink as-is.
+- Why not fixed now: Correcting stale skill-name references is a content-accuracy decision requiring domain verification against current code (`kernel.py`, `os-state.json`, `os-improvement-loop`/`os-memory-manager` SKILL.md), not a symlink-only fix; out of scope for this session per explicit user decision to defer.
+- Recommended fix: (1) Verify `architecture-overview.mmd` against current `templates/kernel.py` and `os-state.json` schema, update or regenerate stale node/edge labels (`os-learning-loop` -> `os-improvement-loop`, `session-memory-manager` -> `os-memory-manager`), then symlink into `os-init` and/or `os-memory-manager`. (2) Same correction for `event-bus-architecture.mmd` and `agentic-os-memory-subsystem.mmd` before linking. (3) Decide whether to keep, regenerate, or delete `agent-agentic-os-architecture.mmd` (do not delete without explicit instruction per `destructive-action-guard.md`).
+- Evidence/repro: `grep -rl "os-learning-loop\|session-memory-manager" plugins/agent-agentic-os/assets/diagrams/*.mmd`; `ls plugins/agent-agentic-os/skills/` confirms neither name exists as a current skill.
+- Severity: S
+- Repeat: NO
+- Status: OPEN
+
