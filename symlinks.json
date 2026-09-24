@@ -10674,6 +10674,612 @@
       "dst": "plugins/agent-agentic-os/skills/transition-simulator/scripts/control_plane/snapshot.py",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/adapters.py",
+      "dst": "plugins/agent-agentic-os/skills/os-health-check/scripts/control_plane/adapters.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/baseline_transition_report.py",
+      "dst": "plugins/agent-agentic-os/skills/os-health-check/scripts/control_plane/baseline_transition_report.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/constants.py",
+      "dst": "plugins/agent-agentic-os/skills/os-health-check/scripts/control_plane/constants.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/coordinator.py",
+      "dst": "plugins/agent-agentic-os/skills/os-health-check/scripts/control_plane/coordinator.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/edge_matrix.py",
+      "dst": "plugins/agent-agentic-os/skills/os-health-check/scripts/control_plane/edge_matrix.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/gate1_approval.py",
+      "dst": "plugins/agent-agentic-os/skills/os-health-check/scripts/control_plane/gate1_approval.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/implementation.py",
+      "dst": "plugins/agent-agentic-os/skills/os-health-check/scripts/control_plane/implementation.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/implementation_loop.py",
+      "dst": "plugins/agent-agentic-os/skills/os-health-check/scripts/control_plane/implementation_loop.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/inspection.py",
+      "dst": "plugins/agent-agentic-os/skills/os-health-check/scripts/control_plane/inspection.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/installation_probe.py",
+      "dst": "plugins/agent-agentic-os/skills/os-health-check/scripts/control_plane/installation_probe.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/measurement.py",
+      "dst": "plugins/agent-agentic-os/skills/os-health-check/scripts/control_plane/measurement.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/pipeline_simulator.py",
+      "dst": "plugins/agent-agentic-os/skills/os-health-check/scripts/control_plane/pipeline_simulator.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/policy.py",
+      "dst": "plugins/agent-agentic-os/skills/os-health-check/scripts/control_plane/policy.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/ports.py",
+      "dst": "plugins/agent-agentic-os/skills/os-health-check/scripts/control_plane/ports.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/proof_edges.py",
+      "dst": "plugins/agent-agentic-os/skills/os-health-check/scripts/control_plane/proof_edges.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/proof_policy.py",
+      "dst": "plugins/agent-agentic-os/skills/os-health-check/scripts/control_plane/proof_policy.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/receipt_provenance.py",
+      "dst": "plugins/agent-agentic-os/skills/os-health-check/scripts/control_plane/receipt_provenance.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/registry.py",
+      "dst": "plugins/agent-agentic-os/skills/os-health-check/scripts/control_plane/registry.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/review_options.py",
+      "dst": "plugins/agent-agentic-os/skills/os-health-check/scripts/control_plane/review_options.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/review_selection.py",
+      "dst": "plugins/agent-agentic-os/skills/os-health-check/scripts/control_plane/review_selection.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/run_transition_simulation.py",
+      "dst": "plugins/agent-agentic-os/skills/os-health-check/scripts/control_plane/run_transition_simulation.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/signing_selftest.py",
+      "dst": "plugins/agent-agentic-os/skills/os-health-check/scripts/control_plane/signing_selftest.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/state_machine.py",
+      "dst": "plugins/agent-agentic-os/skills/os-health-check/scripts/control_plane/state_machine.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/transition_request.py",
+      "dst": "plugins/agent-agentic-os/skills/os-health-check/scripts/control_plane/transition_request.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/transition_simulation_cases.py",
+      "dst": "plugins/agent-agentic-os/skills/os-health-check/scripts/control_plane/transition_simulation_cases.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/transition_templates.yaml",
+      "dst": "plugins/agent-agentic-os/skills/os-health-check/scripts/control_plane/transition_templates.yaml",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/tty_signer.py",
+      "dst": "plugins/agent-agentic-os/skills/os-health-check/scripts/control_plane/tty_signer.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/baseline_transition_report.py",
+      "dst": "plugins/agent-agentic-os/skills/os-init/scripts/control_plane/baseline_transition_report.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/edge_matrix.py",
+      "dst": "plugins/agent-agentic-os/skills/os-init/scripts/control_plane/edge_matrix.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/gate1_approval.py",
+      "dst": "plugins/agent-agentic-os/skills/os-init/scripts/control_plane/gate1_approval.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/inspection.py",
+      "dst": "plugins/agent-agentic-os/skills/os-init/scripts/control_plane/inspection.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/proof_edges.py",
+      "dst": "plugins/agent-agentic-os/skills/os-init/scripts/control_plane/proof_edges.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/proof_policy.py",
+      "dst": "plugins/agent-agentic-os/skills/os-init/scripts/control_plane/proof_policy.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/receipt_provenance.py",
+      "dst": "plugins/agent-agentic-os/skills/os-init/scripts/control_plane/receipt_provenance.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/review_options.py",
+      "dst": "plugins/agent-agentic-os/skills/os-init/scripts/control_plane/review_options.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/review_selection.py",
+      "dst": "plugins/agent-agentic-os/skills/os-init/scripts/control_plane/review_selection.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/signing_selftest.py",
+      "dst": "plugins/agent-agentic-os/skills/os-init/scripts/control_plane/signing_selftest.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/transition_request.py",
+      "dst": "plugins/agent-agentic-os/skills/os-init/scripts/control_plane/transition_request.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/tty_signer.py",
+      "dst": "plugins/agent-agentic-os/skills/os-init/scripts/control_plane/tty_signer.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/adapters.py",
+      "dst": "plugins/agent-agentic-os/skills/os-signing-setup/scripts/control_plane/adapters.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/baseline_transition_report.py",
+      "dst": "plugins/agent-agentic-os/skills/os-signing-setup/scripts/control_plane/baseline_transition_report.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/constants.py",
+      "dst": "plugins/agent-agentic-os/skills/os-signing-setup/scripts/control_plane/constants.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/coordinator.py",
+      "dst": "plugins/agent-agentic-os/skills/os-signing-setup/scripts/control_plane/coordinator.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/edge_matrix.py",
+      "dst": "plugins/agent-agentic-os/skills/os-signing-setup/scripts/control_plane/edge_matrix.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/gate1_approval.py",
+      "dst": "plugins/agent-agentic-os/skills/os-signing-setup/scripts/control_plane/gate1_approval.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/implementation.py",
+      "dst": "plugins/agent-agentic-os/skills/os-signing-setup/scripts/control_plane/implementation.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/implementation_loop.py",
+      "dst": "plugins/agent-agentic-os/skills/os-signing-setup/scripts/control_plane/implementation_loop.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/inspection.py",
+      "dst": "plugins/agent-agentic-os/skills/os-signing-setup/scripts/control_plane/inspection.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/installation_probe.py",
+      "dst": "plugins/agent-agentic-os/skills/os-signing-setup/scripts/control_plane/installation_probe.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/measurement.py",
+      "dst": "plugins/agent-agentic-os/skills/os-signing-setup/scripts/control_plane/measurement.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/pipeline_simulator.py",
+      "dst": "plugins/agent-agentic-os/skills/os-signing-setup/scripts/control_plane/pipeline_simulator.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/policy.py",
+      "dst": "plugins/agent-agentic-os/skills/os-signing-setup/scripts/control_plane/policy.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/ports.py",
+      "dst": "plugins/agent-agentic-os/skills/os-signing-setup/scripts/control_plane/ports.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/proof_edges.py",
+      "dst": "plugins/agent-agentic-os/skills/os-signing-setup/scripts/control_plane/proof_edges.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/proof_policy.py",
+      "dst": "plugins/agent-agentic-os/skills/os-signing-setup/scripts/control_plane/proof_policy.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/receipt_provenance.py",
+      "dst": "plugins/agent-agentic-os/skills/os-signing-setup/scripts/control_plane/receipt_provenance.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/registry.py",
+      "dst": "plugins/agent-agentic-os/skills/os-signing-setup/scripts/control_plane/registry.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/review_options.py",
+      "dst": "plugins/agent-agentic-os/skills/os-signing-setup/scripts/control_plane/review_options.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/review_selection.py",
+      "dst": "plugins/agent-agentic-os/skills/os-signing-setup/scripts/control_plane/review_selection.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/run_transition_simulation.py",
+      "dst": "plugins/agent-agentic-os/skills/os-signing-setup/scripts/control_plane/run_transition_simulation.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/state_machine.py",
+      "dst": "plugins/agent-agentic-os/skills/os-signing-setup/scripts/control_plane/state_machine.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/transition_request.py",
+      "dst": "plugins/agent-agentic-os/skills/os-signing-setup/scripts/control_plane/transition_request.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/transition_simulation_cases.py",
+      "dst": "plugins/agent-agentic-os/skills/os-signing-setup/scripts/control_plane/transition_simulation_cases.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/transition_templates.yaml",
+      "dst": "plugins/agent-agentic-os/skills/os-signing-setup/scripts/control_plane/transition_templates.yaml",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/tty_signer.py",
+      "dst": "plugins/agent-agentic-os/skills/os-signing-setup/scripts/control_plane/tty_signer.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/baseline_transition_report.py",
+      "dst": "plugins/agent-agentic-os/skills/transition-simulator/scripts/control_plane/baseline_transition_report.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/edge_matrix.py",
+      "dst": "plugins/agent-agentic-os/skills/transition-simulator/scripts/control_plane/edge_matrix.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/gate1_approval.py",
+      "dst": "plugins/agent-agentic-os/skills/transition-simulator/scripts/control_plane/gate1_approval.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/identity_layout.py",
+      "dst": "plugins/agent-agentic-os/skills/transition-simulator/scripts/control_plane/identity_layout.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/identity_setup.py",
+      "dst": "plugins/agent-agentic-os/skills/transition-simulator/scripts/control_plane/identity_setup.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/inspection.py",
+      "dst": "plugins/agent-agentic-os/skills/transition-simulator/scripts/control_plane/inspection.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/isolation_check.py",
+      "dst": "plugins/agent-agentic-os/skills/transition-simulator/scripts/control_plane/isolation_check.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/proof_edges.py",
+      "dst": "plugins/agent-agentic-os/skills/transition-simulator/scripts/control_plane/proof_edges.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/proof_policy.py",
+      "dst": "plugins/agent-agentic-os/skills/transition-simulator/scripts/control_plane/proof_policy.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/receipt_provenance.py",
+      "dst": "plugins/agent-agentic-os/skills/transition-simulator/scripts/control_plane/receipt_provenance.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/review_options.py",
+      "dst": "plugins/agent-agentic-os/skills/transition-simulator/scripts/control_plane/review_options.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/review_selection.py",
+      "dst": "plugins/agent-agentic-os/skills/transition-simulator/scripts/control_plane/review_selection.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/signing_selftest.py",
+      "dst": "plugins/agent-agentic-os/skills/transition-simulator/scripts/control_plane/signing_selftest.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/ssh_signing.py",
+      "dst": "plugins/agent-agentic-os/skills/transition-simulator/scripts/control_plane/ssh_signing.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/transition_request.py",
+      "dst": "plugins/agent-agentic-os/skills/transition-simulator/scripts/control_plane/transition_request.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/tty_signer.py",
+      "dst": "plugins/agent-agentic-os/skills/transition-simulator/scripts/control_plane/tty_signer.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/baseline_transition_report.py",
+      "dst": "plugins/agent-agentic-os/skills/work-intake/scripts/control_plane/baseline_transition_report.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/edge_matrix.py",
+      "dst": "plugins/agent-agentic-os/skills/work-intake/scripts/control_plane/edge_matrix.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/gate1_approval.py",
+      "dst": "plugins/agent-agentic-os/skills/work-intake/scripts/control_plane/gate1_approval.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/identity_layout.py",
+      "dst": "plugins/agent-agentic-os/skills/work-intake/scripts/control_plane/identity_layout.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/identity_setup.py",
+      "dst": "plugins/agent-agentic-os/skills/work-intake/scripts/control_plane/identity_setup.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/inspection.py",
+      "dst": "plugins/agent-agentic-os/skills/work-intake/scripts/control_plane/inspection.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/isolation_check.py",
+      "dst": "plugins/agent-agentic-os/skills/work-intake/scripts/control_plane/isolation_check.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/proof_edges.py",
+      "dst": "plugins/agent-agentic-os/skills/work-intake/scripts/control_plane/proof_edges.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/proof_policy.py",
+      "dst": "plugins/agent-agentic-os/skills/work-intake/scripts/control_plane/proof_policy.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/receipt_provenance.py",
+      "dst": "plugins/agent-agentic-os/skills/work-intake/scripts/control_plane/receipt_provenance.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/review_options.py",
+      "dst": "plugins/agent-agentic-os/skills/work-intake/scripts/control_plane/review_options.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/review_selection.py",
+      "dst": "plugins/agent-agentic-os/skills/work-intake/scripts/control_plane/review_selection.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/signing_selftest.py",
+      "dst": "plugins/agent-agentic-os/skills/work-intake/scripts/control_plane/signing_selftest.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/ssh_signing.py",
+      "dst": "plugins/agent-agentic-os/skills/work-intake/scripts/control_plane/ssh_signing.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/transition_request.py",
+      "dst": "plugins/agent-agentic-os/skills/work-intake/scripts/control_plane/transition_request.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/tty_signer.py",
+      "dst": "plugins/agent-agentic-os/skills/work-intake/scripts/control_plane/tty_signer.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/wrappers/__init__.py",
+      "dst": "plugins/agent-agentic-os/skills/work-intake/scripts/control_plane/wrappers/__init__.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/wrappers/run_exit_verification.py",
+      "dst": "plugins/agent-agentic-os/skills/work-intake/scripts/control_plane/wrappers/run_exit_verification.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/wrappers/run_verify_exit_bundle.py",
+      "dst": "plugins/agent-agentic-os/skills/work-intake/scripts/control_plane/wrappers/run_verify_exit_bundle.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/wrappers/write_plan_document.py",
+      "dst": "plugins/agent-agentic-os/skills/work-intake/scripts/control_plane/wrappers/write_plan_document.py",
+      "strategy": "symlink",
+      "description": ""
     }
   ]
 }
