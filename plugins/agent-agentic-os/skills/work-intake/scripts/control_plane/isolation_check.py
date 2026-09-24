@@ -1,0 +1,1 @@
+../../../../scripts/control_plane/isolation_check.py

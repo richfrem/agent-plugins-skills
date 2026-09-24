@@ -1053,3 +1053,16 @@ Persistent tracking of architectural friction, structural anomalies, and unclose
 - Severity: S
 - Repeat: NO
 - Status: RESOLVED
+
+## DEBT-20260924-CONTROL-PLANE-SYMLINK-PARITY
+
+- Logged date: 2026-09-24
+- Cycle/Session ID: work-intake-nbis-chart-lines-blocker-followup
+- Artifact affected: `control_plane` package spokes under `os-health-check`, `os-init`, `os-signing-setup`, `transition-simulator`, `work-intake` (plus `work-intake`'s `control_plane/wrappers` sub-package)
+- Friction observed: After fixing the single missing `snapshot.py` symlink (`DEBT-20260924-SNAPSHOT-SYMLINK-GAP`), running `agent_control.py --help` in a consuming repo surfaced a second `ModuleNotFoundError` for `control_plane.ssh_signing`. A repo-wide parity audit (only auditing directories containing `__init__.py`, i.e. real Python packages requiring full import parity, to avoid false positives on intentionally-selective plain script folders) found the gap was far larger: 5 skills were missing between 12 and 27 hub files each from their `control_plane` package mirror (101 missing symlinks total), plus `work-intake`'s `control_plane/wrappers` sub-package was missing 4 of 4 files. Root cause: as new modules were added to the canonical hub (`plugins/agent-agentic-os/scripts/control_plane/`) over time, the corresponding spoke symlinks were never registered for these 5 skills, so each skill's local `control_plane/` was a stale, partial snapshot rather than a live mirror.
+- Why not fixed now: Fixed immediately this session — mechanical, low-risk, symmetric fix (`symlink_manager.py create` x101), no ambiguity in target resolution, verified via a custom parity-audit script plus live `from control_plane.ports import ...` import tests for all 5 skills and `agent_control.py --help` end-to-end.
+- Recommended fix: N/A — resolved. Same CI-check recommendation as `DEBT-20260924-SNAPSHOT-SYMLINK-GAP`: add an automated parity check (audit script written this session could be adapted) that fails when any skill's mirror of a hub Python package (dir containing `__init__.py`) is missing files present in the hub, so this class of gap is caught at commit time instead of surfacing as a downstream `ModuleNotFoundError`.
+- Evidence/repro: Custom parity-audit script compared every skill's mirrored subdirectory (of any hub `scripts/`, `references/`, or `assets/` package containing `__init__.py`) against the hub; found 0 gaps after the fix. `symlink_manager.py diagnose` shows only the 6 pre-existing, unrelated `plugin-pruner` broken links (`DEBT-...` not logged by this session, out of scope). `agent_control.py --help` now runs cleanly for all 5 previously-broken skills.
+- Severity: M
+- Repeat: NO
+- Status: RESOLVED

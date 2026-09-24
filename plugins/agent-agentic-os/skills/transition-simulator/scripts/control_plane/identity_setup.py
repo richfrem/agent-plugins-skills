@@ -1,0 +1,1 @@
+../../../../scripts/control_plane/identity_setup.py

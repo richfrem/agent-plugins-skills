@@ -1,0 +1,1 @@
+../../../../scripts/control_plane/signing_selftest.py
