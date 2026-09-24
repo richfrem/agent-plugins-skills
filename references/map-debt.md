@@ -1066,3 +1066,16 @@ Persistent tracking of architectural friction, structural anomalies, and unclose
 - Severity: M
 - Repeat: NO
 - Status: RESOLVED
+
+## DEBT-20260924-TRANSITION-REQUEST-FK-CORRUPTION
+
+- Logged date: 2026-09-24
+- Cycle/Session ID: work-intake-nbis-chart-lines-blocker-followup-2
+- Artifact affected: `plugins/agent-agentic-os/scripts/control_plane/adapters.py` (`CHILD_TABLES`, `CURRENT_SCHEMA_VERSION`)
+- Friction observed: `coordinate-transition --to APPROVED --interactive` crashed with `sqlite3.OperationalError: no such table: main._tasks_migrating` in a consuming repo (InvestmentToolkit), before any Gate 1 signing challenge was shown (filed as GitHub issue #659). Root cause: `transition_request` has `FOREIGN KEY (task_id) REFERENCES tasks(task_id)` but was excluded from `CHILD_TABLES`/`ALL_REBUILD_TABLES`. During any `_rebuild_schema_transactional()` run, `ALTER TABLE tasks RENAME TO _tasks_migrating` causes SQLite to auto-repoint the stored FK clause of every OTHER table referencing `tasks` — including `transition_request`, which is never itself renamed/rebuilt, so its `CREATE TABLE IF NOT EXISTS` in `SCHEMA_SQL` is a no-op and the corrupted FK text (`REFERENCES "_tasks_migrating"`) survives the rebuild permanently in `sqlite_master`. The corruption is silent until the next `INSERT INTO transition_request` with `foreign_keys=ON` (the `get_connection()` default) — which only happens at the `APPROVED`/`VERIFY_EXIT`/`DONE` proof-edges, explaining why it went unnoticed across many other successful pipeline runs that never reached those edges.
+- Why not fixed now: Fixed this session. Added `transition_request` to `CHILD_TABLES` (verified via grep it was the only one of 17 `REFERENCES tasks(` sites missing from the rebuild-table list) and bumped `CURRENT_SCHEMA_VERSION` 13 -> 14 so existing already-corrupted databases self-heal via the normal version-mismatch rebuild path on next connect, rather than requiring a manual repair step.
+- Recommended fix: N/A — resolved. Consider a standing test asserting every table whose DDL contains `REFERENCES tasks(` is present in `ALL_REBUILD_TABLES`, so a future new child table can't reintroduce this exact gap silently.
+- Evidence/repro: New regression test `test_rebuild_leaves_transition_request_fk_functional` in `test_control_plane_schema_rebuild_atomicity.py` reproduces the exact crash pre-fix (RED) and passes post-fix (GREEN). Full `plugins/agent-agentic-os/tests/` suite: 891 passed, 1 pre-existing unrelated failure (`test_claude_md_pointer_exact_invariant`, a corrupted root `CLAUDE.md` in this repo, confirmed failing identically with this fix's changes stashed out — not caused by or fixed in this change).
+- Severity: L
+- Repeat: NO
+- Status: RESOLVED
