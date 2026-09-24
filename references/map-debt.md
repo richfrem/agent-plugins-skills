@@ -1040,3 +1040,16 @@ Persistent tracking of architectural friction, structural anomalies, and unclose
 - Repeat: NO
 - Status: OPEN
 
+
+## DEBT-20260924-SNAPSHOT-SYMLINK-GAP
+
+- Logged date: 2026-09-24
+- Cycle/Session ID: work-intake-nbis-chart-lines-blocker
+- Artifact affected: `plugins/agent-agentic-os/skills/work-intake/scripts/control_plane/snapshot.py`, `plugins/agent-agentic-os/skills/transition-simulator/scripts/control_plane/snapshot.py`
+- Friction observed: A consuming repo (InvestmentToolkit) invoking `work-intake`'s `agent_control.py` hit `ModuleNotFoundError: No module named 'control_plane.snapshot'`. Root cause: `control_plane/ports.py` was updated (2026-09-20, when `snapshot.py` was added to the canonical hub at `plugins/agent-agentic-os/scripts/control_plane/snapshot.py`) to import `SnapshotEntry` from it, but the corresponding spoke symlink was never registered for either `work-intake` or `transition-simulator` — every other file in both skills' `scripts/control_plane/` folders is a symlink to the hub; `snapshot.py` was simply missing from both. This broke the control-plane CLI in every consuming repo that synced the plugin after 2026-09-20.
+- Why not fixed now: Fixed immediately this session via `symlink_manager.py create` for both skills (small, safe, single-purpose fix — no ambiguity in target resolution).
+- Recommended fix: N/A — resolved. Consider a CI check that greps skill `control_plane/` folders for parity against the hub's file list, so a hub addition without a spoke symlink fails fast instead of surfacing as a runtime `ModuleNotFoundError` in a downstream repo.
+- Evidence/repro: `python3 plugins/agent-agentic-os/skills/work-intake/scripts/agent_control.py --help` failed before the fix; `python3 -c "from control_plane.ports import PersistenceInvariantViolation"` (run from the skill's `scripts/` dir) succeeds after; `symlink_manager.py diagnose` shows both new links as `✓ symlink`.
+- Severity: S
+- Repeat: NO
+- Status: RESOLVED
