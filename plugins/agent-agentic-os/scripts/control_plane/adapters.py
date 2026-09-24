@@ -569,7 +569,7 @@ BEGIN
 END;
 """
 
-CURRENT_SCHEMA_VERSION = 13
+CURRENT_SCHEMA_VERSION = 14
 
 # issue-523: the only state ControlPlane.create_task() ever seeds a new task at. Not derived
 # from TransitionRegistry (which only declares state-to-state edges among existing states, not
@@ -592,6 +592,7 @@ CHILD_TABLES = [
     "premium_consents",
     "source_assisted_answer_candidates",
     "interview_plan_outlines",
+    "transition_request",
 ]
 ALL_REBUILD_TABLES = ["tasks"] + CHILD_TABLES
 

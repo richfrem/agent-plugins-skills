@@ -394,3 +394,36 @@ def test_health_check_does_not_misfire_on_concurrent_legitimate_rebuild(tmp_path
     finally:
         conn_a.execute("ROLLBACK;")
         conn_a.close()
+
+
+def test_rebuild_leaves_transition_request_fk_functional(tmp_path):
+    """RED->GREEN: transition_request has FOREIGN KEY (task_id) REFERENCES tasks(task_id), but
+    is excluded from ALL_REBUILD_TABLES, so it is never itself renamed/rebuilt during
+    _rebuild_schema_transactional(). SQLite's ALTER TABLE RENAME auto-repoints the stored FK
+    clause of any table referencing the renamed table -- so transition_request's own CREATE
+    TABLE SQL in sqlite_master silently gets rewritten to reference "_tasks_migrating" the
+    moment tasks is renamed. Because transition_request is never dropped, its subsequent
+    `CREATE TABLE IF NOT EXISTS transition_request` in SCHEMA_SQL is a no-op, so the corrupted
+    FK text survives the rebuild permanently. The next INSERT INTO transition_request, with
+    foreign_keys=ON (the get_connection() default used everywhere in real usage), then fails
+    with 'no such table: main._tasks_migrating' -- reproducing the exact crash hit at the
+    AWAITING_APPROVAL -> APPROVED gate, the only edge that ever writes this table."""
+    adapter, db_path = _make_adapter(tmp_path)
+    conn = adapter.get_connection()
+    try:
+        _seed_realistic_data(conn)
+        adapter._rebuild_schema_transactional(conn)
+    finally:
+        conn.close()
+
+    conn = adapter.get_connection()  # foreign_keys = ON, matching real runtime usage
+    try:
+        conn.execute(
+            "INSERT INTO transition_request "
+            "(task_id, from_state, to_state, occupancy_id, nonce, expiration, revision_hash, created_at) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            ("task-a", STATE_INTAKE, STATE_INTERVIEW, 1, "nonce-1", 9999999999.0, "hash-1", 0.0),
+        )
+        conn.commit()
+    finally:
+        conn.close()
