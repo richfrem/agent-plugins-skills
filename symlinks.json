@@ -10662,6 +10662,18 @@
       "dst": "plugins/agent-agentic-os/skills/os-eval-backport/assets/diagrams/os-eval-backport-sequence.mmd",
       "strategy": "symlink",
       "description": "Backport sequence diagram linked into os-eval-backport"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/snapshot.py",
+      "dst": "plugins/agent-agentic-os/skills/work-intake/scripts/control_plane/snapshot.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/snapshot.py",
+      "dst": "plugins/agent-agentic-os/skills/transition-simulator/scripts/control_plane/snapshot.py",
+      "strategy": "symlink",
+      "description": ""
     }
   ]
 }
