@@ -11430,6 +11430,24 @@
       "dst": "docs/diagrams/increment-b-human-only-transition-ssh-signing.mermaid",
       "strategy": "symlink",
       "description": "Public diagram compatibility path; plugin-owned canonical master"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/pre-commit-evolution-guard",
+      "dst": "plugins/agent-agentic-os/skills/os-init/scripts/pre-commit-evolution-guard",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/pre-commit-pipeline-guard",
+      "dst": "plugins/agent-agentic-os/skills/os-init/scripts/pre-commit-pipeline-guard",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/pre-push-review-guard",
+      "dst": "plugins/agent-agentic-os/skills/os-init/scripts/pre-push-review-guard",
+      "strategy": "symlink",
+      "description": ""
     }
   ]
 }
