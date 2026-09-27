@@ -28,11 +28,13 @@ Key Input Dependencies:
 Key Functions:
     - show_challenge() -- write and print the challenge and the sign command.
     - approve_transition() -- verify and commit; returns the TransitionRecord.
+    - refuse_test_signer_outside_temp() -- refuse approval if a real identity folder trusts the test-suite signer.
     - GateApprovalError -- every refusal, with `.reasons`.
 """
 
 import shlex
 import sys
+import tempfile
 import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, TextIO
@@ -162,6 +164,30 @@ def show_challenge(
     return path
 
 
+# Principal enrolled by the test suite's stand-in human (tests/helpers/human_signer.py)
+TEST_SIGNER_PRINCIPAL = "test-human@local"
+
+
+# Keeps a leaked test key from ever approving real work
+def refuse_test_signer_outside_temp(layout: IdentityLayout, temp_dir: Optional[Path] = None) -> None:
+    """Raise GateApprovalError if a non-temp identity folder trusts the test-suite signer.
+
+    Test suites legitimately enroll TEST_SIGNER_PRINCIPAL inside temp repositories; a real
+    checkout trusting it means a test run leaked into the operator's identity.
+    """
+    temp = Path(temp_dir or tempfile.gettempdir()).resolve()
+    if Path(layout.root).resolve().is_relative_to(temp):
+        return
+    for path in (layout.allowed_signers, layout.allowed_signers_selftest):
+        if not path.exists():
+            continue
+        if any(line.split()[:1] == [TEST_SIGNER_PRINCIPAL] for line in path.read_text(encoding="utf-8").splitlines()):
+            raise GateApprovalError(
+                f"{path} trusts the test-suite signer {TEST_SIGNER_PRINCIPAL}. Remove that line (keep your own) "
+                "before approving; it was written by a test run, not by you."
+            )
+
+
 def approve_transition(
     cp: Any,
     request_id: int,
@@ -178,6 +204,7 @@ def approve_transition(
     data = _load_request(cp, request_id)
     _, repo_root = _live_snapshot(cp, data)
     layout = layout or default_layout(repo_root)
+    refuse_test_signer_outside_temp(layout)
     _isolation(layout, agent_identity)
     reasons = _coordinator(cp).authorization_preflight(data["task_id"], data["to_state"])
     if reasons:

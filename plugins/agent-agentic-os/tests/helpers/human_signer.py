@@ -22,6 +22,7 @@ Key Functions:
     - get_test_human() -- the process-wide TestHuman
 """
 
+import atexit
 import os
 import shutil
 import subprocess
@@ -106,4 +107,5 @@ def get_test_human() -> "TestHuman":
     global _SINGLETON
     if _SINGLETON is None:
         _SINGLETON = TestHuman()
+        atexit.register(_SINGLETON.close)  # remove the throwaway key dir instead of leaking it into $TMPDIR
     return _SINGLETON
