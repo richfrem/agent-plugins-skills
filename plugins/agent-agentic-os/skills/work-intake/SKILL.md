@@ -15,15 +15,16 @@ allowed-tools: Bash, Read, Write
 
 ## Critical Operational Rules (Read First Before Any Action)
 
-1. **Read Guidance and DB First**: Before acting or asking, read the stage YAML (`scripts/control_plane/transition_templates.yaml`), advisory transition guidance (`transition-guidance --task-id <task-id>`), and SQLite DB enforcement. Say exactly which parts were read, never more.
-2. **Task Artifact Location**: All task artifacts (spec, plan, outline, reviews) MUST live in `docs/plans/work-tasks/<task-id>/`, NEVER in the `docs/plans` root.
-3. **Running Directives Ledger**: Maintain a running ledger of every human directive from the very first message. Consult it before every reply; never lose directives across transitions.
-4. **Answer Once & One Question at a Time**: Answer all possible questions from context, authorized sources, or the running ledger first. Ask only ONE question per turn for what is genuinely missing. Never re-ask what is recorded.
-5. **No Skips or Impersonation**: Human chat answers to transition questions must be persisted through `coordinate-transition --interactive` (actor=human). Never write interview answers via `record_interview_question.py` as `interviewer`. Never record a review skip on the human's behalf. Skips are human decisions.
-6. **On Blocked Gate**: STOP, state the cause and cost in plain words, and do not attempt workaround commands (recovery approvals, direct DB edits). Never hand the human a state-reverting command without explaining what it undoes.
-7. **Complete Pasteable Commands Only**: Every command the human must run is repeated in full, ready to paste, every time it is needed. No back-references and no vague references (never "see above" or Python function names).
-8. **Never Dispute the Human**: Never dispute or "correct" the human's account of what they said or meant. Take their statement as the record, adjust, and continue.
-9. **References**:
+1. **Confirm the Approver Identity First**: At the start of every intake, state which identity approves this pipeline and confirm it with the human. Each pipeline has exactly one approver. The default is the human operator's own signing identity, used for all main work. Only for simulation work does it change: the agent's test identity (`test-human@local`) may approve a pipeline only when the human has signed off that task as a simulation. Never switch a main work pipeline to the agent identity, never sign on the human's behalf, and never remove or overwrite either identity in `context/identity/allowed_signers` (see `stages.INTERVIEW.approver_identity`).
+2. **Read Guidance and DB First**: Before acting or asking, read the stage YAML (`scripts/control_plane/transition_templates.yaml`), advisory transition guidance (`transition-guidance --task-id <task-id>`), and SQLite DB enforcement. Say exactly which parts were read, never more.
+3. **Task Artifact Location**: All task artifacts (spec, plan, outline, reviews) MUST live in `docs/plans/work-tasks/<task-id>/`, NEVER in the `docs/plans` root.
+4. **Running Directives Ledger**: Maintain a running ledger of every human directive from the very first message. Consult it before every reply; never lose directives across transitions.
+5. **Answer Once & One Question at a Time**: Answer all possible questions from context, authorized sources, or the running ledger first. Ask only ONE question per turn for what is genuinely missing. Never re-ask what is recorded.
+6. **No Skips or Impersonation**: Human chat answers to transition questions must be persisted through `coordinate-transition --interactive` (actor=human). Never write interview answers via `record_interview_question.py` as `interviewer`. Never record a review skip on the human's behalf. Skips are human decisions.
+7. **On Blocked Gate**: STOP, state the cause and cost in plain words, and do not attempt workaround commands (recovery approvals, direct DB edits). Never hand the human a state-reverting command without explaining what it undoes.
+8. **Complete Pasteable Commands Only**: Every command the human must run is repeated in full, ready to paste, every time it is needed. No back-references and no vague references (never "see above" or Python function names).
+9. **Never Dispute the Human**: Never dispute or "correct" the human's account of what they said or meant. Take their statement as the record, adjust, and continue.
+10. **References**:
    - Classification & Who Runs What: `plugins/agent-agentic-os/references/edge-matrix.md`
    - Worked Transcript: `plugins/agent-agentic-os/references/work-intake-healthy-transcript.md`
 

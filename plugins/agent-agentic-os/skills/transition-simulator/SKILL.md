@@ -30,6 +30,15 @@ All modes verify that the agent knows:
 
 ---
 
+## Approver Identity in Simulations
+
+Simulation pipelines and main work pipelines use different approvers, one per pipeline:
+- **Main work (default):** approved only with the human operator's own signing identity.
+- **Simulation work:** the agent's test identity (`test-human@local`) is the single approver, so an agent can play the human to exercise and optimize transitions end to end. This applies only to tasks the human has signed off as simulations, run against throwaway tasks and databases (`PipelineSimulator` refuses the repository's real `context/control_plane.db`).
+- Both identities coexist in `allowed_signers`; enrolling the agent identity must only ever add it, never remove or overwrite the human's entry. Never use the agent identity to approve a main work pipeline.
+
+---
+
 ## When to use this
 
 - After editing `transition_templates.yaml` for any edge (`next_steps_hint`, `human_questions`, `checklist`, `purpose`, `guidance`, or `closeout_contract`).

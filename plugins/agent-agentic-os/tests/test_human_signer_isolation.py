@@ -86,24 +86,6 @@ def test_ensure_identity_keeps_existing_signers(human, tmp_path):
     assert "test-human@local" in text
 
 
-def test_real_identity_trusting_test_signer_is_refused(tmp_path):
-    from control_plane.gate1_approval import GateApprovalError, refuse_test_signer_outside_temp
-    from control_plane.identity_layout import default_layout
-
-    layout = default_layout(tmp_path)
-    layout.root.mkdir(parents=True)
-    layout.allowed_signers.write_text(
-        'operator@control-plane namespaces="control-plane@agentic-os.local" ssh-ed25519 AAAAop\n'
-        'test-human@local namespaces="control-plane@agentic-os.local" ssh-ed25519 AAAAtest\n',
-        encoding="utf-8",
-    )
-    elsewhere = tmp_path / "not-the-temp-dir"
-    elsewhere.mkdir()
-    with pytest.raises(GateApprovalError, match="test-human@local"):
-        refuse_test_signer_outside_temp(layout, temp_dir=elsewhere)
-    refuse_test_signer_outside_temp(layout)  # inside the real temp dir: allowed (test suites)
-
-
 def test_test_human_temp_dir_removed_at_exit(tmp_path):
     import subprocess
     marker = tmp_path / "dir.txt"

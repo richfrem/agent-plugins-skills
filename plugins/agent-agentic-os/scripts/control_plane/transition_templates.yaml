@@ -109,6 +109,13 @@ stages:
       preserve_canonical_ids: true
       no_inferred_answers: true
       approval_and_authority_are_always_explicit: true
+    approver_identity:
+      rule: Before the first interview question, state which identity approves this pipeline and confirm it with the human.
+      one_approver_per_pipeline: true
+      default: human_operator
+      human_operator: Main work pipelines are approved (Gate 1 APPROVED, Gate 3 VERIFY_EXIT, DONE) only with the human operator's own enrolled signing identity. This is the default and never changes for real work.
+      agent_simulation: Only for simulation work does the approver change. The agent's test identity (test-human@local) may be the single approver only on a task the human has signed off as a simulation, such as transition-simulator runs on throwaway tasks and databases.
+      never: Never switch a main work pipeline to the agent identity, never sign on the human's behalf, and never remove or overwrite either identity in allowed_signers; the two identities coexist.
     plan_outline:
       enabled: true
       purpose: Capture the plan-ready bullets discovered during the interview before drafting the full plan.
