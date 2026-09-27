@@ -1105,3 +1105,16 @@ Persistent tracking of architectural friction, structural anomalies, and unclose
 - Severity: L
 - Repeat: NO
 - Status: RESOLVED
+
+## DEBT-20260927-PLUGIN-ADD-RESETS-OWNERSHIP
+
+- Logged date: 2026-09-27
+- Cycle/Session ID: investmenttoolkit-plugin-resync-noise
+- Artifact affected: `plugins/plugin-manager/scripts/plugin_add.py`
+- Friction observed: On 2026-09-24 an agent asked to "run plugin sync" in InvestmentToolkit ran `plugin_add.py --source .../agent-plugins-skills --all --yes` directly. Without `--preserve-ownership`, `plugin_add` appended `--enable-all`, and `plugin_installer` reset every `should_install` in `.agents/ownership/` to true for all 10 plugins, silently undoing the user's trimmed skill set (context bloat went unnoticed until 2026-09-27).
+- Why not fixed now: Fixed this session.
+- Recommended fix: N/A — resolved. `plugin_add` now preserves ownership choices by default; `--enable-all` is an explicit opt-in. `--preserve-ownership` is still accepted (no-op) for existing callers such as `sync_with_inventory.py`.
+- Evidence/repro: `test_plugin_add_preserves_ownership_by_default` and `test_plugin_add_enable_all_is_explicit_opt_in` in `plugins/plugin-manager/tests/test_sync_noise_regressions.py` run `plugin_add.py` as a real subprocess against a temp consumer repo (red before, green after); plugin-manager suite 56 passed.
+- Severity: M
+- Repeat: YES
+- Status: RESOLVED

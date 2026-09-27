@@ -45,6 +45,7 @@ CLI Arguments:
     --dry-run       Preview actions without writing files
     --no-install-rules  Skip installing plugin rules into .agent/rules/ (installed by default)
     --no-append-rules-to-ide-files  Skip injecting rules into IDE files like CLAUDE.md (installed by default)
+    --enable-all    Reset every component to should_install=true (default keeps .agents/ownership/ choices)
 
 Script Dependencies:
     os, sys, argparse, subprocess, shutil, tempfile, json, pathlib
@@ -859,7 +860,8 @@ def _install_plugins(selected_plugins: list, args, plugin_skills_map: dict | Non
             cmd.append("--no-install-rules")
         if not args.append_rules_to_ide_files:
             cmd.append("--no-append-rules-to-ide-files")
-        if not getattr(args, "preserve_ownership", False):
+        # Ownership flags (should_install) are kept unless the caller explicitly asks to reset them
+        if getattr(args, "enable_all", False):
             cmd.append("--enable-all")
         if plugin_skills_map and plugin["name"] in plugin_skills_map:
             retained = [s for s, en in plugin_skills_map[plugin["name"]].items() if en]
@@ -1012,6 +1014,12 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         "--select-skills", action="store_true",
         help="Interactively select and toggle specific skills within each plugin",
     )
+    parser.add_argument(
+        "--enable-all",
+        action="store_true",
+        help="Re-enable every component, resetting should_install choices in .agents/ownership/",
+    )
+    # Kept for callers (sync_with_inventory.py) written before preserving became the default
     parser.add_argument(
         "--preserve-ownership",
         action="store_true",

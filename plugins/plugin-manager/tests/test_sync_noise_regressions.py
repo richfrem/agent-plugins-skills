@@ -140,3 +140,43 @@ def test_retention_step_info_not_warning_when_pruner_absent(tmp_path: Path, caps
     out = capsys.readouterr().out
     assert "WARNING" not in out
     assert "ownership" in out.lower()
+
+
+def _make_consumer_with_disabled_skill(tmp_path: Path) -> Path:
+    """A consumer repo whose ownership file disables skill-a of a local plugin source."""
+    root = tmp_path / "consumer"
+    src = tmp_path / "source" / "plugins" / "sample-plugin"
+    (src / "skills" / "skill-a").mkdir(parents=True)
+    (src / "skills" / "skill-a" / "SKILL.md").write_text("---\nname: skill-a\n---\n# Skill A\n", encoding="utf-8")
+    (src / "plugin.json").write_text(json.dumps({"name": "sample-plugin", "version": "1.0.0"}), encoding="utf-8")
+    ownership = root / ".agents" / "ownership" / "sample-plugin.json"
+    ownership.parent.mkdir(parents=True)
+    ownership.write_text(json.dumps({"plugin": "sample-plugin", "components": {"skills": {
+        "skill-a": {"should_install": False, "artifacts": [".agents/skills/skill-a"]}}}}), encoding="utf-8")
+    return root
+
+
+def _run_plugin_add(root: Path, *extra: str) -> "subprocess.CompletedProcess":
+    import subprocess
+    source = root.parent / "source"
+    return subprocess.run(
+        [sys.executable, str(_SCRIPTS_DIR / "plugin_add.py"), str(source), "--plugins", "sample-plugin", "--yes", *extra],
+        cwd=root, capture_output=True, text=True,
+    )
+
+
+def test_plugin_add_preserves_ownership_by_default(tmp_path: Path):
+    root = _make_consumer_with_disabled_skill(tmp_path)
+    result = _run_plugin_add(root)
+    assert result.returncode == 0, result.stdout + result.stderr
+    ownership = json.loads((root / ".agents" / "ownership" / "sample-plugin.json").read_text(encoding="utf-8"))
+    assert ownership["components"]["skills"]["skill-a"]["should_install"] is False
+    assert not (root / ".agents" / "skills" / "skill-a").exists()
+
+
+def test_plugin_add_enable_all_is_explicit_opt_in(tmp_path: Path):
+    root = _make_consumer_with_disabled_skill(tmp_path)
+    result = _run_plugin_add(root, "--enable-all")
+    assert result.returncode == 0, result.stdout + result.stderr
+    ownership = json.loads((root / ".agents" / "ownership" / "sample-plugin.json").read_text(encoding="utf-8"))
+    assert ownership["components"]["skills"]["skill-a"]["should_install"] is True
