@@ -39,6 +39,8 @@ Key Functions:
     - create_project_structure() — Orchestrates project directory scaffolding
     - create_global_kernel() — Scaffolds user-level ~/.claude/CLAUDE.md kernel
     - print_next_steps() — Displays completion guidance and next steps
+    - dual_identity_notice() — Reports human approval, simulation and isolation readiness separately
+    - ensure_simulation_identity_step() — Creates or reuses the agent's simulation identity (--with-simulation-identity)
     - _parse_args() — Parses CLI arguments
     - _execute_action() — Dispatches retrofit or standard project scaffolding
     - main() — CLI dispatcher entry point
@@ -857,7 +859,49 @@ def signing_identity_notice(target: Path) -> List[str]:
         lines.append("   os-init never runs this and never creates or enrolls a key; agents must not either (see the os-signing-setup skill).")
         for failure in status["failures"][:3]:
             lines.append(f"   - {failure}")
+    return lines + dual_identity_notice(target)
+
+
+# External comment: Report the real-work / simulation / isolation split separately
+def dual_identity_notice(target: Path) -> List[str]:
+    """READ-ONLY report of the two approval identities and of isolation, each with its own readiness.
+
+    Real work (context/control_plane.db) is approved only by the human's key; simulations
+    (context/simulation/simulation_control_plane.db) only by the agent's simulation key. Isolation
+    (the agent running as its own OS account) is what stops a hostile agent from editing the human's
+    trust files; its account commands are printed for the HUMAN, per operating system."""
+    try:
+        from control_plane.simulation_identity import dual_identity_status
+    except Exception as exc:  # older installed copies may not ship the module
+        return [f"   (dual-identity status unavailable: {exc})"]
+    status = dual_identity_status(target)
+    lines = ["\n   Approval identities (one approver per pipeline):"]
+    human = status["human"]
+    lines.append(f"   - Human approval: {'ready' if human['ready'] else 'not ready'} ({human['detail']})")
+    sim = status["simulation"]
+    lines.append(f"   - Simulation: {'ready' if sim['ready'] else 'not set up'} ({sim['detail']})")
+    if not sim["ready"]:
+        lines.append("       The agent may create it (it is the agent's own key, kept apart from yours):")
+        lines.append("         python3 plugins/agent-agentic-os/scripts/init_agentic_os.py --target . --retrofit --with-simulation-identity")
+    iso = status["isolation"]
+    lines.append(f"   - Isolation: {'ready' if iso['ready'] else 'not ready'} ({iso['detail']})")
+    if iso.get("commands"):
+        lines.append("       A HUMAN administrator runs (for this operating system; see references/isolation-setup.md for others):")
+        lines.extend(f"         {command}" for command in iso["commands"])
     return lines
+
+
+# External comment: Create or reuse the agent's simulation identity on request
+def ensure_simulation_identity_step(target: Path, dry_run: bool) -> None:
+    """Creates or reuses context/simulation/identity/ (agent-owned); never writes context/identity/."""
+    if dry_run:
+        print("  [DRY RUN] would create or reuse the simulation identity in context/simulation/identity/")
+        return
+    from control_plane.simulation_identity import ensure_simulation_identity
+
+    info = ensure_simulation_identity(target)
+    verb = "Created" if info["created"] else "Reused"
+    print(f"  {verb} the simulation identity {info['fingerprint']} in {info['layout'].root}")
 
 
 def print_next_steps(target: Path, did_global: bool, did_retrofit: bool) -> None:
@@ -960,6 +1004,12 @@ def _parse_args() -> argparse.Namespace:
         action="store_true",
         help="Overwrite existing files with .bak backups"
     )
+    parser.add_argument(
+        "--with-simulation-identity",
+        action="store_true",
+        help="Create or reuse the agent's simulation signing identity in context/simulation/identity/ "
+             "(never touches the human's production trust file)"
+    )
     return parser.parse_args()
 
 
@@ -1000,6 +1050,9 @@ def main() -> None:
         print("\n[DRY RUN] Previewing changes - nothing will be written.\n")
 
     _execute_action(target, args)
+
+    if args.with_simulation_identity:
+        ensure_simulation_identity_step(target, args.dry_run)
 
     if args.global_kernel:
         create_global_kernel(args.dry_run, args.force)

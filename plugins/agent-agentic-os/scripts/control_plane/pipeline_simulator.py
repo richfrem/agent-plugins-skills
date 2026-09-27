@@ -9,6 +9,8 @@ from pathlib import Path
 from typing import Any, Callable, Dict, Optional
 
 from agent_control import ControlPlane
+from control_plane.approver_policy import CONTEXT_SIMULATION, pipeline_context
+from control_plane.simulation_identity import SimulationSigner
 from control_plane.coordinator import TransitionCoordinator, TransitionCoordinatorError
 from control_plane.ports import PersistenceInvariantViolation
 from control_plane.registry import TransitionRegistry
@@ -22,6 +24,15 @@ from control_plane.wrappers.record_interview_question import record_interview_qu
 from control_plane.wrappers.run_exit_verification import run_exit_verification
 
 
+# Fixed menus for the internal-review questions in a simulation (no reviewer is dispatched)
+def simulation_review_menu(kind: str, runtime: Optional[str] = None) -> Any:
+    """Return the simulation's review menu for a runtime/model/effort question."""
+    from control_plane.review_options import ChoiceSet
+
+    ids = {"runtime": ["claude-cli"], "model": ["test-model"], "effort": ["medium"]}.get(kind, [])
+    return ChoiceSet([{"id": i, "display": i, "installed": True} for i in ids])
+
+
 class PipelineSimulator:
     """Run bounded control-plane scenarios against a caller-owned temporary database.
 
@@ -32,13 +43,20 @@ class PipelineSimulator:
     """
 
     def __init__(self, db_path: Path, *, registry: Optional[TransitionRegistry] = None,
-                 human_signer: Optional[Callable[..., Any]] = None):
+                 human_signer: Optional[Callable[..., Any]] = None,
+                 review_choices_fn: Optional[Callable[..., Any]] = None):
         """`human_signer` completes the cryptographic gates (APPROVED, VERIFY_EXIT, DONE): it is called with the
         control plane and a transition_request id and must return the committed TransitionRecord, exactly as a
         human running `ssh-keygen -Y sign` would. Without one the simulator halts at the first such gate with
         HUMAN_PROOF_REQUIRED -- it never fabricates authority."""
-        self.human_signer = human_signer
         self.db_path = Path(db_path).resolve()
+        if human_signer is None and pipeline_context(self.db_path) == CONTEXT_SIMULATION:
+            # A simulation is approved by the agent's own simulation key, kept next to the database
+            human_signer = SimulationSigner(self.db_path.parent / "identity")
+        self.human_signer = human_signer
+        # Simulations dispatch no real reviewers: answer the review runtime/model/effort menus from a fixed
+        # simulation menu instead of probing the machine's CLIs (the coordinator still validates the answers).
+        self.review_choices_fn = review_choices_fn or simulation_review_menu
         self.repository_root = Path(__file__).resolve().parents[3]
         if self.db_path == (self.repository_root / "context" / "control_plane.db").resolve():
             raise ValueError("Pipeline simulator requires a temporary database, not the repository database")
@@ -47,7 +65,9 @@ class PipelineSimulator:
         self.registry = registry or TransitionRegistry.load_default()
 
     def create_task(self, task_id: str, title: str) -> str:
-        """Create a general task in the simulator database."""
+        """Create a task in the simulator database. Who may approve it depends only on the database
+        file (approver_policy): a database named simulation_control_plane.db is a simulation (only
+        the agent's simulation key approves); any other name is real-work shaped (only human keys)."""
         self.control_plane.create_task(task_id=task_id, title=title, runtime_tool="simulator")
         return task_id
 
@@ -55,7 +75,7 @@ class PipelineSimulator:
         """Enter INTERVIEW through the production coordinator. INTAKE -> INTERVIEW has zero
         own human_questions, so only the mandatory guidance-compliance confirmation is asked."""
         coordinator = TransitionCoordinator(
-            self.control_plane, registry=self.registry,
+            self.control_plane, review_choices_fn=self.review_choices_fn, human_signer=self.human_signer, registry=self.registry,
             input_fn=lambda _prompt: "YES", output_stream=io.StringIO(),
         )
         return coordinator.coordinate_transition(
@@ -122,11 +142,11 @@ class PipelineSimulator:
         mandatory guidance-compliance confirmation is answered too."""
         if expect_success:
             coordinator = TransitionCoordinator(
-                self.control_plane, registry=self.registry,
+                self.control_plane, review_choices_fn=self.review_choices_fn, human_signer=self.human_signer, registry=self.registry,
                 input_fn=lambda _prompt: "YES", output_stream=io.StringIO(),
             )
         else:
-            coordinator = TransitionCoordinator(self.control_plane, registry=self.registry, output_stream=io.StringIO())
+            coordinator = TransitionCoordinator(self.control_plane, review_choices_fn=self.review_choices_fn, human_signer=self.human_signer, registry=self.registry, output_stream=io.StringIO())
         return coordinator.coordinate_transition(
             task_id=task_id,
             to_state=to_state,
@@ -165,7 +185,7 @@ class PipelineSimulator:
         attempt is non-interactive and must halt with HUMAN_PROOF_REQUIRED; with signed=True the configured
         human_signer completes the request."""
         coordinator = TransitionCoordinator(
-            self.control_plane,
+            self.control_plane, review_choices_fn=self.review_choices_fn,
             registry=self.registry,
             output_stream=io.StringIO(),
             human_signer=self.human_signer,
@@ -185,7 +205,7 @@ class PipelineSimulator:
         self.enter_interview(task_id)
         answers = iter(["1", "1", "YES"])
         coordinator = TransitionCoordinator(
-            self.control_plane,
+            self.control_plane, review_choices_fn=self.review_choices_fn, human_signer=self.human_signer,
             registry=self.registry,
             input_fn=lambda _prompt: next(answers),
             output_stream=io.StringIO(),
@@ -235,7 +255,7 @@ class PipelineSimulator:
 
         plan_review_answers = iter(["1", "YES"])
         TransitionCoordinator(
-            self.control_plane,
+            self.control_plane, review_choices_fn=self.review_choices_fn, human_signer=self.human_signer,
             registry=self.registry,
             input_fn=lambda _prompt: next(plan_review_answers),
             output_stream=io.StringIO(),
@@ -248,7 +268,7 @@ class PipelineSimulator:
         )
         review_answers = iter(["1", "3", "claude-cli", "test-model", "medium", "YES"])
         TransitionCoordinator(
-            self.control_plane,
+            self.control_plane, review_choices_fn=self.review_choices_fn, human_signer=self.human_signer,
             registry=self.registry,
             input_fn=lambda _prompt: next(review_answers),
             output_stream=io.StringIO(),
@@ -261,7 +281,7 @@ class PipelineSimulator:
         )
         self.control_plane.record_critic_review(task_id, 1, "simulator", "PASS", "simulated review passed")
         TransitionCoordinator(
-            self.control_plane,
+            self.control_plane, review_choices_fn=self.review_choices_fn, human_signer=self.human_signer,
             registry=self.registry,
             input_fn=lambda _prompt: "YES",  # MULTI_AGENT_REVIEW->PLAN_REVIEW has zero own questions
             output_stream=io.StringIO(),
@@ -274,7 +294,7 @@ class PipelineSimulator:
         )
         awaiting_answers = iter(["1", "YES"])
         TransitionCoordinator(
-            self.control_plane,
+            self.control_plane, review_choices_fn=self.review_choices_fn, human_signer=self.human_signer,
             registry=self.registry,
             input_fn=lambda _prompt: next(awaiting_answers),
             output_stream=io.StringIO(),
@@ -288,7 +308,7 @@ class PipelineSimulator:
 
         self._seed_gate1_content(task_id)
         TransitionCoordinator(
-            self.control_plane,
+            self.control_plane, review_choices_fn=self.review_choices_fn,
             registry=self.registry,
             output_stream=io.StringIO(),
             human_signer=self.human_signer,
@@ -304,7 +324,7 @@ class PipelineSimulator:
         worktree = self._init_git_worktree(repo_root / ".worktrees" / task_id)
         self.control_plane.update_worktree(task_id, str(worktree), f"sim/{task_id}", "written_in_worktree")
         TransitionCoordinator(
-            self.control_plane,
+            self.control_plane, review_choices_fn=self.review_choices_fn, human_signer=self.human_signer,
             registry=self.registry,
             input_fn=lambda _prompt: "YES",  # APPROVED->IN_WORKTREE has zero own questions
             output_stream=io.StringIO(),
@@ -318,7 +338,7 @@ class PipelineSimulator:
         self.control_plane.record_verification_receipt(task_id, "test_suite", "pytest -q", 0)
         worktree_review_answers = iter(["1", "1", "YES"])
         TransitionCoordinator(
-            self.control_plane,
+            self.control_plane, review_choices_fn=self.review_choices_fn, human_signer=self.human_signer,
             registry=self.registry,
             input_fn=lambda _prompt: next(worktree_review_answers),
             output_stream=io.StringIO(),
@@ -330,7 +350,7 @@ class PipelineSimulator:
             interactive=True,
         )
         TransitionCoordinator(
-            self.control_plane,
+            self.control_plane, review_choices_fn=self.review_choices_fn,
             registry=self.registry,
             output_stream=io.StringIO(),
             human_signer=self.human_signer,  # Gate 3 is a human signature over commit SHA + diff + untracked hashes
@@ -369,7 +389,7 @@ class PipelineSimulator:
             "standard simulator path evidence",
         )
         TransitionCoordinator(
-            self.control_plane,
+            self.control_plane, review_choices_fn=self.review_choices_fn, human_signer=self.human_signer,
             registry=self.registry,
             input_fn=lambda _prompt: "YES",  # VERIFY_EXIT->RETROSPECTIVE has zero own questions
             output_stream=io.StringIO(),
@@ -398,7 +418,7 @@ class PipelineSimulator:
         )
         done_answers = iter(["1", "YES"])
         TransitionCoordinator(
-            self.control_plane,
+            self.control_plane, review_choices_fn=self.review_choices_fn, human_signer=self.human_signer,
             registry=self.registry,
             input_fn=lambda _prompt: next(done_answers),
             output_stream=io.StringIO(),
@@ -429,7 +449,7 @@ class PipelineSimulator:
         """Exercise the wildcard reset edge using genuine interactive inputs."""
         answers = iter(["The simulated task state must be re-run from intake.", "y", "YES"])
         coordinator = TransitionCoordinator(
-            self.control_plane,
+            self.control_plane, review_choices_fn=self.review_choices_fn, human_signer=self.human_signer,
             registry=self.registry,
             input_fn=lambda _prompt: next(answers),
             output_stream=io.StringIO(),
@@ -493,7 +513,7 @@ class PipelineSimulator:
                 )
                 before_receipts = len(self.control_plane.get_verification_receipts(task_id))
                 coordinator = TransitionCoordinator(
-                    self.control_plane,
+                    self.control_plane, review_choices_fn=self.review_choices_fn, human_signer=self.human_signer,
                     registry=self.registry,
                     input_fn=lambda _prompt: "STANDARD",
                     output_stream=io.StringIO(),

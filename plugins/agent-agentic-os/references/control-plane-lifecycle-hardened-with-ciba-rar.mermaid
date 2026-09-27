@@ -1,0 +1,76 @@
+flowchart TB
+    %% Production gates: human key in context/control_plane.db; first signature binds one key.
+    %% Simulation: separate context/simulation/simulation_control_plane.db and agent key only.
+    %% Complete captured signed evidence is reverified before a production push.
+    %% HARDENED (Increment B): 13-stage canonical lifecycle
+    %% - Exactly three human authorities are CRYPTOGRAPHIC: APPROVED (Gate 1), VERIFY_EXIT (Gate 3,
+    %%   from BOTH WORKTREE_REVIEW and MULTI_AGENT_CODE_REVIEW) and DONE (closure, including early close
+    %%   from any active state). Each edge declares requires_cryptographic_proof in transition_templates.yaml.
+    %% - The only valid authority is an out-of-band OpenSSH signature (ssh-keygen -Y sign, passphrase
+    %%   prompted on a TTY) over a content-bound transition_request, verified against allowed_signers.
+    %% - No prompt, typed word, flag, receipt or actor='human' string can authorize these edges, and
+    %%   no SQLite trigger trusts an actor column for them. (CIBA+RAR push to an IdP was the earlier
+    %%   design; it is superseded by local SSH signing.)
+    %% - The slow work (live snapshot hashing, ssh-keygen verify) runs BEFORE the commit's BEGIN IMMEDIATE;
+    %%   inside the transaction the request is re-checked and consumed exactly once.
+    %% - No direct IN_WORKTREE -> VERIFY_EXIT edge exists (removed 2026-09-17): all work passes
+    %%   through WORKTREE_REVIEW so the diff is shown first.
+    %% - Deterministic gates remain non-HITL
+
+    subgraph Phase1["1. Planning & Spec"]
+        S1["(1) INTAKE"] --> S2["(2) INTERVIEW"]
+        S2 --> S3["(3) DRAFT_PLAN"]
+        S3 --> S4["(4) PLAN_REVIEW"]
+    end
+
+    subgraph Phase2["2. Plan Review & Human Gate 1 (Cryptographic)"]
+        S4 -->|"optional independent review"| S5["(5) MULTI_AGENT_REVIEW"]
+        S5 -->|"return for human plan acceptance"| S4
+        S4 -->|"human accepts plan; review not required"| S6["(6) AWAITING_APPROVAL"]
+        S6 --> TR1["coordinator halts: HUMAN_PROOF_REQUIRED<br/>transition_request created (not by the agent)<br/>nonce + expiry + spec/plan snapshot"]
+        TR1 --> SIGN1{{"Human: show-challenge, then<br/>ssh-keygen -Y sign on a TTY<br/>(OpenSSH prompts for the passphrase)"}}
+        SIGN1 ==>|"Gate 1: approve-transition verifies the signature<br/>against allowed_signers, then consumes the request<br/>once inside the commit transaction"| S7["(7) APPROVED"]
+    end
+
+    subgraph Phase3["3. Execution & Human Gate 3 (Cryptographic)"]
+        S7 --> S8["(8) IN_WORKTREE"]
+        S8 --> S9["(9) WORKTREE_REVIEW"]
+
+        %% Routing to review is an ordinary agent-or-human edge; ACCEPTING code is the signed act.
+        S9 -->|"Route to multi-agent code review<br/>(no signature; choose method/runtime/model/effort)"| S10["(10) MULTI_AGENT_CODE_REVIEW"]
+        S9 --> TR3["transition_request binds: commit SHA,<br/>tracked-diff hash, untracked-files hash"]
+        S10 --> TR3
+        TR3 --> SIGN3{{"Human signs with ssh-keygen -Y sign<br/>(same flow; no skip flag exists)"}}
+        SIGN3 ==>|"Gate 3: direct acceptance (from 9)<br/>or post-review acceptance (from 10)"| S11["(11) VERIFY_EXIT"]
+    end
+
+    subgraph Phase4["4. Closure (Cryptographic)"]
+        S11 -->|"Deterministic check:<br/>tests + leak/ledger checks<br/>(unchanged — not a human gate)"| S12["(12) RETROSPECTIVE"]
+        S12 --> TR4["transition_request also binds<br/>the retrospective digest"]
+        TR4 --> SIGN4{{"Human signs closure"}}
+        SIGN4 ==>|"Closure gate: signature verified,<br/>request consumed"| S13["(13) DONE"]
+    end
+
+    %% Phase-to-phase vertical layout flow
+    Phase1 --> Phase2
+    Phase2 --> Phase3
+    Phase3 --> Phase4
+
+    %% Early close from any active state uses the SAME signed closure gate (no force-close string or flag)
+    EarlyClose{{"Early close<br/>(any active state)"}} --> TR2["transition_request created<br/>(same mechanics as Gate 1)"]
+    TR2 --> SIGN2{{"Human signs with ssh-keygen -Y sign"}}
+    SIGN2 -.->|"Closure gate: signature verified,<br/>request consumed"| S13
+
+    %% Styling definitions
+    classDef hardened fill:#e0ffe0,stroke:#080,stroke-width:2px
+    classDef localMechanics fill:#e0e8ff,stroke:#336699,stroke-width:1.5px
+    classDef signing fill:#f3e8ff,stroke:#7b2cbf,stroke-width:2px
+    classDef gated fill:#d4edda,stroke:#28a745,stroke-width:2px
+    classDef deterministic fill:#f5f5f5,stroke:#999,stroke-width:1px
+
+    %% Node assignments
+    class S6,S7,S11,S13,EarlyClose hardened
+    class TR1,TR2,TR3,TR4 localMechanics
+    class SIGN1,SIGN2,SIGN3,SIGN4 signing
+    class S9,S10 gated
+    class S12 deterministic

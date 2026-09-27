@@ -1,0 +1,150 @@
+flowchart TB
+    %% Entry Layer
+    subgraph Layer_Entry["Entry Points & Orchestration"]
+        Callers["CLI, agents, and Python consumers"]
+        Facade["ControlPlane compatibility facade"]
+        Coordinator["TransitionCoordinator"]
+        Guidance["Transition guidance: versioned advisory snapshot"]
+        Lifecycle["Canonical lifecycle states: 13-stage sequence"]
+    end
+
+    %% Governance & Gates
+    subgraph Layer_Governance["Governance, Policies & Human Boundaries"]
+        State["StateMachine (control_plane/state_machine.py)"]
+        Policy["Unified policy engine (control_plane/policy.py)"]
+        TransitionRequest["transition_request: nonce, expiry & content snapshot (commit SHA, diff hash, untracked hash, retrospective digest)"]
+        SigningGate["Cryptographic gates: APPROVED, VERIFY_EXIT, DONE\nssh-keygen -Y sign (TTY passphrase) verified vs allowed_signers"]
+        Registry["TransitionRegistry"]
+        Templates["transition_templates.yaml: edge contracts & authorized_actor"]
+        ForceClose["Early close: any active state to DONE (same signed closure gate)"]
+        HumanClose["Human-signed closure\n(any state → DONE; no force-close string or flag)"]
+        ArtifactGate["Plan artifact identity/revision gate"]
+        MainReconciliation["main_worktree_reconciliation (issue #609)"]
+        Delegation["DelegationContract: scope, authority, budget, receipts"]
+    end
+
+    %% Review Subsystem
+    subgraph Layer_Review["Review Dispatch & Worktree Convergence"]
+        ReviewDispatch["Review dispatch: required source + canonical verdict"]
+        ReviewSelection["review-selection-v1: decision → method → internal runtime/model/effort"]
+        ReviewReports["Task-scoped raw reviewer reports + receipts"]
+        ReviewSynthesis["Canonical review synthesis / revision brief"]
+        PlanBranch["Plan-review disposition only: accept plan or request review\n(not a human gate; Gates 1, 3 and closure have no skip)"]
+        PlanAcceptance["PLAN_REVIEW convergence: accept plan or return to DRAFT_PLAN"]
+        InterviewOutline["Atomic interview answer + revisioned outline projection"]
+        Inventory["Session-wide change inventory + reconciliation manifest"]
+        Worktree["Registered implementation worktree"]
+    end
+
+    %% Hexagonal Ports
+    subgraph Layer_Ports["System Ports (Hexagonal Abstraction)"]
+        PersistencePort["PersistencePort"]
+        CryptoPort["CryptoPort"]
+        FilesystemPort["FilesystemPort"]
+        ModelPort["ModelCatalogPort"]
+        ClockPort["ClockPort"]
+    end
+
+    %% Concrete Adapters
+    subgraph Layer_Adapters["Infrastructure Adapters"]
+        SQLiteAdapter["SqlitePersistenceAdapter"]
+        CryptoAdapter["CryptoAdapter"]
+        FilesystemAdapter["FilesystemAdapter"]
+        ModelAdapter["ModelCatalogAdapter"]
+        ClockAdapter["ClockAdapter"]
+    end
+
+    %% Physical Storage & OS Targets
+    subgraph Layer_Storage["Storage, Filesystem & Wall Clock"]
+        DB[("Production: context/control_plane.db")]
+        SimDB[("Simulation: context/simulation/simulation_control_plane.db")]
+        HumanAnchor["Human key: context/identity/allowed_signers"]
+        SimAnchor["Agent key: context/simulation/identity/allowed_signers"]
+        Binding["First signed gate binds one approver key per task"]
+        PushCheck["Production push: complete gate history + exact challenges + human signatures"]
+        Isolation["Separate constrained runtime required; same OS user is not hostile-agent isolation"]
+        Receipts["verification_receipts: gate and artifact identities"]
+        RepoFiles["Repository and verifier files"]
+        CatalogFiles["Model catalog JSON files"]
+        Clock["Wall clock"]
+    end
+
+    %% Relationships: Entry to Orchestration & Governance
+    Callers --> Facade
+    Facade --> Lifecycle
+    Facade --> State
+    Facade --> Policy
+    Facade --> Coordinator
+    Facade --> Delegation
+
+    Coordinator --> Registry
+    Coordinator --> Guidance
+    Coordinator --> ForceClose
+    Coordinator --> ArtifactGate
+    Coordinator --> PlanBranch
+    Coordinator --> PlanAcceptance
+    Coordinator --> ReviewSelection
+    Coordinator --> ReviewDispatch
+
+    %% Governance & Policy Interactions
+    Registry --> Templates
+    Registry -.->|"syncs authorized_actor & questions"| SQLiteAdapter
+    Policy -.->|"requests policy facts via ctx callables"| PersistencePort
+    Policy -->|"enforces at APPROVED to IN_WORKTREE"| MainReconciliation
+    Policy --> TransitionRequest
+    TransitionRequest --> SigningGate
+    SigningGate -->|"verified outside the write lock, consumed once in the commit transaction"| PersistencePort
+    TransitionRequest --> PersistencePort
+    MainReconciliation --> Worktree
+    HumanClose --> State
+    HumanClose --> SigningGate
+    SigningGate -.->|"proof=sshsig audit receipt: principal + key fingerprint"| Receipts
+
+    %% Review Flow Interactions
+    ReviewDispatch --> ReviewReports
+    ReviewReports --> ReviewSynthesis
+    ReviewSynthesis --> PlanAcceptance
+    ReviewSynthesis --> Worktree
+    PlanBranch --> PlanAcceptance
+    PlanAcceptance --> ArtifactGate
+    Worktree --> Inventory
+    Inventory --> ReviewDispatch
+    Inventory --> PersistencePort
+
+    %% Ports Wiring
+    Facade --> PersistencePort
+    Facade --> CryptoPort
+    Facade --> FilesystemPort
+    Facade --> ModelPort
+    Facade --> ClockPort
+
+    ArtifactGate --> FilesystemPort
+    ArtifactGate --> PersistencePort
+    InterviewOutline --> PersistencePort
+    InterviewOutline --> FilesystemPort
+    ReviewDispatch --> ModelPort
+    Delegation --> PersistencePort
+
+    %% Adapters Wiring
+    PersistencePort --> SQLiteAdapter
+    CryptoPort --> CryptoAdapter
+    FilesystemPort --> FilesystemAdapter
+    ModelPort --> ModelAdapter
+    ClockPort --> ClockAdapter
+
+    %% Storage Wiring
+    SQLiteAdapter --> DB
+    SQLiteAdapter -->|"explicit simulation routing only"| SimDB
+    SigningGate --> Binding
+    DB --> HumanAnchor
+    SimDB --> SimAnchor
+    DB --> PushCheck
+    HumanAnchor --> PushCheck
+    Isolation -.-> HumanAnchor
+    SimDB -.->|"never authorizes production push"| PushCheck
+    DB -.-> Receipts
+    DB -.->|"enforces valid_transitions & required questions; proof edges require a consumed transition_request (no actor-column trust)"| State
+    CryptoAdapter --> RepoFiles
+    FilesystemAdapter --> RepoFiles
+    ModelAdapter --> CatalogFiles
+    ClockAdapter --> Clock

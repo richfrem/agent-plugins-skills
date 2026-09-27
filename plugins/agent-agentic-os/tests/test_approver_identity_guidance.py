@@ -21,6 +21,7 @@ Functions:
     - test_interview_contract_declares_single_human_default_approver
     - test_work_intake_confirms_approver_identity_first
     - test_transition_simulator_documents_simulation_approver
+    - test_guidance_describes_the_two_database_split
 
 Usage:
     python -m pytest plugins/agent-agentic-os/tests/test_approver_identity_guidance.py
@@ -54,3 +55,18 @@ def test_transition_simulator_documents_simulation_approver():
     text = (PLUGIN_ROOT / "skills" / "transition-simulator" / "SKILL.md").read_text(encoding="utf-8")
     assert "## Approver Identity in Simulations" in text
     assert "test-human@local" in text
+
+
+def test_guidance_describes_the_two_database_split():
+    """The rule is enforced by database (approver_policy.py): every guidance surface must say that
+    simulations run in the separate simulation_control_plane.db and must not point agents at the
+    removed in-database designation command."""
+    contract = TransitionRegistry.load_default().get_stage_contract("INTERVIEW")["approver_identity"]
+    surfaces = {
+        "yaml": " ".join(str(v) for v in contract.values()),
+        "work-intake": (PLUGIN_ROOT / "skills" / "work-intake" / "SKILL.md").read_text(encoding="utf-8"),
+        "transition-simulator": (PLUGIN_ROOT / "skills" / "transition-simulator" / "SKILL.md").read_text(encoding="utf-8"),
+    }
+    for name, text in surfaces.items():
+        assert "simulation_control_plane.db" in text, name
+        assert "designate-simulation" not in text, name

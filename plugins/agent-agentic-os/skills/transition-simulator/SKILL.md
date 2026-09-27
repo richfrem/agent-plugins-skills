@@ -32,10 +32,12 @@ All modes verify that the agent knows:
 
 ## Approver Identity in Simulations
 
-Simulation pipelines and main work pipelines use different approvers, one per pipeline:
-- **Main work (default):** approved only with the human operator's own signing identity.
-- **Simulation work:** the agent's test identity (`test-human@local`) is the single approver, so an agent can play the human to exercise and optimize transitions end to end. This applies only to tasks the human has signed off as simulations, run against throwaway tasks and databases (`PipelineSimulator` refuses the repository's real `context/control_plane.db`).
-- Both identities coexist in `allowed_signers`; enrolling the agent identity must only ever add it, never remove or overwrite the human's entry. Never use the agent identity to approve a main work pipeline.
+Real work and simulations use separate databases and separate signing identities, enforced by `scripts/control_plane/approver_policy.py` on every signed gate and re-checked by the push guard:
+- **Real work:** the repository's `context/control_plane.db`. Only the human's key (enrolled in `context/identity/allowed_signers`) approves; the agent's simulation key (enrolled as `test-human@local`) is refused under any alias, and so is any key registered as a simulation key even if the production trust file relabels it. Before a push, the push guard (installed by the `os-init` skill, verifier shipped with the `work-intake` skill) re-verifies every signed gate of the task against the human trust file, so a simulated DONE copied or symlinked into `context/control_plane.db` cannot unlock a push.
+- **Simulations:** `context/simulation/simulation_control_plane.db` (or any file named exactly `simulation_control_plane.db`). Only the agent's simulation key approves; a human key is refused. `PipelineSimulator(<dir>/simulation_control_plane.db)` signs every gate itself with the simulation key kept next to the database (`<dir>/identity/`; for the repository, `context/simulation/identity/`), so an agent can run a full simulation end to end with no human, and answers the internal-review menus from a fixed simulation menu (no reviewer is dispatched).
+- **The repository's simulation identity** (`context/simulation/identity/`) is created on the first simulation run and reused afterwards; the `os-init` skill can also create it up front (its `--with-simulation-identity` option). Either way it is additive and never writes the human's `context/identity/`.
+- A database's context is stamped inside it at creation and must agree with the name it is opened as. A case variant, symlink or hard link of a simulation database is ambiguous and refused for every key, never reassigned.
+- Within either database the first signed gate fixes the approver key for the task; an edited binding that disagrees with the signed-gate history is refused.
 
 ---
 

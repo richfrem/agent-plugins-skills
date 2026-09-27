@@ -30,6 +30,7 @@ Usage:
 import hashlib
 import sys
 import tempfile
+import uuid
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -60,9 +61,18 @@ def human():
 
 
 def test_ensure_identity_refuses_real_repo_root(human):
-    before = _digest(REAL_IDENTITY)
+    """Refuses any root outside the temp dir before touching the filesystem, wherever this
+    checkout lives (a checkout inside $TMPDIR is itself a legitimate disposable root)."""
+    non_temp = Path("/") / f"agentic-os-not-temp-{uuid.uuid4().hex}"
+    assert not non_temp.resolve().is_relative_to(Path(tempfile.gettempdir()).resolve())
     with pytest.raises(RuntimeError, match="temp"):
-        human.ensure_identity(REPO_ROOT)
+        human.ensure_identity(non_temp)
+    assert not non_temp.exists()  # refused before any mkdir
+
+    before = _digest(REAL_IDENTITY)
+    if not REPO_ROOT.resolve().is_relative_to(Path(tempfile.gettempdir()).resolve()):
+        with pytest.raises(RuntimeError, match="temp"):
+            human.ensure_identity(REPO_ROOT)
     assert _digest(REAL_IDENTITY) == before
 
 

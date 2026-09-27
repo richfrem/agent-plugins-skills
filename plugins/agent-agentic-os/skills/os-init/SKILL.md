@@ -21,10 +21,10 @@ Always perform a read-only preflight against the target before proposing or runn
 the target into exactly one state:
 
 ```bash
-python3 .agents/skills/os-init/scripts/control_plane/installation_probe.py --target <project-path>
+python3 scripts/control_plane/installation_probe.py --target <project-path>
 ```
 
-When running from the source checkout, use `plugins/agent-agentic-os/scripts/control_plane/installation_probe.py`.
+Run commands from this skill's root, with the target project supplied explicitly.
 The command emits JSON with `state` and diagnostic `missing` entries and never creates or migrates files.
 
 | State | Classification evidence | Action |
@@ -86,8 +86,9 @@ Follow the protocol in [instruction-blending.md](references/instruction-blending
 
 Run `init_agentic_os.py` based on mode:
 
-- **Mode A (Fresh Setup)**: `python3 .agents/skills/os-init/scripts/init_agentic_os.py --target <project-path> --sync-instructions`
-- **Mode B (Retrofit Existing)**: `python3 .agents/skills/os-init/scripts/init_agentic_os.py --target <project-path> --retrofit`
+- **Mode A (Fresh Setup)**: `python3 scripts/init_agentic_os.py --target <project-path> --sync-instructions --with-simulation-identity`
+- **Mode B (Retrofit Existing)**: `python3 scripts/init_agentic_os.py --target <project-path> --retrofit --with-simulation-identity`
+- **Approval identities**: every run reports three separate readiness items: human approval (the human's key in `context/identity/`, set up only by the human through the `os-signing-setup` skill), simulation (the agent's own key in `context/simulation/identity/`), and isolation (the agent running as its own OS account, commands printed per operating system for a human administrator). Add `--with-simulation-identity` to create or reuse the simulation identity; os-init never creates or enrolls the human's key.
 
 *Note: In both modes, `init_agentic_os.py` automatically initializes `context/control_plane.db` with WAL mode, installs `.git/hooks/pre-commit-evolution-guard`, and configures the `Stop` turn hook.*
 
@@ -104,7 +105,7 @@ setup. Full history and the invariant this guards against are in `references/det
 Provide the installation command tailored to the user's environment:
 - **Universal `uvx` (Recommended)**: `uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills`
 - **Claude Code Marketplace**: `claude plugin add richfrem/agent-plugins-skills`
-- **Local Source Reinstall**: `python3 plugins/plugin-manager/scripts/plugin_add.py --all -y`
+- **Local Source Reinstall**: invoke the `plugin-installer` skill with the authorized plugin selection and target project; its scripts belong to that skill, not this one.
 
 ---
 

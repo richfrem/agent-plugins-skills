@@ -45,6 +45,7 @@ if _scripts_dir not in sys.path:
     sys.path.insert(0, _scripts_dir)
 
 import agent_control
+from helpers.human_signer import OPERATOR_PRINCIPAL, get_test_human
 from control_plane.coordinator import HumanProofRequired, TransitionCoordinator, TransitionCoordinatorError
 from control_plane.gate1_approval import GateApprovalError, approve_transition, show_challenge
 from control_plane.identity_layout import default_layout
@@ -90,15 +91,12 @@ class CodeGate:
         for d in (self.layout.root, self.layout.challenge_dir):
             d.mkdir(parents=True, exist_ok=True)
             os.chmod(d, 0o700)
-        keys = self.tmp / "keys"
-        keys.mkdir()
-        self.key = keys / "id"
-        self.keygen(self.key)
-        pub = (keys / "id.pub").read_text().split()
-        self.layout.allowed_signers.write_text(f'op@local namespaces="{SIGN_NAMESPACE}" {pub[0]} {pub[1]}\n')
-        self.layout.allowed_signers_selftest.write_text(f'op@local namespaces="control-plane-selftest@agentic-os.local" {pub[0]} {pub[1]}\n')
-        for f in (self.layout.allowed_signers, self.layout.allowed_signers_selftest):
-            os.chmod(f, 0o600)
+        # One approver per pipeline: this regular task's Gate 1 was signed with the stand-in human's operator key,
+        # so Gate 3 must be signed with that same key (key continuity, not just a matching principal name).
+        human = get_test_human()
+        human.ensure_identity(self.repo)
+        self.key = human.operator_key
+        self.principal = OPERATOR_PRINCIPAL
         self.identity = {"agent_name": "agentic-os-local-agent", "agent_uid": _other_uid(), "agent_gids": set()}
 
     @staticmethod
@@ -128,7 +126,7 @@ class CodeGate:
         subprocess.run([SSH_KEYGEN, "-Y", "sign", "-f", str(key or self.key), "-n", SIGN_NAMESPACE, str(path)], check=True, capture_output=True)
 
     def approve(self):
-        return approve_transition(self.cp, self.request_id, layout=self.layout, principal="op@local", agent_identity=self.identity, out=io.StringIO())
+        return approve_transition(self.cp, self.request_id, layout=self.layout, principal=self.principal, agent_identity=self.identity, out=io.StringIO())
 
     def db(self):
         return sqlite3.connect(self.cp.db_path)

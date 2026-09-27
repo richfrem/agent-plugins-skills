@@ -1162,11 +1162,128 @@ Persistent tracking of architectural friction, structural anomalies, and unclose
 
 - Logged date: 2026-09-27
 - Cycle/Session ID: investmenttoolkit-plugin-resync-noise
-- Artifact affected: `plugins/agent-agentic-os/skills/work-intake/SKILL.md`, `plugins/agent-agentic-os/skills/transition-simulator/SKILL.md`, `plugins/agent-agentic-os/scripts/control_plane/transition_templates.yaml`
-- Friction observed: Two signing identities coexist by design in `context/identity/allowed_signers`: the human operator's, and the agent's test identity (`test-human@local`) used so an agent can play the human in simulated pipelines. No guidance said which one approves a given pipeline, so agents either treated the agent identity as a threat to remove or risked it spilling into main work.
-- Why not fixed now: Fixed this session (guidance only).
-- Recommended fix: Guidance added: each pipeline has exactly one approver; the default is the human operator's identity for all main work; only simulation work, signed off by the human, may use the agent identity; work-intake confirms the approver identity before the first question (`stages.INTERVIEW.approver_identity`, work-intake Rule 1, transition-simulator "Approver Identity in Simulations"). Open follow-up: the control plane does not yet record or enforce a per-task approver or a signed "simulation" designation; today this is guidance, not a gate.
-- Evidence/repro: `plugins/agent-agentic-os/tests/test_approver_identity_guidance.py` (3 tests: red against origin/main, green on the branch); full agentic-os suite 898 passed.
+- Artifact affected: `plugins/agent-agentic-os/scripts/control_plane/approver_policy.py`, `gate_evidence.py`, `simulation_identity.py`, `adapters.py`, `pipeline_simulator.py`, `scripts/verify_gate_evidence.py`, `scripts/pre-push-review-guard`, `scripts/pre-commit-pipeline-guard`, `scripts/init_agentic_os.py`, `scripts/setup_ciba_identity.py`, work-intake / transition-simulator / os-init / os-signing-setup guidance, `references/isolation-setup.md`
+- Friction observed: Two signing identities coexist by design: the human operator's (real work) and the agent's simulation key (`test-human@local`, simulations). Nothing said or enforced which one approves a pipeline, and the simulator could not complete a simulation outside the test suite.
+- Why not fixed now: Fixed on branch `feat/one-approver-per-pipeline` after three independent adversarial review rounds.
+- Recommended fix: N/A — resolved. Real work (`context/control_plane.db`) accepts only human keys; simulations (`simulation_control_plane.db`, with their own key and trust file in `<dir>/identity/`) accept only the agent key. Each database stamps its context inside itself and the stamp must agree with the name it is opened as (path swaps, copies and aliases refused); ambiguous aliases (case variants, symlinks, extra hard links) are refused for every key; a symlinked production database is refused; roles are by key fingerprint (aliases, principal patterns and dual enrollment fail closed); registered simulation keys are refused on real work even if relabelled; the first signed gate fixes the approver key and an edited binding that disagrees with signed-gate history is refused; every signed gate's challenge and signature is stored and the push guard re-verifies them against the human trust file before a push (a simulated DONE cannot unlock one); the commit guard refuses symlinked or simulation-stamped production databases. PipelineSimulator now passes its signer and a fixed simulation review menu to every coordinator, so a full simulation runs standalone from the installed transition-simulator skill (it previously relied on test-suite stand-ins). os-init and `setup_ciba_identity.py --check` report human approval, simulation and isolation readiness separately; `--with-simulation-identity` creates the agent's identity additively and never the human's.
+- Evidence/repro: `tests/test_one_approver_per_pipeline.py`, `tests/test_approver_isolation.py` (round-3 attacks R1-R5 as refusals, the real push and commit guards), `tests/test_dual_identity_onboarding.py` (including a standalone simulation from the installed skill), `tests/test_os_init_dual_identity.py`, `tests/test_approver_identity_guidance.py`, `tests/test_human_signer_isolation.py`.
+- Severity: M
+- Repeat: NO
+- Status: RESOLVED
+
+## DEBT-20260927-SAME-ACCOUNT-TRUST-FILE-EXPOSURE
+
+- Logged date: 2026-09-27
+- Cycle/Session ID: investmenttoolkit-plugin-resync-noise
+- Artifact affected: deployment of the agent (not code): `context/identity/allowed_signers`, `context/control_plane.db`
+- Friction observed: When the agent runs as the human's own OS account (the common setup), it can write the human's trust file and the control-plane database. It could enroll a brand-new key under a human principal, or rewrite binding and history rows, which no file- or database-level check can prevent (round-3 review R5.2). Registered simulation keys are refused even if relabelled, but an unregistered new key is not distinguishable from a human key by any check the agent cannot also edit.
+- Why not fixed now: Requires a deployment change the agent must not make for the human: run the agent in a container or as the separate `agentic-os-local-agent` account so it cannot write `context/identity/`. Account commands exist for macOS, Linux and Windows (`identity_setup.privileged_account_commands`).
+- Recommended fix: Human follows `references/isolation-setup.md` (container recommended, or dedicated account). os-init and `setup_ciba_identity.py --check` now report isolation as its own readiness item so this is never hidden behind "signing ready".
+- Evidence/repro: `dual_identity_status()` reports `isolation.ready = False` when the agent account does not exist.
+- Severity: M
+- Repeat: NO
+- Status: OPEN
+
+## DEBT-20260927-APPROVER-POLICY-REVIEW-ROUNDS-1-3
+
+- Logged date: 2026-09-27
+- Cycle/Session ID: investmenttoolkit-plugin-resync-noise
+- Artifact affected: `plugins/agent-agentic-os/scripts/control_plane/approver_policy.py`
+- Friction observed: Three unmerged designs were rejected by independent adversarial review (`temp/_prompt_requests/review-one-approver-per-pipeline-*response.md`). Rounds 1-2: any row inside one shared database deciding real vs simulation stays forgeable. Round 3: a separate database chosen only by file NAME is still defeated by path swaps, copies into the production location, symlinks, hard links and case aliases, and the push guard trusted stored state.
+- Why not fixed now: Fixed on the same branch before merge.
+- Recommended fix: N/A — resolved as described in DEBT-20260927-APPROVER-IDENTITY-GUIDANCE-GAP. Lessons: (1) put an authority boundary where an editable row cannot move it; (2) check identity through the connection actually committing, not a pathname looked up afterwards; (3) consumers of approval state (hooks) must re-verify signatures, not trust stored state; (4) be explicit about what only deployment isolation can provide.
+- Evidence/repro: regression tests listed in DEBT-20260927-APPROVER-IDENTITY-GUIDANCE-GAP.
+- Severity: L
+- Repeat: NO
+- Status: RESOLVED
+
+## DEBT-20260927-INCOMPLETE-PUSH-GATE-EVIDENCE
+
+- Logged date: 2026-09-27
+- Cycle/Session ID: one-approver-per-pipeline-completion
+- Artifact affected: `plugins/agent-agentic-os/scripts/control_plane/gate_evidence.py`
+- Friction observed: Deleting APPROVED or VERIFY_EXIT evidence left a genuine DONE signature that the push consumer accepted.
+- Why not fixed now: Fixed with two failing real-hook regressions before implementation.
+- Recommended fix: Require every registry-defined proof-bearing history edge to match one consumed request and exact signed challenge; reject mismatched request status, nonce, occupancy or key metadata.
+- Evidence/repro: `test_push_guard_refuses_missing_earlier_gate_evidence` failed twice before the fix; 14 isolation tests passed after the fix, then 25 expanded isolation/onboarding checks passed.
+- Severity: L
+- Repeat: NO
+- Status: RESOLVED
+
+## DEBT-20260927-ACCOUNT-EXISTENCE-OVERSTATES-ISOLATION
+
+- Logged date: 2026-09-27
+- Cycle/Session ID: one-approver-per-pipeline-completion
+- Artifact affected: `plugins/agent-agentic-os/scripts/control_plane/simulation_identity.py`
+- Friction observed: An agent account merely existing marked isolation ready without proving runtime identity or protected-file permissions.
+- Why not fixed now: Fixed with a failing account-resolution regression before implementation.
+- Recommended fix: Report account presence separately and keep runtime isolation unverified until deployment evidence establishes it. Human signing preflight remains required.
+- Evidence/repro: `test_account_existence_does_not_prove_runtime_isolation` failed before the fix; seven dual-identity tests passed afterward.
+- Severity: M
+- Repeat: NO
+- Status: RESOLVED
+
+## DEBT-20260927-SIGNED-APPROVAL-MISSING-LEGACY-RECEIPT
+
+- Logged date: 2026-09-27
+- Cycle/Session ID: one-approver-per-pipeline-completion
+- Artifact affected: stable main `APPROVED -> IN_WORKTREE` policy integration
+- Friction observed: Human-signed transition 366 entered APPROVED but did not create the legacy human_approval receipt, so entry to IN_WORKTREE was denied.
+- Why not fixed now: Separate workflow-integration change outside this bounded security completion; the human recorded the existing supported receipt without bypassing the signature.
+- Recommended fix: Add a failing integration test, then derive the compatibility receipt from the verified signature transaction rather than asking the human twice.
+- Evidence/repro: transition 366 signed; entry denied for missing human_approval; human ran record-human-approval; transition 367 then succeeded.
+- Severity: M
+- Repeat: NO
+- Status: OPEN
+
+## DEBT-20260927-COMPLETION-AUDIT-LIMITS
+
+- Logged date: 2026-09-27
+- Cycle/Session ID: one-approver-per-pipeline-completion
+- Artifact affected: workspace conventions and current completion verification orchestration
+- Friction observed: Broad conventions audit reports 165 canonical files with findings across six plugins; verification ran directly rather than through ImplementationController cadence accounting. Temporary read-only inspection calls also hit guessed missing module paths and two orchestration formatting errors; no edits resulted from those failed calls.
+- Why not fixed now: Broad audit remediation and controller retrofitting would expand this task. Existing focused/full tests and plugin checks are executed and reported as actual subprocess results, not fabricated controller receipts.
+- Recommended fix: Use controller-owned verification from entry on subsequent work; triage conventions by baseline versus new findings without silently claiming repository-wide compliance.
+- Evidence/repro: `temp/workspace_conventions_report.md`; actual pytest subprocess outputs preserved in this session. Failed exploratory calls were corrected or replaced with verified paths.
+- Severity: M
+- Repeat: NO
+- Status: OPEN
+
+## DEBT-20260927-VERIFY-EXIT-BASELINE-FAILURES
+
+- Logged date: 2026-09-27
+- Cycle/Session ID: one-approver-per-pipeline-completion
+- Artifact affected: `plugins/dev-utils/tests/test_dependencies_parity.py`, `plugins/exploration-cycle-plugin/tests/test_exploration_integration.py`, and implementation-plan T5.
+- Friction observed: The initial repository-wide suite failed on three baseline assumptions. T5 also mixed implementation verification with post-DONE publication, making the implementation-completeness check circular.
+- Why not fixed now: Fixed during authorized rework; the placeholder leak verifier and full-suite receipt reuse are tracked separately below and in GitHub issues #663/#664.
+- Recommended fix: Derive dependency parity from canonical metadata rather than an optional generated report, initialize the substrate test database through ControlPlane, and keep conditional publication/convergence outside the implementation ledger.
+- Evidence/repro: Clean archive at `/tmp/approver-baseline-check.z21c8A` reproduced the original 3 failures. Fixed suite result in the registered worktree: 1,426 passed, 3 skipped, 1 xfailed. Corrected T5 ledger now limits completion to verification and implementation handoff.
+- Severity: M
+- Repeat: NO
+- Status: RESOLVED
+
+## DEBT-20260927-VERIFY-EXIT-FULL-SUITE-REUSE
+
+- Logged date: 2026-09-27
+- Cycle/Session ID: one-approver-per-pipeline-completion
+- Artifact affected: `plugins/agent-agentic-os/scripts/control_plane/wrappers/run_verify_exit_bundle.py`, `run_exit_verification.py`, and VERIFY_EXIT guidance.
+- Friction observed: The worktree-review edge permits recording a completed test-suite result, but standard VERIFY_EXIT requires a distinct `full_test_suite` receipt and the bundle always invokes `pytest -q`; the agent has no safe way to reuse an identical current run.
+- Why not fixed now: Requires a verifier change and content-bound reuse rule; recorded for a separately bounded fix.
+- Recommended fix: Reuse only a passing full-suite result bound to the exact registered worktree digest and verifier/test configuration; rerun if code, configuration, command, or freshness differs.
+- Evidence/repro: Issue #663; `pytest -q` passed 1,426 tests (3 skipped, 1 xfailed), then the formal bundle began the same command again and was interrupted before completion.
+- Severity: M
+- Repeat: NO
+- Status: OPEN
+
+## DEBT-20260927-VERIFY-EXIT-PLACEHOLDER-LEAK-CHECK
+
+- Logged date: 2026-09-27
+- Cycle/Session ID: one-approver-per-pipeline-completion
+- Artifact affected: `plugins/agent-agentic-os/scripts/control_plane/wrappers/run_exit_verification.py` verifier catalog.
+- Friction observed: The cataloged `leak_check` command only prints `clean`; it does not inspect repository state, the reconciliation manifest, or main-checkout baseline.
+- Why not fixed now: Replacing a security-relevant verifier requires a separate test-first workflow change.
+- Recommended fix: Run a deterministic, task-scoped baseline/reconciliation check and bind the checked paths and digest to the passing receipt.
+- Evidence/repro: Issue #664; the real main-checkout comparison was separately executed and recorded as receipt `EVO-INTEGRITY-one-approver-per-pipeline-5657fa34cb3d`.
 - Severity: M
 - Repeat: NO
 - Status: OPEN

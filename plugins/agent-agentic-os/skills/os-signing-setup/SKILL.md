@@ -63,6 +63,10 @@ the setup command, then the self-test command, one at a time, and wait for their
 3. Read the output only to advise (fingerprint present, `[TODO]` lines, exit codes); never act on their
 behalf. 4. Point the human to `README.md` in this folder for the plain-language walkthrough.
 
+## Two identities
+
+This skill sets up only the **human's** production signing identity (`context/identity/`), which alone approves real work. The agent's simulation identity is separate (`context/simulation/identity/`, created by the `os-init` skill or on the first simulation run) and can never approve real work. `scripts/setup_ciba_identity.py --check` reports human approval, simulation and isolation readiness separately.
+
 ## What it sets up
 `context/identity/allowed_signers` (0600, namespace `control-plane@agentic-os.local`), a **separate**
 `allowed_signers_selftest` (0600, namespace `control-plane-selftest@agentic-os.local`), and `challenges/` (0700). The

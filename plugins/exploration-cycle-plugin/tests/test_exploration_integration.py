@@ -71,8 +71,7 @@ def test_readiness_routing_uninitialized(tmp_path):
 
 def test_readiness_initialized(tmp_path):
     """Fully initialized substrate must report ready."""
-    from control_plane.adapters import CURRENT_SCHEMA_VERSION, LEGAL_INITIAL_STATES  # type: ignore
-    from control_plane.state_machine import ALLOWED_TRANSITIONS  # type: ignore
+    from agent_control import ControlPlane  # type: ignore
 
     for rel in (
         ".claude/hooks/hooks.json",
@@ -85,21 +84,9 @@ def test_readiness_initialized(tmp_path):
 
     db_path = tmp_path / "context" / "control_plane.db"
     db_path.parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(db_path)
-    conn.execute("CREATE TABLE schema_version (version INTEGER NOT NULL)")
-    conn.execute("INSERT INTO schema_version VALUES (?)", (CURRENT_SCHEMA_VERSION,))
-    conn.execute("CREATE TABLE valid_transitions (from_state TEXT, to_state TEXT)")
-    transitions = [
-        (source, target)
-        for source, targets in ALLOWED_TRANSITIONS.items()
-        for target in targets
-    ] + [(None, s) for s in LEGAL_INITIAL_STATES]
-    conn.executemany("INSERT INTO valid_transitions VALUES (?, ?)", transitions)
-    conn.execute(
-        "CREATE TRIGGER enforce_valid_transition AFTER INSERT ON schema_version BEGIN SELECT 1; END"
-    )
-    conn.commit()
-    conn.close()
+    # Use the canonical initializer so this fixture tracks required schema columns,
+    # triggers and registry-derived actor policy as the production probe does.
+    ControlPlane(db_path=db_path).init_db()
 
     ready, message = check_substrate_readiness(tmp_path)
     assert ready

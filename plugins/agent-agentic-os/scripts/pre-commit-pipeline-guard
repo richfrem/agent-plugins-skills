@@ -24,10 +24,29 @@ fi
 
 DB_PATH="$REPO_ROOT/context/control_plane.db"
 
+# A production control plane must be a regular file: a symlink could point at a simulation database
+if [ -L "$DB_PATH" ]; then
+    echo ""
+    echo "❌ COMMIT BLOCKED: context/control_plane.db is a symlink!"
+    echo "   The production control plane must be a regular file (a symlink could point at a simulation database)."
+    echo ""
+    exit 1
+fi
+
 # If control plane database does not exist, pass through with warning
 if [ ! -f "$DB_PATH" ]; then
     echo "⚠️  WARNING: pre-commit-pipeline-guard found no control_plane.db — commit is ungated (no task registered for this repo)." >&2
     exit 0
+fi
+
+# A database stamped as a simulation (copied into the production location) never gates real work
+DB_IDENTITY="$(sqlite3 "$DB_PATH" "SELECT context FROM control_plane_identity WHERE singleton = 1;" 2>/dev/null || true)"
+if [ -n "$DB_IDENTITY" ] && [ "$DB_IDENTITY" != "real" ]; then
+    echo ""
+    echo "❌ COMMIT BLOCKED: context/control_plane.db is stamped '$DB_IDENTITY', not 'real'!"
+    echo "   A simulation database cannot stand in for the production control plane."
+    echo ""
+    exit 1
 fi
 
 # Determine current branch

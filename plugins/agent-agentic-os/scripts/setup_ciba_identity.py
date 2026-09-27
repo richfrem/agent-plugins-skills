@@ -125,6 +125,16 @@ def main(
             out(f"  - {key['principal']}  {key['key_type']}  {key['fingerprint']}")
         for failure in status["failures"]:
             out(f"  missing/unsafe: {failure}")
+        # Real work and simulations have separate approvers; isolation is reported on its own
+        from control_plane.simulation_identity import dual_identity_status
+
+        dual = dual_identity_status(layout.root.parent.parent)
+        out("Approval identities (one approver per pipeline):")
+        out(f"  Human approval: {'ready' if dual['human']['ready'] else 'not ready'} ({dual['human']['detail']})")
+        out(f"  Simulation: {'ready' if dual['simulation']['ready'] else 'not set up'} ({dual['simulation']['detail']})")
+        out(f"  Isolation: {'ready' if dual['isolation']['ready'] else 'not ready'} ({dual['isolation']['detail']})")
+        for command in dual["isolation"].get("commands", []):
+            out(f"    {command}")
         return 0 if status["ready"] else 1
 
     is_tty = (tty_fn or (lambda: sys.stdin.isatty() and sys.stdout.isatty()))()
