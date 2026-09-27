@@ -1092,3 +1092,16 @@ Persistent tracking of architectural friction, structural anomalies, and unclose
 - Severity: M
 - Repeat: YES
 - Status: RESOLVED
+
+## DEBT-20260927-TEST-HUMAN-CLOBBERS-REAL-IDENTITY
+
+- Logged date: 2026-09-27
+- Cycle/Session ID: investmenttoolkit-plugin-resync-noise
+- Artifact affected: `plugins/agent-agentic-os/tests/helpers/human_signer.py`, `context/identity/allowed_signers`, `context/identity/allowed_signers_selftest`
+- Friction observed: On 2026-09-24 08:15 PDT the full agentic-os suite (`python3 -m pytest plugins/agent-agentic-os/tests/ -q`) was run from the real repo root. `TestHuman.sign_request()` fell back to `Path.cwd()` when a ControlPlane had no `repo_root`, and `ensure_identity()` used `write_text()` (overwrite, not append), so the operator's real Gate 1 enrollment in both allowed_signers files was replaced by the throwaway passphrase-less `test-human@local` key. Nothing reported it; it surfaced on 2026-09-27 as "no enrolled principal matches this signature" when the operator tried to sign a DONE transition.
+- Why not fixed now: Fixed this session.
+- Recommended fix: N/A — resolved. `ensure_identity()` refuses any root outside the temp dir and appends instead of overwriting; `identity_root_for()` routes a ControlPlane without a temp `repo_root` to a private root inside the test human's temp dir. Follow-up worth considering: a production-side guard so `approve_transition` in a non-temp repo rejects the `test-human@local` principal outright, and cleanup of leaked `$TMPDIR/test-human-*` dirs (183 found).
+- Evidence/repro: `plugins/agent-agentic-os/tests/test_human_signer_isolation.py` (3 tests: red before, green after); full agentic-os suite run with SHA-256 of the real `context/identity/allowed_signers*` compared before/after: unchanged (887 passed; 1 pre-existing unrelated failure `test_claude_md_pointer_exact_invariant`, repo CLAUDE.md is 1064 lines on origin/main).
+- Severity: L
+- Repeat: NO
+- Status: RESOLVED
