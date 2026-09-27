@@ -1144,3 +1144,16 @@ Persistent tracking of architectural friction, structural anomalies, and unclose
 - Severity: M
 - Repeat: NO
 - Status: RESOLVED
+
+## DEBT-20260927-SYNC-ROUTED-TO-INSTALLER
+
+- Logged date: 2026-09-27
+- Cycle/Session ID: investmenttoolkit-plugin-resync-noise
+- Artifact affected: `plugins/plugin-manager/skills/plugin-syncer/SKILL.md`, `plugins/plugin-manager/skills/plugin-installer/SKILL.md` (+ evals)
+- Friction observed: Asked to "run plugin sync", an agent ran `plugin_add.py --all --yes` (the installer) twice on 2026-09-24 and reported it as a sync. The syncer description said it "Reinstalls all plugins", blurring the two.
+- Why not fixed now: Fixed this session.
+- Recommended fix: N/A — resolved. Syncer description states that sync/resync means `sync_with_inventory.py` and honors ownership; installer description says it is only for adding unregistered plugins. Routing evals added for "run plugin sync" / "resync" (syncer should trigger, installer should not). Behavioural backstop: DEBT-20260927-PLUGIN-ADD-RESETS-OWNERSHIP.
+- Evidence/repro: 2 new should_trigger cases per skill in `evals/evals.json`; `audit.py --path plugins/plugin-manager` passes.
+- Severity: S
+- Repeat: YES
+- Status: RESOLVED

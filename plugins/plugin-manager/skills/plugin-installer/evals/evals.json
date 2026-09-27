@@ -1,8 +1,34 @@
 [
-  {"prompt": "Install the rlm-factory plugin to my agent environments.", "should_trigger": true},
-  {"prompt": "Deploy the plugin from GitHub richfrem/agent-plugins-skills into my Claude setup.", "should_trigger": true},
-  {"prompt": "Add the vector-db plugin and sync it to my active agent configs.", "should_trigger": true},
-  {"prompt": "Audit all plugins for structural compliance against the open standards.", "should_trigger": false},
-  {"prompt": "Create a new task for the authentication bug and add it to the backlog.", "should_trigger": false},
-  {"prompt": "Speed read my research paper at 300 WPM.", "should_trigger": false}
+  {
+    "prompt": "Install the rlm-factory plugin to my agent environments.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Deploy the plugin from GitHub richfrem/agent-plugins-skills into my Claude setup.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Add the vector-db plugin and sync it to my active agent configs.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Audit all plugins for structural compliance against the open standards.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Create a new task for the authentication bug and add it to the backlog.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Speed read my research paper at 300 WPM.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "run plugin sync again in this repo",
+    "should_trigger": false
+  },
+  {
+    "prompt": "resync the plugins so the ownership should_install changes take effect",
+    "should_trigger": false
+  }
 ]
