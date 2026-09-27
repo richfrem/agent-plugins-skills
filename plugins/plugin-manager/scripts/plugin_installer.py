@@ -412,6 +412,17 @@ def deploy_agents(plugin_path: Path, plugin_name: str, targets: list,
     return deployed
 
 
+# Detects a CLAUDE.md that deliberately defers to AGENTS.md
+def _is_agents_md_pointer_stub(text: str) -> bool:
+    """Return True if text is a pointer to AGENTS.md with no injected plugin blocks.
+
+    Repos that keep AGENTS.md as the single source of truth reduce CLAUDE.md to a
+    short pointer. Appending rule blocks to it re-inflates the file on every sync,
+    so append-mode deployment leaves such files untouched.
+    """
+    return "AGENTS.md" in text and "<!-- plugin:" not in text
+
+
 def _deploy_rule_to_target(rule_file: Path, dest_name: str, plugin_name: str,
                             target_dir_name: str, root: Path, dry_run: bool,
                             append_to_ide_files: bool = True) -> Path | None:
@@ -449,10 +460,12 @@ def _deploy_rule_to_target(rule_file: Path, dest_name: str, plugin_name: str,
 
     elif config.get("rules_mode") == "append":
         append_target = root / config["rules_append_target"]
+        existing = append_target.read_text(encoding="utf-8") if append_target.exists() else ""
+        if _is_agents_md_pointer_stub(existing):
+            return None
         content = rule_file.read_text(encoding="utf-8")
         marker = f"<!-- plugin: {plugin_name} / {rule_file.stem} -->"
         if not dry_run:
-            existing = append_target.read_text(encoding="utf-8") if append_target.exists() else ""
             if marker not in existing:
                 with open(append_target, "a", encoding="utf-8") as f:
                     f.write(f"\n{marker}\n{content}\n")

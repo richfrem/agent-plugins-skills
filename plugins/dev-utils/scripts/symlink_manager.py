@@ -538,7 +538,10 @@ def cmd_remove(args: argparse.Namespace) -> None:
     dst = Path(args.dst)
     dst_abs = dst if dst.is_absolute() else root / dst
 
-    ok, msg = remove_link(dst_abs)
+    # A link already deleted from disk (e.g. its skill dir was git-removed)
+    # still needs its stale manifest entry dropped.
+    already_gone = not dst_abs.exists() and not dst_abs.is_symlink()
+    ok, msg = (True, "already absent on disk") if already_gone else remove_link(dst_abs)
     print(f"  {'✓' if ok else '✗'}  {dst}  {msg}")
 
     if ok:

@@ -1079,3 +1079,16 @@ Persistent tracking of architectural friction, structural anomalies, and unclose
 - Severity: L
 - Repeat: NO
 - Status: RESOLVED
+
+## DEBT-20260927-PLUGIN-SYNC-RECURRING-NOISE
+
+- Logged date: 2026-09-27
+- Cycle/Session ID: investmenttoolkit-plugin-resync-noise
+- Artifact affected: `plugins/plugin-manager/scripts/plugin_installer.py`, `plugins/plugin-manager/scripts/plugin_add.py`, `plugins/plugin-manager/scripts/sync_with_inventory.py`, `plugins/dev-utils/scripts/symlink_manager.py`, `symlinks.json`
+- Friction observed: Every `sync_with_inventory.py` run in a consumer repo (InvestmentToolkit, 2026-09-24 and 2026-09-27) (1) appended ~1,500 lines of rule blocks to a root CLAUDE.md that is a deliberate 3-line pointer to AGENTS.md, dirtying the tree and blocking the work-intake `main_clean_before_approval` gate; (2) printed `[WARNING] prune_installed_skills.py not found` because the plugin-pruner skill was intentionally removed in #627 but the syncer still looked for it; (3) printed one `missing evals/evals.json` warning per skill (28 lines), 15 of them for the remote third-party `obra/superpowers` source the consumer cannot fix. Root cause of the 6 stale `plugin-pruner` entries left in `symlinks.json` after #627: `symlink_manager.py remove` only dropped a manifest entry after deleting a link on disk, so entries whose links were already git-removed could never be cleaned via the tool (silent exit 0).
+- Why not fixed now: Fixed this session.
+- Recommended fix: N/A — resolved. Append-mode rule deployment skips a CLAUDE.md that references AGENTS.md and contains no `<!-- plugin:` blocks; the retention step prints an info line (ownership sync supersedes it) when the pruner is not installed; evals warnings are skipped for remote GitHub sources and collapsed to one line per plugin for local sources; `symlink_manager.py remove` drops manifest entries whose links are already absent. Remaining evals warnings for InvestmentToolkit's own plugins (tradingview, portfolio-advisor, questrade, toolkit-manager — 13 skills) are real gaps owned by that repo.
+- Evidence/repro: `python3 -m pytest plugins/plugin-manager/tests/test_sync_noise_regressions.py plugins/dev-utils/tests/test_symlink_manager_remove.py` (red before the fix, green after); full plugin-manager suite 54 passed; `symlink_manager.py diagnose` all links OK; `grep -c plugin-pruner symlinks.json` = 0.
+- Severity: M
+- Repeat: YES
+- Status: RESOLVED
