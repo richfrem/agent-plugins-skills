@@ -20,6 +20,16 @@ fi
 
 DB_PATH="$REPO_ROOT/context/control_plane.db"
 
+# A production control plane must be a regular file: a symlink could point at a simulation database
+if [ -L "$DB_PATH" ]; then
+    echo ""
+    echo "❌ GIT PUSH BLOCKED: context/control_plane.db is a symlink!"
+    echo ""
+    echo "   The production control plane must be a regular file (a symlink could point at a simulation database)."
+    echo ""
+    exit 1
+fi
+
 # If control plane database does not exist, pass through — but warn visibly
 if [ ! -f "$DB_PATH" ]; then
     echo "⚠️  WARNING: pre-push-review-guard found no control_plane.db — push is ungated (no task registered for this repo)." >&2
@@ -169,6 +179,40 @@ if [ -n "$LAST_TO" ] && [ "$LAST_TO" != "$TASK_STATE" ]; then
     echo "   Task ID:      $TASK_ID"
     echo "   Table State:  $TASK_STATE"
     echo "   Log State:    $LAST_TO"
+    echo ""
+    exit 1
+fi
+
+# 3. Authenticate the DONE: re-verify every signed gate of this task against the human trust anchor
+#    (context/identity/allowed_signers). Stored state alone is not trusted: a simulation database
+#    copied into context/control_plane.db also looks DONE. Works in Git Bash on Windows too.
+VERIFIER=""
+for CANDIDATE in \
+    "$(cd "$(dirname "$0")" 2>/dev/null && pwd)/verify_gate_evidence.py" \
+    "$REPO_ROOT/plugins/agent-agentic-os/scripts/verify_gate_evidence.py" \
+    "$REPO_ROOT/.agents/skills/work-intake/scripts/verify_gate_evidence.py" \
+    "$REPO_ROOT/.agents/skills/os-init/scripts/verify_gate_evidence.py"; do
+    if [ -f "$CANDIDATE" ]; then
+        VERIFIER="$CANDIDATE"
+        break
+    fi
+done
+PYTHON_BIN="$(command -v python3 || command -v python || true)"
+if [ -z "$VERIFIER" ] || [ -z "$PYTHON_BIN" ]; then
+    echo ""
+    echo "❌ GIT PUSH BLOCKED: Cannot Authenticate Signed Gates!"
+    echo ""
+    echo "   Task ID:     $TASK_ID"
+    echo "   verify_gate_evidence.py or a Python interpreter was not found; resync the agent-agentic-os plugin."
+    echo ""
+    exit 1
+fi
+if ! EVIDENCE_REPORT="$("$PYTHON_BIN" "$VERIFIER" --repo-root "$REPO_ROOT" --branch "$CURRENT_BRANCH" 2>&1)"; then
+    echo ""
+    echo "❌ GIT PUSH BLOCKED: DONE Is Not Authenticated By Signed Human Gates!"
+    echo ""
+    echo "   Task ID:     $TASK_ID"
+    echo "$EVIDENCE_REPORT"
     echo ""
     exit 1
 fi

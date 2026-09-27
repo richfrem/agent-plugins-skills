@@ -59,6 +59,7 @@ import subprocess
 import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+from control_plane.approver_policy import enforce_pipeline_approver, pipeline_context, record_gate_evidence, stamp_database_identity
 from control_plane.ports import (
     FilesystemPort,
     CryptoPort,
@@ -832,6 +833,9 @@ class SqlitePersistenceAdapter(PersistencePort):
         conn = self.get_connection()
         try:
             self._check_no_orphaned_migration_tables(conn)
+            # Record once, inside the database itself, whether it is a real-work or simulation database
+            stamp_database_identity(conn, self.db_path)
+            conn.commit()
             if self._schema_is_current(conn):
                 return  # read-only fast path: no DDL, no YAML parse, no write lock
             conn.execute("PRAGMA journal_mode = WAL;")
@@ -2269,6 +2273,18 @@ class SqlitePersistenceAdapter(PersistencePort):
                     occupancy_id=latest_trans_id, proof=proof, now=signed_at,
                     preverified=preverified,
                 )
+                # One approver per pipeline, by key: real-work databases accept only human keys,
+                # a simulation database (approver_policy.SIMULATION_DB_NAME) only the agent key
+                enforce_pipeline_approver(
+                    conn, request.task_id, verified.fingerprint, verified.principal, proof.allowed_signers,
+                    self.db_path, proof.request_id,
+                )
+                if preverified is not None:
+                    # Keep the exact signed challenge so the push guard can re-verify it against the human anchor
+                    record_gate_evidence(
+                        conn, proof.request_id, request.task_id, edge[0], edge[1], bytes(preverified.challenge),
+                        bytes(proof.signature), verified.fingerprint, verified.principal, pipeline_context(self.db_path),
+                    )
                 proof_audit = (
                     f"proof=sshsig;edge={edge[0]}->{edge[1]};request={proof.request_id};"
                     f"principal={verified.principal};key={verified.fingerprint}"

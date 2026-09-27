@@ -39,6 +39,11 @@ check: the agent must keep writing it for ordinary transitions.
 3. **Same-account exclusion (weakest, interim only).** If the agent must share your account, unset
    `SSH_AUTH_SOCK` for it and keep the files above owner-only. This is not a substitute for 1 or 2.
 
+## Two approval identities
+- **Human (real work):** your key, enrolled in `context/identity/allowed_signers`; the only key that approves `context/control_plane.db` and the only one the push guard accepts.
+- **Agent (simulations):** a separate, agent-owned key in `context/simulation/identity/`, used only for `simulation_control_plane.db`.
+- The code keeps them apart for normal use. Against a hostile agent the separation holds only when the agent cannot write `context/identity/` (options 1 or 2 above); in a same-account setup it could edit your trust file, which is why `setup_ciba_identity.py --check` reports isolation as its own item. This applies equally on macOS, Linux and Windows.
+
 ## Mode
 - **strict (the only mode).** No prompt, piped input, injected input function, `--answers`, flag or actor string
   can authorize the cryptographic gates (APPROVED, VERIFY_EXIT, DONE). Only a verified OpenSSH signature can.

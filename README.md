@@ -48,6 +48,31 @@ Tasks can return to interview, planning, review, implementation, escalation, or 
 calls for it. See the canonical [happy-path diagram](docs/diagrams/control-plane-pipeline-happy-path.mermaid)
 and [complete state machine](docs/diagrams/control-plane-pipeline.mermaid).
 
+## Production and simulation approvals
+
+Production work and simulations use separate databases and signing identities:
+
+| Context | Database | Approver |
+| --- | --- | --- |
+| Real work | `context/control_plane.db` | Your human signing key, enrolled in `context/identity/allowed_signers` |
+| Simulation | `context/simulation/simulation_control_plane.db` | Agent simulation key (`test-human@local`), enrolled in `context/simulation/identity/allowed_signers` |
+
+The first signed gate binds one key for that pipeline. The other context's key is refused;
+simulation results cannot authorize a production push. The push guard verifies complete signed
+gate evidence against the production human trust anchor, not merely a stored `DONE` state.
+Legacy tasks without captured signature evidence fail closed; do not fabricate historical evidence.
+
+The `os-init` skill guides both identities: use `--with-simulation-identity` to create/reuse the
+simulation identity additively, and invoke `os-signing-setup` for the human-controlled key setup.
+Human enrollment is never overwritten. Simulations specify their database on each invocation;
+there is no sticky `.env` approval-mode switch. This is two approval contexts, not a requirement
+to spawn two agent processes.
+
+Separate databases alone do not isolate a hostile agent running as your OS user. Protect human
+keys, trust anchors, and approval tooling using a separate account/container or trusted broker.
+Account existence is not proof that the agent runtime is isolated; onboarding reports that limit.
+See [isolation setup](plugins/agent-agentic-os/references/isolation-setup.md).
+
 ## Governance around native capability
 
 The control plane governs **before, around, and after** agent execution. It does not prescribe a

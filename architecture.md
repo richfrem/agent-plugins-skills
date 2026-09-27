@@ -71,6 +71,35 @@ Current scale (read from `plugins/` — verify with `find plugins -name SKILL.md
 └── CLAUDE.md                        # Behavioral guidelines + project-specific rules (this repo's law)
 ```
 
+## Approval contexts: production and simulation
+
+The Agentic OS has two segregated approval contexts, not two mandatory agent processes:
+
+| Context | State store | Signing authority |
+| --- | --- | --- |
+| Production | `context/control_plane.db` | Human key in `context/identity/allowed_signers` |
+| Simulation | `context/simulation/simulation_control_plane.db` | Agent key (`test-human@local`) in `context/simulation/identity/allowed_signers` |
+
+`approver_policy.py` stamps database context and binds the first approving key to the task.
+Subsequent gates must use that same key. Simulation filename aliases, symlinks and hard links
+are refused rather than silently changing approval roles; unknown filenames require human approval.
+Production hooks reject aliased or simulation-stamped production databases. Before a production
+push, `gate_evidence.py` checks every proof-bearing history transition against its consumed request,
+exact signed challenge, human trust anchor and single-key continuity. Missing historical signatures
+fail closed, including pre-rollout tasks; they cannot be recreated from unsigned receipts.
+
+`os-init --with-simulation-identity` creates or reuses only the simulation key and reports human,
+simulation and isolation readiness separately. Human key setup remains a human operation through
+`os-signing-setup`. Simulation tools route explicitly per invocation, without a sticky environment
+switch that could silently divert real intake. Source code and references remain plugin-owned;
+installed skill copies are deployment outputs.
+
+Trust boundary: SQLite stamps, filenames and role labels are not immutable against an agent with
+the human's OS permissions. Complete isolation requires a separately constrained agent runtime and
+human-controlled signing/trust infrastructure. A separate account merely existing does not prove
+the agent runs under it. Same-account hostile modification remains an explicit deployment risk,
+not a claim that database segregation alone resolves it.
+
 ## 3. High-Level Flow: Author → Install → Run
 
 ```

@@ -113,9 +113,11 @@ stages:
       rule: Before the first interview question, state which identity approves this pipeline and confirm it with the human.
       one_approver_per_pipeline: true
       default: human_operator
-      human_operator: Main work pipelines are approved (Gate 1 APPROVED, Gate 3 VERIFY_EXIT, DONE) only with the human operator's own enrolled signing identity. This is the default and never changes for real work.
-      agent_simulation: Only for simulation work does the approver change. The agent's test identity (test-human@local) may be the single approver only on a task the human has signed off as a simulation, such as transition-simulator runs on throwaway tasks and databases.
-      never: Never switch a main work pipeline to the agent identity, never sign on the human's behalf, and never remove or overwrite either identity in allowed_signers; the two identities coexist.
+      enforced_by: scripts/control_plane/approver_policy.py (by database file; the first signed gate fixes the task's approver key)
+      human_operator: Real work lives in the repository's context/control_plane.db and is approved (Gate 1 APPROVED, Gate 3 VERIFY_EXIT, DONE) only with the human operator's own enrolled signing key. The agent's simulation key is refused there under any alias.
+      agent_simulation: Simulations run in a separate database file named simulation_control_plane.db. There only the agent's simulation key (enrolled as test-human@local) approves and the human's key is refused. Real-work gates never read that file.
+      push_guard: Before a push, the push guard (verify_gate_evidence.py, shipped with the work-intake skill) re-verifies every signed gate of the task against context/identity/allowed_signers (human keys only, one key); a simulation database copied or symlinked into context/control_plane.db cannot unlock it.
+      never: Never run a simulation against context/control_plane.db, never sign on the human's behalf, and never remove or overwrite either identity in allowed_signers; the two identities coexist.
     plan_outline:
       enabled: true
       purpose: Capture the plan-ready bullets discovered during the interview before drafting the full plan.
