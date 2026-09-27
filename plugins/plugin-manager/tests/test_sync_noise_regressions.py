@@ -180,3 +180,31 @@ def test_plugin_add_enable_all_is_explicit_opt_in(tmp_path: Path):
     assert result.returncode == 0, result.stdout + result.stderr
     ownership = json.loads((root / ".agents" / "ownership" / "sample-plugin.json").read_text(encoding="utf-8"))
     assert ownership["components"]["skills"]["skill-a"]["should_install"] is True
+
+
+def _lock_plugin(tmp_path: Path) -> tuple:
+    """A plugin with one skill and an empty consumer root for skills-lock.json."""
+    plugin = tmp_path / "src-plugin"
+    (plugin / "skills" / "skill-a").mkdir(parents=True)
+    (plugin / "skills" / "skill-a" / "SKILL.md").write_text("# A v1\n", encoding="utf-8")
+    root = tmp_path / "lock-root"
+    root.mkdir()
+    return plugin, root
+
+
+def test_skills_lock_unchanged_when_resynced_without_changes(tmp_path: Path):
+    plugin, root = _lock_plugin(tmp_path)
+    plugin_installer.write_project_lock(plugin, {"repository": "src"}, ["skill-a"], root)
+    first = (root / "skills-lock.json").read_bytes()
+    plugin_installer.write_project_lock(plugin, {"repository": "src"}, ["skill-a"], root)
+    assert (root / "skills-lock.json").read_bytes() == first
+
+
+def test_skills_lock_records_content_change(tmp_path: Path):
+    plugin, root = _lock_plugin(tmp_path)
+    plugin_installer.write_project_lock(plugin, {"repository": "src"}, ["skill-a"], root)
+    before = json.loads((root / "skills-lock.json").read_text(encoding="utf-8"))["skills"]["skill-a"]
+    (plugin / "skills" / "skill-a" / "SKILL.md").write_text("# A v2\n", encoding="utf-8")
+    plugin_installer.write_project_lock(plugin, {"repository": "src"}, ["skill-a"], root)
+    after = json.loads((root / "skills-lock.json").read_text(encoding="utf-8"))["skills"]["skill-a"]
+    assert before["computedHash"] and after["computedHash"] != before["computedHash"]

@@ -1118,3 +1118,16 @@ Persistent tracking of architectural friction, structural anomalies, and unclose
 - Severity: M
 - Repeat: YES
 - Status: RESOLVED
+
+## DEBT-20260927-SKILLS-LOCK-TIMESTAMP-CHURN
+
+- Logged date: 2026-09-27
+- Cycle/Session ID: investmenttoolkit-plugin-resync-noise
+- Artifact affected: `plugins/plugin-manager/scripts/plugin_installer.py` (`write_project_lock`)
+- Friction observed: Every sync rewrote `updatedAt` for every skill in `skills-lock.json` (181 changed lines on a no-op sync in InvestmentToolkit) while `computedHash` was always empty. The tracked lockfile was dirty after every sync, which blocks work-intake's `main_clean_before_approval` gate and forces a throwaway commit or discard before each approval.
+- Why not fixed now: Fixed this session.
+- Recommended fix: N/A — resolved. `computedHash` is now a SHA-256 of the skill directory; `updatedAt` only moves when the hash or source changes, so a no-op sync leaves the lock byte-identical. The first sync after upgrading fills in hashes once.
+- Evidence/repro: `test_skills_lock_unchanged_when_resynced_without_changes` and `test_skills_lock_records_content_change` (red before, green after); plugin-manager suite 58 passed.
+- Severity: M
+- Repeat: YES
+- Status: RESOLVED

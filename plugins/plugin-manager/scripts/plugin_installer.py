@@ -53,7 +53,8 @@ Output:
     deploy_commands(): Deploys commands.
     deploy_agents(): Deploys agents.
     deploy_rules(): Deploys rules.
-    write_project_lock(): Writes project lockfile.
+    write_project_lock(): Writes project lockfile (updatedAt moves only on content/source change).
+    _hash_skill_dir(): Content fingerprint of a skill directory for skills-lock.json.
     provision_central_and_symlink(): Provisions central and symlinks.
 
 Script Dependencies:
@@ -66,6 +67,7 @@ Consumed by:
 import os
 import sys
 import shutil
+import hashlib
 import json
 import argparse
 import datetime
@@ -646,6 +648,21 @@ def deploy_rules(plugin_path: Path, plugin_name: str, targets: list,
     return deployed
 
 
+# Content fingerprint for skills-lock.json change detection
+def _hash_skill_dir(skill_dir: Path) -> str:
+    """Return a SHA-256 over a skill directory's relative paths and file bytes (symlinks followed).
+
+    Returns "" when the directory does not exist.
+    """
+    if not skill_dir.is_dir():
+        return ""
+    digest = hashlib.sha256()
+    for path in sorted(p for p in skill_dir.rglob("*") if p.is_file() and "__pycache__" not in p.parts):
+        digest.update(path.relative_to(skill_dir).as_posix().encode("utf-8") + b"\0")
+        digest.update(path.read_bytes() + b"\0")
+    return digest.hexdigest()
+
+
 def write_project_lock(plugin_path: Path, metadata: dict,
                        installed_skills: list, root: Path, dry_run: bool = False) -> None:
     """Record installed skills in skills-lock.json.
@@ -674,12 +691,15 @@ def write_project_lock(plugin_path: Path, metadata: dict,
         existing = lock.get("skills", {}).get(skill_name, {})
         if "skills" not in lock:
             lock["skills"] = {}
+        content_hash = _hash_skill_dir(plugin_path / "skills" / skill_name)
+        # Only a real change (content or source) moves updatedAt, so a no-op sync leaves the lock byte-identical
+        unchanged = existing.get("computedHash") == content_hash and existing.get("source") == source
         lock["skills"][skill_name] = {
             "source": source,
             "sourceType": "local",
-            "computedHash": "",   # filled by install_all_plugins if needed
+            "computedHash": content_hash,
             "installedAt": existing.get("installedAt", now),
-            "updatedAt": now,
+            "updatedAt": existing.get("updatedAt", now) if unchanged else now,
         }
 
     # Sort keys for stable diffs
