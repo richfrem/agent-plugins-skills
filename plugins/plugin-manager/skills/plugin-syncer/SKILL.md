@@ -2,8 +2,10 @@
 name: plugin-syncer
 plugin: plugin-manager
 description: >-
-  Synchronizes agent environments from plugin-sources.json. Reinstalls all plugins,
-  cleans up orphaned artifacts, and enforces retention policies.
+  Synchronizes agent environments from plugin-sources.json. Refreshes every registered
+  plugin while honoring the should_install choices in .agents/ownership/, cleans up
+  orphaned artifacts, and removes disabled components. This is what "sync", "resync",
+  "plugin sync" and "update plugins" mean: run sync_with_inventory.py, never plugin_add.py.
 allowed-tools: Bash, Read, Write
 ---
 

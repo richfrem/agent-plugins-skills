@@ -375,14 +375,16 @@ def enforce_retention_pruning(root: Path, dry_run: bool) -> None:
         print("  [RETENTION] No plugin-retention.json manifest found — skipping pruning.")
         return
 
+    # The plugin-pruner skill was removed in #627; consumer repos no longer
+    # receive the pruner, so only the plugin-manager source checkout can run it.
     candidate_paths = [
         root / "plugins" / "plugin-manager" / "scripts" / "prune_installed_skills.py",
-        root / ".agents" / "skills" / "plugin-pruner" / "scripts" / "prune_installed_skills.py",
         SCRIPT_DIR / "prune_installed_skills.py",
     ]
     pruner_script = next((p for p in candidate_paths if p.exists()), None)
     if not pruner_script:
-        print("  [WARNING] prune_installed_skills.py not found at any candidate location.")
+        print("  [RETENTION] Pruner not installed here; ownership desired-state sync (step 5) "
+              "already enforces disabled components — skipping legacy plugin-retention.json.")
         return
 
     cmd = [sys.executable, str(pruner_script)]

@@ -5,6 +5,8 @@ description: >-
   Installs plugin components (skills, commands, workflows, rules, hooks, MCP)
   into the .agents/ central store and symlinks them to agent environments (.claude/, .gemini/, etc.).
   Trigger when a user says "install plugin", "deploy plugin", "add plugin", or "install from GitHub".
+  Only for adding a plugin that is not yet registered. For "sync", "resync" or refreshing
+  existing plugins use plugin-syncer. Keeps .agents/ownership/ choices unless --enable-all is passed.
 allowed-tools: Bash, Write, Read
 ---
 

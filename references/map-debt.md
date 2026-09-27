@@ -1079,3 +1079,94 @@ Persistent tracking of architectural friction, structural anomalies, and unclose
 - Severity: L
 - Repeat: NO
 - Status: RESOLVED
+
+## DEBT-20260927-PLUGIN-SYNC-RECURRING-NOISE
+
+- Logged date: 2026-09-27
+- Cycle/Session ID: investmenttoolkit-plugin-resync-noise
+- Artifact affected: `plugins/plugin-manager/scripts/plugin_installer.py`, `plugins/plugin-manager/scripts/plugin_add.py`, `plugins/plugin-manager/scripts/sync_with_inventory.py`, `plugins/dev-utils/scripts/symlink_manager.py`, `symlinks.json`
+- Friction observed: Every `sync_with_inventory.py` run in a consumer repo (InvestmentToolkit, 2026-09-24 and 2026-09-27) (1) appended ~1,500 lines of rule blocks to a root CLAUDE.md that is a deliberate 3-line pointer to AGENTS.md, dirtying the tree and blocking the work-intake `main_clean_before_approval` gate; (2) printed `[WARNING] prune_installed_skills.py not found` because the plugin-pruner skill was intentionally removed in #627 but the syncer still looked for it; (3) printed one `missing evals/evals.json` warning per skill (28 lines), 15 of them for the remote third-party `obra/superpowers` source the consumer cannot fix. Root cause of the 6 stale `plugin-pruner` entries left in `symlinks.json` after #627: `symlink_manager.py remove` only dropped a manifest entry after deleting a link on disk, so entries whose links were already git-removed could never be cleaned via the tool (silent exit 0).
+- Why not fixed now: Fixed this session.
+- Recommended fix: N/A — resolved. Append-mode rule deployment skips a CLAUDE.md that references AGENTS.md and contains no `<!-- plugin:` blocks; the retention step prints an info line (ownership sync supersedes it) when the pruner is not installed; evals warnings are skipped for remote GitHub sources and collapsed to one line per plugin for local sources; `symlink_manager.py remove` drops manifest entries whose links are already absent. Remaining evals warnings for InvestmentToolkit's own plugins (tradingview, portfolio-advisor, questrade, toolkit-manager — 13 skills) are real gaps owned by that repo.
+- Evidence/repro: `python3 -m pytest plugins/plugin-manager/tests/test_sync_noise_regressions.py plugins/dev-utils/tests/test_symlink_manager_remove.py` (red before the fix, green after); full plugin-manager suite 54 passed; `symlink_manager.py diagnose` all links OK; `grep -c plugin-pruner symlinks.json` = 0.
+- Severity: M
+- Repeat: YES
+- Status: RESOLVED
+
+## DEBT-20260927-TEST-HUMAN-CLOBBERS-REAL-IDENTITY
+
+- Logged date: 2026-09-27
+- Cycle/Session ID: investmenttoolkit-plugin-resync-noise
+- Artifact affected: `plugins/agent-agentic-os/tests/helpers/human_signer.py`, `context/identity/allowed_signers`, `context/identity/allowed_signers_selftest`
+- Friction observed: On 2026-09-24 08:15 PDT the full agentic-os suite (`python3 -m pytest plugins/agent-agentic-os/tests/ -q`) was run from the real repo root. `TestHuman.sign_request()` fell back to `Path.cwd()` when a ControlPlane had no `repo_root`, and `ensure_identity()` used `write_text()` (overwrite, not append), so the operator's real Gate 1 enrollment in both allowed_signers files was replaced by the throwaway passphrase-less `test-human@local` key. Nothing reported it; it surfaced on 2026-09-27 as "no enrolled principal matches this signature" when the operator tried to sign a DONE transition.
+- Why not fixed now: Fixed this session.
+- Recommended fix: N/A — resolved. `ensure_identity()` refuses any root outside the temp dir and appends instead of overwriting; `identity_root_for()` routes a ControlPlane without a temp `repo_root` to a private root inside the test human's temp dir. Follow-up worth considering: a production-side guard so `approve_transition` in a non-temp repo rejects the `test-human@local` principal outright, and cleanup of leaked `$TMPDIR/test-human-*` dirs (183 found).
+- Evidence/repro: `plugins/agent-agentic-os/tests/test_human_signer_isolation.py` (3 tests: red before, green after); full agentic-os suite run with SHA-256 of the real `context/identity/allowed_signers*` compared before/after: unchanged (887 passed; 1 pre-existing unrelated failure `test_claude_md_pointer_exact_invariant`, repo CLAUDE.md is 1064 lines on origin/main).
+- Severity: L
+- Repeat: NO
+- Status: RESOLVED
+
+## DEBT-20260927-PLUGIN-ADD-RESETS-OWNERSHIP
+
+- Logged date: 2026-09-27
+- Cycle/Session ID: investmenttoolkit-plugin-resync-noise
+- Artifact affected: `plugins/plugin-manager/scripts/plugin_add.py`
+- Friction observed: On 2026-09-24 an agent asked to "run plugin sync" in InvestmentToolkit ran `plugin_add.py --source .../agent-plugins-skills --all --yes` directly. Without `--preserve-ownership`, `plugin_add` appended `--enable-all`, and `plugin_installer` reset every `should_install` in `.agents/ownership/` to true for all 10 plugins, silently undoing the user's trimmed skill set (context bloat went unnoticed until 2026-09-27).
+- Why not fixed now: Fixed this session.
+- Recommended fix: N/A — resolved. `plugin_add` now preserves ownership choices by default; `--enable-all` is an explicit opt-in. `--preserve-ownership` is still accepted (no-op) for existing callers such as `sync_with_inventory.py`.
+- Evidence/repro: `test_plugin_add_preserves_ownership_by_default` and `test_plugin_add_enable_all_is_explicit_opt_in` in `plugins/plugin-manager/tests/test_sync_noise_regressions.py` run `plugin_add.py` as a real subprocess against a temp consumer repo (red before, green after); plugin-manager suite 56 passed.
+- Severity: M
+- Repeat: YES
+- Status: RESOLVED
+
+## DEBT-20260927-SKILLS-LOCK-TIMESTAMP-CHURN
+
+- Logged date: 2026-09-27
+- Cycle/Session ID: investmenttoolkit-plugin-resync-noise
+- Artifact affected: `plugins/plugin-manager/scripts/plugin_installer.py` (`write_project_lock`)
+- Friction observed: Every sync rewrote `updatedAt` for every skill in `skills-lock.json` (181 changed lines on a no-op sync in InvestmentToolkit) while `computedHash` was always empty. The tracked lockfile was dirty after every sync, which blocks work-intake's `main_clean_before_approval` gate and forces a throwaway commit or discard before each approval.
+- Why not fixed now: Fixed this session.
+- Recommended fix: N/A — resolved. `computedHash` is now a SHA-256 of the skill directory; `updatedAt` only moves when the hash or source changes, so a no-op sync leaves the lock byte-identical. The first sync after upgrading fills in hashes once.
+- Evidence/repro: `test_skills_lock_unchanged_when_resynced_without_changes` and `test_skills_lock_records_content_change` (red before, green after); plugin-manager suite 58 passed.
+- Severity: M
+- Repeat: YES
+- Status: RESOLVED
+
+## DEBT-20260927-TEST-HUMAN-TEMP-DIR-LEAK
+
+- Logged date: 2026-09-27
+- Cycle/Session ID: investmenttoolkit-plugin-resync-noise
+- Artifact affected: `plugins/agent-agentic-os/tests/helpers/human_signer.py`
+- Friction observed: The test human's temp key dir was never removed; 188 `$TMPDIR/test-human-*` dirs had accumulated.
+- Why not fixed now: Fixed this session.
+- Recommended fix: N/A — resolved. `get_test_human()` registers `atexit` cleanup of its key dir. Existing leaked dirs are harmless throwaway keys and can be deleted. (An approval guard that refused the agent's test identity everywhere was tried and removed in the same PR: it contradicted the approver-identity model in DEBT-20260927-APPROVER-IDENTITY-GUIDANCE-GAP.)
+- Evidence/repro: `test_test_human_temp_dir_removed_at_exit` (red before, green after); full agentic-os suite run added no new `test-human-*` temp dirs.
+- Severity: S
+- Repeat: NO
+- Status: RESOLVED
+
+## DEBT-20260927-SYNC-ROUTED-TO-INSTALLER
+
+- Logged date: 2026-09-27
+- Cycle/Session ID: investmenttoolkit-plugin-resync-noise
+- Artifact affected: `plugins/plugin-manager/skills/plugin-syncer/SKILL.md`, `plugins/plugin-manager/skills/plugin-installer/SKILL.md` (+ evals)
+- Friction observed: Asked to "run plugin sync", an agent ran `plugin_add.py --all --yes` (the installer) twice on 2026-09-24 and reported it as a sync. The syncer description said it "Reinstalls all plugins", blurring the two.
+- Why not fixed now: Fixed this session.
+- Recommended fix: N/A — resolved. Syncer description states that sync/resync means `sync_with_inventory.py` and honors ownership; installer description says it is only for adding unregistered plugins. Routing evals added for "run plugin sync" / "resync" (syncer should trigger, installer should not). Behavioural backstop: DEBT-20260927-PLUGIN-ADD-RESETS-OWNERSHIP.
+- Evidence/repro: 2 new should_trigger cases per skill in `evals/evals.json`; `audit.py --path plugins/plugin-manager` passes.
+- Severity: S
+- Repeat: YES
+- Status: RESOLVED
+
+## DEBT-20260927-APPROVER-IDENTITY-GUIDANCE-GAP
+
+- Logged date: 2026-09-27
+- Cycle/Session ID: investmenttoolkit-plugin-resync-noise
+- Artifact affected: `plugins/agent-agentic-os/skills/work-intake/SKILL.md`, `plugins/agent-agentic-os/skills/transition-simulator/SKILL.md`, `plugins/agent-agentic-os/scripts/control_plane/transition_templates.yaml`
+- Friction observed: Two signing identities coexist by design in `context/identity/allowed_signers`: the human operator's, and the agent's test identity (`test-human@local`) used so an agent can play the human in simulated pipelines. No guidance said which one approves a given pipeline, so agents either treated the agent identity as a threat to remove or risked it spilling into main work.
+- Why not fixed now: Fixed this session (guidance only).
+- Recommended fix: Guidance added: each pipeline has exactly one approver; the default is the human operator's identity for all main work; only simulation work, signed off by the human, may use the agent identity; work-intake confirms the approver identity before the first question (`stages.INTERVIEW.approver_identity`, work-intake Rule 1, transition-simulator "Approver Identity in Simulations"). Open follow-up: the control plane does not yet record or enforce a per-task approver or a signed "simulation" designation; today this is guidance, not a gate.
+- Evidence/repro: `plugins/agent-agentic-os/tests/test_approver_identity_guidance.py` (3 tests: red against origin/main, green on the branch); full agentic-os suite 898 passed.
+- Severity: M
+- Repeat: NO
+- Status: OPEN

@@ -53,7 +53,8 @@ Output:
     deploy_commands(): Deploys commands.
     deploy_agents(): Deploys agents.
     deploy_rules(): Deploys rules.
-    write_project_lock(): Writes project lockfile.
+    write_project_lock(): Writes project lockfile (updatedAt moves only on content/source change).
+    _hash_skill_dir(): Content fingerprint of a skill directory for skills-lock.json.
     provision_central_and_symlink(): Provisions central and symlinks.
 
 Script Dependencies:
@@ -66,6 +67,7 @@ Consumed by:
 import os
 import sys
 import shutil
+import hashlib
 import json
 import argparse
 import datetime
@@ -412,6 +414,17 @@ def deploy_agents(plugin_path: Path, plugin_name: str, targets: list,
     return deployed
 
 
+# Detects a CLAUDE.md that deliberately defers to AGENTS.md
+def _is_agents_md_pointer_stub(text: str) -> bool:
+    """Return True if text is a pointer to AGENTS.md with no injected plugin blocks.
+
+    Repos that keep AGENTS.md as the single source of truth reduce CLAUDE.md to a
+    short pointer. Appending rule blocks to it re-inflates the file on every sync,
+    so append-mode deployment leaves such files untouched.
+    """
+    return "AGENTS.md" in text and "<!-- plugin:" not in text
+
+
 def _deploy_rule_to_target(rule_file: Path, dest_name: str, plugin_name: str,
                             target_dir_name: str, root: Path, dry_run: bool,
                             append_to_ide_files: bool = True) -> Path | None:
@@ -449,10 +462,12 @@ def _deploy_rule_to_target(rule_file: Path, dest_name: str, plugin_name: str,
 
     elif config.get("rules_mode") == "append":
         append_target = root / config["rules_append_target"]
+        existing = append_target.read_text(encoding="utf-8") if append_target.exists() else ""
+        if _is_agents_md_pointer_stub(existing):
+            return None
         content = rule_file.read_text(encoding="utf-8")
         marker = f"<!-- plugin: {plugin_name} / {rule_file.stem} -->"
         if not dry_run:
-            existing = append_target.read_text(encoding="utf-8") if append_target.exists() else ""
             if marker not in existing:
                 with open(append_target, "a", encoding="utf-8") as f:
                     f.write(f"\n{marker}\n{content}\n")
@@ -633,6 +648,21 @@ def deploy_rules(plugin_path: Path, plugin_name: str, targets: list,
     return deployed
 
 
+# Content fingerprint for skills-lock.json change detection
+def _hash_skill_dir(skill_dir: Path) -> str:
+    """Return a SHA-256 over a skill directory's relative paths and file bytes (symlinks followed).
+
+    Returns "" when the directory does not exist.
+    """
+    if not skill_dir.is_dir():
+        return ""
+    digest = hashlib.sha256()
+    for path in sorted(p for p in skill_dir.rglob("*") if p.is_file() and "__pycache__" not in p.parts):
+        digest.update(path.relative_to(skill_dir).as_posix().encode("utf-8") + b"\0")
+        digest.update(path.read_bytes() + b"\0")
+    return digest.hexdigest()
+
+
 def write_project_lock(plugin_path: Path, metadata: dict,
                        installed_skills: list, root: Path, dry_run: bool = False) -> None:
     """Record installed skills in skills-lock.json.
@@ -661,12 +691,15 @@ def write_project_lock(plugin_path: Path, metadata: dict,
         existing = lock.get("skills", {}).get(skill_name, {})
         if "skills" not in lock:
             lock["skills"] = {}
+        content_hash = _hash_skill_dir(plugin_path / "skills" / skill_name)
+        # Only a real change (content or source) moves updatedAt, so a no-op sync leaves the lock byte-identical
+        unchanged = existing.get("computedHash") == content_hash and existing.get("source") == source
         lock["skills"][skill_name] = {
             "source": source,
             "sourceType": "local",
-            "computedHash": "",   # filled by install_all_plugins if needed
+            "computedHash": content_hash,
             "installedAt": existing.get("installedAt", now),
-            "updatedAt": now,
+            "updatedAt": existing.get("updatedAt", now) if unchanged else now,
         }
 
     # Sort keys for stable diffs

@@ -45,6 +45,7 @@ CLI Arguments:
     --dry-run       Preview actions without writing files
     --no-install-rules  Skip installing plugin rules into .agent/rules/ (installed by default)
     --no-append-rules-to-ide-files  Skip injecting rules into IDE files like CLAUDE.md (installed by default)
+    --enable-all    Reset every component to should_install=true (default keeps .agents/ownership/ choices)
 
 Script Dependencies:
     os, sys, argparse, subprocess, shutil, tempfile, json, pathlib
@@ -423,6 +424,17 @@ def _is_github_source(source: str) -> bool:
     return len(parts) >= 2 and not source.startswith(".")
 
 
+# Distinguishes remote (GitHub) installs from local plugin checkouts
+def _source_is_remote(args) -> bool:
+    """Return True if the install source is a remote GitHub reference.
+
+    Args:
+        args: Parsed argparse namespace; only its `source` attribute is read.
+    """
+    source = getattr(args, "source", None)
+    return bool(source) and _is_github_source(source)
+
+
 def _parse_github_source(source: str):
     """
     Parse a GitHub source string into (owner/repo, optional_subpath).
@@ -518,7 +530,7 @@ def log_failure(tier: int, artifact: str, error: str) -> None:
             pass
 
 
-def validate_plugin(plugin_path: Path) -> None:
+def validate_plugin(plugin_path: Path, warn_missing_evals: bool = True) -> None:
     """Assert that a plugin directory meets minimum structural requirements.
 
     Checks for a plugin.json manifest (validating author object schema and no duplicate
@@ -527,6 +539,9 @@ def validate_plugin(plugin_path: Path) -> None:
 
     Args:
         plugin_path: Path to the plugin directory to validate.
+        warn_missing_evals: If False, skip the missing-evals warning entirely (used for
+            remote third-party sources the consumer cannot fix). If True, print one
+            summary line per plugin rather than one line per skill.
 
     Raises:
         AssertionError: If the manifest or skills/ directory is missing, author format is invalid,
@@ -564,16 +579,18 @@ def validate_plugin(plugin_path: Path) -> None:
     skills_dir = plugin_path / "skills"
     assert skills_dir.is_dir(), f"Missing skills/ directory in {plugin_path.name}"
     
-    # 3. Enforce SKILL.md and evals.json per skill folder
-    for skill_folder in skills_dir.iterdir():
+    # 3. Enforce SKILL.md per skill folder; collect skills lacking evals.json
+    missing_evals = []
+    for skill_folder in sorted(skills_dir.iterdir()):
         if skill_folder.is_dir():
             skill_md = skill_folder / "SKILL.md"
             assert skill_md.is_file(), f"Skill directory '{skill_folder.name}' in plugin '{plugin_path.name}' is missing SKILL.md"
-            
-            # Log warning instead of hard assert for evals.json to allow 3rd party plugins
-            evals_json = skill_folder / "evals" / "evals.json"
-            if not evals_json.is_file():
-                print(f"  ⚠ Warning: Skill '{skill_folder.name}' in plugin '{plugin_path.name}' is missing evals/evals.json")
+            if not (skill_folder / "evals" / "evals.json").is_file():
+                missing_evals.append(skill_folder.name)
+
+    # Warn (never fail) once per plugin, so 3rd party plugins still install
+    if warn_missing_evals and missing_evals:
+        print(f"  ⚠ Warning: {len(missing_evals)} skill(s) in plugin '{plugin_path.name}' missing evals/evals.json: {', '.join(missing_evals)}")
 
 
 # ---------------------------------------------------------------------------
@@ -830,7 +847,7 @@ def _install_plugins(selected_plugins: list, args, plugin_skills_map: dict | Non
     for plugin in selected_plugins:
         print(f"\n  {bold('->')} {cyan(plugin['name'])}")
         try:
-            validate_plugin(Path(plugin["path"]))
+            validate_plugin(Path(plugin["path"]), warn_missing_evals=not _source_is_remote(args))
         except AssertionError as ae:
             print(f"    {red('✗')} Validation Failed: {ae}")
             log_failure(tier=1, artifact=plugin["name"], error=str(ae))
@@ -843,7 +860,8 @@ def _install_plugins(selected_plugins: list, args, plugin_skills_map: dict | Non
             cmd.append("--no-install-rules")
         if not args.append_rules_to_ide_files:
             cmd.append("--no-append-rules-to-ide-files")
-        if not getattr(args, "preserve_ownership", False):
+        # Ownership flags (should_install) are kept unless the caller explicitly asks to reset them
+        if getattr(args, "enable_all", False):
             cmd.append("--enable-all")
         if plugin_skills_map and plugin["name"] in plugin_skills_map:
             retained = [s for s, en in plugin_skills_map[plugin["name"]].items() if en]
@@ -996,6 +1014,12 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         "--select-skills", action="store_true",
         help="Interactively select and toggle specific skills within each plugin",
     )
+    parser.add_argument(
+        "--enable-all",
+        action="store_true",
+        help="Re-enable every component, resetting should_install choices in .agents/ownership/",
+    )
+    # Kept for callers (sync_with_inventory.py) written before preserving became the default
     parser.add_argument(
         "--preserve-ownership",
         action="store_true",

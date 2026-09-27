@@ -17,10 +17,12 @@ Key Input Dependencies:
 
 Key Functions:
     - TestHuman.sign_request() -- complete a PENDING request as the enrolled human; returns the TransitionRecord
-    - TestHuman.ensure_identity() -- create context/identity for a repository root with this human's public key
+    - TestHuman.ensure_identity() -- append this human's public key to a temp repository root's context/identity (refuses non-temp roots)
+    - TestHuman.identity_root_for() -- temp repo root to sign against (never the real checkout or cwd)
     - get_test_human() -- the process-wide TestHuman
 """
 
+import atexit
 import os
 import shutil
 import subprocess
@@ -48,18 +50,40 @@ class TestHuman:
         self.agent_identity: Dict[str, Any] = {"agent_name": "no-such-agent-account", "agent_uid": os.geteuid() + 4242, "agent_gids": set()}
 
     def ensure_identity(self, repo_root: Path):
-        layout = default_layout(Path(repo_root).resolve())
+        """Enroll the test key under repo_root's context/identity, which must be inside the temp dir.
+
+        Appends only; existing signer lines are never dropped. Refusing non-temp roots stops a
+        suite run from a real checkout overwriting the operator's enrollment (2026-09-24 incident).
+        """
+        root = Path(repo_root).resolve()
+        if not root.is_relative_to(Path(tempfile.gettempdir()).resolve()):
+            raise RuntimeError(f"TestHuman refuses to enroll outside the temp dir: {root}")
+        layout = default_layout(root)
         for directory in (layout.root, layout.challenge_dir):
             directory.mkdir(parents=True, exist_ok=True)
             os.chmod(directory, 0o700)
         for path, namespace in ((layout.allowed_signers, SIGN_NAMESPACE), (layout.allowed_signers_selftest, SELFTEST_NAMESPACE)):
-            path.write_text(f'test-human@local namespaces="{namespace}" {self._pub[0]} {self._pub[1]}\n')
+            line = f'test-human@local namespaces="{namespace}" {self._pub[0]} {self._pub[1]}'
+            existing = path.read_text(encoding="utf-8") if path.exists() else ""
+            if line not in existing.splitlines():
+                with open(path, "a", encoding="utf-8") as f:
+                    f.write(("" if not existing or existing.endswith("\n") else "\n") + line + "\n")
             os.chmod(path, 0o600)
         return layout
 
+    def identity_root_for(self, cp: Any) -> Path:
+        """Repo root whose context/identity this human signs against.
+
+        A control plane rooted in a temp dir keeps its own identity folder; anything else
+        (no repo_root, or a real checkout) gets a private root inside this human's temp dir.
+        """
+        repo_root = getattr(cp, "repo_root", None)
+        if repo_root and Path(repo_root).resolve().is_relative_to(Path(tempfile.gettempdir()).resolve()):
+            return Path(repo_root)
+        return self._dir / "repo"
+
     def sign_request(self, cp: Any, request_id: int) -> Any:
-        repo_root = Path(cp.repo_root) if getattr(cp, "repo_root", None) else Path.cwd()
-        layout = self.ensure_identity(repo_root)
+        layout = self.ensure_identity(self.identity_root_for(cp))
         challenge = show_challenge(
             cp, request_id, layout=layout, key_hint=str(self.key), agent_identity=self.agent_identity, out=open(os.devnull, "w"),
         )
@@ -83,4 +107,5 @@ def get_test_human() -> "TestHuman":
     global _SINGLETON
     if _SINGLETON is None:
         _SINGLETON = TestHuman()
+        atexit.register(_SINGLETON.close)  # remove the throwaway key dir instead of leaking it into $TMPDIR
     return _SINGLETON
