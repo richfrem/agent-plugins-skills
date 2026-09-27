@@ -2,6 +2,19 @@
 
 Persistent tracking of architectural friction, structural anomalies, and unclosed loops across sessions.
 
+## DEBT-20260927-OS-INIT-AGENTS-SINGLE-SOURCE (RESOLVED)
+
+- Logged date: 2026-09-27
+- Cycle/Session ID: fix-os-init-agents-md-single-source
+- Artifact affected: `plugins/agent-agentic-os/scripts/init_agentic_os.py`, `plugins/agent-agentic-os/skills/os-init/scripts/`, and `plugins/agent-agentic-os/skills/os-init/SKILL.md`
+- Friction observed: Consumer-project retrofit could overwrite or enrich `CLAUDE.md`, mirror duplicate instruction files, and fail to provide current Git hook guards through the installed os-init skill.
+- Why not fixed now: Fixed in this change.
+- Recommended fix / fix applied: Keep `AGENTS.md` canonical, preserve the exact optional `CLAUDE.md` pointer and existing legacy copies, migrate standalone full `CLAUDE.md` content with a non-overwriting backup, make identical writes no-ops, add hooks-only installation, and package all hook guards as managed file-level symlinks from plugin-root masters.
+- Evidence/repro: Added regression coverage for non-destructive migration, existing duplicate preservation, fresh setup, instruction idempotency, and hook-only installation from an installer-dereferenced skill. Full tests and plugin/symlink audits are run before commit.
+- Severity: M
+- Repeat: NO
+- Status: RESOLVED
+
 ## DEBT-20260920-POST-DONE-PROTOCOL-CODIFICATION (RESOLVED)
 
 - Logged date: 2026-09-20

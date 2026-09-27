@@ -4,10 +4,10 @@ init_agentic_os.py — Agentic OS Scaffolder & Retrofit Engine
 ============================================================
 
 Purpose:
-    Initialize or retrofit the Agentic OS, 3-Layer Memory architecture, and multi-tool
-    instruction mirrors in any project directory.
+    Initialize or retrofit the Agentic OS and 3-Layer Memory architecture in any project
+    directory, keeping AGENTS.md as the single canonical instruction file.
     Supports fresh setup as well as safe retrofitting of existing projects (auto-upgrades
-    legacy skills, seeds 3-layer memory, and mirrors CLAUDE.md to GEMINI/Copilot/AGENTS).
+    legacy skills, and seeds 3-layer memory).
 
 Layer:
     CLI / Initialization & Retrofitting
@@ -15,7 +15,7 @@ Layer:
 Key Input Dependencies:
     - Template directory: assets/templates/ or skills/os-init/assets/templates/
     - Agent control plane schema: context/control_plane.db (auto-initialized)
-    - Instruction files: CLAUDE.md (source of truth for mirroring)
+    - Instruction files: AGENTS.md (canonical); CLAUDE.md may be a pointer
     - Ecosystem rules: .agent/rules/ (synced across workspaces)
 
 Key Functions:
@@ -27,8 +27,8 @@ Key Functions:
     - write_file() — Writes file with backup and dry-run support
     - _init_control_plane_db() — Bootstraps SQLite control plane DB with WAL mode
     - _scaffold_3layer_memory() — Creates 3-layer memory directory structure
-    - _merge_instructions_with_judgment() — Merges OS sections into instruction files
-    - sync_instructions() — Reconciles CLAUDE.md to GEMINI, Copilot, AGENTS
+    - _merge_instructions_with_judgment() — Merges OS sections into AGENTS.md
+    - sync_instructions() — Preserves AGENTS.md and the optional CLAUDE.md pointer
     - _merge_rule_content_preserving_downstream() — Diff-merges upstream rules preserving local edits
     - sync_rules() — Synchronizes ecosystem rules into .agent/rules/
     - retrofit_existing_skills() — Audits and auto-upgrades custom skills
@@ -136,15 +136,27 @@ def make_dir(path: Path, dry_run: bool) -> None:
 # Global tracker for backup files created during the run
 _CREATED_BACKUPS: List[Path] = []
 
+CLAUDE_POINTER = "# CLAUDE.md\n\nRead [AGENTS.md](AGENTS.md).\n"
+
 
 # External comment: Write content to file with backup handling
 def write_file(path: Path, content: str, dry_run: bool, force: bool = False) -> None:
     """Writes content to file with optional backup creation if existing."""
     if path.exists():
+        try:
+            if path.read_text(encoding="utf-8") == content:
+                announce(f"unchanged {path} (skipped)", dry_run)
+                return
+        except (OSError, UnicodeError):
+            pass
         if not force:
             announce(f"exists {path} (skipped - use --force to overwrite)", dry_run)
             return
         backup_path = path.with_suffix(path.suffix + ".bak")
+        suffix = 1
+        while backup_path.exists():
+            backup_path = path.with_name(f"{path.name}.{suffix}.bak")
+            suffix += 1
         announce(f"backup {path} -> {backup_path.name}", dry_run)
         if not dry_run:
             path.rename(backup_path)
@@ -206,12 +218,11 @@ Every Tier 0-3 friction event must be logged here immediately (Status: RESOLVED 
 
 
 # ---------------------------------------------------------------------------
-# Instruction File Synchronizer (CLAUDE -> GEMINI, Copilot, AGENTS)
+# Canonical Instruction File Synchronizer (AGENTS.md)
 # ---------------------------------------------------------------------------
 
 def _merge_instructions_with_judgment(existing_text: str, project_name: str) -> str:
-    """Smartly merge Agentic OS evolution & memory sections into existing instruction files without clobbering project domain context."""
-    # Ensure standard title
+    """Merge Agentic OS guidance into AGENTS.md without clobbering project context."""
     text = existing_text
     
     # Check for Phase 0 Intake & Socratic Gate
@@ -271,61 +282,69 @@ def _merge_instructions_with_judgment(existing_text: str, project_name: str) -> 
     return text
 
 
+def _is_claude_pointer(text: str) -> bool:
+    return text == CLAUDE_POINTER
+
+
+def _agents_template(project_name: str) -> str:
+    template = load_template("CLAUDE_MD_PROJECT.md").format(project_name=project_name)
+    return re.sub(r"^#\s+.*", "# AGENTS.md", template, count=1)
+
+
+def _write_if_changed(path: Path, content: str, dry_run: bool) -> None:
+    """Write an instruction update only when its content actually changes."""
+    if path.exists():
+        try:
+            if path.read_text(encoding="utf-8") == content:
+                announce(f"unchanged {path} (skipped)", dry_run)
+                return
+        except (OSError, UnicodeError):
+            pass
+    announce(f"write  {path}", dry_run)
+    if not dry_run:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content, encoding="utf-8")
+
+
+def _report_existing_instruction_copies(target: Path) -> None:
+    """Report legacy copies without creating, changing, or deleting them."""
+    for relative in ("GEMINI.md", ".github/copilot-instructions.md", "CLAUDE.local.md"):
+        if (target / relative).exists():
+            print(f"Advisory: existing {relative} left untouched; AGENTS.md is the canonical instruction file.")
+
+
 def sync_instructions(target: Path, dry_run: bool) -> None:
-    """Reconcile CLAUDE.md to GEMINI.md, .github/copilot-instructions.md, and AGENTS.md using section preservation rather than blind overwrite."""
+    """Update AGENTS.md only; preserve a pointer CLAUDE.md and all legacy copies."""
     claude_md = target / "CLAUDE.md"
-    if not claude_md.exists():
-        announce("Warning: CLAUDE.md not found — skipping instruction synchronization.", dry_run)
+    agents_md = target / "AGENTS.md"
+    project_name = target.resolve().name
+
+    claude_content = claude_md.read_text(encoding="utf-8") if claude_md.exists() else None
+    if agents_md.exists() and claude_content is not None and not _is_claude_pointer(claude_content):
+        print("Advisory: both AGENTS.md and non-pointer CLAUDE.md exist; leaving both unchanged. Keep AGENTS.md canonical and reconcile CLAUDE.md manually if desired.")
+        _report_existing_instruction_copies(target)
         return
 
-    # Enrich CLAUDE.md with Phase 0 intake, 3-layer memory, and pre-completion gate if missing
-    project_name = target.resolve().name
-    claude_content = claude_md.read_text(encoding="utf-8")
-    enriched_claude = _merge_instructions_with_judgment(claude_content, project_name)
-    if enriched_claude != claude_content:
-        write_file(claude_md, enriched_claude, dry_run, force=True)
-        announce("Enriched CLAUDE.md with core control-plane intake and memory gates", dry_run)
-
-    plugin_root = _get_plugin_root()
-    sync_script = plugin_root.parent / "cli-agents" / "scripts" / "sync_instruction_files.py"
-    if not sync_script.exists():
-        sync_script = target / "plugins" / "cli-agents" / "scripts" / "sync_instruction_files.py"
-
-    if sync_script.exists():
-        announce("Synchronizing instruction files via sync_instruction_files.py...", dry_run)
-        if not dry_run:
-            cmd = [sys.executable, str(sync_script), "--project-root", str(target), "--execute"]
-            subprocess.run(cmd, check=True)
+    if not agents_md.exists():
+        if claude_content is not None and not _is_claude_pointer(claude_content):
+            agents_content = re.sub(r"^#\s+.*", "# AGENTS.md", claude_content, count=1)
+            announce("Migrating CLAUDE.md content into AGENTS.md", dry_run)
+        else:
+            agents_content = _agents_template(project_name)
+        agents_content = _merge_instructions_with_judgment(agents_content, project_name)
+        write_file(agents_md, agents_content, dry_run, force=False)
     else:
-        # Smart Section-Aware Fallback Mirroring
-        announce("Reconciling instructions to GEMINI.md, AGENTS.md, and copilot-instructions.md with section preservation...", dry_run)
-        claude_content = claude_md.read_text(encoding="utf-8")
-        project_name = target.resolve().name
+        existing_agents = agents_md.read_text(encoding="utf-8")
+        merged_agents = _merge_instructions_with_judgment(existing_agents, project_name)
+        _write_if_changed(agents_md, merged_agents, dry_run)
 
-        # GEMINI.md
-        gemini_target = target / "GEMINI.md"
-        existing_gemini = gemini_target.read_text(encoding="utf-8") if gemini_target.exists() else ""
-        gemini_text = re.sub(r"^#\s+.*", "# GEMINI.md", claude_content, count=1)
-        
-        # Preserve existing Gemini Tool Mapping or add standard table
-        if "## Gemini CLI Tool Mapping" in existing_gemini:
-            tool_mapping_part = existing_gemini[existing_gemini.find("## Gemini CLI Tool Mapping"):]
-            gemini_text = gemini_text.split("## Gemini CLI Tool Mapping")[0].rstrip() + "\n\n" + tool_mapping_part
-        elif "## Gemini CLI Tool Mapping" not in gemini_text:
-            gemini_text += "\n\n## Gemini CLI Tool Mapping\n| Claude Code Tool | Gemini CLI Equivalent |\n|---|---|\n| View | view_file |\n| Edit | replace_file_content |\n| Write | write_to_file |\n| Bash | run_command |\n| Grep | grep_search |\n| Glob | find_by_name |\n| Agent | invoke_subagent |\n"
-        write_file(gemini_target, gemini_text, dry_run, force=True)
+    if claude_content is not None and not _is_claude_pointer(claude_content):
+        # Preserve the source as CLAUDE.md.bak before replacing it with the pointer.
+        write_file(claude_md, CLAUDE_POINTER, dry_run, force=True)
+    elif claude_content is None:
+        announce("CLAUDE.md is absent; AGENTS.md remains the sole instruction file.", dry_run)
 
-        # AGENTS.md
-        agents_target = target / "AGENTS.md"
-        agents_text = re.sub(r"^#\s+.*", "# AGENTS.md", claude_content, count=1)
-        write_file(agents_target, agents_text, dry_run, force=True)
-
-        # .github/copilot-instructions.md
-        copilot_dir = target / ".github"
-        make_dir(copilot_dir, dry_run)
-        copilot_header = f"# Copilot Instructions for {project_name}\n\n> Authoritative repository instructions for GitHub Copilot. Mirrors CLAUDE.md.\n\n"
-        body = re.sub(r"^#\s+.*", "", claude_content, count=1).lstrip()
-        write_file(copilot_dir / "copilot-instructions.md", copilot_header + body, dry_run, force=True)
+    _report_existing_instruction_copies(target)
 
 
 # ---------------------------------------------------------------------------
@@ -500,12 +519,31 @@ def _init_control_plane_db(target: Path, dry_run: bool) -> None:
 # ---------------------------------------------------------------------------
 
 # External comment: Scaffold repository root instruction files
+def _scaffold_root_instruction_files(target: Path, dry_run: bool, project_name: str) -> None:
+    """Create AGENTS.md and the optional CLAUDE.md pointer without overwriting instructions."""
+    agents_md = target / "AGENTS.md"
+    claude_md = target / "CLAUDE.md"
+
+    if claude_md.exists() and not agents_md.exists():
+        claude_content = claude_md.read_text(encoding="utf-8")
+        if not _is_claude_pointer(claude_content):
+            sync_instructions(target, dry_run)
+            return
+
+    if not agents_md.exists():
+        write_file(agents_md, _agents_template(project_name), dry_run, force=False)
+
+    if not claude_md.exists():
+        write_file(claude_md, CLAUDE_POINTER, dry_run, force=False)
+    elif not _is_claude_pointer(claude_md.read_text(encoding="utf-8")):
+        print("Advisory: existing non-pointer CLAUDE.md left untouched; AGENTS.md is canonical.")
+
+    _report_existing_instruction_copies(target)
+
+
 def _scaffold_root_files(target: Path, dry_run: bool, force: bool, project_name: str) -> None:
     """Scaffolds top-level kernel instructions, architecture, and project status files."""
-    write_file(target / "CLAUDE.md",
-               load_template("CLAUDE_MD_PROJECT.md").format(project_name=project_name),
-               dry_run, force)
-    write_file(target / "CLAUDE.local.md", load_template("CLAUDE_LOCAL_MD.md"), dry_run, force)
+    _scaffold_root_instruction_files(target, dry_run, project_name)
     write_file(target / "START_HERE.md", load_template("START_HERE_MD.md"), dry_run, force)
     write_file(target / "heartbeat.md", load_template("HEARTBEAT_MD.md"), dry_run, force)
     write_file(target / "architecture.md",
@@ -604,7 +642,7 @@ def _scaffold_claude_dir(target: Path, dry_run: bool, force: bool) -> None:
 
 
 # External comment: Validate git repo and install pre-commit evolution guard
-def _validate_and_finalize(target: Path, dry_run: bool) -> None:
+def _validate_and_finalize(target: Path, dry_run: bool, install_workflow: bool = True) -> None:
     """Validates git repository context and installs pre-commit evolution guard."""
     try:
         subprocess.run(["git", "-C", str(target), "rev-parse", "--is-inside-work-tree"],
@@ -731,6 +769,9 @@ def _validate_and_finalize(target: Path, dry_run: bool) -> None:
                     if not dry_run:
                         pre_push.chmod(0o755)
                 announce("Installed pre-push-review-guard into .git/hooks/", dry_run)
+
+        if not install_workflow:
+            return
 
         # Install GitHub Actions evolution integrity workflow
         github_workflows_dir = target / ".github" / "workflows"
@@ -909,11 +950,9 @@ def print_next_steps(target: Path, did_global: bool, did_retrofit: bool) -> None
     print("\n" + "=" * 60)
     print("Agentic OS Initialization / Retrofit Complete!")
     print("=" * 60)
-    print(f"\n1. Project Kernel & Multi-Tool Instructions:")
-    print(f"   - {target}/CLAUDE.md (Primary Source of Truth)")
-    print(f"   - {target}/GEMINI.md (Mirrored with CLI Tool Mapping)")
-    print(f"   - {target}/.github/copilot-instructions.md (Mirrored for Copilot CLI)")
-    print(f"   - {target}/AGENTS.md (Mirrored for Codex & Generic Agents)")
+    print(f"\n1. Canonical Project Instructions:")
+    print(f"   - {target}/AGENTS.md (single source of truth)")
+    print(f"   - {target}/CLAUDE.md (optional pointer to AGENTS.md)")
     print(f"\n2. 3-Layer Memory & Self-Evolution Substrate:")
     print(f"   - Layer 1: In-prompt context ({target}/context/)")
     print(f"   - Layer 2: Confirmed knowledge & debt ({target}/wiki/, {target}/references/map-debt.md)")
@@ -927,7 +966,7 @@ def print_next_steps(target: Path, did_global: bool, did_retrofit: bool) -> None
     print("   • Local Source Reinstall:")
     print("     python3 plugins/plugin-manager/scripts/plugin_add.py --all -y")
     print("\n4. Add to .gitignore:")
-    print("   CLAUDE.local.md, context/memory/, context/status.md, context/os-state.json, context/events.jsonl, context/.locks/, .claude/")
+    print("   context/memory/, context/status.md, context/os-state.json, context/events.jsonl, context/.locks/, .claude/")
     print("\n5. Recommended Verification Check:")
     print("   Immediately run the health check skill/engine to verify substrate liveness:")
     print("   • Slash command / Skill: /os-health-check")
@@ -981,7 +1020,12 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--sync-instructions",
         action="store_true",
-        help="Mirror CLAUDE.md to GEMINI.md, .github/copilot-instructions.md, and AGENTS.md"
+        help="Merge missing Agentic OS sections into AGENTS.md; preserve optional CLAUDE.md pointer"
+    )
+    parser.add_argument(
+        "--install-hooks",
+        action="store_true",
+        help="Install or update only the Agentic OS git hooks in the target repository"
     )
     parser.add_argument(
         "--sync-rules",
@@ -1016,7 +1060,10 @@ def _parse_args() -> argparse.Namespace:
 # External comment: Execute scaffold or retrofit action workflow
 def _execute_action(target: Path, args: argparse.Namespace) -> None:
     """Executes either retrofit migration or fresh project scaffolding."""
-    if args.retrofit:
+    if args.install_hooks:
+        print(f"\n--- Installing Git Hooks Only: {target.resolve()} ---\n")
+        _validate_and_finalize(target, args.dry_run, install_workflow=False)
+    elif args.retrofit:
         print(f"\n--- Retrofitting Existing Repository: {target.resolve()} ---\n")
         _scaffold_3layer_memory(target, args.dry_run, args.force)
         _configure_plugin_contribution_policy(target, args.contribution_mode, args.dry_run, args.force)
@@ -1050,6 +1097,11 @@ def main() -> None:
         print("\n[DRY RUN] Previewing changes - nothing will be written.\n")
 
     _execute_action(target, args)
+
+    if args.install_hooks:
+        if not args.dry_run:
+            print("Git hooks installation complete; no other project files were changed.")
+        return
 
     if args.with_simulation_identity:
         ensure_simulation_identity_step(target, args.dry_run)
