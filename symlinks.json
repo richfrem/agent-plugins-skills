@@ -9770,19 +9770,19 @@
       "description": "todo-check fallback-tree.md (issue-551 hub-and-spoke fix)"
     },
     {
-      "src": "plugins/agent-agentic-os/references/control-plane-architecture.mermaid",
+      "src": "plugins/agent-agentic-os/references/diagrams/control-plane-architecture.mermaid",
       "dst": "plugins/agent-agentic-os/skills/work-intake/references/control-plane-architecture.mermaid",
       "strategy": "symlink",
       "description": "Control-plane diagram referenced by work-intake pipeline docs"
     },
     {
-      "src": "plugins/agent-agentic-os/references/control-plane-pipeline-happy-path.mermaid",
+      "src": "plugins/agent-agentic-os/references/diagrams/control-plane-pipeline-happy-path.mermaid",
       "dst": "plugins/agent-agentic-os/skills/work-intake/references/control-plane-pipeline-happy-path.mermaid",
       "strategy": "symlink",
       "description": "Control-plane diagram referenced by work-intake pipeline docs"
     },
     {
-      "src": "plugins/agent-agentic-os/references/control-plane-pipeline.mermaid",
+      "src": "plugins/agent-agentic-os/references/diagrams/control-plane-pipeline.mermaid",
       "dst": "plugins/agent-agentic-os/skills/work-intake/references/control-plane-pipeline.mermaid",
       "strategy": "symlink",
       "description": "Control-plane diagram referenced by work-intake pipeline docs"
@@ -10550,55 +10550,55 @@
       "description": ""
     },
     {
-      "src": "plugins/agent-agentic-os/references/ciba-rar-transition-auth-flow.mermaid",
+      "src": "plugins/agent-agentic-os/references/diagrams/ciba-rar-transition-auth-flow.mermaid",
       "dst": "plugins/agent-agentic-os/skills/os-init/references/ciba-rar-transition-auth-flow.mermaid",
       "strategy": "symlink",
       "description": "Control-plane/CIBA-RAR diagram linked into os-init"
     },
     {
-      "src": "plugins/agent-agentic-os/references/control-plane-lifecycle-baseline-no-ciba-rar.mermaid",
+      "src": "plugins/agent-agentic-os/references/diagrams/control-plane-lifecycle-baseline-no-ciba-rar.mermaid",
       "dst": "plugins/agent-agentic-os/skills/os-init/references/control-plane-lifecycle-baseline-no-ciba-rar.mermaid",
       "strategy": "symlink",
       "description": "Control-plane/CIBA-RAR diagram linked into os-init"
     },
     {
-      "src": "plugins/agent-agentic-os/references/control-plane-lifecycle-hardened-with-ciba-rar.mermaid",
+      "src": "plugins/agent-agentic-os/references/diagrams/control-plane-lifecycle-hardened-with-ciba-rar.mermaid",
       "dst": "plugins/agent-agentic-os/skills/os-init/references/control-plane-lifecycle-hardened-with-ciba-rar.mermaid",
       "strategy": "symlink",
       "description": "Control-plane/CIBA-RAR diagram linked into os-init"
     },
     {
-      "src": "plugins/agent-agentic-os/references/increment-b-human-only-transition-ssh-signing.mermaid",
+      "src": "plugins/agent-agentic-os/references/diagrams/increment-b-human-only-transition-ssh-signing.mermaid",
       "dst": "plugins/agent-agentic-os/skills/os-init/references/increment-b-human-only-transition-ssh-signing.mermaid",
       "strategy": "symlink",
       "description": "Control-plane/CIBA-RAR diagram linked into os-init"
     },
     {
-      "src": "plugins/agent-agentic-os/references/ciba-rar-transition-auth-flow.mermaid",
+      "src": "plugins/agent-agentic-os/references/diagrams/ciba-rar-transition-auth-flow.mermaid",
       "dst": "plugins/agent-agentic-os/skills/work-intake/references/ciba-rar-transition-auth-flow.mermaid",
       "strategy": "symlink",
       "description": "Control-plane/CIBA-RAR diagram linked into work-intake"
     },
     {
-      "src": "plugins/agent-agentic-os/references/control-plane-lifecycle-baseline-no-ciba-rar.mermaid",
+      "src": "plugins/agent-agentic-os/references/diagrams/control-plane-lifecycle-baseline-no-ciba-rar.mermaid",
       "dst": "plugins/agent-agentic-os/skills/work-intake/references/control-plane-lifecycle-baseline-no-ciba-rar.mermaid",
       "strategy": "symlink",
       "description": "Control-plane/CIBA-RAR diagram linked into work-intake"
     },
     {
-      "src": "plugins/agent-agentic-os/references/control-plane-lifecycle-hardened-with-ciba-rar.mermaid",
+      "src": "plugins/agent-agentic-os/references/diagrams/control-plane-lifecycle-hardened-with-ciba-rar.mermaid",
       "dst": "plugins/agent-agentic-os/skills/work-intake/references/control-plane-lifecycle-hardened-with-ciba-rar.mermaid",
       "strategy": "symlink",
       "description": "Control-plane/CIBA-RAR diagram linked into work-intake"
     },
     {
-      "src": "plugins/agent-agentic-os/references/increment-b-human-only-transition-ssh-signing.mermaid",
+      "src": "plugins/agent-agentic-os/references/diagrams/increment-b-human-only-transition-ssh-signing.mermaid",
       "dst": "plugins/agent-agentic-os/skills/work-intake/references/increment-b-human-only-transition-ssh-signing.mermaid",
       "strategy": "symlink",
       "description": "Control-plane/CIBA-RAR diagram linked into work-intake"
     },
     {
-      "src": "plugins/agent-agentic-os/references/control-plane-architecture.mermaid",
+      "src": "plugins/agent-agentic-os/references/diagrams/control-plane-architecture.mermaid",
       "dst": "plugins/agent-agentic-os/skills/os-init/references/control-plane-architecture.mermaid",
       "strategy": "symlink",
       "description": "Control-plane architecture diagram linked into os-init"
@@ -11390,43 +11390,43 @@
       "description": "PipelineSimulator dependency"
     },
     {
-      "src": "plugins/agent-agentic-os/references/control-plane-architecture.mermaid",
+      "src": "plugins/agent-agentic-os/references/diagrams/control-plane-architecture.mermaid",
       "dst": "docs/diagrams/control-plane-architecture.mermaid",
       "strategy": "symlink",
       "description": "Public diagram compatibility path; plugin-owned canonical master"
     },
     {
-      "src": "plugins/agent-agentic-os/references/control-plane-pipeline-happy-path.mermaid",
+      "src": "plugins/agent-agentic-os/references/diagrams/control-plane-pipeline-happy-path.mermaid",
       "dst": "docs/diagrams/control-plane-pipeline-happy-path.mermaid",
       "strategy": "symlink",
       "description": "Public diagram compatibility path; plugin-owned canonical master"
     },
     {
-      "src": "plugins/agent-agentic-os/references/control-plane-pipeline.mermaid",
+      "src": "plugins/agent-agentic-os/references/diagrams/control-plane-pipeline.mermaid",
       "dst": "docs/diagrams/control-plane-pipeline.mermaid",
       "strategy": "symlink",
       "description": "Public diagram compatibility path; plugin-owned canonical master"
     },
     {
-      "src": "plugins/agent-agentic-os/references/ciba-rar-transition-auth-flow.mermaid",
+      "src": "plugins/agent-agentic-os/references/diagrams/ciba-rar-transition-auth-flow.mermaid",
       "dst": "docs/diagrams/ciba-rar-transition-auth-flow.mermaid",
       "strategy": "symlink",
       "description": "Public diagram compatibility path; plugin-owned canonical master"
     },
     {
-      "src": "plugins/agent-agentic-os/references/control-plane-lifecycle-baseline-no-ciba-rar.mermaid",
+      "src": "plugins/agent-agentic-os/references/diagrams/control-plane-lifecycle-baseline-no-ciba-rar.mermaid",
       "dst": "docs/diagrams/control-plane-lifecycle-baseline-no-ciba-rar.mermaid",
       "strategy": "symlink",
       "description": "Public diagram compatibility path; plugin-owned canonical master"
     },
     {
-      "src": "plugins/agent-agentic-os/references/control-plane-lifecycle-hardened-with-ciba-rar.mermaid",
+      "src": "plugins/agent-agentic-os/references/diagrams/control-plane-lifecycle-hardened-with-ciba-rar.mermaid",
       "dst": "docs/diagrams/control-plane-lifecycle-hardened-with-ciba-rar.mermaid",
       "strategy": "symlink",
       "description": "Public diagram compatibility path; plugin-owned canonical master"
     },
     {
-      "src": "plugins/agent-agentic-os/references/increment-b-human-only-transition-ssh-signing.mermaid",
+      "src": "plugins/agent-agentic-os/references/diagrams/increment-b-human-only-transition-ssh-signing.mermaid",
       "dst": "docs/diagrams/increment-b-human-only-transition-ssh-signing.mermaid",
       "strategy": "symlink",
       "description": "Public diagram compatibility path; plugin-owned canonical master"
