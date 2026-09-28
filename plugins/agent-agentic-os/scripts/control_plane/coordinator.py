@@ -280,8 +280,12 @@ class TransitionCoordinator:
             if staged_revision is not None:
                 staged_receipts.append(staged_revision)
 
-        # Check deterministic checklist items or checks
+        # Check deterministic checklist items or checks. "Deterministic check satisfied: <id>" lines are shown
+        # with the real result of that check below, never ticked unevaluated.
+        evaluated_line = "Deterministic check satisfied: "
         for chk_item in template.checklist:
+            if chk_item.startswith(evaluated_line) and chk_item[len(evaluated_line):] in template.deterministic_checks:
+                continue
             checklist_status.append((True, chk_item))
 
         for check_id in template.deterministic_checks:
@@ -294,9 +298,11 @@ class TransitionCoordinator:
                 continue
             try:
                 evaluate_check(check_id, ctx)
+                checklist_status.append((True, f"{evaluated_line}{check_id}"))
             except (PolicyViolation, PolicyConfigurationError) as e:
                 all_passed = False
                 failed_reasons.append(f"Check failed: {check_id} ({e})")
+                checklist_status.append((False, f"{evaluated_line}{check_id}"))
 
         # Display checklist
         self._out.write("Checklist:\n")

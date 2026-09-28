@@ -1300,3 +1300,16 @@ Persistent tracking of architectural friction, structural anomalies, and unclose
 - Severity: M
 - Repeat: NO
 - Status: OPEN
+
+## DEBT-20260927-SIGNED-APPROVAL-NO-HUMAN-RECEIPT
+
+- Logged date: 2026-09-27
+- Cycle/Session ID: investmenttoolkit-nbis-in-worktree
+- Artifact affected: `plugins/agent-agentic-os/scripts/control_plane/adapters.py`, `plugins/agent-agentic-os/scripts/control_plane/coordinator.py`
+- Friction observed: Moving InvestmentToolkit task `nbis-scenario-lines-overlay` from APPROVED to IN_WORKTREE: (1) the human's verified Gate 1 signature did not record the `human_approval` receipt that IN_WORKTREE requires, so a second typed `record-human-approval` call was needed (the simulator and fixtures hid this by calling `record_human_approval()` by hand after every signed approval); (2) the checklist printed "[✓] Deterministic check satisfied: human_approval (PASS)" while that same check denied the transition, because YAML checklist lines were ticked without evaluation. Also found `test_retrofit_enriches_claude_md_with_phase0_and_control_plane` failing on origin/main after #667 (it still required CLAUDE.md enrichment).
+- Why not fixed now: Fixed on branch `fix/signed-approval-records-human-approval`.
+- Recommended fix: N/A — resolved. The signed AWAITING_APPROVAL -> APPROVED commit records `human_approval` (approved-by principal, key fingerprint, request id) in the same transaction; "Deterministic check satisfied: <id>" checklist lines now show the real result of that check. The scaffolding test now asserts the #667 contract (AGENTS.md enriched, CLAUDE.md pointer).
+- Evidence/repro: `tests/test_signed_approval_human_receipt.py` (red before, green after); `test_gate_blocks_in_worktree_entry_without_human_approval_receipt` still proves the gate cannot be skipped.
+- Severity: S
+- Repeat: NO
+- Status: RESOLVED

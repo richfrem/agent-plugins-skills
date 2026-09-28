@@ -1096,6 +1096,14 @@ def test_gate_blocks_in_worktree_entry_without_human_approval_receipt(control_pl
     stage_human_decisions(control_plane, task_id, STATE_AWAITING_APPROVAL, STATE_APPROVED)
     control_plane.transition(task_id=task_id, to_state=STATE_APPROVED, actor="user", reason="Proceed")
 
+    # The signed approval records the receipt itself; remove it to prove the gate still can never be skipped
+    import sqlite3
+    with sqlite3.connect(control_plane.db_path) as conn:
+        assert conn.execute(
+            "SELECT COUNT(*) FROM verification_receipts WHERE task_id = ? AND gate_name = 'human_approval'", (task_id,)
+        ).fetchone()[0] == 1
+        conn.execute("DELETE FROM verification_receipts WHERE task_id = ? AND gate_name = 'human_approval'", (task_id,))
+    stage_worktree_metadata(control_plane, task_id)
     with pytest.raises(PersistenceInvariantViolation, match="human_approval|human approval"):
         control_plane.transition(task_id=task_id, to_state=STATE_IN_WORKTREE, actor="controller", reason=REASON_WORKTREE_CREATED)
 
