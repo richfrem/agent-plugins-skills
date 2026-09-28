@@ -2404,6 +2404,17 @@ class SqlitePersistenceAdapter(PersistencePort):
                     "INSERT INTO verification_receipts (task_id, gate_name, command_executed, exit_code, receipt_token) VALUES (?, ?, ?, ?, ?)",
                     (request.task_id, "human_gate_proof", proof_audit, 0, audit_token),
                 )
+                if edge == ("AWAITING_APPROVAL", "APPROVED"):
+                    # The verified Gate 1 signature IS the human approval: record the receipt APPROVED -> IN_WORKTREE
+                    # checks in the same transaction, so the human never has to approve twice.
+                    approval = f"approved-by:{verified.principal};key={verified.fingerprint};request={proof.request_id}"
+                    approval_token = "EVO-INTEGRITY-{}-{}".format(
+                        request.task_id, self._crypto.sha256_hex(f"{request.task_id}:{approval}:{new_trans_id}")[:12]
+                    )
+                    conn.execute(
+                        "INSERT INTO verification_receipts (task_id, gate_name, command_executed, exit_code, receipt_token) VALUES (?, ?, ?, ?, ?)",
+                        (request.task_id, "human_approval", approval, 0, approval_token),
+                    )
             _expire_pending_requests(conn, request.task_id)
             row = conn.execute(
                 "SELECT transition_id, task_id, from_state, to_state, actor, reason, timestamp FROM task_transitions WHERE transition_id = ?",
