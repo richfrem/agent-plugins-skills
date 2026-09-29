@@ -1,7 +1,7 @@
 {
   "sources": [
     {
-      "source": "C:\\Users\\RICHFREM\\source\\repos\\agent-plugins-skills\\plugins",
+      "source": "richfrem/agent-plugins-skills",
       "plugins": [
         "agent-agentic-os",
         "agent-scaffolders",

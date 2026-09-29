@@ -23,11 +23,11 @@ the first one is critically incomplete (missing a whole file, not just minor edi
 
 | Item | Path |
 |---|---|
-| Plugin working dir | `/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/exploration-cycle-plugin/` |
+| Plugin working dir | `./plugins/exploration-cycle-plugin/` |
 | Full execution plan | `[plugin dir]/docs/superpowers/plans/2026-04-06-gap-fill-cleanup-attribution.md` |
-| Copilot CLI skill | `/Users/richardfremmerlid/Projects/AI-Research/.agents/skills/copilot-cli-agent/SKILL.md` |
-| superpowers analysis | `/Users/richardfremmerlid/Projects/AI-Research/01-Research/harnesses/superpowers/superpowers-analysis.md` |
-| Opp 3 design plan | `/Users/richardfremmerlid/Projects/AI-Research/07-Opportunities/03-Exploration-and-Design/exploration-cycle-plugin-design-plan.md` |
+| Copilot CLI skill | `./AI-Research/.agents/skills/copilot-cli-agent/SKILL.md` |
+| superpowers analysis | `./AI-Research/01-Research/harnesses/superpowers/superpowers-analysis.md` |
+| Opp 3 design plan | `./AI-Research/07-Opportunities/03-Exploration-and-Design/exploration-cycle-plugin-design-plan.md` |
 
 ---
 
@@ -35,12 +35,12 @@ the first one is critically incomplete (missing a whole file, not just minor edi
 
 Read these files using your file tools (NOT shell commands):
 1. Read the full plan: `[plugin dir]/docs/superpowers/plans/2026-04-06-gap-fill-cleanup-attribution.md`
-2. Read the Copilot CLI skill: `/Users/richardfremmerlid/Projects/AI-Research/.agents/skills/copilot-cli-agent/SKILL.md`
+2. Read the Copilot CLI skill: `./AI-Research/.agents/skills/copilot-cli-agent/SKILL.md`
 3. Verify what files currently exist in `[plugin dir]/skills/` using `list_dir` tool
 
 Then run the heartbeat check:
 ```bash
-python /Users/richardfremmerlid/Projects/AI-Research/.agents/skills/copilot-cli-agent/scripts/run_agent.py \
+python ./AI-Research/.agents/skills/copilot-cli-agent/scripts/run_agent.py \
   /dev/null /dev/null /tmp/heartbeat.md \
   "HEARTBEAT CHECK: Respond with 'HEARTBEAT_OK' only."
 ```
@@ -417,7 +417,7 @@ The `exploration-cycle-plugin` is independently authored and not affiliated with
 ## Step 5: Commit and Push
 
 ```bash
-cd /Users/richardfremmerlid/Projects/agent-plugins-skills
+cd ./
 
 git add plugins/exploration-cycle-plugin/skills/discovery-planning/
 git add plugins/exploration-cycle-plugin/skills/visual-companion/

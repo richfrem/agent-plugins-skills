@@ -27,7 +27,7 @@ When referencing another skill's files, use the installed location.
 ## Rule 4: Absolute machine paths `/Users/<name>/...` → `<USER_HOME>/...`
 Full computer paths must be neutralized.
 
-**BEFORE:** `e.g. "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/link-checker"`
+**BEFORE:** `e.g. "./plugins/link-checker"`
 **AFTER:**  `e.g. "<USER_HOME>/Projects/agent-plugins-skills/plugins/link-checker"`
 
 ---

@@ -161,7 +161,7 @@ Ollama does not scan for raw GGUF files. To register the existing model:
 
 ```bash
 cat > /tmp/Modelfile-gemma4 << 'EOF'
-FROM /Users/richardfremmerlid/Projects/local-llm-bench/llama.cpp/models/gemma-4-12b-UD-Q4_K_XL.gguf
+FROM ./local-llm-bench/llama.cpp/models/gemma-4-12b-UD-Q4_K_XL.gguf
 PARAMETER num_ctx 32768
 PARAMETER num_gpu 99
 EOF

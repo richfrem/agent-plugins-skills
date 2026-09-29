@@ -8,10 +8,10 @@ Please copy the text below the separator into your new GitHub Copilot Claude Son
 
 Hey Claude, we are going to use the `superpowers` plugin installed in this workspace to execute an architectural refactor of a different plugin. 
 
-**Context:** We need to update our `exploration-cycle-plugin` (located at `/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/exploration-cycle-plugin`) to implement a new custom orchestrator dashboard pattern (which we refer to as "Option 1.5").
+**Context:** We need to update our `exploration-cycle-plugin` (located at `./plugins/exploration-cycle-plugin`) to implement a new custom orchestrator dashboard pattern (which we refer to as "Option 1.5").
 
 **Input Material:** I have prepared a detailed implementation plan that describes exactly what we are building. The path is:
-`/Users/richardfremmerlid/Projects/AI-Research/07-Opportunities/03-Exploration-and-Design/dashboard-pattern-refactor/sme-orchestrator-implementation-plan.md`
+`./AI-Research/07-Opportunities/03-Exploration-and-Design/dashboard-pattern-refactor/sme-orchestrator-implementation-plan.md`
 
 ### Your Instructions:
 1. Please start by invoking the `brainstorming` skill (refer to its rules in `superpowers/skills/brainstorming/SKILL.md`). 

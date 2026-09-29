@@ -80,7 +80,7 @@ When triggered to perform runtime observation:
             {
               "file": "tests/characterization/fixtures/portfolio-mock.json",
               "violation_type": "Absolute Path Leakage",
-              "offending_value": "/Users/richardfremmerlid/Projects/agent-plugins-skills/...",
+              "offending_value": "./...",
               "remediation": "Replaced with ${FIXTURE_ROOT}"
             }
           ]
