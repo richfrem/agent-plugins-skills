@@ -2,6 +2,32 @@
 
 Persistent tracking of architectural friction, structural anomalies, and unclosed loops across sessions.
 
+## DEBT-20260929-WINDOWS-CONSOLE-ENCODING (RESOLVED)
+
+- Logged date: 2026-09-29
+- Cycle/Session ID: fix-rules-sync-and-windows-compat
+- Artifact affected: `plugins/agent-agentic-os/scripts/control_plane/coordinator.py`, `plugins/agent-agentic-os/scripts/agent_control.py`
+- Friction observed: Running `agent_control.py coordinate-transition` in downstream Windows environment (cp1252 codepage console) crashed with `UnicodeEncodeError: 'charmap' codec can't encode character '\u2713'` when outputting the transition checklist.
+- Why not fixed now: Fixed immediately in upstream.
+- Recommended fix / fix applied: Reconfigured `sys.stdout` and `sys.stderr` to UTF-8 (`errors="replace"`) at entrypoint in `agent_control.py`, and replaced Unicode checkmark symbols `✓`/`✗` with ASCII-safe `PASS`/`FAIL` markers in `coordinator.py`. Added subprocess regression coverage with `PYTHONIOENCODING=cp1252` in `test_transition_guidance.py`.
+- Evidence/repro: Subprocess test `test_coordinate_transition_subprocess_cp1252_encoding` passes cleanly.
+- Severity: H
+- Repeat: NO
+- Status: RESOLVED
+
+## DEBT-20260929-WINDOWS-SIGNING-ISOLATION-CHECK (RESOLVED)
+
+- Logged date: 2026-09-29
+- Cycle/Session ID: fix-rules-sync-and-windows-compat
+- Artifact affected: `plugins/agent-agentic-os/scripts/control_plane/isolation_check.py`, `plugins/agent-agentic-os/scripts/control_plane/simulation_identity.py`, `plugins/agent-agentic-os/scripts/control_plane/ssh_signing.py`, `plugins/agent-agentic-os/skills/work-intake/SKILL.md`
+- Friction observed: Running `setup_ciba_identity.py --check` on Windows crashed with `AttributeError: module 'os' has no attribute 'geteuid'`. Additionally, Win32-OpenSSH subprocess failed with exit code 255 due to `_scrubbed_env` stripping `PROGRAMDATA` and Windows system paths. Furthermore, `work-intake` instructions instructed agents to run approver identity checks and isolation status at the start of intake, stalling planning-only document authoring.
+- Why not fixed now: Fixed immediately in upstream.
+- Recommended fix / fix applied: Guarded `os.geteuid()` across `isolation_check.py` and `simulation_identity.py`; cleanly reported `WINDOWS_ISOLATION_UNSUPPORTED` on Windows rather than failing with attribute errors; preserved necessary Windows environment variables (`PROGRAMDATA`, `SYSTEMROOT`) in `ssh_signing.py._scrubbed_env`; and updated `work-intake/SKILL.md` to distinguish draft document authoring from Gate 1 execution signing gates.
+- Evidence/repro: `pytest plugins/agent-agentic-os/tests/test_domain_namespaces.py` and `test_setup_ciba_identity.py` pass; `python plugins/agent-agentic-os/scripts/setup_ciba_identity.py --check` executes without crashing.
+- Severity: H
+- Repeat: NO
+- Status: RESOLVED
+
 ## DEBT-20260927-OS-INIT-AGENTS-SINGLE-SOURCE (RESOLVED)
 
 - Logged date: 2026-09-27

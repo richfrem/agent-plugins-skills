@@ -131,7 +131,7 @@ def _isolation_status() -> Dict[str, Any]:
                       "Separation of approvals is enforced for normal use, not against a hostile agent, until you create it.",
             "commands": privileged_account_commands(),
         }
-    if uid == os.geteuid():
+    if hasattr(os, "geteuid") and uid == os.geteuid():
         return {"ready": False, "detail": f"This process runs as the agent account '{DEFAULT_AGENT_NAME}'; run the status as yourself.", "commands": []}
     return {
         "ready": False,

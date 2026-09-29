@@ -307,7 +307,7 @@ class TransitionCoordinator:
         # Display checklist
         self._out.write("Checklist:\n")
         for passed, item in checklist_status:
-            mark = "✓" if passed else "✗"
+            mark = "PASS" if passed else "FAIL"
             status_text = "PASS" if passed else "FAIL"
             self._out.write(f"[{mark}] {item} ({status_text})\n")
         self._out.write("\n")

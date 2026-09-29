@@ -52,6 +52,7 @@ Usage:
 import errno
 import os
 import stat
+import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Set, Tuple, Union
@@ -177,6 +178,9 @@ def _check_chain(
 def _check_owner(
     st: os.stat_result, path: Path, euid: int, agent_uid: Optional[int], failures: List[IsolationFailure]
 ) -> None:
+    if not hasattr(os, "geteuid") and sys.platform.startswith("win"):
+        # On Windows, st.st_uid is dummy (0) and POSIX ownership does not apply
+        return
     if st.st_uid != euid:
         failures.append(
             IsolationFailure("NOT_OWNED_BY_HUMAN", str(path), f"owner uid {st.st_uid} is not the human uid {euid}")
@@ -252,18 +256,27 @@ def check_isolation(
     ownership/mode/symlink/ancestor checks. The DB is intentionally not inspected.
     Every failure is reported. Container/sandbox markers are evidence only."""
     failures: List[IsolationFailure] = []
-    human_uid = os.geteuid() if euid is None else euid
+    if sys.platform.startswith("win") and euid is None:
+        failures.append(
+            IsolationFailure(
+                "WINDOWS_ISOLATION_UNSUPPORTED",
+                None,
+                "Windows: account and folder-permission isolation is not auto-detected; follow references/isolation-setup.md",
+            )
+        )
+    human_uid = (os.geteuid() if hasattr(os, "geteuid") else 0) if euid is None else euid
     env = os.environ if environ is None else environ
 
     resolved_uid, gids = _resolve_agent_identity(agent_name, agent_uid, agent_gids)
     if resolved_uid is None:
-        failures.append(
-            IsolationFailure(
-                "IDENTITY_UNRESOLVED",
-                None,
-                f"cannot resolve agent account '{agent_name}'; create it per references/isolation-setup.md",
+        if not sys.platform.startswith("win"):
+            failures.append(
+                IsolationFailure(
+                    "IDENTITY_UNRESOLVED",
+                    None,
+                    f"cannot resolve agent account '{agent_name}'; create it per references/isolation-setup.md",
+                )
             )
-        )
     elif human_uid == resolved_uid:
         failures.append(
             IsolationFailure("EUID_IS_AGENT", None, "the verifying process runs as the agent uid")
@@ -301,7 +314,7 @@ def open_protected_readonly(
     Raises IsolationError for a symlink, a non-regular file, a wrong owner, a wrong
     mode, or any mode bit in `forbidden_mode_bits` (e.g. 0o022 for group/other write). Verification uses fstat on the opened descriptor, so a swap after
     the check cannot change what was verified."""
-    uid = os.geteuid() if expected_uid is None else expected_uid
+    uid = (os.geteuid() if hasattr(os, "geteuid") else 0) if expected_uid is None else expected_uid
     flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_CLOEXEC", 0)
     try:
         fd = os.open(path, flags)
@@ -312,7 +325,7 @@ def open_protected_readonly(
         st = os.fstat(fd)
         if not stat.S_ISREG(st.st_mode):
             raise IsolationError(f"{path} is not a regular file")
-        if st.st_uid != uid:
+        if (hasattr(os, "geteuid") or expected_uid is not None) and st.st_uid != uid:
             raise IsolationError(f"{path} owner uid {st.st_uid} is not the expected uid {uid}")
         mode = stat.S_IMODE(st.st_mode)
         if expected_mode is not None and mode != expected_mode:
