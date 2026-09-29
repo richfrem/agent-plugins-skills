@@ -19,6 +19,18 @@ Usage:
   python symlink_manager.py audit   [--manifest symlinks.json]
   python symlink_manager.py list    [--manifest symlinks.json]
   python symlink_manager.py remove  --dst <link>
+
+Policy guards (plugin-architecture-policy §5):
+  - File-level links only: a directory source is refused by `create` and
+    reported by `audit`/`diagnose`.
+  - Installer-owned folders (.agents/skills|rules|workflows|hooks|agents,
+    .claude/*, .gemini/*, .github/skills|prompts|rules) are written and cleaned by
+    the plugin installer/syncer; links placed inside them are refused/reported.
+
+Key Functions (Index):
+  - policy_violations(entry, root) - policy problems for one manifest entry
+  - create_link / remove_link / link_status - filesystem operations
+  - cmd_diagnose / cmd_create / cmd_restore / cmd_audit / cmd_list / cmd_remove - CLI
 """
 
 from __future__ import annotations
@@ -122,6 +134,29 @@ class Manifest:
 IS_WINDOWS = platform.system() == "Windows"
 IS_MACOS = platform.system() == "Darwin"
 IS_LINUX = platform.system() == "Linux"
+
+
+# Folders the plugin installer/syncer own: they materialize and clean these, so a
+# manifest-managed link inside them conflicts with the installer and cannot persist.
+INSTALLER_OWNED_PREFIXES = (
+    ".agents/skills/", ".agents/rules/", ".agents/workflows/", ".agents/hooks/", ".agents/agents/",
+    ".claude/skills/", ".claude/commands/", ".claude/rules/", ".claude/agents/", ".claude/hooks/",
+    ".gemini/skills/", ".gemini/commands/", ".gemini/rules/",
+    ".github/skills/", ".github/prompts/", ".github/rules/",
+)
+
+
+def policy_violations(entry: "LinkEntry", root: Path) -> list[str]:
+    """Return plugin-architecture-policy violations for one manifest entry (empty if compliant)."""
+    problems: list[str] = []
+    if entry.src_path(root).is_dir():
+        problems.append("directory symlink — policy allows file-level links only")
+    dst = entry.dst.replace("\\", "/")
+    if dst.startswith("./"):
+        dst = dst[2:]
+    if any((dst + "/").startswith(prefix) for prefix in INSTALLER_OWNED_PREFIXES):
+        problems.append("link inside an installer-owned folder — the plugin installer/syncer owns and cleans it")
+    return problems
 
 
 def is_admin() -> bool:
@@ -431,6 +466,13 @@ def cmd_create(args: argparse.Namespace) -> None:
     src_abs = src if src.is_absolute() else root / src
     dst_abs = dst if dst.is_absolute() else root / dst
 
+    candidate = LinkEntry(src=str(src).replace("\\", "/"), dst=str(dst).replace("\\", "/"))
+    problems = policy_violations(candidate, root)
+    if problems:
+        for problem in problems:
+            print(f"  ✗ {dst}  →  {src}  refused: {problem}", file=sys.stderr)
+        sys.exit(1)
+
     ok, msg, strategy = create_link(src_abs, dst_abs)
     status = "✓" if ok else "✗"
     print(f"  {status} {dst}  →  {src}  [{strategy}]  {msg}")
@@ -506,6 +548,7 @@ def cmd_audit(args: argparse.Namespace, quiet_header: bool = False) -> None:
     print(f"  {'-'*40}  {'-'*30}  ------")
 
     broken = 0
+    violations = 0
     for entry in manifest.links:
         src_abs = entry.src_path(root)
         dst_abs = entry.dst_path(root)
@@ -513,11 +556,16 @@ def cmd_audit(args: argparse.Namespace, quiet_header: bool = False) -> None:
         print(f"  {entry.dst:<40}  {entry.src:<30}  {status}")
         if status.startswith("✗"):
             broken += 1
+        for problem in policy_violations(entry, root):
+            violations += 1
+            print(f"  {'':<40}  {'':<30}  ✗ policy: {problem}")
 
     print()
     if broken:
         print(f"  ⚠  {broken} broken link(s). Run 'restore' to fix.")
-    else:
+    if violations:
+        print(f"  ⚠  {violations} policy violation(s). Remove or replace these entries with 'remove --dst'; 'restore' cannot fix them.")
+    if not broken and not violations:
         print("  All links OK.")
 
 

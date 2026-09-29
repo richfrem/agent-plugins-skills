@@ -1313,3 +1313,16 @@ Persistent tracking of architectural friction, structural anomalies, and unclose
 - Severity: S
 - Repeat: NO
 - Status: RESOLVED
+
+## DEBT-20260929-SYMLINK-MANAGER-POLICY-GUARDS
+
+- Logged date: 2026-09-29
+- Cycle/Session ID: investmenttoolkit-daily-loop-repair
+- Artifact affected: `plugins/dev-utils/scripts/symlink_manager.py` (`create`, `audit`/`diagnose`)
+- Friction observed: InvestmentToolkit's symlinks.json held a directory symlink `.agents/rules` -> `.agent/rules`. `.agents/rules` is installer-owned (plugin rules for Antigravity; cleaned by `sync_with_inventory.py`), so the link never persisted and `diagnose` showed a permanent "broken link" that `restore` could not fix. `create` accepted both a directory source and a destination inside an installer-owned folder, although plugin-architecture-policy §5 allows file-level links only.
+- Why not fixed now: N/A — fixed on branch `feat/symlink-manager-policy-guards`.
+- Recommended fix: N/A — resolved. `policy_violations()` flags directory sources and destinations under installer-owned prefixes; `create` refuses them (exit 1, manifest untouched); `audit`/`diagnose` report existing violations with a `remove --dst` hint. Also noted, not changed: `sync_with_inventory.py` `run_plugin_installer()` (the only user of fixed-depth `PROJECT_ROOT = SCRIPT_DIR.parents[2]`) is never called — dead code; removal needs explicit approval under the deletion gate.
+- Evidence/repro: `plugins/dev-utils/tests/test_symlink_manager_policy.py` (3 red before, 4 green after); dev-utils suite 19 passed; this repo's own manifest audits clean.
+- Severity: S
+- Repeat: NO
+- Status: RESOLVED
