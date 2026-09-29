@@ -110,12 +110,12 @@ def clean_plugin_artifacts(plugin_name: str, root: Path, dry_run: bool) -> None:
                         else:
                             art_path.unlink()
                     removed_count += 1
-            if not dry_run:
-                ownership_file.unlink()
+            # Note: Do not unlink ownership_file here. The ownership manifest preserves user
+            # component preferences (should_install flags) across sync cycles.
         except Exception as e:
             print(f"    Warning: Failed to clean via ownership manifest: {e}")
             
-    if not ownership_file.exists() or removed_count == 0:
+    if removed_count == 0:
         for agent, config in AGENT_DIRS.items():
             for dir_path_str in config["dirs"]:
                 target_dir = root / dir_path_str

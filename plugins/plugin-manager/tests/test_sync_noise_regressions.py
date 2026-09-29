@@ -208,3 +208,34 @@ def test_skills_lock_records_content_change(tmp_path: Path):
     plugin_installer.write_project_lock(plugin, {"repository": "src"}, ["skill-a"], root)
     after = json.loads((root / "skills-lock.json").read_text(encoding="utf-8"))["skills"]["skill-a"]
     assert before["computedHash"] and after["computedHash"] != before["computedHash"]
+
+
+def test_sync_cleanup_preserves_ownership_manifest(tmp_path: Path):
+    """sync_with_inventory.clean_plugin_artifacts must never delete the ownership manifest."""
+    root = tmp_path / "consumer-root"
+    root.mkdir()
+    ownership_dir = root / ".agents" / "ownership"
+    ownership_dir.mkdir(parents=True)
+    manifest = ownership_dir / "sample-plugin.json"
+    manifest.write_text(json.dumps({
+        "plugin": "sample-plugin",
+        "components": {
+            "skills": {
+                "skill-a": {"should_install": False, "artifacts": [".agents/skills/skill-a"]}
+            }
+        },
+        "artifacts": [".agents/skills/skill-a"]
+    }), encoding="utf-8")
+
+    dummy_skill = root / ".agents" / "skills" / "skill-a"
+    dummy_skill.mkdir(parents=True)
+    (dummy_skill / "SKILL.md").write_text("# Test\n", encoding="utf-8")
+
+    sync_with_inventory.clean_plugin_artifacts("sample-plugin", root, dry_run=False)
+
+    # Artifact must be removed, but ownership manifest must be preserved intact!
+    assert not dummy_skill.exists()
+    assert manifest.exists()
+    saved = json.loads(manifest.read_text(encoding="utf-8"))
+    assert saved["components"]["skills"]["skill-a"]["should_install"] is False
+
