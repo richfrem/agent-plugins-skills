@@ -43,7 +43,10 @@ Key Functions (test cases):
 
 import inspect
 import os
-import pwd
+try:
+    import pwd
+except ImportError:
+    pwd = None
 import sqlite3
 import stat
 import sys
@@ -62,17 +65,24 @@ from control_plane.isolation_check import (
     open_protected_readonly,
 )
 
+pytestmark = pytest.mark.skipif(
+    sys.platform.startswith("win"),
+    reason="POSIX file ownership (chmod/chown/euid) and mode checks do not apply to Windows (see references/isolation-setup.md)",
+)
+
 
 def _other_uid() -> int:
     """A uid that is not the current user's (real account if available)."""
-    for name in ("nobody", "daemon"):
-        try:
-            uid = pwd.getpwnam(name).pw_uid
-            if uid != os.geteuid():
-                return uid
-        except KeyError:
-            continue
-    return os.geteuid() + 4242
+    current_uid = os.geteuid() if hasattr(os, "geteuid") else 1000
+    if pwd is not None:
+        for name in ("nobody", "daemon"):
+            try:
+                uid = pwd.getpwnam(name).pw_uid
+                if uid != current_uid:
+                    return uid
+            except KeyError:
+                continue
+    return current_uid + 4242
 
 
 @pytest.fixture
@@ -215,7 +225,8 @@ def test_denies_symlink_in_ancestor(layout, tmp_path):
 
 def test_denies_file_owned_by_agent_uid(layout):
     """Files here are owned by the current user; declare that uid to be the agent."""
-    result = _run(layout, agent_uid=os.geteuid(), euid=os.geteuid() + 1)
+    current_uid = os.geteuid() if hasattr(os, "geteuid") else 1000
+    result = _run(layout, agent_uid=current_uid, euid=current_uid + 1)
     assert not result.ok
     assert "OWNED_BY_AGENT" in _codes(result)
 
@@ -329,9 +340,10 @@ def test_open_protected_readonly_rejects_wrong_mode(layout):
 
 
 def test_open_protected_readonly_rejects_wrong_owner(layout):
+    current_uid = os.geteuid() if hasattr(os, "geteuid") else 1000
     with pytest.raises(IsolationError):
         open_protected_readonly(
-            layout["allowed_signers"], expected_mode=0o600, expected_uid=os.geteuid() + 1
+            layout["allowed_signers"], expected_mode=0o600, expected_uid=current_uid + 1
         )
 
 
@@ -349,7 +361,7 @@ def test_open_protected_readonly_accepts_when_forbidden_bits_absent(layout):
 
 
 @pytest.mark.skipif(
-    os.geteuid() != 0 or not os.environ.get("AGENTIC_OS_REAL_AGENT_ACCOUNT"),
+    (not hasattr(os, "geteuid")) or os.geteuid() != 0 or not os.environ.get("AGENTIC_OS_REAL_AGENT_ACCOUNT"),
     reason="UNTESTED here: case 6b needs root (or equivalent) to run as the real "
     "agentic-os-local-agent account; non-root identity switching is unavailable on macOS",
 )

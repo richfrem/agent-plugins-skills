@@ -94,6 +94,19 @@ import argparse
 import json
 import os
 import sys
+
+# Ensure UTF-8 output on Windows consoles
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+if hasattr(sys.stderr, "reconfigure"):
+    try:
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 from pathlib import Path
 from typing import Callable, Dict, List, Optional, Any, Tuple
 
@@ -1361,6 +1374,7 @@ def _build_parser() -> argparse.ArgumentParser:
 
     """Constructs and returns CLI argument parser."""
     parser = argparse.ArgumentParser(description="SQLite Control Plane CLI for Agent Lifecycle")
+    parser.add_argument("--db-path", default=None, help="Explicit path to control_plane.db (default: context/control_plane.db)")
     sub = parser.add_subparsers(dest="subcommand")
 
     p_init = sub.add_parser("init")
@@ -1776,7 +1790,7 @@ def main():
         root = Path(args.repo_root).resolve() if args.repo_root else canonical_repo_root(".")
         sys.exit(run_selftest(default_layout(root), Path(args.key).expanduser()))
 
-    cp = ControlPlane()
+    cp = ControlPlane(db_path=getattr(args, "db_path", None))
     try:
         _dispatch_command(cp, args)
     except Exception as e:

@@ -497,3 +497,66 @@ def test_each_edge_guidance_carries_execution_unit_contract():
     for template in registry.get_all_templates():
         snapshot = registry.get_transition_guidance(template.from_state, template.to_state)
         assert set(snapshot["execution_guidance"]) == EXECUTION_GUIDANCE_UNITS
+
+
+def test_coordinate_transition_subprocess_cp1252_encoding(tmp_path):
+    """Failure 1 regression: coordinate-transition prints checklist without charmap/cp1252 encoding crash."""
+    import subprocess
+    import os
+
+    db_path = tmp_path / "control_plane.db"
+    script = SCRIPTS_DIR / "agent_control.py"
+    env = os.environ.copy()
+    env["PYTHONIOENCODING"] = "cp1252"
+    env["AGENT_CONTROL_DB"] = str(db_path)
+
+    # 1. Initialize DB and create task in INTAKE
+    subprocess.run(
+        [
+            sys.executable,
+            str(script),
+            "--db-path",
+            str(db_path),
+            "init",
+            "--task-id",
+            "cp1252-test-01",
+            "--title",
+            "Test cp1252",
+            "--runtime",
+            "codex",
+            "--human-confirmed",
+            "HUMAN-CONFIRMED: create task",
+        ],
+        check=True,
+        capture_output=True,
+        env=env,
+    )
+
+    # 2. Run coordinate-transition with PYTHONIOENCODING=cp1252
+    res = subprocess.run(
+        [
+            sys.executable,
+            str(script),
+            "--db-path",
+            str(db_path),
+            "coordinate-transition",
+            "--task-id",
+            "cp1252-test-01",
+            "--to",
+            "INTERVIEW",
+            "--human-confirmed",
+            "HUMAN-CONFIRMED: test cp1252 encoding without crashing",
+            "--answers",
+            '{"guidance_compliance_confirmation": "YES"}',
+        ],
+        capture_output=True,
+        env=env,
+        cwd=str(tmp_path),
+    )
+    # Must not crash with UnicodeEncodeError: 'charmap' codec can't encode character
+    stderr_text = res.stderr.decode("cp1252", errors="replace")
+    stdout_text = res.stdout.decode("cp1252", errors="replace")
+    assert "UnicodeEncodeError" not in stderr_text
+    assert "UnicodeEncodeError" not in stdout_text
+    assert "Checklist:" in stdout_text
+    assert res.returncode == 0

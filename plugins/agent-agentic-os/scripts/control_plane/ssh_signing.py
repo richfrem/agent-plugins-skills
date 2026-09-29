@@ -166,7 +166,14 @@ def fido_supported(version: Optional[Tuple[int, int]], platform: str = sys.platf
 
 def _scrubbed_env() -> dict:
     """Minimal environment for ssh-keygen: no SSH_AUTH_SOCK, no inherited secrets."""
-    return {"PATH": os.environ.get("PATH", os.defpath), "LC_ALL": "C"}
+    env = {"PATH": os.environ.get("PATH", os.defpath), "LC_ALL": "C"}
+    if sys.platform.startswith("win"):
+        # Win32-OpenSSH requires PROGRAMDATA (and system roots) to find /etc/ssh / ssh_config and crypto state
+        for key in ("SYSTEMROOT", "SYSTEMDRIVE", "PROGRAMDATA", "USERPROFILE", "LOCALAPPDATA", "APPDATA", "TMP", "TEMP"):
+            val = os.environ.get(key)
+            if val is not None:
+                env[key] = val
+    return env
 
 
 def _run(argv: Sequence[str], data: Optional[bytes], timeout: float) -> Tuple[int, bytes, bytes]:

@@ -56,7 +56,8 @@ class TestHuman:
         op_fields = (self._dir / "operator_id.pub").read_text().split()
         self._operator_pub = (op_fields[0], op_fields[1])
         # an agent identity that is not this process, so the isolation check passes as in an isolated setup
-        self.agent_identity: Dict[str, Any] = {"agent_name": "no-such-agent-account", "agent_uid": os.geteuid() + 4242, "agent_gids": set()}
+        current_uid = os.geteuid() if hasattr(os, "geteuid") else 1000
+        self.agent_identity: Dict[str, Any] = {"agent_name": "no-such-agent-account", "agent_uid": current_uid + 4242, "agent_gids": set()}
 
     def ensure_identity(self, repo_root: Path):
         """Enroll the test key under repo_root's context/identity, which must be inside the temp dir.

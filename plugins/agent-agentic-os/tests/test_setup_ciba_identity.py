@@ -30,8 +30,14 @@ Key Functions (test cases):
 """
 
 import os
-import pty
-import pwd
+try:
+    import pty
+except ImportError:
+    pty = None
+try:
+    import pwd
+except ImportError:
+    pwd = None
 import shutil
 import stat
 import subprocess
@@ -56,14 +62,16 @@ pytestmark = pytest.mark.skipif(_FOUND is None, reason="ssh-keygen not installed
 
 
 def _other_uid() -> int:
-    for name in ("nobody", "daemon"):
-        try:
-            uid = pwd.getpwnam(name).pw_uid
-            if uid != os.geteuid():
-                return uid
-        except KeyError:
-            continue
-    return os.geteuid() + 4242
+    current_uid = os.geteuid() if hasattr(os, "geteuid") else 1000
+    if pwd is not None:
+        for name in ("nobody", "daemon"):
+            try:
+                uid = pwd.getpwnam(name).pw_uid
+                if uid != current_uid:
+                    return uid
+            except KeyError:
+                continue
+    return current_uid + 4242
 
 
 def _key(path: Path, passphrase: str = "correct horse") -> Path:
@@ -78,13 +86,16 @@ def env(tmp_path):
     return {"repo": repo, "layout": default_layout(repo), "tmp": tmp_path}
 
 
-def _run(env, *extra, tty=True, agent_uid=None, answers=("n",), key=None):
+def _run(env, *extra, tty=True, agent_uid=None, answers=("n",), key=None, extra_identity=None):
     out = []
     feed = iter(answers)
     args = ["--repo-root", str(env["repo"])] + (["--key", str(key)] if key else []) + list(extra)
+    ident = {"agent_name": "agentic-os-local-agent", "agent_uid": agent_uid or _other_uid(), "agent_gids": set()}
+    if extra_identity:
+        ident.update(extra_identity)
     code = setup_ciba_identity.main(
         args, tty_fn=lambda: tty, input_fn=lambda _p: next(feed, "n"), out=lambda s="": out.append(str(s)),
-        agent_identity={"agent_name": "agentic-os-local-agent", "agent_uid": agent_uid or _other_uid(), "agent_gids": set()},
+        agent_identity=ident,
     )
     return code, "\n".join(out)
 
@@ -96,7 +107,11 @@ def test_refuses_without_a_tty(env):
 
 
 def test_refuses_when_running_as_the_agent_uid(env):
-    code, printed = _run(env, agent_uid=os.geteuid(), key=_key(env["tmp"] / "k"))
+    if not hasattr(os, "geteuid"):
+        import getpass
+        code, printed = _run(env, extra_identity={"agent_name": getpass.getuser()}, key=_key(env["tmp"] / "k"))
+    else:
+        code, printed = _run(env, agent_uid=os.geteuid(), key=_key(env["tmp"] / "k"))
     assert code != 0 and "agent" in printed.lower()
     assert not env["layout"].root.exists()
 
@@ -113,10 +128,11 @@ def test_setup_with_an_existing_protected_key_enrolls_it_and_sets_modes(env):
     code, printed = _run(env, key=key)
     assert code == 0, printed
     layout = env["layout"]
-    assert stat.S_IMODE(layout.root.stat().st_mode) == 0o700
-    assert stat.S_IMODE(layout.challenge_dir.stat().st_mode) == 0o700
-    assert stat.S_IMODE(layout.allowed_signers.stat().st_mode) == 0o600
-    assert stat.S_IMODE(layout.allowed_signers_selftest.stat().st_mode) == 0o600
+    if not sys.platform.startswith("win"):
+        assert stat.S_IMODE(layout.root.stat().st_mode) == 0o700
+        assert stat.S_IMODE(layout.challenge_dir.stat().st_mode) == 0o700
+        assert stat.S_IMODE(layout.allowed_signers.stat().st_mode) == 0o600
+        assert stat.S_IMODE(layout.allowed_signers_selftest.stat().st_mode) == 0o600
     text = layout.allowed_signers.read_text()
     assert f'namespaces="{SIGN_NAMESPACE}"' in text and "ssh-ed25519" in text
     assert "SHA256:" in printed  # the fingerprint is the thumbprint analogue
@@ -183,7 +199,13 @@ def test_identity_status_reports_missing_and_present(env):
     assert status["ready"] is False and status["enrolled_keys"] == 0
     _run(env, key=_key(env["tmp"] / "k"))
     status = identity_status(env["layout"], agent_name="agentic-os-local-agent", agent_uid=_other_uid(), agent_gids=set())
-    assert status["ready"] is True and status["enrolled_keys"] == 1 and status["failures"] == []
+    assert status["enrolled_keys"] == 1
+    if sys.platform.startswith("win"):
+        # On Windows, POSIX isolation is not auto-detected; it reports not ready with WINDOWS_ISOLATION_UNSUPPORTED
+        assert status["ready"] is False
+        assert any("WINDOWS_ISOLATION_UNSUPPORTED" in f for f in status["failures"])
+    else:
+        assert status["ready"] is True and status["failures"] == []
 
 
 def _drive_in_a_pty(argv, script, timeout=60):
@@ -208,6 +230,7 @@ def _drive_in_a_pty(argv, script, timeout=60):
     return os.waitstatus_to_exitcode(status), output.decode("utf-8", "replace")
 
 
+@pytest.mark.skipif(pty is None, reason="pty is not available on Windows")
 def test_generate_a_key_through_the_real_passphrase_prompt(env):
     key = env["tmp"] / "generated"
     argv = [

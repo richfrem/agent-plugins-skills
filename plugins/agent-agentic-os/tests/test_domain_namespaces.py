@@ -96,17 +96,19 @@ def test_migrate_rewrites_legacy_lines_in_both_files_and_is_idempotent(tmp_path)
     assert f'namespaces="{SIGN_NAMESPACE}"' in layout.allowed_signers.read_text()
     assert f'namespaces="{SELFTEST_NAMESPACE}"' in layout.allowed_signers_selftest.read_text()
     assert layout.allowed_signers.read_text().split()[-1] == before  # the key itself is untouched
-    assert stat.S_IMODE(layout.allowed_signers.stat().st_mode) == 0o600
+    if not sys.platform.startswith("win"):
+        assert stat.S_IMODE(layout.allowed_signers.stat().st_mode) == 0o600
     assert migrate_namespaces(layout) == 0
 
 
 def test_status_flags_a_legacy_namespace_as_not_ready(tmp_path):
     layout, _ = _legacy_identity(tmp_path)
-    status = identity_status(layout, agent_name="no-such-agent-xyz", agent_uid=os.geteuid() + 4242, agent_gids=set())
+    current_uid = os.geteuid() if hasattr(os, "geteuid") else 1000
+    status = identity_status(layout, agent_name="no-such-agent-xyz", agent_uid=current_uid + 4242, agent_gids=set())
     assert status["ready"] is False
     assert any("LEGACY_NAMESPACE" in f for f in status["failures"])
     migrate_namespaces(layout)
-    status = identity_status(layout, agent_name="no-such-agent-xyz", agent_uid=os.geteuid() + 4242, agent_gids=set())
+    status = identity_status(layout, agent_name="no-such-agent-xyz", agent_uid=current_uid + 4242, agent_gids=set())
     assert not any("LEGACY_NAMESPACE" in f for f in status["failures"])
 
 
