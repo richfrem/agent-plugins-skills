@@ -12,7 +12,7 @@ Contents
 
 A single absolute path, e.g.:
 
-/Users/richardfremmerlid/Projects/hermes-agent/tasks
+./hermes-agent/tasks
 
 Behavior
 

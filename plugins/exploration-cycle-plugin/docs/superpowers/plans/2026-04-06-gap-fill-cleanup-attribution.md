@@ -27,7 +27,7 @@ However, a post-merge audit identified four outstanding gaps:
 
 All work is done inside:
 ```
-/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/exploration-cycle-plugin/
+./plugins/exploration-cycle-plugin/
 ```
 
 Do NOT modify any files outside this directory.

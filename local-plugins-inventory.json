@@ -3,25 +3,25 @@
     "name": "agent-agentic-os",
     "description": "An opinionated learning layer and harnessing discipline above what Claude Code ships natively. Provides a structured memory hierarchy, a continuous improvement loop for model instructions, and multi-agent event bus coordination. Designed for developers running long-horizon workflows who need a cohesive feedback control system rather than isolated orchestration primitives.",
     "version": "1.8.0",
-    "path": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/agent-agentic-os"
+    "path": "./plugins/agent-agentic-os"
   },
   {
     "name": "agent-orchestration",
     "description": "Composable agent loop architectures for learning loops, agent orchestration (0-to-N inner agents), and red team coordination. Framework-agnostic: works with any CLI agent (Claude, Gemini, Copilot, OpenHands, etc.).",
     "version": "2.0.0",
-    "path": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/agent-orchestration"
+    "path": "./plugins/agent-orchestration"
   },
   {
     "name": "agent-memory",
     "description": "Unified Cognitive Memory & Retrieval Suite. Integrates RLM summaries, ChromaDB vector semantic search, and session caching / tiered promotion-demotion memory management.",
     "version": "1.0.0",
-    "path": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/agent-memory"
+    "path": "./plugins/agent-memory"
   },
   {
     "name": "agent-scaffolders",
     "description": "Meta-plugin containing ecosystem generation and auditing primitives.",
     "version": "2.1.0",
-    "path": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/agent-scaffolders",
+    "path": "./plugins/agent-scaffolders",
     "skills": [
       "audit-plugin",
       "audit-skill",
@@ -49,36 +49,36 @@
     "name": "cli-agents",
     "description": "Unified CLI sub-agent orchestration suite utilizing Claude, Gemini, and GitHub Copilot models for sandboxed, persona-based repository analysis, security audits, and QA.",
     "version": "1.0.0",
-    "path": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/cli-agents"
+    "path": "./plugins/cli-agents"
   },
   {
     "name": "dependency-management",
     "description": "Python dependency management with pip-compile locked-file workflow and tiered hierarchy for Python backends.",
     "version": "2.0.0",
-    "path": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/dependency-management"
+    "path": "./plugins/dependency-management"
   },
   {
     "name": "dev-utils",
     "description": "Unified Developer Utilities Suite. Collection of stateless tools for context bundling, diagram rendering, Kanban board task management, ADR auditing, text humanization, and markdown link verification.",
     "version": "1.0.0",
-    "path": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/dev-utils"
+    "path": "./plugins/dev-utils"
   },
   {
     "name": "exploration-cycle-plugin",
     "description": "Autonomous discovery, business requirements capture, and prototyping loop for spec-driven engineering.",
     "version": "0.1.0",
-    "path": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/exploration-cycle-plugin"
+    "path": "./plugins/exploration-cycle-plugin"
   },
   {
     "name": "obsidian-wiki-engine",
     "description": "Obsidian Wiki Engine - Karpathy-style LLM wiki + RLM distillation + vector search. Dual-representation knowledge graph: vault operations, cross-source concept synthesis, wiki node generation, RLM distillation, semantic health linting, graph traversal, canvas, bases, and progressive-disclosure query with vector DB Phase 2.",
     "version": "3.1.0",
-    "path": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/obsidian-wiki-engine"
+    "path": "./plugins/obsidian-wiki-engine"
   },
   {
     "name": "plugin-manager",
     "description": "Orchestration hub for the plugin ecosystem. Manages structural audits, agent environment sync (install + cleanup orphans), cross-repo plugin replication, and Universal Bridge Installation to adapt standard plugins to 30+ target environments (GitHub Copilot, Gemini, Cursor, Roo, etc).",
     "version": "2.0.0",
-    "path": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/plugin-manager"
+    "path": "./plugins/plugin-manager"
   }
 ]

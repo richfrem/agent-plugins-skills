@@ -98,9 +98,9 @@ Designed to eliminate the cold prefill cost for repeated calls with the same sys
 
 ## 5. Key Files to Monitor
 
-1. **[run_server.py](file:///Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/cli-agents/scripts/run_server.py)**: The central tuning authority. Cross-platform: auto-detects binary, model, and thread count.
-2. **[run_claude.py](file:///Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/cli-agents/scripts/run_claude.py)**: Launches the session proxy, applies settings overrides, and starts Claude Code CLI.
-3. **[routing_proxy.py](file:///Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/cli-agents/scripts/routing_proxy.py)**: Decodes model flags and dispatches traffic. Handles both `/v1/messages` and `/v1/chat/completions`. Includes KV cache wiring.
-4. **[kv_cache_orchestrator.py](file:///Users/richardfremmerlid/Projects/agent-plugins-skills/plugins/cli-agents/scripts/kv_cache_orchestrator.py)**: Disk-persistent KV slot save/restore middleware. ds4-inspired, stdlib only.
+1. **[run_server.py](file://./plugins/cli-agents/scripts/run_server.py)**: The central tuning authority. Cross-platform: auto-detects binary, model, and thread count.
+2. **[run_claude.py](file://./plugins/cli-agents/scripts/run_claude.py)**: Launches the session proxy, applies settings overrides, and starts Claude Code CLI.
+3. **[routing_proxy.py](file://./plugins/cli-agents/scripts/routing_proxy.py)**: Decodes model flags and dispatches traffic. Handles both `/v1/messages` and `/v1/chat/completions`. Includes KV cache wiring.
+4. **[kv_cache_orchestrator.py](file://./plugins/cli-agents/scripts/kv_cache_orchestrator.py)**: Disk-persistent KV slot save/restore middleware. ds4-inspired, stdlib only.
 5. **`~/.claude/proxy/kv_cache/`**: KV slot state files (`<sha256>.bin` + `<sha256>.json` sidecars).
 6. **`~/.claude/settings.json`**: Patched to prevent attribution header cache invalidation (`CLAUDE_CODE_ATTRIBUTION_HEADER: "0"`, `DISABLE_TELEMETRY: "1"`).
