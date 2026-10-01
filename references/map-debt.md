@@ -1352,3 +1352,16 @@ Persistent tracking of architectural friction, structural anomalies, and unclose
 - Severity: S
 - Repeat: NO
 - Status: RESOLVED
+
+## DEBT-20261001-PLUGIN-INSTALLER-NESTED-POINTERS (RESOLVED)
+
+- Logged date: 2026-10-01
+- Cycle/Session ID: fix-plugin-installer-1001
+- Artifact affected: `plugins/plugin-manager/scripts/plugin_installer.py`
+- Friction observed: Installing a skill whose path pointer targeted another pointer copied the intermediate pointer text into `.agents/skills/`, leaving the installed script unusable.
+- Why not fixed now: Fixed immediately on the requested feature branch.
+- Recommended fix / fix applied: Resolve pointer-file chains recursively with cycle detection; preserve best-effort copying for missing pointer targets.
+- Evidence/repro: `plugins/plugin-manager/tests/test_pointer_resolution.py` fails before the fix and passes after; the reported SharePoint source chain now copies byte-for-byte from its canonical script; plugin-manager suite: 61 passed.
+- Severity: M
+- Repeat: NO
+- Status: RESOLVED
