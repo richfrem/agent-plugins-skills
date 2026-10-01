@@ -2,6 +2,26 @@
 
 All notable changes to `agent-agentic-os` are documented here.
 
+## v1.11.0 — 2026-10-01
+
+### Added
+- `skills/os-control-plane-mode/`: enable, disable or check the control plane as one unit, on demand, so the full pipeline can be used for large tasks and switched off for quick ones to save context and time. A declared mode (`context/control-plane-mode`, missing means enabled) replaces "the control plane is whatever happens to be installed". `disable` declares the mode, unwires the two control-plane git guards, switches the member skills/rule off in the ownership file and runs the plugin syncer; `enable` reverses it, with the order chosen so gates are only ever on while the machinery behind them exists. `control_plane_mode.py status|enable|disable` requires `--yes` to change anything, supports `--dry-run`, backs up what it touches, never touches `context/control_plane.db`, and exits non-zero when the repo does not match the declared mode.
+- `skills/os-control-plane-mode/control-plane.manifest.json`: the single declared list of what the control plane consists of (members, git guards, never-removed items, explicit exclusions with reasons). `tests/test_control_plane_mode_manifest.py` fails when a skill, rule or agent mentions the control plane without being classified, so the list cannot rot silently.
+- `scripts/control_plane_hooks.py`: the single implementation of guard wiring (`wire_guard`, `unwire_guard`, `guard_state`) and of the declared mode, shared by `os-init` and the new skill through registered symlinks.
+
+### Changed
+- `pre-commit-pipeline-guard` and `pre-push-review-guard` exit 0 with a visible note when the mode is `disabled`, and behave exactly as before when the file is missing or says `enabled`. An unrecognised value never disables a gate.
+- `init_agentic_os.py` no longer installs or wires the two control-plane guards when the mode is `disabled`, so re-running os-init (or `--retrofit`, `--install-hooks`) cannot silently re-enable them. The inline wiring code moved into `control_plane_hooks.py`. A dispatcher hook that lacks `HOOKS_DIR` now gets it defined before the stanza that uses it.
+- `os-health-check` Phase 3.5 treats `disabled` as an intentional state instead of a Tier 1 MISSING finding, and flags a mode that does not match the repo.
+
+### Fixed
+- `tests/test_signed_approval_human_receipt.py::test_checklist_does_not_tick_a_failing_check` asserted the retired `[✓]` / `[✗]` checklist markers. The coordinator prints `[PASS] <item> (PASS)` / `[FAIL] <item> (FAIL)`, so the test's first assertion had been passing vacuously and its second could never pass (it failed on a clean `main`). It now asserts the real format.
+- `init_agentic_os.py` fails with a clear instruction (re-run the plugin sync) instead of a double traceback when `control_plane_hooks.py` is missing next to it.
+
+### Known follow-ups
+- `rules/worktree-lifecycle-management` and `agents/os-architect-agent` still describe control-plane registration steps unconditionally; they are excluded from the toggle (they are useful without gating) and should be made conditional on the mode.
+- `pre-commit-evolution-guard` and its CI gate are a separate feature and are not affected by the mode.
+
 ## v1.10.0 — 2026-09-20
 
 ### Added

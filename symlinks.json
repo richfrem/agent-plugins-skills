@@ -11448,6 +11448,18 @@
       "dst": "plugins/agent-agentic-os/skills/os-init/scripts/pre-push-review-guard",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane_hooks.py",
+      "dst": "plugins/agent-agentic-os/skills/os-init/scripts/control_plane_hooks.py",
+      "strategy": "symlink",
+      "description": "shared control-plane guard wiring + declared mode (installer uses it)"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane_hooks.py",
+      "dst": "plugins/agent-agentic-os/skills/os-control-plane-mode/scripts/control_plane_hooks.py",
+      "strategy": "symlink",
+      "description": "shared control-plane guard wiring + declared mode (toggle skill uses it)"
     }
   ]
 }

@@ -86,7 +86,10 @@ lingering `.bak` files, and per-plugin `references/evolution-log.md`. Run this o
 check, not just once — a stale `init_agentic_os.py` copy can reintroduce gaps (see
 DEBT-20260905-12/-13/-14). Any MISSING result is a Tier 1 finding — recommend re-running
 `init_agentic_os.py --target . --retrofit` (idempotent, safe to re-run). Exact commands are
-in `references/detailed-reference.md`.
+in `references/detailed-reference.md`. **Read the declared control-plane mode first**
+(`os-control-plane-mode` `status`): a control plane that is `disabled` on purpose is healthy, not
+MISSING, and a mode that does not match the repo is a Tier 1 finding fixed by re-running the
+toggle, not by retrofit.
 
 When `plugins/cli-agents` is installed, also report the state of the optional
 `context/agent-capability-profile.json` profile: missing means setup discovery

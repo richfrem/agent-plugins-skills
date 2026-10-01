@@ -76,6 +76,7 @@ for reliable execution.
 | Promote session learnings to long-term memory | `/os-memory` |
 | Check system health (event log, locks, memory) | `os-health-check` skill |
 | Fix a deadlocked agent (stale lock files) | `os-clean-locks` skill |
+| Turn the control plane (work-intake gating, commit/push guards) on or off, or check its mode | `os-control-plane-mode` skill |
 | Verify os-architect still works after a change | `os-architect-tester` agent |
 | Get a full explanation of how the OS works | `os-guide` skill |
 | Audit files for unresolved TODOs | `todo-check` skill |
@@ -152,6 +153,7 @@ Start here for all evolution and improvement work. Everything else is called by 
 |-------|---------|
 | `optimize-agent-instructions` | Audits and rewrites AI agent instruction files |
 | `os-clean-locks` | Removes stale lock files to resolve deadlocked agents |
+| `os-control-plane-mode` | Enables, disables or checks the control plane as one unit (member skills and rule, the two git guards, declared mode), so the full pipeline can be used for large tasks and switched off for quick ones |
 | `os-signing-setup` | Guides the human through creating the SSH signing key that authorizes the plan-approval, code-acceptance and closure gates, plus the interactive signing self-test (see the skill's README.md) |
 | `os-health-check` | System diagnostics — inspects event log, memory state, lock status (migrated from agent, 2026-09-05) |
 | `todo-check` | Audits files for TODO comments |

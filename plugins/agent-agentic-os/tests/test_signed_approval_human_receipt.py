@@ -70,5 +70,8 @@ def test_checklist_does_not_tick_a_failing_check(tmp_path, monkeypatch):
             task_id="t1", to_state="IN_WORKTREE", actor="simulator", reason="checklist check", interactive=True,
         )
     text = out.getvalue()
-    assert "[✓] Deterministic check satisfied: human_approval" not in text
-    assert "[✗] Deterministic check satisfied: human_approval" in text
+    # coordinator.py prints "[PASS] <item> (PASS)" / "[FAIL] <item> (FAIL)". This test used to look for
+    # the retired "[✓]" / "[✗]" markers, so its first assertion could never fail (vacuous) and its
+    # second could never pass.
+    assert "[PASS] Deterministic check satisfied: human_approval" not in text
+    assert "[FAIL] Deterministic check satisfied: human_approval (FAIL)" in text
