@@ -47,7 +47,9 @@ Output:
     - Creates symlinks and updates skills-lock.json
 
     _is_pointer_file(): Checks if file is a pointer.
-    _copy_resolving_pointers(): Copies resolving pointers.
+    _process_symlink_item(): Copies symlink targets, including pointer files.
+    _process_file_item(): Resolves pointer chains and copies the final file.
+    _copy_resolving_pointers(): Copies trees while resolving pointer files.
     _symlink_or_copy(): Symlinks or copies fallback.
     _write_toml_command(): Writes TOML command wrapper.
     deploy_commands(): Deploys commands.
@@ -148,8 +150,9 @@ COPY_EXCLUDE_DIRS = frozenset({
     ".nyc_output",
 })
 
+# Git checkouts may materialize symlinks as text pointers, including nested targets.
 def _process_symlink_item(item: Path, dst_item: Path) -> None:
-    """Helper to process and copy a symlink item resolving its target."""
+    """Resolve and copy a symlink target, including pointer-file targets."""
     try:
         raw_target = os.readlink(str(item))
         real_src = (item.parent / raw_target).resolve()
@@ -157,31 +160,43 @@ def _process_symlink_item(item: Path, dst_item: Path) -> None:
             if real_src.name not in COPY_EXCLUDE_DIRS:
                 _copy_resolving_pointers(real_src, dst_item)
         elif real_src.is_file():
-            shutil.copy2(real_src, dst_item)
-    except (OSError, PermissionError) as e:
+            _process_file_item(real_src, dst_item)
+    except (OSError, RuntimeError) as e:
         print(f"    ! Could not resolve symlink {item.name}: {e}")
 
 
+# Follow each text pointer until reaching content, a missing target, or a cycle.
 def _process_file_item(item: Path, dst_item: Path) -> None:
-    """Helper to process and copy a pointer file or standard file."""
+    """Copy a file after resolving any chain of relative-path pointer files."""
+    resolved_sources: set[Path] = set()
     try:
-        if _is_pointer_file(item):
-            # Resolve the pointer relative to the file's location
-            rel_target = item.read_text(encoding="utf-8").strip()
-            real_src = (item.parent / rel_target).resolve()
-            if real_src.exists():
-                if real_src.is_dir():
-                    shutil.copytree(real_src, dst_item, dirs_exist_ok=True)
-                else:
-                    shutil.copy2(real_src, dst_item)
-            else:
-                # Pointer target missing — copy the pointer as-is (best effort)
-                shutil.copy2(item, dst_item)
-        else:
-            shutil.copy2(item, dst_item)
+        while True:
+            real_src = item.resolve()
+            if real_src in resolved_sources:
+                print(f"    ! Pointer cycle detected while resolving {item.name}")
+                return
+            resolved_sources.add(real_src)
+
+            if not _is_pointer_file(real_src):
+                shutil.copy2(real_src, dst_item)
+                return
+
+            # Resolve the pointer relative to the file that contains it.
+            rel_target = real_src.read_text(encoding="utf-8").strip()
+            target = (real_src.parent / rel_target).resolve()
+            if not target.exists():
+                # Pointer target missing — copy the pointer as-is (best effort).
+                shutil.copy2(real_src, dst_item)
+                return
+            if target.is_dir():
+                shutil.copytree(target, dst_item, dirs_exist_ok=True)
+                return
+            item = target
     except PermissionError:
         # File is locked by another process — skip
         print(f"    ! Skipped locked file: {dst_item.name}")
+    except (OSError, RuntimeError) as e:
+        print(f"    ! Could not resolve file {item.name}: {e}")
 
 
 def _copy_resolving_pointers(src_dir: Path, dst_dir: Path) -> None:
