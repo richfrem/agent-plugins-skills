@@ -38,6 +38,21 @@ if [ -d "plugins" ]; then
 fi
 ```
 
+### Identity registration (confirm os-init's identity step actually happened)
+
+A first `os-init` wires the gates but cannot register the human's key (it is agent-run), so confirm it:
+
+```bash
+python3 .agents/skills/os-health-check/scripts/setup_ciba_identity.py --check   # read-only, no terminal needed
+```
+
+Read the "Approval identities" lines and apply the mode table in the skill's Phase 3.6. In short, with the
+control plane **enabled**: `Human approval: not ready` is Tier 1 (the human enrolls their key; `os-init` run in
+their own terminal offers to), `Simulation: not set up` is Tier 1 but agent-fixable
+(`python3 .agents/skills/os-init/scripts/init_agentic_os.py --target . --retrofit`), `Isolation: not ready` is a
+Tier 2 recommendation. With it **disabled**, report all three as informational and raise no finding. Never run
+the setup yourself and never edit `allowed_signers*`.
+
 ### Control plane mode (run before judging the checks above)
 
 The control plane can be switched off on purpose with the `os-control-plane-mode` skill. Read the

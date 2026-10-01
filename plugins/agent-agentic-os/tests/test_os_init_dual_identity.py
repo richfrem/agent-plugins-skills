@@ -62,7 +62,14 @@ def test_init_reports_three_readiness_items(target_repo):
     out = res.stdout
     for item in ("Human approval", "Simulation", "Isolation"):
         assert item in out, item
-    assert "--with-simulation-identity" in out
+    assert "Simulation: ready" in out  # created by default now; no opt-in flag needed
+
+
+def test_skipping_the_simulation_identity_reports_it_and_says_how_to_create_it(target_repo):
+    res = _init(target_repo, "--no-simulation-identity")
+    assert res.returncode == 0, res.stderr
+    assert "Simulation: not set up" in res.stdout and "re-run" in res.stdout
+    assert not (target_repo / "context" / "simulation" / "identity").exists()
 
 
 def test_with_simulation_identity_creates_only_the_simulation_identity(target_repo):

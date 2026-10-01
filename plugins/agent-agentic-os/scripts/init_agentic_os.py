@@ -872,8 +872,11 @@ def signing_identity_notice(target: Path) -> List[str]:
         lines.append("   Signing identity is set up and safely isolated.")
     else:
         lines.append("   Signing identity is not set up yet (needed to approve Gate 1). A HUMAN runs, in their own terminal:")
-        lines.append("     python3 plugins/agent-agentic-os/scripts/setup_ciba_identity.py")
-        lines.append("   os-init never runs this and never creates or enrolls a key; agents must not either (see the os-signing-setup skill).")
+        lines.append(f"     {human_setup_command(target)}")
+        note = machine_key_note()
+        if note:
+            lines.append(f"   This machine already has your signing key {note}: that command enrolls it in this repo (no new key or passphrase).")
+        lines.append("   Run os-init yourself in an interactive terminal and it offers to do this for you. Run by an agent, os-init never creates or enrolls a key (see the os-signing-setup skill).")
         for failure in status["failures"][:3]:
             lines.append(f"   - {failure}")
     return lines + dual_identity_notice(target)
@@ -898,8 +901,8 @@ def dual_identity_notice(target: Path) -> List[str]:
     sim = status["simulation"]
     lines.append(f"   - Simulation: {'ready' if sim['ready'] else 'not set up'} ({sim['detail']})")
     if not sim["ready"]:
-        lines.append("       The agent may create it (it is the agent's own key, kept apart from yours):")
-        lines.append("         python3 plugins/agent-agentic-os/scripts/init_agentic_os.py --target . --retrofit --with-simulation-identity")
+        lines.append("       The agent may create it (it is the agent's own key, kept apart from yours). A normal os-init run does so;")
+        lines.append("       re-run it, or `init_agentic_os.py --target . --retrofit`, to create it now.")
     iso = status["isolation"]
     lines.append(f"   - Isolation: {'ready' if iso['ready'] else 'not ready'} ({iso['detail']})")
     if iso.get("commands"):
@@ -908,7 +911,96 @@ def dual_identity_notice(target: Path) -> List[str]:
     return lines
 
 
-# External comment: Create or reuse the agent's simulation identity on request
+# External comment: Locate the human-only identity setup script as installed in this repository
+def find_setup_script(target: Path) -> Optional[Path]:
+    """Return the human setup script for `target`'s layout (installed skills first, then beside this file)."""
+    candidates = [
+        target / ".agents" / "skills" / "os-signing-setup" / "scripts" / "setup_ciba_identity.py",
+        target / ".agents" / "skills" / "os-health-check" / "scripts" / "setup_ciba_identity.py",
+        target / "plugins" / "agent-agentic-os" / "scripts" / "setup_ciba_identity.py",
+        Path(__file__).resolve().parent / "setup_ciba_identity.py",
+    ]
+    return next((c for c in candidates if c.is_file()), None)
+
+
+def human_setup_command(target: Path) -> str:
+    """The exact command a human runs, using the path that really exists in this repository."""
+    script = find_setup_script(target)
+    if script is None:
+        return "python3 <path to setup_ciba_identity.py>   (see the os-signing-setup skill)"
+    try:
+        shown = script.relative_to(target)
+    except ValueError:
+        shown = script
+    return f"python3 {shown}"
+
+
+def machine_key_note() -> Optional[str]:
+    """Fingerprint of the standard signing key already on this machine. PUBLIC key only, never the private one."""
+    try:
+        from control_plane.identity_layout import DEFAULT_KEY_HINT
+
+        pub = Path(os.path.expanduser(DEFAULT_KEY_HINT) + ".pub")
+        if not pub.is_file():
+            return None
+        out = subprocess.run(["ssh-keygen", "-lf", str(pub)], capture_output=True, text=True, timeout=10)
+        if out.returncode != 0 or len(out.stdout.split()) < 2:
+            return None
+        return f"{out.stdout.split()[1]} ({pub})"
+    except Exception:
+        return None
+
+
+# External comment: Offer to enroll the human's key, only from a human's interactive terminal
+def register_human_identity_step(target: Path, dry_run: bool, *, interactive: Optional[bool] = None,
+                                 run=subprocess.run, ask=input) -> str:
+    """Register the human's signing identity in this repo, if a human is at the terminal.
+
+    os-init is normally agent-run, and enrolling a key from an agent would be an enrollment path for
+    that agent. So this never enrolls on its own: it only *offers*, and only when stdin and stdout are
+    both a terminal. It delegates to `setup_ciba_identity.py`, which independently refuses to run without
+    a terminal and refuses to run as the agent account, so it is no new power for an agent.
+    Returns one of: dry-run, already-ready, not-interactive, declined, unavailable, enrolled, failed.
+    """
+    if dry_run:
+        print("  [DRY RUN] would offer to enroll your signing key (interactive terminal only)")
+        return "dry-run"
+    try:
+        from control_plane.identity_layout import default_layout
+        from control_plane.identity_setup import identity_status
+
+        if identity_status(default_layout(target))["ready"]:
+            print("  Human signing identity already set up in this repo.")
+            return "already-ready"
+    except Exception:
+        pass  # status unavailable (older install): fall through to the interactive offer
+    if interactive is None:
+        interactive = sys.stdin.isatty() and sys.stdout.isatty()
+    if not interactive:
+        print("  Human signing identity is not set up. Not enrolling from a non-interactive/agent context; "
+              f"a human runs: {human_setup_command(target)}")
+        return "not-interactive"
+    script = find_setup_script(target)
+    if script is None:
+        print("  Human signing identity is not set up and the setup script was not found; see the os-signing-setup skill.")
+        return "unavailable"
+    note = machine_key_note()
+    print("\n  Your signing identity is not registered in this repo, so no gate (APPROVED, VERIFY_EXIT, DONE) can be approved yet.")
+    if note:
+        print(f"  This machine already has your key {note}; it would be enrolled here (no new key or passphrase).")
+    else:
+        print("  This will create a passphrase-protected key (you type the passphrase at the ssh-keygen prompt) and enroll it.")
+    if ask("  Enroll your key in this repo now? [y/N] ").strip().lower() not in ("y", "yes"):
+        print(f"  Skipped. Later, run: {human_setup_command(target)}")
+        return "declined"
+    result = run([sys.executable, str(script), "--repo-root", str(target)], cwd=str(target))
+    if result.returncode == 0:
+        return "enrolled"
+    print(f"  The setup did not complete (exit {result.returncode}). Run it yourself: {human_setup_command(target)}")
+    return "failed"
+
+
+# External comment: Create or reuse the agent's simulation identity
 def ensure_simulation_identity_step(target: Path, dry_run: bool) -> None:
     """Creates or reuses context/simulation/identity/ (agent-owned); never writes context/identity/."""
     if dry_run:
@@ -916,7 +1008,12 @@ def ensure_simulation_identity_step(target: Path, dry_run: bool) -> None:
         return
     from control_plane.simulation_identity import ensure_simulation_identity
 
-    info = ensure_simulation_identity(target)
+    try:
+        info = ensure_simulation_identity(target)
+    except Exception as exc:  # e.g. no ssh-keygen: report, never fail the whole init
+        print(f"  WARNING: could not create the simulation identity ({exc}). Transition simulations need it; "
+              "install OpenSSH >= 8.1 and re-run os-init.")
+        return
     verb = "Created" if info["created"] else "Reused"
     print(f"  {verb} the simulation identity {info['fingerprint']} in {info['layout'].root}")
 
@@ -1028,7 +1125,17 @@ def _parse_args() -> argparse.Namespace:
         "--with-simulation-identity",
         action="store_true",
         help="Create or reuse the agent's simulation signing identity in context/simulation/identity/ "
-             "(never touches the human's production trust file)"
+             "(never touches the human's production trust file). This is now the default; the flag is kept for compatibility."
+    )
+    parser.add_argument(
+        "--no-simulation-identity",
+        action="store_true",
+        help="Do not create the agent's simulation identity"
+    )
+    parser.add_argument(
+        "--no-identity-prompt",
+        action="store_true",
+        help="Never offer to enroll the human's signing key, even in an interactive terminal"
     )
     return parser.parse_args()
 
@@ -1079,8 +1186,11 @@ def main() -> None:
             print("Git hooks installation complete; no other project files were changed.")
         return
 
-    if args.with_simulation_identity:
+    if not args.no_simulation_identity:
         ensure_simulation_identity_step(target, args.dry_run)
+
+    if not args.no_identity_prompt:
+        register_human_identity_step(target, args.dry_run)
 
     if args.global_kernel:
         create_global_kernel(args.dry_run, args.force)

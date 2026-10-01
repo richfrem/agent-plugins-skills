@@ -72,10 +72,20 @@ owned and isolated from the agent account. Exit 1 lists each failure with a code
 `SSHSIG_UNSUPPORTED`, `NO_ENROLLED_KEYS`, `NAMESPACE_MISMATCH`, isolation codes). Do **not** test or report on
 `actor` strings, typed confirmations or skip/force-close flags: they cannot authorize these gates and no
 longer exist. A green status shows the trust anchors are safely owned and a key is enrolled; it is
-**not proof of human presence**. A failure is a Tier 1 finding: tell the human to run
-`python3 scripts/setup_ciba_identity.py` themselves (see the `os-signing-setup` skill). **Never run the
-setup or the self-test yourself, never create, read or move a private key, and never edit
-`allowed_signers*`**; only the human enrolls a key.
+**not proof of human presence**. **Never run the setup or the self-test yourself, never create, read or
+move a private key, and never edit `allowed_signers*`**; only the human enrolls a key.
+
+**Confirm the three identities were registered** (the same `--check` prints them under "Approval identities").
+Judge them against the declared control-plane mode (`os-control-plane-mode` `status`):
+
+| Identity | Mode `enabled` | Mode `disabled` |
+|---|---|---|
+| **Human approval** (your key enrolled in this repo's `context/identity/allowed_signers`) | not ready = **Tier 1**: a HUMAN runs the setup command (`os-init` prints the path that exists in this repo; run in their own terminal, it offers to enroll the key already on the machine) | informational only; no finding |
+| **Simulation** (the agent's own key in `context/simulation/identity/`) | not set up = **Tier 1, agent-fixable**: `init_agentic_os.py --target . --retrofit` creates it | informational only; no finding |
+| **Isolation** (agent runs as its own account or container) | not ready = Tier 2 recommendation, not blocking | informational only; no finding |
+
+Name the command that exists in this repo (`.agents/skills/os-health-check/scripts/setup_ciba_identity.py` is
+always installed with this skill, even when `os-signing-setup` has been removed by disabling the control plane).
 
 ### Phase 3.5: os-init Substrate Completeness Check
 
