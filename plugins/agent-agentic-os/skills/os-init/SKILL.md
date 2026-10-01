@@ -86,11 +86,11 @@ Follow the protocol in [instruction-blending.md](references/instruction-blending
 
 Run `init_agentic_os.py` based on mode:
 
-- **Mode A (Fresh Setup)**: `python3 scripts/init_agentic_os.py --target <project-path> --sync-instructions --with-simulation-identity`
-- **Mode B (Retrofit Existing)**: `python3 scripts/init_agentic_os.py --target <project-path> --retrofit --with-simulation-identity`
+- **Mode A (Fresh Setup)**: `python3 scripts/init_agentic_os.py --target <project-path> --sync-instructions`
+- **Mode B (Retrofit Existing)**: `python3 scripts/init_agentic_os.py --target <project-path> --retrofit`
 - **Hooks only**: `python3 scripts/init_agentic_os.py --target <project-path> --install-hooks` installs or updates only Git hooks; it does not scaffold instructions, context, rules, or skills.
 - **Idempotency**: A second setup/retrofit run with no source changes must leave existing files unchanged.
-- **Approval identities**: every run reports three separate readiness items: human approval (the human's key in `context/identity/`, set up only by the human through the `os-signing-setup` skill), simulation (the agent's own key in `context/simulation/identity/`), and isolation (the agent running as its own OS account, commands printed per operating system for a human administrator). Add `--with-simulation-identity` to create or reuse the simulation identity; os-init never creates or enrolls the human's key.
+- **Approval identities**: every run reports three separate readiness items: human approval (the human's key in `context/identity/`, set up only by the human through the `os-signing-setup` skill), simulation (the agent's own key in `context/simulation/identity/`), and isolation (the agent running as its own OS account, commands printed per operating system for a human administrator). The simulation identity is created (or reused) by default, because it is the agent's own key and can never approve real work; `--no-simulation-identity` skips it. **The human's key is registered only by a human:** when the human runs os-init in their own interactive terminal it offers to enroll their key (it delegates to `setup_ciba_identity.py`, which itself refuses without a terminal and refuses to run as the agent account), reusing the key already on the machine if there is one. Run by an agent (no terminal), os-init enrolls nothing, creates no key, and prints the setup command that exists in this repository's layout plus the fingerprint of any key already on the machine. `--no-identity-prompt` suppresses the offer. Never enroll a key on the human's behalf from an agent session: an enrolled key is what lets a signature approve a gate. `os-health-check` confirms all three identities afterwards.
 
 *Note: In both modes, `init_agentic_os.py` automatically initializes `context/control_plane.db` with WAL mode, installs `.git/hooks/pre-commit-evolution-guard`, and configures the `Stop` turn hook.*
 

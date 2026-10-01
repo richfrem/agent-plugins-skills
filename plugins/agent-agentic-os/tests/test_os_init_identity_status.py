@@ -62,9 +62,13 @@ def test_init_reports_signing_identity_status_and_the_human_command(target_repo)
 
 def test_init_never_creates_keys_or_identity_files(target_repo):
     _init(target_repo)
+    # The HUMAN's identity is never created by an agent-run os-init (no terminal here).
     assert not (target_repo / "context" / "identity").exists()
-    assert not list(target_repo.rglob("allowed_signers*"))
+    # The only trust files that may exist are the agent's OWN simulation ones (created by default now).
+    stray = [p for p in target_repo.rglob("allowed_signers*") if "context/simulation/identity" not in p.as_posix()]
+    assert not stray, f"human trust file created by os-init: {stray}"
     assert not list(target_repo.rglob("id_ed25519*"))
+    assert not list(target_repo.rglob("agentic-os_signing*"))
 
 
 def test_init_reports_enrolled_keys_when_a_human_already_set_it_up(target_repo, tmp_path):

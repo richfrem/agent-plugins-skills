@@ -2,6 +2,20 @@
 
 All notable changes to `agent-agentic-os` are documented here.
 
+## v1.12.0 — 2026-10-01
+
+### Added
+- `os-init` registers the human's signing identity when a **human** runs it in an interactive terminal: it offers to enroll the key (reusing the standard key already on the machine, `~/.ssh/agentic-os_signing`, so no new key or passphrase) by delegating to `setup_ciba_identity.py`. Previously a first `os-init` wired the commit/push guards and the gates but left `context/identity/` absent, so no gate (APPROVED, VERIFY_EXIT, DONE) could ever be approved until the human found and ran the setup themselves.
+- `--no-identity-prompt` (never offer) and `--no-simulation-identity` (skip the agent's simulation key).
+
+### Changed
+- The agent's **simulation identity is now created by default** (it is the agent's own key in `context/simulation/identity/`, a separate namespace and database, and can never approve real work). `--with-simulation-identity` is kept as a no-op for compatibility, and the `os-init` skill no longer needs to pass it. A failure to create it (for example no `ssh-keygen`) is a warning, not a failed init.
+- The setup command `os-init` prints for the human now names the script that exists in the repository's layout (`.agents/skills/os-signing-setup/...`, else `.../os-health-check/...`, else the plugin source path) instead of always printing `plugins/agent-agentic-os/scripts/...`, which does not exist in consumer repos. It also reports the fingerprint of the signing key already on the machine (public key only) and says the command enrolls it here.
+- `os-health-check` Phase 3.6 now confirms the three identities (human approval, simulation, isolation) as separate findings judged against the declared control-plane mode: with the control plane enabled an unregistered human identity is Tier 1 (human-only), an unregistered simulation identity is Tier 1 and agent-fixable via `os-init`, and isolation not ready is Tier 2; with it disabled all three are informational.
+
+### Security invariant (tested)
+- An agent-run `os-init` (no terminal) never creates or writes the human's trust file, never creates a human key, and never prompts. The offer appears only when stdin and stdout are a real terminal (covered with a pseudo-terminal test), and `setup_ciba_identity.py` independently refuses to run without a terminal or as the agent account, so this gives an agent no new capability.
+
 ## v1.11.1 — 2026-10-01
 
 ### Changed
