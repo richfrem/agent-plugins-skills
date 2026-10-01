@@ -1,7 +1,7 @@
 ---
 name: os-control-plane-mode
 plugin: agent-agentic-os
-version: 1.0.0
+version: 1.1.0
 description: >
   Enable, disable, or check the Agentic OS control plane as one unit, on demand. Use the full
   pipeline for big tasks where its overhead pays off, and switch it off for quick tasks to save
@@ -76,6 +76,17 @@ Tell the user that last one keeps applying, because it surprises people.
 - Skills removed or added are picked up by the next session. In the current session, stop or start
   using `work-intake` according to the new mode.
 - A toggle affects every worktree of the repository (hooks and the database are shared).
+- **Tracked member files show as deleted.** If the repo tracks any member file in git (for example
+  `.agent/rules/`), `disable` removes it from the working tree, so git shows it as deleted. The plan
+  warns about this beforehand and `status` flags it as an "uncommitted deletion". Tell the user and
+  **do not commit those deletions**; `enable` restores the identical file. (`.agents/` is normally
+  gitignored, so skills do not have this effect.)
+- **The sync takes a minute or more** (it refreshes every registered plugin). Run the command with a
+  long timeout and do not interrupt it; if it fails the command is safe to repeat.
+- **The syncer rewrites the ownership file and bumps its `installed_at` line** on every run, so expect
+  that one line to differ after any toggle. The `should_install` flags are what the toggle controls.
+- **`status` manages only the manifest members.** Other components that happen to be off (for example
+  `self-evolution`) are not part of the toggle and are not changed or reported as problems.
 
 ## When something is off
 

@@ -2,6 +2,15 @@
 
 All notable changes to `agent-agentic-os` are documented here.
 
+## v1.11.1 — 2026-10-01
+
+### Changed
+- `os-control-plane-mode` (1.1.0): the `disable` plan now warns when git tracks any member file, because disabling removes it from the working tree and git then shows it as deleted; `status` reports such files as an "uncommitted deletion" warning while disabled (the state still counts as consistent) and exposes `tracked_member_files` / `uncommitted_deletions` in `--json`. Found by running a real disable/enable round trip on a consumer repo that tracks `.agent/rules/`: the rule showed as deleted until `enable` restored it identically.
+- `SKILL.md`, `references/acceptance-criteria.md` and `references/fallback-tree.md` document that the sync takes a minute or more, that the syncer bumps `installed_at` in the ownership file on every run, that tracked deletions must not be committed, and that `status` manages only the manifest members.
+
+### Fixed
+- The tests' fake plugin-syncer now behaves like the real one (rewrites the ownership file and bumps `installed_at`; restores a removed rule with its original content), so the round-trip test no longer claims a byte-for-byte ownership match that the real syncer cannot give.
+
 ## v1.11.0 — 2026-10-01
 
 ### Added

@@ -13,6 +13,7 @@ Start from the symptom. Every command here is safe to repeat.
 | Exit 3: the plugin sync failed | Earlier steps were applied; the sync did not finish | Fix the sync error, then re-run the same toggle |
 | "unrecognized" for a dispatcher hook | A hand-edited hook mentions the guard in a different shape | Left untouched on purpose. The guard still exits 0 while disabled. Edit the hook by hand if you want it gone |
 | "mode file must contain 'enabled' or 'disabled'" | `context/control-plane-mode` is corrupt | Delete the file (missing means enabled) or write a valid word, then run `status` |
+| `git status` shows a member file as deleted while disabled (e.g. `.agent/rules/...`) | The repo tracks that file and `disable` removed it from the working tree | Do not commit it. `enable` restores the identical file; or `git restore <file>` after re-enabling |
 | Gates still blocking after `disable` | You are in a different clone, or hooks were reinstalled afterwards | Run `status` in that clone; mode and hooks are per clone |
 
 ## Undo

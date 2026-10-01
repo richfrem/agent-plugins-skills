@@ -36,3 +36,11 @@ The skill is working when all of these hold. Each is covered by `tests/test_cont
     `disabled`, still installs the evolution guard, and behaves exactly as before otherwise.
 15. A component that mentions the control plane but is not classified in the manifest fails the
     test suite.
+
+## Git-tracked members (found on a real consumer repo)
+
+16. When any member file is tracked by git, the `disable` plan warns that git will show it as deleted
+    and that the deletion must not be committed; no warning appears when nothing is tracked.
+17. While disabled, `status` lists tracked members that are deleted in the working tree as an
+    "uncommitted deletion" **warning** (the state still matches the declared mode, so it stays
+    consistent), and `enable` restores the file so git is clean again.

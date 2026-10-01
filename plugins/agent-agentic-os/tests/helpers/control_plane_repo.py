@@ -38,9 +38,11 @@ BYSTANDERS = {
 
 FAKE_SYNCER = '''\
 import json, shutil, sys
+from datetime import datetime, timezone
 from pathlib import Path
 root = Path.cwd()
-own = json.loads((root / ".agents/ownership/agent-agentic-os.json").read_text())
+own_path = root / ".agents/ownership/agent-agentic-os.json"
+own = json.loads(own_path.read_text())
 for kind, comps in own["components"].items():
     for name, entry in comps.items():
         for art in entry["artifacts"]:
@@ -48,11 +50,14 @@ for kind, comps in own["components"].items():
             if entry["should_install"]:
                 if p.suffix:
                     p.parent.mkdir(parents=True, exist_ok=True)
-                    p.touch()
+                    p.write_text("installed\\n")  # the real syncer restores the plugin's identical content
                 else:
                     p.mkdir(parents=True, exist_ok=True)
             elif p.exists():
                 shutil.rmtree(p) if p.is_dir() else p.unlink()
+# The real plugin-syncer rewrites the ownership file and bumps installed_at on every run.
+own["installed_at"] = datetime.now(timezone.utc).isoformat()
+own_path.write_text(json.dumps(own, indent=2) + "\\n")
 print("fake sync ok")
 '''
 
@@ -67,7 +72,7 @@ def _artifact(kind: str, name: str) -> str:
     }[kind]
 
 
-def make_repo(tmp_path: Path, *, installed: bool = True) -> Path:
+def make_repo(tmp_path: Path, *, installed: bool = True, track_rule: bool = False) -> Path:
     root = tmp_path / "repo"
     root.mkdir()
     for cmd in (["git", "init", "-q"], ["git", "config", "user.email", "t@example.com"],
@@ -137,6 +142,10 @@ def make_repo(tmp_path: Path, *, installed: bool = True) -> Path:
     (root / "context").mkdir()
     (root / "context" / "control_plane.db").write_bytes(DB_BYTES)
     (root / "fake_sync.py").write_text(FAKE_SYNCER, encoding="utf-8")
+    if track_rule:
+        rule = MEMBERS["rules"][0]
+        subprocess.run(["git", "add", "-f", _artifact("rules", rule)], cwd=root, check=True, capture_output=True)
+        subprocess.run(["git", "commit", "-q", "-m", "track the rule"], cwd=root, check=True, capture_output=True)
     return root
 
 

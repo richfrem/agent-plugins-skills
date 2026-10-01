@@ -114,12 +114,20 @@ def test_enable_restores_everything_and_proves_it(repo):
     assert "echo custom-pre-commit-step" in (repo / ".git/hooks/pre-commit").read_text()
 
 
-def test_disable_then_enable_round_trips_the_ownership_file_byte_for_byte(repo):
-    original = (repo / OWNERSHIP).read_bytes()
+def _without_installed_at(path):
+    # The real plugin-syncer rewrites the ownership file and bumps installed_at on every run
+    # (observed on a real consumer repo), so a toggle round trip cannot be byte-identical there.
+    return [ln for ln in path.read_text().splitlines() if '"installed_at"' not in ln]
+
+
+def test_disable_then_enable_round_trips_the_ownership_file_except_the_sync_timestamp(repo):
+    original = _without_installed_at(repo / OWNERSHIP)
+    original_flags = _member_flags(repo)
     run_mode(repo, "disable", "--yes")
-    assert (repo / OWNERSHIP).read_bytes() != original
+    assert _without_installed_at(repo / OWNERSHIP) != original
     run_mode(repo, "enable", "--yes")
-    assert (repo / OWNERSHIP).read_bytes() == original  # formatting preserved, only flags flipped
+    assert _member_flags(repo) == original_flags
+    assert _without_installed_at(repo / OWNERSHIP) == original  # formatting preserved, only flags flipped
 
 
 def test_repeating_a_toggle_is_a_no_op(repo):
@@ -217,3 +225,54 @@ def test_toggle_works_from_a_git_worktree_target(repo, tmp_path):
     )
     assert res.returncode == 0, res.stdout + res.stderr
     assert json.loads(res.stdout)["repo"] == str(repo.resolve())  # resolved to the main checkout
+
+
+# --- git-tracked member files (found on a real consumer repo that tracks .agent/rules/) ----------
+
+RULE = ".agent/rules/state-transition-guidance-compliance.md"
+
+
+@pytest.fixture
+def tracked_repo(tmp_path):
+    return make_repo(tmp_path, track_rule=True)
+
+
+def test_no_warning_when_no_member_file_is_tracked(repo):
+    plan = run_mode(repo, "disable", "--dry-run")
+    assert "WARNING" not in plan.stdout
+    run_mode(repo, "disable", "--yes")
+    st = json.loads(run_mode(repo, "status", "--json").stdout)
+    assert st["tracked_member_files"] == [] and st["uncommitted_deletions"] == []
+
+
+def test_disable_plan_warns_that_tracked_member_files_will_show_as_deleted(tracked_repo):
+    plan = run_mode(tracked_repo, "disable", "--dry-run")
+    assert plan.returncode == 0
+    assert "WARNING" in plan.stdout and RULE in plan.stdout and "Do NOT commit" in plan.stdout
+
+
+def test_enable_plan_does_not_warn(tracked_repo):
+    assert "WARNING" not in run_mode(tracked_repo, "enable", "--dry-run").stdout
+
+
+def test_status_flags_the_uncommitted_deletion_while_disabled_but_stays_consistent(tracked_repo):
+    res = run_mode(tracked_repo, "disable", "--yes")
+    assert res.returncode == 0 and "RESULT: consistent" in res.stdout
+    assert "uncommitted deletion" in res.stdout and RULE in res.stdout
+    st = json.loads(run_mode(tracked_repo, "status", "--json").stdout)
+    assert st["consistent"] is True  # a warning, not a problem: the state matches the declared mode
+    assert st["tracked_member_files"] == [RULE] and st["uncommitted_deletions"] == [RULE]
+    porcelain = subprocess.run(["git", "status", "--porcelain", "--", RULE], cwd=tracked_repo,
+                               capture_output=True, text=True).stdout
+    assert porcelain.strip().endswith(RULE) and porcelain.lstrip().startswith("D")
+
+
+def test_enable_restores_the_tracked_file_and_git_is_clean_again(tracked_repo):
+    run_mode(tracked_repo, "disable", "--yes")
+    res = run_mode(tracked_repo, "enable", "--yes")
+    assert res.returncode == 0 and "uncommitted deletion" not in res.stdout
+    st = json.loads(run_mode(tracked_repo, "status", "--json").stdout)
+    assert st["uncommitted_deletions"] == [] and st["consistent"] is True
+    porcelain = subprocess.run(["git", "status", "--porcelain", "--", RULE], cwd=tracked_repo,
+                               capture_output=True, text=True).stdout
+    assert porcelain.strip() == ""  # the rule is back and git sees no change
