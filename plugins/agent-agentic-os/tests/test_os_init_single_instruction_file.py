@@ -155,7 +155,10 @@ def test_install_hooks_installs_current_guards_and_touches_no_instructions(repo)
     installed_scripts.mkdir(parents=True)
     installed_init = installed_scripts / "init_agentic_os.py"
     shutil.copy2(INIT, installed_init)
-    for name in ("pre-commit-evolution-guard", "pre-commit-pipeline-guard", "pre-push-review-guard"):
+    # The installer copies the whole os-init scripts/ folder with symlinks dereferenced, which
+    # includes the shared control_plane_hooks.py helper that init_agentic_os.py imports.
+    for name in ("pre-commit-evolution-guard", "pre-commit-pipeline-guard", "pre-push-review-guard",
+                 "control_plane_hooks.py"):
         shutil.copy2(PLUGIN / "scripts" / name, installed_scripts / name)
     _run(repo, "--install-hooks", script=installed_init)  # simulate installer-dereferenced skill files
     hooks = repo / ".git" / "hooks"

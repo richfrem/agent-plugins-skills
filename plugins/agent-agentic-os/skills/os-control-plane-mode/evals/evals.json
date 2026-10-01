@@ -1,0 +1,17 @@
+[
+  {"prompt": "disable the control plane", "should_trigger": true},
+  {"prompt": "enable the control plane", "should_trigger": true},
+  {"prompt": "can you turn off work-intake, this is just a quick fix", "should_trigger": true},
+  {"prompt": "turn work-intake back on, I'm starting a big feature", "should_trigger": true},
+  {"prompt": "stop gating my commits and pushes for now", "should_trigger": true},
+  {"prompt": "turn off the push guard", "should_trigger": true},
+  {"prompt": "is the control plane on?", "should_trigger": true},
+  {"prompt": "control plane status", "should_trigger": true},
+  {"prompt": "I want the full pipeline for this one, switch the control plane on", "should_trigger": true},
+  {"prompt": "the pre-push hook keeps blocking me, can you just get past it", "should_trigger": false},
+  {"prompt": "run work-intake for this new feature", "should_trigger": false},
+  {"prompt": "push with --no-verify", "should_trigger": false},
+  {"prompt": "clean up stale locks in the context folder", "should_trigger": false},
+  {"prompt": "deploy to production", "should_trigger": false},
+  {"prompt": "run a health check on the OS", "should_trigger": false}
+]

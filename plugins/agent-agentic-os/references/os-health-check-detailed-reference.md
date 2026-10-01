@@ -38,6 +38,28 @@ if [ -d "plugins" ]; then
 fi
 ```
 
+### Control plane mode (run before judging the checks above)
+
+The control plane can be switched off on purpose with the `os-control-plane-mode` skill. Read the
+declared mode first, because it changes what "healthy" means:
+
+```bash
+python3 .agents/skills/os-control-plane-mode/scripts/control_plane_mode.py status
+```
+
+- **Mode `enabled`, exit 0**: the members are installed and both control-plane guards are wired.
+  Judge the checks above as normal.
+- **Mode `disabled`, exit 0**: report `OK control plane DISABLED (intentional)`. Do **not** raise a
+  finding for the `work-intake` rule being absent from the instruction files, and do **not** run
+  `--retrofit` to "repair" it: retrofit honours the mode and would only confuse the picture.
+  `control_plane.db` is still expected (disable never deletes it).
+- **Exit 1 (inconsistent)**: this is a Tier 1 finding. The declared mode and the repo disagree
+  (for example, mode `disabled` but `work-intake` is installed, or mode `enabled` but a guard is
+  unwired). Recommend re-running the toggle for the declared mode, which reconciles it:
+  `... control_plane_mode.py enable --dry-run` (or `disable`), then `--yes` after the user confirms.
+  Do not hand-edit hooks or the ownership file.
+- **Skill not installed** (older install): skip this step and judge the checks above as before.
+
 **If any report MISSING**: this is a Tier 1 finding, not merely informational.
 Recommend re-running the retrofit immediately in the health check summary:
 

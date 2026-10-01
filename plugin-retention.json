@@ -18,6 +18,7 @@
         "optimize-agent-instructions": true,
         "os-architect": true,
         "os-clean-locks": true,
+        "os-control-plane-mode": true,
         "os-environment-probe": true,
         "os-eval-backport": false,
         "os-eval-lab-setup": false,

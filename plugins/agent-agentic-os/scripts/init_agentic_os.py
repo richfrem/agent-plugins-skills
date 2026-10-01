@@ -70,6 +70,21 @@ from typing import Dict, List, Optional, Tuple
 # ---------------------------------------------------------------------------
 
 # External comment: Resolve plugin root directory
+try:  # shared control-plane hook wiring + declared mode
+    import control_plane_hooks
+except ImportError:  # imported from another working directory, or an incomplete install
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    try:
+        import control_plane_hooks
+    except ImportError:
+        sys.exit(
+            "ERROR: control_plane_hooks.py was not found next to init_agentic_os.py "
+            f"({Path(__file__).resolve().parent}).\n"
+            "It is part of the os-init skill's scripts/ folder. Re-run the plugin sync "
+            "(plugin-syncer) to restore it, then retry."
+        )
+
+
 def _get_plugin_root() -> Path:
     """Resolves and returns the canonical plugin root path."""
     env_root = os.environ.get("CLAUDE_PLUGIN_ROOT")
@@ -641,6 +656,40 @@ def _scaffold_claude_dir(target: Path, dry_run: bool, force: bool) -> None:
                load_template("HOOKS_JSON.json"), dry_run, force)
 
 
+# External comment: Install the control-plane git guards unless the control plane is disabled
+def _install_control_plane_guards(target: Path, git_hooks_dir: Path, plugin_root: Path, dry_run: bool) -> None:
+    """Install and wire pre-commit-pipeline-guard and pre-push-review-guard.
+
+    Honours the declared mode in `context/control-plane-mode`: when it says `disabled`,
+    nothing is installed or wired, so a re-run of os-init never silently re-enables a gate.
+    A missing file means `enabled` (every pre-existing install is unchanged). An unreadable
+    mode file fails closed: the guards are installed and the problem is announced.
+    """
+    root = control_plane_hooks.common_repo_root(target)
+    try:
+        mode = control_plane_hooks.read_mode(root)
+    except control_plane_hooks.ModeError as exc:
+        announce(f"WARNING: {exc} Treating the control plane as enabled.", dry_run)
+        mode = control_plane_hooks.MODE_ENABLED
+
+    if mode == control_plane_hooks.MODE_DISABLED:
+        announce(
+            "Control plane is DISABLED (context/control-plane-mode): not installing or wiring "
+            "pre-commit-pipeline-guard / pre-push-review-guard. "
+            "Re-enable with the os-control-plane-mode skill.",
+            dry_run,
+        )
+        return
+
+    for guard in control_plane_hooks.CONTROL_PLANE_GUARDS:
+        source = plugin_root / "scripts" / guard.name
+        if not source.exists():
+            continue
+        control_plane_hooks.install_guard_script(source, git_hooks_dir, guard, dry_run)
+        control_plane_hooks.wire_guard(git_hooks_dir, guard, dry_run)
+        announce(f"Installed {guard.name} into .git/hooks/", dry_run)
+
+
 # External comment: Validate git repo and install pre-commit evolution guard
 def _validate_and_finalize(target: Path, dry_run: bool, install_workflow: bool = True) -> None:
     """Validates git repository context and installs pre-commit evolution guard."""
@@ -693,82 +742,9 @@ def _validate_and_finalize(target: Path, dry_run: bool, install_workflow: bool =
                         pre_commit.chmod(0o755)
                 announce("Installed pre-commit-evolution-guard into .git/hooks/", dry_run)
 
-            # Install pre-commit pipeline bypass enforcement guard
-            pipeline_guard_source = plugin_root / "scripts" / "pre-commit-pipeline-guard"
-            if pipeline_guard_source.exists():
-                pipeline_guard_target = git_hooks_dir / "pre-commit-pipeline-guard"
-                pipeline_guard_content = pipeline_guard_source.read_text(encoding="utf-8")
-                write_file(pipeline_guard_target, pipeline_guard_content, dry_run, force=True)
-                if not dry_run:
-                    pipeline_guard_target.chmod(0o755)
-
-                pre_commit = git_hooks_dir / "pre-commit"
-                if pre_commit.exists():
-                    pc_content = pre_commit.read_text(encoding="utf-8")
-                    if "pre-commit-pipeline-guard" not in pc_content:
-                        pipe_block = "\n# Run pipeline execution guard if it exists\nif [ -x \"$HOOKS_DIR/pre-commit-pipeline-guard\" ]; then\n    \"$HOOKS_DIR/pre-commit-pipeline-guard\" || exit 1\nfi\n"
-                        if "\nexit 0" in pc_content:
-                            idx = pc_content.rfind("\nexit 0")
-                            pc_content = pc_content[:idx] + pipe_block + "\nexit 0" + pc_content[idx+7:]
-                        else:
-                            pc_content += pipe_block + "\nexit 0\n"
-                        write_file(pre_commit, pc_content, dry_run, force=True)
-                else:
-                    minimal_hook = (
-                        "#!/usr/bin/env bash\n"
-                        "# pre-commit hook — installed by init_agentic_os.py\n"
-                        "HOOKS_DIR=\"$(dirname \"$0\")\"\n"
-                        "\n"
-                        "# Run pipeline guard\n"
-                        "if [ -x \"$HOOKS_DIR/pre-commit-pipeline-guard\" ]; then\n"
-                        "    \"$HOOKS_DIR/pre-commit-pipeline-guard\" || exit 1\n"
-                        "fi\n"
-                        "\n"
-                        "exit 0\n"
-                    )
-                    write_file(pre_commit, minimal_hook, dry_run, force=False)
-                    if not dry_run:
-                        pre_commit.chmod(0o755)
-                announce("Installed pre-commit-pipeline-guard into .git/hooks/", dry_run)
-
-            # Install pre-push review guard
-            push_guard_source = plugin_root / "scripts" / "pre-push-review-guard"
-            if push_guard_source.exists():
-                push_guard_target = git_hooks_dir / "pre-push-review-guard"
-                push_guard_content = push_guard_source.read_text(encoding="utf-8")
-                write_file(push_guard_target, push_guard_content, dry_run, force=True)
-                if not dry_run:
-                    push_guard_target.chmod(0o755)
-
-                # Wire the guard into the pre-push hook
-                pre_push = git_hooks_dir / "pre-push"
-                if pre_push.exists():
-                    pp_content = pre_push.read_text(encoding="utf-8")
-                    if "pre-push-review-guard" not in pp_content:
-                        pp_block = "\n# Run review guard if it exists\nif [ -x \"$HOOKS_DIR/pre-push-review-guard\" ]; then\n    \"$HOOKS_DIR/pre-push-review-guard\" || exit 1\nfi\n"
-                        if "\nexit 0" in pp_content:
-                            idx = pp_content.rfind("\nexit 0")
-                            pp_content = pp_content[:idx] + pp_block + "\nexit 0" + pp_content[idx+7:]
-                        else:
-                            pp_content += pp_block + "\nexit 0\n"
-                        write_file(pre_push, pp_content, dry_run, force=True)
-                else:
-                    minimal_push_hook = (
-                        "#!/usr/bin/env bash\n"
-                        "# pre-push hook — installed by init_agentic_os.py\n"
-                        "HOOKS_DIR=\"$(dirname \"$0\")\"\n"
-                        "\n"
-                        "# Run review guard\n"
-                        "if [ -x \"$HOOKS_DIR/pre-push-review-guard\" ]; then\n"
-                        "    \"$HOOKS_DIR/pre-push-review-guard\" || exit 1\n"
-                        "fi\n"
-                        "\n"
-                        "exit 0\n"
-                    )
-                    write_file(pre_push, minimal_push_hook, dry_run, force=False)
-                    if not dry_run:
-                        pre_push.chmod(0o755)
-                announce("Installed pre-push-review-guard into .git/hooks/", dry_run)
+            # Install the control-plane guards (pipeline + push). One shared implementation in
+            # control_plane_hooks.py; skipped when the declared mode is 'disabled'.
+            _install_control_plane_guards(target, git_hooks_dir, plugin_root, dry_run)
 
         if not install_workflow:
             return

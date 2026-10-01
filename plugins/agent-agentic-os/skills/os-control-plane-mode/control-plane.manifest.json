@@ -1,0 +1,61 @@
+{
+  "schema": 1,
+  "plugin": "agent-agentic-os",
+  "description": "Declares what the Agentic OS control plane consists of, so os-control-plane-mode can enable and disable it as one unit. Members are switched through the ownership file and the plugin syncer; git guards are wired and unwired in .git/hooks; the declared mode lives in mode_file. Nothing outside this file decides what 'the control plane' is, and tests/test_control_plane_mode_manifest.py fails if a component mentions the control plane without being classified here.",
+  "ownership_file": ".agents/ownership/agent-agentic-os.json",
+  "mode_file": "context/control-plane-mode",
+  "members": {
+    "skills": ["work-intake", "transition-simulator", "os-signing-setup"],
+    "rules": ["state-transition-guidance-compliance"],
+    "agents": []
+  },
+  "git_guards": [
+    {
+      "name": "pre-commit-pipeline-guard",
+      "dispatcher": "pre-commit",
+      "purpose": "blocks commits from a task branch that has not reached an implementation stage"
+    },
+    {
+      "name": "pre-push-review-guard",
+      "dispatcher": "pre-push",
+      "purpose": "blocks pushes from a task branch that has not cleared review and reached DONE"
+    }
+  ],
+  "never_removed": [
+    "context/control_plane.db and its task history (disable never deletes it)",
+    "skills/os-init and skills/os-health-check (they create and verify the substrate, including the disabled state)",
+    "skills/os-control-plane-mode itself",
+    "the Claude Code plugin hooks in hooks/hooks.json (memory, evolution guard, metrics): not part of the control plane",
+    "pre-commit-evolution-guard: map-debt / evolution-log discipline is a separate feature with its own gate"
+  ],
+  "excluded": [
+    {
+      "component": "skills/os-init",
+      "reason": "Creates the substrate (control_plane.db, hooks) and honours the declared mode; must stay installed in both modes."
+    },
+    {
+      "component": "skills/os-health-check",
+      "reason": "Verifies the substrate and understands the disabled mode; must stay installed in both modes."
+    },
+    {
+      "component": "skills/self-evolution",
+      "reason": "The evolution loop is independent of work-intake gating; it only mentions the control plane for optional prior-art logging."
+    },
+    {
+      "component": "skills/worktree-manager",
+      "reason": "General-purpose worktree selection and cleanup guidance; it mentions the control plane in one line only (retain the task's gates) and is useful with or without gating."
+    },
+    {
+      "component": "rules/config-driven-constants-over-hardcoding",
+      "reason": "General coding rule; it mentions control_plane/constants.py only as a worked example."
+    },
+    {
+      "component": "rules/worktree-lifecycle-management",
+      "reason": "General worktree hygiene. Its control-plane steps assume the control plane is enabled; making them conditional is a follow-up and is tracked in the changelog."
+    },
+    {
+      "component": "agents/os-architect-agent",
+      "reason": "Stays installed: architecture design is useful with or without gating. Its registration step applies only when the control plane is enabled; making that conditional is a follow-up."
+    }
+  ]
+}
