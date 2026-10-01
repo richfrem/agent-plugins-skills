@@ -137,6 +137,46 @@ def _component(own: dict, kind: str, name: str, root: Path) -> dict:
     }
 
 
+def _member_artifacts(own: dict, manifest: dict) -> list[str]:
+    paths: list[str] = []
+    for kind in COMPONENT_KINDS:
+        for name in manifest["members"][kind]:
+            entry = own.get("components", {}).get(kind, {}).get(name)
+            if entry:
+                paths += entry.get("artifacts", [])
+    return paths
+
+
+def _git_lines(root: Path, *args: str) -> list[str]:
+    try:
+        out = subprocess.run(["git", "-C", str(root), *args], capture_output=True, text=True, timeout=20)
+    except (subprocess.SubprocessError, OSError):
+        return []
+    return [ln for ln in out.stdout.splitlines() if ln.strip()] if out.returncode == 0 else []
+
+
+def tracked_member_files(root: Path, own: dict, manifest: dict) -> list[str]:
+    """Member files that git tracks. Disabling removes them from the working tree, so git
+    shows them as deleted (a repo that tracks `.agent/rules/` hits this; `.agents/` is ignored)."""
+    paths = _member_artifacts(own, manifest)
+    return sorted(set(_git_lines(root, "ls-files", "--", *paths))) if paths else []
+
+
+def uncommitted_deletions(root: Path, own: dict, manifest: dict) -> list[str]:
+    """Tracked member files currently deleted from the working tree (not yet committed)."""
+    paths = _member_artifacts(own, manifest)
+    if not paths:
+        return []
+    lines = _git_lines(root, "status", "--porcelain", "--", *paths)
+    return sorted(ln[3:] for ln in lines if ln[:2].strip() in ("D", "AD", "DD"))
+
+
+def tracked_warning(files: list[str]) -> str:
+    shown = ", ".join(files[:4]) + (f" (+{len(files) - 4} more)" if len(files) > 4 else "")
+    return (f"git tracks member files ({shown}): disabling removes them from the working tree, so git "
+            "will show them as deleted. Do NOT commit those deletions; `enable` restores them.")
+
+
 def _agents_md_phase0(root: Path) -> str:
     path = root / "AGENTS.md"
     if not path.is_file():
@@ -218,6 +258,14 @@ def collect_status(root: Path, manifest: dict) -> dict:
     if want_on and not db.is_file():
         warnings.append("context/control_plane.db is missing; run os-init --retrofit to create it")
 
+    tracked = tracked_member_files(root, own, manifest)
+    deleted = uncommitted_deletions(root, own, manifest)
+    if not want_on and deleted:
+        warnings.append(
+            f"uncommitted deletion of git-tracked member file(s): {', '.join(deleted)}. "
+            "Do NOT commit these; `enable` restores them."
+        )
+
     phase0 = _agents_md_phase0(root)
     if not want_on and phase0 == "mandatory":
         warnings.append("AGENTS.md still says Phase 0 intake is mandatory; make it conditional on the control plane")
@@ -230,6 +278,8 @@ def collect_status(root: Path, manifest: dict) -> dict:
         "components": components,
         "guards": guards,
         "control_plane_db_present": db.is_file(),
+        "tracked_member_files": tracked,
+        "uncommitted_deletions": deleted,
         "agents_md_phase0": phase0,
         "problems": problems,
         "warnings": warnings,
@@ -324,6 +374,9 @@ def plan_text(root: Path, manifest: dict, want: str, own: dict, hdir: Optional[P
     lines.append("  Backups of the ownership file, mode file and hook files go to context/control-plane-backup/.")
     if hdir is None:
         lines.append("  NOTE: no .git/hooks directory here: the guard steps are skipped.")
+    tracked = tracked_member_files(root, own, manifest)
+    if tracked and not desired:
+        lines.append("  WARNING: " + tracked_warning(tracked))
     return lines
 
 
