@@ -18,6 +18,7 @@ Supported Object Types:
 CLI Arguments:
     --dry-run: Simulate cleanup without deleting.
     --cleanup-only: Run cleanup analysis only, skip installation.
+    --prune-orphans: Delete orphaned dirs under .agents/skills/ (default: report only).
 
 Key Input Dependencies:
     plugin-sources.json         — authoritative registry of all installed plugins and their sources
@@ -294,10 +295,35 @@ def _find_unexpected_skill_dirs(root: Path, registered_plugins: set) -> list:
     return unexpected
 
 
-def validate_agents_state(root: Path, registered_plugins: set) -> None:
+def _prune_orphaned_skill_dirs(root: Path, unexpected: list, dry_run: bool) -> list:
+    """Delete (or, in dry-run, list) the orphaned skill dirs; return the ones that remain."""
+    prefix = "Orphaned skill directory: "
+    remaining = []
+    for entry in unexpected:
+        rel = entry[len(prefix):] if entry.startswith(prefix) else None
+        target = (root / rel) if rel else None
+        skills_dir = (root / ".agents" / "skills").resolve()
+        if target is None or target.parent.resolve() != skills_dir:
+            remaining.append(entry)
+            continue
+        if dry_run:
+            print(f"  [DRY RUN] Would remove orphaned skill directory: {rel}")
+            continue
+        if target.is_symlink():
+            target.unlink()
+        else:
+            shutil.rmtree(target)
+        print(f"  [PRUNE] Removed orphaned skill directory: {rel}")
+    return remaining
+
+
+def validate_agents_state(root: Path, registered_plugins: set, prune_orphans: bool = False,
+                          dry_run: bool = False) -> None:
     """Scan installed directories and report validation issues."""
     missing = _find_missing_artifacts(root, registered_plugins)
     unexpected = _find_unexpected_skill_dirs(root, registered_plugins)
+    if prune_orphans and unexpected:
+        unexpected = _prune_orphaned_skill_dirs(root, unexpected, dry_run)
 
     if missing or unexpected:
         print("  ⚠️ Validation issues detected:")
@@ -413,6 +439,9 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Sync all plugins from plugin-sources.json registry.")
     parser.add_argument("--dry-run", action="store_true", help="Simulate without modifying files.")
     parser.add_argument("--cleanup-only", action="store_true", help="Run cleanup only, skip reinstall.")
+    parser.add_argument("--prune-orphans", action="store_true",
+                        help="Delete skill dirs under .agents/skills/ that belong to no registered plugin "
+                             "(with --dry-run, list them only). Default: report only.")
     parser.add_argument("--no-prune", action="store_true", help="Skip post-sync component retention pruning.")
     args = parser.parse_args()
 
@@ -438,8 +467,8 @@ def main() -> None:
         enforce_retention_pruning(root, args.dry_run)
 
     print("\n--- 7. Post-Sync Validation ---")
-    if not args.dry_run:
-        validate_agents_state(root, registered_set)
+    if not args.dry_run or args.prune_orphans:
+        validate_agents_state(root, registered_set, args.prune_orphans, args.dry_run)
     else:
         print("  [DRY RUN] Skipping validation check.")
 
