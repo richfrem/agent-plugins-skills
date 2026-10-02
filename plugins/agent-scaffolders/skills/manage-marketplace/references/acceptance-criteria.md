@@ -1,1 +1,1 @@
-../../../references/acceptance-criteria.md
+../../../references/manage-marketplace-acceptance-criteria.md

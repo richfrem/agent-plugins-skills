@@ -1,1 +1,1 @@
-../acceptance-criteria.md
+../../../references/business-requirements-capture-acceptance-criteria.md

@@ -1,1 +1,1 @@
-../../../references/acceptance-criteria.md
+../../../references/ecosystem-standards-acceptance-criteria.md

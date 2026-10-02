@@ -1,1 +1,1 @@
-../../../references/acceptance-criteria.md
+../../../references/create-sub-agent-acceptance-criteria.md

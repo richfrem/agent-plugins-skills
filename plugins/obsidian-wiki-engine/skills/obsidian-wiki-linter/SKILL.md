@@ -1,110 +1,55 @@
 ---
 name: obsidian-wiki-linter
-plugin: obsidian-wiki-engine
-description: "Runs a semantic health check over the Obsidian LLM wiki using the cheapest available LLM CLI. Finds inconsistencies, missing concepts, stale articles, connection candidates, and new article suggestions. Writes a structured report to meta/lint-report.md. Use when the wiki is large enough to have quality drift, or as a periodic maintenance step."
-allowed-tools: Bash, Read, Write
+description: Runs semantic health checks over the Obsidian LLM wiki using cheap LLM CLIs. Detects contradictions, missing concepts, stale articles, and connection candidates.
 ---
+
+# Obsidian Wiki Linter (obsidian-wiki-linter)
+
+Performs semantic health checks over the Obsidian LLM wiki to detect contradictions, knowledge gaps, and connection candidates.
+
+## Contents
+- [Critical Constraints](#critical-constraints)
+- [Dependencies](#dependencies)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
+
+## Critical Constraints
+- The linter only writes analytical reports to `{wiki_root}/meta/lint-report.md`; never autonomously mutates concept nodes.
+- Run semantic passes with low-cost mini/flash models (`gpt-5-mini`, `claude-haiku-4-5`).
+- Limit checks to manageable node subsets on large wikis (`--sample 20`).
 
 ## Dependencies
 
 Requires Python 3.8+ and at least one CLI installed: `copilot`, `claude`, or `gemini`.
 
+## Quick start
 ```bash
-pip install -r requirements.txt
+# Run semantic health check with default engine
+python3 plugins/obsidian-wiki-engine/scripts/lint_wiki.py --wiki-root <path>
+
+# Sample specific number of nodes
+python3 plugins/obsidian-wiki-engine/scripts/lint_wiki.py --wiki-root <path> --sample 30
+
+# Dry run inspection
+python3 plugins/obsidian-wiki-engine/scripts/lint_wiki.py --wiki-root <path> --dry-run
 ```
 
----
-# Obsidian Wiki Linter
+## Workflow
+1. **Wiki Sampling**: Enumerate concept nodes and select target sample size.
+2. **Diagnostic Analysis**: Check for contradictions, unlinked references, and thin nodes.
+3. **Link Candidate Identification**: Recommend new `[[wikilinks]]` between semantically related concepts.
+4. **Report Generation**: Write structured diagnostic findings to `{wiki_root}/meta/lint-report.md`.
 
-**Status:** Active
-**Author:** Richard Fremmerlid
-**Domain:** Obsidian Wiki Engine
-
-## Purpose
-
-Performs a semantic health check over the LLM wiki — the step Karpathy calls
-"linting." Unlike `audit.py` (which checks structural coverage: orphans, missing
-summaries, broken wikilinks), this skill uses an LLM to analyze *semantic quality*:
-contradictions, knowledge gaps, and connection opportunities that only emerge once
-the wiki is large enough to have internal consistency requirements.
-
-## What It Checks
-
-| Category | What it finds |
-|:---------|:--------------|
-| **Inconsistencies** | Contradicting claims between two concept pages |
-| **Missing Concepts** | Topics implied by existing articles but not yet written |
-| **Stale Articles** | Pages with vague, outdated, or thin content |
-| **Connection Candidates** | Concept pairs that should have wikilinks but don't |
-| **New Article Suggestions** | Topics the wiki should cover based on its current scope |
-
-## Usage
-
-### Run semantic health check (default engine)
+## Verification
 ```bash
-python ./scripts/lint_wiki.py --wiki-root /path/to/wiki-root
+# Verify linter with dry run
+python3 plugins/obsidian-wiki-engine/scripts/lint_wiki.py --wiki-root <path> --dry-run
+
+# Audit skill compliance
+python3 plugins/agent-scaffolders/scripts/audit_skill.py plugins/obsidian-wiki-engine/skills/obsidian-wiki-linter --mode source
 ```
 
-### Sample more pages for larger wikis
-```bash
-python ./scripts/lint_wiki.py --wiki-root /path/to/wiki-root --sample 30
-```
-
-### Force engine
-```bash
-python ./scripts/lint_wiki.py --wiki-root /path/to/wiki-root --engine claude
-```
-
-### Dry run (print prompt without calling LLM)
-```bash
-python ./scripts/lint_wiki.py --wiki-root /path/to/wiki-root --dry-run
-```
-
-## Engine Fallback Chain
-
-Same strict cheap-model chain as `obsidian-rlm-distiller`:
-```
-1. copilot  → gpt-5-mini        (Paid, AI Credits)
-2. claude   → claude-haiku-4-5  (fallback, Paid)
-3. gemini   → gemini-3-flash-preview (final fallback, Paid)
-
-```
-
-## Output
-
-Report is written to `{wiki-root}/meta/lint-report.md` with YAML frontmatter:
-```yaml
-generated_at: "2026-04-16T..."
-engine: "claude"
-model: "claude-haiku-4-5"
-```
-
-Followed by five sections:
-1. **Inconsistencies** — conflicting claims between articles
-2. **Missing Concepts** — implied but not yet written
-3. **Stale or Weak Articles** — need richer content
-4. **Connection Candidates** — wikilinks to add
-5. **New Article Suggestions** — fresh topics to write
-
-## When to Use
-
-- After the wiki reaches ~20+ concept nodes (semantic quality starts to matter)
-- As a weekly maintenance step before a major query session
-- When you notice the wiki feels inconsistent or fragmented
-- Before filing `--save-as` outputs back — lint first to know what gaps to fill
-- As the final step in `/wiki-rebuild` (after ingest, distill, build)
-
-## Audit vs. Lint
-
-| `audit.py` | `lint_wiki.py` |
-|:-----------|:---------------|
-| Structural: missing summaries, broken links, orphans | Semantic: contradictions, gaps, stale content |
-| Always fast, no LLM needed | Requires LLM call |
-| Run before every `/wiki-query` | Run periodically (weekly or post-rebuild) |
-| Exit code 1 on critical issues | Always exits 0 (report-only) |
-
-## Related Scripts
-
-- `lint_wiki.py` — semantic health check orchestrator
-- `audit.py` — structural coverage checker (complementary)
-- `distill_wiki.py` — shares engine detection logic
+## References
+- [wiki-linting-guide.md](references/wiki-linting-guide.md) - Report schemas, audit vs linting tradeoffs, and CLI flags.

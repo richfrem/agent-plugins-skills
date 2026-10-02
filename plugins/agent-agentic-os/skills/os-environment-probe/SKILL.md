@@ -12,62 +12,54 @@ color: cyan
 tools: ["Bash", "Read", "Write"]
 ---
 
-## Role
+# Environment Probe (`os-environment-probe`)
 
-os-environment-probe asks the user which AI environments they have access to, then
-verifies each claimed environment by running a lightweight probe command. Results are
-written to `context/memory/environment.md` — a single source of truth that downstream
-skills read to make delegation decisions without asking the user again.
+Discovers, verifies, and records available local AI CLI environments (Copilot CLI, Agy CLI, Claude, Cursor) into `context/memory/environment.md` for automated backend dispatch.
 
----
+## Contents
 
-## Environment Interview
+- [Critical Constraints](#critical-constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
 
-Ask the user these questions (one prompt, multiple-choice, keep it brief):
+## Critical Constraints
 
-> Which of these AI tools do you currently have active on this machine?
-> (Select all that apply)
->
-> A. Claude Code only
-> B. Claude Code + GitHub Copilot CLI (Pro or Business plan)
-> C. Claude Code + Agy CLI (Antigravity — gemini-3.5-flash backend)
-> D. Cursor (Claude or GPT backend)
-> E. Other (describe)
+1. **Verification Before Recording**: Only record environments that pass active probe execution. Never write an unverified claimed environment.
+2. **Safe Idempotent Overwrite**: Re-probing safely refreshes `context/memory/environment.md` without destructive side-effects.
+3. **Fallback Priority**: Downstream routing defaults to Claude-only mode if `environment.md` is absent.
 
-Wait for their answer before probing.
+## Quick start
 
----
+Probe the local system for active CLI tools:
 
-## Probe Commands
+```bash
+python3 scripts/probe_environments.py --check
+```
 
-For each claimed environment, verify it is actually callable:
+## Workflow
 
-| Environment | Probe command | Pass condition |
-|-------------|---------------|----------------|
-| Copilot CLI | `gh copilot explain "test" 2>&1 \| head -3` | No "not authenticated" or "command not found" |
-| Agy CLI | `agy --version 2>&1 \| head -1` | Outputs a version string |
-| Cursor | `cursor --version 2>&1 \| head -1` | Outputs a version string |
-| Claude Code | always present | — |
+1. **Environment Interview**: Ask which AI tools are active (Claude Code, Copilot CLI, Agy CLI, Cursor).
+2. **Execute Probes**: Verify each claimed tool:
+   - Copilot CLI: `gh copilot explain "test" 2>&1 | head -3`
+   - Agy CLI: `agy --version 2>&1 | head -1`
+   - Cursor: `cursor --version 2>&1 | head -1`
+3. **Persist State**: Write verified profiles to `context/memory/environment.md`.
+4. **Downstream Integration**: Notify caller (`os-architect` or `os-evolution-planner`) of confirmed backends and model tier preferences.
 
-Report each probe result to the user:
-- Pass: "✓ Copilot CLI — confirmed"
-- Fail: "✗ Copilot CLI — not found or not authenticated (skipping)"
+## Verification
 
-Only write environments that pass to the profile.
+Confirm environment profile file exists and contains valid Markdown formatting:
 
----
+```bash
+python3 scripts/probe_environments.py --validate
+```
 
-## Procedure
+## References
 
-1. Run the Environment Interview.
-2. Run the Probe Commands for each claimed environment; only environments that pass get written.
-3. Write `context/memory/environment.md` in the format in `references/detailed-reference.md`.
-4. Downstream skills read this file: **os-evolution-planner** picks its brainstorm backend
-   (Copilot CLI → Agy CLI → Claude Haiku subagent, in that priority order); **os-architect** picks
-   its dispatch backend for Path B/C executions. If `environment.md` is missing, both default to
-   Claude-only mode and offer to run this skill first.
-5. **Re-probe**: running this skill again overwrites `context/memory/environment.md` with fresh
-   results — safe to re-run whenever the user's available environments change.
-
-Output format, smoke tests, gotchas, and support-file details are in
-`references/detailed-reference.md`.
+- [detailed-reference.md](references/detailed-reference.md) — Output schema, probe timeouts, and error handling.
+- [cheapest_models.md](references/cheapest_models.md) — Model cost tiers and backend prioritization rules.
+- [acceptance-criteria.md](references/acceptance-criteria.md) — Verification checklist and gate requirements.
+- [gemini-detection-example.md](references/gemini-detection-example.md) — Gemini detection output format and probe examples.
+- [fallback-tree.md](references/fallback-tree.md) — Fallback resolution when probe binaries fail or timeout.

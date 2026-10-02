@@ -1,5 +1,16 @@
 # Symlink Troubleshooting Reference
 
+## Contents
+- [A required privilege is not held by the client](#error-a-required-privilege-is-not-held-by-the-client)
+- [Git checks out symlinks as plain text files](#error-git-checks-out-symlinks-as-plain-text-files)
+- [Too many levels of symbolic links](#error-too-many-levels-of-symbolic-links)
+- [Symlink shows as regular file in audit](#symlink-shows-as--regular-file-not-a-link-in-audit)
+- [macOS Operation not permitted](#macos-operation-not-permitted-on-network-drives-or-apfs-encrypted-volumes)
+- [Symlinks break on CI](#symlinks-work-locally-but-break-on-ci-github-actions--gitlab-ci)
+- [Checking junction status on Windows](#checking-if-a-path-is-a-junction-on-windows)
+- [symlinks.json not being committed](#the-symlinksjson-manifest-is-not-being-committed-to-git)
+- [Mixed links after git pull](#after-git-pull-some-links-break-but-others-dont)
+
 ## Error: "A required privilege is not held by the client"
 
 **Cause**: Windows requires elevated permissions or Developer Mode to create symlinks.

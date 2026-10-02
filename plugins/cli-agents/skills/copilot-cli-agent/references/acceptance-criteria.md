@@ -1,1 +1,1 @@
-../../../references/acceptance-criteria.md
+../../../references/copilot-cli-agent-acceptance-criteria.md

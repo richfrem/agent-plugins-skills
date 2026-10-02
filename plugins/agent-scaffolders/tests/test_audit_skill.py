@@ -137,8 +137,8 @@ class TestAuditSkill(unittest.TestCase):
         self.assertFalse(result.passed)
         self.assertTrue(any("ADR-002" in e or "not a symlink" in e for e in result.errors))
 
-    def test_fix_mode_repairs_evals(self):
-        """Assert --fix mode converts legacy dict wrapped evals to array."""
+    def test_fix_mode_refuses_inference_without_mutation(self):
+        """Assert the same legacy fixture remains unchanged under disabled repair."""
         skill_dir = self.skills_dir / "fixable-skill"
         skill_dir.mkdir(parents=True)
         (skill_dir / "SKILL.md").write_text("---\nname: fixable-skill\ndescription: Does work.\n---\n", encoding="utf-8")
@@ -150,9 +150,13 @@ class TestAuditSkill(unittest.TestCase):
         }), encoding="utf-8")
         
         result = audit_skill(skill_dir, plugin_root=self.plugin_root, fix=True)
-        # Should repair evals.json to root list
+        self.assertFalse(result.passed)
+        self.assertTrue(any("disabled" in error for error in result.errors))
+        # Preserve the routing outcomes and wrapper without silent conversion.
         repaired_data = json.loads((evals_dir / "evals.json").read_text(encoding="utf-8"))
-        self.assertIsInstance(repaired_data, list)
+        self.assertIsInstance(repaired_data, dict)
+        self.assertEqual(repaired_data["entries"][0]["should_trigger"], True)
+        self.assertEqual(result.fixes_applied, [])
 
 
 if __name__ == "__main__":

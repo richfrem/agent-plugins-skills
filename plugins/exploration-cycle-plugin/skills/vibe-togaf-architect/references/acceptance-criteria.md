@@ -1,0 +1,1 @@
+../../../references/vibe-togaf-architect-acceptance-criteria.md

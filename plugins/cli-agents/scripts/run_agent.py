@@ -210,11 +210,14 @@ def _build_cmd_agy(
     return cmd
 
 
-def _build_cmd_claude(model: str, prompt: str, isolated: bool = False) -> list[str]:
+def _build_cmd_claude(model: str, prompt: str, isolated: bool = False, effort: str | None = None) -> list[str]:
     """Claude CLI. --dangerously-skip-permissions is suppressed when isolated=True."""
-    if isolated:
-        return ["claude", "--model", model, "-p", prompt]
-    return ["claude", "--dangerously-skip-permissions", "--model", model, "-p", prompt]
+    cmd = ["claude"] + ([] if isolated else ["--dangerously-skip-permissions"])
+    if effort:
+        if effort not in {"low", "medium", "high"}:
+            raise ValueError(f"Unsupported Claude effort: {effort}")
+        cmd += ["--effort", effort]
+    return cmd + ["--model", model, "-p", prompt]
 
 
 def _build_cmd_codex(model: str) -> list[str]:
@@ -347,11 +350,20 @@ def _build_cli_cmd(
         return _build_cmd_agy(model, prompt_tmp, isolated, effort, print_timeout)
     if cli == "codex":
         return _build_cmd_codex(model)
-    return _build_cmd_claude(model, prompt, isolated)  # claude
+    return _build_cmd_claude(model, prompt, isolated, effort)  # claude
 
 
 def _execute_cli_command(cmd: list, cli: str, output_file: str, prompt_tmp: str) -> None:
     """Run the CLI command, streaming or piping stdin as appropriate for the backend."""
+    executable = shutil.which(cmd[0])
+    if not executable:
+        raise FileNotFoundError(f"Selected executable is unavailable: {cmd[0]}")
+    cmd = [executable, *cmd[1:]]
+    # Probe before opening the output, without including task input in diagnostics.
+    version = subprocess.run([executable, "--version"], capture_output=True, text=True, timeout=10)
+    version_text = version.stdout.strip() if version.returncode == 0 else f"unavailable (--version exit {version.returncode})"
+    print(f"[run_agent] executable={executable} version={version_text or 'unavailable'}")
+    print(f"[run_agent] python={sys.executable} version={sys.version.split()[0]}")
     if cli in _STREAMING_CLIS:
         with open(output_file, "w") as out_f:
             proc = subprocess.Popen(cmd, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
@@ -386,6 +398,7 @@ def run_agent(
     profile_path: str | None = None,
     effort: str | None = None,
     print_timeout: str | None = None,
+    executable: str | None = None,
 ) -> None:
     """Assemble the prompt and dispatch it to the selected backend, writing output_file."""
     cli, model = _resolve_cli_and_model(cli, model, tier, profile_path)
@@ -410,12 +423,18 @@ def run_agent(
         prompt_tmp = _maybe_write_prompt_tmp(cli, prompt)
 
         cmd = _build_cli_cmd(cli, model, prompt, prompt_tmp, isolated, effort, print_timeout)
+        if executable:
+            cmd[0] = executable
+        print(f"[run_agent] backend={cli} model={model} effort={effort or 'provider-default'}")
         _execute_cli_command(cmd, cli, output_file, prompt_tmp)
 
         print(f"[run_agent] {cli} complete → {output_file}")
 
     except subprocess.CalledProcessError as e:
-        print(f"Error executing {cli}: {e}")
+        print(f"Error executing {cli}: backend exited with code {e.returncode}")
+        sys.exit(1)
+    except (OSError, RuntimeError, subprocess.TimeoutExpired) as error:
+        print(f"Error executing {cli}: {error}")
         sys.exit(1)
     finally:
         if prompt_tmp and os.path.exists(prompt_tmp):
@@ -486,8 +505,9 @@ if __name__ == "__main__":
         )
         parser.add_argument(
             "--effort", choices=("low", "medium", "high"), default=None,
-            help="Reasoning effort for agy (low, medium, or high).",
+            help="Reasoning effort for Claude or agy (low, medium, or high).",
         )
+        parser.add_argument("--executable", help="Explicit CLI executable path; takes precedence over PATH.")
         parser.add_argument(
             "--print-timeout", default=None,
             help="Explicit Agy print wait ceiling, for example 15m0s.",
@@ -504,4 +524,4 @@ if __name__ == "__main__":
             args.effort = args.tier
         run_agent(args.persona_file, args.input_file, args.output_file, args.instruction,
                   args.cli, args.model, args.isolated, args.max_tokens, args.require_input,
-                  args.tier, args.profile, args.effort, args.print_timeout)
+                  args.tier, args.profile, args.effort, args.print_timeout, args.executable)

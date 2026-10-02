@@ -1,0 +1,1 @@
+../../../references/gemini-cli-commands.md

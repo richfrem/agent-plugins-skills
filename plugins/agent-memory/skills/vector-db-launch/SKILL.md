@@ -1,84 +1,61 @@
 ---
 name: vector-db-launch
-plugin: vector-db
-description: Start the Native Python ChromaDB background server. Use when semantic search returns connection refused on port 8110, or when the user wants to enable concurrent agent read/writes.
+plugin: agent-memory
+description: Start the Native Python ChromaDB background server when concurrent multi-agent read/writes are required.
 allowed-tools: Bash, Read, Write
 ---
 
-## Dependencies
+# Vector DB Launch (`vector-db-launch`)
 
-This skill requires **Python 3.8+** and standard library only. No external packages needed.
+Starts and verifies the ChromaDB background HTTP service for multi-agent concurrency.
 
-**To install this skill's dependencies:**
-```bash
-pip-compile ./requirements.in
-pip install -r ./requirements.txt
-```
+## Contents
 
-See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+- [Critical Constraints](#critical-constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [Troubleshooting](#troubleshooting)
+- [References](#references)
 
----
-# Vector DB Launch (Python Native Server)
+## Critical Constraints
 
-ChromaDB provides the vector database backend for semantic search. If configured for Option C (Native Server) in `vector_profiles.json`, the database must be running as a background HTTP service to be accessed by `operations.py`.
+1. **Localhost-Only Binding**: NEVER bind `--host` to `0.0.0.0` or any public interface due to CVE-2026-45829/45830/45831; binding MUST remain `127.0.0.1`.
+2. **In-Process Preference**: Default to in-process mode unless concurrent writer access is explicitly required.
 
-## When You Need This
+## Quick start
 
-- **RAG ingest fails** with connection refused to `127.0.0.1:8110`
-- **Semantic search** hangs or fails to connect
-- The user has explicitly selected **Option 2 (Python Native Server)** during `vector-db-init`
-
-## Pre-Flight Check
+Check whether the ChromaDB background server is already active:
 
 ```bash
-# Check if ChromaDB is already running
-curl -sf http://127.0.0.1:8110/api/v1/heartbeat > /dev/null && echo "✅ ChromaDB running" || echo "❌ ChromaDB not running"
+curl -sf http://127.0.0.1:8110/api/v1/heartbeat > /dev/null && echo "ChromaDB running" || echo "ChromaDB stopped"
 ```
 
-If it prints "✅ ChromaDB running", you're done. If not, proceed.
+## Workflow
 
-## Security: Localhost-Only Binding (Hard Rule)
+1. **Check Existing Service**: Query heartbeat to confirm port 8110 availability.
+2. **Launch Daemon**: Start ChromaDB background server binding strictly to localhost:
+   ```bash
+   chroma run --host 127.0.0.1 --port 8110 --path .vector_data &
+   ```
+3. **Verify Heartbeat**: Poll heartbeat endpoint until healthy.
+4. **Report Status**: State daemon PID, host binding, port, and storage path.
 
-ChromaDB has multiple unpatched, unfixed CVEs as of 2026-08-27 (CVE-2026-45829: pre-auth code
-injection, CVSS 10.0; CVE-2026-45830/45831: authorization provider doesn't scope tenant/database/
-collection permissions) — see `plugins/agent-memory/requirements.in` for full detail. **Never bind
-the server to `0.0.0.0` or any publicly routable interface** — `--host` MUST always be `127.0.0.1`.
-This is the only available mitigation until upstream ships a fix; do not weaken it for convenience
-(e.g. to reach the server from another machine on the network).
+## Verification
 
-## Launching the Server (Native Python)
-
-The ChromaDB server runs as a background Python process. 
-
-It binds to the `${chroma_host}:${chroma_port}` defined in your active profile inside `.agent/learning/vector_profiles.json` (defaults to `127.0.0.1:8110`). Its data volume is mounted from the path defined by the profile's `${chroma_data_path}`.
-
-### Step 1: Start the Service via CLI
-Instruct the user to start the server as a background process using `nohup` or `&` so it does not block their terminal. Example:
-
-```bash
-chroma run --host 127.0.0.1 --port 8110 --path .vector_data &
-```
-
-### Step 2: Verify Connection
-After the user confirms the server is running, verify it via API:
+Confirm service health via heartbeat response:
 
 ```bash
 curl -sf http://127.0.0.1:8110/api/v1/heartbeat
 ```
 
-It should return a JSON response containing a timestamp `{"nanosecond heartbeat": ...}`.
-
----
-
 ## Troubleshooting
 
-| Symptom | Fix |
-|---------|-----|
-| `chroma: command not found` | The user hasn't run the `vector-db-init` skill yet. Run it to `pip install chromadb`. |
-| Port 8110 already in use | Another process (or zombie chroma process) is using the port. `lsof -i :8110` to find and kill it. |
-| Permission Denied for data directory | Ensure the user has write access to the `.vector_data` directory. |
+- `chroma: command not found`: Ensure dependencies are installed in virtualenv.
+- `Port 8110 already in use`: Check running process with `lsof -i :8110`.
+- `Permission Denied`: Confirm write access to `.vector_data`.
 
-## Alternative: In-Process Mode
-If the user decides they do not want to run a background server, you can instruct them to set `chroma_host` to an empty string `""` in their profile in `.agent/learning/vector_profiles.json`. 
+## References
 
-The `operations.py` library will automatically fallback to "Option A" (`PersistentClient`) and initialize the database locally inside the python process without needing this skill.
+- [acceptance-criteria.md](references/acceptance-criteria.md) — Acceptance criteria for vector database launch and lifecycle.
+- [vector-db-bootstrap-guide.md](references/vector-db-bootstrap-guide.md) — Initialization manual and configuration details.

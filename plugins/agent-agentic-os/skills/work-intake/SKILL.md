@@ -11,49 +11,56 @@ description: >
 allowed-tools: Bash, Read, Write
 ---
 
-# Interview Spec (`work-intake`)
+# Work Intake (`work-intake`)
 
-## Critical Operational Rules (Read First Before Any Action)
+Critical intake gateway for discovery, interview clarification, and four-pillar specification authoring before implementation.
 
-1. **Confirm Approver Identity Appropriately**: Each pipeline has one approver key enforced at Gate 1 (`AWAITING_APPROVAL -> APPROVED`). For draft authoring, spec/plan outline creation, and research, do not block or derail document authoring on signing-readiness checks. Check/report isolation status only when preparing for execution or when explicitly requested, never on read/draft cycles. Real work lives in `context/control_plane.db` (human operator key); simulations live in `simulation_control_plane.db` (agent simulation key). Never sign on the human's behalf.
-2. **Drafting vs. Implementation Boundaries**: Authoring documentation, task specs, master plans, and outlines occurs in `INTAKE`, `INTERVIEW`, `DRAFT_PLAN`, and `PLAN_REVIEW`. These planning-only activities DO NOT require creating git worktrees or Gate 1 cryptographic signatures. Reuse requirements and directives already supplied in conversation or running ledger instead of re-asking or requesting approval for already-authorized drafting.
-3. **Read Guidance and DB First**: Before acting or asking, read the stage YAML (`scripts/control_plane/transition_templates.yaml`), advisory transition guidance (`transition-guidance --task-id <task-id>`), and SQLite DB enforcement. Say exactly which parts were read, never more.
-4. **Task Artifact Location**: All task artifacts (spec, plan, outline, reviews) MUST live in `docs/plans/work-tasks/<task-id>/`, NEVER in the `docs/plans` root.
-5. **Running Directives Ledger**: Maintain a running ledger of every human directive from the very first message. Consult it before every reply; never lose directives across transitions.
-6. **Answer Once & One Question at a Time**: Answer all possible questions from context, authorized sources, or the running ledger first. Ask only ONE question per turn for what is genuinely missing. Never re-ask what is recorded.
-7. **No Skips or Impersonation**: Human chat answers to transition questions must be persisted through `coordinate-transition --interactive` (actor=human). Never write interview answers via `record_interview_question.py` as `interviewer`. Never record a review skip on the human's behalf. Skips are human decisions.
-8. **On Blocked Gate**: STOP, state the cause and cost in plain words, and do not attempt workaround commands (recovery approvals, direct DB edits). Never hand the human a state-reverting command without explaining what it undoes. Report a real blocker once with its exact impact rather than looping in administrative exploration.
-9. **Complete Pasteable Commands Only**: Every command the human must run is repeated in full, ready to paste, every time it is needed. No back-references and no vague references (never "see above" or Python function names).
-10. **Never Dispute the Human**: Never dispute or "correct" the human's account of what they said or meant. Take their statement as the record, adjust, and continue.
-11. **References**:
-   - Classification & Who Runs What: `references/edge-matrix.md`
-   - Worked Transcript: `references/work-intake-healthy-transcript.md`
-   - Push evidence verifier: `scripts/verify_gate_evidence.py` (run from this skill's root).
+## Contents
 
----
+- [Critical Constraints](#critical-constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
 
-## Edge Classification (Who Runs What)
+## Critical Constraints
 
-Every transition command belongs to one of three classes (see `references/edge-matrix.md`):
-- **AGENT-RUNNABLE**: You (the agent) run the command directly once the human says go in chat. Never ask the human to run it.
-- **SOFT**: You ask the human in chat for a simple confirmation. Once they approve, YOU run the command. Never hand the command to the human.
-- **HARD**: Only cryptographic signatures (Gate 1 `APPROVED`, Gate 3 `VERIFY_EXIT`, closure `DONE`) or policy-reserved commands require human execution. Only hand a command to the human for these, using the full pasteable command.
+1. **Confirm Approver Identity First**: Real work lives in `context/control_plane.db` where only the human operator's signing key approves; simulation runs in `simulation_control_plane.db` with agent test identity (`test-human@local`).
+2. **Read Guidance & DB First**: Read `transition_templates.yaml`, `transition-guidance`, and SQLite DB first; say exactly which parts were read, never more.
+3. **Artifact Location & Running Ledger**: Task artifacts live in `docs/plans/work-tasks/<task-id>/`, never plans root. Maintain a running ledger of every human directive from first message.
+4. **Question Budget & Chat Answers**: Answer from context first; ask only ONE question per turn. Never re-ask what is recorded and never dispute the human's account. Persist chat answers via `coordinate-transition --interactive` (actor=human); never write interview answers as interviewer.
+5. **Pasteable Commands Only**: Every command the human must run is complete and ready to paste, with no back-references, no vague references, and never "see above".
+6. **Stop on Blocked Gate**: On blocked gate, STOP and state cause and cost; no workaround commands (recovery approvals, direct DB edits). Never record a review skip on the human's behalf.
 
----
+## Quick start
 
-## Stage-Entry Question Contract & Outline
+Check advisory guidance for the active task state:
 
-1. Load that state's `stages.<STATE>` contract from `transition_templates.yaml`.
-2. Map intent from context, prompt documents, or ledger.
-3. Update the outline at `docs/plans/work-tasks/<task-id>/<task-id>-plan-outline.md` after each accepted answer.
-4. Fast-track `TRIVIAL` tasks to lightweight verification; standard work proceeds through full specification and implementation plan drafting.
-5. In `PLAN_REVIEW`: agent review is optional. When the human accepts the plan, YOU run `coordinate-transition --to AWAITING_APPROVAL`. No review or skip receipt is required.
+```bash
+python3 scripts/control_plane/coordinator.py transition-guidance --task-id <task-id>
+```
 
----
+## Workflow
 
-## The 4 Pillars of `TASK_SPEC.md`
-Every compiled specification must satisfy:
-1. **The Job**: Clear description of system change and subsystem paths.
-2. **The Why**: Core problem statement and architectural rationale.
-3. **Semantic Guardrails**: Non-negotiable boundaries paired with concrete justifications.
-4. **Objective Definition of Done (DoD)**: Programmatic verification commands (`exit 0` tests, linters, audits).
+1. **Read Guidance & State**: Read `transition_templates.yaml` and SQLite DB enforcement before asking or acting.
+2. **Interview & Spec Synthesis**: Interview for missing requirements. Compile the 4 pillars of `TASK_SPEC.md` (The Job, The Why, Semantic Guardrails, Objective DoD).
+3. **Plan Drafting**: Outline and draft implementation plan in `docs/plans/work-tasks/<task-id>/`.
+4. **Stage Transitions**: Transition through `INTAKE` -> `INTERVIEW` -> `DRAFT_PLAN` -> `PLAN_REVIEW` using `coordinate-transition`.
+5. **Advance to Approval**: In `PLAN_REVIEW`, once the plan is accepted, agent runs `coordinate-transition --to AWAITING_APPROVAL`.
+
+## Verification
+
+Validate task spec and transition gate evidence deterministically:
+
+```bash
+python3 scripts/verify_gate_evidence.py --task-id <task-id>
+```
+
+## References
+
+- [edge-matrix.md](references/edge-matrix.md) — Command execution taxonomy (AGENT-RUNNABLE, SOFT, HARD).
+- [work-intake-healthy-transcript.md](references/work-intake-healthy-transcript.md) — Example walkthrough transcript.
+- [acceptance-criteria.md](references/acceptance-criteria.md) — Gate criteria and definitions of done.
+- [fallback-tree.md](references/fallback-tree.md) — Fallback and recovery when transitions fail.
+- [multi-round-external-review-protocol.md](references/multi-round-external-review-protocol.md) — Multi-round external review and persona selection protocol.
+- [detailed-reference.md](references/detailed-reference.md) — Extended contract and protocol documentation.

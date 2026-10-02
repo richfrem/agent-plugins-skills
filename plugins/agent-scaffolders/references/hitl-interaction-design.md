@@ -3,6 +3,13 @@
 
 A reference for deciding when and how to incorporate human interaction into skills, and how to design outputs for different audiences. Used by `create-skill` during the design phase.
 
+## Contents
+
+- [HITL Decision Matrix](#hitl-decision-matrix)
+- [Question Types Reference](#question-types-reference)
+- [Output Design Guide](#output-design-guide)
+- [Incorporating HITL into SKILL.md Structure](#incorporating-hitl-into-skillmd-structure)
+
 ---
 
 ## HITL Decision Matrix

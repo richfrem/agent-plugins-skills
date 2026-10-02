@@ -1,96 +1,58 @@
 ---
 name: co-pilot-loop
 plugin: agent-orchestration
-description: "Cooperative Multi-Agent Coordination Loop. Spawns a lightweight companion sub-agent (Gemini 3.5 Flash Low) to perform spec discovery, planning, and implementation. The primary agent (Claude) acts as the QA Director, answering Gemini's questions, approving the spec/plan, and running verification tests. Assumes the superpowers plugin is installed in the target repository."
+description: "Cooperative Multi-Agent Coordination Loop. Spawns a lightweight companion sub-agent to perform spec discovery, planning, and implementation while the primary agent acts as QA Director."
 allowed-tools: Bash, Read, Write
 ---
 
-# Cooperative Co-Pilot Loop (Supervisor Protocol)
+# Cooperative Co-Pilot Loop (`co-pilot-loop`)
 
-The **Co-Pilot Loop** splits software engineering tasks between a **Supervisor (Outer Loop — you)** and an **Executor (Inner Loop — a lightweight companion sub-agent)**. The Supervisor acts as the product manager and QA director, while the Executor performs spec writing, planning, and coding inside an isolated worktree.
+Splits engineering tasks between a Supervisor (Outer Loop) and an Executor (Inner Loop sub-agent) running inside an isolated worktree.
 
-You do not know which CLI or chat interface the user is using — and that's fine. The skill is model-agnostic. It reads the cheapest model for the active CLI at runtime.
+## Contents
 
----
+- [Constraints](#constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
 
-## 1. Setup & Orientation
+## Constraints
 
-### Step 1A — Determine the active CLI backend
-Ask the user once (or detect from context):
-> "Which CLI backend is available for the sub-agent? (`agy`, `claude`, `copilot`, `codex`, `llama`)"
+- **No-Git rule**: The companion Executor is strictly forbidden from running any `git` commands.
+- **Background protection**: Always append `< /dev/null` to CLI dispatch commands to prevent `SIGTTIN` hangs.
+- **Sequential review gates**: Gate 1 (Spec), Gate 2 (Plan), Gate 3 (QA) must be completed in order.
+- **Single commit rule**: All commits are made exclusively by the Supervisor after QA approval.
 
-### Step 1B — Look up the cheapest model for that backend
-Consult `plugins/agent-orchestration/references/cheapest_models.json` (or `references/cheapest_models.md`) to select the cheapest model for the detected CLI backend.
+## Quick start
 
-### Step 1C — Spawn the sub-agent
-Use `run_agent.py` with the resolved CLI and model:
 ```bash
-# For agy (recommended — cheapest Gemini)
+# Spawn companion sub-agent with strategy packet
 python ./scripts/run_agent.py <PERSONA_FILE> <PACKET_FILE> <OUTPUT_FILE> "<INSTRUCTION>" \
   --cli agy --model "Gemini 3.5 Flash (Low)" < /dev/null
-
-# For claude CLI
-python ./scripts/run_agent.py <PERSONA_FILE> <PACKET_FILE> <OUTPUT_FILE> "<INSTRUCTION>" \
-  --cli claude --model claude-haiku-4.5 < /dev/null
-
-# For copilot CLI
-python ./scripts/run_agent.py <PERSONA_FILE> <PACKET_FILE> <OUTPUT_FILE> "<INSTRUCTION>" \
-  --cli copilot --model gpt-5.4-nano < /dev/null
 ```
 
-> **CRITICAL**: Always append `< /dev/null` to prevent `SIGTTIN` process suspension in background execution.
+## Workflow
 
----
+1. **Setup & Model**: Consult [cheapest_models.md](references/cheapest_models.md) or [cheapest_models.json](references/cheapest_models.json) to select companion model.
+2. **Packet Handoff**: Create isolated worktree and assemble Strategy Packet specifying scope and no-git constraint.
+3. **Gate 1 (Spec Review)**: Supervisor validates spec has zero placeholders (`TODO`/`TBD`) and ADR alignment.
+4. **Gate 2 (Plan Review)**: Supervisor validates dependency ordering, rollback steps, and TDD contract.
+5. **Gate 3 (Execution & QA)**: Executor implements in worktree; Supervisor audits `git diff` and runs test suite.
+6. **Retrospective & Merge**: Merge validated changes from worktree and log session summary.
 
-## 2. Strategy Packet & Handoff
+## Verification
 
-Create an isolated Git worktree or branch for the Executor. Generate a `Strategy Packet` (via `scripts/agent_orchestrator.py packet`) containing:
-
-1. **Objective** — what feature/bug is being implemented.
-2. **Constraints** — TDD rules, symlink policy, coding conventions, no deletions.
-3. **No-Git Rule** — the Executor is strictly **forbidden** from running any `git` commands.
-4. **Spec output path** — e.g. `docs/superpowers/specs/YYYY-MM-DD-<feature>-spec.md`.
-5. **Plan output path** — e.g. `implementation_plan.md`.
-
-Hand the Strategy Packet to the Executor and start the parallel session.
-
----
-
-## 3. Supervision & Review Gates
-
-You (the Supervisor) enforce the following sequential gates. **No gate may be skipped.**
-
-### Gate 1 — Design Spec Review
-When the Executor generates a design spec, audit it:
-- No vague placeholders (`TODO`, `TBD`, `REPLACE`).
-- Architectural decisions align with existing ADRs and codebase patterns.
-- *Action*: Approve → proceed to Gate 2. Reject → pass specific written feedback back to Executor.
-
-### Gate 2 — Implementation Plan Review
-Review the Executor's `implementation_plan.md` / `task.md`:
-- Files grouped logically by dependency layer.
-- A clear automated verification plan is included.
-- *Action*: Approve → proceed to Gate 3. Reject → return with specific revision notes.
-
-### Gate 3 — QA & Verification
-Once Executor signals completion, run the verification suite:
 ```bash
-python3 run_tests.py    # or npm run test / npm run build
-git diff                # inspect all changed files
+# Verify supervisor gate acceptance criteria
+pytest plugins/agent-orchestration/tests/test_loop_strategies.py
+# Check git diff in companion worktree before merge
+git -C <WORKTREE_PATH> diff --stat
 ```
 
-Classify issues using the severity schema:
-- 🔴 **CRITICAL** — fails compile or tests. Return error logs to Executor immediately.
-- 🟡 **MODERATE** — works but violates conventions or ADRs. Return with specific ADR.
-- 🟢 **MINOR** — stylistic only. Fix directly yourself.
+## References
 
-Generate correction packets via:
-`python ./scripts/agent_orchestrator.py correct --packet handoffs/task_NNN.md --feedback "Reason"`
-
----
-
-## 4. Retrospective & Closure
-Once all verification tests pass:
-1. Merge branch to `main` (from repo root only, never inside worktree).
-2. Update RLM summaries and write session retrospective (`scripts/agent_orchestrator.py retro`).
-3. Commit validated changes.
+- [acceptance-criteria.md](references/acceptance-criteria.md) — Structural and behavioral expectations for co-pilot loop.
+- [fallback-tree.md](references/fallback-tree.md) — Fallback escalation protocol for loop hangs and test failures.
+- [cheapest_models.md](references/cheapest_models.md) — Companion sub-agent token and latency guide.
+- [cheapest_models.json](references/cheapest_models.json) — Structured CLI model capability catalog.

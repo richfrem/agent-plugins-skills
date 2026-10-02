@@ -2,6 +2,19 @@
 
 Extracted from SKILL.md per Layer-1 procedural-core line budget (issue #551).
 
+## Contents
+
+- [Phase 0: Intake](#phase-0-intake--full-questions)
+- [Phase 1: Progress Audit](#phase-1--commands)
+- [Phase 2: Diff Inspection](#phase-2--commands)
+- [Phase 3: Structured Assessment](#phase-3--structured-assessment-table-format-and-verdicts)
+- [Phase 4: Apply Approved Changes](#phase-4-apply-approved-changes-full-steps)
+- [Phase 5: Interrogate Lab Agent](#phase-5-interrogate-the-lab-agent-full-question-list)
+- [Phase 6: Capture Learnings](#phase-6-capture-learnings--full-detail)
+- [Master Source Mapping Reference](#master-source-mapping-reference)
+
+---
+
 ## Phase 0: Intake — full questions
 
 **Q1 — Lab repo path?**

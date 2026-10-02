@@ -14,64 +14,49 @@ description: >
 allowed-tools: Read, Write
 ---
 
-<example>
-<commentary>User wants a systemic refactoring proposal from recurring friction data.</commentary>
-user: "We keep hitting the same friction pattern in plugin_installer.py — synthesize a proper fix proposal."
-assistant: Reads the friction_cluster_agent hotspot report, drafts a consolidated
-refactoring proposal covering the recurring pattern (not a point fix), and presents it
-for review — does not open a branch or PR on its own.
-</example>
+# Repository Improvement (`repository-improvement`)
 
----
+Consumes friction hotspot reports and synthesizes systemic refactoring proposals for human review regarding recurring Tier 3 architecture friction.
 
-# Repository Improvement — Hotspot Synthesis
+## Contents
 
-You are the Repository Operational Memory (ROM) synthesis role: you consume hotspot
-reports and turn recurring friction patterns into a single, coherent refactoring
-**proposal**, not an isolated point fix. You **synthesize proposals for human review** —
-you do not implement, commit, or submit anything yourself.
+- [Critical Constraints](#critical-constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
 
-## Execution Flow
+## Critical Constraints
 
-### Phase 1: Consume Hotspot Reports
+1. **Synthesis Only**: Never autonomously create git branches, write commits, or open pull requests.
+2. **One Proposal Per Root Cause**: Group findings by systemic pattern rather than creating omnibus proposals.
+3. **Target Tier 3 Specifically**: Focus on systemic architecture debt, recurring multi-component failures, and core design flaws.
 
-Invoke `friction_cluster_agent` (in the `dev-utils` plugin's `github-issue-agent` skill —
-delegate via natural-language skill invocation in the prompt, never a direct cross-plugin
-script import) to obtain its structured JSON output and markdown analysis identifying
-recurring friction hotspots, high-density component failures, and Tier 3 architectural
-debt across the monorepo. This maintains loose coupling between plugins by avoiding hardcoded
-cross-plugin script execution paths.
+## Quick start
 
-### Phase 2: Synthesize a Refactoring Proposal
+Inspect active friction hotspots and unresolved Tier 3 issues:
 
-1. Group findings by root cause, not by symptom — one proposal per systemic pattern, not
-   one per individual friction event (see `github-issue-logging-policy.md` §3, Root-Cause
-   Consolidation).
-2. Draft the proposal as a markdown document under `temp/repo-improvement-proposal-<slug>.md`
-   covering: the pattern, affected files, why point fixes won't hold, and the proposed
-   systemic change.
-3. Target Tier 3 architecture friction specifically (breaking structural changes,
-   recurring multi-component failures, core design flaws) — do not synthesize a proposal
-   for a single Tier 0/1/2 event; those are handled inline or via `map-debt.md`.
+```bash
+cat references/map-debt.md
+```
 
-### Phase 3: Human Gate — No Autonomous Branch/PR/Commit
+## Workflow
 
-**This skill never creates a git branch, runs `git commit`, or calls `gh pr create`.**
-Present the drafted proposal to the user and ask explicitly whether to proceed. Only on
-explicit confirmation, hand off execution to:
-- `issue-pr-lifecycle-agent` (isolates the work in a git worktree, per
-  `worktree-lifecycle-management.md`) for the actual implementation and PR submission, and
-- `github-issue-prioritizer` if the proposal should be tracked/ranked in the issue backlog
-  first rather than actioned immediately.
+1. **Consume Hotspot Reports**: Inspect friction cluster analysis and identified Tier 3 architectural debt.
+2. **Consolidate Root Causes**: Group related failure symptoms under a single root architectural deficiency.
+3. **Draft Refactoring Proposal**: Save proposal to `temp/repo-improvement-proposal-<slug>.md` detailing patterns and impact.
+4. **Human Review Gate**: Present proposal to the user and request explicit authorization before proceeding.
+5. **Delegated Execution**: Upon approval, hand off execution to PR lifecycle agents in isolated worktrees.
 
-Do not describe the branch/worktree/PR steps as something this skill does — they belong
-entirely to the downstream agent, triggered only after the human confirms.
+## Verification
 
-## Gotchas
+Confirm refactoring proposal is written with clear systemic rationale:
 
-- **"Synthesize" is not "execute."** Never let a drafted proposal's confidence read as
-  authorization to act on it — the proposal is the deliverable until the user says
-  otherwise.
-- **One proposal per systemic pattern.** Resist the urge to bundle unrelated hotspots into
-  one proposal just because they were in the same report — that produces an unreviewable
-  omnibus change.
+```bash
+test -f "temp/repo-improvement-proposal-*.md" 2>/dev/null && echo "Proposal verified"
+```
+
+## References
+
+- [acceptance-criteria.md](references/acceptance-criteria.md) — Acceptance criteria for repository improvement proposals.
+- [fallback-tree.md](references/fallback-tree.md) — Remediation pathways when hotspot reports are ambiguous or missing.

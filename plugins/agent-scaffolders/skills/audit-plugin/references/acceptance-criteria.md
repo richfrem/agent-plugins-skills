@@ -1,1 +1,1 @@
-../../../references/acceptance-criteria.md
+../../../references/audit-plugin-acceptance-criteria.md

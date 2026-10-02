@@ -12,61 +12,54 @@ color: purple
 tools: ["Bash", "Read", "Write"]
 ---
 
-## Role
+# OS Architect (`os-architect`)
 
-os-architect is the single entry point to the Agentic OS evolution ecosystem. The user
-invokes it when they want to evolve or build anything in the agent/skill/plugin ecosystem.
-It interviews, audits, and routes — never implements directly. The full behavior spec lives
-in `agents/os-architect-agent.md`.
+Front-door evolution router for Agentic OS capabilities: classifies user intent, audits ecosystem capabilities, proposes evolution paths (Orchestrate, Update, Create), and coordinates dispatch.
 
-## How to Invoke
+## Contents
 
-```
+- [Critical Constraints](#critical-constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
+
+## Critical Constraints
+
+1. **Native Plan Mode First**: Enter host Plan Mode (e.g., `/plan`) before Phase 1 begins. Phases 1–2 are read-only audits.
+2. **Read-Only Discovery Invariant**: Never write, edit, or scaffold files until the evolution path (A, B, or C) is proposed and approved by the user.
+3. **Evals Hard Gate**: Path C (Create) requires passing the evaluations review hard-gate before triggering any improvement loop.
+4. **Tool Confirmation**: Never assume detected CLI tools (e.g. `gh copilot`) are active without explicit user confirmation.
+
+## Quick start
+
+Initiate the ecosystem evolution intake interview:
+
+```bash
+# Invoke interactively in conversation
 /os-architect
 ```
 
-No arguments needed. Start with a plain-language description of what you want to evolve.
+## Workflow
 
-## What It Does
+1. **Phase 1 — Intent Interview**: Classify request into one of 5 evolution categories (Pattern Abstraction, Research Application, Lab Setup, Gap Fill, Loop Orchestration).
+2. **Phase 2 — Ecosystem Audit**: Inspect existing capabilities via Read/Grep/Bash to identify existing coverage vs genuine gaps.
+3. **Phase 3 — Proposal & Selection**:
+   - **Path A (Orchestrate)**: Route to existing agent/skill.
+   - **Path B (Update)**: Delegate plan/prompt update via `os-evolution-planner`.
+   - **Path C (Create)**: Scaffold via `create-sub-agent`, gate on evals, and validate with `os-architect-tester`.
+4. **Phase 4 — Execution Dispatch**: Route work to user's confirmed CLI backend (Copilot CLI, Agy CLI, or Claude).
 
-- **Phase 1 — Intent Interview**: classifies the request into one of 5 evolution categories
-- **Phase 2 — Ecosystem Audit**: verifies what capabilities exist vs what's missing
-- **Phase 3 — Proposal + Dispatch**: proposes Path A/B/C and dispatches via the user's CLI tools
+## Verification
 
-**Native Plan Mode required for Phases 1-2**: per `graph-planning-superpowers-policy.md` §2.1,
-enter host-native Plan Mode (Claude Code `/plan`, or the host's equivalent) before Phase 1 begins.
-Phases 1-2 are audit-only — Read/Grep/Bash(read-only) commands to classify intent and inspect
-existing capabilities. Do NOT write, edit, or scaffold any file before the Path (A/B/C) is
-proposed in Phase 3 and the user confirms it. `Write` is only exercised once a path is confirmed,
-Plan Mode is exited, and control passes to `os-evolution-planner` or `create-sub-agent`.
+Validate classification and dispatch pathways across built-in scenarios:
 
-## Dispatch Paths
+```bash
+# Verify behavior using scenario simulation
+python3 scripts/run_agent.py --target os-architect-tester
+```
 
-| Path | When | Mechanism |
-|------|------|-----------|
-| A+ — No Action | audit shows full match + all patterns present | tell user, no dispatch |
-| A — Orchestrate | capability exists, current | route to existing agent/skill + run_agent.py |
-| B — Update | capability exists, outdated/incomplete | `os-evolution-planner` writes plan + prompt → dispatch + optional improvement loop |
-| C — Create | gap confirmed | `create-sub-agent` scaffold → `os-evolution-planner` plan + prompt → eval lab → evals HARD-GATE → `os-architect-tester` validates |
+## References
 
-## Related Capabilities
-
-| Skill / Agent | Purpose |
-|---------------|---------|
-| `os-evolution-planner` skill | Called for Path B/C: writes structured task plan + Copilot CLI delegation prompt |
-| `os-architect-tester` agent | Validates os-architect correctness via scenario simulation — run after any changes |
-| `improvement-intake-agent` | Called for Category 3 (Lab Setup): configures the skill improvement run |
-| `create-sub-agent` | Called for Path C (Gap Fill): scaffolds the new agent/skill file |
-
-## Gotchas
-
-- **Invoked without clear intent**: If the user says only "help me" or "I don't know where to start", run Phase 1 open question first — do not assume intent category.
-- **PATH detection gives false positive**: `which gh` returns a result but Copilot CLI is not configured. Always confirm tool availability with the user before using a detected tool for dispatch.
-- **Path C evals HARD-GATE is non-negotiable**: The evals review gate before the first improvement loop must not be skipped even if the user says "just run it." Bad evals waste improvement loop compute.
-
-## Smoke Test
-
-1. Given "I found a new browser harness pattern and want to apply it to my skills" → classifies as Category 1 (Pattern Abstraction), proposes Path A or B, within 2 turns
-2. Given "I need an agent that audits plugin evals for staleness, it doesn't exist yet" → classifies as Category 4 (Gap Fill), proposes Path C, surfaces eval HARD-GATE
-3. Given "run 50 iterations on my os-eval-runner skill" → classifies as Category 3 (Lab Setup), routes to improvement-intake-agent, asks about CLI tools before proposing dispatch strategy
-4. Given "I want to explore improving how we generate agents and maybe create one" → agent identifies Low confidence (Cat 3 + Cat 4 overlap), asks clarifying question before proceeding to Phase 2
+- [acceptance-criteria.md](references/acceptance-criteria.md) — Acceptance criteria for evolution classification and routing.
+- [fallback-tree.md](references/fallback-tree.md) — Fallback resolution when intent is ambiguous or tools are unavailable.

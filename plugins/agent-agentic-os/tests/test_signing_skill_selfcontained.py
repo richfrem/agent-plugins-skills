@@ -71,6 +71,8 @@ def test_skill_md_uses_only_skill_relative_scripts():
 
 
 def test_readme_exists_with_the_high_level_steps():
-    readme = (SKILL / "README.md").read_text().lower()
+    guide = SKILL / "references" / "os-signing-setup-guide.md"
+    target = guide if guide.is_file() else (SKILL / "README.md")
+    readme = target.read_text().lower()
     for needle in ("passphrase", "fingerprint", "setup_ciba_identity.py", "test_signing_mechanics.py", "show-challenge", "approve-transition", "agentic-os-local-agent", "never"):
         assert needle in readme, needle

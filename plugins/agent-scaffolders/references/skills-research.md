@@ -4,6 +4,21 @@ This document captures our accumulated knowledge and definitive specifications f
 
 **Source:** [Extend Claude with skills](https://code.claude.com/docs/en/skills)
 
+## Contents
+
+- [Definition](#definition)
+- [Creation & Structure](#creation--structure)
+- [Optional Directories](#optional-directories)
+- [Resolution Precedence](#resolution-precedence)
+- [Configuration (YAML Frontmatter)](#configuration-yaml-frontmatter)
+- [Arguments & String Substitutions](#arguments--string-substitutions)
+- [Integration with Subagents](#integration-with-subagents)
+- [Packaging & Distribution (ZIP)](#packaging--distribution-zip)
+- [Best Practices & Authoring Guidelines](#best-practices--authoring-guidelines)
+- [Architecture & Progressive Disclosure](#architecture--progressive-disclosure)
+- [Enterprise Governance & Security](#enterprise-governance--security)
+- [GitHub Ecosystem Integration](#github-ecosystem-integration)
+
 ## Definition
 Skills are modular capabilities that package procedural knowledge, context, and workflows into reusable, filesystem-based resources. While built primarily for Claude and Claude Code, they adhere to the open [Agent Skills](https://agentskills.io/) standard originally developed by Anthropic. Because it is an open standard, skills are highly portable and supported by a wide ecosystem of AI developer tools (e.g., Cursor, Gemini CLI, Goose, VS Code, Letta, Roo Code, etc.). They replace and expand upon older legacy feature sets like `/commands`.
 
@@ -133,8 +148,9 @@ Since skills provide instructions and execute code, review third-party or intern
 
 ### File References
 When referencing other files inside your skill (e.g. scripts or docs), use **relative paths from the skill root**.
-- Good: `See [the guide](references/REFERENCE.md)` or `Run scripts/extract.py`
+- Good: `See references/guide.md` or `Run scripts/extract.py`
 - Bad: `../` or absolute paths.
+
 
 ### Official Validation
 The open standard provides an official NPM-based CLI validator for skill structure. When authoring new skills, always manually run:

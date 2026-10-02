@@ -1,1 +1,0 @@
-../../references/transition-simulator-acceptance-criteria.md

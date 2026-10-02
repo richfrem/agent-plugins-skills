@@ -1,0 +1,1 @@
+../../../scripts/model_catalog.py

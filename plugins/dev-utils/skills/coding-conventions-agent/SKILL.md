@@ -1,193 +1,75 @@
 ---
 name: coding-conventions-agent
-plugin: coding-conventions
-description: >
-  Coding conventions enforcement agent. Auto-invoked when writing new code,
-  reviewing code quality, adding headers, or checking documentation compliance
-  across Python, TypeScript/JavaScript, and C#/.NET.
-allowed-tools: Read, Write
+plugin: dev-utils
+description: Enforces codebase coding conventions, file headers, type hints, Google docstrings, and naming standards across languages.
+allowed-tools: Read, Write, Bash
 ---
 
-## Dependencies
+# Coding Conventions Agent (`coding-conventions-agent`)
 
-This skill requires **Python 3.8+** and standard library only. No external packages needed.
+Enforces project-wide coding policy alignment across Python, TypeScript/JavaScript, and C#/.NET.
 
-**To install this skill's dependencies:**
+## Contents
+
+- [Critical Constraints](#critical-constraints)
+- [Header Templates](#header-templates)
+- [Naming Conventions](#naming-conventions)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
+
+## Critical Constraints
+
+1. **Dual-Layer Docs**: External comment above + internal docstring inside every non-trivial function/class.
+2. **File Headers**: Every source file must begin with a standardized purpose header.
+3. **Type Annotations**: All Python function signatures require complete type annotations.
+4. **Refactor Threshold**: Functions exceeding 50+ lines or 3+ nesting levels must be refactored into helpers.
+5. **Zero Stubs**: Reject placeholder tokens (`TODO`, `TBD`, `[NEEDS INPUT]`) in completed code.
+
+## Header Templates
+
+Use templates located in `assets/templates/`:
+- [Python Template](assets/templates/python-tool-header-template.py)
+- [JavaScript / TypeScript Template](assets/templates/js-tool-header-template.js)
+- [React TSX Template](assets/templates/tsx-tool-header-template.tsx)
+- [Bash Tool Template](assets/templates/bash-tool-header-template.sh)
+
+## Naming Conventions
+
+| Language | Functions/Vars | Classes | Constants | Private Fields |
+|---|---|---|---|---|
+| **Python** | `snake_case` | `PascalCase` | `UPPER_SNAKE_CASE` | `_leading_underscore` |
+| **TS/JS** | `camelCase` | `PascalCase` | `UPPER_SNAKE_CASE` | `_leading_underscore` |
+| **C#** | `PascalCase` (public) | `PascalCase` | `PascalCase` | `_camelCase` |
+
+## Quick start
+
+Execute the workspace conventions auditor across the project:
+
 ```bash
-pip-compile ./requirements.in
-pip install -r ./requirements.txt
+python3 scripts/workspace_conventions_auditor.py
 ```
 
-See `./././requirements.txt` for the dependency lockfile (currently empty — standard library only).
+## Workflow
 
----
-# Identity: The Standards Agent 📝
+1. **Language Detection**: Identify target file languages and load corresponding header templates.
+2. **Standard Enforcement**: Apply dual-layer documentation and type annotations to new/modified code.
+3. **Threshold Check**: Extract any function exceeding 50 lines or 3 nesting levels into named helpers.
+4. **Audit Execution**: Run `workspace_conventions_auditor.py` to confirm full compliance.
 
-You enforce project-wide **coding policy alignment** across all scripts and code.
+## Verification
 
-**Your Mission:** Ensure 100% codebase compliance with `.agent/rules/` policies so that:
-1. **Policies are consistently enforced** - No scripts are exempt or grandfathered in
-2. **Fresh agents can understand code at a glance** - First 20 lines answer: what/why/how/dependencies
-3. **Code quality is uniform** - Standards are applied systematically, not ad-hoc
+Review audit findings in generated report:
 
-**Authority:** All standards defined in `.agent/rules/coding-conventions.md` and related policy files
-
-## 🚫 Non-Negotiables
-1. **Dual-layer docs** — external comment above + internal docstring inside every non-trivial function/class
-2. **File headers** — every source file starts with a purpose header
-3. **Type hints** — all Python function signatures use type annotations
-4. **Naming** — `snake_case` (Python), `camelCase` (JS/TS), `PascalCase` (C# public)
-5. **Refactor threshold** — 50+ lines or 3+ nesting levels → extract helpers
-6. **Manifest schema** — use simple `{title, description, files}` format (ADR 097)
-
-## 📂 Header Templates
-- **Python**: `../../assets/templates/python-tool-header-template.py`
-- **JS/TS**: `../../assets/templates/js-tool-header-template.js`
-- **TSX (React)**: `../../assets/templates/tsx-tool-header-template.tsx`
-
-## 📝 File Headers
-
-### Python
-```python
-#!/usr/bin/env python
-"""
-Script Name
-=====================================
-
-Purpose:
-    What the script does and its role in the system.
-
-Layer: Investigate / Codify / Curate / Retrieve
-
-Usage:
-    python script.py [args]
-"""
-```
-
-### TypeScript/JavaScript
-```javascript
-/**
- * path/to/file.js
- * ================
- *
- * Purpose:
- *   Component responsibility and role in the system.
- *
- * Key Functions/Classes:
- *   - functionName() - Brief description
- */
-```
-
-### TSX (React Components)
-```javascript
-/**
- * ComponentName (React Component)
- * =====================================
- *
- * Purpose:
- *     Component responsibility and role in the UI.
- *
- * Layer: Frontend / UI / Layout
- *
- * Usage Examples:
- *     <ComponentName />
- *
- * Props:
- *     - propName: description
- *
- * Key Functions:
- *     - handleEvent() - Description
- */
-```
-
-### C#/.NET
-```csharp
-// path/to/File.cs
-// Purpose: Class responsibility.
-// Layer: Service / Data access / API controller.
-// Used by: Consuming services.
-```
-
-## 📝 Function Documentation
-
-### Python — Google-style docstrings
-```python
-def process_data(xml_path: str, fmt: str = 'markdown') -> Dict[str, Any]:
-    """
-    Converts Oracle Forms XML to the specified format.
-
-    Args:
-        xml_path: Absolute path to the XML file.
-        fmt: Target format ('markdown', 'json').
-
-    Returns:
-        Dictionary with converted data and metadata.
-
-    Raises:
-        FileNotFoundError: If xml_path does not exist.
-    """
-```
-
-### TypeScript — JSDoc
-```typescript
-/**
- * Fetches RCC data and updates component state.
- *
- * @param rccId - Unique identifier for the RCC record
- * @returns Promise resolving to RCC data object
- * @throws {ApiError} If the API request fails
- */
-```
-
-## 📋 Naming Conventions
-
-| Language | Functions/Vars | Classes | Constants |
-|:---|:---|:---|:---|
-| Python | `snake_case` | `PascalCase` | `UPPER_SNAKE_CASE` |
-| TS/JS | `camelCase` | `PascalCase` | `UPPER_SNAKE_CASE` |
-| C# | `PascalCase` (public) | `PascalCase` | `PascalCase` |
-
-C# private fields use `_camelCase` prefix.
-
-## 📂 Module Organization (Python)
-```
-module/
-├── __init__.py       # Exports
-├── models.py         # Data models / DTOs
-├── services.py       # Business logic
-├── repositories.py   # Data access
-├── utils.py          # Helpers
-└── constants.py      # Constants and enums
-```
-
-## ⚠️ Quality Thresholds
-- **50+ lines** → extract helpers
-- **3+ nesting** → refactor
-- **Comments** explain *why*, not *what*
-- **TODO format**: `// TODO(#123): description`
-
-## 🏗️ Script Architectural Rules
-
-1. **Cross-Plugin Dependencies (ADR-001)**: 
-   - Never execute another plugin's scripts directly via `subprocess` or `python ../../`.
-   - Never use physical cross-plugin symlinks pointing outside the plugin root.
-   - **Standard**: Instruct the conversational agent to orchestrate the required capability by triggering the other plugin's skill (e.g. `Please trigger the rlm-curator skill`).
-
-2. **Multi-Skill Script Organization (ADR-002)**: 
-   - **Single-Skill Usage**: Place script physically inside the owning skill directory (`plugins/<plugin>/skills/<skill>/scripts/foo.py`).
-   - **Multi-Skill Usage**: Extract to the primary Plugin root (`plugins/<plugin>/scripts/foo.py`) and wire backward-looking, local symlinks into each consuming `skills/` directory.
-
-### Pre-Commit Checklist
-- [ ] File has proper header
-- [ ] Type hints are complete
-- [ ] Docstrings follow Google style
-- [ ] Dual-layer documentation applied (comment + docstring)
-
-## 🔍 Automated Compliance Checks
-
-To check files across the workspace for alignment with these conventions, run the developer conventions auditor utility:
 ```bash
-python3 plugins/dev-utils/scripts/workspace_conventions_auditor.py
+python3 scripts/workspace_conventions_auditor.py && test -f temp/workspace_conventions_report.md
 ```
-This utility parses AST trees for Python and matches regex structures for JavaScript and TypeScript files, generating a comprehensive report under `temp/workspace_conventions_report.md`.
 
+## References
+
+- [acceptance-criteria.md](references/acceptance-criteria.md) — Compliance gates and indexing checks.
+- [coding-conventions.md](references/coding-conventions.md) — Authoritative codebase coding standards.
+- [fallback-tree.md](references/fallback-tree.md) — Fallback protocol when templates or threshold limits are encountered.
+- [graph-planning-superpowers-policy.md](references/graph-planning-superpowers-policy.md) — Graph planning and code quality rules.
+- [map-debt.md](references/map-debt.md) — Technical debt and friction log.

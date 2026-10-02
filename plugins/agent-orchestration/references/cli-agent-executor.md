@@ -8,9 +8,9 @@ description: >
 
 ## Ecosystem Role: Inner Loop Specialist
 
-This reference describes specialized **Inner Loop Execution** patterns for the [`dual-loop`](../skills/dual-loop/SKILL.md) skill.
+This reference describes specialized **Inner Loop Execution** patterns for the `dual-loop` skill.
 
-- **Orchestrated by**: [`orchestrator`](../skills/orchestrator/SKILL.md)
+- **Orchestrated by**: `orchestrator`
 - **Use Case**: When "generic coding" is insufficient and specialized expertise (Security, QA, Architecture) is required.
 - **Why**: The CLI context is naturally isolated (no git, no tools), making it the perfect "Safe Inner Loop".
 

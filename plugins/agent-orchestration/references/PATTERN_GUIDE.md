@@ -1,6 +1,19 @@
 # Agent Loops: Pattern Guide
 
-This guide maps the agent-orchestration/ skills to standard industry terminology (e.g., Google ADK patterns) and provides a comparative reference for when and how to use them.
+This guide maps the `agent-orchestration/` skills to standard industry terminology (e.g., Google ADK patterns) and provides a comparative reference for when and how to use them.
+
+## Contents
+- [Overview of Patterns](#overview-of-patterns)
+- [1. Single Agent / Loop Agent (`learning-loop`)](#1-single-agent--loop-agent-learning-loop)
+- [2. Sequential Agent / Agent as a Tool (`dual-loop`)](#2-sequential-agent--agent-as-a-tool-dual-loop)
+- [3. Parallel Agent (`agent-swarm`)](#3-parallel-agent-agent-swarm)
+- [4. Meta-Learning System (`triple-loop-learning`)](#4-meta-learning-system-triple-loop-learning)
+- [5. Routing Agent / Hierarchical (`orchestrator`)](#5-routing-agent--hierarchical-orchestrator)
+- [6. Review and Critique Pattern (`red-team-review`)](#6-review-and-critique-pattern-red-team-review)
+- [7. Deterministic State Machine / DAG Pattern (`graph-execution`)](#7-deterministic-state-machine--dag-pattern-graph-execution)
+- [8. Strategy Router Pattern (`select-loop-strategy`)](#8-strategy-router-pattern-select-loop-strategy)
+
+---
 
 ## Overview of Patterns
 
@@ -21,8 +34,6 @@ This guide maps the agent-orchestration/ skills to standard industry terminology
 
 The foundational pattern where a single agent repeatedly interacts with the environment (tools, research) to synthesize knowledge.
 
-![Learning Loop / Single Agent Architecture](resources/diagrams/learning_loop.mmd)
-
 ### Pros & Cons
 | Pros | Cons |
 | :--- | :--- |
@@ -39,8 +50,6 @@ Use when a task requires pure exploratory research, basic document generation, o
 
 An outer/manager agent defines a strategy packet, hands it to an inner/worker agent, and verifies the output before continuing.
 
-![Sequential Agent / Dual Loop Architecture](resources/diagrams/inner_outer_loop.mmd)
-
 ### Pros & Cons
 | Pros | Cons |
 | :--- | :--- |
@@ -56,8 +65,6 @@ Use for feature implementations or bug fixes where a clear specification exists.
 ## 3. Parallel Agent (`agent-swarm`)
 
 Tasks are partitioned into independent chunks and delegated to N agents executing simultaneously, followed by an aggregation/merge step.
-
-![Parallel Agent / Agent Swarm Architecture](resources/diagrams/agent_swarm.mmd)
 
 ### Pros & Cons
 | Pros | Cons |
@@ -83,8 +90,6 @@ The **Meta-Learning Loop** architecture automates the iterative improvement of a
 
 An initial decision layer that analyzes the prompt or trigger and directs the query to the correct specialized sub-agent or pattern.
 
-![Routing Agent / Orchestrator Architecture](resources/diagrams/agent_loops_overview.mmd)
-
 ### Pros & Cons
 | Pros | Cons |
 | :--- | :--- |
@@ -100,8 +105,6 @@ Use as the primary entry point for ambiguous human triggers. The Router decides 
 ## 6. Review and Critique Pattern (`red-team-review`)
 
 A specialized iterative pattern pairing a generator with an adversarial reviewer.
-
-![Review and Critique / Red Team Review Architecture](resources/diagrams/red_team_review_loop.mmd)
 
 ### Pros & Cons
 | Pros | Cons |

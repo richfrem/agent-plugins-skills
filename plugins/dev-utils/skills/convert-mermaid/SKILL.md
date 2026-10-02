@@ -1,69 +1,54 @@
 ---
 name: convert-mermaid
-plugin: mermaid-to-png
-description: Translate .mmd diagram files into PNG images with configurable resolution (retina/HQ/scale), supporting rasterization (raster, rasterize, rasterization). V2 includes L5 Delegated Constraint Verification via verify_png for strict binary linting and Puppeteer-based rendering.
+plugin: dev-utils
+description: Translate .mmd diagram files into PNG images with configurable resolution, supporting binary linting and Puppeteer-based rendering.
 allowed-tools: Bash, Read, Write
-examples:
-  - "python ./scripts/convert.py -i architecture.mmd -o architecture.png -s 3"
-  - "python ./scripts/verify_png.py architecture.png"
 ---
 
-<example>python ./scripts/convert.py -i architecture.mmd -o architecture.png -s 3</example>
-<example>python ./scripts/verify_png.py architecture.png</example>
+# Mermaid Diagram Converter (`convert-mermaid`)
 
-## Dependencies
+Orchestrates the conversion of `.mmd` syntax files into high-resolution `.png` binary images with deterministic verification.
 
-This skill requires **Python 3.8+** and standard library only. No external packages needed.
+## Contents
 
-**To install this skill's dependencies:**
-```bash
-pip-compile ./requirements.in
-pip install -r ./requirements.txt
-```
+- [Critical Constraints](#critical-constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
 
-See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+## Critical Constraints
 
----
-# Identity: The Mermaid Diagram Converter
+1. **Never Write Binary Streams Directly**: LLMs cannot safely generate raw `.png` bitstreams in context.
+2. **Never `cat` Binary Files**: Reading binary `.png` files into context corrupts agent memory; always use `scripts/verify_png.py`.
+3. **Always Verify Output**: Immediately verify output files using `scripts/verify_png.py`.
 
-You are a specialized conversion agent. Your job is to orchestrate the translation of `.mmd` or `.mermaid` syntax files into high-resolution `.png` binary images.
+## Quick start
 
-## 🛠️ Tools (Skill Scripts)
-- **Converter Engine**: `scripts/convert.py`
-- **Verification Engine**: `scripts/verify_png.py`
-
-## Core Workflow: The Generation Pipeline
-
-When a user requests `.mmd` to `.png` conversion, execute these phases strictly.
-
-### Phase 1: Engine Execution
-Invoke the appropriate Python converter script wrapper. 
-If the user asks for "high resolution", "retina", or "HQ", set `-s` to 3 or 4.
+Convert a diagram with 3x retina scaling and verify binary integrity:
 
 ```bash
-python ./scripts/convert.py -i architecture.mmd -o architecture.png -s 3
+python3 scripts/convert.py -i architecture.mmd -o architecture.png -s 3
+python3 scripts/verify_png.py architecture.png
 ```
 
-### Phase 2: Delegated Constraint Verification (L5 Pattern)
-**CRITICAL: Do not trust that the headless browser correctly generated the `.png`.**
-Immediately after the `convert.py` wrapper finishes, execute the verification engine:
+## Workflow
+
+1. **Engine Execution**: Invoke `scripts/convert.py` with input and output paths. Set `-s 3` or `-s 4` for retina/HQ requests.
+2. **Delegated Verification**: Run `scripts/verify_png.py` to confirm the generated output is a valid non-empty PNG binary.
+3. **Outcome Resolution**:
+   - `"status": "success"` -> Output verified. Proceed.
+   - `"status": "errors_found"` -> Review JSON error logs and consult [Fallback Tree](references/fallback-tree.md).
+
+## Verification
+
+Run the verification script against the generated PNG:
 
 ```bash
-python ./scripts/verify_png.py "architecture.png"
+python3 scripts/verify_png.py architecture.png
 ```
-- If the script returns `"status": "success"`, the generated image is a valid PNG binary.
-- If it returns `"status": "errors_found"`, review the JSON log (e.g., `MissingMagicBytes`, `EmptyFile`). Puppeteer likely crashed or wrote raw text to the file. Consult the `references/fallback-tree.md`.
 
-## Architectural Constraints
+## References
 
-### ❌ WRONG: Manual Binary Manipulation (Negative Instruction Constraint)
-Never attempt to write raw `.png` bitstreams natively from your context window. LLMs cannot safely generate binary blobs this way.
-
-### ❌ WRONG: Tainted Context Reads
-Never attempt to use `cat` or read a generated `.png` file back into your chat context to "verify" it. It is raw binary data and will instantly corrupt your context window. You MUST use the `verify_png.py` script to inspect the file mathematically.
-
-### ✅ CORRECT: Native Engine
-Always route binary generation and validation through the scripts provided in this plugin.
-
-## Next Actions
-If the `npx` wrapper script crashes or the verification loop fails, stop and consult the `references/fallback-tree.md` for triage and alternative conversion strategies.
+- [acceptance-criteria.md](references/acceptance-criteria.md) — Image generation standards and acceptance criteria.
+- [fallback-tree.md](references/fallback-tree.md) — Failure triage and escalation tree for rendering errors.

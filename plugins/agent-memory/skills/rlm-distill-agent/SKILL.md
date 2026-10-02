@@ -1,117 +1,62 @@
 ---
 name: rlm-distill-agent
-plugin: rlm-factory
-description: |
-  Distills uncached files into the Recursive Language Model(RLM) Summary cache Ledger. You (the agent) ARE the distillation engine.
-  Read each file deeply, write a high-quality 1-sentence summary, inject it via inject_summary.py.  The purpose is if you read the full file once and produce a great summary once it will avoid the need to read the file every time you need to know what the script does or what the details of the file are.  most cases the RLM summary should be sufficient. 
-  Use when files are missing from the ledger and need to be summarized.
-
-  <example>
-  user: "Summarize these new plugin files into the RLM ledger"
-  assistant: "I'll use rlm-distill-agent to read and summarize each file into the cache."
-  </example>
-  <example>
-  user: "The RLM ledger is missing 40 files -- fill the gaps"
-  assistant: "I'll use rlm-distill-agent to process the missing files."
-  </example>
+plugin: agent-memory
+description: Distills uncached files into the Recursive Language Model (RLM) Summary cache Ledger by reading files deeply and injecting high-quality 1-sentence summaries via inject_summary.py.
 allowed-tools: Bash, Read, Write
 ---
 
-## Dependencies
+# RLM Distill Agent (`rlm-distill-agent`)
 
-This skill requires **Python 3.8+** and standard library only. No external packages needed.
+Distills uncached files into the RLM Summary Ledger to avoid re-reading full files repeatedly across agent sessions.
 
-**To install this skill's dependencies:**
-```bash
-pip-compile ./requirements.in
-pip install -r ./requirements.txt
-```
+## Contents
 
-See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+- [Critical Constraints](#critical-constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Batch Swarm Protocol](#batch-swarm-protocol)
+- [Verification](#verification)
+- [References](#references)
 
----
+## Critical Constraints
 
-# RLM Distill Agent
+1. **Never Edit Cache Manually**: Always inject summaries via `python3 scripts/inject_summary.py`.
+2. **Deep File Reading**: Read the entire file; extract core purpose, key components, and dependencies.
+3. **Source Transparency**: Report which files were summarized and their injected summaries.
 
-## Role
+## Quick start
 
-You ARE the distillation engine. Read each uncached file deeply, write an exceptionally good 1-sentence
-summary, and inject it into the ledger via `inject_summary.py`.
-
-## When to Use
-
-- Files are missing from the ledger (as reported by `inventory.py`)
-- A new plugin, skill, or document was just created
-- A file's content changed significantly since it was last summarized
-
-## Prerequisites
-
-**First-time setup or missing profile?** Run the `rlm-init` skill first:
-```bash
-# See: ../SKILL.md
-# Creates rlm_profiles.json, manifest, and empty cache
-```
-
-## Execution Protocol
-
-### 1. Identify missing files
+Check for missing summaries and inject a 1-sentence distillation:
 
 ```bash
-python ./scripts/inventory.py --profile project
-python ./scripts/inventory.py --profile tools
+python3 scripts/inventory.py --profile project
+python3 scripts/inject_summary.py --profile project --file path/to/file.py --summary "Concise 1-sentence summary of behavior and components."
 ```
 
-### 2. For each missing file -- read deeply and write a great summary
+## Workflow
 
-Read the **entire file** with `view_file`. Do not skim.
+1. **Identify Gaps**: Run `python3 scripts/inventory.py --profile project` to list unindexed files.
+2. **Deep Inspection**: Read target files thoroughly to identify architectural roles and interfaces.
+3. **Inject Summary**: Execute `scripts/inject_summary.py` providing a dense, informative 1-sentence description.
+4. **Transparent Output**: Output the file path and injected summary to the user.
 
-A great RLM summary answers: *"What does this file do, what problem does it solve,
-and what are its key components/functions?"* in one dense sentence.
+## Batch Swarm Protocol
 
-### 3. Inject the summary
+For large numbers of missing files (10+), delegate to `scripts/swarm_run.py` using the appropriate engine:
+- **GitHub Copilot CLI**: `python3 scripts/swarm_run.py --engine copilot --workers 2 --files-from tasks.md`
+- **Google Antigravity CLI**: `python3 scripts/swarm_run.py --engine gemini --workers 5 --files-from tasks.md`
+- **Claude Code**: `python3 scripts/swarm_run.py --engine claude --workers 3 --files-from tasks.md`
+
+## Verification
+
+Verify updated inventory coverage metrics after distillation:
 
 ```bash
-python ./scripts/inject_summary.py \
-  --profile project \
-  --file ../SKILL.md \
-  --summary "Provides atomic file CRUD operations for markdown notes using POSIX rename and fcntl.flock."
+python3 scripts/inventory.py --profile project
 ```
 
-The script handles atomic writes safely. Never write to the Markdown files manually.
+## References
 
-### 4. Batching -- if 50+ files are missing
-
-Do not attempt manual distillation for large batches. Choose an engine based on the user's CLI context and cost profile, then delegate to the agent swarm:
-
-**CRITICAL: Determine User's CLI Context First!**
-Before blindly using `--engine copilot`, determine which agent CLI the user is running (Claude Code, GitHub Copilot CLI, or Google Gemini CLI). You can often tell from the terminal process or simply by asking the user which AI CLI they have access to.
-
-| User's CLI Tool | Recommended Engine Flag | Cost Profile | Workers |
-|:-------|:------|:-----|:--------|
-| GitHub Copilot CLI | `--engine copilot` (gpt-5-mini nano tier) | **$0 free** | `--workers 2` (rate-limit safe) |
-| Google Gemini CLI | `--engine gemini` (gemini-3-flash-preview) | **$0 free** | `--workers 5` (high throughput) |
-| Claude Code | `--engine claude` (Haiku / Sonnet) | Low-Medium | `--workers 3` |
-
-**Default Protocol**: Ask the user: *"I noticed we have over 50 files to distill. Do you have access to Copilot CLI or Gemini CLI for zero-cost batch processing, or should I use Claude Code?"*
-
-Then, run the swarm job based on their answer. For example, if they use Gemini:
-```bash
-python ./scripts/swarm_run.py --engine gemini --workers 5 --files-from rlm_distill_tasks_project.md
-```
-
-Provide a job file describing the summarization task and the gap file from `inventory.py --missing`.
-
-See `SKILL.md` for full swarm configuration options.
-
-## Quality Standard for Summaries
-
-| Good | Bad |
-|:-----|:----|
-| "Atomic file CRUD using POSIX rename + flock, preserving YAML frontmatter via ruamel.yaml." | "This file handles file operations." |
-| "3-phase search skill: RLM ledger -> ChromaDB -> grep, escalating from O(1) to exact match." | "Searches for things in the codebase." |
-
-## Rules
-
-- **Never write to `*_cache/*.md` directory manualy** -- always use `inject_summary.py`.
-- **Read the whole file** -- skimming produces summaries that miss key details.
-- **Source Transparency Declaration**: list which files you summarized and their injected summaries.
+- [acceptance-criteria.md](references/acceptance-criteria.md) — Acceptance criteria for RLM distillation quality.
+- [cheapest_models.md](references/cheapest_models.md) — Model tiers and pricing guidance for distillation engines.
+- [RLM_ARCHITECTURE.md](references/RLM_ARCHITECTURE.md) — Architectural overview of RLM semantic cache.

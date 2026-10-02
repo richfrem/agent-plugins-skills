@@ -3,6 +3,12 @@
 
 A reference for deciding when and how to incorporate advanced L4 architectural and state management patterns into skills. Used by `create-skill` and `create-plugin` during the design phase to selectively load deep context only when needed.
 
+## Contents
+
+- [Pattern Decision Tree](#pattern-decision-tree)
+- [How to Apply Loaded Patterns (JIT Injection)](#how-to-apply-loaded-patterns-jit-injection)
+- [L4 Pattern Reference Catalog](#l4-pattern-reference-catalog)
+
 ---
 
 ## Pattern Decision Tree
@@ -95,7 +101,7 @@ Not every skill needs complex architectural patterns. Use this tree during the d
 If a pattern is triggered and loaded, you must perform **Progressive Disclosure Injection** into the generated skill:
 
 1.  **Do not bloat the `./SKILL.md`** with the full theory of the pattern.
-2.  Create a lean reference file in the new skill's `references/` directory (e.g. `references/escalation-rules.md`).
+2.  Create a lean reference file in the new skill's `references/` directory (for example, `escalation-rules.md`).
 3.  Populate that new reference file with ONLY the concrete, domain-specific tables and rules requested by the pattern definition.
 4.  Add a markdown link in the new `./SKILL.md` pointing to this newly generated reference file so the runtime agent knows to load it when executing.
 

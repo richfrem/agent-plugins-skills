@@ -9,77 +9,44 @@ description: >
 allowed-tools: Bash, Read, Write
 ---
 
-For the full platform-specific bootstrap, build, model-download, daemon, and
-verification procedure, read `../../references/local-llm-setup-deep-reference.md`.
-This skill is the user-facing entry point; the deep reference preserves the
-former standalone setup agent's detailed procedure.
+# Local LLM Setup (`local-llm-setup`)
 
-<example>
-<commentary>User wants to set up local Gemma 4 for the first time on a Mac.</commentary>
-User: Set up local LLM with Gemma 4 on my M1 Mac
-Agent: Detects Metal GPU, compiles llama-server from source, downloads gemma-4-12b-UD-Q4_K_XL.gguf,
-  starts server, installs routing proxy via launchd, validates with a Mode B timing test (~2s).
-</example>
+Setup wizard and configuration guide for local Gemma 4 12B inference and task delegation.
 
-<example>
-<commentary>User wants to test Mode B task delegation speed vs Mode A proxy.</commentary>
-User: Compare Mode B vs Mode A speed for local Gemma
-Agent: Runs `time python3 scripts/run_agent.py /dev/null /dev/null /tmp/t.md "hello" --cli llama`
-  (~2s), then `time claude --model gemma-4-12b -p "hello"` (~30–60s cold), reports the delta.
-</example>
+## Contents
 
-## Primary Use Case: Mode B Task Delegation
+- [Constraints](#constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [Persona Registry](#-persona-registry-agents)
+- [References](#references)
 
-**Mode B is the fast path.** `run_agent.py` sends a lean prompt directly to llama-server — no proxy overhead, no 29K system prompt. Measured: ~2s wall clock for a typical bounded task.
+## Constraints
+
+- **Hardware acceleration**: Auto-detects and compiles for Metal (macOS), CUDA, Vulkan, or ROCm.
+- **Modes**: Mode B (`run_agent.py --cli llama`) for delegation; Mode A (`scripts/enable_global_routing.py`) for proxy.
+- **Paths**: All scripts resolve from `scripts/` relative to skill root.
+
+## Quick start
 
 ```bash
-# Start llama-server (required for cli=llama)
 python3 scripts/run_server.py
-curl http://localhost:8089/health   # must return {"status":"ok"}
-
-# Mode B task delegation — fast path (~2s)
-time python3 scripts/run_agent.py agents/refactor-expert.md target.py output.md \
-  "List the top 3 issues." --cli llama
-
-# Mode B with custom max tokens
-python3 scripts/run_agent.py /dev/null /dev/null /tmp/out.md \
-  "Summarize this architecture decision." --cli llama --max-tokens 300
+curl -s http://localhost:8089/health
 ```
 
-**Available agent personas** (pass as PERSONA_FILE):
+## Workflow
 
-| Persona | Role |
-|---------|------|
-| `agents/refactor-expert.md` | Code quality — SOLID/DRY smell taxonomy |
-| `agents/security-auditor.md` | OWASP vulnerability audit |
-| `agents/architect-review.md` | C4/SOLID structural review |
-| `agents/red-team-reviewer.md` | Adversarial exploit analysis |
-| `agents/compliance-reviewer.md` | Coding standards drift detection |
-| `agents/pr-reviewer.md` | Diff review — ship/hold decision |
-| `agents/test-writer.md` | Unit test generation |
-| `agents/debate-synthesizer.md` | Multi-perspective synthesis |
-| `agents/output-validator.md` | Output guardrail / hallucination check |
-| `agents/self-critic.md` | Reflection loop — task-fit check |
-| `agents/performance-analyst.md` | Bottleneck and scale analysis |
+1. **Bootstrap**: Review prerequisites in `references/local-llm-setup-deep-reference.md`.
+2. **Launch Server**: Start `llama-server` on port 8089 (`python3 scripts/run_server.py`).
+3. **Validate**: Run Mode B test command and confirm sub-5s response latency.
 
-## Mode A (Optional — Interactive Proxy)
-
-Mode A routes Claude Code itself through Gemma via a proxy. It carries ~29K tokens of system prompt overhead per session, making the first turn 30–60s. **Not recommended for task delegation** — use Mode B instead.
+## Verification
 
 ```bash
-python3 scripts/enable_global_routing.py   # install launchd/systemd/NSSM daemon
-python3 scripts/disable_global_routing.py  # remove daemon
+python3 scripts/run_agent.py agents/refactor-expert.md target.py output.md "List top 3 issues." --cli llama
 ```
 
-## Co-located Scripts (`scripts/`)
-
-| Script | Purpose |
-|--------|---------|
-| `run_server.py` | Start llama-server (authoritative params) |
-| `run_agent.py` | Task router — Mode B, 6 backends |
-| `enable_global_routing.py` | Install Mode A proxy daemon |
-| `disable_global_routing.py` | Remove Mode A proxy daemon |
-| `routing_proxy.py` | Mode A API compatibility proxy (port 4000) |
 ## 🎭 Persona Registry (`agents/`)
 
 These personas are mirrored across CLI agent dispatchers to ensure consistent analytical behavior across the ecosystem.
@@ -103,5 +70,7 @@ For reusable sub-agent execution, use the provided Python orchestrator which han
 python ./scripts/run_agent.py <PERSONA_FILE> <INPUT_FILE> <OUTPUT_FILE> "<INSTRUCTION>"
 ```
 
----
+## References
 
+- [acceptance-criteria.md](references/acceptance-criteria.md) — Acceptance criteria for local LLM setup.
+- [local-llm-setup-deep-reference.md](references/local-llm-setup-deep-reference.md) — Platform-specific compilation, model download, and service guides.

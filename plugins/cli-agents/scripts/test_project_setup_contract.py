@@ -6,8 +6,16 @@ from pathlib import Path
 SKILL = Path(__file__).resolve().parents[1] / "skills" / "project-setup" / "SKILL.md"
 
 
-def test_project_setup_establishes_one_reusable_capability_baseline():
+def setup_instructions():
+    """Follow the entry point's direct capability route, as an installed agent does."""
     text = SKILL.read_text(encoding="utf-8")
+    reference = "references/project-capability-baseline.md"
+    assert f"]({reference})" in text
+    return " ".join((text + "\n" + (SKILL.parent / reference).read_text(encoding="utf-8")).split())
+
+
+def test_project_setup_establishes_one_reusable_capability_baseline():
+    text = setup_instructions()
 
     required_markers = (
         "Capability Baseline (once per project setup)",
@@ -24,14 +32,14 @@ def test_project_setup_establishes_one_reusable_capability_baseline():
 
 
 def test_project_setup_preserves_explicit_authorization_boundary_for_reviews():
-    text = SKILL.read_text(encoding="utf-8")
+    text = setup_instructions()
 
     assert "does not authorize reviewer dispatch" in text
     assert "Do not dispatch an internal reviewer" in text
 
 
 def test_project_setup_asks_one_at_a_time_and_persists_provider_inventory():
-    text = SKILL.read_text(encoding="utf-8").lower()
+    text = setup_instructions().lower()
 
     assert "one question at a time" in text
     assert "codex" in text and "agy" in text and "claude" in text
@@ -47,7 +55,7 @@ def test_project_setup_asks_one_at_a_time_and_persists_provider_inventory():
 
 
 def test_project_setup_defines_setup_only_depth_and_pipeline_read_only_handoff():
-    text = SKILL.read_text(encoding="utf-8").lower()
+    text = setup_instructions().lower()
 
     assert "deep analysis belongs in project setup" in text
     assert "pipeline stages must read" in text

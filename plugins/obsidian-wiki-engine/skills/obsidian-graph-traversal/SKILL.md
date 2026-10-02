@@ -5,72 +5,58 @@ description: "Semantic link traversal for Obsidian Vaults. Builds an in-memory g
 allowed-tools: Bash, Read
 ---
 
+# Obsidian Graph Traversal (obsidian-graph-traversal)
+
+Constructs an in-memory graph index from vault wikilinks to query forward links, backlinks, and multi-degree connection paths.
+
+## Contents
+- [Critical Constraints](#critical-constraints)
+- [Dependencies](#dependencies)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
+
+## Critical Constraints
+- **Read-Only Traversal**: Graph query and index construction operations must never modify vault note files.
+- **Timestamp Cache Invalidation**: The `.graph-index.json` cache must automatically invalidate and re-index notes whose `mtime` has changed.
+- **Embed Distinction**: Disambiguate semantic links (`[[Note]]`) from embed transclusions (`![[Note]]`) to prevent false graph edges.
+- **Query Performance**: Traversal operations must return within a sub-2-second budget across vaults with 1,000+ notes.
+
 ## Dependencies
 
-This skill requires **Python 3.8+** and standard library only. No external packages needed.
+Requires `obsidian-parser` and Python 3.8+ (standard library only for traversal operations).
 
-**To install this skill's dependencies:**
+## Quick start
+
 ```bash
-pip-compile ./requirements.in
-pip install -r ./requirements.txt
+# Build the graph index for a vault
+python3 plugins/obsidian-wiki-engine/scripts/graph_ops.py build --vault-root <vault-path>
+
+# Query backlinks for a specific note
+python3 plugins/obsidian-wiki-engine/scripts/graph_ops.py backlinks --note "Note Name"
+
+# Find orphaned notes without incoming or outgoing links
+python3 plugins/obsidian-wiki-engine/scripts/graph_ops.py orphans --vault-root <vault-path>
 ```
 
-See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+## Workflow
 
----
-# Obsidian Graph Traversal
+1. **Phase 1: Index Building**: Parse vault notes via `obsidian-parser`, extract wikilinks, and cache adjacency lists in `.graph-index.json`.
+2. **Phase 2: Topology Querying**: Execute forward-link, backlink, or multi-degree connection traversals from the in-memory graph.
+3. **Phase 3: Orphan & Cluster Detection**: Identify isolated notes lacking connections or discover tightly coupled concept clusters.
+4. **Phase 4: Impact Evaluation**: Assess upstream and downstream dependencies before executing multi-file refactoring operations.
 
-**Status:** Active
-**Author:** Richard Fremmerlid
-**Domain:** Obsidian Integration
-**Depends On:** `obsidian-markdown-mastery` (WP05, `obsidian-parser`)
+## Verification
 
-## Purpose
-
-This skill transforms static vault notes into a queryable semantic graph. It answers
-questions like "What connects to Note X?" and "What are the 2nd-degree connections
-of Concept A?" — instantly, without rescanning the vault.
-
-**Performance Target**: < 2 seconds for deep queries across 1000+ notes.
-
-## Available Commands
-
-### Build the Graph Index
 ```bash
-python ./graph_ops.py build --vault-root <path>
+# Verify graph CLI commands
+python3 plugins/obsidian-wiki-engine/scripts/graph_ops.py build --help
+
+# Audit skill compliance
+python3 plugins/agent-scaffolders/scripts/audit_skill.py plugins/obsidian-wiki-engine/skills/obsidian-graph-traversal --mode source
 ```
 
-### Get Forward Links (outbound)
-```bash
-python ./graph_ops.py forward --note "Note Name"
-```
-
-### Get Backlinks (inbound)
-```bash
-python ./graph_ops.py backlinks --note "Note Name"
-```
-
-### Get N-Degree Connections
-```bash
-python ./graph_ops.py connections --note "Note Name" --depth 2
-```
-
-### Find Orphaned Notes
-```bash
-python ./graph_ops.py orphans --vault-root <path>
-```
-
-## Architecture
-
-### In-Memory Graph Index
-- On `build`, every `.md` file in the vault is parsed using the `obsidian-parser`
-- Wikilinks are extracted; embeds (`![[...]]`) are filtered out
-- A bidirectional adjacency map is built: `{source: [targets], ...}` and `{target: [sources], ...}`
-- The index is cached as `.graph-index.json` at the vault root
-- Invalidation uses file `mtime` — if a file changed since last build, only that file is re-indexed
-
-### The Primary Agent as Librarian
-The graph index enables the agent to:
-- **Detect blind spots**: Orphaned notes indicate areas where agents act without historical context
-- **Resolve conflicts**: If two agents update the same note, the graph shows the impact radius
-- **Enforce schema**: Frontmatter metadata (status, trust_score) tracked across linked notes
+## References
+- [acceptance-criteria.md](references/acceptance-criteria.md) - Graph traversal invariants and performance targets.
+- [fallback-tree.md](references/fallback-tree.md) - Recovery procedures for missing indices or cyclic link paths.

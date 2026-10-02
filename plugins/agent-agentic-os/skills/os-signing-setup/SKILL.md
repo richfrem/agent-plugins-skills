@@ -10,73 +10,51 @@ description: >
 allowed-tools: Bash, Read
 ---
 
-<example>
-<commentary>The remediation error says the human has no signing key set up yet.</commentary>
-user: "I got HUMAN_PROOF_REQUIRED and failed_checks lists missing files, what do I do?"
-assistant: Points the human at the read-only status command, then the guided setup, and waits; never runs it.
-</example>
+# OS Signing Setup (`os-signing-setup`)
 
-<example>
-<commentary>The human wants to prove the key works before an approval.</commentary>
-user: "Test my signing key works."
-assistant: Gives the exact self-test command for the human's own terminal and explains the prompt to expect.
-</example>
+Guides human operators through creating and verifying passphrase-protected or FIDO hardware SSH signing keys required for cryptographic approval gates (`APPROVED`, `VERIFY_EXIT`, `DONE`).
 
-# OS Signing Setup
+## Contents
 
-## Purpose
-The three human gates (Gate 1 `AWAITING_APPROVAL -> APPROVED`, Gate 3 `-> VERIFY_EXIT`, and closure `-> DONE`) each need a cryptographic approval from a human's SSH key. This
-skill takes the human through creating that key and proving it works. The key is an **SSH key
-(SSHSIG)**, not an X.509 certificate; its `SHA256:` fingerprint is the thumbprint analogue.
+- [Critical Constraints](#critical-constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
 
-## Hard rules for the agent
-1. **Never run the setup or the self-test yourself.** They are human tools: they refuse to run without a
-   terminal and as the agent account. Give the human the exact commands and wait.
-2. **Never create, copy, read or move a private key**, and never edit `allowed_signers*`. Enrolling a key
-   is what lets a signature approve; only the human does it.
-3. Never answer a passphrase or touch prompt, never pipe input into these scripts.
+## Critical Constraints
 
-## When to use
-- The remediation error `HUMAN_PROOF_REQUIRED` lists `failed_checks` or the human has no key yet.
-- The human asks to set up, rotate (add another key) or test their approval key.
-- Do NOT use it to approve a task (that is `show-challenge` / `approve-transition`), or for pipeline
-  friction (map-debt, GitHub issues).
+1. **Never Run Setup Autonomously**: Key creation and self-tests require interactive human terminal prompts; agents must never run them directly.
+2. **Never Touch Private Keys**: Never create, read, copy, or move private keys, and never edit `allowed_signers*`.
+3. **No Automated Approvals**: Never pipe passphrases or fabricate signatures; signatures are proof of actual human presence.
 
-## Steps (the human runs these in their own terminal; paths are relative to this skill's folder)
-1. Check status (read-only, no terminal needed):
-   `python3 scripts/setup_ciba_identity.py --check`
-   Exit 0 = ready, 1 = not ready (the output lists each `[TODO]`).
-2. Guided setup (creates the key, enrolls it, prints account commands for the human to run):
-   `python3 scripts/setup_ciba_identity.py`
-   Add `--type ecdsa-sk` for a FIDO hardware key (touch); `--force` to add another key (old keys stay).
-3. Prove it works (real passphrase prompt or touch, verified against the self-test file only):
-   `python3 scripts/test_signing_mechanics.py`
-   (The full plugin's `agent_control.py` exposes the same self-test as a verb.)
-4. Use it: at Gate 1 the agent's `coordinate-transition --to APPROVED` returns `HUMAN_PROOF_REQUIRED` with
-   a request id. The human runs `show-challenge --request-id N`, signs the printed challenge with the
-   printed `ssh-keygen -Y sign` command, then runs `approve-transition --request-id N`
-   (both are `agent_control.py` verbs in the full plugin).
+## Quick start
 
-## High-level flow for the agent
-1. Detect the need (remediation error or the human asks). 2. Give the human the status command, then
-the setup command, then the self-test command, one at a time, and wait for their pasted output.
-3. Read the output only to advise (fingerprint present, `[TODO]` lines, exit codes); never act on their
-behalf. 4. Point the human to `README.md` in this folder for the plain-language walkthrough.
+Check signing status and key readiness:
 
-## Two identities
+```bash
+python3 scripts/setup_ciba_identity.py --check
+```
 
-This skill sets up only the **human's** production signing identity (`context/identity/`), which alone approves real work. The agent's simulation identity is separate (`context/simulation/identity/`, created by the `os-init` skill or on the first simulation run) and can never approve real work. `scripts/setup_ciba_identity.py --check` reports human approval, simulation and isolation readiness separately.
+## Workflow
 
-## What it sets up
-`context/identity/allowed_signers` (0600, namespace `control-plane@agentic-os.local`), a **separate**
-`allowed_signers_selftest` (0600, namespace `control-plane-selftest@agentic-os.local`), and `challenges/` (0700). The
-private key stays in the human's `~/.ssh`. The unprivileged agent account (`agentic-os-local-agent`) is
-created by the human with the printed administrator commands; they are never run by the script.
+1. **Check Status**: Run status check to verify whether trust anchors or keys are missing.
+2. **Guide Key Creation**: Provide instructions for the human to run `python3 scripts/setup_ciba_identity.py` in their own terminal.
+3. **Run Self-Test**: Direct the human to execute `python3 scripts/test_signing_mechanics.py`.
+4. **Inspect Results**: Advise the human based on script output and verify readiness.
 
-## Cross-platform notes
-macOS and Linux use the system OpenSSH; Windows 10/11 ships OpenSSH (FIDO needs Win32-OpenSSH 8.9+).
-File modes are POSIX; on Windows follow the ownership steps in `references/isolation-setup.md`.
+## Verification
+
+Confirm trust anchors exist and key is verified (exit code 0):
+
+```bash
+python3 scripts/setup_ciba_identity.py --check
+```
 
 ## References
-- `references/SIGNING_WORKFLOW_OVERVIEW.md`: the full first-time sequence (prerequisites, create and enroll the key, status check, self-test, gate approval), expected output and security boundaries.
-- `references/isolation-setup.md`: the full setup and the honest limits (same-account agents are not stopped).
+
+- [acceptance-criteria.md](references/acceptance-criteria.md) — Acceptance criteria for cryptographic approval workflows.
+- [fallback-tree.md](references/fallback-tree.md) — Remediation pathways when signing checks fail.
+- [isolation-setup.md](references/isolation-setup.md) — OS account isolation steps and residual risk notes.
+- [os-signing-setup-guide.md](references/os-signing-setup-guide.md) — Plain-language setup guide and identity definitions.
+- [SIGNING_WORKFLOW_OVERVIEW.md](references/SIGNING_WORKFLOW_OVERVIEW.md) — Cryptographic boundary architecture.

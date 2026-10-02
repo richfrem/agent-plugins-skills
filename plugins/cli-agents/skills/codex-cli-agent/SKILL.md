@@ -1,86 +1,52 @@
 ---
 name: codex-cli-agent
 plugin: cli-agents
-description: >
-  Codex CLI sub-agent for dispatching tasks to OpenAI-compatible models via the `codex` binary.
-  Use for code-focused tasks routed to GPT-5 Codex or any OpenAI-compatible endpoint.
-  Part of the run_agent.py multi-LLM task router — cli=codex target.
+description: Dispatches bounded coding tasks and analysis through the Codex CLI. Use for authorized Codex execution, code reviews, or tasks needing a fresh OpenAI model context.
 allowed-tools: Bash, Read, Write
 ---
 
-## Identity: The Codex Sub-Agent Dispatcher (Standard: gpt-5-codex)
+# Codex CLI Agent
 
-Dispatches bounded tasks to the Codex CLI (`codex` binary). Uses the `run_agent.py` task router with `cli=codex`.
+Dispatch the authorized task using the bundled router.
 
-> [!IMPORTANT]
-> **Default model: `gpt-5-codex`.** Requires `OPENAI_API_KEY` in environment. The `codex` binary must be on PATH.
+## Contents
 
-## Native orchestration facilities (verified September 2026)
+- [Constraints](#constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [Persona Registry](#-persona-registry-agents)
+- [Dispatch details](references/codex-cli-dispatch.md)
 
-This Codex CLI provides sandboxed execution (`--sandbox`), approval policy, non-interactive
-`exec`, dedicated `review`, session resume/fork, and browsing sessions through `codex agents`.
-Its documented CLI surface does **not** expose a native plan mode, a command that creates Git
-worktrees, or a CLI flag to delegate subagents. Do not infer any of those from the model or from
-an outer host's collaboration tools. Use the Agentic OS portable worktree and its orchestration
-layer for those functions; then run Codex in that selected worktree.
+## Constraints
 
-```bash
-# Bounded review on the current portable worktree
-codex review --uncommitted "Review only correctness and regression risks."
+Reuse the user's runtime/model/effort choice; do not start an unrequested review.
+Use one backend; halt on failure without silent fallback. Analysis uses `--isolated`;
+it suppresses dangerous flags and adds instructions, but is not an OS sandbox.
+Non-isolated dispatch requires authorization and external containment where needed.
 
-# Restricted execution inside a selected worktree
-codex exec --sandbox workspace-write "Implement the approved task and run focused tests."
-```
+## Quick start
 
-Use `--dangerously-bypass-approvals-and-sandbox` only with explicit authorization and external
-containment. When a host does provide collaboration tools, record that host runtime separately
-rather than claiming the Codex CLI itself supplied native delegation.
-
----
-
-## Orchestration Pattern: `run_agent.py`
+Run from this skill root; input and output paths are supplied by the caller:
 
 ```bash
-python ./scripts/run_agent.py \
-  <PERSONA_FILE> <INPUT_FILE> <OUTPUT_FILE> "<INSTRUCTION>" \
-  --cli codex --model gpt-5-codex
+python3 scripts/run_agent.py agents/security-auditor.md <input> <output> "Review supplied source." --cli codex --isolated --require-input
 ```
 
-The prompt is piped to `codex exec` via stdin — not passed as a positional arg — to avoid OS ARG_MAX limits and process listing exposure.
+## Workflow
 
-### Example
+1. Read [dispatch details](references/codex-cli-dispatch.md) before selecting flags or models.
+2. Read [execution rules](references/execution-contract.md) and [backend capabilities](references/backend-capabilities.md); user instructions govern authorization.
+3. Use the selected model or catalog tier; inspect the resolved executable/version.
+4. Dispatch once, then check exit status, nonempty output and requested acceptance criteria.
 
-```bash
-python ./scripts/run_agent.py \
-  agents/refactor-expert.md \
-  target.py \
-  refactor.md \
-  "Refactor this function and explain the top 3 changes." \
-  --cli codex
-```
+[Profile contract](references/capability-profile-contract.md) applies when a caller supplies a profile.
 
-### With a different model
+## Verification
 
-```bash
-python ./scripts/run_agent.py \
-  agents/security-auditor.md \
-  target.py \
-  security.md \
-  "Find vulnerabilities. Rate severity: CRITICAL / MODERATE / MINOR." \
-  --cli codex --model gpt-4o
-```
-
----
-
-## When to Use codex-cli-agent
-
-| Use Case | Why codex |
-|----------|-----------|
-| Code review / refactor | GPT-5 Codex is code-optimized |
-| OpenAI endpoint routing | Use any `OPENAI_BASE_URL`-compatible target |
-| Isolated sub-task to GPT-5 | No main agent context bleed |
-
----
+Record backend, executable/version, model, effort, scope and result. Empty or failed
+output is not a completed review. Log failures in [Map Debt](references/map-debt.md).
+For gated reviews, record PASS/REVISE/REJECT through the control plane; only PASS approves.
 
 ## 🎭 Persona Registry (`agents/`)
 
@@ -103,24 +69,4 @@ For reusable sub-agent execution, use the provided Python orchestrator which han
 
 ```bash
 python ./scripts/run_agent.py <PERSONA_FILE> <INPUT_FILE> <OUTPUT_FILE> "<INSTRUCTION>"
-```
-
----
-
-## Smoke Test
-
-```bash
-echo "Say hello in one sentence." | codex exec --model gpt-5-codex -
-python ./scripts/run_agent.py agents/refactor-expert.md target.py output.md "Summarize this file." --cli codex
-```
-
----
-
-## Health Check
-
-```bash
-echo $OPENAI_API_KEY   # must be set
-which codex            # must be on PATH
-codex --version
-codex exec --help      # verify exec subcommand and available flags
 ```

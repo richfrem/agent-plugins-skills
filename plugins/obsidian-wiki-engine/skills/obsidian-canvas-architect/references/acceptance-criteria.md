@@ -1,1 +1,1 @@
-../acceptance-criteria.md
+../../../references/obsidian-canvas-architect-acceptance-criteria.md

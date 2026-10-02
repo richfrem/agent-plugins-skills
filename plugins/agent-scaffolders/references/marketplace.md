@@ -4,6 +4,16 @@ This document captures our accumulated knowledge and definitive specifications f
 
 **Source:** [Claude Plugin Marketplaces](https://code.claude.com/docs/en/plugin-marketplaces)
 
+## Contents
+
+- [Definition](#definition)
+- [The `marketplace.json` Registry](#the-marketplacejson-registry)
+- [Discovery and Installation](#discovery-and-installation)
+- [Management Commands](#management-commands)
+- [Environment Variables](#environment-variables)
+- [SkillsMP.com Ecosystem Marketplace](#skillsmpcom-open-skillmd-ecosystem-marketplace)
+- [Release Channels Pattern](#release-channels-pattern)
+
 ## Definition
 A **plugin marketplace** is a catalog used to distribute plugins. It provides centralized discovery, version tracking, automatic updates, and supports multiple source types like git repositories and local paths. When a user installs a plugin, the plugin directory is copied to a cache, so relative paths outside the plugin directory (`../`) do not work unless they are symlinks.
 

@@ -1,10 +1,7 @@
 ---
 name: adr-management
-plugin: adr-manager
-description: >
-  ADR management skill. Auto-invoked for generating architecture decisions,
-  documenting design rationale, and maintaining the decision record log.
-  Uses native read/write tools to scaffold and update ADR markdown files.
+plugin: dev-utils
+description: Scaffolds, lists, searches, and manages Architecture Decision Records (ADRs) to record permanent institutional memory.
 allowed-tools: Bash, Read, Write
 ---
 
@@ -14,73 +11,54 @@ Requires Python 3.8+ (standard library only).
 
 ---
 
-# Identity: The ADR Manager 📐
+# Architecture Decision Records (`adr-management`)
 
-You manage Architecture Decision Records — the project's institutional memory for technical choices.
+Manages Architecture Decision Records to ensure significant technical and architectural choices are permanently documented.
 
-## 🎯 Primary Directive
-**Document, Decide, and Distribute.** Your goal is to ensure that significant architectural choices are permanently recorded in the `docs/architecture/decisions/` directory using the standard format.
+## Contents
 
-## 🛠️ Tools (Plugin Scripts)
+- [Dependencies](#dependencies)
+- [Critical Constraints](#critical-constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Querying ADRs](#querying-adrs)
+- [Verification](#verification)
+- [References](#references)
 
-**Canonical path (use this — agents run from the root of the current skill folder):**
-```
-./scripts/adr_manager.py
-./scripts/next_number.py
-```
+## Critical Constraints
 
-Always invoke with the root-relative path:
+1. **Fill All Sections**: Never leave an ADR partially empty; extrapolate context, decision, consequences, and alternatives.
+2. **Filename Convention**: Always format filenames as `NNN-short-descriptive-title.md`.
+3. **Status Lifecycle**: Mark new records `Proposed` or `Accepted`; mark superseded records `Superseded` with links.
+
+## Quick start
+
+Create a new ADR with an automatic sequential ID:
+
 ```bash
-python ./scripts/adr_manager.py <command>
-python ./scripts/next_number.py --type adr
+python3 scripts/adr_manager.py create "Title" --context "Context" --decision "Decision" --consequences "Consequences"
 ```
 
-**Do NOT use** `./adr_manager.py` (relative to script dir — breaks from project root).
+## Workflow
 
-## Core Workflow: Creating an ADR
+1. **Scaffold Record**: Run `adr_manager.py create "<Title>"` to create the template file in `docs/architecture/decisions/` or `ADRs/`.
+2. **Populate Content**: Open the generated file and document technical context, rationale, consequences, and alternatives.
+3. **Cross-Reference**: Link related decisions by number (e.g. `ADR-003`).
 
-When asked to create an Architecture Decision Record (ADR):
+## Querying ADRs
 
-### 1. Execute the Manager Script
-- **Default Location:** The `ADRs/` directory at the project root.
-- Execute the Manager script with the `create` subcommand. It will automatically determine the next sequential ID and generate the base template file for you.
-- e.g., `python ./scripts/adr_manager.py create "Use Python 3.12" --context "..." --decision "..." --consequences "..."`
-- The script will print the path of the generated `.md` file to stdout.
+- **View Record**: `python3 scripts/adr_manager.py get <NUMBER>`
+- **Search Keywords**: `python3 scripts/adr_manager.py search "<KEYWORD>"`
+- **Next Number**: `python3 scripts/next_number.py --type adr`
 
-### 2. Fill in the Logical Content
-- Open the newly generated file.
-- Edit the scaffolded sections based on the user's conversational context.
-- Extrapolate Consequences and Alternatives based on your software engineering knowledge.
+## Verification
 
-### 3. Maintain Status & Cross-References
-- **Status values**: A new ADR should usually be `Proposed` or `Accepted`.
-- If a new ADR invalidates an older one, edit the older ADR's status to `Superseded` and add a note linking to the new ADR.
-- **Reference ADRs by number** — e.g., "This builds upon the database choice outlined in ADR-0003."
+List existing ADRs and verify sequential indexing:
 
-## Auxiliary Workflows
-
-### Listing ADRs
 ```bash
-python ./scripts/adr_manager.py list
-python ./scripts/adr_manager.py list --limit 10
+python3 scripts/adr_manager.py list
 ```
 
-### Viewing a Specific ADR
-```bash
-python ./scripts/adr_manager.py get 42
-```
+## References
 
-### Searching ADRs by Keyword
-```bash
-python ./scripts/adr_manager.py search "ChromaDB"
-```
-
-### Sequence Resolution
-Use `next_number.py` to identify the next sequential ID across various artifact domains.
-- **Scans**: Specs, Tasks, ADRs, Business Rules/Workflows.
-- **Example**: `python ./scripts/next_number.py --type adr`
-
-## Best Practices
-1. **Always fill all sections**: Never leave an ADR blank. Extrapolate context and consequences based on your software engineering knowledge.
-2. **Kebab-Case Names**: Always format the filename as `NNN-short-descriptive-title.md`.
-3. **Reference ADRs by number** — e.g., "This builds upon the database choice outlined in ADR-003."
+- [acceptance-criteria.md](references/acceptance-criteria.md) — Acceptance criteria for ADR scaffolding and indexing.

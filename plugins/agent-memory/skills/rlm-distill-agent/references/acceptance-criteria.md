@@ -1,1 +1,1 @@
-../../../references/acceptance-criteria.md
+../../../references/rlm-distill-agent-acceptance-criteria.md

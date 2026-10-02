@@ -1,77 +1,40 @@
 ---
 name: vibe-browser-audit
-plugin: exploration-cycle-plugin
-description: A visual & functional crawler operation utilizing Chrome DevTools Protocol (CDP) or Playwright/Puppeteer to audit prototype UI/UX and behavior.
-allowed-tools: Bash, Read, Write
+description: Audits prototype UI/UX and behavior utilizing Chrome DevTools Protocol (CDP), Playwright, or Puppeteer to produce comprehensive discovery reports on layouts, styling, and state.
 ---
 
-<example>
-<commentary>Demonstrates using visual discovery to map out a prototype dashboard UI.</commentary>
-User: Audit my portfolio prototype at localhost:3000
-Agent: Launches the Playwright harness on port 3000, crawls visual screens, maps components, captures DOM trees and API state logs, and compiles DISCOVERY_REPORT.md.
-</example>
+# Visual & Functional Browser Audit (vibe-browser-audit)
 
-# Visual & Functional Browser Audit
+Performs comprehensive visual and functional inspections of running prototypes using browser automation, producing detailed discovery reports.
 
-You are a Senior UI/UX Engineer and Browser Automation Specialist. Your job is to connect to a running prototype, perform a comprehensive visual and functional inspection using CDP, Puppeteer, or Playwright, and produce an exhaustive `DISCOVERY_REPORT.md` documenting the application's current layout, styling, and behavior.
+## Contents
+- [Critical Constraints](#critical-constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
 
----
+## Critical Constraints
+- Only audit local or permitted prototype URLs; never execute intrusive automation on unauthorized endpoints.
+- Separate core logic salvage ("Preservation Gems") from technical debt to be remediated.
+- Always output standardized discovery reports directly to `exploration/captures/DISCOVERY_REPORT.md`.
 
-## Audit Workflow Steps
+## Quick start
+1. Confirm prototype is running on designated port (e.g., `http://localhost:3000`).
+2. Launch Playwright or CDP crawler to capture DOM trees, design tokens, and network interactions.
+3. Compile findings into `exploration/captures/DISCOVERY_REPORT.md`.
 
-### Step 1: Establish Environment & Connection
-1. Probe the workspace or ask the user for the local URL (e.g. `http://localhost:3000`, `http://localhost:5173`).
-2. Verify that the server is running on the designated port.
-3. Launch your local Playwright/Puppeteer script or CDP harness. If no harness is pre-configured, scaffold a simple Python Playwright crawling script inside the plugin's `scripts/` or `temp/` folder.
+## Workflow
+1. **Connection Setup**: Verify prototype URL and initialize Playwright/Puppeteer/CDP connection.
+2. **Visual UX Audit**: Crawl every distinct page, modal, and drawer; catalog component trees and design tokens.
+3. **Behavioral Audit**: Trigger user flows, capture HTTP traffic schemas, and record console logs.
+4. **Logic & Debt Analysis**: Classify business logic to preserve versus technical debt to remediate.
+5. **Report Compilation**: Write exhaustive `DISCOVERY_REPORT.md` into `exploration/captures/`.
 
-### Step 2: Visual UX Audit (Layout & Style)
-1. **Screen Crawling:** Navigate through every distinct page, tab, modal, and drawer.
-2. **Component Trees:** Map out key HTML structures, form inputs, button classes, and container hierarchies.
-3. **Styling Conventions:** Document the design tokens (e.g., Tailwind classes, custom CSS variables, layout patterns, responsive breakpoints).
-4. **Visual Assets:** Catalog image paths, custom SVG icons, and font families loaded.
+## Verification
+- Confirm `exploration/captures/DISCOVERY_REPORT.md` exists and includes all four standard sections.
+- Verify screen crawl captures all major application routes and states.
+- Ensure API schemas and payload contracts are accurately documented.
 
-### Step 3: Functional & Behavioral Audit (State & Network)
-1. **Interactive Elements:** Trigger form inputs, button clicks, tab switching, and modal triggers to record interactive transitions.
-2. **Network Logs:** Monitor and log HTTP requests, API endpoints, payload bodies, response headers, and response formats (e.g., JSON schemas).
-3. **State Management:** Trace frontend state shifts (e.g., changes in React state, local storage updates, session tokens).
-4. **Console Integrity:** Record all console logs, warnings, and errors triggered during user flows.
-5. **Ecosystem & Code Rescue Audit:** Inspect the codebase or running prototype to identify:
-   - **Preservation Gems:** Valuable business logic, domain models, formulas, or specific UI layouts that are correct and should be salvaged.
-   - **Technical Debt & Antipatterns:** Hardcoded values, mock endpoints, insecure storage, unhandled errors, or architectural bottlenecks to be quarantined and refactored.
-
-### Step 4: Compile Discovery Report
-Write `DISCOVERY_REPORT.md` directly into `exploration/captures/` (or the current session context directory):
-
-```markdown
-# Discovery Report: [Prototype Name]
-
-**Local URL:** `[URL]`
-**Inspection Date:** [Date]
-**Technology Footprint:** [e.g. React/Vite, Tailwind, Express]
-
-## 1. Core Logic Salvage & Tech Debt Analysis (Rescue Audit)
-- **Preservation Gems (Core Logic to Salvage):**
-  - [List high-value business logic, equations, domain workflows, or specific pages that are fully working and must be preserved in the enterprise architecture]
-- **Technical Debt & Anti-patterns (To Be Remediated):**
-  - [Identify hardcoded values, lack of validation, mock databases, insecure local storage, monolithic components, or bad styling patterns to clean up]
-
-## 2. Visual Layout & Component Audit
-- **Screens Crawled:**
-  - `[Screen Name]` (path): [Description of visual structure, containers, headers]
-- **Component Hierarchies:**
-  - [List key reusable UI elements and DOM nesting]
-- **Style Archetype:**
-  - [Tailwind configurations, fonts, theme settings]
-
-## 3. Behavioral & Interactive Flow Log
-- **User Actions Triggered:**
-  - [e.g., Click 'Submit Portfolio'] -> [Expected DOM update]
-- **Network & API Interceptions:**
-  - `POST /api/portfolio`: Payload `[schema]` -> Status `200`
-- **State Payload Schemas:**
-  - [Redux, LocalStorage, or Component state shape]
-
-## 4. Console & Load Warnings
-- **Warnings/Errors:** [None or specific warning lines]
-- **Latency/Performance:** [Subjective load speed & responsive feedback]
-```
+## References
+- [acceptance-criteria.md](references/acceptance-criteria.md)

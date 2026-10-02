@@ -2,6 +2,14 @@
 
 Reference material for os-improvement-loop. Active protocol steps are in SKILL.md.
 
+## Contents
+- [Architecture](#architecture)
+- [Dependencies](#dependencies)
+- [Evaluation Budget Guard](#evaluation-budget-guard-enforced)
+- [Bash Polling Pattern](#bash-polling-pattern)
+- [Examples](#examples)
+- [References](#references)
+
 ---
 
 ## Architecture
@@ -23,51 +31,50 @@ ${CLAUDE_PROJECT_DIR}/context/
 Companion skills (all required for a complete loop):
 - `triple-loop` — strategy packet format, correction packet protocol, verification
 - `os-eval-lab-setup` — bootstrap experiment dirs (deploys program.md, evals.json, results.tsv); use **before** running any eval cycle on a new target
-- `os-eval-runner` — eval_runner.py (pure scorer), evaluate.py (loop gate with KEEP/DISCARD exit codes), results.tsv baseline; the canonical eval engine
-- `os-memory-manager` — session log template, L2/L3 promotion, deduplication
-- `Triple-Loop Retrospective` — root cause analysis, Full Loop improvement, auto-patching skills
+- `os-eval-runner` — single-skill evaluation loop (inner loop used by this skill)
+- `os-eval-backport` — port validated skill improvements from test repo back to canonical source
+- `os-memory-manager` — session log format, memory promotion protocol
+- `os-improvement-report` — ASCII progress chart from improvement-ledger.tsv
+
+---
 
 ## Dependencies
-- **os-eval-lab-setup** (agent-agentic-os plugin) — required for experimental scaffolding.
-- **os-eval-runner** (agent-agentic-os plugin) — the canonical evaluation engine.
 
-> [!TIP]
-> See [INSTALL.md](https://github.com/richfrem/agent-plugins-skills/blob/main/INSTALL.md) for instructions on how to install missing dependencies.
+- Python 3.8+ (standard library only for core scripts)
+- SQLite 3 (optional, for persistent memory backends)
+- Claude Code CLI (or compatible host harness)
 
 ---
 
 ## Evaluation Budget Guard (enforced)
 
-These limits are hard constraints enforced by the orchestrator, not guidelines:
-
-| Limit | Value | Rationale |
-|-------|-------|-----------|
-| max_iterations_per_lab | 10 | Prevents runaway cost; sufficient for signal |
-| max_eval_datasets_per_run | 3 | base + holdout + adversarial only |
-| critic_invocations_per_iteration | 1 | One cheap-model challenge per mutation |
-
-Labs that exceed these limits must be split into separate sessions.
+Before starting any loop iteration, check remaining budget:
+- Max iterations per session: 10 (hard cap — stop and write session log even if target not met)
+- Max consecutive DISCARD verdicts: 3 (triggers strategy review; switch to Triple-Loop Retrospective if stuck)
+- Timeout per agent step: 300 seconds (kill and log failure event)
 
 ---
 
 ## Bash Polling Pattern
 
+When waiting for events from another agent:
+
 ```bash
 poll_for_event() {
-  local AGENT=$1 ACTION=$2 CID=$3
-  for i in $(seq 1 30); do
-    EVENTS=$(python "$KERNEL_PY" read_events --agent "$AGENT")
-    MATCH=$(echo "$EVENTS" | python -c "
-import sys, json
-evs = json.load(sys.stdin)
-hits = [e for e in evs if e.get('action') == '$ACTION'
-        and (not '$CID' or e.get('correlation_id') == '$CID')]
-print(json.dumps(hits[0]) if hits else '')
-")
-    if [ -n "$MATCH" ]; then echo "$MATCH"; return 0; fi
+  local agent="$1"
+  local action="$2"
+  local timeout="${3:-60}"
+  local elapsed=0
+  while [ $elapsed -lt $timeout ]; do
+    if grep -q "\"agent\":\"$agent\".*\"action\":\"$action\"" context/events.jsonl 2>/dev/null; then
+      echo "Event found: $action from $agent"
+      return 0
+    fi
     sleep 2
+    elapsed=$((elapsed + 2))
   done
-  echo ""; return 1
+  echo "Timeout waiting for $action from $agent"
+  return 1
 }
 ```
 
@@ -75,7 +82,7 @@ print(json.dumps(hits[0]) if hits else '')
 
 ## Examples
 
-<example>
+### Example 1: Continuous Improvement Loop
 User: "run a continuous improvement loop on the os-eval-runner skill"
 ORCHESTRATOR reads last survey (notes INNER_AGENT flagged eval_runner.py flag confusion as
 biggest friction). Writes strategy packet incorporating that fix. INNER_AGENT runs, emits
@@ -84,37 +91,32 @@ worked. PEER_AGENT runs os-eval-runner independently, produces KEEP verdict with
 score delta, saves survey noting zero friction. ORCHESTRATOR applies edit, runs post_run_metrics
 (friction count dropped from 3 to 0), writes session log with before/after scores, promotes
 fix to memory.md. No Triple-Loop Retrospective trigger needed — friction threshold not crossed.
-</example>
 
-<example>
+### Example 2: Parallel Multi-Skill Audit
 User: "audit 3 skills in parallel"
 ORCHESTRATOR dispatches 3 INNER_AGENTs via claim_task. Each emits friction events during work,
 runs eval_runner.py, saves survey. ORCHESTRATOR collects all results, identifies lowest scorer,
 writes correction packet. After correction cycle, runs post_run_metrics — 4 friction events
 for same cause (wrong CLI syntax in eval_runner). Triggers Triple-Loop Retrospective Full Loop to patch
 eval_runner documentation in the skill. Closes with session log and memory promotion.
-</example>
 
-<example>
+### Example 3: Substrate Latency Comparison
 User: "replace AGENT_COMMS.md with the event bus and track whether it's faster"
 ORCHESTRATOR establishes bus, runs Pattern A turn-signal cycle, records round-trip latency.
 INNER_AGENT and PEER_AGENT both complete post-run surveys noting any friction with polling syntax.
 post_run_metrics emitted. Session log records latency delta vs AGENT_COMMS baseline.
 Surveys compared — if both agents report same confusion point, Triple-Loop Retrospective patches SKILL.md.
-</example>
 
 ---
 
 ## References
 
-- This skill delegates to [agent-orchestration Pattern 5 (triple-loop-learning)](../../agent-orchestration/skills/triple-loop-learning/SKILL.md)
-  for the inner loop execution pattern. agent-orchestration/ is the execution substrate;
-  os-improvement-loop adds the eval gate, experiment log, and lab isolation on top.
-- [os-eval-runner SKILL](../os-eval-runner/SKILL.md) - eval_runner.py, KEEP/DISCARD, results.tsv
-- [os-memory-manager SKILL](../os-memory-manager/SKILL.md) - session log template, L2/L3 promotion
-- [Triple-Loop Retrospective agent](../../agents/Triple-Loop Retrospective.md) - root cause analysis, Full Loop patching
-- [os-improvement-report SKILL](../os-improvement-report/SKILL.md) - generate progress chart from improvement ledger
-- [improvement-ledger-spec.md](../../references/memory/improvement-ledger-spec.md) - ledger format, Section 1/2/3 writing protocol
-- [post_run_survey.md](../../references/memory/post_run_survey.md) - self-assessment survey template (all sections mandatory)
-- [post_run_metrics.py](scripts/post_run_metrics.py) - automated metric collection script
-- [metrics.md](../../references/memory/metrics.md) - North Star metric definition and review cadence
+- This skill delegates to `agent-orchestration:triple-loop-learning` for the inner loop execution pattern. agent-orchestration is the execution substrate; os-improvement-loop adds the eval gate, experiment log, and lab isolation on top.
+- `os-eval-runner` — eval_runner.py, KEEP/DISCARD, results.tsv
+- `os-memory-manager` — session log template, L2/L3 promotion
+- `triple-loop` agent — root cause analysis, Full Loop patching
+- `os-improvement-report` — generate progress chart from improvement ledger
+- [improvement-ledger-spec.md](memory/improvement-ledger-spec.md) — ledger format, Section 1/2/3 writing protocol
+- [post_run_survey.md](memory/post_run_survey.md) — self-assessment survey template (all sections mandatory)
+- [post_run_metrics.py](../scripts/post_run_metrics.py) — automated metric collection script
+- [metrics.md](memory/metrics.md) — North Star metric definition and review cadence

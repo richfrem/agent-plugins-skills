@@ -1,159 +1,62 @@
 ---
 name: rlm-search
-plugin: rlm-factory
-description: >
-  3-Phase Knowledge Search strategy for the RLM Factory ecosystem. Auto-invoked
-  when tasks involve finding code, documentation, or architecture context in the
-  repository. Enforces the optimal search order: RLM Summary Scan (O(1)) ->
-  Vector DB Semantic Search -> Grep/Exact Match. Never skip phases.
+plugin: agent-memory
+description: 3-Phase Knowledge Search strategy enforcing optimal lookup order - RLM Summary Scan -> Vector DB Semantic Search -> Grep/Exact Match.
 allowed-tools: Bash, Read, Write
 ---
 
-## Dependencies
+# RLM Knowledge Search (`rlm-search`)
 
-This skill requires **Python 3.8+** and standard library only. No external packages needed.
+Enforces the 3-phase knowledge search protocol to locate repository context with minimal token overhead.
 
-**To install this skill's dependencies:**
-```bash
-pip-compile ./requirements.in
-pip install -r ./requirements.txt
-```
+## Contents
 
-See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+- [Critical Constraints](#critical-constraints)
+- [Quick start](#quick-start)
+- [Search Order Protocol](#search-order-protocol)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
 
----
-# Identity: The Knowledge Navigator 🔍
+## Critical Constraints
 
-You are the **Knowledge Navigator**. Your job is to find things efficiently.
-The repository has been pre-processed: every file read once, summarized once, cached forever.
-**Use that prework. Never start cold.**
+1. **Start at Phase 1**: Never skip directly to full-repo grep or read files cold without checking summary cache first.
+2. **Scope Grep Searches**: Restrict regex or grep searches to files identified in Phase 1 or Phase 2.
+3. **Never Edit Ledgers**: Reading summaries is purely non-destructive.
 
----
+## Quick start
 
-## The 3-Phase Search Protocol
-
-> **Always start at Phase 1. Only escalate if the current phase is insufficient.**
-> Never skip to grep unless Phases 1 and 2 have failed.
-
-```
-Phase 1: RLM Summary Scan       -- 1ms, O(1) -- "Table of Contents"
-Phase 2: Vector DB Semantic      -- 1-5s, O(log N) -- "Index at the back of the book"
-Phase 3: Grep / Exact Search     -- Seconds, O(N) -- "Ctrl+F"
-```
-
----
-
-## Phase 1 -- RLM Summary Scan (Table of Contents)
-
-**When to use:** Orientation, understanding what a file does, planning, high-level questions.
-
-**The concept:** The RLM pre-reads every file ONCE, generates a dense 1-sentence summary, and caches it forever as a native Markdown file. Searching those summaries costs nothing. This is amortized prework -- pay the reading cost once, benefit many times.
-
-### Searching the Ledger
-
-Because the summaries are now pure Markdown files, you can search them instantly using your native `grep_search` tool across the cache directories defined in `rlm_profiles.json` (typically `.agent/learning/rlm_summary_cache/` or `rlm_tool_cache/`).
-
-Common defaults:
-
-| Profile | Cache Directory | Use When |
-|:--------|:----------------|:---------|
-| `project` | `.agent/learning/rlm_summary_cache/` | Topic is a concept, decision, or process |
-| `tools` | `.agent/learning/rlm_tool_cache/` | Topic is a tool, command, or implementation |
-
-**When topic is ambiguous: search all profile directories.** Each is O(1) -- near-zero cost.
+Execute a Phase 1 scan across pre-computed summary caches:
 
 ```bash
-# Example: Search docs/protocols cache (Native Tool)
-grep_search "vector query" .agent/learning/rlm_summary_cache/
-
-# Example: Search plugins/scripts cache
-grep_search "vector query" .agent/learning/rlm_tool_cache/
+python3 scripts/query_cache.py "session memory persistence" --profile wiki
 ```
 
-**Phase 1 is sufficient when:** The summary gives you enough context to proceed (file path + what the file does). You do not need the exact code yet.
+## Search Order Protocol
 
-**Escalate to Phase 2 when:** The summary is not specific enough, or no matching summary was found.
+```
+Phase 1: RLM Summary Scan    -> O(1), ~1ms       -> Table of Contents
+Phase 2: Vector DB Semantic  -> O(log N), 1-5s   -> Back-of-book Index
+Phase 3: Scoped Exact Grep   -> O(N), scoped     -> Ctrl+F
+```
 
----
+## Workflow
 
-## Phase 2 -- Vector DB Semantic Search (Back-of-Book Index)
+1. **Phase 1 (RLM Scan)**: Scan summaries using `scripts/query_cache.py` or `grep_search .agent/learning/*_cache/`. Stop if answered.
+2. **Phase 2 (Vector Search)**: If ranked similarity across chunks is needed, query `scripts/query.py "query" --profile wiki`. Stop if answered.
+3. **Phase 3 (Scoped Grep)**: If exact symbol or function names are required, run targeted `rg "pattern" <scoped-dir>`.
+4. **Transparent Citations**: State which search phase resolved the target and provide exact file links.
 
-**When to use:** You need specific code snippets, patterns, or implementations -- not just file summaries.
+## Verification
 
-**The concept:** The Vector DB stores chunked embeddings of every file. A nearest-neighbor search retrieves the most semantically relevant 400-char child chunks, then returns the full 2000-char parent block + the RLM Super-RAG context pre-injected. Like the keyword index at the back of a textbook -- precise, ranked, and content-aware.
-
-Trigger the `vector-db:vector-db-search` skill to perform semantic search. Provide the query and optional `--profile` and `--limit` parameters.
-
-**Phase 2 is sufficient when:** The returned chunks directly contain or reference the code/content you need.
-
-**Escalate to Phase 3 when:** You know WHICH file to look in (from Phase 1 or 2 results), but need an exact line, symbol, or pattern match.
-
----
-
-## Phase 3 -- Grep / Exact Search (Ctrl+F)
-
-**When to use:** You need exact matches -- specific function names, class names, config keys, or error messages. Scope searches to files identified in previous phases.
-
-**The concept:** Precise keyword or regex search across the filesystem. Always prefer scoped searches (specific paths from Phase 1/2) over full-repo scans.
+Confirm query tool responsiveness and cache availability:
 
 ```bash
-# Scoped search (preferred -- use paths from Phase 1 or 2)
-grep_search "VectorDBOperations" \
-  ./scripts/
-
-# Ripgrep for regex patterns
-rg "def query" ../../ --type py
-
-# Find specific config key
-rg "chroma_host" plugins/ -l
+python3 scripts/query_cache.py "health" --profile wiki
 ```
 
-**Phase 3 is sufficient when:** You have the exact file and line containing what you need.
+## References
 
----
-
-## Architecture Reference
-
-The diagrams below document the system this skill operates in:
-
-| Diagram | What It Shows |
-|:--------|:--------------|
-| [search_process.mmd](../../assets/diagrams/search_process.mmd) | Full 3-phase sequence diagram |
-| [rlm-factory-architecture.mmd](../../assets/diagrams/rlm-factory-architecture.mmd) | RLM vs Vector DB query routing |
-| [rlm-factory-dual-path.mmd](../../assets/diagrams/rlm-factory-dual-path.mmd) | Dual-path Super-RAG context injection |
-
----
-
-## Decision Tree
-
-```
-START: I need to find something in the codebase
-   |
-   v
-[Phase 1] grep_search -- "what does X do?" across `.agent/learning/*_cache/`
-   |
-   +-- Summary found + sufficient? --> USE IT. Done.
-   |
-   +-- No summary / insufficient detail?
-         |
-         v
-      [Phase 2] vector-db:vector-db-search -- "find code for X"
-         |
-         +-- Chunks found + sufficient? --> USE THEM. Done.
-         |
-         +-- Need exact line / symbol?
-               |
-               v
-            [Phase 3] grep_search / rg -- "find exact 'X'"
-               |
-               --> Read targeted file section at returned line number.
-```
-
----
-
-## Anti-Patterns (Never Do These)
-
-- **NEVER skip Phase 1** to go directly to grep. The RLM prework exists precisely to avoid this.
-- **NEVER read an entire file cold** to find something. Use Phase 1 summary first.
-- **NEVER run a full-repo grep** without scoping to paths from Phase 1 or 2. It's expensive and noisy.
-- **NEVER assume the RLM cache is empty.** Run `inventory.py --missing` to check coverage before assuming a file is not indexed.
+- [acceptance-criteria.md](references/acceptance-criteria.md) — Acceptance criteria for 3-phase search retrieval accuracy.
+- [cheapest_models.md](references/cheapest_models.md) — Model tiers and pricing guidance for semantic query engines.
+- [RLM_ARCHITECTURE.md](references/RLM_ARCHITECTURE.md) — Architectural overview of the 3-phase lookup design.

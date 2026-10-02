@@ -8,43 +8,48 @@ description: >
 allowed-tools: Bash, Read
 ---
 
-## Dependencies
+# Todo Check (`todo-check`)
 
-This skill requires **Python 3.8+** and standard library only. No external packages needed.
+Audit target source files for TODO comments, unfinished work items, or technical debt markers prior to commit or merge.
 
-**To install this skill's dependencies:**
+## Contents
+
+- [Critical Constraints](#critical-constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
+
+## Critical Constraints
+
+1. **Read-Only Inspection**: Do not edit files to remove or suppress discovered TODOs.
+2. **Standard Library Only**: Use built-in Python scripts without external pip dependencies.
+3. **Report Exact Lines**: Output exact line numbers and comment contents for every debt marker found.
+
+## Quick start
+
+Scan a source file for pending TODO items:
+
 ```bash
-pip-compile ./requirements.in
-pip install -r ./requirements.txt
+python3 scripts/check_todos.py <path/to/file>
 ```
 
-See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+## Workflow
 
----
+1. **Resolve Target**: Identify candidate source file or directory for debt auditing.
+2. **Execute Audit**: Run `check_todos.py` against target path.
+3. **Parse Findings**: Inspect reported markers (`TODO`, `FIXME`, `HACK`, `XXX`).
+4. **Report Status**: Present summary of open items and file readiness to the user.
 
-# todo-check
+## Verification
 
-Check for TODOs and debt markers in a file.
+Confirm script runs and outputs valid scan results:
 
-## Usage
-`python ${CLAUDE_PLUGIN_ROOT}/skills/todo-check/scripts/check_todos.py <path>`
+```bash
+python3 scripts/check_todos.py scripts/check_todos.py
+```
 
-<example>
-Context: Directly auditing a specific file.
-user: "Are there any todos left in project_logic.py?"
-assistant: "I'll run the todo-check audit to find any pending work items in project_logic.py."
-</example>
+## References
 
-<example>
-Context: Scanning for debt as part of a review.
-user: "List the pending work items in utils.py before we merge."
-assistant: "I'll use the todo-check tool to scan utils.py for any TODO markers or debt."
-</example>
-
-<example>
-Context: Agent proactively audits before proposing a code change.
-assistant: [autonomously, before suggesting a refactor] "Let me run todo-check on this file first to surface any existing debt markers before adding more changes."
-<commentary>
-Implicit audit trigger -- agent uses todo-check as a pre-flight check, no user prompt needed.
-</commentary>
-</example>
+- [acceptance-criteria.md](references/acceptance-criteria.md) — Acceptance criteria for todo scanning.
+- [fallback-tree.md](references/fallback-tree.md) — Remediation pathways if file cannot be read.

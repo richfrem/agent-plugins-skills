@@ -8,11 +8,19 @@
 **Version:** 5.0 (Unified Dependency Architecture - Example Template)
 **Generated:** 2025-11-15
 
+## Contents
+
+- [Preamble](#preamble)
+- [Dependency File Structure](#dependency-file-structure)
+- [Unified Dependency Manifest (Example)](#unified-dependency-manifest-example)
+  - [AI & Cognitive Engines](#ai--cognitive-engines)
+
 ## Preamble
 
 This document provides an example template manifest of all Python dependencies, reflecting the strategic decision to adopt a unified dependency architecture. 
 
 In accordance with clean code principles, each dependency in this template is cataloged with its specific role and strategic purpose to demonstrate how a complex project can be modeled into clear, strategic dependency categories.
+
 
 
 ---

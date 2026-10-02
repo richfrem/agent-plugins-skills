@@ -11,120 +11,68 @@ description: >
 allowed-tools: Bash, Read
 ---
 
-<example>
-<commentary>User explicitly requested a system diagnostic.</commentary>
-user: "Run a system monitor check on the OS."
-assistant: Scans the event bus and state file, compiles liveness metrics, and reports them.
-</example>
+# OS Health Check (`os-health-check`)
 
-## Dependencies
+Scan across `context/events.jsonl` Event Bus stream, review `os-state.json` liveness, and compile system metrics deterministically without mutating user files.
 
-This skill requires **Python 3.8+** and standard library only. No external packages needed.
+## Contents
 
-# OS Health Check
+- [Critical Constraints](#critical-constraints)
+- [Quick start](#quick-start)
+- [Cryptographic Verification Readiness](#cryptographic-verification-readiness)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
 
-Scan across the `context/events.jsonl` Event Bus stream, review `os-state.json` liveness, and
-compile system metrics without mutating user files.
+## Critical Constraints
 
-## Execution Flow
+1. **Deterministic Diagnostic**: Do not modify user code or repo configs during health checks.
+2. **Never Enroll CIBA Keys**: Check verification readiness via `--check`; never execute key enrollment scripts autonomously.
+3. **Lock Hygiene**: Always release acquired monitor locks upon completion or error recovery.
 
-### Phase 0: Intent Emission (Event Bus)
+## Quick start
 
-```bash
-python3 scripts/kernel.py emit_event --agent os-health-check --type intent --action scan_metrics
-```
-
-### Phase 1: Context Gathering & OS State Lock
-
-```bash
-python3 scripts/kernel.py state_update active_agent os-health-check
-python3 scripts/kernel.py acquire_lock monitor
-```
-
-If the lock acquisition fails, abort — the kernel handles stale lock cleanup automatically
-(see `os-clean-locks` if a stale lock persists).
-
-### Phase 2: Analyze Event Bus
-
-Inspect the recent Event Bus (`tail -n 100 context/events.jsonl`) and calculate metrics: total
-intent vs. result events, hook error count (also check `context/memory/hook-errors.log`), and
-any agent that emitted `intent` without a matching `result` (crash signal).
-
-### Phase 3: Inspect Memory & File Health
-
-Check `context/memory.md` length (`wc -l`), scan `context/.locks/` for leaked stale locks, and
-determine whether `memory_gc_due` should be flagged.
-
-### Phase 3.6: Cryptographic Verification Readiness (read-only)
-
-The three human authorities (APPROVED, VERIFY_EXIT, DONE) are cryptographic gates: only an `ssh-keygen -Y sign`
-signature over a `transition_request`, verified against `allowed_signers`, advances them. Assert that
-verification can actually work. Read-only, no terminal needed:
+Run a fast read-only check of the Agentic OS substrate and cryptographic readiness:
 
 ```bash
 python3 scripts/setup_ciba_identity.py --check
 ```
 
-Exit 0 means ready. It asserts: (1) `ssh-keygen` is present and supports SSHSIG (OpenSSH >= 8.1, line
-`ssh-keygen: OpenSSH ...`); (2) `allowed_signers` parses to at least one enrolled key; (3) every key is
-scoped to the production namespace (otherwise no gate signature can verify); (4) the trust anchors are safely
-owned and isolated from the agent account. Exit 1 lists each failure with a code (`SSH_KEYGEN_UNAVAILABLE`,
-`SSHSIG_UNSUPPORTED`, `NO_ENROLLED_KEYS`, `NAMESPACE_MISMATCH`, isolation codes). Do **not** test or report on
-`actor` strings, typed confirmations or skip/force-close flags: they cannot authorize these gates and no
-longer exist. A green status shows the trust anchors are safely owned and a key is enrolled; it is
-**not proof of human presence**. **Never run the setup or the self-test yourself, never create, read or
-move a private key, and never edit `allowed_signers*`**; only the human enrolls a key.
+## Cryptographic Verification Readiness
 
-**Confirm the three identities were registered** (the same `--check` prints them under "Approval identities").
-Judge them against the declared control-plane mode (`os-control-plane-mode` `status`):
-
-| Identity | Mode `enabled` | Mode `disabled` |
-|---|---|---|
-| **Human approval** (your key enrolled in this repo's `context/identity/allowed_signers`) | not ready = **Tier 1**: a HUMAN runs the setup command (`os-init` prints the path that exists in this repo; run in their own terminal, it offers to enroll the key already on the machine) | informational only; no finding |
-| **Simulation** (the agent's own key in `context/simulation/identity/`) | not set up = **Tier 1, agent-fixable**: `init_agentic_os.py --target . --retrofit` creates it | informational only; no finding |
-| **Isolation** (agent runs as its own account or container) | not ready = Tier 2 recommendation, not blocking | informational only; no finding |
-
-Name the command that exists in this repo (`.agents/skills/os-health-check/scripts/setup_ciba_identity.py` is
-always installed with this skill, even when `os-signing-setup` has been removed by disabling the control plane).
-
-### Phase 3.5: os-init Substrate Completeness Check
-
-Verify the scaffolding artifacts `os-init --retrofit` is responsible for creating
-(`control_plane.db`, `.claude/hooks/hooks.json`, `.git/hooks/pre-commit-evolution-guard`,
-`.github/workflows/verify-evolution-integrity.yml`), the Phase 0 intake rule in `CLAUDE.md`,
-lingering `.bak` files, and per-plugin `references/evolution-log.md`. Run this on every health
-check, not just once — a stale `init_agentic_os.py` copy can reintroduce gaps (see
-DEBT-20260905-12/-13/-14). Any MISSING result is a Tier 1 finding — recommend re-running
-`init_agentic_os.py --target . --retrofit` (idempotent, safe to re-run). Exact commands are
-in `references/detailed-reference.md`. **Read the declared control-plane mode first**
-(`os-control-plane-mode` `status`): a control plane that is `disabled` on purpose is healthy, not
-MISSING, and a mode that does not match the repo is a Tier 1 finding fixed by re-running the
-toggle, not by retrofit.
-
-When `plugins/cli-agents` is installed, also report the state of the optional
-`context/agent-capability-profile.json` profile: missing means setup discovery
-is still required; invalid or stale means refresh guidance is required; ready
-means provider and model-tier preferences may be used. Do not treat a missing
-optional profile as a failed Agentic OS substrate, and never read credentials
-or raw provider output while checking it.
-
-### Phase 4: Summarize & Lock Release
+Assert human cryptographic gates can verify via `ssh-keygen`, SSHSIG, and `allowed_signers`:
 
 ```bash
-python3 scripts/kernel.py emit_event --agent os-health-check --type result --action scan_metrics --status success --summary "Metrics compiled"
-python3 scripts/kernel.py release_lock monitor
+python3 scripts/setup_ciba_identity.py --check
 ```
 
-Present the metrics to the user. Recommend `os-clean-locks` or `os-memory-manager` if health
-metrics indicate deadlock or bloated state, and recommend re-running `os-init --retrofit` if
-Phase 3.5 found any missing substrate. If Phase 3.5 found drifted local skills/scripts, see the
-Consumer Guidance on Plugin Drift in `references/detailed-reference.md` (upstream fix vs.
-local domain customization).
+Exit 0 indicates trust anchors are ready, but is not proof of human presence. An agent must never run `setup_ciba_identity.py` to enroll keys.
 
-### Phase 5: Self-Assessment Survey (MANDATORY)
+## Workflow
 
-Complete the Post-Run Self-Assessment Survey (`references/memory/post_run_survey.md`) after
-every run and save to
-`context/memory/retrospectives/survey_[YYYYMMDD]_[HHMM]_os-health-check.md`, then emit
-`--type learning --action survey_completed`. Full survey questions in
-`references/detailed-reference.md`.
+1. **Emit Intent & Lock**: Emit intent event and acquire `monitor` lock via `kernel.py`:
+   ```bash
+   python3 scripts/kernel.py emit_event --agent os-health-check --type intent --action scan_metrics
+   python3 scripts/kernel.py acquire_lock monitor
+   ```
+2. **Analyze Event Bus & State**: Inspect `context/events.jsonl`, check hook error logs, and inspect `os-state.json`.
+3. **Inspect Memory & Substrate**: Review `context/memory.md` length, check `context/.locks/` for stale locks, and verify substrate components.
+4. **Summarize & Release**:
+   ```bash
+   python3 scripts/kernel.py emit_event --agent os-health-check --type result --action scan_metrics --status success --summary "Metrics compiled"
+   python3 scripts/kernel.py release_lock monitor
+   ```
+
+## Verification
+
+Confirm monitor lock is released and event bus records clean result:
+
+```bash
+python3 scripts/kernel.py state_read
+```
+
+## References
+
+- [detailed-reference.md](references/detailed-reference.md) — Phase specifications and deep metric inspection patterns.
+- [acceptance-criteria.md](references/acceptance-criteria.md) — Health assessment thresholds and pass/fail criteria.
+- [fallback-tree.md](references/fallback-tree.md) — Remediation pathways for failed checks and leaked locks.

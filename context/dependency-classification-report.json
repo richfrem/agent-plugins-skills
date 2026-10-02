@@ -1,6 +1,207 @@
 {
-  "eligible": [],
-  "ineligible": [],
-  "ineligible_details": [],
+  "eligible": [
+    "plugins/agent-orchestration/skills/agent-swarm/SKILL.md",
+    "plugins/agent-orchestration/skills/learning-loop/SKILL.md",
+    "plugins/agent-orchestration/skills/orchestrator/SKILL.md",
+    "plugins/dependency-management/skills/dependency-management/SKILL.md",
+    "plugins/dev-utils/skills/adr-management/SKILL.md",
+    "plugins/dev-utils/skills/hf-download/SKILL.md",
+    "plugins/dev-utils/skills/hf-upload/SKILL.md"
+  ],
+  "ineligible": [
+    "plugins/agent-orchestration/skills/red-team-review/SKILL.md",
+    "plugins/agent-orchestration/skills/triple-loop-learning/SKILL.md",
+    "plugins/agent-scaffolders/skills/audit-plugin/SKILL.md",
+    "plugins/agent-scaffolders/skills/ecosystem-authoritative-sources/SKILL.md",
+    "plugins/agent-scaffolders/skills/ecosystem-standards/SKILL.md",
+    "plugins/obsidian-wiki-engine/skills/obsidian-bases-manager/SKILL.md",
+    "plugins/obsidian-wiki-engine/skills/obsidian-canvas-architect/SKILL.md",
+    "plugins/obsidian-wiki-engine/skills/obsidian-graph-traversal/SKILL.md",
+    "plugins/obsidian-wiki-engine/skills/obsidian-init/SKILL.md",
+    "plugins/obsidian-wiki-engine/skills/obsidian-markdown-mastery/SKILL.md",
+    "plugins/obsidian-wiki-engine/skills/obsidian-query-agent/SKILL.md",
+    "plugins/obsidian-wiki-engine/skills/obsidian-rlm-distiller/SKILL.md",
+    "plugins/obsidian-wiki-engine/skills/obsidian-vault-crud/SKILL.md",
+    "plugins/obsidian-wiki-engine/skills/obsidian-wiki-builder/SKILL.md",
+    "plugins/obsidian-wiki-engine/skills/obsidian-wiki-linter/SKILL.md"
+  ],
+  "ineligible_details": [
+    {
+      "skill": "plugins/agent-orchestration/skills/red-team-review/SKILL.md",
+      "reason": "Capability / inter-skill dependency (not python package requirements)"
+    },
+    {
+      "skill": "plugins/agent-orchestration/skills/triple-loop-learning/SKILL.md",
+      "reason": "Capability / inter-skill dependency (not python package requirements)"
+    },
+    {
+      "skill": "plugins/agent-scaffolders/skills/audit-plugin/SKILL.md",
+      "packages": [
+        "annotated-types",
+        "anyio",
+        "azure-ai-projects",
+        "azure-core",
+        "azure-identity",
+        "azure-storage-blob",
+        "certifi",
+        "cffi",
+        "charset-normalizer",
+        "cryptography",
+        "distro",
+        "h11",
+        "httpcore",
+        "httpx",
+        "idna",
+        "isodate",
+        "jiter",
+        "msal",
+        "msal-extensions",
+        "openai",
+        "pycparser",
+        "pydantic",
+        "pydantic-core",
+        "pyjwt[crypto]",
+        "pyyaml",
+        "requests",
+        "sniffio",
+        "tqdm",
+        "typing-extensions",
+        "typing-inspection",
+        "urllib3"
+      ]
+    },
+    {
+      "skill": "plugins/agent-scaffolders/skills/ecosystem-authoritative-sources/SKILL.md",
+      "packages": [
+        "annotated-types",
+        "anyio",
+        "azure-ai-projects",
+        "azure-core",
+        "azure-identity",
+        "azure-storage-blob",
+        "certifi",
+        "cffi",
+        "charset-normalizer",
+        "cryptography",
+        "distro",
+        "h11",
+        "httpcore",
+        "httpx",
+        "idna",
+        "isodate",
+        "jiter",
+        "msal",
+        "msal-extensions",
+        "openai",
+        "pycparser",
+        "pydantic",
+        "pydantic-core",
+        "pyjwt[crypto]",
+        "pyyaml",
+        "requests",
+        "sniffio",
+        "tqdm",
+        "typing-extensions",
+        "typing-inspection",
+        "urllib3"
+      ]
+    },
+    {
+      "skill": "plugins/agent-scaffolders/skills/ecosystem-standards/SKILL.md",
+      "packages": [
+        "annotated-types",
+        "anyio",
+        "azure-ai-projects",
+        "azure-core",
+        "azure-identity",
+        "azure-storage-blob",
+        "certifi",
+        "cffi",
+        "charset-normalizer",
+        "cryptography",
+        "distro",
+        "h11",
+        "httpcore",
+        "httpx",
+        "idna",
+        "isodate",
+        "jiter",
+        "msal",
+        "msal-extensions",
+        "openai",
+        "pycparser",
+        "pydantic",
+        "pydantic-core",
+        "pyjwt[crypto]",
+        "pyyaml",
+        "requests",
+        "sniffio",
+        "tqdm",
+        "typing-extensions",
+        "typing-inspection",
+        "urllib3"
+      ]
+    },
+    {
+      "skill": "plugins/obsidian-wiki-engine/skills/obsidian-bases-manager/SKILL.md",
+      "packages": [
+        "ruamel-yaml"
+      ]
+    },
+    {
+      "skill": "plugins/obsidian-wiki-engine/skills/obsidian-canvas-architect/SKILL.md",
+      "packages": [
+        "ruamel-yaml"
+      ]
+    },
+    {
+      "skill": "plugins/obsidian-wiki-engine/skills/obsidian-graph-traversal/SKILL.md",
+      "packages": [
+        "ruamel-yaml"
+      ]
+    },
+    {
+      "skill": "plugins/obsidian-wiki-engine/skills/obsidian-init/SKILL.md",
+      "packages": [
+        "ruamel-yaml"
+      ]
+    },
+    {
+      "skill": "plugins/obsidian-wiki-engine/skills/obsidian-markdown-mastery/SKILL.md",
+      "packages": [
+        "ruamel-yaml"
+      ]
+    },
+    {
+      "skill": "plugins/obsidian-wiki-engine/skills/obsidian-query-agent/SKILL.md",
+      "packages": [
+        "pyyaml"
+      ]
+    },
+    {
+      "skill": "plugins/obsidian-wiki-engine/skills/obsidian-rlm-distiller/SKILL.md",
+      "packages": [
+        "pyyaml"
+      ]
+    },
+    {
+      "skill": "plugins/obsidian-wiki-engine/skills/obsidian-vault-crud/SKILL.md",
+      "packages": [
+        "ruamel-yaml"
+      ]
+    },
+    {
+      "skill": "plugins/obsidian-wiki-engine/skills/obsidian-wiki-builder/SKILL.md",
+      "packages": [
+        "pyyaml"
+      ]
+    },
+    {
+      "skill": "plugins/obsidian-wiki-engine/skills/obsidian-wiki-linter/SKILL.md",
+      "packages": [
+        "pyyaml"
+      ]
+    }
+  ],
   "ambiguous": []
 }

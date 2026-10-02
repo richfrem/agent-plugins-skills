@@ -15,33 +15,56 @@ allowed_tools:
   - list_dir
 ---
 
-# GitHub Issue Worktree Agent (`github-issue-worktree-agent`)
+# GitHub Issue Worktree Agent (github-issue-worktree-agent)
 
-> **Routing Directive:** USE ONLY when setting up, listing, or removing isolated git worktrees (`.worktrees/issue-NNN`) for issue execution branches. DO NOT USE for managing GitHub PR lifecycles (use `github-issue-pr-lifecycle-agent` instead) or friction logging (use `github-issue-agent` instead).
+Provisions and manages isolated git worktrees (`.worktrees/issue-NNN`) for clean issue execution branches.
 
-The `github-issue-worktree-agent` skill manages isolated workspace environments using `git worktree`. It ensures agent work on specific issues takes place in isolated branches under `.worktrees/issue-NNN` without dirtying or interfering with the main working directory.
+## Contents
+- [Critical Constraints](#critical-constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
 
----
+## Critical Constraints
+- **Scope Boundary**: USE ONLY for worktree lifecycle operations. DO NOT USE for PR lifecycles (use `github-issue-pr-lifecycle-agent`) or issue logging (use `github-issue-agent`).
+- **Standard Location**: Worktrees must strictly reside within `.worktrees/issue-NNN` relative to repository root.
+- **Safe Teardown**: Check `git status` prior to removal; never force-prune uncommitted work without confirmation.
+- **Branch Tracking**: Branch naming must consistently map to the issue identifier (`issue-NNN`).
 
-## Quick Start & CLI
-
-- **Helper Script:** `plugins/dev-utils/skills/github-issue-worktree-agent/scripts/issue_worktree_manage.py`
+## Quick start
 
 ```bash
-# Create a worktree for Issue #123:
-python3 plugins/dev-utils/skills/github-issue-worktree-agent/scripts/issue_worktree_manage.py create --issue 123 --base main
+# Provision isolated worktree for Issue #123
+python3 plugins/dev-utils/skills/github-issue-worktree-agent/scripts/issue_worktree_manage.py \
+  create --issue 123 --base main
 
-# List active worktrees:
+# List active worktrees
 python3 plugins/dev-utils/skills/github-issue-worktree-agent/scripts/issue_worktree_manage.py list
 
-# Remove a worktree for Issue #123:
-python3 plugins/dev-utils/skills/github-issue-worktree-agent/scripts/issue_worktree_manage.py remove --issue 123
+# Clean up worktree after resolution
+python3 plugins/dev-utils/skills/github-issue-worktree-agent/scripts/issue_worktree_manage.py \
+  remove --issue 123
 ```
 
----
+## Workflow
 
-## Progressive Disclosure & References
+1. **Phase 1: Workspace Inspection**: Check for existing worktree directories or branch name collisions.
+2. **Phase 2: Worktree Provisioning**: Spawn isolated worktree at `.worktrees/issue-NNN` tracking trunk.
+3. **Phase 3: Implementation Context**: Guide agent execution to occur within the isolated worktree directory.
+4. **Phase 4: Teardown & Pruning**: Confirm committed state, prune worktree directory, and clean local branch.
 
-- **Worktree Management Guide**: [references/worktree-guide.md](references/worktree-guide.md) — safety contracts, configuration options, and Python API interface.
-- **Acceptance Criteria**: [references/acceptance-criteria.md](references/acceptance-criteria.md) — verification contracts and test expectations.
-- **Fallback Protocol**: [references/fallback-tree.md](references/fallback-tree.md) — failure recovery procedures and dirty worktree resolution.
+## Verification
+
+```bash
+# Verify active worktree state
+python3 plugins/dev-utils/skills/github-issue-worktree-agent/scripts/issue_worktree_manage.py list
+
+# Audit skill compliance
+python3 plugins/agent-scaffolders/scripts/audit_skill.py plugins/dev-utils/skills/github-issue-worktree-agent --mode source
+```
+
+## References
+- [worktree-guide.md](references/worktree-guide.md) - Worktree isolation safety contracts and CLI guide.
+- [acceptance-criteria.md](references/acceptance-criteria.md) - Verification contracts and test criteria.
+- [fallback-tree.md](references/fallback-tree.md) - Failure recovery and dirty worktree resolution.

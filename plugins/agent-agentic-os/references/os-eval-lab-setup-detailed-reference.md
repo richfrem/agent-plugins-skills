@@ -2,6 +2,14 @@
 
 Extracted from SKILL.md per Layer-1 procedural-core line budget (issue #551).
 
+## Contents
+- [Phase 0: Intake](#phase-0-intake--full-question-set)
+- [Phase 1: Bootstrap the Lab Repo](#phase-1-bootstrap-the-lab-repo--full-commands)
+- [Dependencies](#dependencies)
+- [Phase 2: Generate eval-instructions.md](#phase-2-generate-eval-instructionsmd-command)
+- [Phase 3: Confirm Ready](#phase-3-confirm-ready--autonomous-execution-command)
+- [What to Expect: Meta-Circular Improvement](#what-to-expect-meta-circular-improvement)
+
 ## Phase 0: Intake — full question set
 
 Ask each unanswered question. If provided in `$ARGUMENTS`, confirm rather than re-ask.

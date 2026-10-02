@@ -1,1 +1,1 @@
-../../../references/acceptance-criteria.md
+../../../references/create-plugin-acceptance-criteria.md

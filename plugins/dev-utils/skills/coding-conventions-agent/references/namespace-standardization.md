@@ -1,1 +1,0 @@
-../../../references/namespace-standardization.md

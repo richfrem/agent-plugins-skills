@@ -1,122 +1,55 @@
 ---
 name: obsidian-rlm-distiller
-plugin: obsidian-wiki-engine
-description: "Distills wiki source files into the RLM summary layer (summary.md, bullets.md, deep.md) using the cheapest available LLM CLI. Routes to Copilot gpt-5-mini first, then Claude Haiku, then Gemini Flash. Never uses Ollama. Use when wiki nodes need RLM summaries generated or refreshed."
-allowed-tools: Bash, Read, Write
+description: Distills wiki source files into the three-layer RLM summary structure (summary.md, bullets.md, deep.md) using cheap cloud LLM CLIs. Routes to mini/flash tiers.
 ---
+
+# Obsidian RLM Distiller (obsidian-rlm-distiller)
+
+Distills wiki source files into a three-layer RLM summary structure using low-cost cloud LLM CLIs.
+
+## Contents
+- [Critical Constraints](#critical-constraints)
+- [Dependencies](#dependencies)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
+
+## Critical Constraints
+- Route strictly to mini/flash tier models (`gpt-5-mini`, `claude-haiku-4-5`, `gemini-3-flash-preview`); never use local models.
+- Track source file hashes to prevent redundant re-distillation of unchanged notes.
+- Every distilled concept must output the standard 3-tier structure (`summary.md`, `bullets.md`, `deep.md`).
 
 ## Dependencies
 
 Requires Python 3.8+ and at least one CLI installed: `copilot`, `claude`, or `gemini`.
 
+## Quick start
 ```bash
-pip install -r requirements.txt
+# Distill all stale wiki nodes
+python3 plugins/obsidian-wiki-engine/scripts/distill_wiki.py --wiki-root <path>
+
+# Distill single named source
+python3 plugins/obsidian-wiki-engine/scripts/distill_wiki.py --wiki-root <path> --source arch-docs
+
+# Dry run inspection
+python3 plugins/obsidian-wiki-engine/scripts/distill_wiki.py --wiki-root <path> --dry-run
 ```
 
----
-# Obsidian RLM Distiller
+## Workflow
+1. **Source Discovery**: Scan registered wiki sources and compare hashes against `meta/agent-memory.json`.
+2. **Model Routing**: Select lowest-cost available CLI runner (`copilot` -> `claude` -> `agy`).
+3. **Multi-Tier Distillation**: Generate 1-paragraph summary, 6-bullet key points, and comprehensive deep summary.
+4. **Cache Persistence**: Store outputs in `{wiki_root}/rlm/<concept>/` and update hash registry.
 
-**Status:** Active
-**Author:** Richard Fremmerlid
-**Domain:** Obsidian Wiki Engine
-**Replaces:** `rlm-distill-ollama` (fully deprecated)
-
-## Purpose
-
-Distills registered wiki source files into the three-layer RLM summary structure
-inside `{wiki_root}/rlm/{concept}/`. Delegates work to the **cheapest available
-LLM CLI** — never a local Ollama server.
-
-## Cheap-Model Fallback Chain (Strict)
-
-```
-1. copilot CLI available?  → use gpt-5-mini        (fastest, Paid - AI Credits)
-2. claude CLI available?   → use claude-haiku-4-5  (fallback, Paid)
-3. gemini CLI available?   → use gemini-3-flash-preview (final fallback, Paid)
-4. none found              → exit with instructions
-
-```
-
-> `rlm-distill-ollama` is fully deprecated. Only `rlm-distill-agent` pointing
-> at cheap cloud models is supported.
-
-## Output: Three-Layer RLM Structure
-
-```
-{wiki_root}/rlm/{concept}/
-  summary.md    ← 1-5 sentence distilled summary
-  bullets.md    ← key idea bullets (6-10 points)
-  deep.md       ← full multi-pass distillation
-```
-
-## Usage
-
-### Distill all stale wiki nodes
+## Verification
 ```bash
-python ./scripts/distill_wiki.py --wiki-root /path/to/wiki-root
+# Verify distillation with dry run
+python3 plugins/obsidian-wiki-engine/scripts/distill_wiki.py --wiki-root <path> --dry-run
+
+# Audit skill compliance
+python3 plugins/agent-scaffolders/scripts/audit_skill.py plugins/obsidian-wiki-engine/skills/obsidian-rlm-distiller --mode source
 ```
 
-### Distill one named source
-```bash
-python ./scripts/distill_wiki.py --wiki-root /path/to/wiki-root --source arch-docs
-```
-
-### Force engine override
-```bash
-python ./scripts/distill_wiki.py --wiki-root /path/to/wiki-root --engine claude
-python ./scripts/distill_wiki.py --wiki-root /path/to/wiki-root --engine gemini
-python ./scripts/distill_wiki.py --wiki-root /path/to/wiki-root --engine copilot
-```
-
-### Use shared .agent/learning/ cache (colocates with rlm-factory)
-```bash
-python ./scripts/distill_wiki.py --wiki-root /path/to/wiki-root \
-    --rlm-cache-dir /path/to/project/.agent/learning/rlm_wiki_cache
-```
-
-### Dry run
-```bash
-python ./scripts/distill_wiki.py --wiki-root /path/to/wiki-root --dry-run
-```
-
-## Engine Detection Logic
-
-`distill_wiki.py` calls `shutil.which()` for each CLI in priority order.
-The first one found and authenticated is used for the entire batch:
-
-```python
-ENGINE_PRIORITY = [
-    ("copilot", "gpt-5-mini"),
-    ("claude",  "claude-haiku-4-5"),
-    ("gemini",  "gemini-3-flash-preview"),
-]
-```
-
-## RLM Cache Storage
-
-`distill_wiki.py` writes summaries directly into its own RLM cache directory.
-No cross-plugin script execution — instead, inter-plugin coordination routes through agent skill delegation.
-
-Default cache: `{wiki-root}/rlm/{concept}/`
-
-To colocate with rlm-factory under `.agent/learning/`, pass `--rlm-cache-dir`:
-```bash
-python ./scripts/distill_wiki.py --wiki-root /path/to/wiki-root \
-    --rlm-cache-dir /path/to/project/.agent/learning/rlm_wiki_cache
-```
-
-The cache location is determined by configuration in `.agent/learning/rlm_profiles.json`
-(the `cache` key of the wiki profile) — not by hard-coded cross-plugin paths.
-
-## When to Use
-
-- After `/wiki-ingest` populates new wiki nodes
-- When RLM summaries are missing or stale
-- Before running `/wiki-query` for optimal recall
-- As part of the `/wiki-rebuild` full pipeline
-
-## Related Scripts
-
-- `distill_wiki.py` — cheap-model fallback orchestrator
-- `raw_manifest.py` — `WikiSourceConfig` loader
-- `audit.py` — identifies stale/missing RLM summaries
+## References
+- [wiki-distillation-guide.md](references/wiki-distillation-guide.md) - Summary schemas, cache colocation, and runner configurations.

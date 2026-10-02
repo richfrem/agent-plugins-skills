@@ -1,1 +1,1 @@
-../../../references/acceptance-criteria.md
+../../../references/learning-loop-acceptance-criteria.md

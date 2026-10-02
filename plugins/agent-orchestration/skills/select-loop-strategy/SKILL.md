@@ -1,93 +1,67 @@
 ---
 name: select-loop-strategy
 plugin: agent-orchestration
-description: "Selects the optimal agent orchestration or looping strategy for a given task using a deterministic decision tree. Distinguishes between solo discovery, dual-loop delegation, adversarial review, parallel swarms, meta-learning, and deterministic graph-state machines."
+description: Selects the optimal agent orchestration topology using a deterministic 6-gate decision tree.
 allowed-tools: Read, Bash
 ---
 
-# Select Loop Strategy: Orchestration Pattern Decision Tree
+# Select Loop Strategy (`select-loop-strategy`)
 
-Provides a deterministic decision framework to help agents and developers select the right execution topology for any given software engineering, research, or system evolution task.
+Deterministic decision framework to select the right execution topology for any engineering or research task.
 
----
+## Contents
 
-## The Master Decision Tree
+- [Constraints](#constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Pattern Comparison](#pattern-comparison)
+- [Verification](#verification)
+- [References](#references)
 
-Evaluate your task against the following gates in order:
+## Constraints
 
-```
-[Incoming Task / Trigger]
-    │
-    ▼
-1. Does the task require strict human approval gates, formal state tracking, 
-   transactional worktree isolation, or automatic rollbacks on test failure?
-   ├─ YES ──▶ Pattern 7: graph-execution (Deterministic State Machine)
-   └─ NO  ──▶ continue
-    │
-    ▼
-2. Can the work be partitioned into 10+ independent, non-overlapping items 
-   that execute simultaneously with zero shared state?
-   ├─ YES ──▶ Pattern 4: agent-swarm (Parallel Fan-Out)
-   └─ NO  ──▶ continue
-    │
-    ▼
-3. Is the primary requirement adversarial critique, security analysis, 
-   or multi-perspective red-teaming until an explicit "Approved" verdict?
-   ├─ YES ──▶ Pattern 2: red-team-review (Generator / Critic Feedback)
-   └─ NO  ──▶ continue
-    │
-    ▼
-4. Does the task involve unguided friction discovery, automated hypothesis 
-   testing, and headless benchmark evaluation over long horizons?
-   ├─ YES ──▶ Pattern 5: triple-loop-learning (Meta-Learning System)
-   └─ NO  ──▶ continue
-    │
-    ▼
-5. Does the task require separating strategy/git management (Outer Loop) 
-   from tactical coding/test execution (Inner Loop)?
-   ├─ YES ──▶ Pattern 3: dual-loop (Hierarchical Delegation)
-   │          (Optionally use co-pilot-loop for Claude + Gemini Flash Low pairing)
-   └─ NO  ──▶ continue
-    │
-    ▼
-6. Is this self-directed research, documentation, or local exploratory discovery 
-   where the agent works autonomously in a single context window?
-   └─ YES ──▶ Pattern 1: learning-loop (Single-Agent Cognitive Continuity)
+- **Preserve skill identities**: Route by intent without altering skill boundaries.
+- **Fail safe**: If the task requires human gates or rollbacks, always choose `graph-execution`.
+- **Zero tool leakage**: Delegated inner workers must operate under tool and git restrictions.
+
+## Quick start
+
+```bash
+# Evaluate topology selection against test fixtures
+pytest plugins/agent-orchestration/tests/test_loop_strategies.py
 ```
 
----
+## Workflow
 
-## Pattern Comparison Matrix
+Evaluate task characteristics sequentially:
+1. **Approval Gates & Rollbacks?** -> `graph-execution` (State machine, receipts, worktrees).
+2. **10+ Independent Bulk Tasks?** -> `agent-swarm` (Concurrent workers, zero shared state).
+3. **Adversarial Critique Required?** -> `red-team-review` (Generator + critic until approved).
+4. **Autonomous Meta-Learning?** -> `triple-loop-learning` (Friction logging + headless evals).
+5. **Supervisor / Coding Sub-Agent?** -> `dual-loop` (or `co-pilot-loop` for fast pairing).
+6. **Single-Agent Research?** -> `learning-loop` (Autonomous single-context loop).
 
-| Pattern | Skill | Core Mechanics | Primary Use Case | Risk / Tradeoff |
-|---|---|---|---|---|
-| **1. Solo Learning** | `learning-loop` | Single context, orientation $\rightarrow$ synthesis $\rightarrow$ closure | Research, documentation, local spikes | Risk of context drift on large tasks |
-| **2. Adversarial Review** | `red-team-review` | Generator + multi-persona critics, convergence limit | Security audits, architectural decisions | High token cost; multi-round latency |
-| **3. Dual-Loop** | `dual-loop` | Outer Director (Git) $\leftrightarrow$ Inner Worker (No Git) | Features, bugs, bounded code changes | Inner agent must wait for manager review |
-| **4. Parallel Swarm** | `agent-swarm` | Partitioned jobs, concurrent batch worker runners | Bulk migrations, mass doc generation | Merge conflicts if tasks share dependencies |
-| **5. Meta-Learning** | `triple-loop-learning` | Friction logging $\rightarrow$ hypothesis $\rightarrow$ headless eval | Autonomous system self-optimization | Requires objective automated test harness |
-| **6. Fast-Tier Pair** | `co-pilot-loop` | Claude (Director) + Gemini Flash Low (Worker) | Cost-sensitive rapid prototyping | Requires multi-CLI tooling configuration |
-| **7. Graph Execution** | `graph-execution` | Deterministic DAG state transitions, receipts, rollbacks | High-assurance self-evolution, safe migrations | Highest structural rigor; state files required |
+## Pattern Comparison
 
----
+| Pattern | Skill | Core Mechanics | Primary Use Case |
+|---|---|---|---|
+| **Solo Learning** | `learning-loop` | Single context, discovery -> synthesis | Research, documentation, spikes |
+| **Adversarial** | `red-team-review` | Generator + multi-persona critics | Security audits, architecture |
+| **Dual-Loop** | `dual-loop` | Outer Director <-> Inner Worker | Feature implementation, bug fixes |
+| **Fast Pair** | `co-pilot-loop` | Claude (Director) + Flash Low | Cost-sensitive prototyping |
+| **Parallel Swarm** | `agent-swarm` | Concurrent batch worker runners | Bulk migrations, mass doc updates |
+| **Meta-Learning** | `triple-loop-learning` | Friction logging -> headless eval | Autonomous system optimization |
+| **Graph Execution** | `graph-execution` | Deterministic DAG & rollback | High-assurance migrations |
 
-## When to Use Loops vs. Graphs vs. Swarms
+## Verification
 
-### Use a **Loop** (`learning-loop`, `dual-loop`, `red-team-review`) when:
-- The task is iterative and converges on quality through refinement.
-- State is naturally maintained in conversational context or a task packet.
-- Failure simply means "try another edit or refine the prompt."
+```bash
+# Run loop strategy routing tests
+pytest plugins/agent-orchestration/tests/test_loop_strategies.py -v
+```
 
-### Use a **Graph** (`graph-execution`) when:
-- The task involves irreversible or high-risk filesystem mutations.
-- Human authorization is non-negotiable before execution or commit.
-- You require **asymmetric persistence** (discarding bad code while saving learnings).
-- Cryptographic proof receipts (`EVO-INTEGRITY-...`) are needed to verify execution integrity.
+## References
 
-### Use a **Swarm** (`agent-swarm`) when:
-- High volume of homogeneous items (e.g., 50 files to convert or test).
-- Zero shared dependencies or ordering requirements between tasks.
-
----
-
-See [`references/PATTERN_GUIDE.md`](../references/PATTERN_GUIDE.md) for full pattern comparisons and trade-off matrices.
+- [PATTERN_GUIDE.md](references/PATTERN_GUIDE.md) — Comprehensive comparative pattern guide.
+- [acceptance-criteria.md](references/acceptance-criteria.md) — Verification criteria and contracts.
+- [fallback-tree.md](references/fallback-tree.md) — Escalation paths for ambiguous routing.

@@ -2,6 +2,11 @@
 
 Extracted from SKILL.md per Layer-1 procedural-core line budget (issue #551).
 
+## Contents
+- [Phase 3.5 — Substrate Completeness Check](#phase-35--os-init-substrate-completeness-check-full-commands)
+- [Consumer Guidance on Plugin Drift & Gaps](#consumer-guidance-on-plugin-drift--gaps)
+- [Phase 5 — Self-Assessment Survey](#phase-5--self-assessment-survey-full-detail)
+
 ## Phase 3.5 — os-init Substrate Completeness Check (full commands)
 
 Verify the scaffolding artifacts `os-init --retrofit` is responsible for creating. This

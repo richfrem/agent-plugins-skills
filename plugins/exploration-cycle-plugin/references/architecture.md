@@ -1,5 +1,12 @@
 # Exploration Cycle Plugin Architecture Reference
 
+## Contents
+- [Intent](#intent)
+- [Phase A Implementation](#phase-a-implementation-current)
+- [Next Capability Groups](#next-capability-groups-phase-b)
+- [Evaluation Expectations](#evaluation-expectations)
+- [Canonical Artifact Conventions](#canonical-artifact-conventions)
+
 This plugin is the implementation boundary for the exploration-cycle system. The architecture and spec documents are maintained within this plugin's `references/` directory.
 
 ## Intent

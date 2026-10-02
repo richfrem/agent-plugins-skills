@@ -9,81 +9,69 @@ argument-hint: "[rule-name or constraint-intent]"
 allowed-tools: Bash, Read, Write
 ---
 
-# create-rule: Universal Agent Rule Scaffolder
+# Create Rule (`create-rule`)
 
-Creates lean, invariant-driven markdown rules (`.agent/rules/<rule-name>.md` or `plugins/<plugin>/rules/<rule-name>.md`) adhering to strict agentic engineering standards.
+Scaffolds lean, invariant-driven markdown rules (`plugins/<plugin>/rules/<rule-name>.md`) adhering to agentic engineering standards.
 
----
+## Contents
 
-## The 5 Invariants of Agent Rules
+- [Constraints](#constraints)
+- [Quick start](#quick-start)
+- [Template](#template)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
 
-Rules are loaded into context continuously or matched across file interactions. Every line consumes token budget. Every rule must satisfy:
+## Constraints
 
-1. **Strict Invariants, Not Narrative**: State hard constraints (`MUST`, `NEVER`, `ALWAYS`), forbidden actions, and deterministic verification commands.
-2. **Zero Historical Fluff or Post-Mortems**:
-   - ❌ NO session dates (`2026-08-18`), incident stories ("Task 7 failed because..."), commit hashes, or session diaries.
-   - ❌ NO user directory references (`/Users/...`, `C:\...`).
-   - ❌ NO ADR historical changelog citations.
-3. **Universally Applicable**: Rules must be fully portable and valid when installed into *any* external downstream repository. No repo-specific domain files (`ta-sweep-results.json`, `portfolio.json`).
-4. **High Information Density**:
-   - Target **30–70 lines**. If a rule exceeds 80 lines, strip background exposition or split concerns.
-5. **Rule vs. Skill Distinction**:
-   - **Rules** define *hard constraints, invariants, and guardrails* (passive policy).
-   - **Skills** define *executable, multi-step procedures and interactive interviews* (active execution).
+- **Strict invariants**: State hard constraints (`MUST`, `NEVER`, `ALWAYS`), forbidden actions, and deterministic verifiers.
+- **Zero historical fluff**: No session dates, incident post-mortems, commit hashes, or absolute machine paths (`/Users/...`).
+- **High information density**: Target 30–70 lines. Strip background exposition.
+- **Rules vs Skills**: Rules define passive constraints and policies; skills define active multi-step procedures.
 
----
+## Quick start
 
-## Standard Rule Template
+```bash
+# Scaffold a new rule in target plugin rules directory
+touch plugins/<plugin-name>/rules/<rule-name>.md
+```
+
+## Template
 
 ```markdown
 ---
 trigger: always_on | on_match
-description: Concise one-sentence summary of the constraint and why it exists.
+description: Concise summary of the constraint and why it exists.
 globs: ["**/*"]
 ---
 
 # Rule Title
 
 ## The Law
-
-> **Core invariant stated in 1-2 sentences.** Every agent action touching [Scope]
-> MUST comply with this invariant before execution.
+> **Core invariant stated in 1-2 sentences.** Every action MUST comply.
 
 ## Invariants & Forbidden Actions
-
 1. **[Invariant 1]**: Concrete MUST / NEVER constraint.
-2. **[Invariant 2]**: Specific forbidden action and failure condition.
-3. **[Invariant 3]**: Deterministic verification requirement.
-
-## Verification & Recovery
-
-```bash
-# Deterministic verification command
-<verification-command>
+2. **[Invariant 2]**: Specific forbidden action.
 ```
-
-- If verification fails: <immediate rollback or corrective action>.
-```
-
----
 
 ## Workflow
 
-### 1. Discovery & Intent
-Identify:
-- **Rule Name**: lowercase-hyphen slug (e.g., `destructive-action-guard`).
-- **Core Invariant**: What is forbidden? What must be verified?
-- **Scope/Trigger**: Is it `always_on` or scoped to file patterns via `globs`?
-- **Target Location**: Canonical source in `plugins/<plugin>/rules/` or local repo `.agent/rules/`.
+1. **Discovery**: Determine slug, invariant, trigger scope (`always_on` or `globs`), and location (`plugins/<plugin>/rules/`).
+2. **Scaffold**: Populate YAML frontmatter and invariant rules following the canonical template.
+3. **Register Symlinks**: Register rule symlink via `symlink_manager.py create`.
+4. **Synchronize**: Run `python3 plugins/cli-agents/scripts/sync_instruction_files.py` to update root instructions.
 
-### 2. Validation Gate
-Before writing the rule, verify:
-- [ ] Are all dates (`YYYY-MM-DD`) and incident names omitted?
-- [ ] Are all personal usernames and absolute machine paths omitted?
-- [ ] Is the entire text under 80 lines?
-- [ ] Are constraints expressed as actionable invariants with verification commands?
+## Verification
 
-### 3. Execution & Symlink Registration
-- Write canonical rule to `plugins/<plugin>/rules/<rule-name>.md`.
-- Symlink to `.agent/rules/<rule-name>.md` via `symlink_manager.py`.
-- If modifying rule mirrors across `CLAUDE.md`, `AGENTS.md`, `GEMINI.md`, and `.github/copilot-instructions.md`, sync via `python3 plugins/cli-agents/scripts/sync_instruction_files.py`.
+```bash
+# Verify rule contains zero dates or absolute machine paths
+grep -E "202[0-9]-[0-9]{2}-[0-9]{2}|/Users/|/home/" plugins/<plugin>/rules/<rule-name>.md && echo "FAIL" || echo "PASS"
+# Verify rule line budget <= 80 lines
+wc -l plugins/<plugin>/rules/<rule-name>.md
+```
+
+## References
+
+- [acceptance-criteria.md](references/acceptance-criteria.md) — Acceptance gates and structural requirements for rules.
+- [fallback-tree.md](references/fallback-tree.md) — Fallback escalation protocol for rule authoring.

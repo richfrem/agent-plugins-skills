@@ -1,5 +1,12 @@
 # Dispatch Strategies
 
+## Contents
+- [Strategy Selection](#strategy-selection)
+- [Task Complexity Guide](#task-complexity-guide)
+- [Token Efficiency & Sub-Agents](#token-efficiency-cheap-sub-agents-for-qa)
+- [Fallback Behavior](#fallback-behavior)
+- [Dispatch Reference by Environment](#dispatch-reference-by-environment)
+
 This document defines how the exploration-cycle orchestrator delegates work to sub-agents and models,
 prioritizing token efficiency. The core principle: **the orchestrator (expensive model, large context)
 should only do coordination work — delegate everything else to the cheapest model capable of that task.**

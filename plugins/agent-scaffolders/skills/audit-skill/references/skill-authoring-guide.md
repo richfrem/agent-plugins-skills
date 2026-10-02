@@ -1,0 +1,1 @@
+../../../references/skill-authoring-guide.md

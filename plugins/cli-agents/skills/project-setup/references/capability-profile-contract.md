@@ -1,0 +1,1 @@
+../../../references/capability-profile-contract.md

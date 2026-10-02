@@ -1,1 +1,1 @@
-../../../references/acceptance-criteria.md
+../../../references/agent-swarm-acceptance-criteria.md

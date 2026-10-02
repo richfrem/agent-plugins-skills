@@ -1,42 +1,35 @@
 ---
 name: {name}
 description: {description}
-disable-model-invocation: false
 ---
 
 # {title_name}
-[See acceptance criteria](references/acceptance-criteria.md)
 
-## Discovery Phase
-<!-- Add questions here to gather requirements, or remove section if fully autonomous -->
+{purpose}
 
-## Recap
-<!-- Add confirmation gate here if gathering complex requirements. E.g., "Does this look right? (yes / adjust)" -->
+## Contents
 
-## Execution
-This skill implements the requested functionality. When invoked, you MUST execute the provided Python determinism script instead of attempting to solve the task using raw bash or javascript logic.
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
 
-**Usage:**
-```bash
-python scripts/execute.py --help
-```
+## Quick start
 
-## Baseline Validation
-Before optimizing behavior, run one baseline evaluation and log it in `evals/results.tsv`.
+Identify the requested outcome and required inputs. Reuse information already supplied.
 
-## Iteration Loop
-When iterating, follow a disciplined loop:
-1. Change one dominant variable per iteration.
-2. Re-run evaluations.
-3. Mark the attempt as `keep` or `discard`.
-4. If the run crashes or times out, log the failure and continue from the last known good state.
+## Workflow
 
-## Output
-Always conclude execution with a Source Transparency Declaration explicitly listing what was queried to guarantee user trust:
-**Sources Checked:** [list]
-**Sources Unavailable:** [list]
+1. Confirm the task falls within the description's scope.
+2. Apply the task-specific procedure and constraints supplied by the author.
+3. Produce the requested result and verify it against observable acceptance criteria.
 
-## Next Actions
-<!-- Suggest logical follow-up skills here. For example: -->
-- Use `./scripts/benchmarking/run_loop.py --results-dir evals/experiments` for repeatable improvement loops.
-- Suggest the user run `audit-plugin` to verify the generated artifacts.
+## Verification
+
+Create at least three representative task scenarios before expanding the instructions.
+Keep routing cases in `evals/evals.json` and task-success cases in `evals/task-success.json`.
+Compare results with the baseline using the models intended for this skill.
+
+<!-- Author: replace general workflow steps with task-specific knowledge. Add critical
+constraints before Quick start when needed. Link required references directly and state
+when to read them; add early contents to reference files over 100 lines. Omit this comment
+and unused sections before publishing. -->

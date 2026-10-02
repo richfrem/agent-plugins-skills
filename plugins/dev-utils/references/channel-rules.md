@@ -4,6 +4,14 @@ Writing rules and hard constraints by channel. Load the relevant section for
 the channel the user has specified (or inferred from context). Apply all
 constraints in that section before returning output.
 
+## Contents
+- [LinkedIn (Posts and Articles)](#linkedin-posts-and-articles)
+- [Email (Professional)](#email-professional)
+- [Blog / Long-Form](#blog--long-form)
+- [Twitter / X (Posts and Threads)](#twitter--x-posts-and-threads)
+- [Slack / Internal Messaging](#slack--internal-messaging)
+- [Internal Memo / Announcement](#internal-memo--announcement)
+
 ---
 
 ## LinkedIn (Posts and Articles)

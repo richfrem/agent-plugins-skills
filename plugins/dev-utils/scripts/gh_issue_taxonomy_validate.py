@@ -29,6 +29,10 @@ def load_taxonomy(json_path: Optional[str] = None) -> Dict:
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     real_plugin_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
     candidates = [
+        os.path.join(base_dir, "references", "issue-taxonomy.json"),
+        os.path.join(real_plugin_dir, "references", "issue-taxonomy.json"),
+        os.path.join(base_dir, "skills", "github-issue-agent", "references", "issue-taxonomy.json"),
+        os.path.join(real_plugin_dir, "skills", "github-issue-agent", "references", "issue-taxonomy.json"),
         os.path.join(base_dir, "issue-taxonomy.json"),
         os.path.join(base_dir, "skills", "github-issue-agent", "issue-taxonomy.json"),
         os.path.join(real_plugin_dir, "skills", "github-issue-agent", "issue-taxonomy.json"),

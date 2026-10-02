@@ -15,27 +15,48 @@ allowed_tools:
   - list_dir
 ---
 
-# GitHub Issue Prioritizer (`github-issue-prioritizer`)
+# GitHub Issue Prioritizer (github-issue-prioritizer)
 
-> **Routing Directive:** USE ONLY when calculating issue priority ranks (P0-P3), updating priority labels (`priority:P0`..`P3`), or generating payload updates for GitHub Projects v2 custom fields. DO NOT USE for friction logging (use `github-issue-agent` instead) or task promotion (use `github-issue-backlog-agent` instead).
+Computes deterministic priority ranks (P0-P3) for GitHub issues from friction tiers, recurrence frequency, and blockages.
 
-The `github-issue-prioritizer` skill computes priority ranks from friction tiers, work blockages, and occurrence frequencies to maintain an up-to-date queue of repository tasks.
+## Contents
+- [Critical Constraints](#critical-constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
 
----
+## Critical Constraints
+- **Scope Boundary**: USE ONLY for calculating priority ranks (P0-P3) and syncing priority labels/fields. DO NOT USE for logging issues (use `github-issue-agent`).
+- **Deterministic Formula**: Calculate priority ranks strictly using the weighted matrix in `priority-matrix.md` without manual override inflation.
+- **Dry-Run Default**: Preview calculated scores and proposed label diffs before mutating GitHub metadata.
+- **Rate-Limit Hygiene**: Batch queries when prioritizing bulk backlogs to avoid secondary GitHub API limits.
 
-## Quick Start & Usage
-
-- **Helper Script:** `plugins/dev-utils/skills/github-issue-prioritizer/scripts/gh_issue_prioritize.py`
+## Quick start
 
 ```bash
-# Prioritize an issue via CLI:
+# Calculate priority score and preview update (dry-run)
 python3 plugins/dev-utils/skills/github-issue-prioritizer/scripts/gh_issue_prioritize.py --issue 42
+
+# Execute live priority label and Projects v2 update
+python3 plugins/dev-utils/skills/github-issue-prioritizer/scripts/gh_issue_prioritize.py --issue 42 --execute
 ```
 
----
+## Workflow
 
-## Progressive Disclosure & References
+1. **Phase 1: Issue Inspection**: Retrieve issue metadata, friction tier labels (`tier:*`), and linked blocker relationships.
+2. **Phase 2: Score Calculation**: Evaluate score via matrix formula considering tier severity, recurrence count, and pipeline blocks.
+3. **Phase 3: Payload Preview**: Review proposed priority designation (`priority:P0` through `priority:P3`) in preview mode.
+4. **Phase 4: Label & Field Sync**: Apply the resulting priority label and update GitHub Projects v2 fields using `--execute`.
 
-- **Priority Matrix & API**: [references/priority-matrix.md](references/priority-matrix.md) — complete ranking logic and Python API interface.
-- **Acceptance Criteria**: [references/acceptance-criteria.md](references/acceptance-criteria.md) — verification contracts and test expectations.
-- **Fallback Protocol**: [references/fallback-tree.md](references/fallback-tree.md) — missing label defaults and GraphQL fallback procedures.
+## Verification
+
+```bash
+# Audit skill compliance
+python3 plugins/agent-scaffolders/scripts/audit_skill.py plugins/dev-utils/skills/github-issue-prioritizer --mode source
+```
+
+## References
+- [priority-matrix.md](references/priority-matrix.md) - Ranking logic, weighting formula, and Python API.
+- [acceptance-criteria.md](references/acceptance-criteria.md) - Verification contracts and test criteria.
+- [fallback-tree.md](references/fallback-tree.md) - Missing label defaults and GraphQL fallback procedures.

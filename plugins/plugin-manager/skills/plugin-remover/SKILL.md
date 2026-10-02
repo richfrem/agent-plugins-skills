@@ -5,34 +5,54 @@ description: Interactively select and uninstall agent plugins and skills from th
 allowed-tools: Bash, Read, Write
 ---
 
-# Plugin Remover
+# Plugin Remover (plugin-remover)
 
 Safely uninstalls plugins from agent environments and synchronizes tracking registries.
-Removal reads both legacy `artifacts` entries and the component-level ownership
-manifest, so disabled and enabled assets are fully removed together.
 
-## Quick Start
+## Contents
+- [Critical Constraints](#critical-constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
 
-### 1. Interactive Removal (Recommended)
-Launch the interactive removal menu:
+## Critical Constraints
+- **Scope Boundary**: Dedicated to uninstalling plugins. For installing or refreshing plugins, use `plugin-installer` or `plugin-syncer`.
+- **Dual Manifest Scrubbing**: Reads both legacy `artifacts` lists and ownership manifests to ensure complete removal of enabled and disabled assets.
+- **Destructive Action Safety**: Never remove untracked project files outside `.agents/` and registered environment symlinks.
+- **Confirmation Prompts**: Prompt for confirmation before wholesale deletion unless `--yes` is explicitly specified.
+
+## Quick start
+
 ```bash
-python3 scripts/plugin_remove.py
+# Interactive removal menu
+python3 plugins/plugin-manager/scripts/plugin_remove.py
+
+# Remove a specific plugin non-interactively
+python3 plugins/plugin-manager/scripts/plugin_remove.py --plugins <plugin-name> --yes
+
+# Remove all tracked plugins and clean orphaned artifacts
+python3 plugins/plugin-manager/scripts/plugin_remove.py --all --yes
 ```
 
-### 2. Headless Specific Removal
-Remove a specific plugin without prompting:
+## Workflow
+
+1. **Phase 1: Target Identification**: Select targeted plugin(s) interactively or pass `--plugins <name>` arguments.
+2. **Phase 2: Inventory Resolution**: Consult `.agents/ownership/<plugin>.json` and `.agents/plugin-sources.json` to map all deployed artifacts.
+3. **Phase 3: Artifact & Symlink Pruning**: Delete target environment symlinks (`.claude/`, `.gemini/`) and purge files in `.agents/`.
+4. **Phase 4: Registry Reconciliation**: Remove plugin entries from `plugin-sources.json` and delete the ownership manifest.
+
+## Verification
+
 ```bash
-python3 scripts/plugin_remove.py --plugins <plugin-name> --yes
+# Verify no broken symlinks remain
+python3 plugins/dev-utils/scripts/symlink_manager.py audit
+
+# Audit skill compliance
+python3 plugins/agent-scaffolders/scripts/audit_skill.py plugins/plugin-manager/skills/plugin-remover --mode source
 ```
 
-### 3. Full Cleanup (Remove All)
-Remove all tracked plugins and clean orphaned artifacts:
-```bash
-python3 scripts/plugin_remove.py --all --yes
-```
-
-## Progressive Disclosure & References
-
-- **CLI Reference & Cleanup Protocol**: See `references/remover-cli-guide.md` for registry scrubbing rules and orphan cleanup behavior.
-- **Acceptance Criteria**: See `references/acceptance-criteria.md` for structural invariants.
-- **Fallback Procedures**: See `references/fallback-tree.md` for fallback and recovery trees.
+## References
+- [remover-cli-guide.md](references/remover-cli-guide.md) - Removal flags, orphan pruning behavior, and registry scrubbing rules.
+- [acceptance-criteria.md](references/acceptance-criteria.md) - Uninstallation invariants and safety requirements.
+- [fallback-tree.md](references/fallback-tree.md) - Fallback procedures and error recovery trees.

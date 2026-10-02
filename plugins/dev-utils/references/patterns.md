@@ -3,6 +3,14 @@
 Full reference of structural and voice patterns that make writing read as
 synthetic. Use this during Phase 1 (Diagnose) and Phase 2 (Fingerprint Scan).
 
+## Contents
+- [How to Use](#how-to-use)
+- [Structural Patterns](#structural-patterns)
+- [Voice Patterns (Hollow Filler)](#voice-patterns-hollow-filler)
+- [AI Adjectives (Vague Tech Vocabulary)](#ai-adjectives-vague-tech-vocabulary)
+- [Enthusiasm Without Specificity](#enthusiasm-without-specificity)
+- [Structural Grammar Habits](#structural-grammar-habits)
+
 ## How to Use
 
 During rewriting, scan for any pattern in the Structural or Voice tables. If

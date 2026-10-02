@@ -4,6 +4,12 @@ This registry tracks technical debt, process friction, and workarounds.
 Entries must be resolved, aged, or escalated. 
 Do not delete resolved items; set `Status: RESOLVED` to maintain history.
 
+## Contents
+- [Tier 1 (Friction): Duplicated Hardcoded Domain Literals](#tier-1-friction-duplicated-hardcoded-domain-literals-across-control-plane-files)
+- [Tier 3 (Structural): Controller Verifies Wrong Directory](#tier-3-structural-controller-verifies-and-commits-against-the-wrong-directory)
+- [Tier 0 (Friction): Missing Domain Query CLI Primitives](#tier-0-friction-missing-domain-query-cli-primitives-leading-to-ad-hoc-inline-sql)
+
+
 | 2026-09-20 | auth-ciba-increment-b | Review-selection runtime/model/effort answers are free text; `list-review-options` helps but nothing rejects a mistyped model. | Profile-driven validation (choices from context/agent-capability-profile.json). | See `references/map-debt.md` `DEBT-20260920-REVIEW-SELECTION-PROFILE-VALIDATION` | Tier 1 | 0 | OPEN |
 
 | 2026-09-19 | auth-ciba-increment-b | Trigger rejection's transition_violations INSERT is rolled back with the aborted transaction, so no violation row survives (U2 fixed only the message). | Write the violation row out-of-transaction on a separate connection after rollback. | See `references/map-debt.md` `DEBT-20260919-TRANSITION-VIOLATIONS-NOT-WRITTEN-ON-ROLLBACK` | Tier 2 | 0 | RESOLVED |

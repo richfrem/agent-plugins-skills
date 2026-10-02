@@ -1,1 +1,1 @@
-../../../references/acceptance-criteria.md
+../../../references/convert-mermaid-acceptance-criteria.md
