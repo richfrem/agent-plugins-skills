@@ -18,7 +18,8 @@ Supported Object Types:
 CLI Arguments:
     --dry-run: Simulate cleanup without deleting.
     --cleanup-only: Run cleanup analysis only, skip installation.
-    --prune-orphans: Delete orphaned dirs under .agents/skills/ (default: report only).
+    --prune-orphans: Delete orphaned dirs under .agents/skills/ that an ownership manifest claims
+        (never skills absent from every manifest). Default: report only.
 
 Key Input Dependencies:
     plugin-sources.json         — authoritative registry of all installed plugins and their sources
@@ -295,15 +296,37 @@ def _find_unexpected_skill_dirs(root: Path, registered_plugins: set) -> list:
     return unexpected
 
 
+def _ownership_claimed_skills(root: Path) -> set:
+    """Skill dir names listed as artifacts in ANY .agents/ownership/*.json manifest."""
+    claimed = set()
+    own_dir = root / ".agents" / "ownership"
+    if own_dir.is_dir():
+        for f in own_dir.glob("*.json"):
+            try:
+                data = json.loads(f.read_text(encoding="utf-8"))
+            except Exception:
+                continue
+            for art in data.get("artifacts", []):
+                parts = Path(art).parts
+                if len(parts) >= 3 and parts[0] == ".agents" and parts[1] == "skills":
+                    claimed.add(parts[2])
+    return claimed
+
+
 def _prune_orphaned_skill_dirs(root: Path, unexpected: list, dry_run: bool) -> list:
-    """Delete (or, in dry-run, list) the orphaned skill dirs; return the ones that remain."""
+    """Delete (or, in dry-run, list) orphaned skill dirs that an ownership manifest claims.
+
+    Dirs that no ownership manifest lists (a user's own skills) are never touched.
+    Returns the orphans that remain.
+    """
     prefix = "Orphaned skill directory: "
+    claimed = _ownership_claimed_skills(root)
     remaining = []
     for entry in unexpected:
         rel = entry[len(prefix):] if entry.startswith(prefix) else None
         target = (root / rel) if rel else None
         skills_dir = (root / ".agents" / "skills").resolve()
-        if target is None or target.parent.resolve() != skills_dir:
+        if target is None or target.parent.resolve() != skills_dir or target.name not in claimed:
             remaining.append(entry)
             continue
         if dry_run:
@@ -440,8 +463,9 @@ def main() -> None:
     parser.add_argument("--dry-run", action="store_true", help="Simulate without modifying files.")
     parser.add_argument("--cleanup-only", action="store_true", help="Run cleanup only, skip reinstall.")
     parser.add_argument("--prune-orphans", action="store_true",
-                        help="Delete skill dirs under .agents/skills/ that belong to no registered plugin "
-                             "(with --dry-run, list them only). Default: report only.")
+                        help="Delete orphaned skill dirs under .agents/skills/ that an .agents/ownership manifest "
+                             "claims but no registered plugin provides; skills in no manifest are never "
+                             "touched (with --dry-run, list only). Default: report only.")
     parser.add_argument("--no-prune", action="store_true", help="Skip post-sync component retention pruning.")
     args = parser.parse_args()
 
