@@ -1,1 +1,1 @@
-../../../references/acceptance-criteria.md
+../../../references/red-team-review-acceptance-criteria.md

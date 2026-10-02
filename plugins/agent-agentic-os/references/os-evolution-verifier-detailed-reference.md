@@ -4,6 +4,17 @@ Extracted from SKILL.md per Layer-1 procedural-core line budget (issue #551). Se
 for the core phase-by-phase procedure; this file holds the exact bash commands, output formats,
 scenario format, smoke tests, and gotchas.
 
+## Contents
+- [Phase 1 — Resolve Test Inputs](#phase-1--resolve-test-inputs-commands)
+- [Phase 2 — Dispatch os-architect](#phase-2--dispatch-os-architect-commands)
+- [Phase 3 — Artifact Verification](#phase-3--artifact-verification-commands)
+- [Phase 4 — Record Result](#phase-4--record-result-format)
+- [Phase 5 — Summary Report](#phase-5--summary-report-format-and-contract)
+- [Phase 6 — Persist to Experiment Log](#phase-6--persist-to-experiment-log-command)
+- [Scenario File Format](#scenario-file-format)
+- [Smoke Tests](#smoke-tests)
+- [Gotchas](#gotchas)
+
 ## Phase 1 — Resolve Test Inputs (commands)
 
 If invoked with `all`, find test scenarios:

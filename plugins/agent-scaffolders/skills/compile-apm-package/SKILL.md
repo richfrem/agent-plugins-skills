@@ -8,28 +8,48 @@ description: >-
 allowed-tools: Bash, Read, Glob
 ---
 
-# compile-apm-package Skill 📄
+# Compile APM Package (`compile-apm-package`)
 
-## Overview
-This skill generates merged context documents from APM primitives. This is primarily required for harnesses that consume a single authoritative file (like Gemini's `GEMINI.md`) rather than distributed skill directories.
+Compiles APM package primitives into top-level unified context documents (`AGENTS.md`, `CLAUDE.md`, `GEMINI.md`) for single-file context hosts.
 
-## 🚫 Non-Negotiables
-1. **Artifact Status** — Compiled files (`AGENTS.md`, etc.) are generated artifacts. NEVER edit them directly if a `.apm/` source tree exists.
-2. **Conditional Use** — Do not run compile if the user's harness (e.g., Claude Code, Copilot Chat) supports native directory-based skills.
-3. **Validation First** — Ensure the package is valid before merging primitives.
+## Contents
 
-## Decision Tree
-1. **Target supports directory-based skills?** -> Use `install-apm-package`.
-2. **Target needs top-level context?** (e.g., Gemini, Codex) -> Run `apm compile`.
-3. **Authoring shared context?** -> Use `apm compile` to verify how fragments merge into the final doc.
+- [Critical Constraints](#critical-constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
+
+## Critical Constraints
+
+1. **Artifact Status**: Compiled files (`AGENTS.md`, `GEMINI.md`) are generated outputs. Never edit compiled files directly when `.apm/` sources exist.
+2. **Conditional Compilation**: Do not compile if target harness supports native directory skills; use `install-apm-package` instead.
+3. **Pre-Compile Validation**: Verify package validity via validation scripts before compiling fragments into authoritative files.
+
+## Quick start
+
+Compile package primitives into the default top-level context document:
+
+```bash
+apm compile --verbose
+```
 
 ## Workflow
-1. Verify `apm.yml` existence.
-2. Execute `python scripts/validate_apm_package.py`.
-3. Identify target requirements.
-4. Run `apm compile [--target <slug>]`.
-5. Report the location of generated context files.
 
-## Anti-Patterns
-- **Unnecessary Compilation**: Running `apm compile` for a Claude Code project (redundant work).
-- **Direct Artifact Editing**: Fixing a typo in `GEMINI.md` instead of the source `.prompt.md`.
+1. **Verify Source**: Confirm `apm.yml` exists and package passes validation checks.
+2. **Identify Target**: Determine required client format (e.g. `--target gemini` for `GEMINI.md`, `--target codex` for `AGENTS.md`).
+3. **Execute Compile**: Run `apm compile [--target <slug>]`.
+4. **Report Outputs**: Display generated file paths and verify merged fragment completeness.
+
+## Verification
+
+Validate compiled document structure and freshness against source primitives:
+
+```bash
+python3 scripts/validate_apm_package.py --check-compiled
+```
+
+## References
+
+- [acceptance-criteria.md](references/acceptance-criteria.md) — Acceptance gates and compilation verification rules.
+- [fallback-tree.md](references/fallback-tree.md) — Fallback resolution for compilation errors and missing fragment mappings.

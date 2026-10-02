@@ -1,86 +1,63 @@
 ---
 name: hf-init
-plugin: huggingface-utils
-description: "Initialize HuggingFace integration - validates .env variables, tests API connectivity, and ensures the dataset repository structure exists. Use when onboarding a new project to HuggingFace or when credentials change."
+plugin: dev-utils
+description: Initialize HuggingFace integration - validates environment variables, tests API connectivity, and sets up dataset repository structure.
 allowed-tools: Bash, Read
 ---
 
-## Dependencies
+# HuggingFace Initialization (`hf-init`)
 
-This skill requires **Python 3.8+** and standard library only. No external packages needed.
+Sets up credentials, connectivity, and dataset repository structure for HuggingFace persistence.
 
-**To install this skill's dependencies:**
+## Contents
+
+- [Critical Constraints](#critical-constraints)
+- [Quick start](#quick-start)
+- [Required Environment Variables](#required-environment-variables)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
+
+## Critical Constraints
+
+1. **Secret Hygiene**: Tokens must be stored in shell profile (`~/.zshrc`), NEVER committed to `.env` or Git.
+2. **Repository Structure**: Enforces standard folder structure (`lineage/`, `data/`, `metadata/`).
+
+## Quick start
+
+Validate HuggingFace configuration without modifying remote repositories:
+
 ```bash
-pip-compile ./requirements.in
-pip install -r ./requirements.txt
+python3 scripts/hf_init.py --validate-only
 ```
-
-See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
-
----
-# HuggingFace Init (Onboarding)
-
-**Status:** Active
-**Author:** Richard Fremmerlid
-**Domain:** HuggingFace Integration
-
-## Purpose
-
-Sets up everything needed for HuggingFace persistence. Run this once when
-onboarding a new project, or whenever credentials change.
-
-## What It Does
-
-1. **Validates** required `.env` variables are set
-2. **Tests** API connectivity with the configured token
-3. **Ensures** the dataset repository exists on HF Hub
-4. **Creates** the standard folder structure (`lineage/`, `data/`, `metadata/`)
-5. **Uploads** the dataset card (README.md) with configurable discovery tags
 
 ## Required Environment Variables
 
 | Variable | Required | Description |
-|:---------|:---------|:------------|
-| `HUGGING_FACE_USERNAME` | ✅ Yes | Your HF username |
-| `HUGGING_FACE_TOKEN` | ✅ Yes | API token (set in `~/.zshrc`, NOT `.env`) |
-| `HUGGING_FACE_REPO` | ✅ Yes | Model repo name |
-| `HUGGING_FACE_DATASET_PATH` | ✅ Yes | Dataset repo name |
-| `HUGGING_FACE_TAGS` | ❌ No | Comma-separated discovery tags for dataset card |
-| `HUGGING_FACE_PROJECT_NAME` | ❌ No | Pretty name for dataset card heading |
-| `SOUL_VALENCE_THRESHOLD` | ❌ No | Moral/emotional charge filter (default: `-0.7`) |
+|---|---|---|
+| `HUGGING_FACE_USERNAME` | Yes | HuggingFace account username |
+| `HUGGING_FACE_TOKEN` | Yes | Hub API token (in shell profile) |
+| `HUGGING_FACE_REPO` | Yes | Model repository name |
+| `HUGGING_FACE_DATASET_PATH` | Yes | Dataset repository name |
+| `HUGGING_FACE_TAGS` | No | Comma-separated discovery tags |
+| `HUGGING_FACE_PROJECT_NAME` | No | Display name for dataset card |
 
-## Usage
+## Workflow
 
-### Validate Config
-```bash
-python ./hf_config.py
-```
+1. **Credential Validation**: Verify presence of required environment variables.
+2. **Connectivity Test**: Run API probe to confirm read/write token privileges.
+3. **Repository Setup**: Initialize standard directory structure (`lineage/`, `data/`, `metadata/`) on remote dataset.
+4. **Readiness Report**: Output connection status and configured paths.
 
-### Full Init (Validate + Create Structure + Dataset Card)
-```bash
-python ./hf_init.py
-```
+## Verification
 
-### Validate Only (No Changes)
-```bash
-python ./hf_init.py --validate-only
-```
-
-## Quick Setup
+Confirm configuration and authentication validity:
 
 ```bash
-# Token goes in shell profile (never committed):
-export HUGGING_FACE_TOKEN=hf_xxxxxxxxxxxxx
-
-# Project vars go in .env:
-HUGGING_FACE_USERNAME=<your-username>
-HUGGING_FACE_REPO=<your-model-repo>
-HUGGING_FACE_DATASET_PATH=<your-dataset-repo>
-
-# Optional customization:
-HUGGING_FACE_TAGS=reasoning-traces,cognitive-continuity,your-project-tag
-HUGGING_FACE_PROJECT_NAME=My Project Soul
-
-# Run init
-python ./hf_init.py
+python3 scripts/hf_config.py
 ```
+
+## References
+
+- [acceptance-criteria.md](references/acceptance-criteria.md) — Acceptance criteria and security validation for HuggingFace initialization.
+- [fallback-tree.md](references/fallback-tree.md) — Fallback protocol when credentials or variables are missing.

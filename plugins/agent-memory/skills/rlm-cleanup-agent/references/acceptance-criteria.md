@@ -1,1 +1,1 @@
-../../../references/acceptance-criteria.md
+../../../references/rlm-cleanup-agent-acceptance-criteria.md

@@ -1,1 +1,1 @@
-../fallback-tree.md
+../../../references/obsidian-markdown-mastery-fallback-tree.md

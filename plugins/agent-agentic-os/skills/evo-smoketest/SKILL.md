@@ -4,41 +4,51 @@ description: Converts temperatures between Celsius and Fahrenheit for the evolut
 version: 0.1.0
 ---
 
-# evo-smoketest
+# Evolution Smoke Test (`evo-smoketest`)
 
-A disposable fixture skill used only by the evolution end-to-end acceptance suite. It exists to give
-a real self-evolution cycle a controlled, reproducible routing gap to triage, fix (E2E-PASS), or fail
-three times (E2E-ROLLBACK). Do not deploy or depend on this skill in production.
+Disposable test fixture skill used exclusively by the self-evolution acceptance test harness to simulate reproducible routing gaps and verify E2E-PASS and E2E-ROLLBACK lifecycles.
 
-## Purpose
+## Contents
 
-Provide deterministic temperature-unit conversions so the router has a concrete capability to score
-against `evals/evals.json`.
+- [Critical Constraints](#critical-constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
 
-## When to use
+## Critical Constraints
 
-Use this skill when the user asks to convert a temperature between Celsius and Fahrenheit.
+1. **Test Fixture Only**: Do not deploy, rely upon, or publish this skill in production environments.
+2. **Deliberate Baseline Gap**: The description intentionally omits Kelvin. The baseline test case `kelvin_conversion` must genuinely fail during triage to exercise autonomous self-evolution.
+3. **Preserve Gap Mechanics**: Do not manually add Kelvin to frontmatter; the evolution harness exercises modifying this file autonomously.
 
-## Deliberate baseline gap (do not remove without updating evals)
+## Quick start
 
-The description above intentionally names only Celsius and Fahrenheit. `evals/evals.json`'s
-`kelvin_conversion` case ("How warm is 300 Kelvin?") shares zero 4+ char keywords with this
-description, so the routing evaluator genuinely MISSES it at baseline (not merely for a lower score --
-correctness map-debt 2026-08-31 found the original query, "Convert 300 Kelvin to Celsius.", already
-contained the word "Celsius" and so passed at baseline for the wrong reason, never exercising this gap
-at all).
+Run a temperature conversion calculation:
 
-- E2E-PASS: the evolution cycle closes the gap by broadening the `description` and `When to use`
-  section to include Kelvin (K = C + 273.15), which flips the failing eval case to green
-  (`evaluate.py --decision-only` exit 0) for the right reason -- because "kelvin" is now a matched
-  keyword, not by coincidence.
-- E2E-ROLLBACK: an intentionally wrong "fix" that does NOT add Kelvin fails the verifier three
-  times, forcing the controller into ROLLBACK.
+```bash
+# Example conversion: 100 Celsius to Fahrenheit
+python3 -c "print(f'{100 * 9/5 + 32:.1f}°F')"
+```
 
-## Procedure
+## Workflow
 
-1. Identify the source unit, target unit, and numeric value in the request.
-2. Apply the conversion:
+1. **Parse Input**: Identify source unit, target unit, and numeric value from user request.
+2. **Apply Conversion**:
    - Celsius to Fahrenheit: `F = C * 9/5 + 32`
    - Fahrenheit to Celsius: `C = (F - 32) * 5/9`
-3. Return the converted value rounded to one decimal place.
+3. **Format Result**: Return converted value rounded to one decimal place.
+
+## Verification
+
+Evaluate routing discrimination against the test evals:
+
+```bash
+python3 scripts/evaluate.py --skill . --decision-only
+```
+
+## References
+
+- [acceptance-criteria.md](references/acceptance-criteria.md) — Acceptance criteria for the end-to-end evolution harness.
+- [fallback-tree.md](references/fallback-tree.md) — Rollback expectations during forced 3-attempt failure simulations.
+- [transaction-manifest.json](references/transaction-manifest.json) — Transaction manifest template for the evolution test run.

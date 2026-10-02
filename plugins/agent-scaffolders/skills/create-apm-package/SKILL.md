@@ -8,52 +8,49 @@ description: >-
 allowed-tools: Bash, Read, Write
 ---
 
-# create-apm-package Skill 🏗️
+# Create APM Package (`create-apm-package`)
 
-## Overview
-This skill scaffolds a new APM-native package using the "Source in .apm/" pattern. It is used for greenfield projects where APM is the primary distribution format from day one.
+Scaffolds a greenfield APM-native package with source primitives isolated under `.apm/` and standard governance documentation.
 
-## 🚫 Non-Negotiables
-1. **Source in .apm/** — Primitives MUST be authored inside the `.apm/` directory.
-2. **Kebab-case** — Package names must be lowercase with hyphens.
-3. **No Overwrites** — Never overwrite an existing directory without explicit confirmation.
-4. **Governance Docs** — Every package must include `docs/governance.md`.
+## Contents
 
-## Decision Tree
-1. **New Package?** -> Proceed with `scripts/scaffold_apm.py`.
-2. **Existing Plugin?** -> Route to `convert-plugin-to-apm`.
-3. **Hybrid needed?** -> Use `--allow-hybrid` flag in scaffold script.
+- [Critical Constraints](#critical-constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
 
-## Generated Structure
-```text
-<package-name>/
-  apm.yml
-  README.md
-  .gitignore
-  .apm/
-    skills/
-    agents/
-    instructions/
-    prompts/
-    hooks/
-    mcp/
-    scripts/
-    tests/
-  docs/
-    governance.md
-    attribution.md
-    package-lifecycle.md
-  scripts/
-  tests/
-```
+## Critical Constraints
 
-## Validation Steps
-After scaffolding, always run:
+1. **Source in .apm/**: Greenfield primitives (skills, agents, prompts, hooks, mcp) must be authored inside `.apm/`.
+2. **Kebab-Case Naming**: Package names must be lowercase alphanumeric with hyphens.
+3. **No Overwrites**: Never overwrite existing directories without explicit user confirmation.
+4. **Mandatory Governance Docs**: Every generated package must include `docs/governance.md`.
+
+## Quick start
+
+Scaffold a new APM package structure:
+
 ```bash
-python scripts/validate_apm_package.py --path ./<package-name>
+python3 scripts/scaffold_apm.py --name <package-name>
 ```
 
-## Anti-Patterns
-- **Duplicate Roots**: Creating `.apm/skills` while also having `skills/` in the same package.
-- **Missing Docs**: Skipping the `docs/` folder in a `team` or `enterprise` lane.
-- **Absolute Paths**: Using machine-specific paths in `apm.yml`.
+## Workflow
+
+1. **Pre-Check Qualification**: Verify this is a new package from scratch (if migrating an existing plugin, redirect to `convert-plugin-to-apm`).
+2. **Scaffold Package**: Run `scaffold_apm.py` to create the standard folder hierarchy (`apm.yml`, `.apm/`, `docs/`).
+3. **Author Governance**: Populate `docs/governance.md`, `README.md`, and license attribution.
+4. **Compile Initial Lockfile**: Run `apm install --dry-run` to generate initial dependency lockfile.
+
+## Verification
+
+Validate the scaffolded package structure and manifest compliance:
+
+```bash
+python3 scripts/validate_apm_package.py --path ./<package-name>
+```
+
+## References
+
+- [acceptance-criteria.md](references/acceptance-criteria.md) — Acceptance gates and structural requirements for APM packages.
+- [fallback-tree.md](references/fallback-tree.md) — Fallback resolution when scaffolding or validation fails.

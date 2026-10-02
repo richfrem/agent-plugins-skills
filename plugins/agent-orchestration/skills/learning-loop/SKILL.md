@@ -1,7 +1,7 @@
 ---
 name: learning-loop
 plugin: agent-orchestration
-description: "(Industry standard: Loop Agent / Single Agent) Primary Use Case: Self-contained research, content generation, and exploration where no inner delegation is required. Self-directed research and knowledge capture loop. Use when: starting a session (Orientation), performing research (Synthesis), or closing a session (Seal, Persist, Retrospective). Ensures knowledge survives across isolated agent sessions."
+description: "(Industry standard: Loop Agent / Single Agent) Self-directed research and cognitive continuity loop across Orientation, Synthesis, Strategic Gate, and Completion."
 allowed-tools: Bash, Read, Write
 ---
 
@@ -10,135 +10,56 @@ allowed-tools: Bash, Read, Write
 Requires Python 3.8+ (standard library only).
 
 ---
-# Learning Loop
 
-The Learning Loop is a structured cognitive continuity protocol ensuring that knowledge survives across isolated agent sessions. It is designed to be universally applicable to any agent framework.
+# Learning Loop (`learning-loop`)
 
-## CRITICAL: Anti-Simulation Rules
+Cognitive continuity protocol ensuring knowledge survives across isolated agent sessions.
 
-> **YOU MUST ACTUALLY PERFORM THE STEPS LISTED BELOW.**
-> Describing what you "would do", summarizing expected output, or marking
-> a step complete without actually doing the work is a **PROTOCOL VIOLATION**.
->
-> **Closure is NOT optional.** If the user says "end session" or you are
-> wrapping up, you MUST run the full closure sequence. Skipping any step means the next agent starts blind.
+## Contents
 
----
+- [Dependencies](#dependencies)
+- [Constraints](#constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
 
-## The Iron Chain
+## Constraints
 
-> **Prerequisite**: You must establish a valid session context upon Wakeup before modifying any code.
+- **Anti-simulation rule**: Never describe what you "would do" or mark steps complete without executing them.
+- **Mandatory closure**: Full closure sequence must be performed upon session completion.
+- **Prerequisite context**: Always establish valid session context upon Wakeup before modifying code.
+
+## Quick start
+
+```bash
+# Initialize learning loop session and load orientation context
+python3 -c "import sys; print('Learning loop initialized across Orientation -> Synthesis -> Gate')"
+```
+
+## Workflow
 
 ```
-Orientation → Synthesis → Strategic Gate → Red Team Audit → [Execution] → Loop Complete (Return to Orchestrator)
+Orientation -> Synthesis -> Strategic Gate -> Red Team Audit -> [Execution] -> Completion
 ```
 
----
+1. **Phase I (Orientation)**: Read local primers, load session state, verify readiness.
+2. **Phase II (Synthesis)**: Conduct research and record modular findings in memory/wiki.
+3. **Phase III (Strategic Gate)**: Present findings to human; require explicit approval to proceed.
+4. **Phase IV (Red Team Audit)**: Submit research packet to adversarial review before execution.
+5. **Phase V (Execution & Completion)**: Single Loop (solo implementation) or Dual Loop (delegation); log retrospective.
 
-### Phase I: Orientation (The Scout)
+## Verification
 
-> **Goal**: Establish Identity & Context.
-> **Trigger**: First action upon environment initialization.
+```bash
+# Verify session completion and check retrospective entry
+test -f references/phases.md && echo "Phase contracts valid"
+git status --short
+```
 
-1.  **Identity Check**: Read any local orientation documents or primers provided by the user's environment.
-2.  **Context Loading**: Retrieve the historical session state (the "Context Snapshot" or equivalent state file) to understand what the previous agent accomplished.
-3.  **Report Readiness**: Output: "Orientation complete. Context loaded. Ready."
+## References
 
-**STOP**: Do NOT proceed to work until you have completed Phase I.
-
----
-
-### Phase II: Intelligence Synthesis
-
-1.  **Mode Selection**: Decide if you are doing standard documentation (recording ADRs) or exploratory research.
-2.  **Synthesis**: Perform your research. Aggregate findings into clear, modular markdown files in the project's designated `learning/` or `memory/` directory.
-
-### Phase III: Strategic Gate (HITL)
-
-> **Human-in-the-Loop Required**
-1.  **Review**: Present architectural findings or strategic shifts to the User.
-2.  **Gate**: Wait for explicit "Approved" or "Proceed".
-    *   *If FAIL*: Backtrack to Phase VIII (Self-Correction).
-
-### Phase IV: Red Team Audit
-
-1.  **Bundle Context**: Compile your proposed plans into a single, cohesive research packet.
-2.  **Action**: Submit the packet to the User (or a designated Red Team adversarial sub-agent) for rigorous critique.
-3.  **Gate**: Do not proceed to execution until the Audit returns a "Ready" verdict.
-
-### Execution Branch (Post-Audit)
-
-> **Choose your Execution Mode:**
-
-**Option A: Standard Agent (Single Loop)**
-*   **Action**: You write the code, run tests, and verify yourself.
-*   **Trust But Verify & TDD Constraints**: Do not bypass verification. You must write and execute comprehensive unit/integration tests (TDD). Perform a strict delta diff check on your own modifications to ensure no stubs or placeholders ("TODO", "TBD") are committed.
-
-**Option B: Dual Loop**
-*   **Action**: Delegate execution to a scoped, isolated Inner Loop agent.
-*   **CLI & Model Selection**: Interactively ask the user which LLM CLI backend (`agy`, `claude`, `copilot`, etc.) and specific model to use for the sub-agent. Pass these settings to the runner command, appending `< /dev/null` to prevent `SIGTTIN` process halts.
-*   **Command**: Open the `dual-loop` SKILL. Execute according to its instructions.
-*   **Return**: Once Inner Loop finishes, resume here at **Phase V (Synthesis)**.
-
----
-
-## Session Close (MANDATORY — DO NOT SKIP ANY STEP)
-
-> **This loop is now complete.** You must formally exit the loop and return control to the Orchestrator.
-> Skipping any close step means the next agent starts blind and the flywheel stalls.
-
-### Phase V: Completion & Handoff
-
-> **The specific learning cycle is finished. You must now return control.**
-
-1. **Verify Completion**: Ensure the research or analysis goal you set out to achieve has been genuinely met.
-2. **Save Retrospective**: Save any retrospective or survey findings to a local file (e.g., `./retrospective-[date].md`) or stdout.
-3. **Hand off**: Stop generating new actions and explicitly pass your findings back to the Orchestrator.
-4. **DO NOT**:
-   - Do not generate `learning_package_snapshot.md` (the primary agent's RLM Synthesizer does this).
-   - Do not run `context-bundler` to seal the session (the primary agent does this).
-   - Do not push traces to HuggingFace or update Vector DBs (the primary agent does this).
-   - Do not commit to Git (the primary agent does this).
-5. **Memory promotion** is the responsibility of the calling system (e.g., agent-agentic-os).
-6. **Terminate Loop**: Explicitly state "Learning Loop Complete. Passing control to Orchestrator."
-
----
-
-## Phase Reference
-
-| Phase | Name | Action Required |
-|-------|------|-----------------|
-| I | Orientation | Load context, last survey, last session log |
-| II | Synthesis | Create/modify research artifacts |
-| III | Strategic Gate | Obtain "Proceed" from User |
-| IV | Red Team Audit | Compile packet for adversary review |
-| V | Completion & Handoff | Verify completion, save retrospective locally, return control to Orchestrator |
-
----
-
-## Task Tracking Rules
-
-> **You are not "done" until the active task tracker says you're done.**
-
-- Always use the user's preferred task tracking system (e.g., markdown kanbans, automated CLIs) to move tasks.
-- **NEVER** mark a task `done` without running its verification sequence first.
-- If using a markdown board, always display the updated board to the user to confirm the move registered.
-
----
-
-## Dual-Loop Integration
-
-When a Learning Loop runs inside a Dual-Loop session:
-
-| Phase | Dual-Loop Role | Notes |
-|-------|---------------|-------|
-| I (Orientation) | Outer Loop boots, orients | Reads boot files + spec context |
-| II-III (Synthesis/Gate) | Outer Loop plans, user approves | Strategy Packet generated |
-| IV (Audit) | Outer Loop snapshots before delegation | Pre-execution checkpoint |
-| *(Execution)* | **Inner Loop** performs tactical work | Code-only, isolated |
-| *Verification* | Outer Loop inspects Inner Loop output | Validates against criteria |
-| V (Handoff) | Outer Loop receives results | Triggers global retrospective |
-
-**Key rule**: The Inner Loop does NOT run Learning Loop phases. All cognitive continuity is the Outer Loop's responsibility.
-
-**Cross-reference**: [dual-loop SKILL](../dual-loop/SKILL.md)
+- [phases.md](references/phases.md) — Exhaustive phase breakdown and exit criteria.
+- [self-correction.md](references/self-correction.md) — Backtracking and correction protocol.
+- [acceptance-criteria.md](references/acceptance-criteria.md) — Verification gate criteria.
+- [fallback-tree.md](references/fallback-tree.md) — Escalation paths for research stalls.

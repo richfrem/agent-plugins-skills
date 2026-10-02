@@ -15,30 +15,51 @@ allowed_tools:
   - list_dir
 ---
 
-# GitHub Issue PR Lifecycle Agent (`github-issue-pr-lifecycle-agent`)
+# GitHub Issue PR Lifecycle Agent (github-issue-pr-lifecycle-agent)
 
-> **Routing Directive:** USE ONLY when orchestrating or dry-running the full lifecycle flow (Issue -> Worktree -> PR -> Close resolution). DO NOT USE for individual isolated worktree setup (use `github-issue-worktree-agent` instead) or friction logging (use `github-issue-agent` instead).
+Orchestrates the end-to-end issue resolution lifecycle: Issue -> Worktree -> Implementation -> PR Creation -> Resolution Closure.
 
-The `github-issue-pr-lifecycle-agent` skill connects git worktree execution with GitHub CLI operations (`gh pr create`, `gh issue close`) into a single, verifiable workflow pipeline.
+## Contents
+- [Critical Constraints](#critical-constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
 
----
+## Critical Constraints
+- **Scope Boundary**: USE ONLY for end-to-end lifecycle orchestration. For standalone worktree isolation, use `github-issue-worktree-agent`. For issue logging, use `github-issue-agent`.
+- **Dry-Run by Default**: Generates pipeline payload in preview mode; requires `--execute` for live branch/PR mutations.
+- **Worktree Isolation**: Implementation must occur strictly in `.worktrees/issue-NNN` to keep the primary workspace clean.
+- **Verification Gate**: Automated tests must pass prior to opening pull requests.
 
-## Quick Start & CLI
-
-- **Helper Script:** `plugins/dev-utils/skills/github-issue-pr-lifecycle-agent/scripts/issue_pr_orchestrate.py`
+## Quick start
 
 ```bash
-# Dry-run payload generation for Issue #42:
-python3 plugins/dev-utils/skills/github-issue-pr-lifecycle-agent/scripts/issue_pr_orchestrate.py --issue 42 --title "Fix login bug" --body "Resolves crash on empty password"
+# Preview full lifecycle orchestration (dry-run)
+python3 plugins/dev-utils/skills/github-issue-pr-lifecycle-agent/scripts/issue_pr_orchestrate.py \
+  --issue 42 --title "Fix login bug" --body "Resolves crash on empty password"
 
-# Live execution of end-to-end lifecycle:
-python3 plugins/dev-utils/skills/github-issue-pr-lifecycle-agent/scripts/issue_pr_orchestrate.py --issue 42 --title "Fix login bug" --body "Resolves crash on empty password" --execute
+# Execute live end-to-end lifecycle
+python3 plugins/dev-utils/skills/github-issue-pr-lifecycle-agent/scripts/issue_pr_orchestrate.py \
+  --issue 42 --title "Fix login bug" --body "Resolves crash on empty password" \
+  --execute
 ```
 
----
+## Workflow
 
-## Progressive Disclosure & References
+1. **Phase 1: Worktree Provisioning**: Create isolated git worktree at `.worktrees/issue-NNN` branching from trunk.
+2. **Phase 2: Implementation & Tests**: Apply patch within the isolated worktree and execute the local test suite.
+3. **Phase 3: Pull Request Creation**: Push branch to remote and open GitHub PR referencing the issue (`Resolves #NNN`).
+4. **Phase 4: Resolution & Cleanup**: Confirm merge, close issue with appropriate labels, and tear down the worktree.
 
-- **Detailed Guide & API**: [references/lifecycle-guide.md](references/lifecycle-guide.md) — execution sequence, safety contracts, and Python API interface.
-- **Acceptance Criteria**: [references/acceptance-criteria.md](references/acceptance-criteria.md) — verification contracts and test expectations.
-- **Fallback Protocol**: [references/fallback-tree.md](references/fallback-tree.md) — failure recovery procedures and manual workarounds.
+## Verification
+
+```bash
+# Audit skill compliance
+python3 plugins/agent-scaffolders/scripts/audit_skill.py plugins/dev-utils/skills/github-issue-pr-lifecycle-agent --mode source
+```
+
+## References
+- [lifecycle-guide.md](references/lifecycle-guide.md) - Pipeline sequencing, safety contracts, and API options.
+- [acceptance-criteria.md](references/acceptance-criteria.md) - Verification contracts and test criteria.
+- [fallback-tree.md](references/fallback-tree.md) - Failure recovery and manual recovery procedures.

@@ -7,49 +7,53 @@ argument-hint: "[event-type or use case]"
 allowed-tools: Bash, Read, Write
 ---
 
-Follow the `create-hook` skill workflow to design and generate a hook configuration.
+# Create Hook (create-hook)
 
-## Inputs
+Scaffolds event-driven lifecycle hooks (e.g. `PreToolUse`, `PostToolUse`, `Stop`, `PermissionRequest`) in plugin configuration or skill frontmatter.
 
-- `$ARGUMENTS` — optional hook event type (e.g. `PreToolUse`, `Stop`, `PermissionRequest`)
-  or a use-case description (e.g. "block dangerous bash commands"). Omit for discovery.
+## Contents
+- [Critical Constraints](#critical-constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
 
-## Steps
+## Critical Constraints
+- **Event Scope**: Only for lifecycle hooks. For standalone skills, use `create-skill`. For CI/CD or agentic workflows, use `create-github-action` or `create-agentic-workflow`.
+- **Cross-Platform Commands**: Hook commands must support macOS/Linux and Windows via `python3 ... || python ...` syntax with `${CLAUDE_PLUGIN_ROOT}` path anchors.
+- **Project Context Guards**: Hook scripts must verify repository context on entry (e.g. check `.agent/` or `context/`) and exit silently (return code 0) if uninitialized.
+- **Minimal Latency**: Keep synchronous hook handlers lean to prevent blocking the agent execution loop.
 
-1. If `$ARGUMENTS` names an event or use case, use it to seed Phase 1 questions
-2. Follow the create-hook phased workflow: select event, choose handler type
-   (command / prompt / agent), design the matcher and logic, then write the hook entry
-3. Validate with `validate_hook_schema.py` and test with `test_hook.py`
-4. Report placement (global `hooks.json` vs skill-scoped frontmatter) and next steps
+## Quick start
 
-## Output
-
-`hooks.json` entry or SKILL.md frontmatter block with complete hook configuration
-(event, matcher, handler type, command/prompt body, output schema).
-
-## Hook Script Standards
-
-When generating a Python hook script, always apply these two rules:
-
-**Cross-platform python command** — use `python3 ... || python ...` in hooks.json so the hook works on both macOS/Linux (python3) and Windows (python):
-```json
-{ "type": "command", "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/script.py || python ${CLAUDE_PLUGIN_ROOT}/hooks/script.py" }
+```bash
+python3 plugins/agent-scaffolders/scripts/scaffold.py \
+  --type hook \
+  --name check-command \
+  --path plugins/<plugin>/hooks \
+  --event PreToolUse \
+  --action command
 ```
 
-**Project-type guard** — hooks run in every project, not just ones that have initialized this plugin. Add an early-exit guard at the top of `main()` so the script skips silently in projects that lack the required context:
-```python
-def main():
-    project_root = Path(os.environ.get("CLAUDE_PROJECT_DIR", os.getcwd()))
-    if not (project_root / "context").exists():
-        return  # Not an initialized project — skip silently
-    ...
+## Workflow
+
+1. **Phase 1: Event & Scope Selection**: Determine lifecycle trigger event (`PreToolUse`, `PostToolUse`, `Stop`), placement scope (global `hooks.json` vs skill frontmatter), and action type (`command`, `prompt`, `agent`).
+2. **Phase 2: Hook Configuration**: Draft configuration entry with event identifier, target tool matcher pattern, and action parameters.
+3. **Phase 3: Script Implementation**: For command hooks, author script with cross-platform fallback, silent project guards, and deterministic exit codes.
+4. **Phase 4: Linting & Testing**: Execute `hook_linter.py` on created handler scripts and verify schema validity.
+
+## Verification
+
+```bash
+# Lint the hook handler script
+python3 plugins/agent-scaffolders/scripts/hook_linter.py plugins/<plugin>/hooks/<script>.py
+
+# Audit skill compliance
+python3 plugins/agent-scaffolders/scripts/audit_skill.py plugins/agent-scaffolders/skills/create-hook --mode source
 ```
-Adapt the guard to whatever directory/file your hook requires (e.g. `.agent/`, `context/os-state.json`).
 
-## Edge Cases
-
-- If `$ARGUMENTS` is empty: begin with the event selection question in Phase 1
-- If the requested event is not in the 13 supported events: explain valid options
-- If the use case implies a skill-scoped hook (enforce invariant only during one skill):
-  generate frontmatter syntax instead of a global hooks.json entry
-- If user wants to auto-approve subagent permissions: use PermissionRequest + prompt handler
+## References
+- [fallback-tree.md](references/fallback-tree.md) - Fallback tree for scaffolding failures.
+- [references/patterns.md](references/patterns.md) - Common event-driven hook patterns.
+- [references/advanced.md](references/advanced.md) - Advanced handler types and lifecycle nuances.
+- [acceptance-criteria.md](references/acceptance-criteria.md) - Hook validation and acceptance criteria.

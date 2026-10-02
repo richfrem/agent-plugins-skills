@@ -4,6 +4,17 @@ This document captures our accumulated knowledge and definitive specifications f
 
 **Source:** [Create plugins](https://code.claude.com/docs/en/plugins)
 
+## Contents
+
+- [Definition](#definition)
+- [Directory Structure](#directory-structure)
+- [Component Details](#component-details)
+- [Environment Variables & Caching](#environment-variables--caching)
+- [Installation Scopes](#installation-scopes)
+- [plugin.json Manifest Schema](#pluginjson-manifest-schema)
+- [Portability and Discovery](#portability-and-discovery)
+- [Development & Usage](#development--usage)
+
 ## Definition
 Plugins let you extend Claude Code with custom functionality (skills, agents, hooks, and MCP/LSP servers) that can be shared across projects and teams. They use explicit namespaces (e.g., `/my-plugin:hello`) to avoid conflicts, support built-in versioning, and are packaged for marketplace distribution.
 
@@ -12,7 +23,24 @@ Plugins must follow a strict root-level structure:
 - `.claude-plugin/plugin.json`: The manifest (must only contain `plugin.json`).
 - `README.md`: Included as a best practice. It is highly recommended to contain a text-based file tree structure (using `├──` and `└──`) detailing the components inside the plugin and their purpose.
 
-*See visual representation in [plugin-architecture.mmd](../assets/diagrams/plugin-architecture.mmd)*
+```mermaid
+graph TD
+    A[my-plugin] --> B[.claude-plugin/]
+    B --> C[plugin.json]
+    A --> D[skills/]
+    D --> E[my-skill/]
+    E --> F[SKILL.md]
+    E --> G[references/]
+    E --> H[scripts/]
+    H --> I[execute.py]
+    A --> J[agents/]
+    A --> K[commands/]
+    A --> L[hooks.json]
+    A --> M[.mcp.json]
+    A --> N[.lsp.json]
+    A --> O[README.md]
+```
+
 
 ## Component Details
 - **Skills (`skills/` prefix):** Directories containing a `././SKILL.md` file. Commands are simple `.md` files in `commands/`. Always namespace (e.g., `/my-plugin:skill-name`).

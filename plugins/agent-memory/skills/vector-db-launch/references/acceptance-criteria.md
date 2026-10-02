@@ -1,0 +1,1 @@
+../../../references/vector-db-launch-acceptance-criteria.md

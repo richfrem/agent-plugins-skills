@@ -24,7 +24,15 @@ from pathlib import Path
 
 import pytest
 
-from capability_probe import probe_runtime
+from capability_probe import _RUNTIME_MARKERS, probe_runtime
+
+
+@pytest.fixture(autouse=True)
+def clean_env(monkeypatch):
+    for _, markers in _RUNTIME_MARKERS:
+        for marker in markers:
+            monkeypatch.delenv(marker, raising=False)
+
 from worktree_manager import (
     build_worktree_plan,
     cleanup_command,

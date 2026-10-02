@@ -4,87 +4,57 @@ description: Conducts a full-system adversarial audit of agent plugins, skills, 
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 ---
 
-# Purpose
+# Critical Auditor (`critical-auditor`)
 
-This skill performs a **deep, adversarial system audit** designed to break:
+Conducts failure-seeking adversarial system audits designed to uncover boundary violations, unverified assumptions, and enforcement loopholes.
 
-- runtime enforcement guarantees
-- mutation safety assumptions
-- eval coverage completeness
-- plugin isolation boundaries
+## Contents
 
-This is NOT a compliance review.
+- [Critical Constraints](#critical-constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Output Requirements](#output-requirements)
+- [Verification](#verification)
+- [References](#references)
 
-This is a **failure-seeking audit**.
+## Critical Constraints
 
----
+1. **Unforgiving Mandate**: Treat guarantees as unenforced unless mathematically or programmatically verified by code and tests.
+2. **Exploit Reproduction**: Every finding must include a concrete exploit reproduction scenario.
+3. **No Muted Severity**: Never downgrade security or boundary findings without empirical proof of remediation.
 
-# Audit Mandate
+## Quick start
 
-You must assume:
+Audit a target skill for boundary violations and contract enforcement:
 
-- The system is **incorrect until proven otherwise**
-- Enforcement **can be bypassed unless proven impossible**
-- Evals **are incomplete**
-- Plugins will **attempt to violate boundaries**
-- Mutation logic will **corrupt state unless isolated**
+```bash
+python3 scripts/audit_skill.py <path/to/skill> --strict
+```
 
----
+## Workflow
 
-# Required Focus Areas
+1. **Map Target Surface**: Identify boundaries, evaluation suites, and state mutators in target skill or plugin.
+2. **Adversarial Pass**: Probe execution enforcement, mutation integrity, eval coverage, and sandbox isolation.
+3. **Draft Exploitation Scenarios**: Construct minimal repro steps illustrating how checks can be bypassed.
+4. **Document Findings**: Assign severity (P0-P2), explain root failure cause, and propose remediation.
 
-## 1. Execution Enforcement
-- Can HALT be bypassed?
-- Are there code paths where violations do not interrupt execution?
-- Are exceptions truly global?
+## Output Requirements
 
-## 2. Mutation Integrity
-- Can partial mutations persist?
-- Are sandbox boundaries leak-proof?
-- Can state escape `temp/sandbox/`?
+For each finding, specify:
+- **Severity**: P0 (Critical), P1 (Major), P2 (Minor).
+- **Reproduction**: Concrete exploit path with shell/code snippet.
+- **Root Failure**: Exact reason why existing checks failed to catch it.
+- **Remediation**: Structural patch or invariant enforcement.
 
-## 3. Eval Authority
-- What behaviors are NOT covered by evals?
-- Can mutations exploit blind spots?
-- Can regression be reclassified as acceptable?
+## Verification
 
-## 4. Baseline Integrity
-- Can baselines be indirectly manipulated?
-- Are diffs actually verified or just declared?
+Confirm audit findings are documented and reproducible:
 
-## 5. Plugin Isolation
-- Do any skills:
-  - chain multiple actions?
-  - make decisions?
-  - orchestrate workflows?
+```bash
+git status --short
+```
 
-## 6. Orchestration Leakage
-- Are there hidden multi-step flows inside skills?
-- Are sub-agents behaving like orchestrators?
+## References
 
-## 7. Debt System Exploits
-- Can debt accumulate without blocking progress?
-- Can agents route around debt enforcement?
-
----
-
-# Output Requirements
-
-For every issue:
-
-- ID
-- Severity (P0/P1/P2)
-- Exploit scenario (MANDATORY)
-- Exact failure path
-- Why enforcement fails
-- System impact
-- Recommended fix
-- Can agent exploit automatically? (YES/NO)
-
----
-
-# Critical Rule
-
-If you cannot prove a guarantee is enforced:
-
-→ It must be treated as **NOT enforced**
+- [acceptance-criteria.md](references/acceptance-criteria.md) — Acceptance criteria for adversarial audits.
+- [fallback-tree.md](references/fallback-tree.md) — Failure resolution and audit escalation paths.

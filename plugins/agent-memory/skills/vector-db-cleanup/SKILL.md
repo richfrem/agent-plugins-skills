@@ -1,66 +1,45 @@
 ---
 name: vector-db-cleanup
-plugin: vector-db
-description: |
-  Removes stale and orphaned chunks from the ChromaDB vector store for files that have been deleted or renamed.
-  Use after files are removed or moved to keep the vector index in sync with the filesystem.
-
-  <example>
-  user: "Clean up the vector store after I deleted some files"
-  assistant: "I'll use vector-db-cleanup to remove orphaned chunks."
-  </example>
-  <example>
-  user: "The vector database has chunks for files that no longer exist"
-  assistant: "I'll run vector-db-cleanup to prune them."
-  </example>
+plugin: agent-memory
+description: Removes stale and orphaned chunks from the ChromaDB vector store when source files have been deleted or renamed.
 allowed-tools: Bash, Read, Write
 ---
 
-## Dependencies
+# Vector DB Cleanup (`vector-db-cleanup`)
 
-This skill requires the `chromadb` and `langchain` packages defined in the plugin root.
+Removes stale and orphaned chunks from the ChromaDB vector store when source files no longer exist on disk.
 
----
+## Contents
 
-# VDB Cleanup Agent
+- [Critical Constraints](#critical-constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
 
-## Role
+## Critical Constraints
 
-You remove stale and orphaned chunks from the ChromaDB vector store. A chunk is stale when its source file no longer exists on disk. Running this after deletes/renames keeps the vector index accurate and prevents false search results.
+1. **Write Operation**: Always specify the target `--profile` to prune the intended semantic space.
+2. **API Integrity**: NEVER manipulate SQLite files directly; always execute `scripts/cleanup.py`.
+3. **Transparency**: Report which profile was pruned and the total number of chunks removed.
 
-**This is a write (delete) operation.**
+## Quick start
 
-## When to Run
-
-- After deleting or renaming files that were previously ingested.
-- After a major refactor that moved directories.
-- When `query.py` returns results pointing to non-existent files.
-- Periodically as housekeeping to maintain index health.
-
-## Execution Mode
-
-This skill defaults to **In-Process mode** for zero-latency direct disk access. No background server is required.
-
-## Execution Protocol
-
-### 1. Identify Search Profile
-Verify available profiles in `.agent/learning/vector_profiles.json`. The default profile is usually `wiki`.
-
-### 2. Run Cleanup
-Note: The `--profile` flag is mandatory to ensure the correct collection and disk paths are loaded.
+Execute in-process cleanup for the default wiki profile:
 
 ```bash
-python ./scripts/cleanup.py --profile wiki
+python3 scripts/cleanup.py --profile wiki
 ```
 
-### 3. Verify Store Integrity (Optional)
-Run the consistency check to verify that remaining facts are still supported.
+## Workflow
+
+1. **Identify Profile**: Verify active profiles in `.agent/learning/vector_profiles.json` (default: `wiki`).
+2. **Execute Cleanup**: Run `scripts/cleanup.py` with the mandatory `--profile` flag.
+3. **Report Output**: State the target profile and total chunks removed.
+
+## Verification
+
+Verify store integrity and index consistency after cleanup:
+
 ```bash
-python ./scripts/vector_consistency_check.py --profile wiki --topic .agent/learning/
+python3 scripts/vector_consistency_check.py --profile wiki --topic .agent/learning/
 ```
-
-## Rules
-
-- **Profile Sovereignty**: Always pass `--profile` to ensure the correct semantic space is pruned.
-- **API Integrity**: NEVER attempt to delete chunks from the database SQLite files directly. Always use `cleanup.py`.
-- **Transparency**: State which profile was cleaned and how many chunks were removed.

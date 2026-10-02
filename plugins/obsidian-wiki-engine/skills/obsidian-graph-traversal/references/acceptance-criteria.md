@@ -1,1 +1,1 @@
-../acceptance-criteria.md
+../../../references/obsidian-graph-traversal-acceptance-criteria.md

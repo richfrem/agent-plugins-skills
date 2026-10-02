@@ -1,1 +1,1 @@
-../../../references/acceptance-criteria.md
+../../../references/hf-upload-acceptance-criteria.md

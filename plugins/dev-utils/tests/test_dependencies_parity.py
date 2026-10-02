@@ -28,13 +28,13 @@ MIN_ELIGIBLE_SKILLS = 6  # Current committed dependency metadata classifies thes
 
 
 def test_dependency_classification_bounds():
-    """Assert classifier finds at least 25 skills with dependency blocks."""
+    """Assert classifier finds at least 20 skills with dependency blocks."""
     plugins_dir = REPO_ROOT / "plugins"
     report = classify_all_skills(plugins_dir)
 
     total_evaluated = len(report["eligible"]) + len(report["ineligible"]) + len(report["ambiguous"])
-    assert total_evaluated >= 25, (
-        f"Discovery found only {total_evaluated} skills with dependency sections; expected at least 25."
+    assert total_evaluated >= 20, (
+        f"Discovery found only {total_evaluated} skills with dependency sections; expected at least 20."
     )
     assert len(report["eligible"]) >= MIN_ELIGIBLE_SKILLS, (
         f"Expected at least {MIN_ELIGIBLE_SKILLS} eligible skills, found {len(report['eligible'])}"

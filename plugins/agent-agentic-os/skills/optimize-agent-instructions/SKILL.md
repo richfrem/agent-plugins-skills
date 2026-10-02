@@ -12,83 +12,50 @@ description: >
 allowed-tools: Read, Write, Bash
 ---
 
-<example>
-<commentary>User wants their agent instruction files to follow best practices.</commentary>
-user: "Optimize my AGENTS.md with Karpathy principles"
-assistant: [triggers optimize-agent-instructions, reads files, audits against checklist, rewrites]
-</example>
+# Optimize Agent Instructions (`optimize-agent-instructions`)
 
-<example>
-<commentary>User has stale auto-generated content in their instruction files.</commentary>
-user: "My GEMINI.md has a bunch of stuff that doesn't belong — can you clean it up?"
-assistant: [triggers optimize-agent-instructions, identifies foreign content, strips and rewrites]
-</example>
+Audits and rewrites the canonical `AGENTS.md` instruction file in any repository to preserve concise, high-signal behavioral constraints.
 
-<example>
-<commentary>Negative — user wants to update a specific skill, not instruction files.</commentary>
-user: "Improve the trigger description for my link-checker skill"
-assistant: [triggers os-improvement-loop, not optimize-agent-instructions]
-</example>
+## Contents
 
-# optimize-agent-instructions
+- [Critical Constraints](#critical-constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
 
-Audits and rewrites the canonical `AGENTS.md` in a repo. Works on any project — not just
-agent-plugins-skills. The goal is one authoritative, concise instruction source. Legacy
-platform files are inventory-only unless the user explicitly authorizes a compatibility
-rewrite; use `agent-file-synchronization` for mechanical, opt-in mirroring.
+## Critical Constraints
 
----
+1. **Single Canonical Authority**: `AGENTS.md` is the sole source of truth; never create separate conflicting rules in mirrors.
+2. **Preserve Domain Invariants**: Never delete project-specific rules, architecture boundaries, or test commands without confirmation.
+3. **No Stale Artifacts**: Strip personal usernames, dates, historical session notes, and outdated post-mortems.
 
-## Phase 1 — Discovery
+## Quick start
 
-Run these checks silently before asking anything:
+Inspect the current instruction file for stale session notes and line count:
 
-**1. Which instruction files exist?**
 ```bash
-ls AGENTS.md CLAUDE.md GEMINI.md .github/copilot-instructions.md 2>/dev/null
+wc -l AGENTS.md CLAUDE.md GEMINI.md 2>/dev/null
 ```
 
-**2. Ask the user:**
-- What platform(s) they use (AGENTS.md open standard / Cursor / Codex / Antigravity, Claude Code, Copilot, Gemini CLI) — determines which files to touch
-- Any project-specific rules to preserve (coding standards, ADRs, naming conventions)
+## Workflow
 
-If instruction files are missing for active platforms, offer to create them.
+1. **Discovery**: Inventory existing files (`AGENTS.md`, `CLAUDE.md`, `GEMINI.md`) and identify rules to preserve.
+2. **Audit & Scoring**: Score instruction files against Karpathy principles, brevity, and platform mappings.
+3. **Plan Rewrite**: Present explicit diff of removals (stale logs), additions (behavioral rules), and kept invariants.
+4. **Synthesis**: Write lean, consolidated `AGENTS.md`.
+5. **Mirror Verification**: Ensure platform mirrors are short pointers rather than duplicate full-text files.
 
----
+## Verification
 
-## Phase 2 — Audit Each File
+Confirm `AGENTS.md` contains core behavioral principles and zero stale notes:
 
-Read `AGENTS.md`, then inventory the legacy files and score the canonical file against the Quality Checklist: structure (Karpathy + project rules
-merged, no stale AI-session artifacts, no foreign rules from other projects, no self-referential
-"copy of X" framing, current paths/commands, platform notes present), all four Karpathy
-Principles present, and platform-specific checks (Gemini tool-mapping table; Copilot file is
-authoritative, not framed as a copy). Full checklist and the audit-score report format are in
-`references/detailed-reference.md`. Report the score before rewriting.
+```bash
+head -n 40 AGENTS.md
+```
 
----
+## References
 
-## Phase 3 — Rewrite Plan
-
-For `AGENTS.md` if it scored poorly, propose changes:
-
-- State what will be **removed** (foreign content, stale artifacts)
-- State what will be **added** (Karpathy section, platform notes)
-- State what will be **preserved** (valid project-specific rules)
-
-Get confirmation before writing. Show the full proposed content for each file.
-
----
-
-## Phase 4 — Write
-
-Read the Karpathy principles at `references/sample-claude-md`. Write `AGENTS.md` using the
-canonical structure (tradeoff note, the four Karpathy sections, working-if footer, project rules)
-plus platform-specific sections (Gemini CLI Tool Mapping table; copilot-instructions.md
-authoritative title + "Mirrors CLAUDE.md" note). Full templates in `references/detailed-reference.md`.
-
-## Phase 5 — Verify & Rules
-
-Verify all four Karpathy principles are present, platform sections match, and files are
-authoritative. Never remove valid project rules (move to `## Project-Specific Rules`), never
-create unrequested instruction files, and always read files before writing. Full verification
-report format, rules, and Karpathy attribution are in `references/detailed-reference.md`.
+- [detailed-reference.md](references/detailed-reference.md) — 12-point Quality Checklist, Karpathy principles, and platform mappings.
+- [acceptance-criteria.md](references/acceptance-criteria.md) — Acceptance criteria for instruction optimizations.
+- [fallback-tree.md](references/fallback-tree.md) — Remediation pathways when instruction files conflict.

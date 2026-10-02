@@ -9,59 +9,58 @@ description: >
 allowed-tools: Bash, Read, Write
 ---
 
-# Loop Progress Report
+# Loop Progress Report (os-improvement-report)
 
-Visual and text reporting on the agentic loop improvement cycle — across any plugin that
-maintains an `improvement-ledger.md` and `results.tsv` per skill.
+Generates visual charts and structured text summaries tracking agentic loop improvement cycles across plugins.
 
-The reference output is the autoresearch progress chart: green KEEP dots on a timeline,
-gray DISCARD dots, running-best step line, annotations showing what each improvement was.
-This skill produces the same chart for agentic-os and exploration-cycle-plugin improvement cycles.
+## Contents
+- [Critical Constraints](#critical-constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
 
-Dependencies (Python 3.8+, pandas, matplotlib) are in `references/detailed-reference.md`.
+## Critical Constraints
+- **Reporting Scope Only**: Dedicated to generating visual and text progress summaries. Do NOT use to execute the learning loop or evaluate skill modifications.
+- **Primary Source of Truth**: Read numeric results primarily from `context/experiment-log/index.md`; treat `context/memory/improvement-ledger.md` strictly as a legacy fallback.
+- **Data Availability Gate**: If no numeric entries or completed cycles exist, report "No cycles completed yet" rather than rendering empty charts.
+- **Output Placement**: Write charts and summaries exclusively to `context/memory/reports/` using timestamped filenames.
 
-## What It Reads
+## Quick start
 
-| Source | Priority | Content |
-|--------|----------|---------|
-| `context/experiment-log/index.md` | **Primary** | All logged runs; filter `result_type: numeric` for KEEP/DISCARD/score data from orchestrator runs |
-| `context/memory/improvement-ledger.md` | Legacy fallback | Eval score progression written by os-improvement-loop Stage 4.7; used if experiment log has no numeric entries |
-| `.agents/skills/*/evals/results.tsv` | Supplement | Per-skill detailed eval score history |
+```bash
+# Generate progress report and trend chart for the workspace
+python3 plugins/agent-agentic-os/scripts/generate_report.py \
+  --project-dir . \
+  --plugin-dir plugins/agent-agentic-os
 
-The experiment log is the unified source of truth for numeric results. The improvement ledger
-is a legacy format maintained for backward compatibility with older loop runs.
+# Generate report for a single skill
+python3 plugins/agent-agentic-os/scripts/generate_report.py \
+  --project-dir . \
+  --plugin-dir plugins/agent-agentic-os \
+  --skill <skill-name>
+```
 
-## What It Produces
+## Workflow
 
-| Output | Description |
-|--------|-------------|
-| `context/memory/reports/progress_YYYYMMDD_HHMM.png` | Progress chart: KEEP/DISCARD timeline, running-best step line, change annotations |
-| `context/memory/reports/summary_YYYYMMDD_HHMM.md` | Text summary: baseline vs best, top hits by delta, survey effectiveness, north star trend |
+1. **Phase 1: Log & Ledger Ingestion**: Query `context/experiment-log/index.md` for numeric evaluation entries; check legacy ledger if no numeric rows exist.
+2. **Phase 2: Metric Aggregation**: Parse progression scores, baseline-vs-best deltas, and step-line progression points across cycles.
+3. **Phase 3: Chart & Report Generation**: Execute `generate_report.py` to render the PNG chart and write markdown summary under `context/memory/reports/`.
+4. **Phase 4: Presentation**: Output the image artifact path, display summary highlights inline, and offer drill-downs into per-skill trends.
 
-## Execution Flow
+## Verification
 
-1. **Read experiment log for numeric entries** — run `experiment_log.py summary`, filter
-   `context/experiment-log/index.md` for `Result Type: numeric` rows, and parse each linked
-   file's KEEP/DISCARD verdict string. Fall through to Phase 1 if no numeric entries exist.
-   Full parsing detail in `references/detailed-reference.md`.
-2. **Check legacy data availability (fallback only)** — if `context/memory/improvement-ledger.md`
-   is missing or its Section 1 table is empty, tell the user no cycles have completed yet rather
-   than running the report on an empty ledger.
-3. **Run the report** — invoke `generate_report.py --project-dir ... --plugin-dir ...`
-   (optionally `--skill <name>`). Exits 0 and prints the chart path + text summary.
-4. **Surface the output** — report the chart path, print the text summary inline, and ask
-   whether to open the chart image or show per-skill detail.
-5. **Cross-plugin reporting (optional)** — if tracking both `agent-agentic-os` and
-   `exploration-cycle-plugin`, run the report once per plugin's project dir and concatenate the
-   text summaries. Full commands in `references/detailed-reference.md`.
+```bash
+# Verify generator CLI options
+python3 plugins/agent-agentic-os/scripts/generate_report.py --help
 
-How to read the resulting chart, and how any other plugin can plug into this report via the
-three-section ledger format, are in `references/detailed-reference.md`.
+# Audit skill compliance
+python3 plugins/agent-scaffolders/scripts/audit_skill.py plugins/agent-agentic-os/skills/os-improvement-report --mode source
+```
 
 ## References
-
-- [improvement-ledger-spec.md](../../references/memory/improvement-ledger-spec.md) — ledger format, writing protocol, initialization
-- [chart-reading-guide.md](references/operations/chart-reading-guide.md) — how to interpret KEEP/DISCARD dots, step line, and text summary fields
-- [os-improvement-loop SKILL](../os-improvement-loop/SKILL.md) — Stage 4.7 writes to the ledger
-- [test-scenarios-seed.md](../../references/testing/test-scenarios-seed.md) — 50 pre-designed test hypotheses
-- [post_run_survey.md](../../references/memory/post_run_survey.md) — survey template (Section 2 trace sources)
+- [detailed-reference.md](references/detailed-reference.md) - Ledger specifications, parsing rules, and cross-plugin commands.
+- [chart-reading-guide.md](references/chart-reading-guide.md) - How to interpret KEEP/DISCARD dots and running-best step lines.
+- [improvement-ledger-spec.md](references/memory/improvement-ledger-spec.md) - Improvement ledger format, writing protocol, and initialization.
+- [acceptance-criteria.md](references/acceptance-criteria.md) - Acceptance criteria and output validation standards.
+- [fallback-tree.md](references/fallback-tree.md) - Fallback handling for missing logs or execution errors.

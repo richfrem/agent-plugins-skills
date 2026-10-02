@@ -7,28 +7,51 @@ argument-hint: "[skill-name]"
 allowed-tools: Bash, Read, Write
 ---
 
-Follow the `create-docker-skill` skill workflow to scaffold a compliant agent skill
-that depends on containerized runtimes (Docker, Nextflow, HPC).
+# Create Docker Skill (create-docker-skill)
 
-## Inputs
+Scaffolds a compliant agent skill that executes workloads within containerized runtimes (Docker, Nextflow, HPC).
 
-- `$ARGUMENTS` — optional skill name or use-case description. Omit to start with discovery.
+## Contents
+- [Critical Constraints](#critical-constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
 
-## Steps
+## Critical Constraints
+- **Container Scope**: Only for container-dependent workloads. For standard local skills, use `create-skill`. For Azure AI Foundry, use `create-azure-agent`.
+- **Pre-Flight Validation**: Generated skills must verify container daemon availability (`docker info`) and fail gracefully with actionable remediation.
+- **Security Boundaries**: Restrict mount scopes to designated working directories; never mount the root filesystem or run in privileged mode unless requested.
+- **Non-Destructive**: Never overwrite existing directories without explicit confirmation.
 
-1. If `$ARGUMENTS` provides a skill name, use it to seed the discovery phase
-2. Follow the create-docker-skill phased workflow: determine container runtime and
-   workflow type, gather environment check requirements, design pre-flight validation
-   and subprocess execution scaffolding, then generate the skill directory
-3. Report the created skill path and Docker environment setup instructions
+## Quick start
 
-## Output
+```bash
+python3 plugins/agent-scaffolders/scripts/scaffold.py \
+  --type skill \
+  --name <skill-name> \
+  --path plugins/<plugin>/skills/<skill-name> \
+  --desc "Containerized workload execution"
+```
 
-Skill directory with `SKILL.md` containing pre-flight environment checks, subprocess
-execution patterns, security-override config, and Docker-aware error handling.
+## Workflow
 
-## Edge Cases
+1. **Phase 1: Runtime Discovery**: Gather container runtime (Docker, Nextflow, Podman), base image, CPU/memory limits, volume mounts, and network isolation needs.
+2. **Phase 2: Directory Scaffolding**: Execute `scaffold.py` to generate the skill structure with `SKILL.md`, `scripts/`, `evals/`, and `references/`.
+3. **Phase 3: Runtime Harnessing**: Configure container pre-flight checks, subprocess invocation wrapper, stdout/stderr streaming, and container cleanup traps.
+4. **Phase 4: Verification & Evals**: Populate `evals/evals.json` with positive/negative trigger cases and validate skill compliance.
 
-- If `$ARGUMENTS` is empty: begin with discovery — do not assume Docker is available
-- If Docker is not installed in the target environment: generate graceful degradation
-- If the workflow uses HPC or Nextflow instead of Docker: adapt scaffolding accordingly
+## Verification
+
+```bash
+# Validate generated skill compliance
+python3 plugins/agent-scaffolders/scripts/audit_skill.py plugins/<plugin>/skills/<skill-name> --mode source
+
+# Verify container runtime pre-flight logic
+docker info >/dev/null 2>&1 || echo "Docker daemon unreachable"
+```
+
+## References
+- [fallback-tree.md](references/fallback-tree.md) - Procedural fallback handling for scaffolding failures.
+- [acceptance-criteria.md](references/acceptance-criteria.md) - Standard acceptance criteria for container skills.
+- [references/patterns/client-side-compute-sandbox-constraint.md](references/patterns/client-side-compute-sandbox-constraint.md) - Sandbox isolation pattern.

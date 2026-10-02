@@ -4,398 +4,59 @@ plugin: agent-scaffolders
 description: >
   Use when the user asks to audit or validate a plugin, check its structure or
   .claude-plugin/plugin.json, review components, or confirm compliance. Also trigger
-  after plugin components change. Audit the whole plugin here; use audit-skill for
-  one skill. Deeper security review requires an explicitly selected security-review
-  workflow.
+  after plugin components change. Audit the whole plugin here; use audit-skill for one skill.
 allowed-tools: Bash, Read, Write, Glob, Grep
 ---
 
+# Audit Plugin (`audit-plugin`)
+
+Performs comprehensive validation of a plugin against structure standards, naming conventions, and component requirements.
+
+## Contents
+
+- [Dependencies](#dependencies)
+- [Constraints](#constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
+
 ## Dependencies
 
-This skill requires **Python 3.8+** and standard library only. No external packages needed.
+Requires Python 3.8+ and standard library modules.
 
-**To install this skill's dependencies:**
-```bash
-pip-compile ./requirements.in
-pip install -r ./requirements.txt
-```
+## Constraints
 
-See `../../requirements.txt` for the dependency lockfile (currently empty — standard library only).
+- **File-level symlinks only**: Directory symlinks violate plugin architecture policy.
+- **Hub-first asset layout**: Reusable scripts and references live in plugin root hub, symlinked into skills.
+- **Portability**: No hardcoded paths (`/Users/`, `/home/`); use relative paths or `${CLAUDE_PLUGIN_ROOT}`.
+- **Manifest schema**: `.claude-plugin/plugin.json` author field must be an object `{"name": "...", "email": "..."}`.
 
----
-
-# Plugin Auditor
-
-Performs comprehensive validation of a Claude Code plugin against structure standards,
-naming conventions, component requirements, and security best practices.
-
----
-
-## Step 1: Locate the Plugin
-
-Establish the plugin root:
-- Look for `../../../../.claude-plugin/plugin.json` -- this is the definitive marker
-- If user didn't specify a path, check current directory and common locations
-- Confirm with user if ambiguous
-
----
-
-## Step 2: Run Component Validation Scripts
-
-Run the scripts bundled in this plugin (all in `scripts/`):
+## Quick start
 
 ```bash
-# Validate agent files
-python ${CLAUDE_PLUGIN_ROOT}/scripts/validate_agent.py agents/my-agent.md
-
-# Validate hooks.json schema
-python ${CLAUDE_PLUGIN_ROOT}/scripts/validate_hook_schema.py hooks/hooks.json
-
-# Lint hook scripts
-python ${CLAUDE_PLUGIN_ROOT}/scripts/hook_linter.py hooks/
+python3 scripts/audit_plugin_structure.py plugins/<plugin-name>
 ```
 
-Checks performed: frontmatter structure, required fields (name/description/model/color),
-`<example>` blocks in agent descriptions, hook event names, matcher + hooks array structure.
+## Workflow
 
-**Validation report format:**
-```
-## Plugin Validation Report
-### Plugin: [name] | Location: [path]
-### Summary: [PASS/FAIL with stats]
-### Critical Issues ([count]) -- file path + issue + fix
-### Warnings ([count]) -- file path + recommendation
-### Component Summary -- counts of each type
-### Positive Findings
-### Overall Assessment: [PASS/FAIL + reasoning]
-```
+1. **Structure & Manifest**: Verify `.claude-plugin/plugin.json` exists with object author schema.
+2. **Component Linting**: Validate agents, hooks (`validate_hook_schema.py`), and skills.
+3. **Symlink Hygiene**: Verify spoke symlinks resolve cleanly to plugin root hubs.
+4. **Contract Compliance**: Confirm `evals/evals.json` routing arrays use `should_trigger` boolean schema.
+5. **Security Scan**: Verify zero hardcoded tokens, secrets, or machine-specific absolute paths.
 
----
-
-## Step 2b: Auto-Fix Claude Code Load Errors
-
-Before deep validation, run the load-error fixer to catch issues that prevent
-Claude Code from loading the plugin at all. These are silent failures — the plugin
-simply doesn't load with no useful error until you run `/doctor`.
+## Verification
 
 ```bash
-python ${CLAUDE_PLUGIN_ROOT}/scripts/fix_plugin_load_errors.py <plugin_root>
+# Validate plugin structure compliance
+python3 scripts/audit_plugin_structure.py plugins/<plugin-name>
+# Audit marketplace source paths (if marketplace.json present)
+python3 scripts/audit_marketplace_sources.py .
 ```
 
-**What it fixes automatically:**
-
-| Issue | Symptom in /doctor | Root cause |
-|---|---|---|
-| `plugin.json` has `skills`/`agents`/`hooks`/`commands` field (any value — array, boolean `true`, object) | `Invalid input` | Validator rejects these entirely — auto-discovery handles them; `"hooks": true` is a common mistake |
-| `hooks.json` is `{}` (empty object) | `expected record, received undefined` | Must be `{"hooks": {}}` |
-| `hooks.json` is `[]` (array) | `expected object received array` | Must be an object |
-| `hooks.json` flat format `{"EventName":{...}}` | `expected record, received undefined` | Must be nested under `"hooks"` key |
-| `hooks.json`/`lsp.json`/`.mcp.json` has literal `\n` chars | `Unrecognized token '\'` | Python `json.dump` wrote escaped newlines; file must have real newlines |
-| `SKILL.md` has comment lines before `---` | skill fails to load | Frontmatter parser requires `---` as the very first line |
-
-**Correct `hooks.json` format:**
-```json
-{
-  "hooks": {
-    "SessionStart": [
-      {
-        "matcher": "",
-        "hooks": [{ "type": "command", "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/script.py || python ${CLAUDE_PLUGIN_ROOT}/hooks/script.py" }]
-      }
-    ]
-  }
-}
-```
-Note: use `python3 ... || python ...` — not bare `python` — so hooks work on both macOS/Linux and Windows.
-
-**Empty hooks (no hooks needed):**
-```json
-{ "hooks": {} }
-```
-
-**IMPORTANT — Cache coverage**: Claude Code scans ALL cached versions under
-`~/.claude/plugins/cache/`, not just the active `installPath`. Fixing source files
-and reinstalling is the only reliable fix. Use `uvx plugin-add` to reinstall.
-
----
-
-## Step 2c: Detect and Fix Symlink Stand-Ins
-
-Git checks out symlinks as plain-text "stand-in" files when `core.symlinks=false` (common on
-Windows without Developer Mode, or when cloned without the setting). Stand-ins look like real files
-but contain only a relative path (e.g. `../../../scripts/execute.py`). They are functionally broken
-— the bridge installer will copy the path string, not the actual script.
-
-**Run the bulk scanner** from the link-checker plugin:
-
-```bash
-python plugins/dev-utils/scripts/bulk_symlink_fixer.py plugins/<plugin-name>
-```
-
-The scanner detects both:
-- **text-file stand-ins**: small plain-text files (`< 512 bytes`) whose content looks like a relative path
-- **broken symlinks**: real symlinks whose target no longer exists
-
-**Important — the fixer has a silent failure mode.** `symlink_manager.py` always exits 0, so
-`bulk_symlink_fixer.py` prints "✓ Fixed" even when the source doesn't exist. Always verify manually:
-
-```bash
-# Confirm symlinks resolved (count should match expectations)
-find plugins/<plugin-name> -type l | wc -l
-
-# Confirm no text-file stand-ins remain for scripts paths (critical)
-find plugins/<plugin-name>/skills -path "*/scripts/*" -type f ! -type l
-```
-
-**Two categories of stand-ins:**
-
-1. **Valid stand-ins** (target exists) — the fixer converts these automatically. If it fails
-   silently, convert manually:
-   ```python
-   # Read the path out of the stand-in, unlink the file, recreate as symlink
-   content = Path(standin).read_text().strip()
-   Path(standin).unlink()
-   Path(standin).symlink_to(content)
-   ```
-
-2. **Wrong-path stand-ins** (target missing) — common cause: an extra subdirectory in the path
-   (e.g. `references/architecture/architecture.md` when the file is at `references/architecture.md`).
-   Correct the relative path before creating the symlink. Check what actually exists at the plugin
-   `references/` root and recalculate the depth.
-
-**Correct symlink pattern (must match all standard skills):**
-```
-skills/<skill>/scripts/execute.py  →  ../../../scripts/<canonical_name>.py
-skills/<skill>/references/architecture.md  →  ../../../references/architecture.md
-```
-The symlink filename and the target filename may differ (e.g. `execute.py` → `exploration_optimizer_execute.py`)
-— that is intentional and valid.
-
-**6 known missing-source stand-ins in exploration-cycle-plugin** (leave as-is until source files
-are created at `plugins/exploration-cycle-plugin/references/`):
-`agent-loop-patterns.md`, `exploration-output-standards.md`
-
----
-
-## Step 3: Run Component-Specific Scripts
-
-Run targeted scripts for detailed checks:
-
-**Validate each agent file:**
-```bash
-python ${CLAUDE_PLUGIN_ROOT}/scripts/validate_agent.py agents/my-agent.md
-```
-Checks: frontmatter structure, required fields (name/description/model/color), name format
-(3-50 chars, lowercase + hyphens), description has `<example>` blocks, system prompt
-length (minimum 20 chars, recommended 500-3,000).
-
-**Validate hooks.json schema:**
-```bash
-python ${CLAUDE_PLUGIN_ROOT}/scripts/validate_hook_schema.py hooks/hooks.json
-```
-Checks: JSON syntax, valid event names, each hook has `matcher` + `hooks` array,
-hook type is `command` or `prompt`, command hooks reference existing scripts with
-`${CLAUDE_PLUGIN_ROOT}`.
-
-**Test a hook script directly:**
-```bash
-python ${CLAUDE_PLUGIN_ROOT}/scripts/test_hook.py \
-  --hook hooks/scripts/validate.py \
-  --event PreToolUse \
-  --input '{"tool_name": "Write", "tool_input": {"file_path": "src/app.py"}}'
-```
-
-**Lint hook scripts for common issues:**
-```bash
-python ${CLAUDE_PLUGIN_ROOT}/scripts/hook_linter.py hooks/
-```
-
----
-
-## Step 3b: Self-Evolution Policy Compliance Check
-
-Every plugin must comply with the continuous self-evolution policy at
-`.agent/rules/self-evolution-policy.md`. Check each of the following:
-
-**Required files (flag WARN if missing):**
-```bash
-# Check for self-evolution profile (required by Phase 0 before any autonomous edit)
-ls plugins/<plugin>/references/self-evolution-profile.md
-
-# Check for map-debt working queue (required by friction-driven evolution policy)
-ls plugins/<plugin>/references/map-debt.md
-
-# Check for evolution log (created by Phase 7 on first fix)
-ls plugins/<plugin>/references/evolution-log.md
-```
-
-**Evals schema (flag CRITICAL if wrong):**
-```bash
-# All evals.json must use should_trigger boolean schema — NOT legacy expected_behavior
-grep -r "expected_behavior\|expected_output\|\"expected\":" plugins/<plugin>/skills/*/evals/evals.json
-# Any match = wrong schema → fix immediately
-```
-
-**SKILL.md line count (flag WARN if over 500):**
-```bash
-wc -l plugins/<plugin>/skills/*/SKILL.md | sort -rn | head -10
-```
-
-**Stale skill references (flag WARN):**
-```bash
-# os-skill-improvement is methodology-only — any SKILL.md directing agents to invoke it
-# for active improvement should reference os-improvement-loop instead
-grep -rn "os-skill-improvement" plugins/<plugin>/skills/*/SKILL.md
-```
-
-**File-level-symlinks-only check (flag CRITICAL if violated):**
-```bash
-# Only file-level symlinks permitted — no directory symlinks
-find plugins/<plugin> -type l | while read l; do
-  if [ -d "$l" ]; then echo "DIRECTORY SYMLINK (violates file-level-symlinks-only rule): $l"; fi
-done
-```
-
----
-
-## Step 4: Manual Checks
-
-For issues the scripts may not catch:
-
-**Plugin structure check:**
-```bash
-# Manifest must be here (not in root)
-ls .claude-plugin/plugin.json
-
-# Components must be at root (not in .claude-plugin/)
-ls commands/ agents/ skills/ hooks/
-
-# Validate JSON & author format (author MUST be an object with name/email, not a string)
-jq . .claude-plugin/plugin.json
-```
-
-**Manifest lint rules:**
-- `author` MUST be an object: `{"name": "...", "email": "..."}`. A string value causes `Invalid input: expected object, received string` during `/plugin install`.
-- No duplicate top-level keys in `plugin.json` (e.g. duplicate `agents` or `commands`).
-
-**Security scan:**
-```bash
-# Check for hardcoded credentials
-grep -rn "password\|api_key\|secret\|token" --include="*.md" --include="*.json" --include="*.sh" .
-```
-
-**${CLAUDE_PLUGIN_ROOT} portability:**
-```bash
-# Ensure no hardcoded paths in hook commands or MCP config
-grep -rn "/Users/\|/home/" --include="*.json" --include="*.sh" .
-```
-
-**Hook script quality (for any `.py` files wired as hooks):**
-- Does the hook command use `python3 ... || python ...` for cross-platform compatibility?
-- Does `main()` have an early-exit project-type guard (e.g. `if not (project_root / "context").exists(): return`) so it skips silently in projects that haven't initialized the plugin?
-
-**Naming conventions:**
-- Plugin name: kebab-case (`my-plugin`, not `MyPlugin` or `my_plugin`)
-- Command files: kebab-case `.md`
-- Agent files: kebab-case `.md` describing role
-- Skill directories: kebab-case
-- Script files: kebab-case with extension (`.sh`, `.py`, `.js`)
-
-**Skill quality (run skill-reviewer for each skill):**
-```
-"Review my skill at skills/skill-name/SKILL.md"
-```
-
----
-
-## Step 4b: Marketplace Source Path Audit
-
-If the repo contains a `.claude-plugin/marketplace.json`, run this check to ensure
-every plugin entry points to a directory that actually exists. Missing directories
-silently fail during `/plugin` install with no helpful error message.
-
-```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/scripts/audit_marketplace_sources.py <repo_root>
-# or from the repo root:
-python3 ${CLAUDE_PLUGIN_ROOT}/scripts/audit_marketplace_sources.py .
-```
-
-**Common causes of missing paths:**
-- Plugin directory renamed but `marketplace.json` not updated (e.g. `obsidian-integration` → `obsidian-wiki-engine`)
-- Plugin entry added to marketplace before the plugin directory was created
-- Plugin directory deleted but marketplace entry not removed
-
-**Fix:** Either update the `source` path to match the real directory name, or remove the entry.
-
----
-
-## Step 5: Report and Remediate
-
-**Severity levels:**
-- **Critical** -- plugin won't work or is insecure. Fix immediately. (e.g., invalid JSON, string author instead of object, duplicate keys, hardcoded credentials, missing required fields)
-- **Warning** -- degrades quality or usability. Fix before distribution. (e.g., missing README, vague skill descriptions, no `<example>` blocks in agents)
-- **Minor** -- best practice improvement. Fix when convenient.
-
-**Fix critical issues first, then re-validate:**
-```bash
-# Re-run validation after fixes
-"Validate my plugin at <path>"
-```
-
-**Keep running until: 0 critical issues, warnings addressed or documented.**
-
----
-
----
-
-## Standards & References
-
-- **Compliance rules to check directly:** no cross-plugin script execution (a plugin never imports or runs another plugin's Python code); hub-and-spoke shared scripts (a script used by 2+ skills in the same plugin lives at the plugin root, not duplicated per-skill); file-level symlinks only (never directory symlinks, never duplicated copies); full self-containment (an installed skill has zero runtime dependency on the source repo or another plugin). A plugin that duplicates a shared script instead of symlinking it, or depends on another plugin's code, is structurally non-compliant.
-
-## Standards Reference
-
-**.claude-plugin/plugin.json minimal valid:**
-```json
-{
-  "name": "plugin-name",
-  "author": { "name": "Author Name", "email": "email@example.com" }
-}
-```
-
-**.claude-plugin/plugin.json recommended:**
-```json
-{
-  "name": "plugin-name",
-  "version": "0.1.0",
-  "description": "What the plugin does",
-  "author": { "name": "Author Name", "email": "email@example.com" }
-}
-```
-
-**Agent description pattern (must have `<example>` blocks):**
-```markdown
-description: |
-  Use this agent when user asks to "do X", "run Y", or mentions Z.
-  
-  <example>
-  Context: user just finished creating a plugin
-  user: "I've set up my plugin"
-  assistant: "Let me validate the structure."
-  </example>
-```
-
-**Skill description pattern (third-person, anti-undertrigger):**
-```yaml
-description: >
-  This skill should be used when the user asks to "X", "Y", or "Z".
-  Use this skill even when the user doesn't explicitly say "Z" -- 
-  mentions of [related concept] should also trigger this.
-```
-
----
-
-## Next Actions
-- **Fix gaps**: Run `create-skill` or `create-hook` to add missing components
-- **Improve skills**: Run `skill-reviewer` on each skill for trigger optimization
-- **Deeper security review**: Request a separate security-review workflow when routine plugin validation is insufficient
-- **Distribute**: Push to GitHub — users install via `plugin_add.py richfrem/agent-plugins-skills`
+## References
+
+- [audit-plugin-guide.md](references/audit-plugin-guide.md) — Comprehensive audit rules and error codes.
+- [acceptance-criteria.md](references/acceptance-criteria.md) — Plugin validation acceptance criteria.
+- [fallback-tree.md](references/fallback-tree.md) — Escalation protocol for structural audit failures.

@@ -45,7 +45,8 @@ def test_interview_contract_declares_single_human_default_approver():
 
 def test_work_intake_confirms_approver_identity_first():
     text = (PLUGIN_ROOT / "skills" / "work-intake" / "SKILL.md").read_text(encoding="utf-8")
-    rules = text.split("## Critical Operational Rules", 1)[1]
+    heading = "## Critical Constraints" if "## Critical Constraints" in text else "## Critical Operational Rules"
+    rules = text.split(heading, 1)[1]
     first_rule = next(line for line in rules.splitlines() if line.startswith("1. "))
     assert "Approver Identity" in first_rule
     assert "simulation" in first_rule.lower()

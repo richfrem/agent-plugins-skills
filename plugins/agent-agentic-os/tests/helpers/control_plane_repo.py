@@ -23,7 +23,7 @@ PLUGIN = Path(__file__).resolve().parents[2]
 SCRIPTS = PLUGIN / "scripts"
 SKILL = PLUGIN / "skills" / "os-control-plane-mode"
 MODE_SCRIPT = SKILL / "scripts" / "control_plane_mode.py"
-MANIFEST = SKILL / "control-plane.manifest.json"
+MANIFEST = SKILL / "references" / "control-plane.manifest.json" if (SKILL / "references" / "control-plane.manifest.json").is_file() else (SKILL / "control-plane.manifest.json")
 
 MEMBERS = {
     "skills": ["work-intake", "transition-simulator", "os-signing-setup"],

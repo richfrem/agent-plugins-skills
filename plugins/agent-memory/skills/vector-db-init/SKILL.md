@@ -1,271 +1,62 @@
 ---
 name: vector-db-init
-plugin: vector-db
-description: Interactively initializes the Vector DB plugin. Guided discovery asks which folders to index, confirms the manifest, then scaffolds vector_profiles.json for high-performance In-Process or Native Server connections. Mandatory first step before ingestion or search.
+plugin: agent-memory
+description: Interactively initializes the Vector DB plugin, configuring source manifests and vector_profiles.json for In-Process or Server mode.
 allowed-tools: Bash, Read, Write
 ---
 
-## Dependencies
+# Vector DB Initialization (`vector-db-init`)
 
-This skill requires **Python 3.8+** and standard library for initialization. Performance operations require `chromadb` and `langchain` as defined in the plugin root requirements.
+Prepares the local environment and manifests for ChromaDB vector embeddings and semantic search.
 
-**To install this skill's dependencies:**
-```bash
-python -m piptools compile requirements.in --output-file requirements.txt
-pip install -r requirements.txt
-```
+## Contents
 
----
+- [Critical Constraints](#critical-constraints)
+- [Quick start](#quick-start)
+- [Operational Parameters](#operational-parameters)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
 
-# Vector DB Initialization
+## Critical Constraints
 
-The `vector-db-init` skill is an interactive setup routine that prepares the environment for the Vector database. It follows the same pattern as `rlm-init` and `wiki-init` for a consistent experience across all three retrieval plugins.
+1. **In-Process Default**: Operates directly on disk via `chroma_data_path`; no daemon required unless multi-process concurrency is needed.
+2. **Dependency Install**: Requires `chromadb` and `sentence-transformers` available in the python environment.
+3. **Manifest Sovereignty**: Configuration persists in `.agent/learning/vector_profiles.json`.
 
-## Profile Configuration Reference
+## Quick start
 
-All operational settings live in `.agent/learning/vector_profiles.json`. These control performance and connection mode.
-
-| Parameter | Default | Purpose |
-|:-----|:--------|:--------|
-| `chroma_host` | `""` | Empty = In-Process (Direct Disk); IP = Server mode. |
-| `batch_size` | `1000` | Files processed per embedding batch. |
-| `embedding_model` | `nomic-ai/nomic-embed-text-v1.5` | Semantic model for indexing. |
-| `device` | `cpu` | Hardware: `cpu` or `cuda` (NVIDIA GPU). |
-| `parent_chunk_size` | `2000` | Parent chunk granularity. |
-| `child_chunk_size` | `400` | Child chunk granularity. |
-
-## When to Use This
-
-- When a user first installs the `vector-db` plugin.
-- If the Vector DB profile is missing from `.agent/learning/vector_profiles.json`.
-- If you need to add a new manifest profile or update which folders are indexed.
-- If you need to re-scaffold a clean configuration after a plugin upgrade.
-
----
-
-## Default: In-Process (Filesystem) Mode
-
-Vector-db runs **In-Process by default** — ChromaDB persists directly to a local directory
-(configured as `chroma_data_path` in `vector_profiles.json`). No server process is needed.
-
-When running `ingest.py` or `query.py` you will see:
-```
-[WARN] Failed to connect to remote ChromaDB ... Falling back to local.
-[DIR] Connecting to local persistent ChromaDB at .agent/learning/vector_wiki_db...
-```
-**This is expected and correct.** The remote-server check (`127.0.0.1:8110`) happens
-automatically in case a server IS running, but falls back gracefully. Only switch to
-server mode (`vector-db-launch` skill) if you need multiple concurrent writers.
-
----
-
-
-### Step 0: Install Dependencies (MANDATORY — do this first)
-
-**Before anything else**, install the plugin's Python dependencies from the lockfile.
-
-Run from the project root:
+Execute automatic profile scaffolding for local vector storage:
 
 ```bash
-# Regenerate the lockfile from the intent file (only needed when requirements.in changes):
-python -m piptools compile plugins/agent-memory/requirements.in \
-    --output-file plugins/agent-memory/requirements.txt
-
-# Install all dependencies (always run this on first setup):
-python -m pip install -r plugins/agent-memory/requirements.txt
+python3 scripts/init.py
 ```
 
-> **Note:** `pip-tools` itself must be installed first if not present:
-> ```bash
-> python -m pip install pip-tools
-> ```
->
-> **Known gotcha:** The system `pip` command may not be available on macOS. Always use
-> `python -m pip install ...` rather than bare `pip install ...`.
+## Operational Parameters
 
-Verify the critical packages are installed:
+Settings configured in `.agent/learning/vector_profiles.json`:
+- `chroma_host`: Empty string for in-process direct disk mode; IP:port for server mode.
+- `batch_size`: Embedding batch size (default: 1,000 files).
+- `embedding_model`: `nomic-ai/nomic-embed-text-v1.5`.
+- `parent_chunk_size`: 2,000 chars; `child_chunk_size`: 400 chars.
+
+## Workflow
+
+1. **Dependency Verification**: Ensure dependencies are installed in virtualenv.
+2. **Target Discovery**: Identify project directories to index (e.g. `docs/`, `plugins/`).
+3. **Manifest Generation**: Write `.agent/learning/vector_knowledge_manifest.json`.
+4. **Scaffold Profile**: Run `python3 scripts/init.py` to create the profile configuration.
+5. **Next Steps**: Guide user to run `vector-db-ingest` to index content.
+
+## Verification
+
+Confirm configuration file generation and validity:
 
 ```bash
-python -c "import chromadb; print('chromadb:', chromadb.__version__)"
-python -c "import einops; print('einops: OK')"
-python -c "from sentence_transformers import SentenceTransformer; print('sentence-transformers: OK')"
+test -f .agent/learning/vector_profiles.json && echo "Profile configured"
 ```
 
-If any check fails, the install step above will fix it.
+## References
 
----
-
-### Step 1: Setup Mode Selection
-
-**Ask this after dependencies are installed.**
-
-First, check what other plugins are installed:
-```bash
-ls .agents/skills/rlm-init/              2>/dev/null && echo "rlm-factory: INSTALLED"          || echo "rlm-factory: NOT FOUND"
-ls .agents/skills/obsidian-wiki-builder/ 2>/dev/null && echo "obsidian-wiki-engine: INSTALLED"  || echo "obsidian-wiki-engine: NOT FOUND"
-```
-
-Then ask:
-```
-Vector DB works standalone with zero external dependencies. You can also combine it with
-other plugins for a more powerful retrieval stack. What setup would you like?
-
-  A) Vector DB only (standalone)
-     - Semantic search over any indexed folders
-     - No other plugins needed — works right now
-
-  B) Vector DB + RLM Phase 1 pre-filter                [requires: rlm-factory in .agents/]
-     - RLM keyword pre-filter -> vector semantic search
-     - Reduces noise, improves precision for large corpora
-
-  C) Vector DB as wiki Phase 2 search                  [requires: obsidian-wiki-engine in .agents/]
-     - Adds vector semantic search to /wiki-query
-     - /wiki-query: RLM keyword (O(1)) -> vector (O(log N)) -> grep exact
-
-  D) Full Super-RAG                                    [requires: rlm-factory + obsidian-wiki-engine]
-     - All three phases: RLM keyword -> vector semantic -> wiki concept nodes
-
-Enter A, B, C, or D (default: A):
-```
-
-If required plugins are NOT installed for the chosen mode:
-```
-[plugin-name] is not installed in .agents/.
-
-To install it:
-
-  # Recommended (uvx -- works on Mac, Linux, Windows)
-  uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills
-
-  # See full install guide
-  cat INSTALL.md
-
-After installing, re-run /vector-db:init and choose your desired mode.
-
-Continue with Mode A (standalone) for now? (y) or abort and install first? (n)
-```
-
----
-
-### Step 1: Guided Source Discovery
-
-Scan the project root and present a numbered table of candidate directories:
-
-```bash
-find . -maxdepth 1 -type d | grep -v '^\.$' | grep -v -E '\.(git|venv|vscode|windsurf|claude|agents|agent|knowledge_vector_data|wiki|vector_data)$' | sort
-```
-
-Present results as a numbered table with a one-line description of each folder. Then ask:
-
-```
-Which folders should be treated as raw content sources for vector indexing?
-
-  Enter numbers separated by commas (e.g. 1, 3, 5)
-  or type custom paths (relative or absolute)
-  or both (e.g. 1, 2, /path/to/other/dir)
-
-  You can specify all sources now in one go.
-```
-
-Resolve all selected paths to their relative form from the project root (e.g. `plugins/`, `plugin-research/`).
-Validate each path exists. Warn if a path does not exist -- ask the user to confirm or skip it.
-
-Then ask once, globally:
-
-```
-Any subdirectory patterns or file types to exclude beyond the defaults?
-Defaults: .git/, node_modules/, .venv/, __pycache__/, requirements.in, requirements.txt
-
-Press Enter to accept defaults, or type additions (e.g. temp/, *.tmp):
-```
-
----
-
-### Step 2: Confirm and Write Manifest
-
-Display the complete manifest before writing, using the same flat schema as `rlm-factory` and `obsidian-wiki-engine`:
-
-```json
-{
-  "description": "Globs tracking project documentation and knowledge records.",
-  "include": [
-    "<folder_1>/",
-    "<folder_2>/"
-  ],
-  "exclude": [
-    "/.git/",
-    "/node_modules/",
-    "/.venv/",
-    "/__pycache__/",
-    "requirements.in",
-    "requirements.txt"
-  ]
-}
-```
-
-Ask: "Does this look correct? (y to write, e to edit, q to abort)"
-
-If `.agent/learning/vector_knowledge_manifest.json` already exists:
-- Ask: "A manifest already exists. Overwrite, merge (add new includes only), or abort? (o/m/q)"
-- **Merge**: append new paths to the existing `include` array; never remove existing entries
-- **Overwrite**: replace entirely with the new manifest
-
-Write to: `.agent/learning/vector_knowledge_manifest.json`
-Create parent directories if needed.
-
-> **Note on manifest naming**: `vector_profiles.json` may reference `vector_wiki_manifest.json` (legacy name).
-> The canonical filename going forward is `vector_knowledge_manifest.json`. If the profile still points
-> to the old name, update the `manifest` field in `vector_profiles.json` to match.
-
----
-
-### Step 3: Scaffold Profile and Install Dependencies
-
-After the manifest is confirmed, run the init script which handles profile scaffolding and dependency installation:
-
-```bash
-python ./scripts/init.py
-```
-
-The script will:
-1. Install Python dependencies from the lockfile (`requirements.txt`)
-2. Scaffold or update `.agent/learning/vector_profiles.json` with the `wiki` profile
-3. Set `chroma_host: ""` (In-Process mode by default — no server needed)
-
-After the script runs, verify the profile's `manifest` field points to `vector_knowledge_manifest.json`.
-If it still shows `vector_wiki_manifest.json`, update it:
-
-```json
-{
-  "version": 2,
-  "profiles": {
-    "wiki": {
-      "manifest": ".agent/learning/vector_knowledge_manifest.json"
-    }
-  },
-  "default_profile": "wiki"
-}
-```
-
----
-
-### Step 4: Verify and Show Next Steps
-
-Confirm the files written, then print:
-
-```
-=== Vector DB Setup Complete (Mode <X>) ===
-
-Files written:
-  - .agent/learning/vector_knowledge_manifest.json  (<N> sources)
-  - .agent/learning/vector_profiles.json            (wiki profile ready)
-
-Next steps:
-  /vector-db:ingest   <- build the semantic index from your sources
-  /vector-db:search   <- run semantic queries
-  /vector-db:audit    <- check index coverage
-
-[Mode B/C/D] To activate the full retrieval stack:
-  /rlm-factory:init   <- set up RLM Phase 1 keyword pre-filter
-  /wiki-init          <- set up wiki concept node layer
-```
+- [acceptance-criteria.md](references/acceptance-criteria.md) — Acceptance criteria for vector database bootstrapping.
+- [vector-db-bootstrap-guide.md](references/vector-db-bootstrap-guide.md) — Step-by-step initialization manual.

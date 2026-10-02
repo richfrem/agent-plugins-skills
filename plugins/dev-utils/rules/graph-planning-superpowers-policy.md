@@ -15,6 +15,16 @@ globs: ["**/*"]
 
 ---
 
+## Contents
+- [1. Overview & 4-Phase Lifecycle](#1-overview--4-phase-lifecycle)
+- [2. Phase 0: Pre-Planning Intake Bookend & Socratic Gate](#2-phase-0-pre-planning-intake-bookend--socratic-gate)
+- [3. Phase 1: Native Plan Mode & Adversarial Review](#3-phase-1-native-plan-mode--adversarial-review)
+- [4. Phase 2: Worktree Isolation & Superpowers TDD](#4-phase-2-worktree-isolation--superpowers-tdd)
+- [5. Phase 3: Deterministic Exit Gates & Asymmetric Persistence](#5-phase-3-deterministic-exit-gates--asymmetric-persistence)
+- [6. Git & Environment Invariants](#6-git--environment-invariants)
+
+---
+
 ## 1. Overview & 4-Phase Lifecycle
 
 All STANDARD-classified engineering tasks MUST progress through the 4-phase lifecycle below. This replaces legacy waterfall approaches and couples upstream discovery to deterministic execution.

@@ -9,42 +9,48 @@ allowed-tools: Bash, Read
 
 # Worktree Manager
 
-Use this skill when a task needs an isolated worktree or when the active runtime
-may provide native worktree management.
+Selects confirmed native worktree facilities or the governed portable repository worktree fallback, validates placement, and reports cleanup guidance.
 
-1. Probe the active runtime with `scripts/capability_probe.py`.
-2. Treat the returned capability result as authoritative. Never infer native
-   worktree support from a model name or an installed binary.
-3. If `native_worktree` is true, follow the returned activation guidance and
-   retain the task's control-plane gates.
-4. Otherwise use the portable plan from `scripts/worktree_manager.py` and
-   delegate lifecycle operations to the `issue-worktree-agent` skill; its path
-   must remain below `<repo>/.worktrees/<task-id>`.
-5. Before creating any worktree, `git fetch origin main` and base the new
-   branch on `origin/main` — never on local `main`, which may be stale or
-   hold uncommitted state. A worktree only ever contains committed content;
-   see `references/worktree-reconciliation-and-multi-worktree-practices.md`
-   for why and for the full reconciliation and multi-worktree contract.
-6. Report the selected strategy, exact path, branch, activation guidance, and
-   cleanup command before mutating the repository.
+## Contents
 
-Native and portable execution have the same approval, verification, and review
-requirements. Native execution is an implementation facility, not a governance
-bypass.
+- [Critical Constraints](#critical-constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
 
-## Dirty pre-worktree state and concurrent worktrees
+## Critical Constraints
 
-Do not rely on agent self-report that pre-worktree changes on the source checkout were carried
-into the worktree, or that a concurrent worktree's merged work is still intact after a rebase —
-both are enforced or documented, not assumed:
+1. **Origin Base Invariant**: Before creating any worktree, run `git fetch origin main` and base new branches on `origin/main` — never on local `main`.
+2. **Path Confinement**: Portable worktrees must reside strictly below `<repo>/.worktrees/<task-id>`.
+3. **Governance Equivalence**: Native worktree execution is an implementation facility, not a governance bypass. Both native and portable execution require identical approval, verification, and review gates.
+4. **Reconciliation & Concurrency**: Never assume pre-worktree dirty state or concurrent branches carry over automatically. `APPROVED -> IN_WORKTREE` requires deterministic reconciliation (`main_worktree_reconciliation`). Rebase onto fresh `origin/main` immediately before merging.
 
-- **Pre-worktree dirty state**: the `APPROVED -> IN_WORKTREE` transition runs a deterministic,
-  code-executed reconciliation check (`main_worktree_reconciliation`) that force-copies dirty
-  source-checkout files into the worktree and hard-blocks on any genuine conflict. See
-  `references/worktree-reconciliation-and-multi-worktree-practices.md` §1.
-- **Concurrent worktrees**: rebase onto fresh `origin/main` immediately before merging any
-  worktree branch — never assume the branch's original base commit is still current, especially
-  given this repository's squash-merge convention. See
-  `references/worktree-reconciliation-and-multi-worktree-practices.md` §3 for the full
-  multi-worktree contract (fresh-base branching, task-scoped file ownership, staging/integration
-  branch for overlapping work, mandatory diff review before merge).
+## Quick start
+
+Probe the active runtime to determine available worktree facilities:
+
+```bash
+python3 scripts/capability_probe.py
+```
+
+## Workflow
+
+1. **Probe Runtime**: Run `capability_probe.py` and treat returned capability as authoritative. Never infer native support from model name or binary presence.
+2. **Select Facility**:
+   - If `native_worktree` is true: follow returned activation guidance and retain task control-plane gates.
+   - If portable fallback: generate execution plan via `scripts/worktree_manager.py` and delegate lifecycle management to `issue-worktree-agent`.
+3. **Reconcile Base & State**: Fetch `origin/main` and verify base commit. If migrating uncommitted edits, run deterministic reconciliation.
+4. **Report & Activate**: Report selected strategy, exact path, branch, activation guidance, and cleanup commands before mutating repository.
+
+## Verification
+
+1. Confirm worktree directory path matches `<repo>/.worktrees/<task-id>`.
+2. Verify branch HEAD is derived directly from `origin/main`.
+3. Inspect `git status` inside worktree to confirm reconciliation succeeded without uncommitted file collisions.
+
+## References
+
+- [worktree-reconciliation-and-multi-worktree-practices.md](references/worktree-reconciliation-and-multi-worktree-practices.md) — Read when handling dirty working trees, rebase conflicts, or concurrent worktrees.
+- [acceptance-criteria.md](references/acceptance-criteria.md) — Acceptance gates and readiness checks.
+- [fallback-tree.md](references/fallback-tree.md) — Recovery procedures when worktree creation fails.

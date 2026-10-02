@@ -1,74 +1,49 @@
 ---
 name: vector-db-ingest
-plugin: vector-db
-description: |
-  Ingests repository files into the ChromaDB vector store. Builds or updates the vector index from a manifest or directory scan using ingest.py.
-  Use when new files need to be indexed or the vector store is out of date.
-
-  <example>
-  user: "Index these new plugin files into the vector database"
-  assistant: "I'll use vector-db-ingest to add them to the vector store."
-  </example>
-  <example>
-  user: "The vector store is missing recent files -- update it"
-  assistant: "I'll use vector-db-ingest to re-index the changes."
-  </example>
+plugin: agent-memory
+description: Ingests repository files into the ChromaDB vector store, building or updating the vector index using ingest.py.
 allowed-tools: Bash, Read, Write
 ---
 
-## Dependencies
+# Vector DB Ingest (`vector-db-ingest`)
 
-This skill requires the `chromadb` and `langchain` packages defined in the plugin root.
+Ingests and indexes repository files into the ChromaDB vector store for semantic retrieval.
 
----
+## Contents
 
-# VDB Ingest Agent
+- [Critical Constraints](#critical-constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
 
-## Role
+## Critical Constraints
 
-You ingest (index) repository files into the ChromaDB vector store so they can be semantically searched. You build or update the parent-child chunk structure that `query.py` searches against.
+1. **Profile Sovereignty**: Always specify `--profile` to ensure the correct manifest and batch configuration are loaded.
+2. **Lock Concurrency**: Ensure no concurrent process holds a lock on the database folder during ingestion.
+3. **Transparency**: Report target profile, indexed file count, and any processing errors.
 
-**High-Performance Mode:** This skill uses a configurable batch processing engine (default 1,000 files) defined in `.agent/learning/vector_profiles.json`.
+## Quick start
 
-## Prerequisites
-
-### 1. First-time setup
-If `vector_profiles.json` is missing, run the init skill first:
-```bash
-python ./scripts/init.py
-```
-
-### 2. Execution Mode
-This plugin defaults to **In-Process mode** for zero-latency direct disk access. No background server is required unless explicitly configured in the profile.
-
-## Execution Protocol
-
-### Full ingest (first time or full rebuild)
-Note: The `--profile` flag is mandatory to load the correct manifest and batch settings.
+Run incremental ingestion for the default wiki profile (last 24 hours):
 
 ```bash
-python ./scripts/ingest.py --profile wiki --full
+python3 scripts/ingest.py --profile wiki --since 24
 ```
 
-### Incremental ingest (only new/changed files since N hours)
+## Workflow
+
+1. **Prerequisite Check**: Ensure profiles exist in `.agent/learning/vector_profiles.json` (or initialize via `vector-db-init`).
+2. **Execute Ingest**: Run `scripts/ingest.py` with `--profile` and appropriate target scope:
+   - Specific file: `python3 scripts/ingest.py --profile wiki --file path/to/file.md`
+   - Specific directory: `python3 scripts/ingest.py --profile wiki --folder path/to/folder`
+   - Incremental: `python3 scripts/ingest.py --profile wiki --since 24`
+   - Full rebuild: `python3 scripts/ingest.py --profile wiki --full`
+3. **Report Output**: State target profile, number of chunks created, and total runtime.
+
+## Verification
+
+Confirm indexed content is immediately retrievable via semantic query:
+
 ```bash
-python ./scripts/ingest.py --profile wiki --since 24
+python3 scripts/query.py "test query" --profile wiki --limit 3
 ```
-
-### Single File/Folder Ingest
-```bash
-python ./scripts/ingest.py --profile wiki --file path/to/file.md
-python ./scripts/ingest.py --profile wiki --folder path/to/folder
-```
-
-## After Ingesting
-
-Run a quick semantic search to confirm the new content is retrievable:
-```bash
-python ./scripts/query.py "search query" --profile wiki --limit 3
-```
-
-## Rules
-- **Profile Sovereignty**: Always pass `--profile` to ensure the correct batch size and manifest are used.
-- **In-Process Reliability**: Ensure no other process is holding a lock on the database folder during ingestion.
-- **Source Transparency**: State which profile was ingested, how many files, and any errors encountered.

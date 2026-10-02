@@ -7,30 +7,52 @@ argument-hint: "[mcp-server-name or service]"
 allowed-tools: Bash, Read, Write
 ---
 
-Follow the `create-mcp-integration` skill workflow to scaffold a new MCP server
-integration for a Claude Code plugin.
+# Create MCP Integration (create-mcp-integration)
 
-## Inputs
+Configures Model Context Protocol (MCP) server integrations within a plugin or workspace `.mcp.json`.
 
-- `$ARGUMENTS` — optional MCP server name or service description (e.g. `postgres`,
-  `github`, `slack`). Omit to start with discovery.
+## Contents
+- [Critical Constraints](#critical-constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
 
-## Steps
+## Critical Constraints
+- **Integration Scope**: Configuration of MCP servers only. For scaffolding new plugins, use `create-plugin`. For hosted cloud agents, use `create-azure-agent`.
+- **Encrypted Transports**: Remote server endpoints must use `https://` or `wss://`; unencrypted plain HTTP/WS transports are forbidden.
+- **Modern Transport Priority**: Prefer `streamable-http` or `stdio` transports over deprecated SSE implementations.
+- **Credential Hygiene**: Store secrets strictly in environment variables; never embed raw API tokens or credentials inside `.mcp.json`.
 
-1. If `$ARGUMENTS` names a server or service, use it to seed Phase 1 discovery
-2. Follow the create-mcp-integration phased workflow: confirm server type
-   (stdio / SSE / streamable-http), authentication method, which tools to expose,
-   configuration fields, then generate the `.mcp.json` entry and any supporting config
-3. Report the generated configuration and setup instructions
+## Quick start
 
-## Output
+```bash
+python3 plugins/agent-scaffolders/scripts/scaffold.py \
+  --type mcp \
+  --name postgres-mcp \
+  --path plugins/<plugin>
+```
 
-`.mcp.json` server entry with full configuration (command/url, env vars, allowed tools)
-and instructions for obtaining credentials and verifying the connection with `/mcp`.
+## Workflow
 
-## Edge Cases
+1. **Phase 1: Transport & Security Discovery**: Establish server archetype (`stdio`, `streamable-http`, `sse`), endpoint URL or binary command, and authentication mechanism.
+2. **Phase 2: Tool Surface Definition**: Select target tool subsets, resource templates, and prompt templates to expose to the agent environment.
+3. **Phase 3: Configuration Scaffolding**: Generate the `.mcp.json` server definition block with required environment variable placeholders and arguments.
+4. **Phase 4: Schema & Connection Audit**: Validate JSON formatting and test connectivity using the environment MCP inspector.
 
-- If `$ARGUMENTS` is empty: begin with server type selection
-- If the service requires OAuth: document the auth flow steps explicitly
-- Prefer `streamable-http` transport for new hosted integrations over SSE
-- All MCP server URLs must use HTTPS/WSS — never HTTP/WS
+## Verification
+
+```bash
+# Validate JSON formatting
+python3 -c "import json; json.load(open('.mcp.json'))"
+
+# Audit skill compliance
+python3 plugins/agent-scaffolders/scripts/audit_skill.py plugins/agent-scaffolders/skills/create-mcp-integration --mode source
+```
+
+## References
+- [fallback-tree.md](references/fallback-tree.md) - Fallback tree for scaffolding failures.
+- [references/server-types.md](references/server-types.md) - MCP transport architecture standards.
+- [references/authentication.md](references/authentication.md) - Safe credential and authentication patterns.
+- [references/tool-usage.md](references/tool-usage.md) - Tool filtering and prompt exposure.
+- [acceptance-criteria.md](references/acceptance-criteria.md) - Quality checklist for MCP integrations.

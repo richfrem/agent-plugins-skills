@@ -1,96 +1,54 @@
 ---
 name: rlm-cleanup-agent
-plugin: rlm-factory
-description: |
-  Removes stale and orphaned entries from the RLM Summary Ledger.
-  Use after files are deleted, renamed, or moved to keep the ledger in sync with the filesystem.
-
-  <example>
-  user: "Clean up the RLM cache after I renamed some files"
-  assistant: "I'll use rlm-cleanup-agent to remove stale entries from the ledger."
-  </example>
-  <example>
-  user: "The RLM ledger has entries for files that no longer exist"
-  assistant: "I'll run rlm-cleanup-agent to prune orphaned entries."
-  </example>
+plugin: agent-memory
+description: Removes stale and orphaned entries from the RLM Summary Ledger when files are deleted, renamed, or moved.
 allowed-tools: Bash, Read, Write
 ---
 
-## Dependencies
+# RLM Cleanup Agent (`rlm-cleanup-agent`)
 
-This skill requires **Python 3.8+** and standard library only. No external packages needed.
+Removes stale and orphaned entries from the RLM Summary Ledger to keep it in sync with the filesystem.
 
-**To install this skill's dependencies:**
-```bash
-pip-compile ./requirements.in
-pip install -r ./requirements.txt
-```
+## Contents
 
-See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+- [Critical Constraints](#critical-constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
 
----
+## Critical Constraints
 
-# RLM Cleanup Agent
+1. **Write Operation**: Always confirm scope with the user before applying deletions.
+2. **Dry-Run First**: Never apply cache prunes without showing what will be removed first.
+3. **Scripted Integrity**: Never edit cache markdown files directly; always execute `scripts/cleanup_cache.py`.
 
-## Role
+## Quick start
 
-You remove stale and orphaned entries from the RLM Summary Ledger. An entry is stale when
-its file no longer exists or has moved. Running this regularly keeps the ledger accurate.
-
-**This is a write operation.** Always confirm scope before running.
-
-## Prerequisites
-
-**Profile not configured?** Run `rlm-init` skill first: `SKILL.md`
-
-## When to Run
-
-- After deleting or renaming files that were previously summarized
-- After a major refactor that moved directories
-- When `inventory.py` reports entries with no matching file on disk
-- Periodically as housekeeping (e.g. after a merge)
-
-## Execution Protocol
-
-### 1. Confirm profiles to clean
-
-Default: run against all configured profiles. Ask if unsure:
-> "Should I clean all profiles (project + tools), or a specific one?"
-
-### 2. Dry run first -- show what will be removed
+Perform a dry-run check for stale or orphaned ledger entries:
 
 ```bash
-python ./scripts/cleanup_cache.py \
-  --profile project --dry-run
-
-python ./scripts/cleanup_cache.py \
-  --profile tools --dry-run
+python3 scripts/cleanup_cache.py --profile project --dry-run
 ```
 
-Report: "Found N stale entries across profiles: [list of paths]"
+## Workflow
 
-### 3. Apply -- only after confirming with the user
+1. **Confirm Profiles**: Default to all configured profiles (`project`, `tools`), or query the user if scope is ambiguous.
+2. **Execute Dry-Run**: Run `cleanup_cache.py` with `--dry-run` to identify orphaned entries.
+3. **User Confirmation**: Present the audit findings for explicit authorization.
+4. **Apply Pruning**: Execute `cleanup_cache.py --apply` to purge verified orphans.
+5. **Report Summary**: State the total number of removed entries per profile.
+
+## Verification
+
+Verify cache coverage and ledger consistency after cleanup:
 
 ```bash
-python ./scripts/cleanup_cache.py \
-  --profile project --apply
-
-python ./scripts/cleanup_cache.py \
-  --profile tools --apply
+python3 scripts/inventory.py --profile project
 ```
 
-### 4. Verify
+## References
 
-```bash
-python ./scripts/inventory.py --profile project
-```
-
-Report the new coverage percentage.
-
-## Rules
-
-- **Always dry-run first.** Never apply without showing the user what will be deleted.
-- **Never edit `*_cache/*.md` directly.** Always use `cleanup_cache.py`.
-- **Source Transparency Declaration**: state which profiles were cleaned and how many entries removed.
-
-
+- [acceptance-criteria.md](references/acceptance-criteria.md) — Acceptance criteria for RLM cache pruning and hygiene.
+- [cheapest_models.md](references/cheapest_models.md) — Model selection guidance for regeneration passes.
+- [RLM_ARCHITECTURE.md](references/RLM_ARCHITECTURE.md) — Architectural overview of the RLM ledger filesystem.

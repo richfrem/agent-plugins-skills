@@ -1,5 +1,11 @@
 # Architectural Fitness & Precedence Rules
 
+## Contents
+- [1. Truth Precedence Hierarchy](#1-truth-precedence-hierarchy)
+- [2. Layered Architecture & Import Boundaries](#2-layered-architecture--import-boundaries)
+- [3. Autonomous Rewrite Boundaries](#3-autonomous-rewrite-boundaries)
+- [4. Enforcement Protocols](#4-enforcement-protocols)
+
 This document establishes the canonical Architectural Fitness Function rules, Truth Precedence, and boundary locks for all reengineering operations within the `exploration-cycle-plugin` environment. All agents and automated refactoring pipelines must strictly validate their work against these rules.
 
 ---

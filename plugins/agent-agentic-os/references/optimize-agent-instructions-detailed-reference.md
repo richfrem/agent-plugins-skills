@@ -2,6 +2,16 @@
 
 Extracted from SKILL.md per Layer-1 procedural-core line budget (issue #551).
 
+## Contents
+
+- [Phase 2: Quality Checklist](#phase-2--quality-checklist-full)
+- [Phase 4: Canonical Structure & Template](#phase-4--canonical-structure-full-template)
+- [Gemini CLI Tool Mapping](#gemini-cli-tool-mapping)
+- [Phase 5: Verification Report Format](#phase-5--verify-report-format)
+- [Attribution](#attribution)
+
+---
+
 ## Phase 2 — Quality Checklist (full)
 
 **Structure**
@@ -111,7 +121,7 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 <Project-specific rules. Keep existing rules from previous versions, or omit section if none exist.>
 ```
 
-### Platform-Specific Sections
+### Gemini CLI Tool Mapping
 
 **For GEMINI.md only** — append after the main content:
 ```markdown

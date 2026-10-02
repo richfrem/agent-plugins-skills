@@ -1,1 +1,1 @@
-../../../references/acceptance-criteria.md
+../../../references/rlm-curator-acceptance-criteria.md

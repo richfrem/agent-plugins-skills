@@ -1,117 +1,40 @@
 ---
 name: prototype-builder
-plugin: exploration-cycle-plugin
-description: >
-  Orchestrates the full prototype build cycle for a Subject Matter Expert. Coordinates layout confirmation and component building — it does not build components directly. Acts as the single entry point for all prototype-related requests. Trigger phrases: "build a prototype", "create a working prototype", "show me a working version", "prototype to clarify scope", "build an exploratory prototype"
-allowed-tools: Bash, Read, Write
+description: Orchestrates the prototype build cycle from approved discovery plans to working prototypes and SME walkthroughs. Coordinates layout confirmation and component assembly.
 ---
 
-<example>
-<commentary>Demonstrates the standard flow where the user asks to build after a Discovery Plan has been approved.</commentary>
-User: Build a prototype based on our plan
-Agent: Reads the most recent Discovery Plan, invokes visual-companion to confirm layout direction, then invokes subagent-driven-prototyping to build the components, stays available during the build, and guides the SME through a walkthrough once it's ready.
-</example>
+# Prototype Builder (prototype-builder)
 
-<example>
-<commentary>Demonstrates the HARD-GATE redirect when the user asks to build without any existing Discovery Plan.</commentary>
-User: Create a working prototype for me
-Agent: Checks for a Discovery Plan file and finds none. Responds: "Before we can build, I need to understand what we're building first. Can we start with a planning session? It only takes a few minutes and it'll make sure what we build is exactly what you need." Stops there and does not continue.
-</example>
+Orchestrates the prototype build cycle from approved Discovery Plans to working prototypes and SME walkthroughs.
 
-## Role
+## Contents
+- [Critical Constraints](#critical-constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
 
-This skill coordinates the full prototype build cycle. It does NOT build components directly. Building is handled by `subagent-driven-prototyping`. Layout confirmation is handled by `visual-companion`. This skill connects those two steps and guides the SME through the full journey from plan to working prototype.
+## Critical Constraints
+- Hard gate: No building may commence without an approved Discovery Plan in `exploration/discovery-plans/`.
+- Coordinate build cycles without implementing code directly; delegate components to `subagent-driven-prototyping`.
+- Always record raw walkthrough feedback to `exploration/captures/walkthrough-notes.md`.
 
-## HARD-GATE Check
+## Quick start
+1. Verify approved Discovery Plan exists in `exploration/discovery-plans/`.
+2. Confirm layout direction with `visual-companion` in `exploration/captures/layout-direction.md`.
+3. Dispatch component construction to `subagent-driven-prototyping` and guide SME walkthrough.
 
-This is the **first thing that runs**, before any other step.
+## Workflow
+1. **Gate Check**: Verify plan approval in `exploration/discovery-plans/`; halt and redirect to planning if unapproved.
+2. **Layout Direction**: Invoke `visual-companion` to capture wireframes or layout directions.
+3. **Component Build**: Invoke `subagent-driven-prototyping` to assemble parts in `exploration/prototype/`.
+4. **SME Walkthrough**: Walk the SME through main user journeys and document observations in `exploration/captures/walkthrough-notes.md`.
+5. **Phase Handoff**: Synthesize notes into `exploration/captures/prototype-notes.md` and report completion.
 
-Check: does `exploration/discovery-plans/` exist and contain at least one `.md` file?
+## Verification
+- Confirm `exploration/prototype/` contains runnable prototype assets.
+- Validate that walkthrough notes capture all SME feedback and blocker items.
+- Ensure all acceptance criteria from the Discovery Plan are evaluated.
 
-**If NO plan exists:**
-> "Before we can build, I need to understand what we're building first.
-> Can we start with a planning session? It only takes a few minutes and
-> it'll make sure what we build is exactly what you need."
-
-Stop. Do not continue. Do not suggest workarounds. Do not attempt to build without a plan.
-
-**If a plan file exists:** Read the most recent `.md` file in `exploration/discovery-plans/`. Check that it contains either:
-- A `## SME Approval` section, or
-- A `PLAN_STATUS: APPROVED` line
-
-If neither is present:
-> "A Discovery Plan exists but hasn't been approved yet. Please review the plan and confirm approval before we begin building."
-
-Stop. Do not continue. File existence alone is NOT approval.
-
-**If the plan is approved:** This is the source of truth for the entire build session.
-
-## Session Flow
-
-### Step 1 — Layout direction
-
-Invoke the `visual-companion` skill to present layout options and get SME confirmation before any building begins.
-
-Do not proceed to Step 2 until visual-companion has written `exploration/captures/layout-direction.md` and announced "Layout confirmed."
-
-### Step 2 — Build
-
-Once layout is confirmed, invoke the `subagent-driven-prototyping` skill.
-
-Announce:
-> "I'm putting your prototype together now — each part separately so I can
-> make sure it matches our plan. I'll show you the full version once everything is ready."
-
-Stay available during the build. If any component is BLOCKED or NEEDS_CONTEXT, address it immediately. Do not let the build stall.
-
-### Step 3 — SME walkthrough
-
-Once all components are built and the completion report is received, invite the SME to review:
-
-> "Your prototype is ready. Please click through it and let me know if the flows
-> work the way you described. It's much easier to adjust things at this stage
-> than later on."
-
-Guide the SME through each main flow described in the Discovery Plan. Ask about each one:
-> "Does this part work the way you expected?"
-
-Listen carefully for surprises, corrections, and anything that wasn't in the original plan.
-
-### Step 4 — Write raw walkthrough transcript
-
-Write a **raw walkthrough transcript** to `exploration/captures/walkthrough-notes.md`.
-This is an unstructured narrative — flows tested, SME comments, surprises, corrections.
-Do NOT extract or structure requirements here.
-
-```
-# Walkthrough Transcript
-
-**Session date:** [date]
-**Discovery Plan reference:** [plan filename]
-
-## Flow Walkthroughs
-[Narrative description of each flow tested, in order]
-
-## SME Comments
-[Verbatim or close-paraphrase of SME reactions, corrections, and new observations]
-
-## Surprises and Blockers
-[Anything that didn't work as expected or surprised the SME]
-```
-
-### Step 5 — Hand off
-
-> "I'll pass your walkthrough notes to the observation agent now, which will extract
-> the structured requirements we need for documentation."
-
-Invoke `prototype-companion-agent` to read `walkthrough-notes.md` and produce the
-final `exploration/captures/prototype-notes.md`. Do NOT write `prototype-notes.md`
-directly from this skill — that is `prototype-companion-agent`'s responsibility.
-
-Once `prototype-companion-agent` confirms it has written `prototype-notes.md`, emit:
-
-```
-PHASE 3 COMPLETE
-Walkthrough transcript: exploration/captures/walkthrough-notes.md
-Prototype observations: exploration/captures/prototype-notes.md
-```
+## References
+- [acceptance-criteria.md](references/acceptance-criteria.md)

@@ -1,1 +1,1 @@
-../../../references/acceptance-criteria.md
+../../../references/os-memory-manager-acceptance-criteria.md

@@ -9,76 +9,56 @@ description: >
 allowed-tools: Bash, Read, Write
 ---
 
-# Session Memory Manager
+# Session Memory Manager (`os-memory-manager`)
 
-Manages the three tiers of agent memory in an Agentic OS environment.
+Manages the three tiers of agent memory in an Agentic OS environment: Auto-memory (`MEMORY.md`), Long-term facts (`context/memory.md`), and Session logs (`context/memory/YYYY-MM-DD.md`).
 
-Prerequisites, dependencies, and trigger examples are in `references/detailed-reference.md` —
-this skill requires the Agentic OS to be initialized first (`os-init`).
+## Contents
 
-## Memory Tiers
+- [Critical Constraints](#critical-constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
 
-| Tier | File | Written By | When Loaded |
-|------|------|-----------|-------------|
-| Auto-memory | `MEMORY.md` | Claude automatically | Every session (Anthropic native) |
-| Long-term facts | `context/memory.md` | You (curated) | @imported in CLAUDE.md |
-| Session logs | `context/memory/YYYY-MM-DD.md` | Agent at session close | On demand |
+## Critical Constraints
 
-## Execution Flow
+1. **Conflict Resolution**: Never overwrite `context/memory.md` with conflicting facts without prompt and resolution.
+2. **Enduring Facts Only**: Do not promote ephemeral error messages, test noise, or single-use bash commands.
+3. **Lock Release**: Always release `memory` lock upon completion or error recovery.
 
-Execute these phases in order. Do not skip phases. Full detail (templates, dedup protocol,
-size-limit enforcement, survey questions) for each phase is in `references/detailed-reference.md`.
+## Quick start
 
-### Phase 0: Intent Emission (Event Bus)
+Check current memory file size and status:
 
-Before taking any actions, publish your intent:
-`python context/kernel.py emit_event --agent os-memory-manager --type intent --action promote_memory`
+```bash
+wc -c context/memory.md
+```
 
-### Phase 1: Acquire OS State and Lock
+## Workflow
 
-1. Update OS state: `active_agent os-memory-manager`, `mode memory-gc`, `memory_gc_due false`.
-2. Acquire the lock: `python context/kernel.py acquire_lock memory`. If it fails, abort.
-3. Ask the user to confirm session scope: main task/goal, architectural decisions, tricky bugs
-   solved, skills updated, open next steps.
+1. **Acquire Lock**: Acquire `memory` lock via `kernel.py`:
+   ```bash
+   python3 scripts/kernel.py acquire_lock memory
+   ```
+2. **Record Session Log**: Write dated session summary to `context/memory/YYYY-MM-DD.md`.
+3. **Promote Long-Term Facts**: Append vetted architectural decisions to `context/memory.md` with conflict checks.
+4. **Enforce Size Limits**: If `context/memory.md` exceeds 50,000 bytes, prune or archive oldest entries to `context/memory/archive/`.
+5. **Release Lock**:
+   ```bash
+   python3 scripts/kernel.py release_lock memory
+   ```
 
-### Phase 2: Write the Dated Session Log
+## Verification
 
-Write to `context/memory/YYYY-MM-DD.md` using today's date, per the template in
-`references/detailed-reference.md`.
+Confirm memory update is persisted and lock is released:
 
-### Phase 3: Preserve Test Registry Artifacts
+```bash
+python3 scripts/kernel.py state_read
+```
 
-Never archive/skip `context/memory/tests/registry.md`; preserve closed scenario files for 90
-days before archiving; promote confirmed test findings not already in `context/memory.md`; add
-"DO NOT RE-TEST" entries for falsified hypotheses. Full protocol in `references/detailed-reference.md`.
+## References
 
-### Phase 4: Promote to Long-Term Memory
-
-Apply the promote/skip decision (ephemeral state and open tasks → skip; system facts, commands,
-style rules, architectural decisions → promote). Before promoting, read `context/memory.md` and
-the last 10 `MEMORY.md` entries, run dedup/conflict detection, and follow the Safe Write Protocol
-(git stash + diff preview + post-write verification). Full dedup/conflict/ID protocol and both
-fact-format options are in `references/detailed-reference.md`.
-
-### Phase 4b: Enforce Memory.md Size Limits
-
-Check `wc -c context/memory.md`; if over 50000 bytes, merge/prune redundant facts or archive the
-oldest ~200 lines to `context/memory/archive/YYYY-MM.md`. Full steps in `references/detailed-reference.md`.
-
-### Phase 5: Self-Assessment Survey (MANDATORY)
-
-Before releasing the lock, complete the Post-Run Self-Assessment Survey
-(`references/memory/post_run_survey.md`) and save to
-`context/memory/retrospectives/survey_[YYYYMMDD]_[HHMM]_os-memory-manager.md`. Emit
-`--type learning --action survey_completed` on completion. Full survey questions in
-`references/detailed-reference.md`.
-
-### Phase 6: Confirm with User and Release Lock
-
-Show a completion summary, emit the success result event, then run
-`python context/kernel.py release_lock memory`. Full format in `references/detailed-reference.md`.
-
-## Next Actions
-
-- To understand the full memory layer architecture -> read `os-guide` skill
-- To set up CLAUDE.md @imports for memory -> read `references/architecture/claude-md-hierarchy.md` in `os-guide`
+- [detailed-reference.md](references/detailed-reference.md) — Tiered memory architectures and promotion protocols.
+- [acceptance-criteria.md](references/acceptance-criteria.md) — Acceptance criteria for memory promotions.
+- [fallback-tree.md](references/fallback-tree.md) — Recovery procedures when locks fail or collisions occur.

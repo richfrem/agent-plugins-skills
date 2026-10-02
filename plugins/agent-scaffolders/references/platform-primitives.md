@@ -5,11 +5,11 @@
 Across modern AI developer tooling (Claude Code, Antigravity, Cursor, Codex, Gemini CLI, MAF):
 
 1. **Skills ARE Tools & Slash Commands**:
-   - Every skill defined in `skills/<name>/SKILL.md` is registered automatically as `/name` and `@name`.
-   - The model invokes the skill when user intent aligns with `description` and `evals.json`.
+   - Discovery and explicit invocation syntax depend on the host. Verify the installed host's skill capabilities rather than assuming `/name` or `@name` works everywhere.
+   - Names and descriptions guide discovery. evals.json measures routing; it is not a runtime discovery registry.
 
 2. **Default to Skills**:
-   - Prefer skills for deterministic procedural capabilities.
+   - Prefer skills for reusable procedural capabilities, including instructions without executable code.
    - Use `create-sub-agent` only when context isolation (`context: fork`) or multi-turn conversational wizards are required.
    - Use `create-stateful-skill` only when cross-session state or continuous counters are required.
 

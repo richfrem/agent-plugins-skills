@@ -10,61 +10,50 @@ argument-hint: "[lab-repo-path] [skill-path] [github-url]"
 allowed-tools: Bash, Read, Write
 ---
 
-<example>
-<commentary>User wants to start an improvement run on a skill in an isolated lab repo.</commentary>
-user: "Set up an eval lab for the link-checker skill"
-assistant: [triggers os-eval-lab, runs intake interview, bootstraps lab repo, installs engine, copies plugin files, generates eval-instructions.md]
-</example>
+# Eval Lab Setup (`os-eval-lab-setup`)
 
-<example>
-<commentary>User has a lab repo but needs it configured.</commentary>
-user: "Prepare the test repo at <USER_HOME>/Projects/test-my-skill-eval for skill evaluation"
-assistant: [triggers os-eval-lab, installs engine, copies plugin files, generates eval-instructions.md]
-</example>
+Bootstrap evaluation lab environments for autoresearch improvement runs, copying plugin files as real files (no symlinks) and configuring `eval-instructions.md`.
 
-# Identity: The Eval Lab Setup Agent
+## Contents
 
-You bootstrap evaluation lab environments for autoresearch improvement runs. A lab repo is a
-standalone git repo with a hard copy of the plugin files (no symlinks), the
-`os-eval-runner` engine installed, and a customized `eval-instructions.md` ready for
-an eval agent to follow.
+- [Critical Constraints](#critical-constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
 
-The template used to generate `eval-instructions.md` lives at:
-`assets/templates/eval-instructions.template.md` (relative to this skill root)
+## Critical Constraints
 
-## Phase 0: Intake
+1. **Resolve Symlinks on Copy**: Always use `cp -RL` so the lab repo contains independent, standalone files.
+2. **Clean Slate**: Remove `.agent .agents .gemini .claude` directories in the lab repo before installing.
+3. **Workspace Permissions**: Confirm directory permissions before creating or mutating lab repositories.
 
-Ask 9 questions in order (lab repo path, target plugin path, target skill name, GitHub repo
-URL, round label, agent-plugins-skills root path, primary optimization metric, optimization
-strategy/context depth, and CLI proposer). Confirm any answer already given in `$ARGUMENTS`
-rather than re-asking. Full question text, option tables, and defaults are in
-`references/detailed-reference.md`. Present a confirmation summary before proceeding.
+## Quick start
 
-## Phase 1: Bootstrap the Lab Repo
+Generate evaluation instructions for a target skill in a lab repo:
 
-Set key variables first (`PLUGIN_NAME` must be parsed from the plugin path's second segment,
-not inferred from the literal word `plugins`). Then, in order: git setup (remote + init if
-needed), clean slate (remove `.agent .agents .gemini .claude`), hard-copy plugin files with
-symlinks resolved (`cp -RL`), seed commit and push, and verify Python 3.8+. Exact commands are
-in `references/detailed-reference.md`. Note the workspace-permissions warning there before
-touching files outside the current workspace.
+```bash
+python3 scripts/generate_eval_instructions.py --skill <skill-name> --lab-repo <path>
+```
 
-## Phase 2: Generate eval-instructions.md
+## Workflow
 
-Run `generate_eval_instructions.py` with the template, skill name, plugin dir, repo URL, round
-label, engine source, and master plugin path. Exact invocation in `references/detailed-reference.md`.
+1. **Intake**: Gather lab repo path, target plugin path, skill name, and GitHub repository URL.
+2. **Bootstrap Lab Repo**: Initialize git repository, clean slate, and copy plugin files via `cp -RL`.
+3. **Generate Instructions**: Render `eval-instructions.md` from `assets/templates/eval-instructions.template.md`.
+4. **Seed Commit**: Commit baseline state in lab repo and push to origin.
+5. **Launch Options**: Provide user with Manual instructions or Autonomous CLI launcher command.
 
-## Phase 3: Confirm Ready
+## Verification
 
-Report the lab repo path, confirmed git remote, files copied, engine install location, and
-`eval-instructions.md` path. Ask the user to choose Manual (open a new session in the lab repo
-and follow `eval-instructions.md`) or Autonomous (trigger the looping orchestrator immediately
-via `agy` in headless mode — exact command in `references/detailed-reference.md`). After an
-autonomous run completes, use `os-eval-backport` to review and apply approved changes to master.
+Confirm lab repo contains materialized files and valid `eval-instructions.md`:
 
-## What to Expect: Meta-Circular Improvement
+```bash
+test -f "<lab-repo-path>/eval-instructions.md" && echo "Lab setup valid"
+```
 
-The improvement loop may propose changes to the lab copy of `os-eval-runner` itself, not just
-the target skill — this is expected, since it's a physical copy still gated by `evaluate.py`.
-Treat such changes with extra scrutiny at backport review (a self-modifying evaluator is
-high-leverage). Full rationale in `references/detailed-reference.md`.
+## References
+
+- [detailed-reference.md](references/detailed-reference.md) — Intake questions, option tables, and exact bootstrap commands.
+- [acceptance-criteria.md](references/acceptance-criteria.md) — Verification criteria for bootstrapped lab environments.
+- [fallback-tree.md](references/fallback-tree.md) — Remediation pathways if lab initialization or generation fails.

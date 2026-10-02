@@ -7,29 +7,51 @@ argument-hint: "[workflow-type: test|build|deploy|lint|release|security]"
 allowed-tools: Bash, Read, Write
 ---
 
-Follow the `create-github-action` skill workflow to scaffold a traditional deterministic
-GitHub Actions CI/CD workflow (no AI at runtime).
+# Create GitHub Action (create-github-action)
 
-## Inputs
+Scaffolds deterministic GitHub Actions CI/CD workflow configurations (`.github/workflows/<name>.yml`) without runtime AI orchestration.
 
-- `$ARGUMENTS` — optional workflow type or purpose (e.g. `test`, `build`, `deploy`,
-  `lint`, `release`, `security`). Omit to start with discovery.
+## Contents
+- [Critical Constraints](#critical-constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
 
-## Steps
+## Critical Constraints
+- **Deterministic Scope**: Traditional CI/CD only (no runtime LLMs). For agentic or prompt-driven automation, use `create-agentic-workflow`. For local tool hooks, use `create-hook`.
+- **Least-Privilege Permissions**: Explicitly specify minimal `permissions:` blocks (e.g. `contents: read`) at workflow or job level; never omit or use broad write tokens.
+- **Action Pinning & Timeouts**: Pin third-party actions to verified major versions or SHAs. Set explicit `timeout-minutes` on all jobs.
+- **Secret Sanitization**: Reference secrets exclusively via `${{ secrets.NAME }}`; never hardcode sensitive values or log secret outputs.
 
-1. If `$ARGUMENTS` specifies a workflow type, use it to seed Phase 1 discovery
-2. Follow the create-github-action phased workflow: confirm trigger events, runner OS,
-   required secrets/environment variables, job steps, and caching strategy
-3. Generate the `.github/workflows/<name>.yml` file
-4. Report the workflow path and setup instructions (secrets to configure, badges, etc.)
+## Quick start
 
-## Output
+```bash
+# Seed discovery for a specific workflow type (test, build, deploy, lint, release)
+python3 plugins/agent-scaffolders/scripts/scaffold.py \
+  --type workflow \
+  --name ci-pipeline \
+  --path .github/workflows/ci.yml
+```
 
-`.github/workflows/<name>.yml` with complete job definitions, trigger events, permissions,
-and inline comments explaining each step.
+## Workflow
 
-## Edge Cases
+1. **Phase 1: Pipeline Discovery**: Identify workflow trigger events (`push`, `pull_request`, `workflow_dispatch`), target runner environments (`ubuntu-latest`), matrix strategies, and dependencies.
+2. **Phase 2: Scaffolding Generation**: Construct `.github/workflows/<name>.yml` with explicit triggers, concurrency controls, least-privilege permissions, and step caching.
+3. **Phase 3: Secrets & Environment Setup**: Document required repository secrets and environment variables without logging actual secrets.
+4. **Phase 4: Schema Validation**: Validate the generated YAML syntax and step structure against GitHub Actions schema standards.
 
-- If `$ARGUMENTS` is empty: begin with workflow type discovery
-- If the use case involves AI agents at runtime: redirect to `create-agentic-workflow`
-- If secrets or environment variables are required: list them explicitly without values
+## Verification
+
+```bash
+# Check YAML syntax and schema formatting
+python3 -c "import yaml; yaml.safe_load(open('.github/workflows/<name>.yml'))"
+
+# Audit skill compliance
+python3 plugins/agent-scaffolders/scripts/audit_skill.py plugins/agent-scaffolders/skills/create-github-action --mode source
+```
+
+## References
+- [fallback-tree.md](references/fallback-tree.md) - Procedural fallbacks for generation failures.
+- [references/action-types.md](references/action-types.md) - Supported GitHub Action pipeline archetypes.
+- [acceptance-criteria.md](references/acceptance-criteria.md) - Quality gates for CI/CD workflows.

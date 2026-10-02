@@ -1,0 +1,90 @@
+{
+  "version": "1.0.0",
+  "report_schema_version": 2,
+  "thresholds": {"lean_lines": 80, "preview_lines": 100, "body_lines": 500, "name_chars": 64, "description_chars": 1024},
+  "profiles": ["repository", "anthropic"],
+  "variants": {
+    "instructional": {"template": "SKILL.md.jinja", "directories": ["evals"]},
+    "executable": {"template": "SKILL-executable.md.jinja", "directories": ["evals", "scripts"], "script_template": "execute.py.jinja"}
+  },
+  "resources": {"scripts": "scripts", "references": "references", "assets": "assets"},
+  "rules": {
+    "input.target": {"severity": "error", "origin": "repository"},
+    "metadata.required": {"severity": "error", "origin": "repository"},
+    "metadata.name": {"severity": "error", "origin": "repository"},
+    "metadata.description": {"severity": "error", "origin": "repository"},
+    "metadata.voice": {"severity": "warning", "origin": "anthropic"},
+    "metadata.reserved": {"severity": "warning", "origin": "anthropic"},
+    "size.lean": {"severity": "warning", "origin": "repository"},
+    "size.body": {"severity": "warning", "origin": "anthropic"},
+    "navigation.entry-toc": {"severity": "warning", "origin": "repository"},
+    "navigation.canonical-headings": {"severity": "warning", "origin": "repository"},
+    "navigation.legacy-headings": {"severity": "warning", "origin": "repository"},
+    "navigation.reference-toc": {"severity": "warning", "origin": "anthropic"},
+    "navigation.direct-reference": {"severity": "warning", "origin": "anthropic"},
+    "links.resolve": {"severity": "error", "origin": "repository"},
+    "links.unsupported": {"severity": "warning", "origin": "repository"},
+    "evals.routing": {"severity": "error", "origin": "repository"},
+    "evals.task-success": {"severity": "error", "origin": "repository"},
+    "evals.missing": {"severity": "warning", "origin": "repository"},
+    "packaging.resource": {"severity": "error", "origin": "repository"},
+    "packaging.pending-link": {"severity": "error", "origin": "repository"},
+    "packaging.hygiene": {"severity": "error", "origin": "repository"},
+    "packaging.folder-structure": {"severity": "warning", "origin": "repository"},
+    "repair.disabled": {"severity": "error", "origin": "repository"}
+  },
+  "ai_review_schema": {
+    "type": "object",
+    "required": ["status"],
+    "properties": {
+      "status": {"type": "string", "enum": ["not_requested", "ran", "failed"]},
+      "runtime": {"type": "string"},
+      "model": {"type": "string"},
+      "effort": {"type": "string"},
+      "input_hash": {"type": "string"},
+      "contract_version": {"type": "string"},
+      "report_path": {"type": "string"},
+      "exit_code": {"type": "integer"},
+      "findings": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": ["evidence", "issue", "proposed_edit", "preservation_risk", "confidence"],
+          "properties": {
+            "evidence": {
+              "type": "object",
+              "required": ["path", "line", "quote"],
+              "properties": {
+                "path": {"type": "string"},
+                "line": {"type": ["integer", "null"]},
+                "quote": {"type": "string"}
+              }
+            },
+            "issue": {"type": "string"},
+            "proposed_edit": {"type": "string"},
+            "preservation_risk": {"type": "string", "enum": ["low", "medium", "high"]},
+            "confidence": {"type": "number"}
+          }
+        }
+      }
+    }
+  },
+  "semantic_scenarios": {
+    "concise_complete": {
+      "description": "Skill under 80 lines with clear triggers, constraints, workflow and direct references.",
+      "expected_action": "preserve",
+      "findings_count": 0
+    },
+    "verbose_history": {
+      "description": "Skill containing historical incident retellings, migration narratives, or duplicated basic instructions.",
+      "expected_action": "compress_history",
+      "flags": ["change_history", "incident_retelling", "redundant_basics"]
+    },
+    "short_incomplete": {
+      "description": "Skill under 20 lines missing constraints, missing failure handling, or lacking observable verification.",
+      "expected_action": "flag_missing_behavior",
+      "flags": ["missing_constraints", "missing_verification"]
+    }
+  }
+}
+

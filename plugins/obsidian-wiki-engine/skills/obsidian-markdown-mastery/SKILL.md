@@ -5,65 +5,55 @@ description: "Core markdown syntax skill for Obsidian. Enforces strict parsing a
 allowed-tools: Bash, Read, Write
 ---
 
+# Obsidian Markdown Mastery (obsidian-markdown-mastery)
+
+Enforces deterministic parsing, formatting, and validation of Obsidian-flavored Markdown syntax.
+
+## Contents
+- [Critical Constraints](#critical-constraints)
+- [Dependencies](#dependencies)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
+
+## Critical Constraints
+- **Deterministic Python Parsing**: All link and block extraction must execute via the `obsidian-parser` module rather than ad-hoc regex.
+- **Protocol Agnosticism**: The parser remains decoupled from project-specific workflows, operating solely on markdown text and AST tokens.
+- **Proprietary Syntax Integrity**: Enforce exact syntax rules for wikilinks (`[[Note#Heading|Alias]]`), block IDs (`^block-id`), and callouts (`> [!type]`).
+- **Vault Root Discovery**: Use `OBSIDIAN_VAULT_PATH` environment variable for root discovery, defaulting safely to repository root.
+
 ## Dependencies
 
-This skill requires **Python 3.8+** and standard library only. No external packages needed.
+Requires `obsidian-parser` and Python 3.8+ (standard library only).
 
-**To install this skill's dependencies:**
+## Quick start
+
 ```bash
-pip-compile ./requirements.in
-pip install -r ./requirements.txt
+# Extract links, embeds, and block metadata from note
+python3 plugins/obsidian-wiki-engine/scripts/obsidian-parser/parser.py analyze --file <path_to_md>
+
+# Construct an Obsidian callout block
+python3 plugins/obsidian-wiki-engine/scripts/obsidian-parser/parser.py callout --type info --title "Notice" --text "Body"
 ```
 
-See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+## Workflow
 
----
-# Obsidian Markdown Mastery (Protocol 129 COMPLIANT)
+1. **Phase 1: Text Ingestion & Tokenizing**: Parse target markdown files using `parser.py` to identify AST components.
+2. **Phase 2: Metadata Extraction**: Segregate semantic wikilinks (`[[Link]]`) from embeds (`![[Embed]]`) and block references (`^id`).
+3. **Phase 3: Syntax Authoring**: Apply deterministic formatting primitives when generating new notes or inserting callouts.
+4. **Phase 4: Downstream Handoff**: Supply parsed metadata to graph traversers and vault indexers.
 
-**Status:** Active
-**Author:** Obsidian Integration Plugin
-**Domain:** Obsidian Integration
+## Verification
 
-## Core Mandate
+```bash
+# Verify parser CLI execution
+python3 plugins/obsidian-wiki-engine/scripts/obsidian-parser/parser.py analyze --help
 
-The `obsidian-markdown-mastery` skill is responsible for the exact formatting, extraction, and validation of Obsidian-flavoured Markdown. It provides the low-level string manipulation that allows higher-order agents (like the Graph Traverser or JSON Canvas Architect) to safely interpret relational links without breaking the `.md` Vault.
+# Audit skill compliance
+python3 plugins/agent-scaffolders/scripts/audit_skill.py plugins/obsidian-wiki-engine/skills/obsidian-markdown-mastery --mode source
+```
 
-> **CRITICAL ARCHITECTURAL RULE:**
-> All vault data manipulation MUST occur through deterministic Python scripts rather than agent-prompted regex. This skill defines the `obsidian-parser` module that performs these deterministic actions.
-> 
-> *Agnosticism Enforcement*: This module knows NOTHING about project-specific protocols, persistence layers, or external services. It only knows how to parse text into valid Obsidian links and block-quotes. Project-specific configuration (vault paths, injection points) is managed via the `OBSIDIAN_VAULT_PATH` environment variable.
-
-## Available Commands
-
-### Analyze Markdown Content
-Extracts all Obsidian-specific metadata (links, embeds, blocks) from a given markdown file or string.
-**Command**: `python ./parser.py analyze --file <path_to_md>`
-
-### Inject Callout
-Wraps a target text block in an Obsidian-flavored callout.
-**Command**: `python ./parser.py callout --type <type> --title <title> --text <content>`
-
-## The Parsed Syntax (Data Dictionary)
-
-When manipulating strings via this module, the following formats are enforced:
-
-### 1. Linking and Aliasing
-*   **Standard Link**: `[[Note Name]]`
-*   **Heading Link**: `[[Note Name#Heading Name]]`
-*   **Block Link**: `[[Note Name#^block-id]]`
-*   **Aliased Link**: `[[Note Name|Display Text]]`
-
-### 2. Transclusion (Embeds)
-*   **Standard Embed**: `![[Note Name]]` (Note the leading `!`)
-*   *(The parser specifically categorizes these differently so graph mappers know they are transclusions, not semantic links).*
-
-### 3. Callouts
-*   **Syntax**:
-    ```markdown
-    > [!type] Title
-    > Content block goes here.
-    ```
-*   **Supported Types**: `info`, `warning`, `error`, `success`, `note`.
-
-## Configuration Environment Variable
-Other tools (such as `protocol-manager` and `chronicle-manager`) rely on the unified `OBSIDIAN_VAULT_PATH` environment variable to discover where the root of the Obsidian Vault resides. If missing, it defaults to the project root.
+## References
+- [acceptance-criteria.md](references/acceptance-criteria.md) - Syntax compliance and parsing criteria.
+- [fallback-tree.md](references/fallback-tree.md) - Recovery procedures for malformed markdown or broken wikilinks.

@@ -7,39 +7,50 @@ description: >-
 allowed-tools: Bash, Read, Write, Glob
 ---
 
-# convert-plugin-to-apm Skill 🔄
+# Convert Plugin to APM (`convert-plugin-to-apm`)
 
-## Overview
-This skill implements the **Overlay-First** migration strategy. It allows existing plugins to gain APM governance without the "repackaging tax" of moving files, unless explicitly requested.
+Applies overlay-first APM governance, lockfile reproducibility, and multi-runtime packaging to existing agent plugins without disruptive refactors.
 
-## Migration Modes
+## Contents
 
-### 1. Overlay Mode (Default)
-**Use when**: The plugin is active and its current layout is preferred.
-- **Action**: Add `apm.yml` and `docs/governance.md` to the root.
-- **Benefit**: Zero disruption to existing `npx skills` or Claude Code workflows.
+- [Critical Constraints](#critical-constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
 
-### 2. Hybrid Mode
-**Use when**: You want to keep the plugin layout but start adding new APM-native assets.
-- **Action**: Add `.apm/` for new governance assets; keep existing primitives in place.
+## Critical Constraints
 
-### 3. Full Conversion
-**Use when**: You want a clean, APM-native package structure.
-- **Action**: Create a new directory and migrate all primitives into `.apm/`.
-- **Note**: Always preserve the original plugin untouched.
+1. **Overlay-First Directive**: Never force `.apm/` as the source of truth or move existing files unless explicitly requested by the user.
+2. **Preserve Original Layout**: Default to Overlay Mode, adding `apm.yml` and `docs/governance.md` at root without disrupting active workflows.
+3. **Lossless Mapping**: When Full Conversion is requested, keep the original plugin untouched and map primitives accurately.
 
-## 🎯 Primary Directive
-**Do not force .apm/ as the new source of truth unless explicitly requested.**
+## Quick start
 
-## Validation & Audit
-After conversion, run:
+Analyze a plugin directory to determine the appropriate conversion mode:
+
 ```bash
-python scripts/validate_apm_package.py --path <target-path>
+python3 scripts/validate_apm_package.py --analyze <path-to-plugin>
 ```
 
-## Mapping Rules (Full Mode)
-- `.claude-plugin/plugin.json` -> Metadata for `apm.yml`
-- `skills/*` -> `.apm/skills/*`
-- `agents/*` -> `.apm/agents/*`
-- `commands/*` -> `.apm/prompts/*` (APM standard)
-- `hooks/hooks.json` -> `.apm/hooks/hooks.json`
+## Workflow
+
+1. **Select Migration Mode**:
+   - **Overlay Mode (Default)**: Add `apm.yml` and `docs/governance.md` to root; zero file relocations.
+   - **Hybrid Mode**: Add `.apm/` for new governance assets while keeping existing primitives in place.
+   - **Full Conversion**: Migrate primitives into `.apm/` structure (`commands/*` -> `.apm/prompts/*`).
+2. **Generate Manifest**: Scaffold compliant `apm.yml` capturing plugin metadata and dependencies.
+3. **Compile Lockfile**: Run `apm install --dry-run` to generate initial lockfile state.
+
+## Verification
+
+Audit the converted plugin package for schema and lockfile validity:
+
+```bash
+python3 scripts/validate_apm_package.py --path <path-to-plugin>
+```
+
+## References
+
+- [acceptance-criteria.md](references/acceptance-criteria.md) — Acceptance criteria for overlay, hybrid, and full conversion modes.
+- [fallback-tree.md](references/fallback-tree.md) — Fallback resolution for mapping errors and validation rejections.

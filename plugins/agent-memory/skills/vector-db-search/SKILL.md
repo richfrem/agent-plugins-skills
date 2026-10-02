@@ -1,54 +1,53 @@
 ---
 name: vector-db-search
-plugin: vector-db
+plugin: agent-memory
 description: "Semantic search skill for retrieving code and documentation from the ChromaDB vector store. Use when you need concept-based search across the repository (Phase 2 of the 3-phase search protocol). V2 includes L4/L5 retrieval constraints."
 allowed-tools: Bash, Read
 ---
 
-## Dependencies
+# Vector DB Search (`vector-db-search`)
 
-This skill requires the `chromadb` and `langchain` packages defined in the plugin root.
+Semantic concept-based search against ChromaDB using Parent-Child chunk retrieval for Phase 2 of the 3-phase search protocol (RLM -> Vector -> Grep).
 
----
+## Contents
 
-# Vector DB Search
+- [Critical Constraints](#critical-constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
 
-Semantic (meaning-based) search against the ChromaDB vector store using a high-precision Parent-Child architecture. Use for Phase 2 of the 3-phase search protocol (RLM -> Vector -> Grep).
+## Critical Constraints
 
-## Scripts
+1. **Profile Sovereignty**: The `--profile` parameter is mandatory to ensure queries target the correct collection and embedding space.
+2. **API Integrity**: Never read SQLite or Parquet backing files directly. Queries must execute through `scripts/query.py`.
+3. **Search Protocol Placement**: Use as Phase 2 when RLM summaries return insufficient detail, before falling back to raw regex grep.
 
-| Script | Role |
-|:-------|:-----|
-| `scripts/query.py` | Semantic search CLI -- recovers context-rich parent chunks. |
-| `scripts/operations.py` | Core domain logic for retrieval. |
-| `scripts/vector_config.py` | Unified profile-based configuration loader. |
+## Quick start
 
-## Execution Mode
-
-This skill defaults to **In-Process mode** for zero-latency direct disk access. No background server is required. This ensures maximum stability in isolated project environments.
-
-## When to Use
-
-- Phase 1 (RLM Summary Ledger) returned no match or insufficient detail.
-- User asks "how does X work?" / "find code that does Y".
-- You need specific high-context snippets (Parent chunks) for reasoning.
-
-## Execution Protocol
-
-### 1. Identify Search Profile
-Verify available profiles in `.agent/learning/vector_profiles.json`. The default profile is usually `wiki`.
-
-### 2. Run Query
-Note: The `--profile` flag is mandatory to ensure the correct model and collection are loaded.
+Execute a natural-language semantic query against the default profile:
 
 ```bash
-python ./scripts/query.py "your natural language question" --profile wiki --limit 5
+python3 scripts/query.py "how does session memory persist" --profile wiki --limit 5
 ```
 
-Results include ranked parent chunks (2,000 chars) that provide broad context to the LLM for reasoning.
+## Workflow
 
-## Rules
+1. **Identify Target Profile**: Verify configured profile collections (`wiki`, `codebase`) in `.agent/learning/vector_profiles.json`.
+2. **Execute Query**: Run `scripts/query.py` with the natural language query, specifying `--profile` and result limit.
+3. **Ingest Parent Chunks**: Extract returned high-context parent chunks (up to 2,000 chars) for downstream reasoning.
+4. **Transparent Reporting**: If no results match, report the exact profile and query string evaluated before falling back to grep.
 
-- **Profile Sovereignty**: Always pass `--profile` to ensure the correct semantic space is searched.
-- **API Integrity**: NEVER attempt to read the database SQLite or parquet files directly. Always use `query.py`.
-- **Transparency**: When search returns empty results, state which profile and scope were searched.
+## Verification
+
+Verify ChromaDB index responsiveness and consistency:
+
+```bash
+python3 scripts/vector_consistency_check.py --profile wiki
+```
+
+## References
+
+- [acceptance-criteria.md](references/acceptance-criteria.md) — Retrieval accuracy criteria and ranking constraints.
+- [cheapest_models.md](references/cheapest_models.md) — Embedding model tiers and pricing guidance.
+- [fallback-tree.md](references/fallback-tree.md) — Fallback protocol when vector collections are unavailable or return zero hits.

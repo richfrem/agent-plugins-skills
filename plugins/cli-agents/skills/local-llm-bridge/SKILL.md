@@ -9,101 +9,45 @@ description: >
 allowed-tools: Bash, Read, Write
 ---
 
-## Identity: The Local Gemma Sub-Agent Dispatcher
+# Local LLM Bridge (`local-llm-bridge`)
 
-Dispatches bounded tasks directly to the optimized local Gemma 4 12B server at `http://localhost:8089/v1/chat/completions`. No routing proxy involved. Uses the `run_agent.py` task router with `cli=llama`.
+Dispatches bounded tasks directly to local Gemma 4 12B via llama-server at localhost:8089.
 
-> [!IMPORTANT]
-> **Requires llama-server running on port 8089.** Check: `curl http://localhost:8089/health`
-> Start: `./run_server.sh` in the local-llm-bench workspace.
-> Thinking is disabled server-side (`--reasoning off`) — no special flags needed.
+## Contents
 
----
+- [Constraints](#constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [Persona Registry](#-persona-registry-agents)
+- [References](#references)
 
-## Why This Is Fast
+## Constraints
 
-The routing proxy (Mode A) carries ~29K tokens of Claude Code system prompt — at ~30 tok/s prefill that costs 60+ seconds per context boundary crossing.
+- **Server active**: Requires `llama-server` on port 8089 (`curl -s http://localhost:8089/health`).
+- **Prompt budget**: Keep prompts lean (<2,000 tokens) and instructions specific; default `max_tokens=120`.
+- **Sub-agent isolation**: Instruct local agent not to use tools or access filesystem. Fast, private delegation (Mode B).
 
-This skill (Mode B) sends **only the task prompt** — typically 50–500 tokens. At 7+ tok/s generation on M1 Metal with a small context:
-
-| Output length | Typical response time |
-|---------------|-----------------------|
-| 50 tokens | ~7s |
-| 100 tokens | ~14s |
-| 200 tokens | ~28s |
-
-Default `max_tokens=120` keeps responses terse. Override via code if needed.
-
----
-
-## Orchestration Pattern: `run_agent.py`
+## Quick start
 
 ```bash
-python ./scripts/run_agent.py \
-  <PERSONA_FILE> <INPUT_FILE> <OUTPUT_FILE> "<INSTRUCTION>" \
-  --cli llama --max-tokens 120
+python3 scripts/run_agent.py agents/refactor-expert.md target.py review.md "List top 3 issues concisely." --cli llama
 ```
 
-### Example — code review
+## Workflow
+
+1. **Health Check**: Confirm local llama-server is healthy (`curl -s http://localhost:8089/health`).
+2. **Select Persona**: Choose from `agents/security-auditor.md`, `agents/refactor-expert.md`, or `agents/architect-review.md`.
+3. **Dispatch**: Run `scripts/run_agent.py` with `--cli llama` and bounded tokens.
+4. **Inspect**: Verify the output file contains the completed response.
+
+## Verification
 
 ```bash
-python ./scripts/run_agent.py \
-  agents/refactor-expert.md \
-  target.py \
-  review.md \
-  "List the top 3 issues in this code. Be terse." \
-  --cli llama
+curl -s http://localhost:8089/health
+python3 scripts/run_agent.py /dev/null /dev/null /tmp/test.md "Say hello in one word." --cli llama
+cat /tmp/test.md
 ```
-
-### Example — summarize a diff (longer output)
-
-```bash
-python ./scripts/run_agent.py \
-  /dev/null \
-  changes.diff \
-  summary.md \
-  "Summarize this diff in 2 sentences. Focus on risk." \
-  --cli llama --max-tokens 200
-```
-
-### Example — instruction only (no input file)
-
-```bash
-python ./scripts/run_agent.py \
-  /dev/null /dev/null \
-  answer.md \
-  "What is the capital of France? One word." \
-  --cli llama --max-tokens 10
-```
-
----
-
-## Prompt Budget Guidelines
-
-Keep prompts lean — this is the primary performance lever:
-- Persona: 100–300 tokens (enough to set role and tone)
-- Source file: keep under 2,000 tokens where possible; trim to the relevant section
-- Instruction: 1–3 sentences; specific and bounded
-- Expected output: terse — list form, not prose paragraphs
-
-Avoid: pasting full file trees, long conversation histories, or open-ended "analyze everything" instructions.
-
----
-
-## Hardware Details (M1 Mac, 16GB)
-
-| Parameter | Value |
-|-----------|-------|
-| Server | llama-server :8089 |
-| Model | Gemma 4 12B UD-Q4_K_XL |
-| GPU offload | `-ngl 99` (full Metal) |
-| Flash Attention | `-fa on` |
-| Batch sizes | `-b 2048 -ub 512` |
-| KV cache quant | `-ctk q8_0 -ctv q8_0` |
-| Thinking | disabled (`--reasoning off`) |
-| Context | 32768 tokens (1 slot) |
-
----
 
 ## 🎭 Persona Registry (`agents/`)
 
@@ -128,36 +72,7 @@ For reusable sub-agent execution, use the provided Python orchestrator which han
 python ./scripts/run_agent.py <PERSONA_FILE> <INPUT_FILE> <OUTPUT_FILE> "<INSTRUCTION>"
 ```
 
----
+## References
 
-## Co-located Scripts (`scripts/`)
-
-All scripts are symlinked from the canonical `plugins/cli-agents/scripts/` so the skill is self-contained when installed in isolation.
-
-| Script | Purpose |
-|--------|---------|
-| `run_agent.py` | Task router — `cli=llama` dispatches here |
-| `kv_cache_orchestrator.py` | KV slot save/restore for repeated persona calls |
-| `run_server.py` | Start llama-server with authoritative parameters |
-| `test_run_agent.py` | 37 tests: command builders, isolated-flag security contract, llama payload |
-
-> `routing_proxy.py` is NOT included — it is the Mode A API compatibility shim and is not part of this skill's execution path.
-
----
-
-## Smoke Test
-
-```bash
-curl http://localhost:8089/health
-python ./scripts/run_agent.py /dev/null /dev/null /tmp/test.md "Say hello in one word." --cli llama
-cat /tmp/test.md
-```
-
----
-
-## Health Check
-
-```bash
-curl http://localhost:8089/health          # must return {"status":"ok"}
-# If down: python ./scripts/run_server.py
-```
+- [acceptance-criteria.md](references/acceptance-criteria.md) — Acceptance criteria for local LLM bridge delegation.
+- [cheapest_models.md](references/cheapest_models.md) — Local inference latency and token pricing comparison.

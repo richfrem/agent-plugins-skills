@@ -1,1 +1,1 @@
-../acceptance-criteria.md
+../../../references/obsidian-markdown-mastery-acceptance-criteria.md

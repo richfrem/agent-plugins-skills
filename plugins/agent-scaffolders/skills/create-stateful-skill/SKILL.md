@@ -10,42 +10,53 @@ argument-hint: "[skill-name]"
 allowed-tools: Bash, Read, Write
 ---
 
-Follow the `create-stateful-skill` workflow to scaffold an advanced agent skill with
-L4 state management, lifecycle artifacts, and deterministic skill chaining.
+# Create Stateful Skill (`create-stateful-skill`)
 
-> [!IMPORTANT]
-> **Stateful Skill vs. Guided Sub-Agent Boundary (2026+)**
-> - **Stateful Skill (`create-stateful-skill`)**: Runs directly in the main conversation. Persists state
->   across separate turns via filesystem schemas (`.agent/learning/`, `.agent/state/`, or artifact frontmatter).
->   Best for: lifecycle state transitions (Draft → Review → Final), cyclical workflows, persistent configs, and chained skill steps.
-> - **Guided Workflow Sub-Agent (`create-sub-agent`)**: Runs in an isolated forked context (`context: fork`).
->   Best for: long multi-turn conversational interviews or setup wizards where intermediate chatter must not pollute the main session.
-> - **Stateless Procedural Skill (`create-skill`)**: Use when no cross-turn state, counters, or schemas are needed.
+Scaffolds advanced stateful skills with filesystem-native state schemas, lifecycle state machines, and deterministic skill chaining in the main conversation context.
 
-## Inputs
+## Contents
 
-- `$ARGUMENTS` — optional skill name or use-case description. Omit to start with discovery.
+- [Critical Constraints](#critical-constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
 
-## Steps
+## Critical Constraints
 
-1. If `$ARGUMENTS` provides a skill name or context, use it to seed discovery.
-2. **Pre-Scaffold Qualification**: Verify that the skill requires cross-turn state (if not, redirect to `create-skill`).
-3. Follow the phased workflow:
-   - Identify required L4 patterns from `pattern-decision-matrix.md` (artifact lifecycle, cyclical state propagation, persistent configuration, escalation taxonomy).
-   - Design the state schema (JSON/YAML in `.agent/state/` or artifact frontmatter metadata).
-   - Design skill chaining via standard Offer-Next-Steps blocks (linking to subsequent `/skill-name` capabilities, not legacy flat commands).
-   - Scaffold the skill directory: `SKILL.md` (< 100-500 lines), `evals/evals.json`, `references/` (offloaded schemas & rules).
-4. Run `audit_skill.py` to verify compliance.
-5. Report created skill path, state schema, and next-step execution sequence.
+1. **Stateful Skill vs Sub-Agent Boundary**: Stateful skills run directly in the main conversation using filesystem schemas (`.agent/state/` or artifact frontmatter). Isolated wizards use `create-sub-agent`; stateless procedures use `create-skill`.
+2. **Deterministic Chaining**: Skill transitions must offer explicit next-step capabilities (`/skill-name`), not loose commands.
+3. **Budget Compliance**: Generated skill instructions must stay within the lean advisory limit ($\le 80$ lines).
 
-## Output
+## Quick start
 
-Skill directory with `SKILL.md` implementing selected L4 patterns, explicit state schemas,
-lifecycle artifact templates, and skill-chaining transitions.
+Scaffold a new stateful skill directory using the generator helper:
 
-## Edge Cases
+```bash
+python3 scripts/scaffold.py --name <skill-name> --type stateful
+```
 
-- If `$ARGUMENTS` is empty: begin with discovery — identify which L4 patterns apply.
-- If the use case is simple (no persistent state, no chaining): recommend `create-skill` instead.
-- If the workflow requires multi-turn human interview loops: recommend `create-sub-agent` instead.
-- If state mutations are high-risk: configure escalation taxonomy steps and human confirmation gates.
+## Workflow
+
+1. **Pre-Scaffold Qualification**: Verify that the skill requires persistent state schemas or lifecycle transitions across turns.
+2. **Select L4 Patterns**: Consult `pattern-decision-matrix.md` to select artifact lifecycle, state propagation, or escalation models.
+3. **Design State Schema**: Formulate JSON/YAML schemas for `.agent/state/` or structured frontmatter.
+4. **Scaffold Directory**: Generate `SKILL.md`, `evals/evals.json`, and reference files.
+5. **Chain Next Steps**: Configure standard next-step blocks linking downstream capabilities.
+
+## Verification
+
+Audit the newly created skill for contract compliance and schema validity:
+
+```bash
+python3 scripts/audit_skill.py plugins/<plugin>/skills/<skill-name> --mode source
+```
+
+## References
+
+- [pattern-decision-matrix.md](references/pattern-decision-matrix.md) — Decision matrix for L4 stateful skill patterns.
+- [persistent-plugin-configuration.md](references/patterns/persistent-plugin-configuration.md) — Persistent configuration pattern reference.
+- [cyclical-state-propagation-contract.md](references/patterns/cyclical-state-propagation-contract.md) — Cyclical state propagation pattern reference.
+- [hitl-interaction-design.md](references/hitl-interaction-design.md) — Human-in-the-loop interaction guidelines and confirmation gates.
+- [acceptance-criteria.md](references/acceptance-criteria.md) — Acceptance gates and structural requirements for stateful skills.
+- [fallback-tree.md](references/fallback-tree.md) — Fallback resolution when state schemas or chaining fail.

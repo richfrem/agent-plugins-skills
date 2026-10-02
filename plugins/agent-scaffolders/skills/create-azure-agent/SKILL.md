@@ -7,31 +7,48 @@ argument-hint: "[skill-dir]"
 allowed-tools: Bash, Write, Read
 ---
 
-Follow the `create-azure-agent` skill workflow to generate Azure AI Foundry deployment
-wrappers for an existing agent skill.
+# Create Azure Agent (`create-azure-agent`)
 
-## Inputs
+Generates Azure AI Foundry deployment wrappers, Bicep infrastructure templates, and Azure AI Projects SDK orchestration scripts for existing skills.
 
-- `$ARGUMENTS` — optional path to the skill directory to deploy. Omit to start with discovery.
+## Contents
 
-## Steps
+- [Critical Constraints](#critical-constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
 
-1. If `$ARGUMENTS` provides a skill directory, resolve and validate the path
-2. Follow the create-azure-agent phased workflow: confirm the target skill, gather Azure
-   configuration (subscription, resource group, region, naming preferences), then run
-   `scaffold_azure_agent.py` to generate Bicep templates and the Python Azure AI Projects
-   SDK deployment wrapper
-3. Summarize generated files in the skill's `azure_deployment/` directory
-4. Instruct on reviewing `.bicep` parameters and running `az deployment group create`
+## Critical Constraints
 
-## Output
+1. **Scope Boundaries**: Designed specifically for Azure AI Foundry hosted agents. Use `create-docker-skill` for containerized runtimes and `create-mcp-integration` for MCP servers.
+2. **Tool Ceiling Limit**: Azure AI Foundry enforces a strict 128-tool limit per agent. The scaffolder generates a focused worker configuration.
+3. **Authentication Pre-Condition**: Azure CLI authentication (`az login`) and active subscription context are required before deployment execution.
 
-`azure_deployment/azure_agent.py` (Azure AI Projects SDK orchestration script) and
-`azure_deployment/main.bicep` (Cosmos DB, AI Search, and Foundry Project infrastructure).
+## Quick start
 
-## Edge Cases
+Scaffold Azure AI Foundry deployment templates for a target skill:
 
-- If `$ARGUMENTS` is empty: ask for the target skill directory before proceeding
-- If Azure credentials are not configured: instruct user to run `az login` first
-- Azure AI Foundry enforces a 128-tool limit — scaffold generates a focused worker agent
-- Offer to run `/agent-scaffolders:audit-plugin` to validate the skill before deploying
+```bash
+python3 scripts/scaffold_azure_agent.py --skill-dir plugins/<plugin>/skills/<skill-name>
+```
+
+## Workflow
+
+1. **Resolve Target Skill**: Validate that the input path contains a functional `SKILL.md`.
+2. **Gather Configuration**: Collect Azure subscription, resource group, region, and project naming preferences.
+3. **Generate Artifacts**: Run `scaffold_azure_agent.py` to create `azure_deployment/azure_agent.py` and `azure_deployment/main.bicep`.
+4. **Deploy Infrastructure**: Review Bicep parameters and deploy via `az deployment group create`.
+
+## Verification
+
+Validate generated Bicep and Python deployment wrappers against Azure schema:
+
+```bash
+az bicep build --file azure_deployment/main.bicep
+```
+
+## References
+
+- [acceptance-criteria.md](references/acceptance-criteria.md) — Acceptance gates and deployment wrapper requirements.
+- [fallback-tree.md](references/fallback-tree.md) — Fallback resolution when Azure CLI or Bicep validation fails.

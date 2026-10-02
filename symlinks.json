@@ -974,12 +974,6 @@
       "description": ""
     },
     {
-      "src": "plugins/obsidian-wiki-engine/requirements.txt",
-      "dst": "plugins/obsidian-wiki-engine/skills/obsidian-bases-manager/requirements.txt",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
       "src": "plugins/obsidian-wiki-engine/scripts/obsidian-parser/parser.py",
       "dst": "plugins/obsidian-wiki-engine/skills/obsidian-canvas-architect/scripts/parser.py",
       "strategy": "symlink",
@@ -994,12 +988,6 @@
     {
       "src": "plugins/obsidian-wiki-engine/skills/obsidian-canvas-architect/fallback-tree.md",
       "dst": "plugins/obsidian-wiki-engine/skills/obsidian-canvas-architect/references/fallback-tree.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/obsidian-wiki-engine/requirements.txt",
-      "dst": "plugins/obsidian-wiki-engine/skills/obsidian-canvas-architect/requirements.txt",
       "strategy": "symlink",
       "description": ""
     },
@@ -1022,12 +1010,6 @@
       "description": ""
     },
     {
-      "src": "plugins/obsidian-wiki-engine/requirements.txt",
-      "dst": "plugins/obsidian-wiki-engine/skills/obsidian-graph-traversal/requirements.txt",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
       "src": "plugins/obsidian-wiki-engine/scripts/obsidian-parser/parser.py",
       "dst": "plugins/obsidian-wiki-engine/skills/obsidian-init/scripts/parser.py",
       "strategy": "symlink",
@@ -1042,12 +1024,6 @@
     {
       "src": "plugins/obsidian-wiki-engine/skills/obsidian-init/fallback-tree.md",
       "dst": "plugins/obsidian-wiki-engine/skills/obsidian-init/references/fallback-tree.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/obsidian-wiki-engine/requirements.txt",
-      "dst": "plugins/obsidian-wiki-engine/skills/obsidian-init/requirements.txt",
       "strategy": "symlink",
       "description": ""
     },
@@ -1076,12 +1052,6 @@
       "description": ""
     },
     {
-      "src": "plugins/obsidian-wiki-engine/requirements.txt",
-      "dst": "plugins/obsidian-wiki-engine/skills/obsidian-markdown-mastery/requirements.txt",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
       "src": "plugins/obsidian-wiki-engine/scripts/obsidian-parser/parser.py",
       "dst": "plugins/obsidian-wiki-engine/skills/obsidian-vault-crud/scripts/parser.py",
       "strategy": "symlink",
@@ -1096,12 +1066,6 @@
     {
       "src": "plugins/obsidian-wiki-engine/skills/obsidian-vault-crud/fallback-tree.md",
       "dst": "plugins/obsidian-wiki-engine/skills/obsidian-vault-crud/references/fallback-tree.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/obsidian-wiki-engine/requirements.txt",
-      "dst": "plugins/obsidian-wiki-engine/skills/obsidian-vault-crud/requirements.txt",
       "strategy": "symlink",
       "description": ""
     },
@@ -1859,37 +1823,37 @@
       "src": "plugins/cli-agents/references/cheapest_models.json",
       "dst": "plugins/cli-agents/skills/update-cli-models/references/cheapest_models.json",
       "strategy": "symlink",
-      "description": "Master cheapest model reference for update-cli-models skill"
+      "description": ""
     },
     {
       "src": "plugins/cli-agents/references/cheapest_models.md",
       "dst": "plugins/cli-agents/skills/update-cli-models/references/cheapest_models.md",
       "strategy": "symlink",
-      "description": "Master cheapest model reference (markdown) for update-cli-models skill"
+      "description": ""
     },
     {
       "src": "plugins/cli-agents/references/copilot-models.json",
       "dst": "plugins/cli-agents/skills/update-cli-models/references/copilot-models.json",
       "strategy": "symlink",
-      "description": "Copilot model catalog for update-cli-models skill"
+      "description": ""
     },
     {
       "src": "plugins/cli-agents/references/agy-models.json",
       "dst": "plugins/cli-agents/skills/update-cli-models/references/agy-models.json",
       "strategy": "symlink",
-      "description": "Agy/Gemini model catalog for update-cli-models skill"
+      "description": ""
     },
     {
       "src": "plugins/cli-agents/references/claude-models.json",
       "dst": "plugins/cli-agents/skills/update-cli-models/references/claude-models.json",
       "strategy": "symlink",
-      "description": "Claude direct-API model catalog for update-cli-models skill"
+      "description": ""
     },
     {
       "src": "plugins/cli-agents/references/codex-models.json",
       "dst": "plugins/cli-agents/skills/update-cli-models/references/codex-models.json",
       "strategy": "symlink",
-      "description": "OpenAI/Codex model catalog for update-cli-models skill"
+      "description": ""
     },
     {
       "src": "plugins/cli-agents/references/copilot-models.json",
@@ -8528,6 +8492,12 @@
       "description": ""
     },
     {
+      "src": "plugins/agent-scaffolders/references/plugins.md",
+      "dst": "plugins/agent-scaffolders/skills/ecosystem-standards/references/plugins.md",
+      "strategy": "symlink",
+      "description": "plugins specification reference"
+    },
+    {
       "src": "plugins/agent-scaffolders/references/patterns/artifact-generation-xss-compliance-gate.md",
       "dst": "plugins/agent-scaffolders/skills/ecosystem-standards/references/patterns/artifact-generation-xss-compliance-gate.md",
       "strategy": "symlink",
@@ -8994,6 +8964,24 @@
       "dst": "plugins/dependency-management/skills/dependency-management/references/python_dependency_workflow.mmd",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "plugins/dependency-management/references/self-evolution-profile.md",
+      "dst": "plugins/dependency-management/skills/dependency-management/references/self-evolution-profile.md",
+      "strategy": "symlink",
+      "description": "self-evolution-profile reference"
+    },
+    {
+      "src": "plugins/dependency-management/references/evolution-log.md",
+      "dst": "plugins/dependency-management/skills/dependency-management/references/evolution-log.md",
+      "strategy": "symlink",
+      "description": "evolution-log reference"
+    },
+    {
+      "src": "plugins/dependency-management/references/map-debt.md",
+      "dst": "plugins/dependency-management/skills/dependency-management/references/map-debt.md",
+      "strategy": "symlink",
+      "description": "map-debt reference"
     },
     {
       "src": "plugins/dev-utils/assets/templates/bash-tool-header-template.sh",
@@ -10365,12 +10353,6 @@
     },
     {
       "src": "plugins/agent-agentic-os/references/transition-simulator-acceptance-criteria.md",
-      "dst": "plugins/agent-agentic-os/skills/transition-simulator/acceptance-criteria.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/transition-simulator-acceptance-criteria.md",
       "dst": "plugins/agent-agentic-os/skills/transition-simulator/references/acceptance-criteria.md",
       "strategy": "symlink",
       "description": ""
@@ -10512,12 +10494,6 @@
       "dst": "plugins/agent-agentic-os/skills/os-signing-setup/references/SIGNING_WORKFLOW_OVERVIEW.md",
       "strategy": "symlink",
       "description": "os-signing-setup skill: signing workflow overview (hub-and-spoke)"
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/os-signing-setup-acceptance-criteria.md",
-      "dst": "plugins/agent-agentic-os/skills/os-signing-setup/acceptance-criteria.md",
-      "strategy": "symlink",
-      "description": "Plugin reference -> Skill reference (os-signing-setup acceptance criteria)"
     },
     {
       "src": "plugins/agent-agentic-os/references/os-signing-setup-acceptance-criteria.md",
@@ -11460,6 +11436,636 @@
       "dst": "plugins/agent-agentic-os/skills/os-control-plane-mode/scripts/control_plane_hooks.py",
       "strategy": "symlink",
       "description": "shared control-plane guard wiring + declared mode (toggle skill uses it)"
+    },
+    {
+      "src": "plugins/agent-scaffolders/references/skill-authoring-contract.json",
+      "dst": "plugins/agent-scaffolders/skills/create-skill/references/skill-authoring-contract.json",
+      "strategy": "symlink",
+      "description": "Skill authoring contract resource"
+    },
+    {
+      "src": "plugins/agent-scaffolders/references/skill-authoring-guide.md",
+      "dst": "plugins/agent-scaffolders/skills/create-skill/references/skill-authoring-guide.md",
+      "strategy": "symlink",
+      "description": "Skill authoring contract resource"
+    },
+    {
+      "src": "plugins/agent-scaffolders/references/authoring-acceptance.md",
+      "dst": "plugins/agent-scaffolders/skills/create-skill/references/authoring-acceptance.md",
+      "strategy": "symlink",
+      "description": "Skill authoring contract resource"
+    },
+    {
+      "src": "plugins/agent-scaffolders/references/skill-authoring-fallback.md",
+      "dst": "plugins/agent-scaffolders/skills/create-skill/references/skill-authoring-fallback.md",
+      "strategy": "symlink",
+      "description": "Skill authoring contract resource"
+    },
+    {
+      "src": "plugins/agent-scaffolders/references/anthropic-skill-authoring-best-practices.md",
+      "dst": "plugins/agent-scaffolders/skills/create-skill/references/anthropic-skill-authoring-best-practices.md",
+      "strategy": "symlink",
+      "description": "Skill authoring contract resource"
+    },
+    {
+      "src": "plugins/agent-scaffolders/references/skill-authoring-contract.json",
+      "dst": "plugins/agent-scaffolders/skills/audit-skill/references/skill-authoring-contract.json",
+      "strategy": "symlink",
+      "description": "Skill authoring contract resource"
+    },
+    {
+      "src": "plugins/agent-scaffolders/references/skill-authoring-guide.md",
+      "dst": "plugins/agent-scaffolders/skills/audit-skill/references/skill-authoring-guide.md",
+      "strategy": "symlink",
+      "description": "Skill authoring contract resource"
+    },
+    {
+      "src": "plugins/agent-scaffolders/references/authoring-acceptance.md",
+      "dst": "plugins/agent-scaffolders/skills/audit-skill/references/authoring-acceptance.md",
+      "strategy": "symlink",
+      "description": "Skill authoring contract resource"
+    },
+    {
+      "src": "plugins/agent-scaffolders/references/skill-authoring-fallback.md",
+      "dst": "plugins/agent-scaffolders/skills/audit-skill/references/skill-authoring-fallback.md",
+      "strategy": "symlink",
+      "description": "Skill authoring contract resource"
+    },
+    {
+      "src": "plugins/agent-scaffolders/references/anthropic-skill-authoring-best-practices.md",
+      "dst": "plugins/agent-scaffolders/skills/audit-skill/references/anthropic-skill-authoring-best-practices.md",
+      "strategy": "symlink",
+      "description": "Skill authoring contract resource"
+    },
+    {
+      "src": "plugins/agent-scaffolders/references/language-review.md",
+      "dst": "plugins/agent-scaffolders/skills/audit-skill/references/language-review.md",
+      "strategy": "symlink",
+      "description": "Skill authoring contract resource"
+    },
+    {
+      "src": "plugins/agent-scaffolders/assets/templates/SKILL.md.jinja",
+      "dst": "plugins/agent-scaffolders/skills/create-skill/assets/templates/SKILL.md.jinja",
+      "strategy": "symlink",
+      "description": "Skill authoring contract resource"
+    },
+    {
+      "src": "plugins/agent-scaffolders/assets/templates/SKILL-executable.md.jinja",
+      "dst": "plugins/agent-scaffolders/skills/create-skill/assets/templates/SKILL-executable.md.jinja",
+      "strategy": "symlink",
+      "description": "Skill authoring contract resource"
+    },
+    {
+      "src": "plugins/agent-scaffolders/assets/templates/execute.py.jinja",
+      "dst": "plugins/agent-scaffolders/skills/create-skill/assets/templates/execute.py.jinja",
+      "strategy": "symlink",
+      "description": "Skill authoring contract resource"
+    },
+    {
+      "src": "plugins/agent-scaffolders/assets/templates/skill-layout.md",
+      "dst": "plugins/agent-scaffolders/skills/create-skill/assets/templates/skill-layout.md",
+      "strategy": "symlink",
+      "description": "Skill authoring contract resource"
+    },
+    {
+      "src": "plugins/cli-agents/references/claude-cli-dispatch.md",
+      "dst": "plugins/cli-agents/skills/claude-cli-agent/references/claude-cli-dispatch.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/references/execution-contract.md",
+      "dst": "plugins/cli-agents/skills/claude-cli-agent/references/execution-contract.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/references/backend-capabilities.md",
+      "dst": "plugins/cli-agents/skills/claude-cli-agent/references/backend-capabilities.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/references/map-debt.md",
+      "dst": "plugins/cli-agents/skills/claude-cli-agent/references/map-debt.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/references/capability-profile-contract.md",
+      "dst": "plugins/cli-agents/skills/claude-cli-agent/references/capability-profile-contract.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/agents/security-auditor.md",
+      "dst": "plugins/cli-agents/skills/claude-cli-agent/agents/security-auditor.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/agents/refactor-expert.md",
+      "dst": "plugins/cli-agents/skills/claude-cli-agent/agents/refactor-expert.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/agents/architect-review.md",
+      "dst": "plugins/cli-agents/skills/claude-cli-agent/agents/architect-review.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/references/agy-cli-dispatch.md",
+      "dst": "plugins/cli-agents/skills/agy-cli-agent/references/agy-cli-dispatch.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/references/execution-contract.md",
+      "dst": "plugins/cli-agents/skills/agy-cli-agent/references/execution-contract.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/references/backend-capabilities.md",
+      "dst": "plugins/cli-agents/skills/agy-cli-agent/references/backend-capabilities.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/references/map-debt.md",
+      "dst": "plugins/cli-agents/skills/agy-cli-agent/references/map-debt.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/references/capability-profile-contract.md",
+      "dst": "plugins/cli-agents/skills/agy-cli-agent/references/capability-profile-contract.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/agents/security-auditor.md",
+      "dst": "plugins/cli-agents/skills/agy-cli-agent/agents/security-auditor.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/agents/refactor-expert.md",
+      "dst": "plugins/cli-agents/skills/agy-cli-agent/agents/refactor-expert.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/agents/architect-review.md",
+      "dst": "plugins/cli-agents/skills/agy-cli-agent/agents/architect-review.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/references/codex-cli-dispatch.md",
+      "dst": "plugins/cli-agents/skills/codex-cli-agent/references/codex-cli-dispatch.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/references/execution-contract.md",
+      "dst": "plugins/cli-agents/skills/codex-cli-agent/references/execution-contract.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/references/backend-capabilities.md",
+      "dst": "plugins/cli-agents/skills/codex-cli-agent/references/backend-capabilities.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/references/map-debt.md",
+      "dst": "plugins/cli-agents/skills/codex-cli-agent/references/map-debt.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/references/capability-profile-contract.md",
+      "dst": "plugins/cli-agents/skills/codex-cli-agent/references/capability-profile-contract.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/agents/security-auditor.md",
+      "dst": "plugins/cli-agents/skills/codex-cli-agent/agents/security-auditor.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/agents/refactor-expert.md",
+      "dst": "plugins/cli-agents/skills/codex-cli-agent/agents/refactor-expert.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/agents/architect-review.md",
+      "dst": "plugins/cli-agents/skills/codex-cli-agent/agents/architect-review.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/references/copilot-cli-dispatch.md",
+      "dst": "plugins/cli-agents/skills/copilot-cli-agent/references/copilot-cli-dispatch.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/references/execution-contract.md",
+      "dst": "plugins/cli-agents/skills/copilot-cli-agent/references/execution-contract.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/references/backend-capabilities.md",
+      "dst": "plugins/cli-agents/skills/copilot-cli-agent/references/backend-capabilities.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/references/map-debt.md",
+      "dst": "plugins/cli-agents/skills/copilot-cli-agent/references/map-debt.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/references/capability-profile-contract.md",
+      "dst": "plugins/cli-agents/skills/copilot-cli-agent/references/capability-profile-contract.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/agents/security-auditor.md",
+      "dst": "plugins/cli-agents/skills/copilot-cli-agent/agents/security-auditor.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/agents/refactor-expert.md",
+      "dst": "plugins/cli-agents/skills/copilot-cli-agent/agents/refactor-expert.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/agents/architect-review.md",
+      "dst": "plugins/cli-agents/skills/copilot-cli-agent/agents/architect-review.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/references/model-catalog-maintenance.md",
+      "dst": "plugins/cli-agents/skills/update-cli-models/references/model-catalog-maintenance.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/references/capability-profile-contract.md",
+      "dst": "plugins/cli-agents/skills/update-cli-models/references/capability-profile-contract.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/scripts/model_catalog.py",
+      "dst": "plugins/cli-agents/skills/update-cli-models/scripts/model_catalog.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/references/project-capability-baseline.md",
+      "dst": "plugins/cli-agents/skills/project-setup/references/project-capability-baseline.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/references/project-configuration-workflow.md",
+      "dst": "plugins/cli-agents/skills/project-setup/references/project-configuration-workflow.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/references/capability-profile-contract.md",
+      "dst": "plugins/cli-agents/skills/project-setup/references/capability-profile-contract.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/references/claude-directory-spec.md",
+      "dst": "plugins/cli-agents/skills/project-setup/references/claude-directory-spec.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/references/claude-settings-schema.md",
+      "dst": "plugins/cli-agents/skills/project-setup/references/claude-settings-schema.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/references/antigravity-directory-spec.md",
+      "dst": "plugins/cli-agents/skills/project-setup/references/antigravity-directory-spec.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/references/gemini-cli-commands.md",
+      "dst": "plugins/cli-agents/skills/project-setup/references/gemini-cli-commands.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/scripts/capability_profile.py",
+      "dst": "plugins/cli-agents/skills/project-setup/scripts/capability_profile.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/agents/security-auditor.md",
+      "dst": "plugins/cli-agents/skills/local-llm-bridge/agents/security-auditor.md",
+      "strategy": "symlink",
+      "description": "security-auditor persona"
+    },
+    {
+      "src": "plugins/cli-agents/agents/refactor-expert.md",
+      "dst": "plugins/cli-agents/skills/local-llm-bridge/agents/refactor-expert.md",
+      "strategy": "symlink",
+      "description": "refactor-expert persona"
+    },
+    {
+      "src": "plugins/cli-agents/agents/architect-review.md",
+      "dst": "plugins/cli-agents/skills/local-llm-bridge/agents/architect-review.md",
+      "strategy": "symlink",
+      "description": "architect-review persona"
+    },
+    {
+      "src": "plugins/cli-agents/agents/security-auditor.md",
+      "dst": "plugins/cli-agents/skills/local-llm-setup/agents/security-auditor.md",
+      "strategy": "symlink",
+      "description": "security-auditor persona"
+    },
+    {
+      "src": "plugins/cli-agents/agents/refactor-expert.md",
+      "dst": "plugins/cli-agents/skills/local-llm-setup/agents/refactor-expert.md",
+      "strategy": "symlink",
+      "description": "refactor-expert persona"
+    },
+    {
+      "src": "plugins/cli-agents/agents/architect-review.md",
+      "dst": "plugins/cli-agents/skills/local-llm-setup/agents/architect-review.md",
+      "strategy": "symlink",
+      "description": "architect-review persona"
+    },
+    {
+      "src": "plugins/cli-agents/references/local-llm-setup-deep-reference.md",
+      "dst": "plugins/cli-agents/skills/local-llm-setup/references/local-llm-setup-deep-reference.md",
+      "strategy": "symlink",
+      "description": "local-llm-setup-deep-reference documentation"
+    },
+    {
+      "src": "plugins/agent-memory/references/map-debt.md",
+      "dst": "plugins/agent-memory/skills/memory-management/references/map-debt.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-memory/references/rlm-bootstrap-guide.md",
+      "dst": "plugins/agent-memory/skills/rlm-init/references/rlm-bootstrap-guide.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-memory/references/vector-db-bootstrap-guide.md",
+      "dst": "plugins/agent-memory/skills/vector-db-init/references/vector-db-bootstrap-guide.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-orchestration/references/post_run_survey.md",
+      "dst": "plugins/agent-orchestration/skills/dual-loop/references/post_run_survey.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-orchestration/references/cheapest_models.json",
+      "dst": "plugins/agent-orchestration/skills/dual-loop/references/cheapest_models.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-orchestration/references/cheapest_models.md",
+      "dst": "plugins/agent-orchestration/skills/co-pilot-loop/references/cheapest_models.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-orchestration/references/cheapest_models.json",
+      "dst": "plugins/agent-orchestration/skills/co-pilot-loop/references/cheapest_models.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-orchestration/references/PATTERN_GUIDE.md",
+      "dst": "plugins/agent-orchestration/skills/graph-execution/references/PATTERN_GUIDE.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-orchestration/references/PATTERN_GUIDE.md",
+      "dst": "plugins/agent-orchestration/skills/select-loop-strategy/references/PATTERN_GUIDE.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-orchestration/references/PATTERN_GUIDE.md",
+      "dst": "plugins/agent-orchestration/skills/agent-swarm/references/PATTERN_GUIDE.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/dev-utils/references/map-debt.md",
+      "dst": "plugins/dev-utils/skills/coding-conventions-agent/references/map-debt.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/obsidian-wiki-engine/references/obsidian-vault-onboarding-guide.md",
+      "dst": "plugins/obsidian-wiki-engine/skills/obsidian-init/references/obsidian-vault-onboarding-guide.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/obsidian-wiki-engine/references/wiki-query-guide.md",
+      "dst": "plugins/obsidian-wiki-engine/skills/obsidian-query-agent/references/wiki-query-guide.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/obsidian-wiki-engine/references/wiki-distillation-guide.md",
+      "dst": "plugins/obsidian-wiki-engine/skills/obsidian-rlm-distiller/references/wiki-distillation-guide.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/obsidian-wiki-engine/references/wiki-builder-guide.md",
+      "dst": "plugins/obsidian-wiki-engine/skills/obsidian-wiki-builder/references/wiki-builder-guide.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/obsidian-wiki-engine/references/wiki-linting-guide.md",
+      "dst": "plugins/obsidian-wiki-engine/skills/obsidian-wiki-linter/references/wiki-linting-guide.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/exploration-cycle-plugin/references/architecture-rules.md",
+      "dst": "plugins/exploration-cycle-plugin/skills/vibe-slice-migrator/references/architecture-rules.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane_mode.py",
+      "dst": "plugins/agent-agentic-os/skills/os-control-plane-mode/scripts/control_plane_mode.py",
+      "strategy": "symlink",
+      "description": "control-plane toggle CLI"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-control-plane-mode-acceptance-criteria.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-plane-mode/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": "control-plane mode acceptance criteria"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-control-plane-mode-fallback-tree.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-plane-mode/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": "control-plane mode fallback tree"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/copilot_proposer_prompt.md",
+      "dst": "plugins/agent-agentic-os/skills/os-eval-lab-setup/references/copilot_proposer_prompt.md",
+      "strategy": "symlink",
+      "description": "copilot proposer prompt for eval lab"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/evolution-log.md",
+      "dst": "plugins/agent-agentic-os/skills/os-evolution-verifier/references/evolution-log.md",
+      "strategy": "symlink",
+      "description": "evolution log reference for verifier"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/map-debt.md",
+      "dst": "plugins/agent-agentic-os/skills/os-health-check/references/map-debt.md",
+      "strategy": "symlink",
+      "description": "map debt reference for os-health-check"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/testing/test-registry-protocol.md",
+      "dst": "plugins/agent-agentic-os/skills/os-improvement-report/references/testing/test-registry-protocol.md",
+      "strategy": "symlink",
+      "description": "test registry protocol reference for improvement report"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/map-debt.md",
+      "dst": "plugins/agent-agentic-os/skills/os-signing-setup/references/map-debt.md",
+      "strategy": "symlink",
+      "description": "map debt reference for os-signing-setup"
+    },
+    {
+      "src": "plugins/agent-scaffolders/references/audit-plugin-guide.md",
+      "dst": "plugins/agent-scaffolders/skills/audit-plugin/references/audit-plugin-guide.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-scaffolders/references/marketplace.md",
+      "dst": "plugins/agent-scaffolders/skills/manage-marketplace/references/marketplace.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-scaffolders/references/create-plugin-guide.md",
+      "dst": "plugins/agent-scaffolders/skills/create-plugin/references/create-plugin-guide.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-scaffolders/assets/diagrams/skill-execution-flow.mmd",
+      "dst": "plugins/agent-scaffolders/skills/ecosystem-authoritative-sources/assets/diagrams/skill-execution-flow.mmd",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-scaffolders/references/agent-discovery-and-publication.md",
+      "dst": "plugins/agent-scaffolders/skills/create-sub-agent/references/agent-discovery-and-publication.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/exploration-cycle-plugin/references/discovery-planning-tracks.md",
+      "dst": "plugins/exploration-cycle-plugin/skills/discovery-planning/references/discovery-planning-tracks.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/exploration-cycle-plugin/references/exploration-handoff-guide.md",
+      "dst": "plugins/exploration-cycle-plugin/skills/exploration-handoff/references/exploration-handoff-guide.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/exploration-cycle-plugin/references/exploration-orchestrator-guide.md",
+      "dst": "plugins/exploration-cycle-plugin/skills/exploration-workflow/references/exploration-orchestrator-guide.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/exploration-cycle-plugin/references/prototyping-build-guide.md",
+      "dst": "plugins/exploration-cycle-plugin/skills/subagent-driven-prototyping/references/prototyping-build-guide.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/exploration-cycle-plugin/references/vibe-reengineer-guide.md",
+      "dst": "plugins/exploration-cycle-plugin/skills/vibe-reengineer/references/vibe-reengineer-guide.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/scripts/test_harness.py",
+      "dst": "plugins/cli-agents/skills/maf-adapter/scripts/test_harness.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/references/acceptance-criteria.md",
+      "dst": "plugins/cli-agents/skills/maf-adapter/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/scripts/agt_ops.py",
+      "dst": "plugins/cli-agents/skills/agt-security/scripts/agt_ops.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/scripts/path_security.py",
+      "dst": "plugins/cli-agents/skills/agt-security/scripts/path_security.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/cli-agents/references/acceptance-criteria.md",
+      "dst": "plugins/cli-agents/skills/agt-security/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": ""
     }
   ]
 }

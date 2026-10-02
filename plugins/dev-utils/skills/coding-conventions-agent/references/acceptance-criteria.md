@@ -1,1 +1,1 @@
-../../../references/acceptance-criteria.md
+../../../references/coding-conventions-agent-acceptance-criteria.md

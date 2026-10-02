@@ -6,7 +6,7 @@ Purpose:
     Deterministically generates compliant directory architectures and boilerplate logic for Agent Skills, Plugins, Hooks, Commands, and Sub-Agents.
 
 Key Input Dependencies:
-    - Jinja templates located in ../templates/ (README.md.jinja, SKILL.md.jinja, execute.py.jinja, agent.md.jinja, command.md.jinja)
+    - Format templates located in ../assets/templates/ (README.md.jinja, SKILL.md.jinja, execute.py.jinja, agent.md.jinja, command.md.jinja)
     - argparse for CLI argument parsing
     - pathlib for path resolution
 
@@ -48,15 +48,13 @@ import argparse
 import os
 import json
 import re
+from pathlib import Path
 
 
 def get_template(filename: str) -> str | None:
-    """Load a Jinja template file from ../templates/ directory."""
-    template_path = os.path.join(os.path.dirname(__file__), "..", "templates", filename)
-    if os.path.exists(template_path):
-        with open(template_path, "r") as f:
-            return f.read()
-    return None
+    """Load a format template relative to the invoked source or installed script."""
+    template_path = Path(__file__).absolute().parent.parent / "assets/templates" / filename
+    return template_path.read_text(encoding="utf-8") if template_path.is_file() else None
 
 
 def _create_plugin_directories(full_path: str) -> None:
@@ -233,26 +231,62 @@ def _create_skill_execute_script(skill_dir: str, name: str, description: str) ->
     os.chmod(script_path, 0o755)
 
 
-def create_skill(name: str, path: str, description: str, iteration: int | None = None) -> None:
-    """Create a new skill directory structure with SKILL.md, evals, and execute script."""
-    if not re.match(r'^[a-z0-9-]+$', name):
-        print(f"Error: Skill name '{name}' must contain only lowercase letters, numbers, and hyphens.")
-        return
-    if len(name) > 64:
-        print(f"Error: Skill name '{name}' exceeds 64 characters.")
-        return
+def create_skill(name: str, path: str, description: str, iteration: int | None = None,
+                 variant: str = "instructional", plugin_root: str | None = None,
+                 json_output: bool = False) -> dict:
+    """Preflight a variant and generate hub-owned resources with proposed managed links."""
+    if not re.fullmatch(r"[a-z0-9-]{1,64}", name):
+        raise ValueError("Skill name must be 1–64 lowercase letters, numbers or hyphens")
+    if not description.strip() or len(description) > 1024 or re.search(r"<[^>]+>", description):
+        raise ValueError("Description must be nonempty, <=1024 characters and contain no XML tags")
+    filename = "SKILL.md.jinja" if variant == "instructional" else "SKILL-executable.md.jinja"
+    template = get_template(filename)
+    if template is None:
+        raise ValueError(f"Missing required template: {filename}")
+    contract_path = Path(__file__).absolute().parent.parent / "references/skill-authoring-contract.json"
+    contract = json.loads(contract_path.read_text(encoding="utf-8"))
+    layout = contract["variants"][variant]
+    if layout["template"] != filename:
+        raise ValueError("Template and authoring contract disagree")
+    base = Path(path).absolute()
+    skill = base / ".history" / f"iteration-{iteration}" / name if iteration else base / name
+    if skill.exists():
+        raise ValueError(f"Output already exists: {skill}")
+    root = Path(plugin_root).absolute() if plugin_root else (base.parent if base.name == "skills" else None)
+    script_name = name.replace("-", "_") + ".py"
+    links = []
+    script_content = None
+    script_path = None
+    if variant == "executable":
+        if root is None or base != root / "skills" or iteration:
+            raise ValueError("Executable output requires a plugin-root/skills path and no history iteration")
+        script_template = get_template(layout["script_template"])
+        if script_template is None:
+            raise ValueError("Missing required template: execute.py.jinja")
+        script_path = root / "scripts" / script_name
+        if script_path.exists():
+            raise ValueError(f"Canonical script already exists: {script_path}")
+        script_content = script_template.format(name=name, description=json.dumps(description))
+        compile(script_content, str(script_path), "exec")
+        links.append({"src": str(script_path), "dst": str(skill / "scripts" / script_name),
+                      "strategy": "symlink", "description": f"Canonical executable for {name}"})
+    content = template.format(name=name, description=json.dumps(description, ensure_ascii=False),
+                              title_name=name.replace("-", " ").title(), purpose=description,
+                              script_name=script_name)
+    skill.mkdir(parents=True)
+    for directory in layout["directories"]:
+        (skill / directory).mkdir(exist_ok=True)
+    (skill / "SKILL.md").write_text(content, encoding="utf-8")
+    _create_skill_evals_and_diagram(str(skill), name)
+    if script_path is not None:
+        script_path.parent.mkdir(parents=True, exist_ok=True)
+        script_path.write_text(script_content, encoding="utf-8")
+    report = {"status": "pending_links" if links else "generated", "skill_path": str(skill),
+              "contract_version": contract["version"], "variant": variant, "links": links}
+    print(json.dumps(report, indent=2) if json_output else
+          f"Generated {variant} skill at {skill}; status: {report['status']}. Customize and evaluate before publishing.")
+    return report
 
-    if iteration:
-        skill_dir = os.path.join(path, ".history", f"iteration-{iteration}", name)
-    else:
-        skill_dir = os.path.join(path, name)
-
-    _create_skill_directories(skill_dir)
-    _create_skill_documentation(skill_dir, name, description)
-    _create_skill_evals_and_diagram(skill_dir, name)
-    _create_skill_execute_script(skill_dir, name, description)
-
-    print(f"Success: Skill '{name}' scaffolded at {skill_dir}")
 
 def create_hook(event: str, path: str, action_type: str) -> None:
     """Create a new hook entry in a plugin's hooks.json file."""
@@ -355,12 +389,18 @@ def main() -> None:
     parser.add_argument("--action", default="command", choices=["command", "prompt", "agent"], help="Hook action type")
     parser.add_argument("--iteration", type=int, help="Iteration number for safe rollback isolation (e.g., 1, 2)")
     
+    parser.add_argument("--variant", choices=("instructional", "executable"), default="instructional")
+    parser.add_argument("--plugin-root", default=None, help="Output plugin root for executable resources")
+    parser.add_argument("--json", action="store_true", help="JSON skill generation receipt")
     args = parser.parse_args()
     
     if args.type == "plugin":
         create_plugin(args.name, args.path, args.iteration)
     elif args.type == "skill":
-        create_skill(args.name, args.path, args.desc, args.iteration)
+        try:
+            create_skill(args.name, args.path, args.desc, args.iteration, args.variant, args.plugin_root, args.json)
+        except (ValueError, OSError, KeyError) as error:
+            parser.exit(2, f"Error: {error}\n")
     elif args.type == "hook":
         create_hook(args.event, args.path, args.action)
     elif args.type == "sub-agent":

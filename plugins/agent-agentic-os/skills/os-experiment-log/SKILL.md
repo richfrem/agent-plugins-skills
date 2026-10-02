@@ -13,61 +13,64 @@ argument-hint: "[append --source-type TYPE | query <term> | summary]"
 tools: ["Bash"]
 ---
 
-## Overview
+# OS Experiment Log
 
-The experiment log is the unified cross-cutting record for all agentic-os experiments.
-One file per run, all files in `context/experiment-log/`, with `index.md` as a
-queryable table of all runs.
+Unified cross-cutting persistent log for Agentic OS experiments, recording dated run entries to `context/experiment-log/` and indexing in `index.md`.
 
-```
-context/experiment-log/
-  index.md                                     ← one row per run (date, source, target, verdict)
-  2026-04-25-verifier-os-architect-round1.md   ← from os-evolution-verifier
-  2026-04-25-tester-os-architect.md            ← from os-architect-tester
-  2026-04-25-os-improvement-loop-os-eval-runner.md    ← from os-improvement-loop
-  2026-04-25-planner-0024.md                   ← from os-evolution-planner
-  2026-04-25-survey-session.md                 ← from post_run_survey
-```
+## Contents
+
+- [Constraints](#constraints)
+- [Source Types](#source-types-and-result-kinds)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
+
+## Constraints
+
+- Never mutate prior experiment log records; the log is append-only.
+- Always verify `result_type` before parsing run outputs.
+- Persist entries to `context/experiment-log/` and update `index.md` synchronously.
 
 ## Source Types and Result Kinds
 
-Agents must check `result_type` in a log entry's header before parsing it:
+Agents must check `result_type` before parsing:
+- `verifier` (`qualitative`): PASS/PARTIAL/FAIL counts and handoff block validity.
+- `tester` (`qualitative`): Scenario pass/fail criteria.
+- `orchestrator` (`numeric`): Best score, baseline, score deltas, KEEP/DISCARD counts.
+- `planner` (`qualitative`): Workstreams and identified gaps.
+- `survey` (`mixed`): Friction counts and north-star metrics.
 
-| `--source-type` | Produced by | `result_type` | Key fields |
-|---|---|---|---|
-| `verifier` | os-evolution-verifier | `qualitative` | PASS/PARTIAL/FAIL counts, HANDOFF_BLOCK validity |
-| `tester` | os-architect-tester | `qualitative` | AC-1–4 pass/fail per scenario |
-| `orchestrator` | os-improvement-loop | `numeric` | best_score, baseline, delta, KEEP/DISCARD counts |
-| `planner` | os-evolution-planner | `qualitative` | workstream count, gaps identified |
-| `survey` | post_run_survey | `mixed` | friction item count, north_star metric |
+## Quick start
 
-**Numeric entries** (`result_type: numeric`) carry quantitative metrics suitable for trending and charting.
-**Qualitative entries** (`result_type: qualitative`) carry pass/fail verdicts and gap analysis prose.
-**Mixed entries** (`result_type: mixed`) carry both — agents must check which fields are present before parsing.
+Query aggregate statistics across all logged experiments:
 
-## Phase 1 — Resolve Mode
+```bash
+python3 scripts/experiment_log.py summary
+```
 
-Read the argument or invocation context to determine mode:
+## Workflow
 
-- **`append --source-type TYPE`**: log a new run from a completed experiment
-- **`query <term>`**: search all files in `context/experiment-log/` by keyword
-- **`summary`**: print aggregate stats across all runs, broken down by source type
+1. **Resolve Mode**:
+   - `append --source-type TYPE`: Persist newly completed experiment run.
+   - `query <term>`: Search logged runs by keyword.
+   - `summary`: Print cross-cutting aggregate metrics.
+2. **Execute Operation**:
+   ```bash
+   python3 scripts/experiment_log.py append --source-type <type> --report <path> --session-id <id> --target <target> --triggered-by <caller>
+   ```
+3. **Confirm & Index**: Inspect `context/experiment-log/index.md` to confirm entry was recorded with valid header metadata.
 
-## Phase 2 — Execute
+## Verification
 
-Call `scripts/experiment_log.py append --source-type <type> --report <path> --session-id <id>
---target <target> --triggered-by <caller>` for each of the five source types, or `query <term>`
-/ `summary` for lookups. Full example invocations for every source type are in
-`references/detailed-reference.md`.
+Verify log append and index sync with a query check:
 
-## Phase 3 — Confirm and Report
+```bash
+python3 scripts/experiment_log.py query "<session-id>"
+```
 
-After `append`: run `tail -5 context/experiment-log/index.md` and report the logged filename.
-After `query`: relay matching file names and their header blocks (date, source, target, verdict).
-After `summary`: print the per-source-type breakdown verbatim.
+## References
 
-## Log Entry Format, Smoke Tests, and Gotchas
-
-The exact YAML-header + report file format, three smoke tests, and gotchas (mixed result-type
-parsing, temp/ ephemerality, human-filled Actions Taken, intentional append-only duplicate rows)
-are in `references/detailed-reference.md`.
+- [detailed-reference.md](references/detailed-reference.md) — Invocation templates, YAML schema, and smoke test scenarios.
+- [acceptance-criteria.md](references/acceptance-criteria.md) — Log format standards and validation requirements.
+- [fallback-tree.md](references/fallback-tree.md) — Recovery procedures when logging or indexing fails.

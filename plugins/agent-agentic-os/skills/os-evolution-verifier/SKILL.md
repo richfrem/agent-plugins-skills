@@ -11,62 +11,60 @@ argument-hint: "[test-scenario-file | all]"
 tools: ["Bash", "Read", "Write"]
 ---
 
-## Overview
+# Evolution Verifier (`os-evolution-verifier`)
 
-After evolving os-architect or its downstream agents, you need proof that the changes
-actually work. This skill dispatches os-architect in single-shot simulation mode for
-each test scenario and verifies artifact presence — not by reading the transcript, but
-by checking that expected files exist or expected content appears in output.
+Verifies that evolution agents cause real changes by checking for artifact presence (new files, handoff blocks, plan files) rather than relying on transcript text.
 
-**Evolution is verified by artifact presence, not by transcript review.**
+## Contents
 
----
+- [Critical Constraints](#critical-constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Artifact Verification Matrix](#artifact-verification-matrix)
+- [Verification](#verification)
+- [References](#references)
 
-## Artifact Verification Table
+## Critical Constraints
 
-| Evolution Type | What to Check |
+1. **Physical Artifact Verification**: Evolution is proven strictly by physical file existence and content presence, never conversational transcripts.
+2. **Binary Pass/Fail Contract**: A run only passes if expected files exist and required handoff block fields are complete.
+3. **Persist Results**: Always record verification outcomes to `os-experiment-log` before `temp/` is cleared.
+
+## Quick start
+
+Run verification on a single evolution scenario:
+
+```bash
+python3 scripts/run_evolution_scenario.py --scenario <path-to-scenario.json>
+```
+
+## Workflow
+
+1. **Resolve Scenarios**: Locate target test scenario or scan `temp/os-evolution-verifier/scenarios/*.json`.
+2. **Dispatch Simulation**: Dispatch `os-architect` in single-shot non-interactive simulation mode via subagent.
+3. **Verify Artifacts**: Check physical existence of target files and validate `HANDOFF_BLOCK` integrity.
+4. **Compile Report**: Append PASS/FAIL assessment block to test report.
+5. **Persist Findings**: Invoke `os-experiment-log` to archive test outcomes permanently.
+
+## Artifact Verification Matrix
+
+| Evolution Type | Verification Target |
 |---|---|
-| Path C (Gap Fill) | `SKILL.md` present at expected path |
-| Path B (Update) | `tasks/todo/<slug>-plan.md` AND `tasks/todo/copilot_prompt_<slug>.md` written |
-| Path A+ (No-op) | No new files written; HANDOFF_BLOCK contains `STATUS: complete` |
-| Category 3 (Lab Setup) | `improvement/run-config.json` written AND HANDOFF_BLOCK emitted |
-| HANDOFF_BLOCK integrity | All 7 fields present: INTENT, TARGET, PATH, DISPATCH, STATUS, OUTPUTS, NEXT_ACTION |
-| Confidence model | Low confidence prompt → clarifying question appears before Phase 2 audit |
-| Evolution Integrity Gate | When logic in `plugins/` changes, `references/map-debt.md` or `evolution-log.md` is updated, or `Evolution-Check: none` is present |
+| Gap Fill (Path C) | `SKILL.md` present at expected spoke path |
+| Update (Path B) | `tasks/todo/<slug>-plan.md` and prompt written |
+| No-Op (Path A+) | No unexpected files; `HANDOFF_BLOCK` complete |
+| Lab Setup | `run-config.json` written with valid configuration |
 
----
+## Verification
 
-## Procedure
+Confirm test report is compiled and recorded:
 
-1. **Resolve Test Inputs** — `all` scans `temp/os-evolution-verifier/scenarios/*.json`; a specific
-   file is validated for required fields (`id`, `name`, `path`, `prompt`, `expected_artifact`,
-   `artifact_check`). If none found, report that scenarios must be created or generated via
-   context-bundler red-team mode.
-2. **Dispatch os-architect** — single-shot simulation via `copilot-cli-agent`: heartbeat check
-   first (`gpt-5-mini`), then main dispatch (`claude-sonnet-4.6`, non-interactive) with
-   `plugins/agent-agentic-os/agents/os-architect-agent.md` as system prompt and the scenario
-   prompt as the user turn. Verify output is non-empty before proceeding.
-3. **Artifact Verification** — run the check named in the scenario's `artifact_check` field:
-   HANDOFF_BLOCK integrity (7 required fields), file existence (Path B/C), no-op check (Path A+),
-   or confidence-model ordering check.
-4. **Record Result** — append a per-scenario PASS/FAIL block to
-   `temp/os-evolution-verifier/test-report.md`.
-5. **Summary Report** — after all scenarios, write the structured `EVOLUTION_VERIFICATION` block
-   per scenario plus an aggregate Run Summary. A run PASSES only if an artifact exists, HANDOFF_BLOCK
-   has all 7 fields, STATUS isn't `crashed`, VERDICT is PASS (not PARTIAL), and the Evolution
-   Integrity Gate is satisfied. Adversarial WS-N scenarios must FAIL at least 4 of 6 — passing all of
-   them means the verifier isn't operational.
-6. **Persist to Experiment Log** — always call `os-experiment-log` to append the report; `temp/` is
-   ephemeral and results are lost on shell restart otherwise.
+```bash
+test -f "temp/os-evolution-verifier/test-report.md" && echo "Report verified"
+```
 
-Exact bash commands, the EVOLUTION_VERIFICATION field table, the Binary PASS/FAIL contract, and the
-Run Summary format are in `references/detailed-reference.md`.
+## References
 
----
-
-## Detailed Reference
-
-Full commands for each phase, output formats, scenario file JSON format, smoke tests, and gotchas
-(output-length checks, simulation vs. real dispatch, HANDOFF_BLOCK grep patterns, confidence-model
-ordering, temp/ ephemerality, OUTPUTS path normalization, Category 5 dual-dispatch) are all in
-`references/detailed-reference.md`.
+- [detailed-reference.md](references/detailed-reference.md) — Exact dispatch commands, EVOLUTION_VERIFICATION schema, and failure trees.
+- [acceptance-criteria.md](references/acceptance-criteria.md) — Pass/fail grading criteria and scenario formats.
+- [fallback-tree.md](references/fallback-tree.md) — Remediation pathways when simulation or verification fails.

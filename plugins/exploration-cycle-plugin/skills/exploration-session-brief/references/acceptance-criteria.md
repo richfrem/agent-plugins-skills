@@ -1,1 +1,1 @@
-../acceptance-criteria.md
+../../../references/exploration-session-brief-acceptance-criteria.md

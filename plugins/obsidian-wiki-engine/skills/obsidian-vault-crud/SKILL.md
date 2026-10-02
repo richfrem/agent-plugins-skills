@@ -5,76 +5,60 @@ description: "Safe Create/Read/Update/Delete operations for Obsidian Vault notes
 allowed-tools: Bash, Read, Write
 ---
 
+# Obsidian Vault CRUD (obsidian-vault-crud)
+
+Executes safe Create, Read, Update, and Delete operations for vault notes with atomic writes, advisory locking, and conflict detection.
+
+## Contents
+- [Critical Constraints](#critical-constraints)
+- [Dependencies](#dependencies)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
+
+## Critical Constraints
+- **Atomic Write Protocol**: All note updates must stage to `<target>.agent-tmp` before executing atomic POSIX `os.rename()`.
+- **Advisory Lock Gate**: Acquire `<vault_root>/.agent-lock` before write batches and release it immediately on completion.
+- **Concurrent Edit Detection**: Compare `os.stat(file).st_mtime` before writing; abort if the file changed after reading.
+- **Lossless Frontmatter**: Use `ruamel.yaml` to ensure YAML frontmatter, Dataview fields, and property comments are preserved.
+
 ## Dependencies
 
-This skill requires **Python 3.8+** and standard library only. No external packages needed.
+Requires `ruamel.yaml` and Python 3.8+ for atomic file I/O and lossless YAML serialization.
 
-**To install this skill's dependencies:**
+## Quick start
+
 ```bash
-pip-compile ./requirements.in
-pip install -r ./requirements.txt
+# Read a vault note
+python3 plugins/obsidian-wiki-engine/scripts/vault_ops.py read --file <note-path>
+
+# Create a new note with frontmatter properties
+python3 plugins/obsidian-wiki-engine/scripts/vault_ops.py create \
+  --file <note-path> --content "Note body" --frontmatter type=concept
+
+# Append content atomically to an existing note
+python3 plugins/obsidian-wiki-engine/scripts/vault_ops.py append \
+  --file <note-path> --content "\n## Section\nContent"
 ```
 
-See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
+## Workflow
 
----
-# Obsidian Vault CRUD
+1. **Phase 1: Pre-Flight Lock & Timestamp Check**: Check for `.agent-lock` and record file `st_mtime`.
+2. **Phase 2: Frontmatter Isolation**: Parse frontmatter using `ruamel.yaml` to preserve indentation and comments.
+3. **Phase 3: Staged Atomic Write**: Write modified content to `<file>.agent-tmp` and atomically rename to destination.
+4. **Phase 4: Lock Release & Verification**: Release `.agent-lock` and verify updated note structure.
 
-**Status:** Active
-**Author:** Richard Fremmerlid
-**Domain:** Obsidian Integration
-**Depends On:** `obsidian-markdown-mastery` (WP05)
+## Verification
 
-## Core Mandate
-
-This skill provides the **disk I/O layer** for all agent interactions with the Obsidian Vault. It does NOT handle syntax parsing (that belongs to `obsidian-markdown-mastery`). Instead, it ensures that every file write is:
-
-1. **Atomic** — via POSIX `os.rename()` from a `.tmp` staging file
-2. **Locked** — via an advisory `.agent-lock` file at the vault root
-3. **Conflict-aware** — via `mtime` comparison before/after read
-4. **Lossless** — via `ruamel.yaml` for frontmatter (never PyYAML)
-
-## Available Commands
-
-### Read a Note
 ```bash
-python ./vault_ops.py read --file <path>
+# Verify vault ops CLI
+python3 plugins/obsidian-wiki-engine/scripts/vault_ops.py --help
+
+# Audit skill compliance
+python3 plugins/agent-scaffolders/scripts/audit_skill.py plugins/obsidian-wiki-engine/skills/obsidian-vault-crud --mode source
 ```
 
-### Create a Note
-```bash
-python ./vault_ops.py create --file <path> --content <text> [--frontmatter key=value ...]
-```
-
-### Update a Note
-```bash
-python ./vault_ops.py update --file <path> --content <text>
-```
-
-### Append to a Note
-```bash
-python ./vault_ops.py append --file <path> --content <text>
-```
-
-## Safety Guarantees
-
-### Atomic Write Protocol
-1. Write content to `<target>.agent-tmp`
-2. Verify the `.agent-tmp` file was written completely
-3. `os.rename('<target>.agent-tmp', '<target>')` — atomic on POSIX
-4. If any step fails, the `.agent-tmp` is cleaned up
-
-### Advisory Lock Protocol
-- Before any write batch: create `<vault_root>/.agent-lock`
-- After write batch completes: remove `.agent-lock`
-- Other agents check for `.agent-lock` before writing
-- This is advisory (does not block Obsidian UI)
-
-### Concurrent Edit Detection
-- Capture `os.stat(file).st_mtime` before reading
-- Before writing, check `st_mtime` again
-- If mtime changed → another process edited the file → **ABORT**
-
-### Frontmatter Handling
-- Uses `ruamel.yaml` (NOT `PyYAML`) to preserve comments, indentation, and array styles
-- Ensures Dataview and Obsidian Properties remain intact
+## References
+- [acceptance-criteria.md](references/acceptance-criteria.md) - Vault CRUD invariants and atomic safety standards.
+- [fallback-tree.md](references/fallback-tree.md) - Stale lock resolution and concurrent conflict handling.

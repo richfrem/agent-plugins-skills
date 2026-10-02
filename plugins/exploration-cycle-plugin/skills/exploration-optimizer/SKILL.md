@@ -5,84 +5,51 @@ description: Evaluates and improves the exploration-cycle skills, prompts, routi
 allowed-tools: Bash, Read, Write
 ---
 
-<example>
-<commentary>User wants to evaluate and improve a specific exploration skill.</commentary>
-User: Evaluate and improve the exploration-session-brief skill using the optimization loop.
-Agent: [invokes exploration-optimizer, runs baseline-first iteration on exploration-session-brief]
-</example>
+# Exploration Optimizer (`exploration-optimizer`)
 
-<example>
-<commentary>User notices a skill feels weak and wants a systematic improvement cycle.</commentary>
-User: The exploration cycle feels slow — help me identify which skill to optimize first.
-Agent: [invokes exploration-optimizer, runs discovery phase to identify highest-impact target]
-</example>
+Evaluates and optimizes exploration-cycle skills and prompts using disciplined, baseline-first iteration loops.
 
-<example>
-<commentary>BRD generation routes to business-requirements-capture, not this skill.</commentary>
-User: Generate a BRD from our session captures.
-Agent: [invokes business-requirements-capture, NOT exploration-optimizer]
-</example>
+## Contents
 
-# Exploration Optimizer
-[See acceptance criteria](acceptance-criteria.md)
+- [Constraints](#constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
 
-## Discovery Phase
-Ask for:
-- The target exploration skill or agent to optimize.
-- The eval set to use, or whether to generate one from the current architecture.
-- The iteration budget.
-- Whether auto-apply of winning variants is allowed.
-- Which metrics matter most for this loop: routing quality, artifact usefulness, handoff stability, re-entry quality, or human intervention burden.
-- Whether post-run survey data exists and should be included in the decision.
+## Constraints
 
-## Recap
-Confirm:
-- target component
-- eval source
-- loop budget
-- chosen scoring dimensions
-- whether survey data is available
-- whether auto-apply is enabled
+- **One-hypothesis discipline**: Change exactly one variable per iteration loop.
+- **Programmatic baselines**: Acceptance requires automated benchmark score improvement over baseline.
+- **Fail-safe revert**: Automatically discard regressions; retain only verified improvements.
 
-## Execution
-This skill implements autoresearch-style optimization for the exploration-cycle system. It uses a baseline-first iteration loop to improve skill prompts and logic.
+## Quick start
 
-**Usage:**
 ```bash
+# Execute optimization loop on target skill
 python ./scripts/execute.py \
-  --target ${plugins}/skills/user-story-capture/SKILL.md \
+  --target plugins/exploration-cycle-plugin/skills/<skill>/SKILL.md \
   --eval-script ./scripts/eval_runner.py \
-  --goal "Improve Gherkin block accuracy" \
+  --goal "Improve routing precision" \
   --iterations 3
 ```
 
+## Workflow
 
+1. **Configuration**: Confirm target skill, evaluation benchmark script, and iteration budget.
+2. **Baseline Run**: Establish baseline score using deterministic evaluation fixtures.
+3. **Mutation**: Mutate one hypothesis at a time in isolated worktree.
+4. **Scoring**: Re-evaluate against the baseline. Keep wins, discard regressions.
+5. **Ledger Declaration**: Conclude with Source Transparency Declaration and iteration ledger.
 
-## Iteration Loop
-The `execute.py` script follows a disciplined loop:
-1. Change one dominant variable per iteration.
-2. Re-run evaluations.
-3. Mark the attempt as `keep` or `discard`.
-4. If the run crashes or times out, log the failure and continue from the last known good state.
-5. Never let a subjective preference override a clear regression in the tracked metrics.
-6. Use survey feedback as a quality signal, not an excuse to ignore the baseline-first method.
+## Verification
 
-## Suggested Metrics
+```bash
+# Verify evaluation fixtures run cleanly
+pytest plugins/exploration-cycle-plugin/tests/
+```
 
-- routing quality
-- artifact usefulness
-- handoff stability
-- re-entry usefulness
-- human intervention burden
-- unnecessary agent invocation rate
-- post-run survey composite score
+## References
 
-## Output
-Always conclude execution with a Source Transparency Declaration explicitly listing what was queried to guarantee user trust:
-**Sources Checked:** [list]
-**Sources Unavailable:** [list]
-
-## Next Actions
-<!-- Suggest logical follow-up skills here. For example: -->
-- Use `./scripts/benchmarking/run_loop.py --results-dir evals/experiments` for repeatable improvement loops.
-- Suggest the user run `audit-plugin` to verify the generated artifacts.
+- [acceptance-criteria.md](references/acceptance-criteria.md) — Acceptance criteria for exploration optimization loops.
+- [dispatch-strategies.md](references/dispatch-strategies.md) — Model dispatching and evaluation strategies.

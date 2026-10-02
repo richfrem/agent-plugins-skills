@@ -21,7 +21,10 @@ import control_plane_hooks as cph
 PLUGIN = Path(__file__).resolve().parent.parent
 REPO = PLUGIN.parent.parent
 SKILL = PLUGIN / "skills" / "os-control-plane-mode"
-MANIFEST = json.loads((SKILL / "control-plane.manifest.json").read_text())
+_manifest_file = SKILL / "references" / "control-plane.manifest.json"
+if not _manifest_file.is_file():
+    _manifest_file = SKILL / "control-plane.manifest.json"
+MANIFEST = json.loads(_manifest_file.read_text())
 
 MENTIONS = re.compile(r"work-intake|control[_ -]plane|agent_control", re.IGNORECASE)
 SELF = "skills/os-control-plane-mode"

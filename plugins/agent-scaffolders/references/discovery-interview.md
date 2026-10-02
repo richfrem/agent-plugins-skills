@@ -36,4 +36,12 @@ plugins/<plugin>/skills/<skill-slug>/
     acceptance-criteria.md       (symlink)
     fallback-tree.md             (symlink)
 ```
-Confirm with user before writing. If directory already exists, require explicit overwrite confirmation.
+Reuse the user's recorded authorization and requirements; ask only for genuine gaps.
+If a directory already exists, generation fails without overwriting it. Propose a
+bounded update instead. Choose instructional or executable output explicitly;
+executable generation returns proposed plugin-root script links. Delegate link
+registration/restoration to symlink-manager before final audit.
+
+Keep the first action and critical constraints early. Long references need early
+contents and direct entry-point links. Create at least three task-success scenarios
+in addition to routing cases; expected_behavior belongs to the task-success contract.

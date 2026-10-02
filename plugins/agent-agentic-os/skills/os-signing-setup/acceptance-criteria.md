@@ -1,1 +1,0 @@
-../../references/os-signing-setup-acceptance-criteria.md

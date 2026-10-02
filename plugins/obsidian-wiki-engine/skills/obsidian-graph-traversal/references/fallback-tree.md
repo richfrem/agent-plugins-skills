@@ -1,1 +1,1 @@
-../fallback-tree.md
+../../../references/obsidian-graph-traversal-fallback-tree.md

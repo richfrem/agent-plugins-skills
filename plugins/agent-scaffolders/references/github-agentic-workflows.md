@@ -2,6 +2,16 @@
 
 This document covers the two distinct classes of GitHub AI agents. Both share the `.agent.md` persona format but serve different purposes and require different companion files.
 
+## Contents
+
+- [Quick Comparison](#quick-comparison)
+- [Type 1: IDE / UI Agents](#type-1-ide--ui-agents-interactive-copilot-agents)
+- [Type 2: CI/CD Autonomous Agents](#type-2-cicd-autonomous-agents-smart-failure--agentic-devops)
+- [Type 3: Official GitHub Agentic Workflows](#type-3-official-github-agentic-workflows-technical-preview--feb-2026)
+- [Quick Reference](#quick-reference-which-format-do-i-use)
+
+---
+
 ## Quick Comparison
 
 | | Type 1: IDE / UI Agents | Type 2: CI/CD Autonomous Agents |

@@ -1,1 +1,1 @@
-../../../references/acceptance-criteria.md
+../../../references/create-github-action-acceptance-criteria.md

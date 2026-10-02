@@ -1,1 +1,1 @@
-../fallback-tree.md
+../../../references/obsidian-init-fallback-tree.md

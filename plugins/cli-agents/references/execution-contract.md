@@ -1,7 +1,7 @@
 # CLI Agents: Execution Contract
 
-Non-negotiable behavioral rules for all cli-agents workflows. These rules exist because
-the plugin provides the execution layer — drift here cascades to every workflow above it.
+Execution rules for CLI dispatch. User authorization and task scope govern invocation.
+Reuse established approval; validation guidance does not authorize an unrequested review.
 
 ---
 
@@ -41,12 +41,12 @@ Isolation policy is global — not per-adapter.
 
 **When `--isolated` is set:**
 - Dangerous permission flags are suppressed for all CLIs (`--yolo`, `--dangerously-skip-permissions`)
-- Safety footer is appended to all prompts
+- A no-tools safety instruction is appended to all prompts; this is not enforced OS isolation
 - Use for all analysis tasks (reviews, audits, output generation)
 
 **When NOT isolated (task dispatch with tool access):**
 - Requires explicit user instruction or approval
-- Agent must confirm intent before enabling tools
+- Agent must verify existing authorization or obtain it before enabling tools
 
 The default in `run_agent.py` is non-isolated for task dispatch; use `--isolated` for
 analysis passes. Do not invert this default silently.

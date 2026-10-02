@@ -2,6 +2,13 @@
 
 Extracted from SKILL.md per Layer-1 procedural-core line budget (issue #551).
 
+## Contents
+- [Phase 1 — Brainstorm Prompt and Templates](#phase-1--brainstorm-prompt-and-presentation-templates)
+- [Phase 3 — Output Format (Full Templates)](#phase-3--output-format-full-templates)
+- [Step 4 — Dispatch via Copilot CLI](#step-4--dispatch-via-copilot-cli-agent-skill-full-detail)
+- [Gotchas](#gotchas)
+- [Smoke Test](#smoke-test)
+
 ## Phase 1 — Brainstorm prompt and presentation templates
 
 **Brainstorm prompt template:**

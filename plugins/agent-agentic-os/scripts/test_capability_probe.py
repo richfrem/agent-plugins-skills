@@ -18,8 +18,16 @@ Key Functions:
     - test_detects_claude_code_from_active_session_marker()
 """
 
-from capability_probe import detect_runtime, probe_runtime
+from capability_probe import _RUNTIME_MARKERS, detect_runtime, probe_runtime
 import pytest
+
+
+@pytest.fixture(autouse=True)
+def clean_env(monkeypatch):
+    for _, markers in _RUNTIME_MARKERS:
+        for marker in markers:
+            monkeypatch.delenv(marker, raising=False)
+
 
 
 def test_detects_codex_from_active_session_marker(monkeypatch):

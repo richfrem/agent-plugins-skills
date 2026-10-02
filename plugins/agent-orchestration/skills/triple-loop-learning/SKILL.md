@@ -1,7 +1,7 @@
 ---
 name: triple-loop-learning
 plugin: agent-orchestration
-description: "(Industry standard: Meta-Learning System / Automated Autoresearch) Primary Use Case: Continuous, self-improving orchestration of an agentic system over multiple sessions. Use when: building a continuous improvement layer that autonomously identifies workflow friction, postulates hypotheses, and tests improved instructions/coding skills against an objective headless benchmark before merging and persisting."
+description: "(Industry standard: Meta-Learning System / Automated Autoresearch) Autonomous improvement loop evaluating friction and validating mutations against headless benchmarks."
 allowed-tools: Bash, Read, Write
 ---
 
@@ -9,74 +9,71 @@ allowed-tools: Bash, Read, Write
 
 This skill requires **Python 3.8+** and standard library only.
 
-**Evaluation gate**: NOT included in this primitive. The calling system (e.g., agent-agentic-os
-os-improvement-loop) is responsible for wrapping this skill with an eval gate and experiment log.
+**Evaluation gate**: NOT included in this primitive. The calling system (e.g., agent-agentic-os os-improvement-loop) is responsible for wrapping this skill with an eval gate and experiment log.
 
 ---
-# Triple-Loop Learning (Meta-Learning System)
 
-This skill defines the orchestration pattern for the **Triple-Loop Architecture**. Pattern 5 is a robust, autonomous feedback loop where an independent **Meta-Learning Orchestrator** governs a long-horizon pipeline of execution, planning, and tactical problem-solving.
+# Triple-Loop Learning (`triple-loop-learning`)
 
-This architecture is entirely framework-agnostic. While originally developed for `agent-agentic-os`, it models the core loop defined by Meta-Harness research where autonomous systems evolve their own operating instructions based strictly on headless evaluators.
+Autonomous multi-session improvement architecture that identifies friction, forms hypotheses, and tests mutations against headless benchmarks.
 
-## Architecture Overview
+## Contents
+
+- [Dependencies](#dependencies)
+- [Constraints](#constraints)
+- [Quick start](#quick-start)
+- [Architecture](#architecture)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
+
+## Constraints
+
+- **Objective scoring**: Subjective self-evaluation is prohibited; acceptance requires deterministic tests and score differentials.
+- **Process suspension**: Always append `< /dev/null` to background sub-agent execution.
+- **Promotion gate**: Only promote mutations where regression suites pass and scores exceed the established baseline.
+
+## Quick start
+
+```bash
+pytest plugins/agent-orchestration/tests/test_loop_strategies.py
+```
+
+## Architecture
 
 ```mermaid
 flowchart TD
-    subgraph Outer["Outer Loop (Meta-Learning & Orchestration)"]
-        Hypothesize[Hypothesis Generation] --> StrategyBridge[Strategy Packet]
-        Report --> EvalBridge[Score Analysis]
-        EvalBridge --> Conclude[Accept / Reject Hypothesis]
+    subgraph Outer["Meta-Learning"]
+        Hypothesize --> StrategyBridge[Strategy Packet]
+        Report --> Conclude[Accept / Reject]
     end
-
-    subgraph Mid["Strategic Planner (Dual-Loop Integration)"]
-        Plan[Define Sub-tasks] --> TacticalBridge[Handoff Packet]
-        Result[Aggregate Results] --> Report[Generate Report]
+    subgraph Mid["Planner"]
+        Plan[Define Sub-tasks] --> TacticalBridge[Handoff]
+        Result --> Report[Score Analysis]
     end
-
-    subgraph Inner["Tactical Executor (Single-Loop Integration)"]
-        Execute[Code Mutation] --> Test[Headless Evaluation]
-        Test --> ResultBridge[Pass/Fail Signal]
+    subgraph Inner["Executor"]
+        Execute[Mutation] --> Test[Headless Eval]
+        Test --> Result
     end
-
     StrategyBridge --> Plan
     TacticalBridge --> Execute
-    ResultBridge --> Result
 ```
 
----
+## Workflow
 
-## The Workflow Protocol
+1. **Friction Ingestion**: Ingest logs and cluster repeated friction events.
+2. **Hypothesize**: Formulate testable hypothesis ("Modifying X improves metric Y").
+3. **Dispatch**: Select backend, author strategy packet, and assign tasks.
+4. **Mutate & Score**: Tactical executor mutates code and runs headless tests.
 
-### Step 1: Friction Aggregation (Outer Loop)
+## Verification
 
-1. The Orchestrator constantly ingests execution logs from existing operations. Look for repeated uncertainties, API errors, test failures, or syntax flaws.
-2. Group the friction into clustered tasks.
+```bash
+pytest plugins/agent-orchestration/tests/test_loop_strategies.py
+git diff --check
+```
 
-### Step 2: Hypothesis Generation (Outer Loop)
+## References
 
-1. Define a singular thesis: "If we change instruction X, the accuracy score on benchmark Y will improve by N."
-2. Write a rigid **Strategy Packet** for the Mid-level Planner.
-
-### Step 3: Distribution (Strategic Planner)
-
-1. **Interactively Determine CLI and Model (ask once during bootstrap)**: Interactively prompt the user to select the CLI backend (`agy`, `claude`, `copilot`, etc.) and the specific model to run mutations and evaluation.
-2. The Planner assigns disjoint code fixes to one or multiple Tactical Executors using the selected CLI and model.
-3. Ensure test boundaries and standard input redirection (appending `< /dev/null` to commands) are defined to prevent SIGTTIN process freezes.
-
-### Step 4: Mutation & Headless Scoring (Tactical Executor)
-
-> *Constraint: Subjective LLM analysis is expressly prohibited.*
-
-1. Apply the instruction set or code adjustment.
-2. Run pure, headless deterministic tests. Return an objective integer/float score, not opinions. 
-
-### Step 5: Verification & Promotion (Outer Loop - Trust But Verify)
-
-1. Read the objective score differentials. **No blind trust is allowed.**
-2. **TDD / Test Check**: The promotion logic MUST be backed by headless evaluation. Run the full regression test suite on mutated code.
-3. **Delta Inspection**: Check the source diffs for any stub placeholders ("TODO", "TBD", "[NEEDS INPUT]") and verify syntax cleanliness.
-4. **KEEP** only if Accuracy AND F1 score pass the current baseline. Reject otherwise.
-5. Postulate a retrospective mapping for continuous system-wide instructions improvement.
-
----
+- [acceptance-criteria.md](references/acceptance-criteria.md) — Acceptance criteria for autonomous improvement cycles.
+- [fallback-tree.md](references/fallback-tree.md) — Fallback escalation protocol for loop stagnation.

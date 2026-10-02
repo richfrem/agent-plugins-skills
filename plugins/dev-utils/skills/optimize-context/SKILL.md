@@ -14,42 +14,50 @@ allowed_tools:
   - list_dir
 ---
 
-# Optimize Context (`optimize-context`)
+# Optimize Context (optimize-context)
 
-> **Routing Directive:** USE ONLY when diagnosing token bloat, deduplicating installed skill mirrors, trimming instruction files, or auditing session efficiency.
+Reduces AI agent context bloat through duplicate skill deduplication, canonical AGENTS.md optimization, and session token hygiene.
 
-The `optimize-context` skill enforces context hygiene through automated duplicate scanning, instruction file minimization, and delegation pattern guidance.
+## Contents
+- [Critical Constraints](#critical-constraints)
+- [Quick start](#quick-start)
+- [Workflow](#workflow)
+- [Verification](#verification)
+- [References](#references)
 
----
+## Critical Constraints
+- **Scope Boundary**: USE ONLY for diagnosing token bloat, deduplicating installed skill mirrors, trimming instruction files, or auditing session efficiency.
+- **Destructive Action Gate**: Never delete duplicate skills or platform instruction files autonomously; deletions require explicit user confirmation.
+- **Canonical Instruction Anchor**: Treat `AGENTS.md` as the sole canonical instruction authority; avoid blind synchronizations to legacy mirrors.
+- **Artifact Passing**: Pass bounded structured artifacts rather than raw terminal traces between subagent boundaries.
 
-## Operational Execution Loop
+## Quick start
 
-1. **Phase 1: Skill Deduplication Scan**
-   Run the duplicate scanner to identify redundant project/plugin skill copies:
-   ```bash
-   python3 plugins/dev-utils/scripts/optimize_context.py --dry-run
-   ```
-   If duplicates are found in `.claude/`, report them and propose a bounded cleanup. Do not delete
-   duplicate skills or platform instruction files automatically; deletion requires explicit
-   path-scoped authorization and the destructive-action verification protocol.
-   ```bash
-   # No deletion command is run automatically.
-   ```
+```bash
+# Scan for duplicate skills and context bloat (dry-run)
+python3 plugins/dev-utils/skills/optimize-context/scripts/optimize_context.py --dry-run
+```
 
-2. **Phase 2: Instruction File Optimization**
-   Audit and optimize canonical `AGENTS.md` (target ≤ 80 lines where practical).
-   Inventory legacy `CLAUDE.md`, `GEMINI.md`, and `.github/copilot-instructions.md` as
-   duplicate context surfaces; do not rewrite or remove them without explicit authorization.
+## Workflow
 
-3. **Phase 3: Session Token Efficiency**
-   Check for delegation opportunities, enforce artifact passing over raw transcripts, and recommend `/compact` between tasks.
+1. **Phase 1: Skill Deduplication Scan**: Run `optimize_context.py --dry-run` to detect duplicate skill declarations across `.claude/` and workspace plugin roots.
+2. **Phase 2: Instruction File Audit**: Review `AGENTS.md` against the target line budget and identify duplicate mirror surfaces.
+3. **Phase 3: Session Token Efficiency**: Verify lean delegation patterns and enforce artifact passing over raw transcript dumps.
+4. **Phase 4: Hygiene Verification**: Re-run diagnostic checks to confirm duplicate elimination and verify zero broken references.
 
----
+## Verification
 
-## Progressive Disclosure & References
+```bash
+# Run context hygiene verification
+python3 plugins/dev-utils/skills/optimize-context/scripts/optimize_context.py --dry-run
 
-- **Discovery Topology**: [references/deduplication-topology.md](references/deduplication-topology.md) — Claude Code vs multi-IDE loading hierarchy and fix mechanics.
-- **Instruction Optimization**: [references/instruction-optimization.md](references/instruction-optimization.md) — what to keep vs cut, and mirror sync protocols.
-- **Session Efficiency**: [references/session-efficiency.md](references/session-efficiency.md) — delegation rules, subagent dispatch tiers, and context compounding.
-- **Acceptance Criteria**: [references/acceptance-criteria.md](references/acceptance-criteria.md) — structural pass/fail criteria and verification contracts.
-- **Fallback Protocol**: [references/fallback-tree.md](references/fallback-tree.md) — failure recovery procedures and fallback rules.
+# Audit skill compliance
+python3 plugins/agent-scaffolders/scripts/audit_skill.py plugins/dev-utils/skills/optimize-context --mode source
+```
+
+## References
+- [deduplication-topology.md](references/deduplication-topology.md) - Loading hierarchy and deduplication mechanics.
+- [instruction-optimization.md](references/instruction-optimization.md) - Pruning guidelines and mirror sync rules.
+- [session-efficiency.md](references/session-efficiency.md) - Delegation rules and subagent context boundaries.
+- [acceptance-criteria.md](references/acceptance-criteria.md) - Verification contracts and test criteria.
+- [fallback-tree.md](references/fallback-tree.md) - Failure recovery and fallback procedures.

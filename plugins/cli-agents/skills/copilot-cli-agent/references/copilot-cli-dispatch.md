@@ -1,0 +1,1 @@
+../../../references/copilot-cli-dispatch.md

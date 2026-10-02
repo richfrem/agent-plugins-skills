@@ -2,6 +2,20 @@
 
 Complete guide to writing effective agent system prompts that enable autonomous, high-quality operation.
 
+## Contents
+
+- [Core Structure](#core-structure)
+- [Pattern 1: Analysis Agents](#pattern-1-analysis-agents)
+- [Pattern 2: Generation Agents](#pattern-2-generation-agents)
+- [Pattern 3: Validation Agents](#pattern-3-validation-agents)
+- [Pattern 4: Orchestration Agents](#pattern-4-orchestration-agents)
+- [Writing Style Guidelines](#writing-style-guidelines)
+- [Common Pitfalls](#common-pitfalls)
+- [Length Guidelines](#length-guidelines)
+- [Testing System Prompts](#testing-system-prompts)
+
+---
+
 ## Core Structure
 
 Every agent system prompt should follow this proven structure:
