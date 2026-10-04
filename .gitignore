@@ -38,10 +38,14 @@ venv.bak/
 
 # Project specific
 temp/
+.graph-run/
+.swarm-run/
+.orchestration/
 plugins/**/temp/
 context/*.db
 context/*.db-wal
 context/*.db-shm
+context/*.bak*
 context/*.jsonl
 context/os-state.json
 context/plugin-config.json

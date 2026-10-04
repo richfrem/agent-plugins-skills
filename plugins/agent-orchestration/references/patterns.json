@@ -1,0 +1,55 @@
+{
+  "graph": {
+    "pattern": "graph",
+    "description": "Deterministic DAG with parallel read fan-out, join barriers, and sequential mutations",
+    "plan_artifact": "docs/plans/work-tasks/<task-id>/<task-id>-graph-manifest.json",
+    "required": true,
+    "next_skill": "graph-planner",
+    "validator_script": "skills/graph-planner/scripts/validate_manifest.py",
+    "validator": ["python3", "{validator_script}", "{artifact}"]
+  },
+  "dual-loop": {
+    "pattern": "dual-loop",
+    "description": "Outer-inner supervisor-worker dual loop for single bounded changes",
+    "plan_artifact": "handoffs/task_packet_<task-id>.md",
+    "required": true,
+    "next_skill": "dual-loop",
+    "validator_script": "plugins/agent-orchestration/scripts/agent_orchestrator.py",
+    "validator": ["python3", "{validator_script}", "packet", "--packet-path", "{artifact}"]
+  },
+  "agent-swarm": {
+    "pattern": "agent-swarm",
+    "description": "Parallel independent workers over many identical tasks",
+    "plan_artifact": "docs/plans/work-tasks/<task-id>/<task-id>.job.md",
+    "required": true,
+    "next_skill": "agent-swarm"
+  },
+  "direct": {
+    "pattern": "direct",
+    "description": "Direct implementation for minimal localized changes without subagent overhead",
+    "plan_artifact": "docs/plans/work-tasks/<task-id>/<task-id>-implementation-plan.md",
+    "required": true,
+    "next_skill": null
+  },
+  "red-team-review": {
+    "pattern": "red-team-review",
+    "description": "Adversarial threat modeling and security stress test wrapper",
+    "plan_artifact": "docs/plans/work-tasks/<task-id>/<task-id>-threat-model.md",
+    "required": false,
+    "next_skill": "red-team-review"
+  },
+  "learning-loop": {
+    "pattern": "learning-loop",
+    "description": "Exploratory research spikes, hypothesis testing, and evaluation surveys",
+    "plan_artifact": "docs/plans/work-tasks/<task-id>/<task-id>-eval-brief.md",
+    "required": false,
+    "next_skill": "learning-loop"
+  },
+  "triple-loop-learning": {
+    "pattern": "triple-loop-learning",
+    "description": "Systemic meta-evolutionary optimization and friction clustering",
+    "plan_artifact": "docs/plans/work-tasks/<task-id>/<task-id>-learning-contract.md",
+    "required": false,
+    "next_skill": "triple-loop-learning"
+  }
+}

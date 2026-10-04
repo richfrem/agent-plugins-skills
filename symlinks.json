@@ -2636,12 +2636,6 @@
       "description": ""
     },
     {
-      "src": "plugins/agent-orchestration/references/agent_orchestrator.py",
-      "dst": "plugins/agent-orchestration/skills/orchestrator/references/agent_orchestrator.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
       "src": "plugins/agent-orchestration/references/cli-agent-executor.md",
       "dst": "plugins/agent-orchestration/skills/orchestrator/references/cli-agent-executor.md",
       "strategy": "symlink",
@@ -12066,6 +12060,54 @@
       "dst": "plugins/cli-agents/skills/agt-security/references/acceptance-criteria.md",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "plugins/agent-orchestration/references/graph-manifest-schema.json",
+      "dst": "plugins/agent-orchestration/skills/graph-planner/references/graph-manifest-schema.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-orchestration/references/topology-rules.md",
+      "dst": "plugins/agent-orchestration/skills/graph-planner/references/topology-rules.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-orchestration/references/acceptance-criteria.md",
+      "dst": "plugins/agent-orchestration/skills/graph-planner/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-orchestration/scripts/graph_runner.py",
+      "dst": "plugins/agent-orchestration/skills/graph-execution/scripts/graph_runner.py",
+      "strategy": "symlink",
+      "description": "Deterministic graph execution runner"
+    },
+    {
+      "src": "plugins/agent-orchestration/scripts/validate_manifest.py",
+      "dst": "plugins/agent-orchestration/skills/graph-planner/scripts/validate_manifest.py",
+      "strategy": "symlink",
+      "description": "Deterministic graph manifest validator"
+    },
+    {
+      "src": "plugins/agent-orchestration/scripts/validate_manifest.py",
+      "dst": "plugins/agent-orchestration/skills/graph-execution/scripts/validate_manifest.py",
+      "strategy": "symlink",
+      "description": "Deterministic graph manifest validator for runner"
+    },
+    {
+      "src": "plugins/agent-orchestration/scripts/select_strategy.py",
+      "dst": "plugins/agent-orchestration/skills/select-loop-strategy/scripts/select_strategy.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-orchestration/references/patterns.json",
+      "dst": "plugins/agent-orchestration/skills/select-loop-strategy/references/patterns.json",
+      "strategy": "symlink",
+      "description": "Canonical patterns catalog for select-loop-strategy"
     }
   ]
 }
