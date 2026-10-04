@@ -10,6 +10,12 @@
         "dev-utils",
         "plugin-manager"
       ]
+    },
+    {
+      "source": ".",
+      "plugins": [
+        "agent-orchestration"
+      ]
     }
   ]
 }

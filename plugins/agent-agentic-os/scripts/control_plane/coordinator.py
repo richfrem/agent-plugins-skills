@@ -17,6 +17,9 @@ Purpose:
 
 import hashlib
 import json
+import os
+import re
+import subprocess
 import sys
 from dataclasses import replace
 from pathlib import Path
@@ -28,7 +31,7 @@ from control_plane.review_selection import condition_holds
 from control_plane.identity_layout import default_layout
 from control_plane.isolation_check import check_isolation
 from control_plane.proof_edges import snapshot_for_edge
-from control_plane.snapshot import SnapshotError, snapshot_from_json
+from control_plane.snapshot import SnapshotError, snapshot_from_json, resolve_task_strategy
 from control_plane.ssh_signing import SIGN_NAMESPACE
 from control_plane.transition_request import DEFAULT_GATE1_TTL_SECONDS, create_transition_request
 from control_plane.constants import (
@@ -248,7 +251,7 @@ class TransitionCoordinator:
         self._out.write(f"\nCurrent phase:   {current_state}\n")
         self._out.write(f"Requested phase: {to_state}\n\n")
         self._out.write(f"Purpose:\n{template.purpose}\n\n")
-        self._write_transition_guidance(current_state, to_state, phase="before")
+        self._write_transition_guidance(current_state, to_state, phase="before", task_id=task_id)
 
         # 5. Evaluate deterministic checks and required artifacts
         ctx = self._cp._build_transition_policy_ctx(task_id, task, current_state, to_state)
@@ -745,7 +748,7 @@ class TransitionCoordinator:
             ),
         })
 
-    def _write_transition_guidance(self, current_state: str, to_state: str, phase: str) -> None:
+    def _write_transition_guidance(self, current_state: str, to_state: str, phase: str, task_id: Optional[str] = None) -> None:
         """Render advisory guidance from the read-only registry snapshot."""
         guidance = self._registry.get_transition_guidance(current_state, to_state)
         self._out.write(f"Advisory transition guidance ({phase}; registry version {guidance['registry_version']}):\n")
@@ -766,6 +769,59 @@ class TransitionCoordinator:
         if units:
             self._out.write(f"Execution-unit guidance (advisory; unchanged across edges): {units}\n")
             self._out.write("  See plugins/agent-agentic-os/scripts/control_plane/transition_templates.yaml for full field contracts.\n")
+        if to_state == "DRAFT_PLAN" or current_state == "DRAFT_PLAN":
+            repo_root = self._resolve_repo_root()
+            orch_installed = (repo_root / "plugins" / "agent-orchestration").is_dir()
+            orch_text = ""
+            if orch_installed:
+                orch_text = (
+                    "\n  If agent-orchestration is installed, evaluate execution topology via\n"
+                    "  `select-loop-strategy` among peer patterns (direct, dual-loop, graph, agent-swarm,\n"
+                    "  red-team-review, learning-loop). When strategy=graph, compile and validate\n"
+                    "  `graph-manifest.json` before submitting to PLAN_REVIEW."
+                )
+            self._out.write(
+                "- Plan Drafting & Orchestration Advisory:\n"
+                f"  Use host-native plan facilities for authoring.{orch_text}\n"
+            )
+        if (to_state == "IN_WORKTREE" or current_state == "APPROVED") and task_id:
+            repo_root = self._resolve_repo_root()
+            # If strategy is graph, emit the exact bound runner invocation
+            manifest_file = repo_root / "docs" / "plans" / "work-tasks" / task_id / f"{task_id}-graph-manifest.json"
+            if not manifest_file.is_file():
+                manifest_file = repo_root / "docs" / "plans" / "work-tasks" / task_id / "graph-manifest.json"
+            if manifest_file.is_file():
+                manifest_sha = None
+                try:
+                    cur = self._cp._conn.execute(
+                        "SELECT content_snapshot FROM transition_request WHERE task_id = ? AND to_state = 'APPROVED' AND status = 'CONSUMED' ORDER BY request_id DESC LIMIT 1",
+                        (task_id,),
+                    )
+                    row = cur.fetchone()
+                    if row and row[0]:
+                        snaps = json.loads(row[0])
+                        for s in snaps:
+                            if s.get("label") == "manifest":
+                                manifest_sha = s.get("sha256")
+                                break
+                except Exception:
+                    pass
+                if manifest_sha:
+                    runner_rel = "plugins/agent-orchestration/scripts/graph_runner.py"
+                    if not (repo_root / runner_rel).is_file():
+                        runner_rel = ".agents/skills/graph-execution/scripts/graph_runner.py"
+                    manifest_rel = manifest_file.relative_to(repo_root)
+
+                    self._out.write(
+                        "- Execution Command (strategy: graph):\n"
+                        f"  python3 {runner_rel} {manifest_rel} "
+                        f"--worktree .worktrees/{task_id} --approval none --expect-manifest-sha256 {manifest_sha}\n"
+                    )
+                else:
+                    self._out.write(
+                        "- Execution Warning (strategy: graph):\n"
+                        "  No cryptographically signed manifest snapshot found in Gate 1 approval. Execution command refused.\n"
+                    )
         self._out.write("- Guidance is advisory only; policy, human gates, and SQLite remain authoritative.\n\n")
 
     def _stage_plan_artifact_submission(
@@ -783,6 +839,89 @@ class TransitionCoordinator:
                 continue
             digest = hashlib.sha256(artifact_path.read_bytes()).hexdigest()
             artifact_identities.append(f"{artifact_rel}={digest}")
+
+        # Determine declared execution strategy
+        repo_root = self._resolve_repo_root()
+        declared_strategy = resolve_task_strategy(repo_root, task_id, task=task)
+
+        strat_cfg = self._registry.get_strategy_artifact_config(declared_strategy)
+        if strat_cfg is None:
+            raise TransitionCoordinatorError(
+                f"Declared execution strategy '{declared_strategy}' is unknown or not supported by the control plane. "
+                f"Supported strategies: {', '.join(sorted(self._registry.strategy_artifacts.keys()))}"
+            )
+
+        strat_art_pattern = strat_cfg.get("artifact")
+        is_required = strat_cfg.get("required", False)
+        strat_art_path = None
+        if strat_art_pattern:
+            strat_art_rel = strat_art_pattern.replace("<task-id>", task_id)
+            candidates = [
+                strat_art_rel,
+                f"docs/plans/work-tasks/{task_id}/{Path(strat_art_rel).name}",
+                f"docs/plans/{task_id}-{Path(strat_art_rel).name}",
+                Path(strat_art_rel).name,
+            ]
+            if declared_strategy == "graph":
+                candidates.extend([
+                    f"docs/plans/work-tasks/{task_id}/graph-manifest.json",
+                    "graph-manifest.json",
+                ])
+
+            for candidate_rel in candidates:
+                cand = self._resolve_artifact_path(candidate_rel, task)
+                if cand and cand.is_file():
+                    strat_art_path = cand
+                    break
+
+            if is_required and (strat_art_path is None or not strat_art_path.is_file()):
+                raise TransitionCoordinatorError(
+                    f"Declared strategy '{declared_strategy}' requires artifact '{strat_art_pattern}', but it was not found."
+                )
+
+            if strat_art_path and strat_art_path.is_file():
+                validator_cmd = strat_cfg.get("validator")
+                if validator_cmd:
+                    validator_script_rel = strat_cfg.get("validator_script") or (validator_cmd[1] if len(validator_cmd) > 1 else None)
+                    resolved_script = None
+                    if validator_script_rel:
+                        # Search consumer locations (.agents/), monorepo plugins, and repo root
+                        script_name = Path(validator_script_rel).name
+                        candidates = [
+                            repo_root / ".agents" / validator_script_rel,
+                            repo_root / ".agents" / "skills" / "graph-planner" / "scripts" / script_name,
+                            repo_root / ".agents" / "scripts" / script_name,
+                            repo_root / "plugins" / "agent-orchestration" / validator_script_rel,
+                            repo_root / "plugins" / "agent-orchestration" / "scripts" / script_name,
+                            repo_root / validator_script_rel,
+                        ]
+                        for c in candidates:
+                            if c.is_file():
+                                resolved_script = c
+                                break
+
+                        if not resolved_script:
+                            raise TransitionCoordinatorError(
+                                f"Declared strategy '{declared_strategy}' validator '{validator_script_rel}' is not installed; "
+                                "install the required plugin or skill before proceeding."
+                            )
+
+                    cmd = []
+                    for arg in validator_cmd:
+                        arg_rep = arg.replace("{artifact}", str(strat_art_path))
+                        if resolved_script:
+                            arg_rep = arg_rep.replace("{validator_script}", str(resolved_script))
+                        cmd.append(arg_rep)
+
+                    res = subprocess.run(cmd, cwd=str(repo_root), capture_output=True, text=True)
+                    if res.returncode != 0:
+                        err_out = res.stderr.strip() or res.stdout.strip()
+                        raise TransitionCoordinatorError(
+                            f"Strategy '{declared_strategy}' artifact validation failed ({strat_art_path}):\n{err_out}"
+                        )
+
+                strat_digest = hashlib.sha256(strat_art_path.read_bytes()).hexdigest()
+                artifact_identities.append(f"{declared_strategy}:{strat_art_path.name}={strat_digest}")
 
         identity = "plan-artifacts:v1:" + "|".join(artifact_identities)
         prior_submissions = [
