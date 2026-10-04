@@ -35,7 +35,7 @@ Current scale (read from `plugins/` — verify with `find plugins -name SKILL.md
 [Project Root]/
 ├── plugins/                        # CANONICAL SOURCE — authoritative for all skills/agents
 │   ├── agent-agentic-os/           # OS improvement loop, memory, evolution planning (20 skills)
-│   ├── agent-orchestration/        # OS-decoupled execution primitives (9 skills)
+│   ├── agent-orchestration/        # OS-decoupled execution primitives (10 skills)
 │   ├── agent-memory/               # RLM summary cache + ChromaDB vector store (13 skills)
 │   ├── agent-scaffolders/          # Plugin/skill/agent/rule scaffolding & auditing (20 skills)
 │   ├── cli-agents/                 # Multi-LLM CLI dispatch (Claude/Copilot/Gemini/Agy) (11 skills)
@@ -140,7 +140,7 @@ and `turn_evolution_guard`). Three control-plane edges are cryptographic human g
 **Setup:** per machine, by the human, via `setup_ciba_identity.py` (skill `os-signing-setup`). `allowed_signers*` and `context/identity/challenges/` are machine-local trust anchors and never committed; `os-init` and `os-health-check` report readiness read-only. **Residual risk:** an agent running as the same account with direct database or coordinator access can still tamper; see `plugins/agent-agentic-os/references/isolation-setup.md`.
 
 ### 4.3. Plugin: agent-orchestration/ (v2.3.0)
-Execution primitives for loops and deterministic state graphs (orchestrator, select-loop-strategy, co-pilot-loop, learning-loop, dual-loop, agent-swarm, red-team-review, triple-loop-learning, graph-execution). Provides execution patterns only — no eval gate, no memory; `os-improvement-loop` delegates its inner loop to `triple-loop-learning` as substrate.
+Execution primitives for loops and deterministic state graphs (orchestrator, select-loop-strategy, graph-planner, graph-execution, co-pilot-loop, learning-loop, dual-loop, agent-swarm, red-team-review, triple-loop-learning). Provides execution patterns only — no eval gate, no memory; `os-improvement-loop` delegates its inner loop to `triple-loop-learning` as substrate.
 
 ### 4.4. Plugin: agent-memory (v1.0.0)
 Two retrieval subsystems consolidated from former rlm-factory / vector-db / memory-management

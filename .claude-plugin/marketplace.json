@@ -23,11 +23,11 @@
     },
     {
       "name": "agent-orchestration",
-      "description": "Composable agent loop and graph architectures — learning loops, deterministic state machines (DAG), agent orchestration (0-to-N inner agents), parallel swarms, and red team coordination. Framework-agnostic. v2.3.0.",
+      "description": "Composable agent loop and graph architectures — graph planning, deterministic state machines (DAG), learning loops, agent orchestration (0-to-N inner agents), parallel swarms, and red team coordination. Framework-agnostic. v2.3.0.",
       "source": "./plugins/agent-orchestration",
       "strict": true,
       "category": "agent-infrastructure",
-      "tags": ["orchestrator", "graph-execution", "select-loop-strategy", "state-machine", "learning-loop", "dual-loop", "agent-swarm", "red-team", "multi-agent"]
+      "tags": ["orchestrator", "graph-planner", "graph-execution", "select-loop-strategy", "state-machine", "learning-loop", "dual-loop", "agent-swarm", "red-team", "multi-agent"]
     },
     {
       "name": "agent-scaffolders",

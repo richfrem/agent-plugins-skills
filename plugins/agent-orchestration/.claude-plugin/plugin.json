@@ -10,6 +10,7 @@
   "keywords": [
     "agent-orchestration/",
     "orchestrator",
+    "graph-planner",
     "graph-execution",
     "select-loop-strategy",
     "state-machine",
@@ -21,6 +22,7 @@
   ],
   "capabilities": [
     "orchestration",
+    "graph-planner",
     "graph-execution",
     "state-machine",
     "multi-agent",

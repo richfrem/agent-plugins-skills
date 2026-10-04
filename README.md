@@ -127,7 +127,7 @@ binding [ADRs](docs/ADRs/) before changing plugin structure, scripts, or shared 
 | --- | --- | --- |
 | Control plane | State transitions, human gates, policy checks, verification receipts, retrospectives | [`agent-agentic-os`](plugins/agent-agentic-os/README.md) |
 | Native runtime integration | Discover available CLIs, select suitable models, and delegate without hard runtime coupling | [`cli-agents`](plugins/cli-agents/README.md) |
-| Execution patterns | Composable loops, graph execution, swarms, adversarial review | [`agent-orchestration`](plugins/agent-orchestration/README.md) |
+| Execution patterns | Composable loops, graph planning and execution, swarms, adversarial review | [`agent-orchestration`](plugins/agent-orchestration/README.md) |
 | Learning and memory | Filesystem-native memory, retrieval options, experiment and improvement loops | [`agent-memory`](plugins/agent-memory/README.md), `agent-agentic-os` |
 | Plugin lifecycle | Create, audit, install, synchronize, and maintain reusable plugins | [`agent-scaffolders`](plugins/agent-scaffolders/README.md), [`plugin-manager`](plugins/plugin-manager/README.md) |
 
@@ -155,7 +155,7 @@ self-contained runtime copies into `.agents/`.
 | --- | --- |
 | [`agent-agentic-os`](plugins/agent-agentic-os/README.md) | Governed task lifecycle, health checks, evaluation, continuous improvement, and repository evolution |
 | [`cli-agents`](plugins/cli-agents/README.md) | CLI-agent discovery, delegation, model catalogs, and project/runtime setup |
-| [`agent-orchestration`](plugins/agent-orchestration/README.md) | Reusable orchestration and multi-agent execution primitives |
+| [`agent-orchestration`](plugins/agent-orchestration/README.md) | Reusable orchestration and multi-agent execution primitives (graph-planner, graph-execution, dual-loop, swarm) |
 | [`agent-memory`](plugins/agent-memory/README.md) | Filesystem memory, RLM, and vector-data capabilities |
 | [`agent-scaffolders`](plugins/agent-scaffolders/README.md) | Creating, auditing, packaging, and maintaining plugins and skills |
 | [`dev-utils`](plugins/dev-utils/README.md) | Repository utilities: issues, worktrees, symlinks, context, documentation, and more |

@@ -10,7 +10,7 @@ description: >
   model step; later documentation passes are delegated to cheaper CLI sub-agents.
 dependencies: ["skill:exploration-workflow"]
 model: inherit
-tools: ["Read", "Write", "AskUserQuestion"]
+tools: ["Read", "Write", "AskUserQuestion", "Bash"]
 ---
 
 ## Contents
@@ -35,7 +35,7 @@ This is a deliberate trade-off: intake runs in the primary model context so the 
 
 Do not start capturing requirements. Do not write a spec. Do not suggest solutions. Your only output is a pre-filled `exploration/session-brief.md`.
 
-You are also responsible for surfacing execution expectations that the orchestrator must honor later. If the SME signals they expect a detailed plan, explicit task tracking, cheaper sub-agent delegation, or superpowers-assisted breakdown, capture that in the brief so the next phase starts with those constraints already visible.
+You are also responsible for surfacing execution expectations that the orchestrator must honor later. If the SME signals they expect a detailed plan, explicit task tracking, cheaper sub-agent delegation, or DAG-orchestrated breakdown, capture that in the brief so the next phase starts with those constraints already visible.
 
 ---
 
@@ -88,9 +88,9 @@ If the user reveals at any point (Phase 1 trigger, Phase 2 Domain, Nature, or Pr
 
 ### Desired output
 > What do you need to come out of this exploration?
-- **Technical Codebase Discovery** (→ Technical Diagnostic Brief, `exploration/DIAGNOSTIC_BRIEF.md`, feeding `work-intake` & `context/control_plane.db`)
+- **Technical Codebase Discovery** (→ Technical Diagnostic Brief, `exploration/DIAGNOSTIC_BRIEF.md`, feeding downstream `work-intake`)
 - Just want to think it through and understand it better
-- Need a formal spec (→ Superpowers design doc, `docs/superpowers/specs/`)
+- Need a formal spec (→ 4-Pillar Spec, `TASK_SPEC.md`)
 - Need a planning document or roadmap update
 - Need a prototype or proof of concept to resolve a specific unknown
 - Something else
@@ -100,7 +100,7 @@ When the user indicates they want to explore a technical task, refactor, bug, or
 1. **Emit Technical Brief:** Direct the downstream workflow to compile `exploration/DIAGNOSTIC_BRIEF.md` using `technical_diagnostic_engine.py`.
 2. **Enforce Read-Only Sandboxing:** Emphasize that technical discovery sub-agents inspect coupling surfaces, SQLite schemas, and cross-plugin symlinks in strictly read-only mode.
    - **Operational Why:** Premature mutations during discovery invalidate verifier baselines, cause main checkout leaks, and violate the mandatory Human Gate before a 4-Pillar Spec is approved.
-3. **Control Plane Alignment:** Log the session trigger in `context/control_plane.db` as `INTAKE` and prepare to hand off to `work-intake` (`INTERVIEW`).
+3. **Control Plane Alignment:** Delegate to the `work-intake` skill to register the task in the control plane (`INTAKE` -> `INTERVIEW`) rather than attempting direct cross-plugin database writes.
 
 ### Urgency / scope
 > How time-constrained is this?
@@ -154,10 +154,9 @@ questions, defeating the optimization.
 - [Constraint 2]
 
 ## Execution Expectations
-[Any stated preference for task tracking, cheaper-model delegation, and which superpowers
-disciplines should gate the build phase — isolated workspace (`using-git-worktrees`),
-TDD (`test-driven-development`), two-stage review (`requesting-code-review`), branch
-finishing (`finishing-a-development-branch`). Default: all four, per `phase3-execution-discipline.md`.]
+[Any stated preference for task tracking, cheaper-model delegation, and execution disciplines
+governing the build phase — isolated workspace (`worktree-manager`), TDD (`test-driven-development`),
+DAG orchestration (`graph-planner`), and exit verification gates. Default: per `engineering-lifecycle-policy.md`.]
 
 ## Current System Behavior
 (Brownfield only — describe what the existing system does; mark gaps with [NEEDS HUMAN INPUT])
@@ -187,8 +186,8 @@ Key mapping from intake to schema:
 - **Desired Output**: from Phase 2 "Desired output" answer
 - **Known Constraints**: from Phase 2 "Prior context" + "Urgency / scope"
 - **Execution Expectations**: any stated preference for detailed planning, task tracking, cheaper-model
-  delegation, or which superpowers disciplines (worktree isolation, TDD, code review, branch finishing)
-  should govern the build phase — see `phase3-execution-discipline.md` for the default set
+  delegation, or execution disciplines (worktree isolation, TDD, DAG orchestration, exit gates)
+  governing the build phase — see `engineering-lifecycle-policy.md` for the default set
 - **Current System Behavior**: brownfield only — from Phase 2 "Prior context"
 - **Engineering Blocking Question**: re-entry spike only — from Phase 1 trigger verbatim
 

@@ -28,9 +28,12 @@ Assesses incoming tasks, routes to specialized execution patterns, and enforces 
 ## Constraints
 
 - **Trust but verify**: Never blindly trust sub-agent outputs; mechanically run automated tests.
+
 - **Inner loop isolation**: Inner Loop agents are strictly forbidden from running `git` commands.
+
 - **Background execution**: Always redirect stdin (`< /dev/null`) when spawning sub-agents.
-- **Mandatory closure**: Full closure sequence (Verification -> Retro -> Merge) is required.
+
+- **Zero autonomous merge**: Merging and pushing are strictly caller-managed. The orchestrator halts after verification and retrospective.
 
 ## Quick start
 
@@ -48,16 +51,20 @@ python ./scripts/agent_orchestrator.py packet --wp 001 --spec-dir handoffs
 | Bounded code implementation, bug fix | Supervisor / Worker | `dual-loop` |
 | Bulk migration, 10+ independent partitioned jobs | Parallel Swarm | `agent-swarm` |
 | Unguided friction evaluation, autonomous evals | Meta-Learning | `triple-loop-learning` |
-| Formal DAG transitions, receipts, rollbacks | State Machine | `graph-execution` |
+| Structural dependencies, parallel fan-out joined at barriers | Graph | `graph-planner` -> `graph-execution` |
 | Ambiguous routing, topology comparison | Decision Tree | `select-loop-strategy` |
 
 ## Workflow
 
 1. **Assess & Route**: Match incoming signal against the Routing Decision Table.
-2. **Package**: Author Task Packet via `agent_orchestrator.py packet`.
+
+2. **Package**: Author Task Packet via `agent_orchestrator.py packet`. For graph workflows, mandate compilation of `graph-manifest.json` via `graph-planner`.
+
 3. **Dispatch**: Dispatch inner worker into isolated worktree with stdin redirection (`< /dev/null`).
+
 4. **Supervised Verify**: Audit diff and run tests via `agent_orchestrator.py verify`.
-5. **Close & Retro**: Run `agent_orchestrator.py retro` and merge verified worktree.
+
+5. **Close & Retro**: Run `agent_orchestrator.py retro`. Stop after recording retrospective. Caller performs review, merge, and deployment.
 
 ## Verification
 
@@ -70,6 +77,6 @@ pytest
 
 ## References
 
-- [cli-agent-executor.md](references/cli-agent-executor.md) — Specialized CLI personas.
-- [acceptance-criteria.md](references/acceptance-criteria.md) — Phase gates and exit criteria.
-- [fallback-tree.md](references/fallback-tree.md) — Recovery protocols for loop stalls.
+- [cli-agent-executor.md](references/cli-agent-executor.md) - Specialized CLI personas.
+- [acceptance-criteria.md](references/acceptance-criteria.md) - Phase gates and exit criteria.
+- [fallback-tree.md](references/fallback-tree.md) - Recovery protocols for loop stalls.

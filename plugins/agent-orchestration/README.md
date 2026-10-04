@@ -56,7 +56,8 @@ It provides "LEGO bricks" for orchestration — bringing industry-standard agent
 | `co-pilot-loop` | 3A. Fast-Tier Pair Preset | Specialized dual-loop pairing Claude (Supervisor) with Gemini Flash Low (Worker) via cheapest models configuration. |
 | `agent-swarm` | 4. Parallel Agent (Concurrent) | Partitions work → dispatches to N agents across isolated workspaces → verifies and merges all outputs. |
 | `triple-loop-learning` | 5. Hierarchical Meta-Loop | Orchestrates a 3-tier execution hierarchy for autonomous autoresearch and process self-optimization. |
-| `graph-execution` | 6. Deterministic State Machine (DAG) | Formal node transitions, Proposal Mode, transactional worktree sandboxing, receipt gates, and rollback. |
+| `graph-planner` | 6A. DAG Architect & Compiler | Interactively architects, topologically validates, and compiles token-budgeted execution graphs into graph-manifest.json. |
+| `graph-execution` | 6B. Deterministic State Machine (DAG) | Formal node transitions, Proposal Mode, transactional worktree sandboxing, receipt gates, and rollback. |
 
 ---
 
