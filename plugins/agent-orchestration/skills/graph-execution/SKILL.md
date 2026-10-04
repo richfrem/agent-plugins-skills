@@ -5,9 +5,9 @@ description: Executes complex workflows using deterministic graph-state machines
 allowed-tools: Bash, Read, Write
 ---
 
-# Graph-Planned Execution (`graph-execution`)
+# Graph Execution (`graph-execution`)
 
-Deterministic execution primitive for tasks requiring formal state tracking, human approval gates, worktree sandboxing, and safe rollback.
+Deterministic executor for task graphs compiled by `graph-planner`. Enforces total ordering for mutations, concurrency caps for reads, and automated rollback upon failure.
 
 ## Contents
 
@@ -20,53 +20,70 @@ Deterministic execution primitive for tasks requiring formal state tracking, hum
 
 ## Constraints
 
-- **State persistence**: Active node and attempt counts persist in `.agent/learning/evolution_state.json`.
-- **Proposal mode invariant**: Zero mutations or worktrees are created before explicit human authorization.
-- **Verifier sovereignty**: Pre-execution hashes of verifiers are locked; mutation target cannot alter the verifier.
-- **Asymmetric persistence**: On 3rd failure, code changes rollback while learnings and debt persist to Layer 2.
+- **Workspace Confinement**: Mutations require an isolated git worktree via `--worktree` or `--create-worktree`. `--no-workspace` is permitted only for read-only DAGs.
+
+- **Caller Governance Contract**: Caller environment owns workspace lifecycle and human approval. The runner never pushes, merges, or deletes worktrees.
+
+- **Zero Autonomous Merge**: Merging is strictly caller-managed; the runner stops after recording terminal state.
+
+- **Mutation Boundaries**: Mutations must touch only declared `mutation_targets` and never modify `forbidden_paths`.
+
+- **Fail Closed**: If `--approval prompt` is selected in a non-interactive shell, execution halts immediately before any mutation.
 
 ## Quick start
 
 ```bash
-# Query active graph execution state or initiate node transition
-python3 plugins/agent-agentic-os/scripts/evolution_state.py status
+# Execute compiled manifest inside an isolated worktree
+python3 scripts/graph_runner.py graph-manifest.json --worktree .worktrees/task-001 --approval prompt
+
+# Run read-only graph in current directory
+python3 scripts/graph_runner.py read-manifest.json --no-workspace --approval none
 ```
 
 ## State Machine
 
 ```mermaid
 stateDiagram-v2
-    [*] --> TRIAGE
-    TRIAGE --> PLAN: 4-Box Gate Passed
-    PLAN --> AWAITING_APPROVAL: Manifest Formulated
-    AWAITING_APPROVAL --> AUTHORIZED: User Explicit Approval
-    AUTHORIZED --> CREATE_WORKTREE: Sandbox Initialized
-    CREATE_WORKTREE --> EXECUTE: Mutation Attempt (1-3)
-    EXECUTE --> VERIFY_GATE: Objective Verifier Run
-    VERIFY_GATE --> COMMIT: Verifier Passed (exit 0)
-    VERIFY_GATE --> ROLLBACK: Verifier Failed (Attempts == 3)
+    [*] --> PREFLIGHT: Check Clean Tree
+    PREFLIGHT --> APPROVAL_GATE: Validate Gate
+    APPROVAL_GATE --> PARALLEL_READS: Fan-Out Bounded Pool
+    PARALLEL_READS --> SYNC_BARRIER: Join & Check Hash
+    SYNC_BARRIER --> SEQUENTIAL_MUTATION: Strict Total Order
+    SEQUENTIAL_MUTATION --> VERIFIER_GATE: Hash & Exit 0
+    VERIFY_GATE --> SUCCESS: All Nodes Done
+    VERIFY_GATE --> FALLBACK: On Failure
+    FALLBACK --> SEQUENTIAL_MUTATION: Substituted
+    FALLBACK --> ROLLBACK_AND_HALT: Fallback Failed
 ```
 
 ## Workflow
 
-1. **TRIAGE**: Evaluate 4-Box Automation Gate (structural issue, objective verifier, ceiling <= 3, persistence sink).
-2. **PLAN**: Formulate Transaction Manifest declaring `mutation_targets`, `verifier`, and `forbidden_paths`.
-3. **AUTHORIZED**: Request explicit user authorization; spawn isolated git worktree upon approval.
-4. **EXECUTE**: Apply surgical code edits strictly confined inside the isolated worktree sandbox.
-5. **VERIFY_GATE**: Run objective verifier command. Advance on exit 0; retry or rollback on exit != 0.
-6. **COMMIT / ROLLBACK**: On pass, stage and commit with receipt; on 3rd failure, rollback code and export learnings.
+1. **PREFLIGHT**: Verify working tree is clean (`git status --porcelain`). Record starting commit SHA.
+
+2. **APPROVAL_GATE**: If `--approval none` is set on a mutation graph, verify leading `verifier_gate` with `role: "approval"`.
+
+3. **PARALLEL_READS**: Execute read-only nodes concurrently up to `max_parallel_concurrency`. Calculate git status hash before scatter.
+
+4. **SYNC_BARRIER**: Join parallel reads. Verify git status hash is unchanged; fail barrier if modified.
+
+5. **SEQUENTIAL_MUTATIONS**: Execute mutation nodes one at a time in strict dependency order. Check `mutation_targets` and `forbidden_paths`. Commit once per successful mutation.
+
+6. **VERIFIER_GATE**: Check `verifier_hash`, run verifier command, and confirm exit 0. On failure, attempt retries or transition to `fallback_node_id`.
+
+7. **TERMINAL**: On completion, record terminal state in `state.json`. On unrecovered failure, execute `rollback_and_halt` (`git reset --hard <start_sha>` and `git clean -fd`).
 
 ## Verification
 
 ```bash
-# Verify state machine integrity and receipt logs
-python3 plugins/agent-agentic-os/scripts/verify_evolution_receipt.py --audit
-# Ensure active worktree clean status
-git status --short
+# Inspect append-only execution receipts (anchored in git common dir to survive rollback)
+cat "$(git rev-parse --git-common-dir)/graph-run/<graph_id>/<run_id>/receipts.jsonl"
+
+# Audit runner state and exit status
+cat "$(git rev-parse --git-common-dir)/graph-run/<graph_id>/<run_id>/state.json"
 ```
 
 ## References
 
-- [PATTERN_GUIDE.md](references/PATTERN_GUIDE.md) — Comprehensive comparative pattern guide.
-- [acceptance-criteria.md](references/acceptance-criteria.md) — Verification criteria and contracts.
-- [fallback-tree.md](references/fallback-tree.md) — Recovery and failure escalation paths.
+- [PATTERN_GUIDE.md](references/PATTERN_GUIDE.md) - Comparative loop patterns.
+- [acceptance-criteria.md](references/acceptance-criteria.md) - Phase gates and exit criteria.
+- [fallback-tree.md](references/fallback-tree.md) - Error recovery protocols.

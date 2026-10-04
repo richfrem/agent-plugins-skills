@@ -1,0 +1,42 @@
+[
+  {
+    "prompt": "I have an ambiguous multi-step refactoring workflow that I need to break down into a DAG with token budgets and parallel steps.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Help me architect an execution graph with scatter and gather barriers for this code migration pipeline.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Compile a graph-manifest.json and Mermaid DAG diagram for this multi-step agent workflow.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Design an execution topology with parallel reads and sequential worktree writes for our test suite runner.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Architect a read-only multi-source dependency scan DAG that fans out across 4 repos and joins at a sync barrier.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Fix a single-line off-by-one bug in calculate_tax() within tax_calculator.py.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Execute this existing graph manifest and spawn the worktree sandbox.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Run pytest on the test_loop_strategies suite and check for failures.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Select between dual-loop and swarm strategy for bulk markdown formatting.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "What is the git status in the current repository?",
+    "should_trigger": false
+  }
+]

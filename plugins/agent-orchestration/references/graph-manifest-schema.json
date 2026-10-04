@@ -1,0 +1,187 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "GraphExecutionManifest",
+  "description": "Schema for token-budgeted, deterministic execution graphs (DAGs) compiled by graph-planner and consumed by graph-execution.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "graph_id", "version", "budget", "nodes"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version of the manifest schema contract."
+    },
+    "graph_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "Kebab-case task or workflow identifier."
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version of the graph definition."
+    },
+    "caller": {
+      "description": "Opaque metadata or trace information supplied by caller environment.",
+      "oneOf": [
+        { "type": "string" },
+        { "type": "object" }
+      ]
+    },
+    "budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["token_ceiling_total", "max_parallel_concurrency", "max_retries_per_node"],
+      "properties": {
+        "token_ceiling_total": {
+          "type": "integer",
+          "minimum": 1000,
+          "description": "Advisory token budget ceiling allocated across all graph nodes."
+        },
+        "max_parallel_concurrency": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 16,
+          "description": "Maximum concurrent parallel workers allowed during fan-out."
+        },
+        "max_retries_per_node": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2,
+          "description": "Maximum retry attempts before triggering failure escalation (max 2 retries = 3 attempts total)."
+        }
+      }
+    },
+    "nodes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "type", "tier", "command_or_eval", "input_bindings", "output_contract", "depends_on", "failure_escalation"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9_-]+$",
+            "description": "Unique identifier for this node."
+          },
+          "role": {
+            "type": "string",
+            "enum": ["approval", "worker", "verifier", "barrier", "fallback"],
+            "description": "Functional role of node. 'approval' identifies leading approval verifier_gate."
+          },
+          "type": {
+            "type": "string",
+            "enum": ["parallel_read", "sync_barrier", "verifier_gate", "sequential_mutation"],
+            "description": "Execution semantics and boundary behavior."
+          },
+          "tier": {
+            "type": "string",
+            "enum": ["fast_engine", "frontier_engine", "deterministic_script"],
+            "description": "Compute tier assigned based on token economics."
+          },
+          "command_or_eval": {
+            "type": "string",
+            "description": "Executable bash command, verifier script, or prompt spec."
+          },
+          "timeout_seconds": {
+            "type": "integer",
+            "minimum": 1,
+            "default": 300,
+            "description": "Maximum execution time in seconds before terminating node process."
+          },
+          "verifier_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "description": "Expected SHA256 hex digest of verifier script or command."
+          },
+          "mutation_targets": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Explicit relative file paths this mutation node is permitted to modify."
+          },
+          "forbidden_paths": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Glob patterns that this mutation node must never modify."
+          },
+          "reversible": {
+            "type": "boolean",
+            "default": true,
+            "description": "Whether mutations or actions by this node can be undone via git rollback. External network/API calls must set false."
+          },
+          "input_bindings": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Upstream node outputs bound as inputs."
+          },
+          "output_contract": {
+            "oneOf": [
+              {
+                "type": "string",
+                "description": "Path to schema JSON or format descriptor defining node output."
+              },
+              {
+                "type": "object",
+                "description": "Inline JSON schema object defining node output contract."
+              }
+            ],
+            "description": "Output validation contract as an on-disk schema path or an inline JSON schema object."
+          },
+          "depends_on": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "IDs of prerequisite nodes that must complete before this node executes."
+          },
+          "failure_escalation": {
+            "type": "string",
+            "enum": ["rollback_and_halt", "fallback_node"],
+            "description": "Action taken when node execution or verification exhausts all retries."
+          },
+          "fallback_node_id": {
+            "type": "string",
+            "description": "Target fallback node ID required when failure_escalation is fallback_node."
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "required": ["failure_escalation"],
+              "properties": { "failure_escalation": { "const": "fallback_node" } }
+            },
+            "then": {
+              "required": ["fallback_node_id"]
+            }
+          },
+          {
+            "if": {
+              "required": ["type"],
+              "properties": { "type": { "const": "verifier_gate" } }
+            },
+            "then": {
+              "properties": { "tier": { "const": "deterministic_script" } }
+            }
+          },
+          {
+            "if": {
+              "required": ["role"],
+              "properties": { "role": { "const": "approval" } }
+            },
+            "then": {
+              "properties": { "type": { "const": "verifier_gate" } }
+            }
+          },
+          {
+            "if": {
+              "required": ["type"],
+              "properties": { "type": { "const": "sequential_mutation" } }
+            },
+            "then": {
+              "required": ["mutation_targets"]
+            }
+          }
+        ]
+      }
+    }
+  }
+}
