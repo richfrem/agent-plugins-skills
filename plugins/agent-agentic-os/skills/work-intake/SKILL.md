@@ -44,7 +44,7 @@ python3 scripts/control_plane/coordinator.py transition-guidance --task-id <task
 
 1. **Read Guidance & State**: Read `transition_templates.yaml` and SQLite DB enforcement before asking or acting.
 2. **Interview & Spec Synthesis**: Interview for missing requirements. Compile the 4 pillars of `TASK_SPEC.md` (The Job, The Why, Semantic Guardrails, Objective DoD).
-3. **Plan Drafting**: Outline and draft implementation plan in `docs/plans/work-tasks/<task-id>/`.
+3. **Plan Drafting**: Draft plan via native host facilities. For STANDARD work, evaluate execution topology (`select-loop-strategy`) and conditionally invoke `graph-planner` to compile `graph-manifest.json` before review.
 4. **Stage Transitions**: Transition through `INTAKE` -> `INTERVIEW` -> `DRAFT_PLAN` -> `PLAN_REVIEW` using `coordinate-transition`.
 5. **Advance to Approval**: In `PLAN_REVIEW`, once the plan is accepted, agent runs `coordinate-transition --to AWAITING_APPROVAL`.
 

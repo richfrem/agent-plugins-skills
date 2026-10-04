@@ -98,7 +98,8 @@
         "orchestrator": true,
         "red-team-review": true,
         "select-loop-strategy": true,
-        "triple-loop-learning": true
+        "triple-loop-learning": true,
+        "graph-planner": true
       },
       "rules": {},
       "agents": {

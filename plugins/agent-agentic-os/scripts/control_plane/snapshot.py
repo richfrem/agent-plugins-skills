@@ -36,10 +36,11 @@ Constants:
 import hashlib
 import json
 import os
+import re
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 CHALLENGE_VERSION = "control-plane-challenge/1"
 
@@ -62,11 +63,96 @@ class SnapshotEntry:
     sha256: str
 
 
-# External comment: canonical locations of the two Gate 1 artifacts.
-def gate1_artifact_paths(repo_root: Union[str, Path], task_id: str) -> Tuple[Tuple[str, Path], ...]:
-    """Return ((label, path), ...) for the spec and plan under docs/plans/work-tasks/<task-id>/."""
+def get_canonical_manifest_path(repo_root: Union[str, Path], task_id: str) -> Path:
+    """Return the single canonical manifest path under docs/plans/work-tasks/<task-id>/."""
     folder = Path(repo_root) / "docs" / "plans" / "work-tasks" / task_id
-    return tuple((label, folder / name.format(task_id=task_id)) for label, name in GATE1_ARTIFACTS)
+    primary = folder / f"{task_id}-graph-manifest.json"
+    fallback = folder / "graph-manifest.json"
+    return primary if primary.is_file() else fallback
+
+
+def resolve_task_strategy(
+    repo_root: Union[str, Path],
+    task_id: str,
+    task: Optional[Dict[str, Any]] = None,
+) -> str:
+    """Single canonical strategy resolver per task across snapshot and coordinator.
+
+    Evaluation order:
+    1. Task-scoped strategy decision artifact:
+       docs/plans/work-tasks/<task-id>/<task-id>-strategy-decision.json or select-loop-strategy-decision.json
+    2. Explicit strategy from task dictionary / DB
+    3. Pattern artifact existence (manifest -> graph, job -> agent-swarm, packet -> dual-loop)
+    4. Default: 'direct'
+    """
+    folder = Path(repo_root) / "docs" / "plans" / "work-tasks" / task_id
+
+    # 1. Task-scoped decision artifact
+    for cand_name in (
+        f"{task_id}-strategy-decision.json",
+        "select-loop-strategy-decision.json",
+        "strategy-decision.json",
+    ):
+        dec_file = folder / cand_name
+        if dec_file.is_file():
+            try:
+                data = json.loads(dec_file.read_text(encoding="utf-8"))
+                if isinstance(data, dict) and data.get("pattern"):
+                    return str(data["pattern"]).strip().lower()
+            except Exception:
+                pass
+
+    # 2. Explicit task metadata
+    if task:
+        strat = task.get("strategy")
+        if strat and isinstance(strat, str) and strat.strip():
+            return strat.strip().lower()
+
+    # 3. Task plan header
+    plan_file = folder / f"{task_id}-implementation-plan.md"
+    if plan_file.is_file():
+        try:
+            for line in plan_file.read_text(encoding="utf-8").splitlines():
+                m = re.match(r'^\s*[-*]?\s*(?:[eE]xecution\s+[sS]trategy|[sS]trategy)\s*:\s*([a-zA-Z0-9_-]+)', line)
+                if m:
+                    return m.group(1).lower()
+        except Exception:
+            pass
+
+    # 4. Pattern artifact existence
+    if get_canonical_manifest_path(repo_root, task_id).is_file():
+        return "graph"
+    if (folder / f"{task_id}.job.md").is_file():
+        return "agent-swarm"
+    if (Path(repo_root) / "handoffs" / f"task_packet_{task_id}.md").is_file():
+        return "dual-loop"
+
+    return "direct"
+
+
+def gate1_artifact_paths(
+    repo_root: Union[str, Path],
+    task_id: str,
+    strategy: Optional[str] = None,
+    task: Optional[Dict[str, Any]] = None,
+) -> Tuple[Tuple[str, Path], ...]:
+    """Return ((label, path), ...) for the spec and plan under docs/plans/work-tasks/<task-id>/,
+    plus the canonical graph-manifest.json when strategy is graph."""
+    folder = Path(repo_root) / "docs" / "plans" / "work-tasks" / task_id
+    paths = list((label, folder / name.format(task_id=task_id)) for label, name in GATE1_ARTIFACTS)
+
+    if strategy is None:
+        strategy = resolve_task_strategy(repo_root, task_id, task=task)
+
+    manifest_path = get_canonical_manifest_path(repo_root, task_id)
+    if strategy == "graph":
+        if not manifest_path.is_file():
+            raise SnapshotError(
+                f"Strategy 'graph' requires canonical manifest at '{manifest_path}' before Gate 1 can be signed."
+            )
+        paths.append(("manifest", manifest_path))
+
+    return tuple(paths)
 
 
 def build_snapshot(paths: Sequence[Tuple[str, Union[str, Path]]]) -> Tuple[SnapshotEntry, ...]:

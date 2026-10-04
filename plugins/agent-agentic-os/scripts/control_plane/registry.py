@@ -193,6 +193,7 @@ class TransitionRegistry:
         stage_contracts: Optional[Dict[str, Dict[str, Any]]] = None,
         execution_guidance: Optional[Dict[str, Dict[str, Any]]] = None,
         model_effort_guidance: Optional[Dict[str, Dict[str, Any]]] = None,
+        strategy_artifacts: Optional[Dict[str, Dict[str, Any]]] = None,
     ):
         self._templates_by_edge: Dict[Tuple[str, str], TransitionTemplate] = {}
         self._templates_by_id: Dict[str, TransitionTemplate] = {}
@@ -200,6 +201,7 @@ class TransitionRegistry:
         self._stage_contracts = dict(stage_contracts or {})
         self._execution_guidance = dict(execution_guidance or {})
         self._model_effort_guidance = dict(model_effort_guidance or {})
+        self._strategy_artifacts = dict(strategy_artifacts or {})
 
         for t in templates:
             edge = (t.from_state, t.to_state)
@@ -256,6 +258,13 @@ class TransitionRegistry:
             for c in t.deterministic_checks:
                 check_ids.add(c)
         return check_ids
+
+    @property
+    def strategy_artifacts(self) -> Dict[str, Dict[str, Any]]:
+        return dict(self._strategy_artifacts)
+
+    def get_strategy_artifact_config(self, strategy: str) -> Optional[Dict[str, Any]]:
+        return self._strategy_artifacts.get(strategy)
 
     def get_edges_releasing_capability(self, capability: str) -> List[Tuple[str, str]]:
         return list(self._capability_to_edges.get(capability, []))
@@ -457,6 +466,15 @@ class TransitionRegistry:
                 )
             model_effort_guidance[phase] = settings
 
+        raw_strategy_artifacts = data.get("strategy_artifacts", {})
+        if not isinstance(raw_strategy_artifacts, dict):
+            raise TransitionRegistryError("'strategy_artifacts' in YAML must be a mapping")
+        strategy_artifacts: Dict[str, Dict[str, Any]] = {}
+        for strat, cfg in raw_strategy_artifacts.items():
+            if not isinstance(cfg, dict):
+                raise TransitionRegistryError(f"strategy_artifacts.{strat} must be a mapping")
+            strategy_artifacts[strat] = cfg
+
         parsed: List[TransitionTemplate] = []
         for idx, raw_item in enumerate(raw_templates):
             if not isinstance(raw_item, dict):
@@ -589,7 +607,7 @@ class TransitionRegistry:
                     )
                 parsed.append(t)
 
-        return cls(parsed, stage_contracts, execution_guidance, model_effort_guidance)
+        return cls(parsed, stage_contracts, execution_guidance, model_effort_guidance, strategy_artifacts)
 
     @classmethod
     def default_path(cls) -> Path:

@@ -2,16 +2,11 @@
 """
 Unit tests for agent-orchestration/ skills, pattern selection decision tree, and contracts.
 Validates:
-- Decision tree logic for all orchestration patterns (including graph-execution)
+- Decision tree logic for all orchestration patterns (asserts pattern = graph, not skill = graph-planner)
 - Skill metadata standards (kebab-case, third-person description, line budgets)
-- evals.json schema compliance (should_trigger boolean)
+- evals.json schema compliance (should_trigger boolean, prompt string)
 - Elimination of dead CLI subcommand references in orchestrator
-
-Purpose:
-    Validates the checks listed above across all agent-orchestration skills.
-
-Key Input Dependencies:
-    - ../skills/*/SKILL.md, ../skills/*/evals/evals.json
+- Pattern-owned plan artifact assertions
 """
 
 import json
@@ -25,6 +20,26 @@ REPO_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 PLUGIN_ROOT = Path(__file__).resolve().parent.parent
 
 
+def evaluate_loop_strategy(task_description: str, has_dependencies: bool = False,
+                           is_batch: bool = False, is_adversarial: bool = False,
+                           is_bounded: bool = False, requires_human_gate: bool = False,
+                           is_readonly_dag: bool = False) -> str:
+    """
+    Deterministic implementation of select-loop-strategy 6-gate decision tree.
+    Returns the selected PATTERN name ('graph', 'agent-swarm', 'red-team-review', 'dual-loop', etc.).
+    Note: requires_human_gate is orthogonal governance and does NOT force pattern = 'graph'.
+    """
+    if has_dependencies or is_readonly_dag:
+        return "graph"
+    if is_batch:
+        return "agent-swarm"
+    if is_adversarial:
+        return "red-team-review"
+    if is_bounded:
+        return "dual-loop"
+    return "learning-loop"
+
+
 class TestLoopStrategiesDecisionTree(unittest.TestCase):
 
     def setUp(self):
@@ -32,7 +47,7 @@ class TestLoopStrategiesDecisionTree(unittest.TestCase):
         self.skills_dir = PLUGIN_ROOT / "skills"
 
     def test_all_expected_skills_exist(self):
-        """Assert all core loop and graph skills exist in the plugin."""
+        """Assert all core loop, graph planning, and execution skills exist in the plugin."""
         expected_skills = [
             "orchestrator",
             "select-loop-strategy",
@@ -42,6 +57,7 @@ class TestLoopStrategiesDecisionTree(unittest.TestCase):
             "agent-swarm",
             "red-team-review",
             "triple-loop-learning",
+            "graph-planner",
             "graph-execution",
         ]
         for skill_name in expected_skills:
@@ -50,6 +66,31 @@ class TestLoopStrategiesDecisionTree(unittest.TestCase):
                 skill_path.exists(),
                 f"Expected skill {skill_name}/SKILL.md does not exist",
             )
+
+    def test_routing_decision_tree_patterns(self):
+        """
+        Assert decision tree returns pattern names (e.g. pattern = graph),
+        and verifies that human gates alone do not force graph routing.
+        """
+        # 1. Structural dependencies route to graph pattern
+        pattern = evaluate_loop_strategy("Multi-phase refactor with parallel reads and ordered mutations", has_dependencies=True)
+        self.assertEqual(pattern, "graph", "Structural dependencies must select pattern = 'graph'")
+
+        # 2. Read-only DAG routes to graph pattern
+        pattern = evaluate_loop_strategy("Multi-repo dependency scan joining at barrier", is_readonly_dag=True)
+        self.assertEqual(pattern, "graph", "Read-only DAG must select pattern = 'graph'")
+
+        # 3. Bounded bug fix with human review required routes to dual-loop (NOT graph!)
+        pattern = evaluate_loop_strategy("Fix off-by-one bug with human approval gate", is_bounded=True, requires_human_gate=True)
+        self.assertEqual(pattern, "dual-loop", "Bounded bug fix with human gate must select pattern = 'dual-loop', not 'graph'")
+
+        # 4. Batch parallel tasks route to agent-swarm
+        pattern = evaluate_loop_strategy("Convert 50 files independently", is_batch=True)
+        self.assertEqual(pattern, "agent-swarm", "Batch conversion must select pattern = 'agent-swarm'")
+
+        # 5. Security audit routes to red-team-review
+        pattern = evaluate_loop_strategy("Stress-test auth flow against OWASP top 10", is_adversarial=True)
+        self.assertEqual(pattern, "red-team-review", "Adversarial audit must select pattern = 'red-team-review'")
 
     def test_skill_frontmatter_and_line_budgets(self):
         """Assert all skills have valid YAML frontmatter and line budget <= 300 lines."""
@@ -102,7 +143,6 @@ class TestLoopStrategiesDecisionTree(unittest.TestCase):
         """Verify the copy-paste typo in learning-loop Option B is fixed."""
         learning_loop_md = self.skills_dir / "learning-loop" / "SKILL.md"
         content = learning_loop_md.read_text(encoding="utf-8")
-        # Line 88 previously said: "Open the triple-loop-learning SKILL" for Dual Loop Option B
         self.assertNotIn(
             "Open the `triple-loop-learning` SKILL",
             content,

@@ -24,6 +24,33 @@ session_change_control:
     failure_recovery: "If the observation cannot be classified or its worktree/ledger/evidence update cannot complete, record the exact blocker and recovery action, preserve the current lifecycle state, and do not silently continue."
   review_gate: "Before any review submission, verify every session-owned change is present and content-matched in the registered worktree; classify generated metadata separately and fail closed on missing, mismatched, or unclassified implementation changes."
 
+strategy_artifacts:
+  graph:
+    artifact: docs/plans/work-tasks/<task-id>/<task-id>-graph-manifest.json
+    required: true
+    validator: ["python3", "{validator_script}", "{artifact}"]
+    validator_script: "skills/graph-planner/scripts/validate_manifest.py"
+  dual-loop:
+    artifact: handoffs/task_packet_<task-id>.md
+    required: true
+    validator: ["python3", "{validator_script}", "packet", "--packet-path", "{artifact}"]
+    validator_script: "plugins/agent-orchestration/scripts/agent_orchestrator.py"
+  agent-swarm:
+    artifact: docs/plans/work-tasks/<task-id>/<task-id>.job.md
+    required: true
+  direct:
+    artifact: docs/plans/work-tasks/<task-id>/<task-id>-implementation-plan.md
+    required: true
+  red-team-review:
+    artifact: docs/plans/work-tasks/<task-id>/<task-id>-threat-model.md
+    required: false
+  learning-loop:
+    artifact: docs/plans/work-tasks/<task-id>/<task-id>-eval-brief.md
+    required: false
+  triple-loop-learning:
+    artifact: docs/plans/work-tasks/<task-id>/<task-id>-learning-contract.md
+    required: false
+
 review_selection_contract:
   id: review-selection-v1
   applies_to:
@@ -799,7 +826,7 @@ templates:
   from_state: INTERVIEW
   to_state: DRAFT_PLAN
   purpose: Confirm the interview outline is complete and hand it to DRAFT_PLAN. STANDARD work receives the full plan contract; TRIVIAL work receives a concise implementation plan without the standard-only planning questions.
-  next_steps_hint: "Record the applicable interview answers through the supported interview-question mechanism; each answer updates docs/plans/work-tasks/<task-id>/<task-id>-plan-outline.md. For TRIVIAL, capture only intent, smallest scope, verification and trivial-change evidence. For STANDARD, complete the full acceptance and planning-model questions. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to DRAFT_PLAN. DRAFT_PLAN compiles the route-appropriate plan."
+  next_steps_hint: "Record the applicable interview answers through the supported interview-question mechanism; each answer updates docs/plans/work-tasks/<task-id>/<task-id>-plan-outline.md. For TRIVIAL, capture only intent, smallest scope, verification and trivial-change evidence. For STANDARD, complete the full acceptance and planning-model questions. Then run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to DRAFT_PLAN. DRAFT_PLAN compiles the route-appropriate plan using native host plan mode (Claude /plan, Copilot @plan, Antigravity plan mode); for STANDARD tasks, evaluate execution topology via select-loop-strategy among peer patterns."
   checklist:
   - Current task state is persisted as INTERVIEW
   - The route-appropriate interview questions and evidence are complete
@@ -829,7 +856,7 @@ templates:
   - create implementation worktree
   - push branch to origin
   guidance:
-    success: "TRIVIAL uses the short plan route: do not request external reviewers or a full test suite unless the user explicitly asks or the changed surface makes focused verification insufficient. STANDARD retains the full planning contract."
+    success: "TRIVIAL uses the short plan route: direct execution, concise plan, skip external reviewers. STANDARD retains the full planning contract: leverage native host plan mode and assess orchestration options via select-loop-strategy before submitting to PLAN_REVIEW."
     denial: "The route-specific interview evidence is incomplete; do not promote TRIVIAL work to implementation until the smallest scope and focused verification are explicit."
   denial_message: 'Transition INTERVIEW -> DRAFT_PLAN denied: preconditions or required decisions not satisfied.'
   authority:
@@ -911,7 +938,7 @@ templates:
   to_state: PLAN_REVIEW
   purpose: Submit the authored plan to the PLAN_REVIEW disposition-and-acceptance gate.
   guidance:
-    success: "For TRIVIAL work, submit the concise plan for user review and use focused review evidence; skip independent reviewers unless the user requests them or risk warrants escalation. STANDARD work retains the normal review-selection contract."
+    success: "For TRIVIAL work, submit the concise plan for user review and use focused review evidence; skip independent reviewers unless the user requests them or risk warrants escalation. STANDARD work retains the normal review-selection contract and must declare an execution strategy (direct, dual-loop, graph, agent-swarm, red-team-review, learning-loop, or triple-loop-learning) and compile its corresponding plan artifact before submitting to PLAN_REVIEW."
     denial: "Keep the task in DRAFT_PLAN until the route-appropriate plan artifact is complete."
   next_steps_hint: "The plan is drafted. This is a SOFT edge: (1) In chat, ask the human: 'Would you like to submit the drafted plan for review?'. (2) Once the human approves in chat, YOU run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to PLAN_REVIEW --human-confirmed 'HUMAN-CONFIRMED: <quote>'. If submitted, PLAN_REVIEW separately asks whether agents should review the draft and, when requested, which supported review method to use. Explicit review skips and plan revisions use their own target-specific transitions. No plan-review choice approves implementation."
   checklist:

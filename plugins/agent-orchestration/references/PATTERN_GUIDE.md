@@ -8,10 +8,10 @@ This guide maps the `agent-orchestration/` skills to standard industry terminolo
 - [2. Sequential Agent / Agent as a Tool (`dual-loop`)](#2-sequential-agent--agent-as-a-tool-dual-loop)
 - [3. Parallel Agent (`agent-swarm`)](#3-parallel-agent-agent-swarm)
 - [4. Meta-Learning System (`triple-loop-learning`)](#4-meta-learning-system-triple-loop-learning)
-- [5. Routing Agent / Hierarchical (`orchestrator`)](#5-routing-agent--hierarchical-orchestrator)
+- [5. Dispatcher Pattern (`orchestrator`)](#5-dispatcher-pattern-orchestrator)
 - [6. Review and Critique Pattern (`red-team-review`)](#6-review-and-critique-pattern-red-team-review)
-- [7. Deterministic State Machine / DAG Pattern (`graph-execution`)](#7-deterministic-state-machine--dag-pattern-graph-execution)
-- [8. Strategy Router Pattern (`select-loop-strategy`)](#8-strategy-router-pattern-select-loop-strategy)
+- [7. Deterministic DAG Runner Pattern (`graph-execution`)](#7-deterministic-dag-runner-pattern-graph-execution)
+- [8. Strategy Selector Pattern (`select-loop-strategy`)](#8-strategy-selector-pattern-select-loop-strategy)
 
 ---
 
@@ -86,19 +86,18 @@ The **Meta-Learning Loop** architecture automates the iterative improvement of a
 
 ---
 
-## 5. Routing Agent / Hierarchical (`orchestrator`)
+## 5. Dispatcher Pattern (`orchestrator`)
 
-An initial decision layer that analyzes the prompt or trigger and directs the query to the correct specialized sub-agent or pattern.
+Dispatches the selected pattern to worker runtimes after `select-loop-strategy` decides the execution topology. It does not perform autonomous classification or routing on its own.
 
 ### Pros & Cons
 | Pros | Cons |
 | :--- | :--- |
-| **Highly scalable** ecosystem entrypoint | Added **latency** for the initial classification inference step |
-| Prevents overloading a single agent with too many tools | Router failures cause cascading failures downstream |
-| Ideal for "universal" command inputs | Increases architectural complexity |
+| **Clean separation**: Decouples pattern selection from pattern dispatch | Extra step between strategy decision and execution |
+| Standardizes input packets and handoff structures | Requires structured task brief or decision record |
 
 ### When to Use
-Use as the primary entry point for ambiguous human triggers. The Router decides if the task warrants a simple learning loop, a triple-loop delegation, or a full swarm.
+Use after `select-loop-strategy` produces a decision record, to prepare dispatch packets and trigger the selected pattern planner.
 
 ---
 
@@ -118,25 +117,25 @@ Use for architecture decisions (ADRs), security audits, and critical design phas
 
 ---
 
-## 7. Deterministic State Machine / DAG Pattern (`graph-execution`)
+## 7. Deterministic DAG Runner Pattern (`graph-execution`)
 
-A finite state machine or directed acyclic graph where tasks traverse discrete typed nodes (`TRIAGE` $\rightarrow$ `PLAN` $\rightarrow$ `AWAITING_APPROVAL` $\rightarrow$ `AUTHORIZED` $\rightarrow$ `EXECUTE` $\rightarrow$ `VERIFY_GATE` $\rightarrow$ `COMMIT` / `ROLLBACK`).
+A deterministic directed acyclic graph runner where tasks traverse discrete typed nodes: `parallel_read`, `sync_barrier`, `sequential_mutation`, and `verifier_gate`. Features total sequential ordering on mutations, thread-safe main-thread rollback, and outside run receipts.
 
 ### Pros & Cons
 | Pros | Cons |
 | :--- | :--- |
-| **Highest safety & predictability**: strict state transitions | Requires explicit controller script and state files |
-| **Asymmetric persistence**: safe rollback with retained learnings | More setup overhead than a lightweight loop |
-| **Tamper-evident proof**: bound by cryptographic receipts | Inflexible for informal brainstorming or quick spikes |
+| **Highest safety & predictability**: strict topological dependency execution | Requires pre-compiled `graph-manifest.json` |
+| **Safe automated rollback**: restores exact baseline SHA on failure | More ceremony than a lightweight loop |
+| **Audit receipts**: per-node commit records stored outside the worktree | Inflexible for informal brainstorming or quick spikes |
 
 ### When to Use
-Use for high-assurance autonomous coding, self-evolution cycles, infrastructure changes, or any multi-attempt repair where failures must revert code without losing diagnostic insights.
+Use for workflows with parallel read fan-out, synchronization barriers, or ordered multi-step mutations where intermediate verifier gates and rollback safety are required.
 
 ---
 
-## 8. Strategy Router Pattern (`select-loop-strategy`)
+## 8. Strategy Selector Pattern (`select-loop-strategy`)
 
-A dedicated decision framework providing an interactive and deterministic tree to evaluate task characteristics and select the exact orchestration primitive.
+Interactive front door that diagnoses task characteristics (unit structure, ordering/convergence, assurance need, and task nature), compiles a decision record (`select-loop-strategy-decision.json`), and hands off to the pattern planner.
 
 ### When to Use
-Use at the very beginning of a non-trivial initiative when deciding whether to run solo (`learning-loop`), pair (`co-pilot-loop`), delegate (`dual-loop`), parallelize (`agent-swarm`), critique (`red-team-review`), evolve (`triple-loop-learning`), or structure as a DAG (`graph-execution`).
+Use at the beginning of any non-trivial engineering initiative to determine whether the task requires `dual-loop`, `agent-swarm`, `graph`, `red-team-review`, `learning-loop`, or `triple-loop-learning`. Swarm plan artifact is a job file (`<task-id>.job.md`) plus file list.

@@ -1,13 +1,13 @@
 ---
 name: select-loop-strategy
 plugin: agent-orchestration
-description: Selects the optimal agent orchestration topology using a deterministic 6-gate decision tree.
-allowed-tools: Read, Bash
+description: Interactive pattern selector that diagnoses task characteristics, compiles a decision record, and hands off to the appropriate pattern planner. Triggers on "which orchestration pattern", "how should I orchestrate", "plan this workflow", "should this be a DAG".
+allowed-tools: Read, Write, Bash
 ---
 
 # Select Loop Strategy (`select-loop-strategy`)
 
-Deterministic decision framework to select the right execution topology for any engineering or research task.
+Interactive front door for choosing an execution topology and compiling a structured decision record before planning begins.
 
 ## Contents
 
@@ -20,48 +20,69 @@ Deterministic decision framework to select the right execution topology for any 
 
 ## Constraints
 
-- **Preserve skill identities**: Route by intent without altering skill boundaries.
-- **Fail safe**: If the task requires human gates or rollbacks, always choose `graph-execution`.
-- **Zero tool leakage**: Delegated inner workers must operate under tool and git restrictions.
+- **Governance Orthogonal**: Human approvals and worktree confinement wrap all patterns identically. Never ask about approval or rollback (those belong to caller governance).
+- **Pattern-Owned Plan Artifacts**: Each pattern produces its own native artifact (`graph` -> `graph-manifest.json`, `dual-loop` -> `task_packet_*.md`, `swarm` -> `*.job.md`).
+- **Read-Only DAGs Valid**: Structural fan-out with join barriers and zero mutations qualifies for graph routing.
+- **Stand-alone Independence**: Zero dependencies on external plugins or control plane code.
 
 ## Quick start
 
 ```bash
-# Evaluate topology selection against test fixtures
-pytest plugins/agent-orchestration/tests/test_loop_strategies.py
+# Non-interactive evaluation with answers
+python3 scripts/select_strategy.py --answers '{"unit_structure":"one_bounded","ordering_convergence":"none","assurance_need":"normal","task_nature":"build_fix"}'
+
+# Interactive pattern selection with task-scoped output
+python3 scripts/select_strategy.py --out docs/plans/work-tasks/my-task/
 ```
 
 ## Workflow
 
-Evaluate task characteristics sequentially:
-1. **Approval Gates & Rollbacks?** -> `graph-execution` (State machine, receipts, worktrees).
-2. **10+ Independent Bulk Tasks?** -> `agent-swarm` (Concurrent workers, zero shared state).
-3. **Adversarial Critique Required?** -> `red-team-review` (Generator + critic until approved).
-4. **Autonomous Meta-Learning?** -> `triple-loop-learning` (Friction logging + headless evals).
-5. **Supervisor / Coding Sub-Agent?** -> `dual-loop` (or `co-pilot-loop` for fast pairing).
-6. **Single-Agent Research?** -> `learning-loop` (Autonomous single-context loop).
+1. **Context First**:
+   Read caller-supplied brief, spec, plan, or diagnostic files. Derive answers for known dimensions from explicit requirements; ask only about unresolved dimensions.
+
+2. **Diagnostic Interview (Max 4 Questions, 1 per turn)**:
+   - **Unit structure**: minimal direct change | one bounded change | distinct steps with dependencies | many identical independent units
+   - **Ordering/convergence**: none | results must merge at a barrier | ordered mutations with gates between them
+   - **Assurance need**: normal | adversarial review required (security/architecture)
+   - **Nature**: build/fix | exploratory research | system/friction optimization
+   Each question presents structured options with a recommended default (`Option A [Recommended]`).
+
+3. **Deterministic Selection**:
+   Execute `scripts/select_strategy.py` with gathered answers. The script determines the topology based on explicit rules:
+   - Many identical independent units -> `agent-swarm`
+   - Distinct steps + barrier or ordered mutations -> `graph`
+   - One bounded change -> `dual-loop`
+   - Minimal direct edit -> `direct`
+   - Adversarial assurance -> `red-team-review` (wrapper modifier)
+   - Exploratory research -> `learning-loop`
+   - System optimization -> `triple-loop-learning`
+
+4. **Confirm & Record Decision**:
+   Write `select-loop-strategy-decision.json` (and `.md`) to the task directory (via `--out docs/plans/work-tasks/<task-id>/`). Present the decision to the human to confirm or override. Record any requested override in the decision artifact.
+
+5. **Hand Off**:
+   Name the next skill to invoke with its input path (e.g. `graph-planner --decision docs/plans/work-tasks/<task-id>/select-loop-strategy-decision.json`). Do not invoke downstream execution automatically.
 
 ## Pattern Comparison
 
-| Pattern | Skill | Core Mechanics | Primary Use Case |
-|---|---|---|---|
-| **Solo Learning** | `learning-loop` | Single context, discovery -> synthesis | Research, documentation, spikes |
-| **Adversarial** | `red-team-review` | Generator + multi-persona critics | Security audits, architecture |
-| **Dual-Loop** | `dual-loop` | Outer Director <-> Inner Worker | Feature implementation, bug fixes |
-| **Fast Pair** | `co-pilot-loop` | Claude (Director) + Flash Low | Cost-sensitive prototyping |
-| **Parallel Swarm** | `agent-swarm` | Concurrent batch worker runners | Bulk migrations, mass doc updates |
-| **Meta-Learning** | `triple-loop-learning` | Friction logging -> headless eval | Autonomous system optimization |
-| **Graph Execution** | `graph-execution` | Deterministic DAG & rollback | High-assurance migrations |
+| Pattern | Planner / Dispatcher | Executor | Plan Artifact | Primary Use Case |
+|---|---|---|---|---|
+| **Graph** | `graph-planner` | `graph-execution` | `graph-manifest.json` | Fan-out reads, sync barriers, ordered mutations |
+| **Dual-Loop** | `agent_orchestrator.py packet` | `dual-loop` | `handoffs/task_packet_*.md` | Bounded bug fixes, localized feature coding |
+| **Swarm** | `swarm_run.py --dry-run` | `agent-swarm` | `*.job.md` | Batch conversions, mass refactors across files |
+| **Adversarial** | `red-team-review` | `red-team-review` | Review brief | Security audits, architecture stress-testing |
+| **Solo** | `learning-loop` | `learning-loop` | Research brief | Single-stream open-ended discovery |
+| **Meta** | `triple-loop-learning` | `triple-loop-learning` | Friction log | Autonomous system optimization |
 
 ## Verification
 
 ```bash
-# Run loop strategy routing tests
-pytest plugins/agent-orchestration/tests/test_loop_strategies.py -v
+# Run strategy selection tests
+pytest plugins/agent-orchestration/tests/test_select_strategy.py -v
 ```
 
 ## References
 
-- [PATTERN_GUIDE.md](references/PATTERN_GUIDE.md) — Comprehensive comparative pattern guide.
-- [acceptance-criteria.md](references/acceptance-criteria.md) — Verification criteria and contracts.
-- [fallback-tree.md](references/fallback-tree.md) — Escalation paths for ambiguous routing.
+- [PATTERN_GUIDE.md](references/PATTERN_GUIDE.md) - Comparative loop patterns.
+- [acceptance-criteria.md](references/acceptance-criteria.md) - Verification criteria and contracts.
+- [fallback-tree.md](references/fallback-tree.md) - Escalation paths for ambiguous routing.

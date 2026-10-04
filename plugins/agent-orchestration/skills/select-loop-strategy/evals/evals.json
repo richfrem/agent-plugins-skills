@@ -1,7 +1,13 @@
 [
-  {"prompt": "Which looping or orchestration pattern should I use for a high-risk refactoring that needs human gates and automatic rollback?", "should_trigger": true},
+  {"prompt": "Which looping or orchestration pattern should I use for a refactoring that has parallel exploration reads and ordered sequential mutations?", "should_trigger": true},
   {"prompt": "Help me decide whether to use a dual-loop, a swarm, or a graph for this task.", "should_trigger": true},
   {"prompt": "What is the best agent execution strategy for running 50 independent doc conversions in parallel?", "should_trigger": true},
+  {"prompt": "how should I orchestrate this migration", "should_trigger": true},
+  {"prompt": "which orchestration pattern fits this refactor", "should_trigger": true},
+  {"prompt": "plan this workflow across multiple steps", "should_trigger": true},
+  {"prompt": "should this be a DAG", "should_trigger": true},
+  {"prompt": "run pytest", "should_trigger": false},
+  {"prompt": "execute this existing graph manifest", "should_trigger": false},
   {"prompt": "Run a batch job across 50 files simultaneously with swarm_run.py.", "should_trigger": false},
   {"prompt": "Delegate this task to the inner loop agent right now.", "should_trigger": false},
   {"prompt": "Audit this security design with adversarial red-teaming.", "should_trigger": false}
