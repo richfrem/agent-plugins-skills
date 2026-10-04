@@ -6,3 +6,4 @@
 | 2026-10-04 | Tier 1 | Strategy selection relied on keyword guessing and fragile regex parsing without validation or explicit answers. | Implemented deterministic select_strategy.py with explicit answers, 72-combination table-driven test, and canonical patterns.json catalog with symlink parity verification. | Feature + tests + docs | RESOLVED — All 72 diagnostic combinations covered, invalid inputs fail closed. |
 | 2026-10-04 | Tier 1 | Swarm execution lacked path containment, dry-run state safety, and post-command synchronization. | Hardened swarm_run.py with stdlib frontmatter, directory traversal guards, serial post-command locks, external state directories, and PATTERN_GUIDE alignment. | Hardening + tests | RESOLVED — All safety checks and isolation tests pass. |
 
+
