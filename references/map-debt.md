@@ -2,6 +2,19 @@
 
 Persistent tracking of architectural friction, structural anomalies, and unclosed loops across sessions.
 
+## DEBT-20261005-WINDOWS-SIGNING-ISOLATION-MODE (RESOLVED)
+
+- Logged date: 2026-10-05
+- Cycle/Session ID: feat/windows-signing-isolation-and-simulation-init
+- Artifact affected: `plugins/agent-agentic-os/scripts/control_plane/isolation_check.py`, `plugins/agent-agentic-os/scripts/control_plane/signing_selftest.py`, `plugins/agent-agentic-os/skills/os-init/SKILL.md`
+- Friction observed: Running interactive signing self-test on Windows failed with fatal preflight blockers `WINDOWS_ISOLATION_UNSUPPORTED` and `BAD_MODE` (mode 0666/0777 instead of 0600/0700) because NTFS does not support POSIX octal permission bits. Additionally, `open_protected_readonly()` raised `IsolationError` on Windows for standard NTFS permissions, and `os-init` did not document the required agent simulation identity step for offline `transition-simulator` runs.
+- Why not fixed now: Fixed immediately in upstream.
+- Recommended fix / fix applied: Updated `open_protected_readonly()` in `isolation_check.py` to skip POSIX octal mode bit assertions on `win32`; updated `signing_selftest.py` to treat `WINDOWS_ISOLATION_UNSUPPORTED` and `BAD_MODE` as non-blocking notices for interactive self-tests; and documented agent simulation identity initialization in `os-init/SKILL.md`.
+- Evidence/repro: `test_signing_mechanics.py` runs through challenge generation and real passphrase signing prompt without preflight fatal errors; `init_agentic_os.py --retrofit` verifies simulation identity.
+- Severity: M
+- Repeat: NO
+- Status: RESOLVED
+
 ## DEBT-20260929-WINDOWS-CONSOLE-ENCODING (RESOLVED)
 
 - Logged date: 2026-09-29
