@@ -752,7 +752,7 @@ def _resolve_source(args) -> tuple[Path, Path | None]:
         owner_repo, subpath = _parse_github_source(source)
         _print_banner(f"{owner_repo}" + (f"/{subpath}" if subpath else ""))
         temp_dir = Path(tempfile.mkdtemp(prefix="plugin_add_"))
-        repo_root = _clone_repo(owner_repo, temp_dir / owner_repo.replace("/", "_"))
+        repo_root = _clone_repo(owner_repo, temp_dir)
         return (repo_root / subpath if subpath else repo_root), temp_dir
 
     if source:

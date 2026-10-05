@@ -2,6 +2,19 @@
 
 Persistent tracking of architectural friction, structural anomalies, and unclosed loops across sessions.
 
+## DEBT-20261005-WINDOWS-REMOTE-CLONE-PATH (RESOLVED)
+
+- Logged date: 2026-10-05
+- Cycle/Session ID: bc529998-2734-4b7c-80fd-a19c397f6657
+- Artifact affected: `plugins/plugin-manager/scripts/plugin_add.py`, `plugins/plugin-manager/tests/test_sync_noise_regressions.py`
+- Friction observed: Remote GitHub clones were nested under an extra owner/repository-name directory in the temporary root. That path overhead caused deeply nested SPFx template locale assets to exceed legacy Windows path limits during installation.
+- Why not fixed now: Fixed immediately in this change.
+- Recommended fix / fix applied: Clone directly into the temporary directory created for the remote source. Added a regression test that checks the clone destination and copies a nested locale file through the installer.
+- Evidence/repro: The new Windows regression failed before the fix while creating the nested locale directory (`WinError 206` / `WinError 3`) and passes after the fix. Focused plugin-manager suites: 18 passed.
+- Severity: M
+- Repeat: NO
+- Status: RESOLVED
+
 ## DEBT-20261005-WINDOWS-SIGNING-ISOLATION-MODE (RESOLVED)
 
 - Logged date: 2026-10-05

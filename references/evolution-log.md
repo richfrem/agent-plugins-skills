@@ -1,5 +1,13 @@
 # Evolution log
 
+## Windows remote-clone path length
+
+A downstream Windows plugin install failed while recursively copying a deeply nested SPFx locale
+asset. Remote clones had an unnecessary owner/repository directory beneath the temporary root,
+exceeding legacy path limits. Cloning directly into the temporary root removes that path overhead.
+A regression test reproduced the failing nested layout before the fix and verifies the locale file
+copies after it. Focused plugin-manager suites: 18 passed.
+
 ## one-approver-per-pipeline completion review
 
 Observed deletion of APPROVED or VERIFY_EXIT signed evidence still allowed a production push.

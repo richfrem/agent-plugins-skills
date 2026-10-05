@@ -30,6 +30,7 @@ Functions:
     - test_validate_plugin_silent_when_evals_warning_disabled
     - test_source_is_remote
     - test_retention_step_info_not_warning_when_pruner_absent
+    - test_remote_clone_uses_temp_root_and_nested_locale_assets_copy
 
 Usage:
     python -m pytest plugins/plugin-manager/tests/test_sync_noise_regressions.py
@@ -37,6 +38,7 @@ Usage:
 
 import sys
 import json
+import tempfile
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
@@ -182,6 +184,69 @@ def test_plugin_add_enable_all_is_explicit_opt_in(tmp_path: Path):
     assert ownership["components"]["skills"]["skill-a"]["should_install"] is True
 
 
+def test_remote_clone_uses_temp_root_and_nested_locale_assets_copy(monkeypatch):
+    with tempfile.TemporaryDirectory(prefix="plugin_add_test_") as temp_root:
+        temp_dir = Path(temp_root)
+        clone_destinations: list[Path] = []
+
+        def fake_mkdtemp(prefix: str) -> str:
+            assert prefix == "plugin_add_"
+            return str(temp_dir)
+
+        def fake_clone_repo(owner_repo: str, dest: Path) -> Path:
+            clone_destinations.append(dest)
+            locale_dir = (
+                dest
+                / "plugins"
+                / "sharepoint-spfx-development"
+                / "skills"
+                / "sharepoint-scaffold-spfx-master-detail-webpart"
+                / "assets"
+                / "templates"
+                / "spfx-project-reference"
+                / "src"
+                / "webparts"
+                / "selectedIdFilter"
+                / "loc"
+            )
+            locale_dir.mkdir(parents=True)
+            (locale_dir / "en-us.js").write_text("locale content", encoding="utf-8")
+            return dest
+
+        monkeypatch.setattr(plugin_add.tempfile, "mkdtemp", fake_mkdtemp)
+        monkeypatch.setattr(plugin_add, "_clone_repo", fake_clone_repo)
+
+        repo_root, resolved_temp_dir = plugin_add._resolve_source(
+            SimpleNamespace(source="example/sharepoint-workbench")
+        )
+
+        assert resolved_temp_dir == temp_dir
+        assert clone_destinations == [temp_dir]
+
+        source_assets = (
+            repo_root
+            / "plugins"
+            / "sharepoint-spfx-development"
+            / "skills"
+            / "sharepoint-scaffold-spfx-master-detail-webpart"
+            / "assets"
+            / "templates"
+        )
+        copied_assets = temp_dir / "installed-assets"
+        plugin_installer._copy_resolving_pointers(source_assets, copied_assets)
+
+        copied_locale = (
+            copied_assets
+            / "spfx-project-reference"
+            / "src"
+            / "webparts"
+            / "selectedIdFilter"
+            / "loc"
+            / "en-us.js"
+        )
+        assert copied_locale.read_text(encoding="utf-8") == "locale content"
+
+
 def _lock_plugin(tmp_path: Path) -> tuple:
     """A plugin with one skill and an empty consumer root for skills-lock.json."""
     plugin = tmp_path / "src-plugin"
@@ -238,4 +303,3 @@ def test_sync_cleanup_preserves_ownership_manifest(tmp_path: Path):
     assert manifest.exists()
     saved = json.loads(manifest.read_text(encoding="utf-8"))
     assert saved["components"]["skills"]["skill-a"]["should_install"] is False
-
