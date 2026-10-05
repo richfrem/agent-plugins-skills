@@ -80,6 +80,8 @@ def run_selftest(
     for failure in preflight.failures:
         if failure.code == "IDENTITY_UNRESOLVED":
             out("  note: the unprivileged agent account is not created yet; strict Gate 1 approvals will need it (see setup output).")
+        elif sys.platform.startswith("win") and failure.code in ("WINDOWS_ISOLATION_UNSUPPORTED", "BAD_MODE"):
+            out(f"  note (Windows): {failure.code} - {failure.message}")
         elif failure.path and Path(failure.path) == layout.allowed_signers:
             continue  # the production file is not needed for the self-test
         else:

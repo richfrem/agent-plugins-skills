@@ -44,7 +44,11 @@ python3 scripts/control_plane/installation_probe.py --target <project-path>
 4. **Execute Provisioning**:
    - Fresh: `python3 scripts/init_agentic_os.py --target <project-path> --sync-instructions`
    - Retrofit: `python3 scripts/init_agentic_os.py --target <project-path> --retrofit`
-5. **Verify Substrate**: Confirm 3-Layer Memory structure and run health check.
+5. **Agent Simulation Identity**: Ensure agent simulation identity (`context/simulation/identity/`) is initialized so [`transition-simulator`](../transition-simulator/SKILL.md) can run state validations without human production keys:
+   ```bash
+   python3 -c "from pathlib import Path; from control_plane.simulation_identity import ensure_simulation_identity; ensure_simulation_identity(Path('.'))"
+   ```
+6. **Verify Substrate**: Confirm 3-Layer Memory structure, identity status, and run health check.
 
 ## Verification
 

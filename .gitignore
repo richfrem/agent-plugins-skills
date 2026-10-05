@@ -131,3 +131,5 @@ docs/MAF-research-analysis/
 
 # Per-machine signing identity (allowed_signers*, challenges): trust anchors and throwaway challenges, never committed
 context/identity/
+context/simulation/
+plugins/agent-agentic-os/scripts/context/
