@@ -328,10 +328,11 @@ def open_protected_readonly(
         if (hasattr(os, "geteuid") or expected_uid is not None) and st.st_uid != uid:
             raise IsolationError(f"{path} owner uid {st.st_uid} is not the expected uid {uid}")
         mode = stat.S_IMODE(st.st_mode)
-        if expected_mode is not None and mode != expected_mode:
-            raise IsolationError(f"{path} mode {mode:04o}, required {expected_mode:04o}")
-        if mode & forbidden_mode_bits:
-            raise IsolationError(f"{path} mode {mode:04o} has forbidden bits {forbidden_mode_bits:04o}")
+        if not sys.platform.startswith("win"):
+            if expected_mode is not None and mode != expected_mode:
+                raise IsolationError(f"{path} mode {mode:04o}, required {expected_mode:04o}")
+            if mode & forbidden_mode_bits:
+                raise IsolationError(f"{path} mode {mode:04o} has forbidden bits {forbidden_mode_bits:04o}")
     except IsolationError:
         os.close(fd)
         raise
