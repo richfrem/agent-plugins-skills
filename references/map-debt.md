@@ -1391,3 +1391,17 @@ Persistent tracking of architectural friction, structural anomalies, and unclose
 - Severity: M
 - Repeat: NO
 - Status: RESOLVED
+
+
+## DEBT-20261006-AUDIT-PLUGIN-MISSING-CONTRACT-SPOKE (RESOLVED)
+
+- Logged date: 2026-10-06
+- Cycle/Session ID: fix-audit-plugin-contract-symlink
+- Artifact affected: `plugins/agent-scaffolders/skills/audit-plugin/references/skill-authoring-contract.json`, `symlinks.json`
+- Friction observed: Installed `audit-plugin` crashed with `FileNotFoundError` for `references/skill-authoring-contract.json`. Its `scripts/audit_skill.py` spoke resolves the contract relative to the skill folder (`Path(__file__).absolute()` does not follow symlinks), but only `create-skill` and `audit-skill` had the contract spoke.
+- Why not fixed now: Fixed immediately on branch `fix/audit-plugin-contract-symlink`.
+- Recommended fix / fix applied: Added the file-level spoke via `symlink_manager.py create` and registered it in `symlinks.json`.
+- Evidence/repro: Before: `audit.py --path <plugin>` from installed audit-plugin raised FileNotFoundError. After: `python plugins/agent-scaffolders/skills/audit-plugin/scripts/audit.py --path plugins/agent-scaffolders` passes.
+- Severity: M
+- Repeat: NO
+- Status: RESOLVED

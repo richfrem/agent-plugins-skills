@@ -12108,6 +12108,12 @@
       "dst": "plugins/agent-orchestration/skills/select-loop-strategy/references/patterns.json",
       "strategy": "symlink",
       "description": "Canonical patterns catalog for select-loop-strategy"
+    },
+    {
+      "src": "plugins/agent-scaffolders/references/skill-authoring-contract.json",
+      "dst": "plugins/agent-scaffolders/skills/audit-plugin/references/skill-authoring-contract.json",
+      "strategy": "symlink",
+      "description": "Skill authoring contract for audit-plugin audit_skill.py"
     }
   ]
 }
