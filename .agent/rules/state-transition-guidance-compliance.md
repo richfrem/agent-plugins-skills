@@ -104,7 +104,7 @@ detail, not repeated here):
 - Never let a documented advisory field go unreported solely because the CLI
   wrapper around it failed to print it — verify independently.
 
-## Enforcement: the guidance-compliance gate (added 2026-09-14)
+## Enforcement: the guidance-compliance gate
 
 This rule is no longer advisory-only for `agent-agentic-os`'s control plane.
 `TransitionCoordinator.coordinate_transition()` now asks a mandatory extra

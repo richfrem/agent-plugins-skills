@@ -2,6 +2,19 @@
 
 Persistent tracking of architectural friction, structural anomalies, and unclosed loops across sessions.
 
+## DEBT-20261009-AGENT-AND-RULE-AUDIT-ALIGNMENT (RESOLVED)
+
+- Logged date: 2026-10-09
+- Cycle/Session ID: feat/audit-and-align-agents-and-rules
+- Artifact affected: `plugins/*/agents/*.md`, `plugins/*/rules/*.md`, `plugins/agent-scaffolders/skills/create-sub-agent/SKILL.md`, `plugins/agent-scaffolders/skills/create-rule/SKILL.md`
+- Friction observed: Sub-agents contained wrapper stubs (`Please run the ... skill immediately`) and stand-ins rather than explicit second-person persona definitions, and rules contained calendar dates/temporal fluff violating authoring guidelines. Additionally, there were no dedicated `audit-rule` or `audit-sub-agent` audit tools mirroring `audit-skill`.
+- Why not fixed now: Fixed immediately in this change.
+- Recommended fix / fix applied: Created `plugins/agent-scaffolders/scripts/audit_sub_agent.py` and `audit_rule.py`, created spoke skills `audit-sub-agent` and `audit-rule` with registered symlinks in `symlinks.json`, stripped calendar dates across all rules, and upgraded all stub/stand-in agents with full second-person personas and operating processes.
+- Evidence/repro: `python3 plugins/agent-scaffolders/scripts/audit_sub_agent.py plugins --all` passes 45/45 agents; `python3 plugins/agent-scaffolders/scripts/audit_rule.py plugins --all` passes 15/15 rules; `audit_skill.py` passes both new skills; `symlink_manager.py audit` reports all links OK.
+- Severity: M
+- Repeat: NO
+- Status: RESOLVED
+
 ## DEBT-20261005-WINDOWS-REMOTE-CLONE-PATH (RESOLVED)
 
 - Logged date: 2026-10-05

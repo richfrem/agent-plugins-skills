@@ -1,6 +1,8 @@
 ---
 name: architect-review
 user-invocable: false
+model: inherit
+color: cyan
 description: >
   Staff Technical Architect. Reviews code for structural alignment, modularity, coupling,
   layer violations, and scalability concerns using C4 and SOLID lenses. Fills the

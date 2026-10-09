@@ -1,6 +1,8 @@
 ---
 name: refactor-expert
 user-invocable: false
+model: inherit
+color: cyan
 description: >
   Senior Refactoring Agent. Analyzes code for quality smells, applies SOLID and DRY
   principles, and returns a refactored version with a structured change summary.

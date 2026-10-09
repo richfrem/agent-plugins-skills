@@ -1,0 +1,26 @@
+[
+  {
+    "prompt": "Audit the new git-operations rule to make sure it complies with the 80 line budget.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Check if this rule file has any historical dates or machine paths in it.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Scan all rules under plugins to verify they have The Iron Law and invariants.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Create a new rule called no-hardcoding-constants.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Audit the entire plugin directory for marketplace compliance.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Audit this skill to see if it meets the 80 line budget.",
+    "should_trigger": false
+  }
+]

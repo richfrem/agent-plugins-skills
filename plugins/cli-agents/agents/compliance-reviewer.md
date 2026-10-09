@@ -1,6 +1,8 @@
 ---
 name: compliance-reviewer
 user-invocable: false
+model: inherit
+color: cyan
 description: >
   Compliance Reviewer. Checks code against project conventions, architectural rules,
   and coding standards. Flags drift from the established patterns in the codebase.

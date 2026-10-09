@@ -1,6 +1,8 @@
 ---
 name: pr-reviewer
 user-invocable: false
+model: inherit
+color: cyan
 description: >
   Staff PR Reviewer. Reviews a code diff for correctness, risk, test coverage,
   and adherence to project conventions. Produces a structured review with

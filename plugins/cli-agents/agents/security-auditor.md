@@ -1,6 +1,8 @@
 ---
 name: security-auditor
 user-invocable: false
+model: inherit
+color: cyan
 description: >
   Senior Security Auditor. Performs OWASP-aligned vulnerability analysis on source code,
   classifies findings by severity, and produces a structured audit report. Fills the

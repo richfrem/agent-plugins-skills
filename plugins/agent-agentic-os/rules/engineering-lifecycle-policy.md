@@ -33,7 +33,7 @@ All STANDARD-classified engineering tasks MUST progress through the 4-phase life
 Phase 0: Intake & Socratic Gate (exploration-cycle-plugin + work-intake)
    │
    ├─ TRIVIAL classification (single-file/few-line, no architectural impact):
-   │    CORRECTED 2026-09-19 (verified against the real state machine — see
+   │    Verified against the real state machine (see
    │    references/map-debt.md): there is NO dedicated stage-skipping edge for
    │    TRIVIAL work. The only edges reaching DONE directly from INTAKE or
    │    INTERVIEW are human_force_done__from_INTAKE/INTERVIEW — the force-close

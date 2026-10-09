@@ -1,6 +1,8 @@
 ---
 name: output-validator
 user-invocable: false
+model: inherit
+color: cyan
 description: >
   Output Guardrail Agent. Validates a generated output against a set of rules,
   constraints, or a schema before it reaches the user or the next pipeline stage.

@@ -1,6 +1,8 @@
 ---
 name: performance-analyst
 user-invocable: false
+model: inherit
+color: cyan
 description: >
   Performance Engineering Analyst. Identifies bottlenecks, inefficient algorithms,
   unnecessary allocations, and scaling failures in the provided code.

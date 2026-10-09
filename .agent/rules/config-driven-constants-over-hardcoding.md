@@ -12,7 +12,7 @@ globs: ["plugins/**/*.py", "plugins/**/*.yaml", "plugins/**/*.yml"]
 
 ## Why This Rule Exists
 
-On 2026-09-14, adding one new mandatory question (`guidance_compliance_confirmation`)
+Adding one new mandatory question (`guidance_compliance_confirmation`)
 to every non-force-close transition broke 46 pre-existing tests. Every one of them
 had independently hardcoded its own literal expected answer sequence
 (`iter(["1", "y"])`, `lambda p: "1"`) instead of deriving the expected question count
@@ -58,7 +58,7 @@ hardcoding.
 
 ## Where Constants Live: One Shared `control_plane/constants.py`
 
-**Revised 2026-09-14.** An earlier version of this rule recommended colocating each
+An earlier version of this rule recommended colocating each
 constant group with the production module that "owned" the concept (state names in
 `state_machine.py`, decision types in `adapters.py`, etc.). Review found that split
 ownership still left every consumer guessing which file to import from, and produced
@@ -98,7 +98,7 @@ A literal string interpolated into a *runtime* query (inside a method, executed 
 caller-supplied or looped values) must be passed as a bound `?` parameter, never
 spliced into the SQL text via an f-string — even when the interpolated value is a
 trusted internal constant, not user input. This was found as a live, if low-risk, bug
-during this rule's 2026-09-14 revision: three `adapters.py` methods embedded
+during review: three `adapters.py` methods embedded
 `'{DECISION_TYPE_APPROVAL}'` inside a **plain** (non-f) triple-quoted string, so
 SQLite was literally comparing against the 25-character text `{DECISION_TYPE_APPROVAL}`
 instead of `APPROVAL` — parameterizing forces this class of mistake to fail loudly

@@ -1,6 +1,8 @@
 ---
 name: debate-synthesizer
 user-invocable: false
+model: inherit
+color: cyan
 description: >
   Multi-Agent Debate Judge. Receives two or more competing perspectives, proposals,
   or analyses and synthesizes them into a single hardened conclusion using dialectical

@@ -12,4 +12,4 @@ description: Deprecation bridge for engineering-lifecycle-policy.md (formerly gr
 
 This stub is retained as a zero-downtime bridge for backward compatibility with active worktrees, pinned prompts, and cached manifests. Refer directly to `engineering-lifecycle-policy.md` for normative requirements, the Cryptographic Human Gate, and the 4-phase lifecycle.
 
-**Retirement Notice:** This bridge is deprecated and scheduled for full removal on 2026-11-01. All references must migrate to `engineering-lifecycle-policy.md`.
+**Retirement Notice:** This bridge is deprecated and scheduled for full removal. All references must migrate to `engineering-lifecycle-policy.md`.
