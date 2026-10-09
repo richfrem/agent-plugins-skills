@@ -34,25 +34,38 @@ Requires Python 3.8+ and standard library modules.
 
 ## Quick start
 
+Run structural and component audits for target plugin:
+
 ```bash
+# 1. Structure audit: check hub-and-spoke symlinks & manifest
 python3 scripts/audit_plugin_structure.py plugins/<plugin-name>
+
+# 2. Skills audit: scan all skills within plugin against authoring standards
+python3 scripts/audit_skill.py plugins/<plugin-name> --all --mode source --json
+
+# 3. Sub-agents audit: check all agents in plugin for frontmatter and prompt structure
+python3 scripts/audit_sub_agent.py plugins/<plugin-name> --all --json
+
+# 4. Rules audit: check any rules defined in plugin for invariants and line budgets
+python3 scripts/audit_rule.py plugins/<plugin-name> --all --json
 ```
 
 ## Workflow
 
-1. **Structure & Manifest**: Verify `.claude-plugin/plugin.json` exists with object author schema.
-2. **Component Linting**: Validate agents, hooks (`validate_hook_schema.py`), and skills.
-3. **Symlink Hygiene**: Verify spoke symlinks resolve cleanly to plugin root hubs.
-4. **Contract Compliance**: Confirm `evals/evals.json` routing arrays use `should_trigger` boolean schema.
-5. **Security Scan**: Verify zero hardcoded tokens, secrets, or machine-specific absolute paths.
+1. **Structure & Manifest**: Verify `.claude-plugin/plugin.json` exists with object author schema. Run `audit_plugin_structure.py` to ensure spoke resources are file-level symlinks to plugin root hubs.
+2. **Skills Audit**: Run `audit_skill.py` across all skills in the plugin to verify progressive disclosure line budgets, frontmatter, and `evals/evals.json` boolean contracts.
+3. **Sub-Agents Audit**: Run `audit_sub_agent.py` on `plugins/<plugin>/agents/` to verify second-person system prompts, model/color properties, and trigger `<example>` blocks.
+4. **Rules & Invariants Audit**: Run `audit_rule.py` on `plugins/<plugin>/rules/` to ensure invariant structure, zero calendar dates, zero absolute paths, and line budget compliance.
+5. **Symlink Hygiene & Security**: Verify all symlinks are registered in `symlinks.json` via `symlink_manager.py audit`. Verify zero hardcoded tokens or machine-specific paths.
 
 ## Verification
 
 ```bash
-# Validate plugin structure compliance
+# Full verification pipeline for a plugin
 python3 scripts/audit_plugin_structure.py plugins/<plugin-name>
-# Audit marketplace source paths (if marketplace.json present)
-python3 scripts/audit_marketplace_sources.py .
+python3 scripts/audit_skill.py plugins/<plugin-name> --all --mode source
+python3 scripts/audit_sub_agent.py plugins/<plugin-name> --all
+python3 scripts/audit_rule.py plugins/<plugin-name> --all
 ```
 
 ## References
