@@ -128,7 +128,9 @@
         "ecosystem-authoritative-sources": true,
         "ecosystem-standards": true,
         "install-apm-package": true,
-        "manage-marketplace": true
+        "manage-marketplace": true,
+        "audit-rule": true,
+        "audit-sub-agent": true
       },
       "rules": {
         "plugin-architecture-policy.md": true
