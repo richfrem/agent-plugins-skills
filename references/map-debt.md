@@ -2,6 +2,19 @@
 
 Persistent tracking of architectural friction, structural anomalies, and unclosed loops across sessions.
 
+## DEBT-20261009-AGENTS-MD-MODULAR-RESTRUCTURE (RESOLVED)
+
+- Logged date: 2026-10-09
+- Cycle/Session ID: feat/restructure-agents-md
+- Artifact affected: `AGENTS.md`, `plugins/agent-agentic-os/rules/cryptographic-human-gates.md`, `.agent/rules/cryptographic-human-gates.md`
+- Friction observed: `AGENTS.md` was a monolithic 1,575-line (~95 KB) file that linearly concatenated 14 raw rule files with redundant YAML frontmatter blocks, inflating per-turn session context budgets. Additionally, the Cryptographic Human Gates policy only existed inline inside `AGENTS.md` rather than as a standalone canonical rule file under `plugins/` and `.agent/rules/`.
+- Why not fixed now: Fixed immediately in this change.
+- Recommended fix / fix applied: Extracted the Cryptographic Human Gates policy into `plugins/agent-agentic-os/rules/cryptographic-human-gates.md` and synced to `.agent/rules/cryptographic-human-gates.md` (passing `audit_rule.py`). Refactored `AGENTS.md` from 1,575 lines down to 110 lines following the clean reference index archetype (Contents, Iron Laws, Verification Tooling, and modular rule links).
+- Evidence/repro: `AGENTS.md` dropped from 1,575 lines to 110 lines; all 26 internal and rule links verified present on disk; `audit_rule.py .agent/rules --all` passes all 24 rules (0 errors); pytest suite passes 12/12.
+- Severity: M
+- Repeat: NO
+- Status: RESOLVED
+
 ## DEBT-20261009-STANDALONE-RULES-DATE-SANITIZATION (RESOLVED)
 
 - Logged date: 2026-10-09
