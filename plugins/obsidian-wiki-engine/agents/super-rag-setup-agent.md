@@ -23,6 +23,7 @@ description: >
   </example>
 context: fork
 model: inherit
+color: magenta
 permissionMode: acceptEdits
 tools: ["Bash", "Read", "Write"]
 ---

@@ -1,6 +1,8 @@
 ---
 name: tdd-contract-reviewer
 user-invocable: false
+model: inherit
+color: cyan
 description: >
   TDD Contract & Test Fixture Reviewer. Fills the "TDD Contract Reviewer" role in the
   Graph Planning Phase 1 Fan-Out Trio — stress-tests a PLAN's testability, deterministic

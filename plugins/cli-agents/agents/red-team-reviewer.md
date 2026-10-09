@@ -1,6 +1,8 @@
 ---
 name: red-team-reviewer
 user-invocable: false
+model: inherit
+color: cyan
 description: >
   Adversarial Red Team Reviewer. Attempts to break, bypass, or abuse the provided
   design/code/spec as a hostile actor would. Produces a structured threat model and

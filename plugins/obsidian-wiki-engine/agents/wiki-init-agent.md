@@ -11,6 +11,7 @@ description: >
   "/wiki-init", or "I want to start an LLM wiki for my project".
 context: fork
 model: inherit
+color: magenta
 permissionMode: acceptEdits
 tools: ["Bash", "Read", "Write"]
 ---

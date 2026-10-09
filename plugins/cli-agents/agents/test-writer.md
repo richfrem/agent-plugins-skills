@@ -1,6 +1,8 @@
 ---
 name: test-writer
 user-invocable: false
+model: inherit
+color: cyan
 description: >
   Senior Test Engineer. Generates targeted unit tests for the provided code,
   covering happy paths, edge cases, and failure modes using the project's

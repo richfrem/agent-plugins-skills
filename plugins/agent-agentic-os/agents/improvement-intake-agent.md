@@ -9,6 +9,7 @@ description: >
   Use at the start of any improvement session: first run, resume, or targeted re-evaluation.
 dependencies: ["skill:os-state", "skill:os-memory-manager"]
 model: inherit
+color: green
 tools: ["Read", "Write"]
 ---
 

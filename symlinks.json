@@ -12114,6 +12114,42 @@
       "dst": "plugins/agent-scaffolders/skills/audit-plugin/references/skill-authoring-contract.json",
       "strategy": "symlink",
       "description": "Skill authoring contract for audit-plugin audit_skill.py"
+    },
+    {
+      "src": "plugins/agent-scaffolders/scripts/audit_sub_agent.py",
+      "dst": "plugins/agent-scaffolders/skills/audit-sub-agent/scripts/audit_sub_agent.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-scaffolders/references/create-sub-agent-acceptance-criteria.md",
+      "dst": "plugins/agent-scaffolders/skills/audit-sub-agent/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-scaffolders/references/create-sub-agent-fallback-tree.md",
+      "dst": "plugins/agent-scaffolders/skills/audit-sub-agent/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-scaffolders/scripts/audit_rule.py",
+      "dst": "plugins/agent-scaffolders/skills/audit-rule/scripts/audit_rule.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-scaffolders/references/acceptance-criteria.md",
+      "dst": "plugins/agent-scaffolders/skills/audit-rule/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-scaffolders/references/fallback-tree.md",
+      "dst": "plugins/agent-scaffolders/skills/audit-rule/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": ""
     }
   ]
 }

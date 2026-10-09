@@ -10,6 +10,7 @@ description: >
   model step; later documentation passes are delegated to cheaper CLI sub-agents.
 dependencies: ["skill:exploration-workflow"]
 model: inherit
+color: blue
 tools: ["Read", "Write", "AskUserQuestion", "Bash"]
 ---
 

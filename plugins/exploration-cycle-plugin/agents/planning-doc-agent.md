@@ -10,6 +10,7 @@ description: >
 dependencies: ["skill:exploration-workflow"]
 optional-integration: ["execution-harness", "quantum-double-diamond"]
 model: cheap
+color: green
 tools: ["Read", "Write"]
 ---
 

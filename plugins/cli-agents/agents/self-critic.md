@@ -1,6 +1,8 @@
 ---
 name: self-critic
 user-invocable: false
+model: inherit
+color: cyan
 description: >
   Reflection Agent. Given a draft output and the original task, evaluates whether
   the output actually accomplishes the goal. Identifies gaps, overreach, and
