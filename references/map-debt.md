@@ -2,6 +2,19 @@
 
 Persistent tracking of architectural friction, structural anomalies, and unclosed loops across sessions.
 
+## DEBT-20261009-STANDALONE-RULES-DATE-SANITIZATION (RESOLVED)
+
+- Logged date: 2026-10-09
+- Cycle/Session ID: feat/sync-and-audit-agent-rules
+- Artifact affected: `.agent/rules/background-document-priority.md`, `.agent/rules/spec-driven-development-policy.md`, `plugin-retention.json`, `skills-lock.json`
+- Friction observed: Standalone rules in `.agent/rules/` that did not exist in `plugins/` contained calendar dates violating the timeless invariants rule (`background-document-priority.md` had `2026-09-13` and `spec-driven-development-policy.md` had `2026-05-22`).
+- Why not fixed now: Fixed immediately in this change.
+- Recommended fix / fix applied: Audited all 23 rules in `.agent/rules/` using `audit_rule.py`, verified exact sync with upstream `plugins/` copies, and sanitized calendar dates from the standalone rules. Also included synced retention manifest updates for `audit-rule` and `audit-sub-agent`.
+- Evidence/repro: `python3 plugins/agent-scaffolders/scripts/audit_rule.py .agent/rules --all` passes all 23 rules (0 errors).
+- Severity: M
+- Repeat: NO
+- Status: RESOLVED
+
 ## DEBT-20261009-AGENT-AND-RULE-AUDIT-ALIGNMENT (RESOLVED)
 
 - Logged date: 2026-10-09

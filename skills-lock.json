@@ -11,9 +11,9 @@
     "agy-cli-agent": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
-      "computedHash": "9d864d57ab5dd83c8a0786d24c34a53ae3e94336b3196e4de574535c37a8c011",
+      "computedHash": "fb1d5fb8c24b9b0fa6fc8456daaa64a09f9d32df9c4a35c51f4996db2f0872b0",
       "installedAt": "2026-09-29T19:02:02.586450Z",
-      "updatedAt": "2026-10-09T17:44:59.833348Z"
+      "updatedAt": "2026-10-09T18:33:11.532128Z"
     },
     "audit-plugin": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
@@ -22,6 +22,13 @@
       "installedAt": "2026-09-30T23:40:13.845763Z",
       "updatedAt": "2026-10-09T17:44:59.690223Z"
     },
+    "audit-rule": {
+      "source": "https://github.com/richfrem/agent-plugins-skills",
+      "sourceType": "local",
+      "computedHash": "890aa966aa3927674c7714cc8d4eda1ed650a325fa7de0151b45861555b77664",
+      "installedAt": "2026-10-09T18:33:11.393100Z",
+      "updatedAt": "2026-10-09T18:33:11.393100Z"
+    },
     "audit-skill": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
@@ -29,12 +36,19 @@
       "installedAt": "2026-09-30T23:40:13.845763Z",
       "updatedAt": "2026-10-02T21:27:28.728521Z"
     },
+    "audit-sub-agent": {
+      "source": "https://github.com/richfrem/agent-plugins-skills",
+      "sourceType": "local",
+      "computedHash": "52647bee937d93e9b5d96bf5acd05cc93f163a322b6838c0543fe730433a0f4b",
+      "installedAt": "2026-10-09T18:33:11.393100Z",
+      "updatedAt": "2026-10-09T18:33:11.393100Z"
+    },
     "claude-cli-agent": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
-      "computedHash": "747d10265ae8a11614909cd210d42451299ee77560d7f852a9d4c8ccb101e154",
+      "computedHash": "c030d79999132749170096a61feccb25c16cb34a8424416d6fcad324ab87c1ab",
       "installedAt": "2026-09-29T19:02:02.586450Z",
-      "updatedAt": "2026-10-09T17:44:59.833348Z"
+      "updatedAt": "2026-10-09T18:33:11.532128Z"
     },
     "co-pilot-loop": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
@@ -46,9 +60,9 @@
     "codex-cli-agent": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
-      "computedHash": "d0e21c6bf3ff3260356491e2ad474d12c4fd0407f48c98eea859fafa1ec0e100",
+      "computedHash": "0a40cfe212b0669e1705ddc48e4716b10c79a45fec4a6c5b65640abc07f7993b",
       "installedAt": "2026-09-29T19:02:02.586450Z",
-      "updatedAt": "2026-10-09T17:44:59.833348Z"
+      "updatedAt": "2026-10-09T18:33:11.532128Z"
     },
     "context-bundler": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
@@ -60,9 +74,9 @@
     "copilot-cli-agent": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
-      "computedHash": "90dddf9ab96e2bd28256e5cbcb7aea43d3a3d77226b839858250573f0f07ee42",
+      "computedHash": "e9b62b5469effc3e97d1300a0caf539734f5bbbd94eebe67feb3c0f3017ac2f0",
       "installedAt": "2026-09-29T19:02:02.586450Z",
-      "updatedAt": "2026-10-09T17:44:59.833348Z"
+      "updatedAt": "2026-10-09T18:33:11.532128Z"
     },
     "create-hook": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
@@ -74,9 +88,9 @@
     "create-rule": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
-      "computedHash": "0e58817e6fb6b647f5ecb6ce9f2c7fbfcd20eb24fd6831d3e1e73306cb8bd1c0",
+      "computedHash": "ca1cbe2e4a2751eb0db5ff5299964ec146fb3f700c2f5eb241bfab95bdfd851a",
       "installedAt": "2026-09-30T23:40:13.845763Z",
-      "updatedAt": "2026-10-02T21:27:28.728521Z"
+      "updatedAt": "2026-10-09T18:33:11.393100Z"
     },
     "create-skill": {
       "source": "https://github.com/richfrem/agent-plugins-skills",

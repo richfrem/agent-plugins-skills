@@ -76,5 +76,4 @@ Failure to follow this rule breaks UI dashboards and parsers.
 - **Build context, then maintain it.** Do not redundantly re-read unchanged artifacts in a single session.
 - **Never** use `grep`, `find`, or `ls -R` blindly for tool discovery; use specialized search tools (like RLM/Vector DB queries) or structured directories. 
 
----
-**Ratified**: 2026-05-22 | **Replaces**: `constitution.md`, `AGENTS.md`, legacy `spec_driven_development_policy.md`
+**Supersedes**: `constitution.md`, legacy `spec_driven_development_policy.md`

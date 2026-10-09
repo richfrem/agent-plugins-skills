@@ -18,6 +18,4 @@ otherwise. Never make the human re-answer, live, something they already wrote do
 
 Only ask a live question for what the document genuinely leaves open or ambiguous.
 
-**Why this exists:** a 2026-09-13 session ignored this exact instruction after it was
-stated explicitly in the referenced document, forcing the human to re-answer already-written
-information one question at a time and causing significant, avoidable session friction.
+**Why this exists:** Sessions that ignore referenced background documents force the user to re-answer already-written information one question at a time, causing significant and avoidable friction.
