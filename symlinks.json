@@ -12150,6 +12150,24 @@
       "dst": "plugins/agent-scaffolders/skills/audit-rule/references/fallback-tree.md",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "plugins/agent-scaffolders/scripts/audit_plugin_structure.py",
+      "dst": "plugins/agent-scaffolders/skills/audit-plugin/scripts/audit_plugin_structure.py",
+      "strategy": "symlink",
+      "description": "Symlink audit_plugin_structure.py into audit-plugin skill"
+    },
+    {
+      "src": "plugins/agent-scaffolders/scripts/audit_sub_agent.py",
+      "dst": "plugins/agent-scaffolders/skills/audit-plugin/scripts/audit_sub_agent.py",
+      "strategy": "symlink",
+      "description": "Symlink audit_sub_agent.py into audit-plugin skill"
+    },
+    {
+      "src": "plugins/agent-scaffolders/scripts/audit_rule.py",
+      "dst": "plugins/agent-scaffolders/skills/audit-plugin/scripts/audit_rule.py",
+      "strategy": "symlink",
+      "description": "Symlink audit_rule.py into audit-plugin skill"
     }
   ]
 }

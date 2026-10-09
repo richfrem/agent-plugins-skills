@@ -26,18 +26,18 @@ Current scale (read from `plugins/` — verify with `find plugins -name SKILL.md
 `find plugins/*/agents -maxdepth 1 -name '*.md' | wc -l` before quoting a number elsewhere;
 `plugins/spec-kitty-plugin` was removed 2026-09-05, never part of this count):
 - **10 plugins**
-- **140 skills** (active SKILL.md definitions across plugins)
-- **51 agent definitions** (`agents/*.md` across plugins)
+- **137 skills** (active SKILL.md definitions across plugins)
+- **46 agent definitions** (`agents/*.md` across plugins)
 
 ## 2. Project Structure
 
 ```
 [Project Root]/
 ├── plugins/                        # CANONICAL SOURCE — authoritative for all skills/agents
-│   ├── agent-agentic-os/           # OS improvement loop, memory, evolution planning (20 skills)
+│   ├── agent-agentic-os/           # OS improvement loop, memory, evolution planning (28 skills)
 │   ├── agent-orchestration/        # OS-decoupled execution primitives (10 skills)
 │   ├── agent-memory/               # RLM summary cache + ChromaDB vector store (13 skills)
-│   ├── agent-scaffolders/          # Plugin/skill/agent/rule scaffolding & auditing (20 skills)
+│   ├── agent-scaffolders/          # Plugin/skill/agent/rule scaffolding & auditing (22 skills)
 │   ├── cli-agents/                 # Multi-LLM CLI dispatch (Claude/Copilot/Gemini/Agy) (11 skills)
 │   ├── dependency-management/      # pip-compile / dependency tier workflow (1 skill)
 │   ├── dev-utils/                  # ADR mgmt, symlinks, context bundling, GitHub issues, worktrees (16 skills)
@@ -125,7 +125,7 @@ unmodified, into any number of target projects.
 - `plugins/plugin-manager/scripts/plugin_add.py` / `plugin_installer.py` / `plugin_remove.py` / `sync_with_inventory.py` — interactive and scripted install/remove/sync of individual or bulk plugins into a target project's `.agents/` folder.
 - `pyproject.toml` exposes these as console scripts: `plugin-add`, `plugin-remove`, `plugin-sync`.
 
-### 4.2. Plugin: agent-agentic-os (v1.10.0)
+### 4.2. Plugin: agent-agentic-os
 The self-improvement kernel. Core loop: `os-architect → os-improvement-loop → os-eval-runner →
 os-eval-backport → os-experiment-log`. Owns memory management (`os-memory-manager`), evolution
 planning (`os-evolution-planner`/`os-evolution-verifier`), setup (`os-init`, `agentic-os-setup` agent),
@@ -139,22 +139,22 @@ and `turn_evolution_guard`). Three control-plane edges are cryptographic human g
 
 **Setup:** per machine, by the human, via `setup_ciba_identity.py` (skill `os-signing-setup`). `allowed_signers*` and `context/identity/challenges/` are machine-local trust anchors and never committed; `os-init` and `os-health-check` report readiness read-only. **Residual risk:** an agent running as the same account with direct database or coordinator access can still tamper; see `plugins/agent-agentic-os/references/isolation-setup.md`.
 
-### 4.3. Plugin: agent-orchestration/ (v2.3.0)
+### 4.3. Plugin: agent-orchestration
 Execution primitives for loops and deterministic state graphs (orchestrator, select-loop-strategy, graph-planner, graph-execution, co-pilot-loop, learning-loop, dual-loop, agent-swarm, red-team-review, triple-loop-learning). Provides execution patterns only — no eval gate, no memory; `os-improvement-loop` delegates its inner loop to `triple-loop-learning` as substrate.
 
-### 4.4. Plugin: agent-memory (v1.0.0)
+### 4.4. Plugin: agent-memory
 Two retrieval subsystems consolidated from former rlm-factory / vector-db / memory-management
 plugins: RLM (dense-summary keyword cache, O(1) lookup, zero deps) and vector-db (ChromaDB semantic
 embeddings). Can run standalone or combined as part of a "Super-RAG" stack with
 `obsidian-wiki-engine`.
 
-### 4.5. Plugin: agent-scaffolders (v2.1.0, 20 skills)
+### 4.5. Plugin: agent-scaffolders (22 skills)
 Tooling for creating and auditing ecosystem components: `create-plugin`, `create-skill`, `create-rule`
-(invariant-driven, zero-fluff agent rules), `create-sub-agent`, `audit-plugin`, and `audit-skill`
-(evolution alignment), plus APM package conversion and marketplace management. Retired analyzer,
+(invariant-driven, zero-fluff agent rules), `create-sub-agent`, `audit-plugin`, `audit-skill`, `audit-sub-agent`,
+and `audit-rule` (evolution alignment), plus APM package conversion and marketplace management. Retired analyzer,
 mining, standalone command, path-repair, deep-audit, and self-audit wrappers are no longer catalogued.
 
-### 4.6. Plugin: cli-agents (v2.2.0, 11 skills)
+### 4.6. Plugin: cli-agents (11 skills)
 Multi-LLM task router (`run_agent.py`) consolidated from claude-cli/copilot-cli/gemini-cli.
 6 backends, `--isolated` security contract, 11 expert-persona sub-agents (architect-review,
 security-auditor, tdd-contract-reviewer, red-team-reviewer, etc.) — the first three form the
@@ -166,17 +166,16 @@ driven by `references/copilot-models.json` cost tiers. Gemini CLI consumer acces
 Business discovery workflow (Path 1: pre-build discovery; Path 2: vibe-coded-prototype
 migration). Backed by a hardened Python control plane in `scripts/`: `dispatch.py`,
 `state_engine.py` (SQLite, transactional, WAL), `sandbox_runner.py` (process sandboxing, HMAC-signed
-envelopes, approval gating). v1.3 hardened this to stdlib-only; v1.4 work is in progress. Any change
-to these three files requires reading `docs/ADRs/007_maf_adapter_runtime_decision.md` and the v1.4 spec
+envelopes, approval gating). Any change to these files requires reading `docs/ADRs/007_maf_adapter_runtime_decision.md`
 first — no casual convenience bypasses to the authorization gate or path enforcement.
 
 ### 4.8. Plugin: obsidian-wiki-engine (10 skills)
 Karpathy-style LLM wiki generation over the codebase; standalone or combined with agent-memory as
 the third leg of the Super-RAG stack.
 
-### 4.9. Plugin: dev-utils (v1.4.0, 16 skills)
-Consolidated from 9 former standalone plugins: ADR management, coding-conventions enforcement,
-context bundling (now includes a Multi-Persona Fan-Out mode for parallel adversarial plan
+### 4.9. Plugin: dev-utils (16 skills)
+Consolidated utilities: ADR management, coding-conventions enforcement,
+context bundling (including Multi-Persona Fan-Out mode for parallel adversarial plan
 review), mermaid conversion, HuggingFace init/upload, humanize, link-checking, context
 optimization, `symlink-manager` (the only sanctioned way to create symlinks in this repo),
 task-agent.
@@ -261,17 +260,9 @@ setuptools artifact (from `pip install -e .` / packaging), not an application bu
 - No single top-level test runner — tests are scoped per plugin, colocated with the plugin's
   `scripts/`.
 
-## 11. Known Architectural Evolution (see README.md for full history)
+## 11. Architectural Evolution
 
-- **v1.3** — SQLite-backed hardened control plane for exploration-cycle-plugin.
-- **v1.4** — MAF synthesis: hybrid architecture, MAF adopted as certified optional adapter (ADR-007),
-  not a kernel replacement.
-- **v1.5** — cli-agents promoted to a full multi-LLM task router with adversarial agent personas.
-- **v1.6** — Graph Planning + Superpowers execution discipline (`graph-planning-superpowers-policy.md`,
-  replacing the retired `spec-driven-development-policy.md`): native Plan Mode sandboxing wired into
-  `os-architect`/`os-evolution-planner`, `context-bundler`'s Multi-Persona Fan-Out Mode, the
-  `tdd-contract-reviewer` persona, and `red-team-review`'s 2-3 round convergence cap.
-- **v1.7** — Lean 3-Layer Memory & Self-Evolution Architecture: Hardened 6-node state machine controller (`evolution_state.py`), safe audit manifest logging (`record_trace.py`), cryptographic receipts (`verify_evolution_receipt.py`), `agent-orchestration` v2.3.0 (decoupled execution primitives including `graph-execution` and `select-loop-strategy`), Layer 1 procedural dispatchers at <= 100 lines, and `audit-skill` for evolution alignment.
+The ecosystem evolves via RFCs and binding Architecture Decision Records (ADRs). Rather than tracking volatile release version strings in this architecture document, consult [ADRs](docs/ADRs/) for structural invariants, [README.md](README.md) for milestone highlights, and the Git commit history for granular release notes.
 
 ## 12. Glossary
 

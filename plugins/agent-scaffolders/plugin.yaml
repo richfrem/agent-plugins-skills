@@ -17,7 +17,9 @@ provides_tools:
   - inventory_plugin
 skills:
   - audit-plugin
+  - audit-rule
   - audit-skill
+  - audit-sub-agent
   - create-agentic-workflow
   - create-azure-agent
   - create-docker-skill
