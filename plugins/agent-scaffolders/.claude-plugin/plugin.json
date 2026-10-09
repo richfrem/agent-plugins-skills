@@ -1,7 +1,7 @@
 {
     "name": "agent-scaffolders",
     "version": "2.2.0",
-    "description": "Meta-plugin containing ecosystem generation and evolution auditing primitives. Includes scaffolding for Agent Skills, Plugins, CLI sub-agents, custom GitHub Copilot agents, GitHub Agentic Workflows (gh-aw), CI/CD Smart Failure agents, Azure Foundry agents, and skill evolution auditing (audit-skill).",
+    "description": "Meta-plugin containing ecosystem generation and evolution auditing primitives. Includes scaffolding for Agent Skills, Plugins, CLI sub-agents, custom GitHub Copilot agents, GitHub Agentic Workflows (gh-aw), CI/CD Smart Failure agents, Azure Foundry agents, and comprehensive evolution auditing (audit-plugin, audit-skill, audit-sub-agent, audit-rule).",
     "author": {
         "name": "Richard Fremmerlid"
     },
@@ -14,13 +14,18 @@
         "agent-tooling",
         "github-agents",
         "gh-aw",
+        "audit-plugin",
         "audit-skill",
+        "audit-sub-agent",
+        "audit-rule",
         "skill-auditor"
     ],
     "capabilities": [
         "skill-scaffolding",
         "plugin-scaffolding",
         "code-generation",
-        "skill-auditing"
+        "skill-auditing",
+        "agent-auditing",
+        "rule-auditing"
     ]
 }

@@ -26,18 +26,18 @@ Current scale (read from `plugins/` — verify with `find plugins -name SKILL.md
 `find plugins/*/agents -maxdepth 1 -name '*.md' | wc -l` before quoting a number elsewhere;
 `plugins/spec-kitty-plugin` was removed 2026-09-05, never part of this count):
 - **10 plugins**
-- **140 skills** (active SKILL.md definitions across plugins)
-- **51 agent definitions** (`agents/*.md` across plugins)
+- **137 skills** (active SKILL.md definitions across plugins)
+- **46 agent definitions** (`agents/*.md` across plugins)
 
 ## 2. Project Structure
 
 ```
 [Project Root]/
 ├── plugins/                        # CANONICAL SOURCE — authoritative for all skills/agents
-│   ├── agent-agentic-os/           # OS improvement loop, memory, evolution planning (20 skills)
+│   ├── agent-agentic-os/           # OS improvement loop, memory, evolution planning (28 skills)
 │   ├── agent-orchestration/        # OS-decoupled execution primitives (10 skills)
 │   ├── agent-memory/               # RLM summary cache + ChromaDB vector store (13 skills)
-│   ├── agent-scaffolders/          # Plugin/skill/agent/rule scaffolding & auditing (20 skills)
+│   ├── agent-scaffolders/          # Plugin/skill/agent/rule scaffolding & auditing (22 skills)
 │   ├── cli-agents/                 # Multi-LLM CLI dispatch (Claude/Copilot/Gemini/Agy) (11 skills)
 │   ├── dependency-management/      # pip-compile / dependency tier workflow (1 skill)
 │   ├── dev-utils/                  # ADR mgmt, symlinks, context bundling, GitHub issues, worktrees (16 skills)
