@@ -16,11 +16,13 @@ provides_tools:
   - audit
   - inventory_plugin
 skills:
+  - audit-agents-md
   - audit-plugin
   - audit-rule
   - audit-skill
   - audit-sub-agent
   - create-agentic-workflow
+  - create-agents-md
   - create-azure-agent
   - create-docker-skill
   - create-github-action

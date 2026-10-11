@@ -31,11 +31,11 @@
     },
     {
       "name": "agent-scaffolders",
-      "description": "Meta-plugin containing ecosystem generation and evolution auditing primitives. Scaffolding for agent skills, plugins, CLI sub-agents, custom GitHub Copilot agents, and comprehensive evolution auditing (audit-plugin, audit-skill, audit-sub-agent, audit-rule).",
+      "description": "Meta-plugin containing ecosystem generation and evolution auditing primitives. Scaffolding for agent skills, plugins, CLI sub-agents, root AGENTS.md files (create-agents-md), custom GitHub Copilot agents, and comprehensive evolution auditing (audit-plugin, audit-skill, audit-sub-agent, audit-rule, audit-agents-md).",
       "source": "./plugins/agent-scaffolders",
       "strict": true,
       "category": "agent-infrastructure",
-      "tags": ["scaffolder", "plugin-generator", "skill-generator", "audit-plugin", "audit-skill", "audit-sub-agent", "audit-rule", "skill-auditor", "agent-tooling", "evolution-alignment", "github-agents", "gh-aw"]
+      "tags": ["scaffolder", "plugin-generator", "skill-generator", "create-agents-md", "audit-agents-md", "audit-plugin", "audit-skill", "audit-sub-agent", "audit-rule", "skill-auditor", "agent-tooling", "evolution-alignment", "github-agents", "gh-aw"]
     },
     {
       "name": "agent-memory",

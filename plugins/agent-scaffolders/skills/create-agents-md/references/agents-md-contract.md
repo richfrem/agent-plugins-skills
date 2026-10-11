@@ -1,0 +1,1 @@
+../../../references/agents-md-contract.md

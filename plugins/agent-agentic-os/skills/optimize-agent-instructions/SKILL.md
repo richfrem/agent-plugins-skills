@@ -41,10 +41,10 @@ wc -l AGENTS.md CLAUDE.md GEMINI.md 2>/dev/null
 ## Workflow
 
 1. **Discovery**: Inventory existing files (`AGENTS.md`, `CLAUDE.md`, `GEMINI.md`) and identify rules to preserve.
-2. **Audit & Scoring**: Score instruction files against Karpathy principles, brevity, and platform mappings.
+2. **Audit & Scoring**: Audit instruction files using `audit_agents_md.py` against progressive disclosure line budgets (target <= 100 lines), zero dates, zero ASCII trees, and inline invariants.
 3. **Plan Rewrite**: Present explicit diff of removals (stale logs), additions (behavioral rules), and kept invariants.
-4. **Synthesis**: Write lean, consolidated `AGENTS.md`.
-5. **Mirror Verification**: Ensure platform mirrors are short pointers rather than duplicate full-text files.
+4. **Synthesis**: Write lean, consolidated `AGENTS.md` adhering to the 5-part skeleton in `references/agents-md-contract.md`.
+5. **Mirror Verification**: Ensure platform mirrors (`CLAUDE.md`) are minimal bridges (<= 5 lines) reading `AGENTS.md` (e.g. `Read [AGENTS.md](AGENTS.md)`). Never duplicate full-text rules.
 
 ## Verification
 

@@ -1,65 +1,46 @@
 ---
 name: audit-agents-md
+description: Audits root instruction files (AGENTS.md, CLAUDE.md) for size budgets, timelessness, progressive disclosure, and inline invariants. Use when reviewing, auditing, or trimming root instruction files.
 plugin: agent-scaffolders
-description: >
-  Audits AGENTS.md, CLAUDE.md, and root instruction files against progressive disclosure,
-  zero calendar dates, zero machine paths, and modular rule link standards. Use when verifying
-  or refactoring repository instruction files.
-allowed-tools: Bash, Read, Write
+category: verification
 ---
 
-# Audit AGENTS.md (`audit-agents-md`)
+# Audit AGENTS.md / CLAUDE.md
 
-Performs deterministic structural audits of repository root instruction files (`AGENTS.md`, `CLAUDE.md`, `GEMINI.md`) against authoring standards and progressive disclosure budgets.
+Deterministic and judgment audit for repository root instruction files to prevent context bloat, enforce timeless invariants, and ensure progressive disclosure.
 
-## Contents
-
-- [Constraints](#constraints)
-- [Quick start](#quick-start)
-- [Workflow](#workflow)
-- [Verification](#verification)
-- [References](#references)
-
-## Constraints
-
-Audits are read-only; never modify instruction files automatically.
-Enforce progressive disclosure line budgets (target <= 150 lines, max 200).
-Enforce zero temporal fluff: fail on any calendar dates (`202X-XX-XX`) or absolute machine paths (`/Users/`, `/home/`).
-Flag structural bloat: multi-line ASCII directory trees belong in `architecture.md`; multi-item pitfalls belong in dedicated reference docs; 'Key Files' and 'Tool Name Mapping' tables are redundant.
-Enforce modularity: Non-negotiable rules must be concise invariants with markdown links to `.agent/rules/<rule>.md`.
-
-## Quick start
-
-Run from this skill root with caller-supplied target:
+## Quick Start
 
 ```bash
-# Audit a specific instruction file
-python3 scripts/audit_agents_md.py /path/to/AGENTS.md --json
+# Audit repository AGENTS.md
+python3 scripts/audit_agents_md.py AGENTS.md
 
-# Scan all instruction files in a repository
-python3 scripts/audit_agents_md.py /path/to/repository --all --json
+# Scan all instruction files with strict mode
+python3 scripts/audit_agents_md.py . --all --strict
 ```
 
-Exit 0: clean pass; 1: compliance errors or date/path violations; 2: invalid input.
+## Tier 1: Deterministic Invariants
 
-## Workflow
+Evaluates target files against `references/agents-md-contract.md`:
+1. **Transitive Eager Budget**: Target <= 100 lines (WARN > 120 lines, FAIL > 200 lines). Recursively resolves eager `@imports`.
+2. **Platform Bridge**: Verifies `CLAUDE.md` is a thin bridge (<= 5 lines) pointing to `AGENTS.md`.
+3. **Timelessness**: Zero calendar dates (`YYYY-MM-DD`). Invariants must be timeless.
+4. **Environment Agnosticism**: Zero absolute machine paths (`/Users/`, `/home/`, `C:\`).
+5. **Progressive Disclosure**:
+   - No ASCII directory trees (point to `architecture.md`).
+   - No inlined pitfall catalogs (point to `docs/architecture/known-pitfalls.md` or `references/`).
+   - No redundant Key Files or Tool Name Mapping tables.
+6. **Invariants vs. Procedures**:
+   - MUST/NEVER/ALWAYS/DO NOT invariants must be stated inline (not deferred entirely to a link).
+   - Links point to `.agent/rules/<rule>.md` for rationale and examples.
 
-1. **Target Selection**: Specify `AGENTS.md` or repository root.
-2. **Execute Audit**: Run `audit_agents_md.py` to evaluate line count, dates, paths, and bloat.
-3. **Evaluate Findings**: Check for calendar dates, absolute paths, ASCII directory trees, or rule link gaps.
-4. **Refactor Invariants**: Extract inlined pitfalls to `docs/architecture/known-pitfalls.md`, link directory structure to `architecture.md`, and link rules to `.agent/rules/`.
-5. **Re-Audit**: Confirm clean exit code 0 before committing.
+## Tier 2: Judgment Review (Advisory)
 
-## Verification
-
-```bash
-# Strict verification failing on any warning
-python3 scripts/audit_agents_md.py /path/to/AGENTS.md --strict
-```
-
-Review [acceptance criteria](references/acceptance-criteria.md) before publishing.
+When conducting qualitative review:
+1. Apply the **Pruning Test**: "Would removing this line cause an AI agent to make mistakes?" If not, prune it.
+2. Check for **Procedures Masquerading as Rules**: Multi-step workflows (>3 steps) should be migrated to specialized skills.
+3. Check for **Overuse of Emphasis**: Avoid excessive ALL-CAPS or screaming warnings that dilute signal.
 
 ## References
 
-- [Acceptance criteria](references/acceptance-criteria.md): structural gates and formatting requirements.
-- [Fallback protocol](references/fallback-tree.md): escalation protocol for instruction authoring.
+- [Contract](references/agents-md-contract.md)
