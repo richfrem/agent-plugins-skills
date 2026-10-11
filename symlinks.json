@@ -12218,10 +12218,10 @@
       "description": "fallback-tree reference symlink for create-agents-md"
     },
     {
-      "src": "plugins/agent-scaffolders/assets/AGENTS.md.template",
-      "dst": "plugins/agent-scaffolders/skills/create-agents-md/assets/AGENTS.md.template",
+      "src": "plugins/agent-scaffolders/assets/templates/AGENTS.md.jinja",
+      "dst": "plugins/agent-scaffolders/skills/create-agents-md/assets/templates/AGENTS.md.jinja",
       "strategy": "symlink",
-      "description": "AGENTS.md template asset symlink for create-agents-md"
+      "description": "AGENTS.md Jinja template symlink for create-agents-md"
     }
   ]
 }

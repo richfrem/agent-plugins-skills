@@ -22,7 +22,7 @@ python3 scripts/audit_agents_md.py AGENTS.md
    - Check if `AGENTS.md` or `CLAUDE.md` already exist. **NEVER silently overwrite an existing file.** Propose a unified diff instead.
    - Inspect build files (`package.json`, `pyproject.toml`, `Cargo.toml`, `Makefile`) to identify primary build and test commands.
 2. **Drafting `AGENTS.md`**:
-   - Load template from `assets/AGENTS.md.template`.
+   - Load template from `assets/templates/AGENTS.md.jinja`.
    - Adhere strictly to the 5-part skeleton in contract §6:
      1. `# AGENTS.md` with `## Overview`: One concise paragraph describing stack and purpose.
      2. `## Architecture & Layout`: <= 8 lines pointing to `architecture.md` (zero ASCII trees).
@@ -49,4 +49,4 @@ python3 scripts/audit_agents_md.py AGENTS.md
 ## References
 
 - [Contract](references/agents-md-contract.md)
-- [Template](assets/AGENTS.md.template)
+- [Template](assets/templates/AGENTS.md.jinja)
