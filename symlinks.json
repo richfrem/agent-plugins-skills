@@ -12168,6 +12168,60 @@
       "dst": "plugins/agent-scaffolders/skills/audit-plugin/scripts/audit_rule.py",
       "strategy": "symlink",
       "description": "Symlink audit_rule.py into audit-plugin skill"
+    },
+    {
+      "src": "plugins/agent-scaffolders/scripts/audit_agents_md.py",
+      "dst": "plugins/agent-scaffolders/skills/audit-agents-md/scripts/audit_agents_md.py",
+      "strategy": "symlink",
+      "description": "audit_agents_md CLI script symlink to hub"
+    },
+    {
+      "src": "plugins/agent-scaffolders/references/acceptance-criteria.md",
+      "dst": "plugins/agent-scaffolders/skills/audit-agents-md/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": "acceptance-criteria reference symlink"
+    },
+    {
+      "src": "plugins/agent-scaffolders/references/fallback-tree.md",
+      "dst": "plugins/agent-scaffolders/skills/audit-agents-md/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": "fallback-tree reference symlink"
+    },
+    {
+      "src": "plugins/agent-scaffolders/references/agents-md-contract.md",
+      "dst": "plugins/agent-scaffolders/skills/audit-agents-md/references/agents-md-contract.md",
+      "strategy": "symlink",
+      "description": "Shared AGENTS.md contract symlink for audit-agents-md"
+    },
+    {
+      "src": "plugins/agent-scaffolders/references/agents-md-contract.md",
+      "dst": "plugins/agent-scaffolders/skills/create-agents-md/references/agents-md-contract.md",
+      "strategy": "symlink",
+      "description": "Shared AGENTS.md contract symlink for create-agents-md"
+    },
+    {
+      "src": "plugins/agent-scaffolders/scripts/audit_agents_md.py",
+      "dst": "plugins/agent-scaffolders/skills/create-agents-md/scripts/audit_agents_md.py",
+      "strategy": "symlink",
+      "description": "audit_agents_md CLI script symlink for create-agents-md"
+    },
+    {
+      "src": "plugins/agent-scaffolders/references/acceptance-criteria.md",
+      "dst": "plugins/agent-scaffolders/skills/create-agents-md/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": "acceptance-criteria reference symlink for create-agents-md"
+    },
+    {
+      "src": "plugins/agent-scaffolders/references/fallback-tree.md",
+      "dst": "plugins/agent-scaffolders/skills/create-agents-md/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": "fallback-tree reference symlink for create-agents-md"
+    },
+    {
+      "src": "plugins/agent-scaffolders/assets/templates/AGENTS.md.jinja",
+      "dst": "plugins/agent-scaffolders/skills/create-agents-md/assets/templates/AGENTS.md.jinja",
+      "strategy": "symlink",
+      "description": "AGENTS.md Jinja template symlink for create-agents-md"
     }
   ]
 }

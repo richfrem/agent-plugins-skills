@@ -148,10 +148,11 @@ plugins: RLM (dense-summary keyword cache, O(1) lookup, zero deps) and vector-db
 embeddings). Can run standalone or combined as part of a "Super-RAG" stack with
 `obsidian-wiki-engine`.
 
-### 4.5. Plugin: agent-scaffolders (22 skills)
+### 4.5. Plugin: agent-scaffolders (24 skills)
 Tooling for creating and auditing ecosystem components: `create-plugin`, `create-skill`, `create-rule`
-(invariant-driven, zero-fluff agent rules), `create-sub-agent`, `audit-plugin`, `audit-skill`, `audit-sub-agent`,
-and `audit-rule` (evolution alignment), plus APM package conversion and marketplace management. Retired analyzer,
+(invariant-driven, zero-fluff agent rules), `create-sub-agent`, `create-agents-md` (progressive-disclosure root files),
+`audit-plugin`, `audit-skill`, `audit-sub-agent`, `audit-rule`, and `audit-agents-md` (timeless root instruction auditing),
+plus APM package conversion and marketplace management. Retired analyzer,
 mining, standalone command, path-repair, deep-audit, and self-audit wrappers are no longer catalogued.
 
 ### 4.6. Plugin: cli-agents (11 skills)

@@ -1,0 +1,26 @@
+[
+  {
+    "prompt": "Audit the repository AGENTS.md to make sure it complies with progressive disclosure.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Check if our root CLAUDE.md file has any historical dates, machine paths, or bloat.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Scan all instruction files under the repository to verify they link rules and architecture.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Create a new rule called no-hardcoding-constants.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Audit the entire plugin directory for marketplace compliance.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Audit this skill to see if it meets the 80 line budget.",
+    "should_trigger": false
+  }
+]

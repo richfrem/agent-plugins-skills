@@ -55,6 +55,7 @@ These skills build ecosystem-compliant components from scratch.
 | `create-github-action` | "scaffold CI workflow" | Deterministic GitHub Actions YAML |
 | `create-docker-skill` | "docker skill" | Dockerfile and pre-flight security overrides |
 | `create-azure-agent` | "azure ai foundry" | Azure AI Foundry agent boilerplate |
+| `create-agents-md` | "create AGENTS.md" | Lean progressive-disclosure root instruction file (AGENTS.md / CLAUDE.md bridge) |
 
 ---
 
@@ -65,6 +66,10 @@ These skills ensure your built components don't violate architectural constraint
 | Skill | Purpose |
 |-------|---------|
 | `audit-plugin` | Validates plugin structure, boundaries, and security compliance. |
+| `audit-skill` | Audits individual skills or inventory against authoring standards. |
+| `audit-rule` | Audits agent rule markdown files for line budget compliance and invariant structure. |
+| `audit-sub-agent` | Audits sub-agent specs for metadata, tool sandboxing, and packaging. |
+| `audit-agents-md` | Audits root AGENTS.md / CLAUDE.md files for size budget, timelessness, and inline invariants. |
 
 ---
 
