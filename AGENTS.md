@@ -35,6 +35,8 @@ For local planning, backlog status, and current task handoffs, consult `docs/pla
    Never introduce magic string literals or answer sequences. All domain constants must be imported from `constants.py`. SQL queries must use `?` bind parameters.
 7. **Three-Attempt Maximum & Map Debt Logging**:
    Autonomous repair attempts are capped at 3. Every friction event must update the map (playbooks, rules, references), log `Status: RESOLVED` in `references/map-debt.md` if fixed inline, or record an open debt entry if deferred.
+8. **Only Installed Skills Exist at Runtime**:
+   `plugins/` is source; only what is installed in `.agents/skills/` and enabled in `.agents/ownership/<plugin>.json` (`should_install: true`) can run. A skill present in `plugins/` may be disabled on purpose (context size). Before recommending, routing to, or writing a handoff to any skill or agent, verify it is installed (`ls .agents/skills/<name>`, `grep '"<name>"' .agents/ownership/*.json`); never route through a disabled one. If the right target is disabled, say so and ask. `os-control-plane-mode` toggles only the control-plane family (`work-intake`, `transition-simulator`, `os-signing-setup`); it says nothing about other skills.
 
 ---
 
