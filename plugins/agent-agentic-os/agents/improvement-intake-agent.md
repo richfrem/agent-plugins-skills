@@ -296,9 +296,17 @@ DISPATCH: [copilot-cli | gemini-cli | claude-subagents — from run-config.json]
 
 ## Routing After Handoff
 
-Once the user says "start the run", hand off to the `os-improvement-loop` skill.
-The loop reads the `HANDOFF_BLOCK` above and the files it references.
+Once the user says "start the run", check that `os-improvement-loop` is installed
+(`ls .agents/skills/os-improvement-loop`) and enabled (`should_install: true` in
+`.agents/ownership/agent-agentic-os.json`).
 
-The loop owns everything from IDLE → RUNNING onward.
+- **Installed**: tell the user to continue with `os-improvement-loop`, and give them the
+  paths to `improvement/run-config.json` and `improvement/session-brief.md`. The loop does not
+  read these files itself; its Stage 0 reads the improvement ledger, the target's
+  `evals/results.tsv` and `references/program.md`.
+- **Not installed or disabled**: stop. Say the improvement loop is not enabled in this project,
+  that the intake files are saved, and ask whether to enable it. Do not route through another
+  disabled skill.
+
 The intake agent does not re-enter once the run has started, unless the user explicitly
 restarts intake (e.g. to change the target skill or reset the run depth).

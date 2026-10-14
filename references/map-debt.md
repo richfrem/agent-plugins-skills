@@ -1451,7 +1451,7 @@ Persistent tracking of architectural friction, structural anomalies, and unclose
 - Artifact affected: `plugins/agent-agentic-os/agents/improvement-intake-agent.md`, `plugins/agent-orchestration/skills/graph-execution/SKILL.md`, `architecture.md`, `.claude-plugin/marketplace.json`
 - Friction observed: `improvement-intake-agent` handed runs to `improvement-lifecycle-orchestrator`, which exists in no plugin (`os-architect-agent` routes intake to `os-improvement-loop`). `graph-execution` mermaid used `VERIFY_GATE` where the Workflow says `VERIFIER_GATE`. `architecture.md` and `marketplace.json` skill and persona counts had drifted from `plugins/`.
 - Why not fixed now: Fixed immediately on branch `fix/docs-counts-and-graph-state-names`.
-- Recommended fix / fix applied: Intake agent now names `os-improvement-loop`; mermaid unified on `VERIFIER_GATE`; counts set from `find plugins -name SKILL.md` (139 skills, `agent-scaffolders` 27, `cli-agents` 12 personas). Read counts from `plugins/`, never copy them from another doc.
+- Recommended fix / fix applied: Intake agent handoff now checks that `os-improvement-loop` is installed and stops with a question if not (OPEN: nothing consumes `run-config.json`/`HANDOFF_BLOCK`, and the frontmatter lists `skill:os-state`, which does not exist, and `skill:os-memory-manager`, which is disabled); mermaid unified on `VERIFIER_GATE`; counts set from `find plugins -name SKILL.md` (139 skills, `agent-scaffolders` 27, `cli-agents` 12 personas). Read counts from `plugins/`, never copy them from another doc.
 - Evidence/repro: `grep -rn improvement-lifecycle-orchestrator plugins` finds only the intake agent and a historical CHANGELOG line; `ls plugins/cli-agents/agents` lists 12 personas.
 - Severity: L
 - Repeat: NO
