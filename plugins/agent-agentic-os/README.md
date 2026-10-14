@@ -31,31 +31,33 @@ for reliable execution.
 
 ---
 
-## 🚀 Start Here
+## Two Paths — Pick One
 
-> **Every evolution task starts with one command:**
->
-> ```
-> /os-architect
-> ```
->
-> Describe what you want in plain language. os-architect classifies your intent,
-> audits what already exists, brainstorms approach options, and dispatches work.
-> You do not need to know which internal loop, lab, or intake agent to invoke.
+This plugin holds two unrelated workflows. Neither requires the other. See
+[references/two-improvement-paths.md](./references/two-improvement-paths.md) for the full comparison.
+
+| | Governed task pipeline | Improvement lab |
+|---|---|---|
+| Use it to | Deliver real engineering work under approval gates | Measure and improve one skill or agent against evals |
+| Start with | `os-init` once, then `work-intake` per task | `/os-architect` (Category 3, lab setup) |
+| State | `context/control_plane.db` | `evals/results.tsv`, improvement ledger, `context/events.jsonl` |
+| Human authority | SSH-signed approval at plan, code-acceptance and closure | Human review of the lab diff before backport |
+| Switch | `os-control-plane-mode` | Enable its skills in `.agents/ownership/` |
+
+> **Skills are installed per project.** The skill list below describes the plugin source. A project
+> may install only some of it (`.agents/ownership/agent-agentic-os.json`, `should_install`). Before
+> relying on a skill, confirm it is installed: `ls .agents/skills/<name>`.
 
 **First-time setup (run once):**
 
 | Step | Do this |
 |------|---------|
-| 1. Install & scaffold | `"Set up an agentic OS for this project"` — runs the setup interview |
-| 2. Probe your environment | `/os-architect` → "probe my environment" — detects Copilot CLI, Gemini CLI, Cursor and saves a delegation strategy profile |
-| 3. Start evolving | `/os-architect` → describe your goal |
+| 1. Install & scaffold | `"Set up an agentic OS for this project"` — runs the `os-init` / `agentic-os-setup` interview |
+| 2. Human signing key (control plane) | `os-signing-setup` — human only; creates the key behind the approval gates |
+| 3. Probe your environment (lab path) | `/os-architect` → "probe my environment" — saves a delegation strategy profile |
 
-**After each session:**
-```bash
-/os-loop      # improvement retrospective — evals, friction events, Triple-Loop trigger
-/os-memory    # memory promotion (if /os-loop didn't fire it)
-```
+**After each session (lab path):** run `os-improvement-loop` for the retrospective, then
+`os-memory-manager` to promote learnings, if those skills are installed.
 
 → Full day-to-day workflow: **[USAGE.md](./USAGE.md)**
 
@@ -65,120 +67,113 @@ for reliable execution.
 
 | I want to... | Use this |
 |-------------|---------|
-| Start any improvement or creation task | `/os-architect` |
+| Start any non-trivial engineering task | `work-intake` |
+| Turn the control plane (work-intake gating, commit/push guards) on or off, or check its mode | `os-control-plane-mode` |
+| Work in an isolated worktree based on `origin/main` | `worktree-manager` |
+| Test a control-plane transition without touching real state | `transition-simulator` |
+| Start any skill improvement or creation task | `/os-architect` |
 | Discover which AI tools I have available | `/os-architect` → "probe my environment" |
-| Propose hypotheses and design experiments for a problem | `/os-architect` → "explore why X fails" or "generate hypotheses for Y" |
 | Improve a specific skill with evals | `/os-architect` → describe the skill + goal |
-| Run an unattended improvement loop | `/os-architect` → "improve X skill with a lab" → os-improvement-loop |
-| See eval score trends and progress charts | `os-improvement-report` skill |
-| Search experiment history (what was tested, what changed) | `python3 scripts/experiment_log.py query <term>` |
-| See a summary of all experiment results | `python3 scripts/experiment_log.py summary` |
-| Promote session learnings to long-term memory | `/os-memory` |
-| Check system health (event log, locks, memory) | `os-health-check` skill |
-| Fix a deadlocked agent (stale lock files) | `os-clean-locks` skill |
-| Turn the control plane (work-intake gating, commit/push guards) on or off, or check its mode | `os-control-plane-mode` skill |
+| Run an unattended improvement loop | `/os-architect` → "improve X skill with a lab" → `os-improvement-loop` |
+| See eval score trends and progress charts | `os-improvement-report` |
+| Search experiment history | `python3 scripts/experiment_log.py query <term>` |
+| Promote session learnings to long-term memory | `os-memory-manager` |
+| Check system health (event log, locks, memory) | `os-health-check` |
+| Fix a deadlocked agent (stale lock files) | `os-clean-locks` |
 | Verify os-architect still works after a change | `os-architect-tester` agent |
-| Get a full explanation of how the OS works | `os-guide` skill |
-| Audit files for unresolved TODOs | `todo-check` skill |
+| Get a full explanation of how the OS works | `os-guide` |
 
 ---
 
 ## What's in the Box
 
-### Front Door
-
-Start here for all evolution and improvement work. Everything else is called by these.
-
-| | Invoke as | Purpose |
-|-|-----------|---------|
-| `os-architect` | `/os-architect` or agent dispatch | Classifies intent, audits capabilities, brainstorms options using cheapest available model, dispatches work across Copilot CLI, Gemini CLI, or primary AI subagent — whichever fits your environment profile |
-| `os-environment-probe` | via os-architect or directly | Discovers available AI tools (Copilot CLI, Gemini CLI, Cursor), probes each, writes `context/memory/environment.md` with cheapest-model-per-task delegation strategy |
-
----
-
 ### Agents
-
-**Invoke directly:**
 
 | Agent | Purpose |
 |-------|---------|
-| `agentic-os-setup` | Conversational setup guide — scaffolds memory, hooks, and CLAUDE.md hierarchy for a new project |
+| `agentic-os-setup` | Conversational setup guide; wraps `os-init` in discovery, plan and approve phases |
+| `os-architect` (`agents/os-architect-agent.md`) | Front-door agent for ecosystem evolution; classifies intent into six categories and routes |
+| `improvement-intake-agent` | Plain-language intake for a skill improvement run; writes `improvement/run-config.json` and `session-brief.md` (called by `os-architect` for Category 3) |
+| `os-architect-tester` | Validates `os-architect` against pre-scripted scenario transcripts; run after any change to it |
 
-**Internal (called by os-architect — do not invoke directly):**
+### Skills (28)
 
-| Agent | Called for |
-|-------|-----------|
-| `improvement-intake-agent` | Category 3 (Lab Setup) requests — configures a skill improvement run |
-| `os-architect-tester` | Validation after any change to os-architect — runs 8 pre-scripted scenario transcripts |
-
----
-
-### Skills
-
-#### Setup & Environment
+#### Governed task pipeline (control plane)
 
 | Skill | Purpose |
 |-------|---------|
-| `os-init` | Scaffolds the OS environment — called by the setup agent or `/os-init` |
-| `os-environment-probe` | Discovers AI environments; writes delegation strategy to `context/memory/environment.md` |
+| `work-intake` | Intake gateway: read-only discovery, one question per turn, task registration, four-pillar `TASK_SPEC.md`, plan staging |
+| `worktree-manager` | Picks a native or portable (`.worktrees/<task-id>`) worktree based on `origin/main`; reconciles dirty state |
+| `transition-simulator` | Simulates and grades control-plane transitions on a separate simulation database and key |
+| `os-control-plane-mode` | Enables, disables or checks the control plane as one unit (member skills and rule, the two git guards, declared mode) |
+| `os-signing-setup` | Guides the human through creating the SSH key that authorizes the plan-approval, code-acceptance and closure gates |
 
-#### Planning & Evolution
-
-| Skill | Purpose |
-|-------|---------|
-| `os-architect` | SME-facing front-door skill — invokes the os-architect interview flow |
-| `os-evolution-planner` | Brainstorms 2-3 approach options (cheapest model), presents for selection, writes task plan + Copilot CLI delegation prompt |
-| `os-evolution-verifier` | Verifies os-architect causes actual evolution — simulation dispatch, artifact checks, PASS/PARTIAL/FAIL with evidence |
-| `os-experiment-log` | Persistent folder-based log of all experiment runs; `append / query / summary`; `result_type: numeric\|qualitative\|mixed` |
-
-#### Evaluation & Improvement
+#### Setup, environment & guidance
 
 | Skill | Purpose |
 |-------|---------|
-| `os-eval-lab-setup` | Bootstraps an isolated sibling-repo eval lab for safe iteration |
-| `os-eval-runner` | Stateless eval engine — scores proposed skill patches against locked `evals.json`; KEEP/DISCARD gate |
-| `os-eval-backport` | Reviews completed lab run; backports approved changes to master plugin sources |
-| `os-improvement-loop` | Orchestrates the full eval → mutate → re-eval cycle |
-| `os-improvement-report` | Generates improvement charts and trend data from eval history |
+| `os-init` | Probes, scaffolds or retrofits the OS and 3-layer memory; keeps `AGENTS.md` canonical; creates the simulation identity |
+| `os-environment-probe` | Discovers available AI environments; writes the delegation profile to `context/memory/environment.md` |
+| `os-guide` | Full OS reference: layers, interactions, patterns |
 
-#### Memory & Observability
+#### Evolution planning
+
+| Skill | Purpose |
+|-------|---------|
+| `os-architect` | SME-facing front door: classifies intent, audits capabilities, proposes orchestrate / update / create, dispatches |
+| `os-evolution-planner` | Brainstorms 2-3 approaches with the cheapest model, then writes the task plan and delegation prompt |
+| `os-evolution-verifier` | Checks that `os-architect` produced real artifacts; PASS / PARTIAL / FAIL with evidence |
+| `self-evolution` | Deterministic 6-node graph controller for self-evolution: worktree isolation, verifier sovereignty, Layer 2 persistence |
+| `repository-improvement` | Turns friction-cluster hotspot reports into systemic refactoring proposals for human review (Tier 3 friction) |
+
+#### Eval lab & improvement loop
+
+| Skill | Purpose |
+|-------|---------|
+| `os-eval-lab-setup` | Bootstraps an isolated sibling-repo eval lab: `evals.json`, `results.tsv`, `program.md` |
+| `os-eval-runner` | Stateless eval engine; scores a proposed change against locked `evals.json`; KEEP / DISCARD |
+| `os-improvement-loop` | Five-stage improvement cycle: orient, execute, verify, decide, close |
+| `os-skill-improvement` | RED-GREEN-REFACTOR cycle for one skill whose routing accuracy or score is low |
+| `os-eval-backport` | Reviews a completed lab run and backports approved changes to master plugin sources |
+| `os-experiment-log` | Persistent dated log of experiment runs in `context/experiment-log/` |
+| `os-improvement-report` | Charts and trend summaries across improvement cycles |
+| `evo-smoketest` | Fixture skill (temperature conversion) for the evolution end-to-end smoke test; not a user capability |
+
+#### Memory & observability
 
 | Skill | Purpose |
 |-------|---------|
 | `os-memory-manager` | Deduplicates and promotes session facts to long-term memory (`context/memory.md`) |
+| `os-health-check` | Deterministic liveness report over the event log, locks and memory |
+| `os-clean-locks` | Removes stale lock files left by crashed agents |
 
-#### Utilities (support tools — not part of the core loop)
+#### Audit & quality
 
 | Skill | Purpose |
 |-------|---------|
-| `optimize-agent-instructions` | Audits and rewrites AI agent instruction files |
-| `os-clean-locks` | Removes stale lock files to resolve deadlocked agents |
-| `os-control-plane-mode` | Enables, disables or checks the control plane as one unit (member skills and rule, the two git guards, declared mode), so the full pipeline can be used for large tasks and switched off for quick ones |
-| `os-signing-setup` | Guides the human through creating the SSH signing key that authorizes the plan-approval, code-acceptance and closure gates, plus the interactive signing self-test (see the skill's README.md) |
-| `os-health-check` | System diagnostics — inspects event log, memory state, lock status (migrated from agent, 2026-09-05) |
-| `todo-check` | Audits files for TODO comments |
-| `os-guide` | Full OS reference — layers, interactions, patterns |
+| `critical-auditor` | Full-system adversarial audit of plugins, skills, specs and orchestration |
+| `issue-resolution-reviewer` | Audits closed GitHub issues for genuine root-cause resolution |
+| `optimize-agent-instructions` | Audits and rewrites the canonical `AGENTS.md`; reports legacy mirrors |
+| `todo-check` | Scans a file for TODOs and debt markers |
 
 ---
 
-### Slash Commands
+### Invoking
 
-| Command | What it does |
-|---------|-------------|
-| `/os-init` | Bootstrap the project — triggers `agentic-os-setup` conversational architect |
-| `/os-loop` | Run full OS improvement cycle: eval, emit friction events, trigger Triple-Loop Retrospective if threshold crossed |
-| `/os-memory` | Force memory garbage collection and conflict resolution on the tiered memory system |
+No separate slash-command files ship with this plugin. Invoke any skill by name (for example
+`/os-architect`, `/os-init`) or describe the goal and let routing pick it.
 
 ---
 
 ### Automatic Hooks — no action needed
 
-These fire on every session without any user invocation.
+These fire without any user invocation.
 
 | Event | Script | Effect |
 |-------|--------|--------|
 | `SessionStart` | `session_start.py` | Surfaces memory context at the start of each session |
 | `PostToolUse` | `update_memory.py` | Triggers memory promotion after significant tool use |
+| `Stop` | `turn_evolution_guard.py` | Enforces map-debt and wiki updates at turn end |
 | `Stop` | `post_run_metrics.py` | Captures session errors and friction events to `context/events.jsonl` |
 
 ---
@@ -222,7 +217,7 @@ session through promoted memory.
 
 The improvement loop implements the [Karpathy 3-file autoresearch pattern](./references/meta/research/karpathy-autoresearch-3-file-eval.md)
 (eval / program / results). The architecture is independently validated by
-[Lee et al., arXiv:2603.28052 (2026)](./references/meta/research/meta-harness-lee-2026.md),
+Lee et al., arXiv:2603.28052 (2026),
 which demonstrates that code-space search over harness definitions — using an LLM proposer
 gated by objective evaluation — outperforms hand-designed harnesses across benchmarks.
 
@@ -271,4 +266,3 @@ attribution are documented in [the companion reference](./references/superpowers
 | `agent-scaffolders` | Spec + Factory — what ecosystem artifacts are and how to create them |
 | **`agent-agentic-os`** | **Operations — eval-gated improvement loop, experiment log, memory** |
 | `agent-orchestration` | Execution patterns — loop substrate used by os-improvement-loop |
-```

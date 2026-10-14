@@ -114,7 +114,7 @@ This is why `CLAUDE.md` has a 300-line discipline and skill descriptions are del
 Install the plugin, then ask your agent to "set up an agentic OS" or "run the agentic-os-setup agent." The setup agent runs a discovery interview and scaffolds the environment for your project. After that:
 
 - **Memory runs automatically** - session logs are written at the end of each session; the `os-memory-manager` promotes important facts to long-term memory
-- **Loops run on command** - run `/os-loop` to trigger a retrospective that mines the event log and proposes skill improvements
+- **Loops run on command** - run the `os-improvement-loop` skill (if installed) to trigger a retrospective that mines the event log and proposes skill improvements
 - **Health checks on demand** - run `os-health-check` to inspect system state, event log, and memory integrity
 
 The Triple-Loop learning system starts generating useful signal after a few sessions. By session ten, the skills and CLAUDE.md instructions are meaningfully more accurate for your specific workflow than they were at install.
