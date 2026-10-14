@@ -1,1 +1,0 @@
-../../../references/self-evolution-detailed-reference.md

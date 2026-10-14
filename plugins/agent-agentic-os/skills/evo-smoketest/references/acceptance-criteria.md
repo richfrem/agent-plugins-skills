@@ -1,1 +1,0 @@
-../../../references/evo-smoketest-acceptance-criteria.md

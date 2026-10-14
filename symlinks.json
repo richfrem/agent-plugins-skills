@@ -332,14 +332,8 @@
       "description": ""
     },
     {
-      "src": "plugins/agent-agentic-os/scripts/audit_map_debt.py",
-      "dst": "plugins/agent-agentic-os/skills/self-evolution/scripts/audit_map_debt.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/scripts/check_todos.py",
-      "dst": "plugins/agent-agentic-os/skills/todo-check/scripts/check_todos.py",
+      "src": "plugins/dev-utils/scripts/check_todos.py",
+      "dst": "plugins/dev-utils/skills/todo-check/scripts/check_todos.py",
       "strategy": "symlink",
       "description": ""
     },
@@ -1496,12 +1490,6 @@
       "description": ""
     },
     {
-      "src": "plugins/agent-agentic-os/references/sample-claude-md",
-      "dst": "plugins/agent-agentic-os/skills/optimize-agent-instructions/references/sample-claude-md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
       "src": "plugins/agent-scaffolders/scripts/scaffold_apm.py",
       "dst": "plugins/agent-scaffolders/skills/create-apm-package/scripts/scaffold_apm.py",
       "strategy": "symlink",
@@ -1910,24 +1898,6 @@
       "description": "Agent alias \u2192 link-checker-agent skill"
     },
     {
-      "src": "plugins/agent-agentic-os/rules/self-evolution-policy.md",
-      "dst": "plugins/agent-agentic-os/skills/self-evolution/references/self-evolution-policy.md",
-      "strategy": "symlink",
-      "description": "Plugin reference \u2192 Skill reference"
-    },
-    {
-      "src": "plugins/agent-agentic-os/rules/test-driven-development.md",
-      "dst": "plugins/agent-agentic-os/skills/self-evolution/references/test-driven-development.md",
-      "strategy": "symlink",
-      "description": "Plugin reference \u2192 Skill reference"
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/map-debt.md",
-      "dst": "plugins/agent-agentic-os/skills/self-evolution/references/map-debt.md",
-      "strategy": "symlink",
-      "description": "Plugin reference \u2192 Skill reference"
-    },
-    {
       "src": "plugins/dev-utils/rules/coding-conventions.md",
       "dst": "plugins/dev-utils/skills/coding-conventions-agent/references/coding-conventions.md",
       "strategy": "symlink",
@@ -1948,12 +1918,6 @@
     {
       "src": "plugins/agent-scaffolders/rules/plugin-architecture-policy.md",
       "dst": "plugins/agent-scaffolders/skills/audit-plugin/references/plugin-architecture-policy.md",
-      "strategy": "symlink",
-      "description": "Plugin reference \u2192 Skill reference"
-    },
-    {
-      "src": "plugins/agent-agentic-os/rules/destructive-action-guard.md",
-      "dst": "plugins/agent-agentic-os/skills/self-evolution/references/destructive-action-guard.md",
       "strategy": "symlink",
       "description": "Plugin reference \u2192 Skill reference"
     },
@@ -2074,18 +2038,6 @@
     {
       "src": "plugins/exploration-cycle-plugin/references/program.md",
       "dst": "plugins/exploration-cycle-plugin/skills/visual-companion/references/program.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/acceptance-criteria.md",
-      "dst": "plugins/agent-agentic-os/skills/optimize-agent-instructions/references/acceptance-criteria.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/acceptance-criteria.md",
-      "dst": "plugins/agent-agentic-os/skills/os-clean-locks/references/acceptance-criteria.md",
       "strategy": "symlink",
       "description": ""
     },
@@ -2566,12 +2518,6 @@
     {
       "src": "plugins/agent-agentic-os/references/acceptance-criteria.md",
       "dst": "plugins/agent-agentic-os/skills/os-skill-improvement/references/acceptance-criteria.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/acceptance-criteria.md",
-      "dst": "plugins/agent-agentic-os/skills/self-evolution/references/acceptance-criteria.md",
       "strategy": "symlink",
       "description": ""
     },
@@ -9164,36 +9110,6 @@
       "description": ""
     },
     {
-      "src": "plugins/agent-agentic-os/scripts/evolution_state.py",
-      "dst": "plugins/agent-agentic-os/skills/self-evolution/scripts/evolution_state.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/scripts/record_trace.py",
-      "dst": "plugins/agent-agentic-os/skills/self-evolution/scripts/record_trace.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/scripts/verify_evolution_receipt.py",
-      "dst": "plugins/agent-agentic-os/skills/self-evolution/scripts/verify_evolution_receipt.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/scripts/export_upstream_pr.py",
-      "dst": "plugins/agent-agentic-os/skills/self-evolution/scripts/export_upstream_pr.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/evolution-graph-nodes.md",
-      "dst": "plugins/agent-agentic-os/skills/self-evolution/references/evolution-graph-nodes.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
       "src": "plugins/agent-orchestration/references/acceptance-criteria.md",
       "dst": "plugins/agent-orchestration/skills/select-loop-strategy/references/acceptance-criteria.md",
       "strategy": "symlink",
@@ -9494,30 +9410,6 @@
       "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
     },
     {
-      "src": "plugins/agent-agentic-os/references/critical-auditor-acceptance-criteria.md",
-      "dst": "plugins/agent-agentic-os/skills/critical-auditor/references/acceptance-criteria.md",
-      "strategy": "symlink",
-      "description": "critical-auditor acceptance-criteria.md (issue-551 hub-and-spoke fix)"
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/critical-auditor-fallback-tree.md",
-      "dst": "plugins/agent-agentic-os/skills/critical-auditor/references/fallback-tree.md",
-      "strategy": "symlink",
-      "description": "critical-auditor fallback-tree.md (issue-551 hub-and-spoke fix)"
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/evo-smoketest-acceptance-criteria.md",
-      "dst": "plugins/agent-agentic-os/skills/evo-smoketest/references/acceptance-criteria.md",
-      "strategy": "symlink",
-      "description": "evo-smoketest acceptance-criteria.md (issue-551 hub-and-spoke fix)"
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/evo-smoketest-fallback-tree.md",
-      "dst": "plugins/agent-agentic-os/skills/evo-smoketest/references/fallback-tree.md",
-      "strategy": "symlink",
-      "description": "evo-smoketest fallback-tree.md (issue-551 hub-and-spoke fix)"
-    },
-    {
       "src": "plugins/agent-agentic-os/references/work-intake-detailed-reference.md",
       "dst": "plugins/agent-agentic-os/skills/work-intake/references/detailed-reference.md",
       "strategy": "symlink",
@@ -9530,18 +9422,6 @@
       "description": "github-issue-resolution-reviewer fallback tree"
     },
     {
-      "src": "plugins/agent-agentic-os/references/optimize-agent-instructions-detailed-reference.md",
-      "dst": "plugins/agent-agentic-os/skills/optimize-agent-instructions/references/detailed-reference.md",
-      "strategy": "symlink",
-      "description": "optimize-agent-instructions detailed-reference.md (issue-551 hub-and-spoke fix)"
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/optimize-agent-instructions-fallback-tree.md",
-      "dst": "plugins/agent-agentic-os/skills/optimize-agent-instructions/references/fallback-tree.md",
-      "strategy": "symlink",
-      "description": "optimize-agent-instructions fallback-tree.md (issue-551 hub-and-spoke fix)"
-    },
-    {
       "src": "plugins/agent-agentic-os/references/os-architect-acceptance-criteria.md",
       "dst": "plugins/agent-agentic-os/skills/os-architect/references/acceptance-criteria.md",
       "strategy": "symlink",
@@ -9552,12 +9432,6 @@
       "dst": "plugins/agent-agentic-os/skills/os-architect/references/fallback-tree.md",
       "strategy": "symlink",
       "description": "os-architect fallback-tree.md (issue-551 hub-and-spoke fix)"
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/os-clean-locks-fallback-tree.md",
-      "dst": "plugins/agent-agentic-os/skills/os-clean-locks/references/fallback-tree.md",
-      "strategy": "symlink",
-      "description": "os-clean-locks fallback-tree.md (issue-551 hub-and-spoke fix)"
     },
     {
       "src": "plugins/agent-agentic-os/references/os-environment-probe-detailed-reference.md",
@@ -9728,26 +9602,14 @@
       "description": "repository-improvement fallback-tree.md (issue-551 hub-and-spoke fix)"
     },
     {
-      "src": "plugins/agent-agentic-os/references/self-evolution-detailed-reference.md",
-      "dst": "plugins/agent-agentic-os/skills/self-evolution/references/detailed-reference.md",
-      "strategy": "symlink",
-      "description": "self-evolution detailed-reference.md (issue-551 hub-and-spoke fix)"
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/self-evolution-fallback-tree.md",
-      "dst": "plugins/agent-agentic-os/skills/self-evolution/references/fallback-tree.md",
-      "strategy": "symlink",
-      "description": "self-evolution fallback-tree.md (issue-551 hub-and-spoke fix)"
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/todo-check-acceptance-criteria.md",
-      "dst": "plugins/agent-agentic-os/skills/todo-check/references/acceptance-criteria.md",
+      "src": "plugins/dev-utils/references/todo-check-acceptance-criteria.md",
+      "dst": "plugins/dev-utils/skills/todo-check/references/acceptance-criteria.md",
       "strategy": "symlink",
       "description": "todo-check acceptance-criteria.md (issue-551 hub-and-spoke fix)"
     },
     {
-      "src": "plugins/agent-agentic-os/references/todo-check-fallback-tree.md",
-      "dst": "plugins/agent-agentic-os/skills/todo-check/references/fallback-tree.md",
+      "src": "plugins/dev-utils/references/todo-check-fallback-tree.md",
+      "dst": "plugins/dev-utils/skills/todo-check/references/fallback-tree.md",
       "strategy": "symlink",
       "description": "todo-check fallback-tree.md (issue-551 hub-and-spoke fix)"
     },

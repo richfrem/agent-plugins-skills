@@ -1,1 +1,0 @@
-../../../rules/test-driven-development.md

@@ -34,7 +34,9 @@ for reliable execution.
 ## Two Paths — Pick One
 
 This plugin holds two unrelated workflows. Neither requires the other. See
-[references/two-improvement-paths.md](./references/two-improvement-paths.md) for the full comparison.
+[references/two-improvement-paths.md](./references/two-improvement-paths.md) for the full comparison, and
+[references/agentic-os-skill-map.md](./references/agentic-os-skill-map.md) for what every skill does,
+grouped into five clusters.
 
 | | Governed task pipeline | Improvement lab |
 |---|---|---|
@@ -97,6 +99,8 @@ This plugin holds two unrelated workflows. Neither requires the other. See
 | `os-architect-tester` | Validates `os-architect` against pre-scripted scenario transcripts; run after any change to it |
 
 ### Skills (27)
+
+What each skill does and how the clusters relate: [Agentic OS Skill Map](./references/agentic-os-skill-map.md).
 
 #### Governed task pipeline (control plane)
 
@@ -248,6 +252,8 @@ attribution are documented in [the companion reference](./references/superpowers
 |---------|---------|
 | [USAGE.md](./USAGE.md) | Day-to-day workflow, experiment log close steps, append commands |
 | [SUMMARY.md](./SUMMARY.md) | Full architecture, OS analogy, three-tier lazy loading, scope and limitations |
+| [references/agentic-os-skill-map.md](./references/agentic-os-skill-map.md) | What every skill does, grouped into five clusters, and how the clusters relate |
+| [references/two-improvement-paths.md](./references/two-improvement-paths.md) | Control plane vs skill improvement lab, side by side |
 | [references/superpowers-boundary-and-attribution.md](./references/superpowers-boundary-and-attribution.md) | Runtime boundary, optional fallback conditions, adapted practices, and attribution |
 | [references/architecture/](./references/architecture/) | Canonical file structure, CLAUDE.md hierarchy, context folder patterns |
 | [references/operations/](./references/operations/) | Triple-loop strategy, operating protocols, loop scheduler, skill optimization guide |
