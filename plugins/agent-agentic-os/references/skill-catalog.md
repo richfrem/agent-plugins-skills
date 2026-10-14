@@ -2,7 +2,7 @@
 
 What each of the 28 skills does, grouped into clusters, and how the clusters relate. For audit
 findings (staleness, broken references, retirement candidates) see
-[skill-audit-findings-2026-10-14.md](skill-audit-findings-2026-10-14.md). For the two main workflows
+[skill-audit-findings.md](skill-audit-findings.md). For the two main workflows
 side by side, see [two-improvement-paths.md](two-improvement-paths.md).
 
 A project installs only part of this plugin. Check `.agents/ownership/agent-agentic-os.json`

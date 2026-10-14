@@ -1,4 +1,4 @@
-# agent-agentic-os Skill Audit Findings (2026-10-14)
+# agent-agentic-os Skill Audit Findings
 
 Staleness, broken references and retirement candidates for all 28 skills. For what each skill does
 and how the clusters relate, see [skill-catalog.md](skill-catalog.md).
