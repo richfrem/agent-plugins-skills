@@ -1,4 +1,4 @@
-# Acceptance Criteria: issue-resolution-reviewer
+# Acceptance Criteria: github-issue-resolution-reviewer
 
 ## ✅ Scenarios that must trigger
 - "Audit the issues we closed last week for resolution quality."

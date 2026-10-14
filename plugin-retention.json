@@ -14,7 +14,6 @@
       "skills": {
         "critical-auditor": true,
         "evo-smoketest": false,
-        "issue-resolution-reviewer": true,
         "optimize-agent-instructions": true,
         "os-architect": true,
         "os-clean-locks": true,
@@ -179,6 +178,7 @@
     },
     "dev-utils": {
       "skills": {
+        "github-issue-resolution-reviewer": true,
         "adr-management": false,
         "coding-conventions-agent": false,
         "context-bundler": true,

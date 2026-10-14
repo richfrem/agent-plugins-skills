@@ -1,1 +1,0 @@
-../../../references/issue-resolution-reviewer/acceptance-criteria.md

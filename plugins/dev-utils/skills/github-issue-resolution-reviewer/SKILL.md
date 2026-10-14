@@ -1,18 +1,19 @@
 ---
-name: issue-resolution-reviewer
-plugin: agent-agentic-os
+name: github-issue-resolution-reviewer
+plugin: dev-utils
 description: >
   Audits closed GitHub issues to verify whether root causes were genuinely resolved,
-  if follow-on execution friction appeared, or if systemic improvements were retained.
+  whether follow-on friction appeared, or whether systemic improvements were retained.
   Trigger with "audit closed issues", "review issue resolution quality", "was this issue
   actually fixed", or as a post-closure quality gate on issues labeled resolution:fixed
-  or resolution:superseded. Migrated from the former issue-resolution-reviewer agent
-  (2026-09-05): deterministic audit against fixed criteria, no interview, no code writes
-  — fits the skill archetype, not the agent archetype.
+  or resolution:superseded.
+  USE ONLY for read-only audits of already-closed issues.
+  DO NOT USE for logging or commenting on issues (use `github-issue-agent`), ranking them
+  (use `github-issue-prioritizer`), or resolving them (use `github-issue-pr-lifecycle-agent`).
 allowed-tools: Bash, Read
 ---
 
-# Issue Resolution Reviewer (`issue-resolution-reviewer`)
+# GitHub Issue Resolution Reviewer (`github-issue-resolution-reviewer`)
 
 Audits closed repository issues labeled `resolution:fixed` or `resolution:superseded` to verify whether root causes were genuinely fixed or recurred.
 
@@ -21,6 +22,7 @@ Audits closed repository issues labeled `resolution:fixed` or `resolution:supers
 - [Critical Constraints](#critical-constraints)
 - [Quick start](#quick-start)
 - [Workflow](#workflow)
+- [Related GitHub issue skills](#related-github-issue-skills)
 - [Verification](#verification)
 - [References](#references)
 
@@ -45,6 +47,18 @@ gh issue list --state closed --label "resolution:fixed" --limit 10
 3. **Classify**: Assign `CONFIRMED_RESOLVED`, `RECURRING_FRICTION`, or `INCONCLUSIVE`.
 4. **Produce Audit Table**: Present findings (`Issue # | Title | Classification | Evidence`).
 5. **Human Gate**: If recurring friction is detected, ask user before reopening or logging consolidation issues.
+
+## Related GitHub issue skills
+
+This skill closes the loop on the `dev-utils` GitHub issue family. It only reads; the others act.
+
+| Skill | Role | Hand off when |
+|---|---|---|
+| `github-issue-agent` | Logs friction and bugs as deduplicated issues | Recurring friction needs a new or consolidated issue (after the human gate) |
+| `github-issue-backlog-agent` | Promotes local `tasks/*.md` items into issues | A finding is still only a local task note |
+| `github-issue-prioritizer` | Ranks issues P0-P3 and syncs priority fields | A recurring issue needs re-ranking |
+| `github-issue-worktree-agent` | Creates and cleans `.worktrees/issue-NNN` | A reopened issue needs an isolated workspace |
+| `github-issue-pr-lifecycle-agent` | Runs issue to worktree to PR to closure | A reopened issue needs to be fixed again |
 
 ## Verification
 

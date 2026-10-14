@@ -34,13 +34,13 @@ Current scale (read from `plugins/` — verify with `find plugins -name SKILL.md
 ```
 [Project Root]/
 ├── plugins/                        # CANONICAL SOURCE — authoritative for all skills/agents
-│   ├── agent-agentic-os/           # OS improvement loop, memory, evolution planning (28 skills)
+│   ├── agent-agentic-os/           # OS improvement loop, memory, evolution planning (27 skills)
 │   ├── agent-orchestration/        # OS-decoupled execution primitives (10 skills)
 │   ├── agent-memory/               # RLM summary cache + ChromaDB vector store (13 skills)
 │   ├── agent-scaffolders/          # Plugin/skill/agent/rule scaffolding & auditing (27 skills)
 │   ├── cli-agents/                 # Multi-LLM CLI dispatch (Claude/Copilot/Gemini/Agy/Codex) (11 skills)
 │   ├── dependency-management/      # pip-compile / dependency tier workflow (1 skill)
-│   ├── dev-utils/                  # ADR mgmt, symlinks, context bundling, GitHub issues, worktrees (16 skills)
+│   ├── dev-utils/                  # ADR mgmt, symlinks, context bundling, GitHub issues, worktrees (17 skills)
 │   ├── exploration-cycle-plugin/   # Business discovery workflow + SQLite control plane (20 skills)
 │   ├── obsidian-wiki-engine/       # Karpathy-style LLM wiki over the codebase (10 skills)
 │   ├── plugin-manager/             # Install/remove/sync plugins into target projects (3 skills)
@@ -174,7 +174,7 @@ first — no casual convenience bypasses to the authorization gate or path enfor
 Karpathy-style LLM wiki generation over the codebase; standalone or combined with agent-memory as
 the third leg of the Super-RAG stack.
 
-### 4.9. Plugin: dev-utils (16 skills)
+### 4.9. Plugin: dev-utils (17 skills)
 Consolidated utilities: ADR management, coding-conventions enforcement,
 context bundling (including Multi-Persona Fan-Out mode for parallel adversarial plan
 review), mermaid conversion, HuggingFace init/upload, humanize, link-checking, context

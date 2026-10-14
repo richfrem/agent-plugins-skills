@@ -9332,10 +9332,10 @@
       "description": "os-health-check skill acceptance criteria"
     },
     {
-      "src": "plugins/agent-agentic-os/references/issue-resolution-reviewer/acceptance-criteria.md",
-      "dst": "plugins/agent-agentic-os/skills/issue-resolution-reviewer/references/acceptance-criteria.md",
+      "src": "plugins/dev-utils/references/github-issue-resolution-reviewer-acceptance-criteria.md",
+      "dst": "plugins/dev-utils/skills/github-issue-resolution-reviewer/references/acceptance-criteria.md",
       "strategy": "symlink",
-      "description": "issue-resolution-reviewer skill acceptance criteria"
+      "description": "github-issue-resolution-reviewer skill acceptance criteria"
     },
     {
       "src": "plugins/agent-agentic-os/references/repository-improvement/acceptance-criteria.md",
@@ -9524,10 +9524,10 @@
       "description": "work-intake detailed-reference.md (issue-551 hub-and-spoke fix)"
     },
     {
-      "src": "plugins/agent-agentic-os/references/issue-resolution-reviewer-fallback-tree.md",
-      "dst": "plugins/agent-agentic-os/skills/issue-resolution-reviewer/references/fallback-tree.md",
+      "src": "plugins/dev-utils/references/github-issue-resolution-reviewer-fallback-tree.md",
+      "dst": "plugins/dev-utils/skills/github-issue-resolution-reviewer/references/fallback-tree.md",
       "strategy": "symlink",
-      "description": "issue-resolution-reviewer fallback-tree.md (issue-551 hub-and-spoke fix)"
+      "description": "github-issue-resolution-reviewer fallback tree"
     },
     {
       "src": "plugins/agent-agentic-os/references/optimize-agent-instructions-detailed-reference.md",
@@ -12222,6 +12222,12 @@
       "dst": "plugins/agent-scaffolders/skills/create-agents-md/assets/templates/AGENTS.md.jinja",
       "strategy": "symlink",
       "description": "AGENTS.md Jinja template symlink for create-agents-md"
+    },
+    {
+      "src": "plugins/dev-utils/references/map-debt.md",
+      "dst": "plugins/dev-utils/skills/github-issue-resolution-reviewer/references/map-debt.md",
+      "strategy": "symlink",
+      "description": "github-issue-resolution-reviewer map-debt ledger"
     }
   ]
 }

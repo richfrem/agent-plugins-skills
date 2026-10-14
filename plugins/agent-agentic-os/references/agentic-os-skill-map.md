@@ -1,7 +1,7 @@
 # Agentic OS Skill Map
 
 Read this before routing to, recommending, or handing off to any `agent-agentic-os` skill. It says
-what each of the 28 skills does, grouped by purpose and function, how the clusters relate, and
+what each of the 27 skills does, grouped by purpose and function, how the clusters relate, and
 review findings for each skill. For the two main workflows side by side, see
 [two-improvement-paths.md](two-improvement-paths.md).
 
@@ -28,7 +28,7 @@ A project installs only part of this plugin. Check `.agents/ownership/agent-agen
 | 2. Improvement lab | 9 | Run experiments that raise one skill's eval score | Skills and agents in this ecosystem |
 | 3. Self-evolution | 5 | Plan, apply and verify changes to the plugins and the OS itself | This ecosystem |
 | 4. Kernel and memory | 3 | Maintain the event bus, locks and memory files | Shared by clusters 2 and 3 |
-| 5. Audit utilities | 4 | One-shot reviews of code, issues or instruction files | Any repository |
+| 5. Audit utilities | 3 | One-shot reviews of code, issues or instruction files | Any repository |
 | 6. Guidance | 1 | Explain the OS to a new user | Orientation |
 
 ## How the clusters relate
@@ -128,7 +128,6 @@ One-shot reviews. Each takes a target and returns a report.
 | Skill | What it does |
 |---|---|
 | `critical-auditor` | Adversarial review of a skill or plugin: maps its gates and mutators, tries to bypass them, writes repro scenarios, and ranks findings P0 to P2. |
-| `issue-resolution-reviewer` | Checks closed GitHub issues against their fix commits, CI logs and Map Debt, and classifies each as confirmed resolved, recurring, or inconclusive. Asks before reopening anything. |
 | `optimize-agent-instructions` | Audits and rewrites a repository's `AGENTS.md` to a lean skeleton and checks that `CLAUDE.md` is only a short pointer. |
 | `todo-check` | Scans a file or directory for `TODO`, `FIXME`, `HACK` and `XXX` markers. Also the demo target in `os-improvement-loop`'s quick start. |
 
@@ -196,7 +195,6 @@ audit date. Verdicts: **Keep**, **Refresh** (useful, but contains stale content)
 | Skill | Enabled | Purpose | Findings | Verdict |
 |---|---|---|---|---|
 | `critical-auditor` | no | Adversarial full-system audit | Calls `scripts/audit_skill.py` (an `agent-scaffolders` script, not in the folder); overlaps `agent-scaffolders` audit skills and `cli-agents` red-team personas | Review |
-| `issue-resolution-reviewer` | no | Checks closed GitHub issues were really fixed | Fits `dev-utils` (GitHub issue family) better than this plugin | Review: placement |
 | `optimize-agent-instructions` | no | Audits and rewrites `AGENTS.md` | Superseded by `agent-scaffolders:create-agents-md` and `audit-agents-md` (added in #696); links `references/agents-md-contract.md`, which lives in that plugin; Gemini CLI (6) | Review: strongest retirement candidate |
 | `todo-check` | no | Scans a file for TODO markers | Trivial as a capability, but `os-improvement-loop`'s quick start uses it as the demo eval target | Review: keep only as a lab fixture |
 
@@ -245,7 +243,6 @@ Decisions for the owner:
 - Fold `os-skill-improvement` into `os-improvement-loop`, and keep `todo-check` only as a fixture?
 - Repair or retire `os-evolution-verifier` (its scenario script does not exist)?
 - Rewrite `os-guide` around the two paths, or retire it?
-- Move `issue-resolution-reviewer` to `dev-utils`?
 - Remove or repoint the 17 dangling pointer files?
 
 ### Evidence and limits

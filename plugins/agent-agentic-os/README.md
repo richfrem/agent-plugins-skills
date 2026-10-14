@@ -96,7 +96,7 @@ This plugin holds two unrelated workflows. Neither requires the other. See
 | `improvement-intake-agent` | Plain-language intake for a skill improvement run; writes `improvement/run-config.json` and `session-brief.md` (called by `os-architect` for Category 3) |
 | `os-architect-tester` | Validates `os-architect` against pre-scripted scenario transcripts; run after any change to it |
 
-### Skills (28)
+### Skills (27)
 
 #### Governed task pipeline (control plane)
 
@@ -152,7 +152,6 @@ This plugin holds two unrelated workflows. Neither requires the other. See
 | Skill | Purpose |
 |-------|---------|
 | `critical-auditor` | Full-system adversarial audit of plugins, skills, specs and orchestration |
-| `issue-resolution-reviewer` | Audits closed GitHub issues for genuine root-cause resolution |
 | `optimize-agent-instructions` | Audits and rewrites the canonical `AGENTS.md`; reports legacy mirrors |
 | `todo-check` | Scans a file for TODOs and debt markers |
 
