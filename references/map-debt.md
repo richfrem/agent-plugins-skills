@@ -1567,9 +1567,9 @@ Persistent tracking of architectural friction, structural anomalies, and unclose
 - Cycle/Session ID: fix-docs-counts-and-graph-state-names
 - Artifact affected: `plugins/agent-memory/tests/test_memory_layers.py::test_self_evolution_skill_line_budget`
 - Friction observed: The test asserts `plugins/agent-agentic-os/skills/self-evolution/SKILL.md` exists and stays within a line budget. The skill was retired at the owner's instruction, so the test now fails (it passes on origin/main).
-- Why not fixed now: Iron Law 5 (Verifier Sovereignty): an implementation agent must not modify acceptance tests; needs the owner's instruction.
-- Recommended fix / fix applied: Owner decides: delete the test, or repoint it at a surviving skill.
-- Evidence/repro: `python3 -m pytest plugins/agent-memory/tests/test_memory_layers.py -q`
+- Why not fixed now: Fixed on the same branch after the owner's instruction (Iron Law 5).
+- Recommended fix / fix applied: Deleted the test at the owner's instruction.
+- Evidence/repro: `python3 -m pytest plugins/agent-memory/tests -q` passes.
 - Severity: L
 - Repeat: NO
-- Status: OPEN
+- Status: RESOLVED

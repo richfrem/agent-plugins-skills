@@ -26,14 +26,6 @@ def test_memory_management_skill_line_budget():
     assert len(lines) <= 100, f"memory-management/SKILL.md has {len(lines)} lines (budget <= 100)"
 
 
-def test_self_evolution_skill_line_budget():
-    """Asserts plugins/agent-agentic-os/skills/self-evolution/SKILL.md is <= 100 lines."""
-    skill_file = REPO_ROOT / "plugins" / "agent-agentic-os" / "skills" / "self-evolution" / "SKILL.md"
-    assert skill_file.exists()
-    lines = skill_file.read_text(encoding="utf-8").splitlines()
-    assert len(lines) <= 100, f"self-evolution/SKILL.md has {len(lines)} lines (budget <= 100)"
-
-
 def test_native_retrieval_latency(tmp_path):
     """Asserts direct file reads on wiki/ and references/ complete in < 50ms without daemons."""
     test_wiki = tmp_path / "wiki"
