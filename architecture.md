@@ -26,7 +26,7 @@ Current scale (read from `plugins/` — verify with `find plugins -name SKILL.md
 `find plugins/*/agents -maxdepth 1 -name '*.md' | wc -l` before quoting a number elsewhere;
 `plugins/spec-kitty-plugin` was removed 2026-09-05, never part of this count):
 - **10 plugins**
-- **137 skills** (active SKILL.md definitions across plugins)
+- **139 skills** (active SKILL.md definitions across plugins)
 - **46 agent definitions** (`agents/*.md` across plugins)
 
 ## 2. Project Structure
@@ -37,8 +37,8 @@ Current scale (read from `plugins/` — verify with `find plugins -name SKILL.md
 │   ├── agent-agentic-os/           # OS improvement loop, memory, evolution planning (28 skills)
 │   ├── agent-orchestration/        # OS-decoupled execution primitives (10 skills)
 │   ├── agent-memory/               # RLM summary cache + ChromaDB vector store (13 skills)
-│   ├── agent-scaffolders/          # Plugin/skill/agent/rule scaffolding & auditing (22 skills)
-│   ├── cli-agents/                 # Multi-LLM CLI dispatch (Claude/Copilot/Gemini/Agy) (11 skills)
+│   ├── agent-scaffolders/          # Plugin/skill/agent/rule scaffolding & auditing (27 skills)
+│   ├── cli-agents/                 # Multi-LLM CLI dispatch (Claude/Copilot/Gemini/Agy/Codex) (11 skills)
 │   ├── dependency-management/      # pip-compile / dependency tier workflow (1 skill)
 │   ├── dev-utils/                  # ADR mgmt, symlinks, context bundling, GitHub issues, worktrees (16 skills)
 │   ├── exploration-cycle-plugin/   # Business discovery workflow + SQLite control plane (20 skills)
@@ -148,7 +148,7 @@ plugins: RLM (dense-summary keyword cache, O(1) lookup, zero deps) and vector-db
 embeddings). Can run standalone or combined as part of a "Super-RAG" stack with
 `obsidian-wiki-engine`.
 
-### 4.5. Plugin: agent-scaffolders (24 skills)
+### 4.5. Plugin: agent-scaffolders (27 skills)
 Tooling for creating and auditing ecosystem components: `create-plugin`, `create-skill`, `create-rule`
 (invariant-driven, zero-fluff agent rules), `create-sub-agent`, `create-agents-md` (progressive-disclosure root files),
 `audit-plugin`, `audit-skill`, `audit-sub-agent`, `audit-rule`, and `audit-agents-md` (timeless root instruction auditing),
@@ -157,7 +157,7 @@ mining, standalone command, path-repair, deep-audit, and self-audit wrappers are
 
 ### 4.6. Plugin: cli-agents (11 skills)
 Multi-LLM task router (`run_agent.py`) consolidated from claude-cli/copilot-cli/gemini-cli.
-6 backends, `--isolated` security contract, 11 expert-persona sub-agents (architect-review,
+6 backends, `--isolated` security contract, 12 expert-persona sub-agents (architect-review,
 security-auditor, tdd-contract-reviewer, red-team-reviewer, etc.) — the first three form the
 "Graph Planning Phase 1 Fan-Out Trio" per `graph-planning-superpowers-policy.md`. Model selection
 driven by `references/copilot-models.json` cost tiers. Gemini CLI consumer access ended June 18,

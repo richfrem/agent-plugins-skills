@@ -50,8 +50,8 @@ stateDiagram-v2
     PARALLEL_READS --> SYNC_BARRIER: Join & Check Hash
     SYNC_BARRIER --> SEQUENTIAL_MUTATION: Strict Total Order
     SEQUENTIAL_MUTATION --> VERIFIER_GATE: Hash & Exit 0
-    VERIFY_GATE --> SUCCESS: All Nodes Done
-    VERIFY_GATE --> FALLBACK: On Failure
+    VERIFIER_GATE --> SUCCESS: All Nodes Done
+    VERIFIER_GATE --> FALLBACK: On Failure
     FALLBACK --> SEQUENTIAL_MUTATION: Substituted
     FALLBACK --> ROLLBACK_AND_HALT: Fallback Failed
 ```

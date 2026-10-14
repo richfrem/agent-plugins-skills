@@ -296,9 +296,9 @@ DISPATCH: [copilot-cli | gemini-cli | claude-subagents — from run-config.json]
 
 ## Routing After Handoff
 
-Once the user says "start the run", hand off to `improvement-lifecycle-orchestrator`.
-The orchestrator reads the `HANDOFF_BLOCK` above and the files it references.
+Once the user says "start the run", hand off to the `os-improvement-loop` skill.
+The loop reads the `HANDOFF_BLOCK` above and the files it references.
 
-The orchestrator owns everything from IDLE → RUNNING onward.
+The loop owns everything from IDLE → RUNNING onward.
 The intake agent does not re-enter once the run has started, unless the user explicitly
 restarts intake (e.g. to change the target skill or reset the run depth).
