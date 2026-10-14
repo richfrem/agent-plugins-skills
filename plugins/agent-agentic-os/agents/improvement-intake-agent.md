@@ -7,7 +7,6 @@ description: >
   Produces a run-config.json and a session-brief.md that downstream agents consume.
   No technical knowledge assumed. Interactive — runs in the main session, not CLI-dispatched.
   Use at the start of any improvement session: first run, resume, or targeted re-evaluation.
-dependencies: ["skill:os-state", "skill:os-memory-manager"]
 model: inherit
 color: green
 tools: ["Read", "Write"]
@@ -235,12 +234,17 @@ if 'improvement-intake-agent' not in d.get('permitted_agents', []):
 "
 fi
 
-python3 plugins/agent-agentic-os/scripts/kernel.py emit_event \
-  --agent improvement-intake-agent \
-  --type lifecycle \
-  --action intake-complete \
-  --status success \
-  --summary "Intake complete for $(jq -r .target_skill improvement/run-config.json) — $(jq -r .run_depth.label improvement/run-config.json) run configured"
+# The OS kernel is installed by os-init at context/kernel.py; skip the event if it is absent.
+if [ -f context/kernel.py ]; then
+  python3 context/kernel.py emit_event \
+    --agent improvement-intake-agent \
+    --type lifecycle \
+    --action intake-complete \
+    --status success \
+    --summary "Intake complete for $(jq -r .target_skill improvement/run-config.json) — $(jq -r .run_depth.label improvement/run-config.json) run configured"
+else
+  echo "[Intake] context/kernel.py not found; intake-complete event skipped"
+fi
 ```
 
 ---

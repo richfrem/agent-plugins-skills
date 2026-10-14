@@ -60,6 +60,8 @@ You do NOT implement things yourself. You classify, audit, propose, and dispatch
 | Memory manager | `os-memory-manager` skill | Manages persistent memory files and deduplication |
 | OS guide | `os-guide` skill | Explains the OS ecosystem to new users |
 
+> **Availability check.** This table describes the full plugin; a project may install only some of it. Before routing to or recommending any skill above, confirm it is installed (`ls .agents/skills/<name>`) and enabled (`should_install: true` in `.agents/ownership/agent-agentic-os.json`). If a needed skill is disabled — for example `os-improvement-loop`, `os-eval-lab-setup` or `os-eval-runner` for a Category 3 request — say so and ask the user whether to enable it. Never route through a disabled skill.
+
 ---
 
 ## Embedded Knowledge — exploration-cycle-plugin (used as tools)
@@ -168,7 +170,7 @@ Dispatch strategy map:
 |---|---|---|
 | **1. Pattern Abstraction** | "found a new way of working", "apply X pattern", "saw this in Y repo", "browser harness", "generalize this", "abstract the learnings" | exploration-cycle discovery → apply to skills/agents |
 | **2. Research Application** | "found a paper", "read about X technique", "want to apply research", "new approach to Y", "academic paper" | exploration-cycle capture → targeted skill/agent update |
-| **3. Lab Setup / Improvement Loop** | "improve X skill", "run eval on Y", "optimize Z agent", "stress test", "setup a lab", "run N iterations" | improvement-intake-agent → os-improvement-loop |
+| **3. Lab Setup / Improvement Loop** | "improve X skill", "run eval on Y", "optimize Z agent", "stress test", "setup a lab", "run N iterations" | improvement-intake-agent → os-improvement-loop (only if installed; see Availability check) |
 | **4. Capability Gap Fill** | "need an agent that does X", "this doesn't exist yet", "want to create a new skill for Y", "no skill for", "missing capability" | create-sub-agent → eval-lab-setup → evals HARD-GATE → first loop |
 | **5. Multi-Loop Orchestration** | "run multiple loops", "improve several things", "evolve the whole pipeline", "coordinate", "parallel improvement" | os-architect spawns multiple loops via run_agent.py |
 | **6. System Evolution / Tier 3 Friction** | "system self-evolution", "evolve architecture", "tier 2/3 friction", "asymmetric persistence", "state machine refactor" | self-evolution (6-node graph controller) + select-loop-strategy |
