@@ -25,7 +25,9 @@ A project installs only part of this plugin. Check `.agents/ownership/agent-agen
 ## How the clusters relate
 
 **Cluster 1: Control Plane stands alone.** It is a general task pipeline: it does not depend on
-Cluster 2, and Cluster 2 does not depend on it. Its state is `context/control_plane.db`; its authority is
+Cluster 2. The one link runs the other way: when Cluster 2 updates or creates a skill, it registers
+that work as a control-plane task (`agent_control.py`, task type `EVOLUTION`) and logs a prior-art
+scan, so lab changes pass the same gate. Its state is `context/control_plane.db`; its authority is
 the human's SSH signature at Gate 1, Gate 3 and closure. It borrows execution patterns from the
 separate `agent-orchestration` plugin (`select-loop-strategy`, `graph-planner`, `graph-execution`).
 
