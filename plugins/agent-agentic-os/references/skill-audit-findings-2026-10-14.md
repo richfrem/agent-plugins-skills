@@ -1,58 +1,18 @@
-# agent-agentic-os Skill Catalog and Audit (2026-10-14)
+# agent-agentic-os Skill Audit Findings (2026-10-14)
 
-All 28 skills in this plugin, grouped by function, with how they relate and which ones look stale.
+Staleness, broken references and retirement candidates for all 28 skills. For what each skill does
+and how the clusters relate, see [skill-catalog.md](skill-catalog.md).
 This is a point-in-time audit. Recheck the evidence before acting on any verdict, and never delete a
 skill without an explicit instruction naming its path (Skill Deletion Guard).
 
 ## Contents
 
-- [Six functional groups](#six-functional-groups)
-- [How the groups relate](#how-the-groups-relate)
-- [Per-skill catalog](#per-skill-catalog)
+- [Per-skill verdicts](#per-skill-verdicts)
 - [Cross-cutting findings](#cross-cutting-findings)
 - [Recommended next steps](#recommended-next-steps)
 - [Evidence and limits](#evidence-and-limits)
 
-## Six functional groups
-
-| Group | Skills | What it is for |
-|---|---|---|
-| **A. Governed delivery (control plane)** | `work-intake`, `worktree-manager`, `transition-simulator`, `os-control-plane-mode`, `os-signing-setup`, `os-init` | Large engineering work in *any* repository, under signed human gates. Not specific to this plugin ecosystem. The most-used path. |
-| **B. Improvement lab** | `os-architect`, `os-environment-probe`, `os-eval-lab-setup`, `os-eval-runner`, `os-improvement-loop`, `os-skill-improvement`, `os-eval-backport`, `os-experiment-log`, `os-improvement-report` | Targeted experiments that improve one skill or agent against locked evals. |
-| **C. Ecosystem self-evolution** | `os-evolution-planner`, `os-evolution-verifier`, `self-evolution`, `repository-improvement`, `evo-smoketest` | Changing the plugins and the OS itself: plan-and-delegate, a 6-node evolution controller, Tier 3 friction proposals, and the controller's smoke-test fixture. |
-| **D. Runtime kernel & memory** | `os-memory-manager`, `os-health-check`, `os-clean-locks` | The event bus, locks and memory files that `context/kernel.py` maintains. |
-| **E. Standalone audit utilities** | `critical-auditor`, `issue-resolution-reviewer`, `optimize-agent-instructions`, `todo-check` | One-shot reviews that use none of the workflows above. |
-| **F. Guidance** | `os-guide` | Explains the OS to a new user. |
-
-Group A and group B share no state and no mechanism. See
-[two-improvement-paths.md](two-improvement-paths.md). Group C overlaps both: it changes the
-ecosystem like B, but with its own gated state machine, like A.
-
-## How the groups relate
-
-```text
-A. Governed delivery
-   os-init ─► work-intake ─► (select-loop-strategy / graph-planner, agent-orchestration)
-          ─► Gate 1 ─► worktree-manager ─► execute ─► Gate 3 ─► DONE
-   os-signing-setup supplies the human key for the gates;
-   transition-simulator tests the state machine;
-   os-control-plane-mode switches the whole group on or off.
-
-B. Improvement lab
-   os-architect ─► (improvement-intake-agent) ─► os-eval-lab-setup
-          ─► os-improvement-loop ⇄ os-eval-runner  (os-skill-improvement = single-skill variant)
-          ─► os-eval-backport ─► os-experiment-log ─► os-improvement-report
-   os-environment-probe feeds os-architect's choice of delegation backend.
-
-C. Ecosystem self-evolution
-   os-architect ─► os-evolution-planner ─► delegated change ─► os-evolution-verifier
-   self-evolution: its own 6-node controller (evo-smoketest is its fixture)
-   repository-improvement: consumes friction-cluster reports from dev-utils:github-issue-agent
-
-D. Kernel & memory: used by B and C (event bus, ledger, memory promotion), not needed by A.
-```
-
-## Per-skill catalog
+## Per-skill verdicts
 
 Enabled = `should_install: true` in this repo's `.agents/ownership/agent-agentic-os.json` on the
 audit date. Verdicts: **Keep**, **Refresh** (useful, but contains stale content), **Repair**
@@ -129,9 +89,15 @@ audit date. Verdicts: **Keep**, **Refresh** (useful, but contains stale content)
 4. **22 symlinks not recorded in `symlinks.json`.** They resolve and are relative, so install works,
    but Section 5 of the plugin architecture policy requires every link to be in the manifest, and
    `symlink_manager.py diagnose` only checks recorded links.
-5. **17 dangling path-pointer files in `references/`** at the plugin root (e.g. `architecture.md`,
-   `memory-hygiene.md`). Pointer files are a supported form that the installer resolves; these point
-   at targets that no longer exist, so they install as one-line path text. 14 are referenced nowhere.
+5. **Pointer chains install as one-line stubs.** Skill links such as
+   `os-guide/references/architecture.md` point at plugin-root pointer files such as
+   `references/architecture.md`, whose text is `../../../references/architecture/architecture.md`.
+   That path is correct from the skill folder, but `plugin_installer.py` resolves a pointer relative
+   to the pointer file itself (`real_src.parent`), where it points outside the plugin. The target is
+   not found, so the installer copies the pointer text. Already visible in installed, enabled skills:
+   `.agents/skills/os-init/references/architecture.md` and `project-setup-guide.md`, plus one file
+   each in `dependency-management`, `create-skill` and `audit-plugin`. 17 such pointers sit in this
+   plugin's `references/`. Fix either the pointer text or the installer's resolution base.
 6. **Groups B, C and E are entirely disabled in this repo.** Everything enabled is in group A, plus
    `os-health-check`. That matches how the plugin is used: the control plane daily, the lab
    occasionally.
