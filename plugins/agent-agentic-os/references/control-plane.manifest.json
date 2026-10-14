@@ -38,10 +38,6 @@
       "reason": "Verifies the substrate and understands the disabled mode; must stay installed in both modes."
     },
     {
-      "component": "skills/self-evolution",
-      "reason": "The evolution loop is independent of work-intake gating; it only mentions the control plane for optional prior-art logging."
-    },
-    {
       "component": "skills/worktree-manager",
       "reason": "General-purpose worktree selection and cleanup guidance; it mentions the control plane in one line only (retain the task's gates) and is useful with or without gating."
     },
