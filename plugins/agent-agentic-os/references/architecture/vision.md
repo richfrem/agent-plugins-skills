@@ -30,7 +30,7 @@ This document captures architectural direction for the next evolution of the Age
 ## Current State
 
 The agentic-os is a local runtime with:
-- File-based session memory (`os-memory-manager`)
+- File-based session memory (`os-lab-memory`)
 - JSON/JSONL event bus (flat files, polling-based)
 - Tightly coupled subsystems (memory, loops, hooks baked in)
 - Single-machine scope
@@ -114,7 +114,7 @@ Koubaa formalizes three latency classes as first-class OS scheduling primitives:
 | **SRT** (Soft Real-Time) | Occasional misses tolerable; user-perceived responsiveness critical | Chat assistants, screen copilots, live captioning | First-token 150-300 ms; full-turn 0.8-1.2 s |
 | **DT** (Delay-Tolerant) | No hard deadline; maximize throughput per unit cost | Overnight batch analytics, report generation | 60-120 s acceptable; cost-per-token optimized |
 
-For the Agentic OS plugin: interactive user-facing agents are SRT class; background daemons (`Triple-Loop Retrospective`, `os-health-check`) are DT class. Classifying skills and agents by latency class enables smarter scheduling and better resource allocation.
+For the Agentic OS plugin: interactive user-facing agents are SRT class; background daemons (`Triple-Loop Retrospective`, `os-control-health`) are DT class. Classifying skills and agents by latency class enables smarter scheduling and better resource allocation.
 
 ### Sharma (Authorea, Feb 2026): AOS as Agentic Control Plane
 
@@ -193,7 +193,7 @@ Each adapter has a default local implementation and can be replaced with a riche
 ## Memory Adapter
 
 ### Current
-`os-memory-manager` — flat markdown files, single session scope.
+`os-lab-memory` — flat markdown files, single session scope.
 
 ### Swappable Backends
 
@@ -309,7 +309,7 @@ The agentic-os is built on an OS metaphor that maps directly to classical operat
 | Always in RAM | Skill metadata headers, agent descriptions, `CLAUDE.md`, `soul.md`, `user.md` |
 | Application on disk | Full `SKILL.md` body — stays on disk until invoked |
 | App launcher | Skill metadata descriptions — scanned to decide which skill to invoke |
-| Background daemon | Agents (`Triple-Loop Retrospective`, `os-health-check`) — runs autonomously, acquires locks, terminates |
+| Background daemon | Agents (`Triple-Loop Retrospective`, `os-control-health`) — runs autonomously, acquires locks, terminates |
 | Cron scheduler | `/loop` + `heartbeat.md` |
 | System registry | `context/os-state.json` |
 | System event log | `context/events.jsonl` (JSONL, append-only, never enters context during normal operation) |
@@ -330,7 +330,7 @@ The context window is finite RAM. Every byte consumed by infrastructure is unava
 | **Always in RAM** | Skill metadata headers, agent descriptions, `CLAUDE.md`, `soul.md`, `user.md` | Every session — routing and identity |
 | **Loaded on trigger** | Full `SKILL.md` body | Only when that skill is invoked |
 | **Loaded on demand** | `references/` docs via progressive disclosure | Only when a specific sub-topic is needed |
-| **Loaded for audit** | `context/events.jsonl` | Only when `os-health-check` or `Triple-Loop Retrospective` reads it — never during normal work |
+| **Loaded for audit** | `context/events.jsonl` | Only when `os-control-health` or `Triple-Loop Retrospective` reads it — never during normal work |
 
 **Vision:** As context windows grow (1M+ tokens becoming standard), this discipline remains critical because the problem doesn't disappear — it shifts. Larger context windows create new failure modes: attention dilution, relevant signal buried in noise, cost per token at scale. The lazy-loading pattern evolves from "fit in the window" to "maintain signal density." The Context Orchestrator (see below) is the next evolution of this discipline.
 
@@ -951,7 +951,7 @@ Agent SIEM is the infrastructure that doesn't exist yet but will become critical
 1. Define the memory adapter interface — wire `memory-management` plugin as swappable default
 2. Define the event bus adapter interface — JSON files default, Redis next tier
 3. Document the adapter contract so third-party plugins can implement it
-4. Update `os-init` to accept adapter config at init time
+4. Update `os-control-init` to accept adapter config at init time
 
 ### Security
 5. Define explicit scope declarations in SKILL.md and plugin.json schema

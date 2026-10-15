@@ -5,7 +5,7 @@
   {"prompt": "Show me a summary of all experiment runs: how many passed vs failed", "should_trigger": true},
   {"prompt": "Search the experiment log for hallucination failures", "should_trigger": true},
   {"prompt": "Show me the improvement chart. Are the eval scores trending up?", "should_trigger": true},
-  {"prompt": "Generate the progress report for os-memory-manager, cycle by cycle", "should_trigger": true},
+  {"prompt": "Generate the progress report for os-lab-memory, cycle by cycle", "should_trigger": true},
   {"prompt": "Are we actually getting better? Graph the eval scores across all the skills we've tested.", "should_trigger": true},
   {"prompt": "The ledger is empty and no cycles have run. Can you still show me the chart?", "should_trigger": true},
   {"prompt": "Graph our autonomous completion rate trend", "should_trigger": true},

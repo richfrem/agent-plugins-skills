@@ -88,7 +88,7 @@ issue's own framing tests the wrong lever.
 
 ### Directly observable confirmation in this repo
 
-During this task's own work-intake session, the same duplication pattern
+During this task's own os-control-intake session, the same duplication pattern
 predicted by source 2 was directly observed: the project's own
 `./CLAUDE.md` and
 `./CLAUDE.md` both load,

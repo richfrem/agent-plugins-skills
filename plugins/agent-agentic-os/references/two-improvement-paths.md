@@ -17,39 +17,39 @@ writing a handoff.
 | | Path 1: Control plane | Path 2: Improvement lab |
 |---|---|---|
 | Purpose | Do real engineering work under approval gates | Measure and improve one skill or agent against evals |
-| Entry point | `os-init`, then `work-intake` | `os-lab-planner` (Category 3), then intake and lab setup |
+| Entry point | `os-control-init`, then `os-control-intake` | `os-lab-planner` (Category 3), then intake and lab setup |
 | State store | `context/control_plane.db` (SQLite) | `evals/results.tsv`, `improvement-ledger.md`, `context/events.jsonl` |
 | What changes | The user's repository, in an isolated worktree | A skill's `SKILL.md` in a lab repo, then backported |
 | Human authority | SSH-signed `transition_request` at Gate 1, Gate 3 and closure | Human reviews the diff and approves the backport |
 | Success signal | Task reaches `DONE` with verified evidence | `evaluate.py` verdict KEEP, score above baseline |
-| Toggled by | `os-control-plane-mode` | Enabling its skills in `.agents/ownership/` |
+| Toggled by | `os-control-mode` | Enabling its skills in `.agents/ownership/` |
 
-`os-control-plane-mode` flips only Path 1 (`work-intake`, `transition-simulator`,
-`os-signing-setup`, the guidance-compliance rule, and the two git guards). A control plane that
+`os-control-mode` flips only Path 1 (`os-control-intake`, `os-control-simulator`,
+`os-control-signing-setup`, the guidance-compliance rule, and the two git guards). A control plane that
 reports `ENABLED` says nothing about whether any Path 2 skill is installed.
 
 ## Path 1: Governed task pipeline (control plane)
 
 Use for any non-trivial feature, refactor or multi-file fix.
 
-1. **`os-init`** (agent wrapper: `agentic-os-setup`). Probe the repo (`installation_probe.py`),
+1. **`os-control-init`** (agent wrapper: `os-control-setup-agent`). Probe the repo (`installation_probe.py`),
    interview, make `AGENTS.md` the single canonical instruction file, provision the 3-layer
    memory, `context/control_plane.db` and `context/kernel.py`, and create the simulation identity.
-   Human signing key setup stays a human job (`os-signing-setup`).
-2. **`work-intake`**. Read-only discovery, at most one question per turn, register the task, write the
+   Human signing key setup stays a human job (`os-control-signing-setup`).
+2. **`os-control-intake`**. Read-only discovery, at most one question per turn, register the task, write the
    four-pillar `TASK_SPEC.md` under `docs/plans/work-tasks/<task-id>/`. States:
    `INTAKE -> INTERVIEW -> DRAFT_PLAN -> PLAN_REVIEW -> AWAITING_APPROVAL`.
 3. **Plan the execution shape** (agent-orchestration): `select-loop-strategy` picks the topology;
    `graph-planner` compiles `graph-manifest.json` when the work is a DAG.
 4. **Gate 1** (`AWAITING_APPROVAL -> APPROVED`): cryptographic, human only.
-5. **`worktree-manager`**. Probe native worktree support or fall back to `.worktrees/<task-id>` based
+5. **`os-control-worktree`**. Probe native worktree support or fall back to `.worktrees/<task-id>` based
    on `origin/main`; reconcile dirty state (`APPROVED -> IN_WORKTREE`).
 6. **Execute** with `graph-execution`, `orchestrator`, or a loop pattern. Never merge autonomously.
 7. **Gate 3** (`WORKTREE_REVIEW` or `MULTI_AGENT_CODE_REVIEW -> VERIFY_EXIT`) and **closure**
    (any edge into `DONE`): cryptographic, human only.
 
-Supporting skills: `transition-simulator` tests the state machine against a separate simulation
-database and key; `os-health-check` reports readiness. Agents never sign, never record human
+Supporting skills: `os-control-simulator` tests the state machine against a separate simulation
+database and key; `os-control-health` reports readiness. Agents never sign, never record human
 approvals, and never use a skip or force-close path.
 
 ## Path 2: Improvement lab (autoresearch loop)
@@ -68,7 +68,7 @@ Use to raise a skill's routing accuracy or quality score. It is not task deliver
    - Stage 0 reads the improvement ledger, the target's `results.tsv`, the test registry,
      long-term memory, recent retrospectives, and open Map Debt.
    - Stage 2 runs `evaluate.py` (via `os-lab-scorer`) independently. The verdict is KEEP or DISCARD.
-   - Stage 4 closes with surveys, ledger update and memory promotion (`os-memory-manager`).
+   - Stage 4 closes with surveys, ledger update and memory promotion (`os-lab-memory`).
 5. **`os-lab-backport`**. A human reviews the lab diff; approved changes are backported to the
    master plugin source. Persist results with `os-lab-log`.
 

@@ -8,7 +8,7 @@ flowchart TB
         backend_agent["Backend Agent"]
         frontend_agent["Frontend Agent"]
         os_lab_loop["os-lab-loop"]
-        memory_manager["os-memory-manager"]
+        memory_manager["os-lab-memory"]
   end
  subgraph subGraph1["Kernel Layer (Nervous System)"]
         kernel_controller["kernel.py<br>(Atomic Lock & Emit Broker)"]
@@ -17,7 +17,7 @@ flowchart TB
         registry[("agents.json<br>(Registry)")]
   end
  subgraph subGraph2["Observability & Loops"]
-        os_health_check["os-health-check"]
+        os_health_check["os-control-health"]
         loop_scheduler["/loop scheduler"]
   end
  subgraph subGraph3["Durable Memory (Storage)"]

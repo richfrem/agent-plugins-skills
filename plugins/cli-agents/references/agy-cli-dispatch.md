@@ -37,7 +37,7 @@ nonempty output and acceptance criteria before treating the response as usable.
 ## Native facilities and failures
 
 Check installed help for `--mode plan`, custom agents and `--sandbox` before using
-them. Delegate governed worktree setup to worktree-manager when no native worktree
+them. Delegate governed worktree setup to os-control-worktree when no native worktree
 facility is available. Never equate permission bypass with sandboxing or approval.
 On authentication, quota, timeout or empty-output failure, halt and surface the exact
 failure; do not change backends or restart a running model without authorization.

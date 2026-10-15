@@ -74,7 +74,7 @@ flowchart TD
     subgraph P6["Phase 6 — Capture Learnings (Mandatory)"]
         P6A{"OS initialized?<BR>ls context/kernel.py"} -- Present --> P6B
         P6A -- Absent --> P6C
-        P6B["Delegate to os-memory-manager skill:<BR>write context/memory/YYYY-MM-DD.md<BR>Fields: skill, baseline→final score,<BR>iterations, backported, rejected, snags"]
+        P6B["Delegate to os-lab-memory skill:<BR>write context/memory/YYYY-MM-DD.md<BR>Fields: skill, baseline→final score,<BR>iterations, backported, rejected, snags"]
         P6C["Write directly:<BR>mkdir -p context/memory<BR>context/memory/YYYY-MM-DD.md"]
         P6B --> P6D
         P6C --> P6D
@@ -85,7 +85,7 @@ flowchart TD
         P6E --> P6G
         P6F[Skip — no memory entry needed] --> P6I
         P6G{"OS present?"}
-        P6G -- Yes --> P6H["os-memory-manager: promote to<BR>context/memory.md with dedup ID"]
+        P6G -- Yes --> P6H["os-lab-memory: promote to<BR>context/memory.md with dedup ID"]
         P6G -- No --> P6I
         P6H --> P6I
         P6I([Done])

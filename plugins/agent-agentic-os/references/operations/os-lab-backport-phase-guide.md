@@ -132,7 +132,7 @@ Write `context/memory/YYYY-MM-DD.md` covering:
 - Rejected changes with reasons
 - Snags, workarounds, open items
 
-Delegate to `os-memory-manager` if the Agentic OS is initialized in master.
+Delegate to `os-lab-memory` if the Agentic OS is initialized in master.
 
 ### 6b — Persistent Memory (non-obvious filter)
 
@@ -149,7 +149,7 @@ Skip routine score improvements and self-evident changes.
 
 ### 6c — Promote to context/memory.md
 
-If OS is present and the filter passed, ask `os-memory-manager` to promote the
+If OS is present and the filter passed, ask `os-lab-memory` to promote the
 finding to `context/memory.md` with a deduplication ID.
 
 ---

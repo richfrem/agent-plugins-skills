@@ -129,7 +129,7 @@ say which one, say the files are saved, and ask whether to enable it. Never rout
 | 3 | `os-lab-loop` | The lab path; it reads `references/program.md`. It calls `os-lab-scorer` for every change. |
 | 4 | `os-lab-backport` | After the run completes, to review the lab diff with the user and backport approved changes. |
 | 5 | `os-lab-log` | Run log, summary and charts. |
-| 6 | `os-memory-manager` | Session close and memory promotion. Always offer it. |
+| 6 | `os-lab-memory` | Session close and memory promotion. Always offer it. |
 
 Do not start the next skill until the user agrees. Never record an approval on the user's
 behalf; present the command and let them run it.
@@ -147,6 +147,6 @@ TARGET: <name or new:<description>>
 CONFIG: improvement/run-config.json
 BRIEF: improvement/session-brief.md
 PROGRAM: <path to references/program.md or "pending setup">
-NEXT_SKILL: <os-lab-planner | os-lab-setup | os-lab-loop | os-lab-backport | os-lab-log | os-memory-manager>
+NEXT_SKILL: <os-lab-planner | os-lab-setup | os-lab-loop | os-lab-backport | os-lab-log | os-lab-memory>
 STATUS: <configured | blocked | complete>
 ```

@@ -3,10 +3,10 @@ tests/test_os_init_identity_status.py
 =====================================
 
 Purpose:
-    Failing-first acceptance tests for T13 (auth-ciba-increment-b, issue #639, spec case 16): os-init
+    Failing-first acceptance tests for T13 (auth-ciba-increment-b, issue #639, spec case 16): os-control-init
     reports the Gate 1 signing-identity status and prints the exact human setup command, but is a
     READ-ONLY reporter. It never creates a key, never writes `context/identity/` or `allowed_signers*`,
-    and never runs the setup. os-init is an agent-run surface, so anything else would be an enrollment
+    and never runs the setup. os-control-init is an agent-run surface, so anything else would be an enrollment
     path for an agent. Real subprocess runs of init_agentic_os.py on a real throwaway git repo, the
     same pattern as test_init_agentic_os_scaffolding.py.
 
@@ -62,11 +62,11 @@ def test_init_reports_signing_identity_status_and_the_human_command(target_repo)
 
 def test_init_never_creates_keys_or_identity_files(target_repo):
     _init(target_repo)
-    # The HUMAN's identity is never created by an agent-run os-init (no terminal here).
+    # The HUMAN's identity is never created by an agent-run os-control-init (no terminal here).
     assert not (target_repo / "context" / "identity").exists()
     # The only trust files that may exist are the agent's OWN simulation ones (created by default now).
     stray = [p for p in target_repo.rglob("allowed_signers*") if "context/simulation/identity" not in p.as_posix()]
-    assert not stray, f"human trust file created by os-init: {stray}"
+    assert not stray, f"human trust file created by os-control-init: {stray}"
     assert not list(target_repo.rglob("id_ed25519*"))
     assert not list(target_repo.rglob("agentic-os_signing*"))
 

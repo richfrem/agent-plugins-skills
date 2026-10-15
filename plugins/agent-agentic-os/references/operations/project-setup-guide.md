@@ -1,6 +1,6 @@
 # Project Setup Reference Guide
 
-Detailed checklist and decisions reference for `os-init` users.
+Detailed checklist and decisions reference for `os-control-init` users.
 
 ## What Gets Created and Why
 

@@ -22,7 +22,7 @@ else
     REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 fi
 
-# Declared control-plane mode (managed by the os-control-plane-mode skill). The file holds one
+# Declared control-plane mode (managed by the os-control-mode skill). The file holds one
 # word. A missing file means "enabled", so installs that predate the mode behave as before.
 # When it says "disabled" the gate is off BY DESIGN: say so visibly, then pass.
 MODE_FILE="$REPO_ROOT/context/control-plane-mode"

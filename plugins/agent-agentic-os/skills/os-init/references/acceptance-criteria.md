@@ -1,1 +1,0 @@
-../../../references/os-init-acceptance-criteria.md

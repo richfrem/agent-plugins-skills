@@ -23,15 +23,15 @@ _PLUGINS_DIR = _HERE / "plugins"
 
 _SKILL_DIRS = [
     # agent-agentic-os (15 skills on disk; the subset registered here)
-    ("agent-agentic-os",         "work-intake"),
+    ("agent-agentic-os",         "os-control-intake"),
     ("agent-agentic-os",         "os-lab-planner"),
     ("agent-agentic-os",         "os-lab-backport"),
     ("agent-agentic-os",         "os-lab-setup"),
     ("agent-agentic-os",         "os-lab-scorer"),
     ("agent-agentic-os",         "os-lab-log"),
     ("agent-agentic-os",         "os-lab-loop"),
-    ("agent-agentic-os",         "os-init"),
-    ("agent-agentic-os",         "os-memory-manager"),
+    ("agent-agentic-os",         "os-control-init"),
+    ("agent-agentic-os",         "os-lab-memory"),
 
     # agent-orchestration/ (6 skills)
     ("agent-orchestration/",              "agent-swarm"),
@@ -90,7 +90,7 @@ _SKILL_DIRS = [
     # dependency-management (1 skill)
     ("dependency-management",    "dependency-management"),
 
-    # dev-utils (18 skills)
+    # dev-utils (19 skills)
     ("dev-utils",                "adr-management"),
     ("dev-utils",                "coding-conventions-agent"),
     ("dev-utils",                "context-bundler"),
@@ -99,6 +99,7 @@ _SKILL_DIRS = [
     ("dev-utils",                "github-issue-backlog-agent"),
     ("dev-utils",                "github-issue-pr-lifecycle-agent"),
     ("dev-utils",                "github-issue-prioritizer"),
+    ("dev-utils",                "github-issue-refactor-proposer"),
     ("dev-utils",                "github-issue-resolution-reviewer"),
     ("dev-utils",                "github-issue-worktree-agent"),
     ("dev-utils",                "hf-download"),

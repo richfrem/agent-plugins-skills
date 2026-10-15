@@ -1463,12 +1463,12 @@ Persistent tracking of architectural friction, structural anomalies, and unclose
 - Cycle/Session ID: fix-docs-counts-and-graph-state-names
 - Artifact affected: `plugins/plugin-manager/scripts/plugin_installer.py` (`_process_file_item`); pointer files in `plugins/agent-agentic-os/references/`
 - Friction observed: Skill links such as `os-guide/references/architecture.md` point at plugin-root pointer files (e.g. `references/architecture.md`, text `../../../references/architecture/architecture.md`). The path is correct from the skill folder, but the installer resolves a pointer relative to the pointer file itself (`real_src.parent`), finds nothing, and copies the one-line pointer text. Installed, enabled skills already contain stubs: `.agents/skills/os-init/references/architecture.md`, `project-setup-guide.md`, and one file each in `dependency-management`, `create-skill`, `audit-plugin`.
-- Why not fixed now: Needs an owner decision: change the pointer text or the installer's resolution base.
-- Recommended fix / fix applied: Pending decision.
+- Why not fixed now: Fixed on the same branch (installer resolution base).
+- Recommended fix / fix applied: `_process_file_item` now also resolves a pointer relative to the symlink's directory when its own base fails; regression test `test_symlink_to_pointer_resolves_relative_to_link_directory`. Installed stubs clear on the next sync.
 - Evidence/repro: `find .agents/skills -type f -size -200c` then check for single-line `../` paths.
 - Severity: M
 - Repeat: NO
-- Status: OPEN
+- Status: RESOLVED
 
 ## DEBT-20261014-UNREGISTERED-SKILL-SYMLINKS
 
@@ -1528,12 +1528,12 @@ Persistent tracking of architectural friction, structural anomalies, and unclose
 - Cycle/Session ID: fix-docs-counts-and-graph-state-names
 - Artifact affected: `plugins/agent-agentic-os/references/acceptance-criteria.md`
 - Friction observed: 14 skills link their `references/acceptance-criteria.md` to this one hub file, but its title and content are for `optimize-agent-instructions`, which was retired on this branch. Those 14 skills point at another skill's criteria.
-- Why not fixed now: Each skill needs its own criteria; not a mechanical fix.
-- Recommended fix / fix applied: Pending.
+- Why not fixed now: Fixed on the same branch.
+- Recommended fix / fix applied: Every skill now links its own `<skill>-acceptance-criteria.md`; criteria for `os-lab-setup` and `os-lab-backport` were written from their routing evals; the mislabeled shared file was removed (no users left).
 - Evidence/repro: `python3 -c "import json;print([e['dst'] for e in json.load(open('symlinks.json'))['links'] if e['src']=='plugins/agent-agentic-os/references/acceptance-criteria.md'])"`
 - Severity: M
 - Repeat: NO
-- Status: OPEN
+- Status: RESOLVED
 
 ## DEBT-20261014-OVERLAPPING-SKILLS-DECISIONS
 

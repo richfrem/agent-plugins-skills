@@ -1,15 +1,15 @@
 """
-test_os_init_identity_bootstrap.py - os-init registers the human's identity, but only for a human.
+test_os_init_identity_bootstrap.py - os-control-init registers the human's identity, but only for a human.
 
 Purpose:
-    A first os-init used to leave the repo with gates wired and nobody authorized, and printed a setup
+    A first os-control-init used to leave the repo with gates wired and nobody authorized, and printed a setup
     command that did not exist in consumer repos. Now:
-      * run in a human's interactive terminal, os-init OFFERS to enroll the human's key (it delegates to
+      * run in a human's interactive terminal, os-control-init OFFERS to enroll the human's key (it delegates to
         setup_ciba_identity.py, which itself refuses without a terminal or as the agent account);
       * run by an agent (no terminal) it enrolls NOTHING and prints a command that exists in the repo,
         naming the key already on the machine;
       * the agent's own simulation identity is created by default (it can never approve real work).
-    The invariant under test: os-init never creates or writes the human's trust file without a human.
+    The invariant under test: os-control-init never creates or writes the human's trust file without a human.
 """
 
 import os
@@ -57,14 +57,14 @@ def _never_asked(prompt):
 
 
 def test_command_uses_the_path_that_exists_in_this_repo_layout(repo):
-    script = _install_setup(repo, "os-health-check")  # os-signing-setup is removed when the plane is disabled
+    script = _install_setup(repo, "os-control-health")  # os-control-signing-setup is removed when the plane is disabled
     assert init.find_setup_script(repo) == script
-    assert init.human_setup_command(repo) == "python3 .agents/skills/os-health-check/scripts/setup_ciba_identity.py"
+    assert init.human_setup_command(repo) == "python3 .agents/skills/os-control-health/scripts/setup_ciba_identity.py"
 
 
 def test_signing_setup_skill_is_preferred_when_both_are_installed(repo):
-    preferred = _install_setup(repo, "os-signing-setup")
-    _install_setup(repo, "os-health-check")
+    preferred = _install_setup(repo, "os-control-signing-setup")
+    _install_setup(repo, "os-control-health")
     assert init.find_setup_script(repo) == preferred
 
 
@@ -78,13 +78,13 @@ def test_falls_back_to_the_script_beside_init_when_nothing_is_installed(repo):
 
 
 def test_non_interactive_never_enrolls_and_never_prompts(repo, capsys):
-    _install_setup(repo, "os-health-check")
+    _install_setup(repo, "os-control-health")
     result = init.register_human_identity_step(repo, False, interactive=False, run=_boom, ask=_never_asked)
     assert result == "not-interactive"
     assert not (repo / "context" / "identity").exists()
     out = capsys.readouterr().out
     assert "Not enrolling from a non-interactive/agent context" in out
-    assert "python3 .agents/skills/os-health-check/scripts/setup_ciba_identity.py" in out
+    assert "python3 .agents/skills/os-control-health/scripts/setup_ciba_identity.py" in out
 
 
 def test_dry_run_neither_prompts_nor_runs(repo):
@@ -97,7 +97,7 @@ def test_already_set_up_is_left_alone(repo, monkeypatch):
 
 
 def test_interactive_decline_runs_nothing(repo, capsys):
-    _install_setup(repo, "os-signing-setup")
+    _install_setup(repo, "os-control-signing-setup")
     result = init.register_human_identity_step(repo, False, interactive=True, run=_boom, ask=lambda p: "n")
     assert result == "declined"
     assert not (repo / "context" / "identity").exists()
@@ -106,7 +106,7 @@ def test_interactive_decline_runs_nothing(repo, capsys):
 
 @pytest.mark.parametrize("answer", ["y", "Y", "yes", " YES "])
 def test_interactive_accept_delegates_to_the_human_setup_script(repo, answer):
-    script = _install_setup(repo, "os-signing-setup")
+    script = _install_setup(repo, "os-control-signing-setup")
     calls = []
 
     def fake_run(cmd, cwd=None, **k):
@@ -118,7 +118,7 @@ def test_interactive_accept_delegates_to_the_human_setup_script(repo, answer):
 
 
 def test_a_failed_setup_is_reported_not_swallowed(repo, capsys):
-    _install_setup(repo, "os-signing-setup")
+    _install_setup(repo, "os-control-signing-setup")
     result = init.register_human_identity_step(
         repo, False, interactive=True, ask=lambda p: "y", run=lambda cmd, **k: subprocess.CompletedProcess(cmd, 2))
     assert result == "failed"
@@ -179,9 +179,9 @@ def test_flags_opt_out_of_each_identity_step(repo):
 
 @pytest.mark.skipif(not HAS_SSH_KEYGEN, reason="ssh-keygen not available")
 def test_printed_next_step_command_exists_in_the_repo(repo):
-    _install_setup(repo, "os-health-check")
+    _install_setup(repo, "os-control-health")
     res = _run_init(repo)
-    assert "python3 .agents/skills/os-health-check/scripts/setup_ciba_identity.py" in res.stdout
+    assert "python3 .agents/skills/os-control-health/scripts/setup_ciba_identity.py" in res.stdout
     assert "plugins/agent-agentic-os/scripts/setup_ciba_identity.py" not in res.stdout
 
 
@@ -193,7 +193,7 @@ def test_the_offer_appears_only_with_a_real_terminal_and_declining_changes_nothi
     master, slave = pty.openpty()
     env = {**os.environ, "HOME": str(tmp_path / "home")}  # never touch the real ~/.ssh
     (tmp_path / "home").mkdir()
-    # In a real terminal os-init first asks the plugin-contribution question; answer it by flag so the
+    # In a real terminal os-control-init first asks the plugin-contribution question; answer it by flag so the
     # test reaches the identity offer.
     proc = subprocess.Popen([sys.executable, str(INIT), "--target", str(repo), "--retrofit",
                              "--contribution-mode", "fork-and-pr"],

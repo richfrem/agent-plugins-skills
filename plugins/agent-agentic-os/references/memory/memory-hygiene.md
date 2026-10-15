@@ -49,7 +49,7 @@ Chose monorepo over polyrepo for shared type safety. Services in services/, shar
 
 ## Tier 3: Session Logs (context/memory/YYYY-MM-DD.md)
 
-Write one per significant session. Use `os-memory-manager` skill.
+Write one per significant session. Use `os-lab-memory` skill.
 
 **Write a session log when:**
 - Something meaningful was accomplished (a feature shipped, a bug fixed, a decision made)

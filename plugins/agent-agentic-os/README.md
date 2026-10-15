@@ -41,10 +41,10 @@ grouped into two clusters.
 | | Governed task pipeline | Improvement lab |
 |---|---|---|
 | Use it to | Deliver real engineering work under approval gates | Measure and improve one skill or agent against evals |
-| Start with | `os-init` once, then `work-intake` per task | `os-lab-agent` (one conversation, then `os-lab-planner`) |
+| Start with | `os-control-init` once, then `os-control-intake` per task | `os-lab-agent` (one conversation, then `os-lab-planner`) |
 | State | `context/control_plane.db` | `evals/results.tsv`, improvement ledger, `context/events.jsonl` |
 | Human authority | SSH-signed approval at plan, code-acceptance and closure | Human review of the lab diff before backport |
-| Switch | `os-control-plane-mode` | Enable its skills in `.agents/ownership/` |
+| Switch | `os-control-mode` | Enable its skills in `.agents/ownership/` |
 
 > **Skills are installed per project.** The skill list below describes the plugin source. A project
 > may install only some of it (`.agents/ownership/agent-agentic-os.json`, `should_install`). Before
@@ -54,12 +54,12 @@ grouped into two clusters.
 
 | Step | Do this |
 |------|---------|
-| 1. Install & scaffold | `"Set up an agentic OS for this project"` — runs the `os-init` / `agentic-os-setup` interview |
-| 2. Human signing key (control plane) | `os-signing-setup` — human only; creates the key behind the approval gates |
+| 1. Install & scaffold | `"Set up an agentic OS for this project"` — runs the `os-control-init` / `os-control-setup-agent` interview |
+| 2. Human signing key (control plane) | `os-control-signing-setup` — human only; creates the key behind the approval gates |
 | 3. Probe your environment (lab path) | `cli-agents:project-setup` — builds the provider capability profile |
 
 **After each session (lab path):** run `os-lab-loop` for the retrospective, then
-`os-memory-manager` to promote learnings, if those skills are installed.
+`os-lab-memory` to promote learnings, if those skills are installed.
 
 → Full day-to-day workflow: **[USAGE.md](./USAGE.md)**
 
@@ -69,10 +69,10 @@ grouped into two clusters.
 
 | I want to... | Use this |
 |-------------|---------|
-| Start any non-trivial engineering task | `work-intake` |
-| Turn the control plane (work-intake gating, commit/push guards) on or off, or check its mode | `os-control-plane-mode` |
-| Work in an isolated worktree based on `origin/main` | `worktree-manager` |
-| Test a control-plane transition without touching real state | `transition-simulator` |
+| Start any non-trivial engineering task | `os-control-intake` |
+| Turn the control plane (os-control-intake gating, commit/push guards) on or off, or check its mode | `os-control-mode` |
+| Work in an isolated worktree based on `origin/main` | `os-control-worktree` |
+| Test a control-plane transition without touching real state | `os-control-simulator` |
 | Start any skill improvement or creation task | `os-lab-agent` |
 | Discover which AI tools I have available | `cli-agents:project-setup` |
 | Improve a specific skill with evals | `os-lab-agent` → describe the skill + goal |
@@ -81,9 +81,9 @@ grouped into two clusters.
 | Review and backport a finished lab run | `os-lab-backport` |
 | See eval score trends and progress charts | `os-lab-log` |
 | Search experiment history | `python3 scripts/experiment_log.py query <term>` |
-| Promote session learnings to long-term memory | `os-memory-manager` |
-| Check system health (event log, locks, memory) | `os-health-check` |
-| Fix a deadlocked agent (stale lock files) | Automatic: `kernel.py` `acquire_lock` clears stale locks; `os-health-check` reports them |
+| Promote session learnings to long-term memory | `os-lab-memory` |
+| Check system health (event log, locks, memory) | `os-control-health` |
+| Fix a deadlocked agent (stale lock files) | Automatic: `kernel.py` `acquire_lock` clears stale locks; `os-control-health` reports them |
 | Understand how the OS fits together | [Skill map](./references/agentic-os-skill-map.md) and [two improvement paths](./references/two-improvement-paths.md) |
 
 ---
@@ -94,10 +94,10 @@ grouped into two clusters.
 
 | Agent | Purpose |
 |-------|---------|
-| `agentic-os-setup` | Conversational setup guide; wraps `os-init` in discovery, plan and approve phases |
+| `os-control-setup-agent` | Conversational setup guide; wraps `os-control-init` in discovery, plan and approve phases |
 | `os-lab-agent` | Front door for the skill improvement lab; one plain-language conversation (what to improve, what exists, run settings); writes `references/program.md` and `improvement/run-config.json`, then calls the `os-lab-*` skills in order |
 
-### Skills (15)
+### Skills (14)
 
 What each skill does and how the clusters relate: [Agentic OS Skill Map](./references/agentic-os-skill-map.md).
 
@@ -105,25 +105,24 @@ What each skill does and how the clusters relate: [Agentic OS Skill Map](./refer
 
 | Skill | Purpose |
 |-------|---------|
-| `work-intake` | Intake gateway: read-only discovery, one question per turn, task registration, four-pillar `TASK_SPEC.md`, plan staging |
-| `worktree-manager` | Picks a native or portable (`.worktrees/<task-id>`) worktree based on `origin/main`; reconciles dirty state |
-| `transition-simulator` | Simulates and grades control-plane transitions on a separate simulation database and key |
-| `os-control-plane-mode` | Enables, disables or checks the control plane as one unit (member skills and rule, the two git guards, declared mode) |
-| `os-signing-setup` | Guides the human through creating the SSH key that authorizes the plan-approval, code-acceptance and closure gates |
+| `os-control-intake` | Intake gateway: read-only discovery, one question per turn, task registration, four-pillar `TASK_SPEC.md`, plan staging |
+| `os-control-worktree` | Picks a native or portable (`.worktrees/<task-id>`) worktree based on `origin/main`; reconciles dirty state |
+| `os-control-simulator` | Simulates and grades control-plane transitions on a separate simulation database and key |
+| `os-control-mode` | Enables, disables or checks the control plane as one unit (member skills and rule, the two git guards, declared mode) |
+| `os-control-signing-setup` | Guides the human through creating the SSH key that authorizes the plan-approval, code-acceptance and closure gates |
 
 #### Setup & readiness
 
 | Skill | Purpose |
 |-------|---------|
-| `os-init` | Probes, scaffolds or retrofits the OS and 3-layer memory; keeps `AGENTS.md` canonical; creates the simulation identity |
-| `os-health-check` | Deterministic readiness and liveness report: signing and identity readiness, event log, hook errors, memory size and stale locks |
+| `os-control-init` | Probes, scaffolds or retrofits the OS and 3-layer memory; keeps `AGENTS.md` canonical; creates the simulation identity |
+| `os-control-health` | Deterministic readiness and liveness report: signing and identity readiness, event log, hook errors, memory size and stale locks |
 
 #### Evolution planning
 
 | Skill | Purpose |
 |-------|---------|
 | `os-lab-planner` | Non-interactive planner: audits what exists, chooses orchestrate / update / create, brainstorms 2-3 options, writes the task plan and delegation prompt |
-| `repository-improvement` | Turns friction-cluster hotspot reports into systemic refactoring proposals for human review (Tier 3 friction) |
 
 #### Eval lab & improvement loop
 
@@ -139,14 +138,14 @@ What each skill does and how the clusters relate: [Agentic OS Skill Map](./refer
 
 | Skill | Purpose |
 |-------|---------|
-| `os-memory-manager` | Deduplicates and promotes session facts to long-term memory (`context/memory.md`) |
+| `os-lab-memory` | Deduplicates and promotes session facts to long-term memory (`context/memory.md`) |
 
 ---
 
 ### Invoking
 
 No separate slash-command files ship with this plugin. Invoke any skill by name (for example
-`/os-lab-planner`, `/os-init`) or describe the goal and let routing pick it.
+`/os-lab-planner`, `/os-control-init`) or describe the goal and let routing pick it.
 
 ---
 
@@ -181,7 +180,7 @@ eval gate, experiment log, and lab isolation.
 ### Memory System
 
 Every session writes structured logs to `context/events.jsonl`. At end-of-session,
-`os-memory-manager` deduplicates and promotes the most important facts to `context/memory.md` —
+`os-lab-memory` deduplicates and promotes the most important facts to `context/memory.md` —
 a curated long-term store that bootstraps every future session. Dedup IDs and size limits
 prevent drift and contradiction over hundreds of sessions.
 

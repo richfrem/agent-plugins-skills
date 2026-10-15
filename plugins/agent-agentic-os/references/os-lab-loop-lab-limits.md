@@ -33,7 +33,7 @@ Companion skills (all required for a complete loop):
 - `os-lab-setup` — bootstrap experiment dirs (deploys program.md, evals.json, results.tsv); use **before** running any eval cycle on a new target
 - `os-lab-scorer` — single-skill evaluation loop (inner loop used by this skill)
 - `os-lab-backport` — port validated skill improvements from test repo back to canonical source
-- `os-memory-manager` — session log format, memory promotion protocol
+- `os-lab-memory` — session log format, memory promotion protocol
 - `os-lab-log` — ASCII progress chart from improvement-ledger.tsv
 
 ---
@@ -113,7 +113,7 @@ Surveys compared — if both agents report same confusion point, Triple-Loop Ret
 
 - This skill delegates to `agent-orchestration:triple-loop-learning` for the inner loop execution pattern. agent-orchestration is the execution substrate; os-lab-loop adds the eval gate, experiment log, and lab isolation on top.
 - `os-lab-scorer` — eval_runner.py, KEEP/DISCARD, results.tsv
-- `os-memory-manager` — session log template, L2/L3 promotion
+- `os-lab-memory` — session log template, L2/L3 promotion
 - `triple-loop` agent — root cause analysis, Full Loop patching
 - `os-lab-log` — generate progress chart from improvement ledger
 - [improvement-ledger-spec.md](memory/improvement-ledger-spec.md) — ledger format, Section 1/2/3 writing protocol

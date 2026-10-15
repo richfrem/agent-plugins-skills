@@ -10,7 +10,7 @@ description: >
   description", or when os-lab-loop proposes a change that needs validation.
   DO NOT USE for the multi-iteration loop (os-lab-loop), building the lab repo
   (os-lab-setup), planning (os-lab-planner), reviewing a lab diff (os-lab-backport),
-  run logs and charts (os-lab-log), or memory promotion (os-memory-manager).
+  run logs and charts (os-lab-log), or memory promotion (os-lab-memory).
   NOT for scaffolding new skills: use create-skill (agent-scaffolders).
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 ---

@@ -6,7 +6,7 @@
 | Date | 2026-09-14 |
 | Task type | Agentic OS installation and health check |
 | Task complexity | Medium |
-| Skill/Capability under test | os-health-check |
+| Skill/Capability under test | os-control-health |
 
 ## Completion Outcome
 | Question | Response |

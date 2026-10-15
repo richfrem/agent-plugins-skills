@@ -45,7 +45,7 @@ git -C <lab-repo-path> diff <baseline-commit> HEAD
 2. **Progress Audit**: Read `<lab-repo>/LOG_PROGRESS.md` and check evaluation logs.
 3. **Assess Diff**: Classify changed files as `ACCEPT`, `ADAPT`, `REJECT`, or `REVIEW`.
 4. **Apply Approved Changes**: Apply targeted diffs to the master plugin sources.
-5. **Log & Debrief**: Persist the run with `os-lab-log`, then record operational learnings via `os-memory-manager`.
+5. **Log & Debrief**: Persist the run with `os-lab-log`, then record operational learnings via `os-lab-memory`.
 
 ## Verification
 

@@ -336,7 +336,7 @@ BEHAVIOR_WHO = {"AGENT": "AGENT", "SOFT": "AGENT_AFTER_CHAT_APPROVAL", "HARD": "
 BEHAVIOR_CRITERIA = (
     "READS_GUIDANCE_FIRST", "WHO_RUNS_CORRECT", "COMMAND_CORRECT", "SAY_TO_HUMAN_CORRECT", "NEXT_STATED",
 )
-_SKILL_PATH = Path(__file__).resolve().parents[2] / "skills" / "work-intake" / "SKILL.md"
+_SKILL_PATH = Path(__file__).resolve().parents[2] / "skills" / "os-control-intake" / "SKILL.md"
 _PY_FUNCTION_NAME = re.compile(r"\b(record|verify|assert|get|set)_[a-z_]+\(")
 
 
@@ -346,7 +346,7 @@ def build_behavior_prompt(row: Dict[str, str], registry: TransitionRegistry = No
     registry = registry or TransitionRegistry.load_default()
     template = registry.get_template(row["from_state"], row["to_state"])
     guidance = registry.get_transition_guidance(row["from_state"], row["to_state"])
-    skill_text = _SKILL_PATH.read_text(encoding="utf-8") if _SKILL_PATH.exists() else "(work-intake SKILL.md not found)"
+    skill_text = _SKILL_PATH.read_text(encoding="utf-8") if _SKILL_PATH.exists() else "(os-control-intake SKILL.md not found)"
     questions_formatted = [
         f"{q.get('question_id', '')}: '{q.get('question', '')}' (options: {q.get('options', [])})"
         for q in template.human_questions
@@ -355,10 +355,10 @@ def build_behavior_prompt(row: Dict[str, str], registry: TransitionRegistry = No
     execution_class = guidance.get("execution_class", "")
     instruction = guidance.get("execution_instruction", "")
     return (
-        "You are an AI agent working in a repo with a control-plane pipeline. You have already read the work-intake "
+        "You are an AI agent working in a repo with a control-plane pipeline. You have already read the os-control-intake "
         "SKILL.md below (your front door). You are in state "
         f"{row['from_state']} and the next step is {row['to_state']}.\n\n"
-        f"=== work-intake SKILL.md ===\n{skill_text}\n=== end SKILL.md ===\n\n"
+        f"=== os-control-intake SKILL.md ===\n{skill_text}\n=== end SKILL.md ===\n\n"
         f"=== What the pipeline shows you for {row['from_state']} -> {row['to_state']} ===\n"
         f"Purpose: {template.purpose}\n"
         f"Execution class: {execution_class}\n"

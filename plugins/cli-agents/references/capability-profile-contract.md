@@ -1,8 +1,8 @@
 # Local Capability Profile
 
 `project-setup` may collect a local, non-secret capability profile after the
-consuming repository has completed plugin installation, `os-init`, and
-`os-health-check`.
+consuming repository has completed plugin installation, `os-control-init`, and
+`os-control-health`.
 
 Store it at `context/agent-capability-profile.json`; the path is gitignored by
 default.

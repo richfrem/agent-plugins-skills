@@ -17,7 +17,7 @@ This wires `.git/hooks/pre-commit-evolution-guard` and `.git/hooks/pre-push-revi
 initializes `context/control_plane.db` (self-healing schema, see [`docs/ADRs/`](docs/ADRs/)),
 and scaffolds `context/memory/`, `context/status.md`, and `.claude/hooks/hooks.json`.
 Re-running against an existing local setup instead uses `--retrofit` — see
-[`os-init/SKILL.md`](plugins/agent-agentic-os/skills/os-init/SKILL.md). It creates `.bak` files
+[`os-control-init/SKILL.md`](plugins/agent-agentic-os/skills/os-control-init/SKILL.md). It creates `.bak` files
 when updating existing guideline files (`CLAUDE.md`, `GEMINI.md`, `AGENTS.md`) — **do not blindly
 delete them**; review `git diff` and reconcile local customizations first.
 
@@ -28,7 +28,7 @@ test -f context/control_plane.db && echo "OK control_plane.db" || echo "MISSING 
 test -f .claude/hooks/hooks.json && echo "OK hooks.json" || echo "MISSING hooks.json"
 ```
 
-Or invoke **`/os-health-check`** for the full audit (Event Bus, locks, memory arrays, substrate
+Or invoke **`/os-control-health`** for the full audit (Event Bus, locks, memory arrays, substrate
 completeness). Then verify the test suite: `python3 -m pytest plugins/ -q`. See
 [`CLAUDE.md`](CLAUDE.md) for the full development workflow once the substrate is confirmed.
 

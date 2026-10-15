@@ -13,7 +13,7 @@
   {"prompt": "Score this SKILL.md change against the locked evals and tell me KEEP or DISCARD", "should_trigger": false, "note": "sibling: os-lab-scorer"},
   {"prompt": "Review the lab diff and backport the approved changes to the source skill", "should_trigger": false, "note": "sibling: os-lab-backport"},
   {"prompt": "Show me the run log and charts from last night's experiment", "should_trigger": false, "note": "sibling: os-lab-log"},
-  {"prompt": "Promote today's learnings into memory and close the session", "should_trigger": false, "note": "sibling: os-memory-manager"},
+  {"prompt": "Promote today's learnings into memory and close the session", "should_trigger": false, "note": "sibling: os-lab-memory"},
   {"prompt": "Show me the current eval score for os-lab-scorer", "should_trigger": false},
   {"prompt": "List all the agents we currently have in the agentic-os plugin", "should_trigger": false},
   {"prompt": "Fix the bug in dispatch.py where the tier flag is ignored", "should_trigger": false},

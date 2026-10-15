@@ -63,7 +63,7 @@
     },
     {
       "name": "dev-utils",
-      "description": "Unified Developer Utilities Suite — 18 skills covering ADR management, coding conventions, context bundling, Mermaid diagrams, GitHub issue logging & friction management, GitHub issue backlog bridge, issue prioritizer & Projects v2 sync, GitHub issue worktree manager, GitHub issue PR lifecycle orchestrator, GitHub issue resolution reviewer, TODO scanning, HuggingFace integration, text humanization, link validation, symlink management, and agent context hygiene.",
+      "description": "Unified Developer Utilities Suite — 19 skills covering ADR management, coding conventions, context bundling, Mermaid diagrams, GitHub issue logging & friction management, GitHub issue backlog bridge, issue prioritizer & Projects v2 sync, GitHub issue worktree manager, GitHub issue PR lifecycle orchestrator, GitHub issue resolution reviewer, GitHub issue refactor proposer, TODO scanning, HuggingFace integration, text humanization, link validation, symlink management, and agent context hygiene.",
       "source": "./plugins/dev-utils",
       "strict": true,
       "category": "workflow",

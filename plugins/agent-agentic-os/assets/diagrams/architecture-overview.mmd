@@ -60,8 +60,8 @@ flowchart TB
   KernelPy -- "task registry and counters" --> OSState
   KernelPy -- "PID and lease metadata" --> Locks
 
-  EventBus -- "os-memory-manager promotes" --> L2
-  L2 -- "os-memory-manager distills" --> L3
+  EventBus -- "os-lab-memory promotes" --> L2
+  L2 -- "os-lab-memory distills" --> L3
 
   classDef agentRole fill:#f9f0ff,stroke:#5e35b1,stroke-width:2px
   classDef kernel fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px

@@ -62,10 +62,10 @@ def _setup_test_control_plane(tmp_path: Path, task_id: str, state: str = "INTAKE
 
 
 def test_readiness_routing_uninitialized(tmp_path):
-    """Missing or partial substrate must cleanly route to os-init."""
+    """Missing or partial substrate must cleanly route to os-control-init."""
     ready, message = check_substrate_readiness(tmp_path)
     assert not ready
-    assert "os-init" in message.lower()
+    assert "os-control-init" in message.lower()
     assert "substrate is not initialized" in message.lower()
 
 

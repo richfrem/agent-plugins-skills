@@ -88,7 +88,7 @@ if hasattr(sys.stderr, "reconfigure"):
 # Antigravity, Gemini CLI, and GitHub Copilot have all adopted the standard
 # .agents/ install path — they read skills, workflows, and agents directly
 # from there. Rules are the one exception: they land in .agent/rules/
-# (singular "agent"), the shared Gemini CLI / os-init workspace-rules
+# (singular "agent"), the shared Gemini CLI / os-control-init workspace-rules
 # convention — see deploy_rules(). No per-agent symlinks are needed for
 # skills/workflows/agents on those platforms anymore; the canonical .agents/
 # copy is sufficient. As agents converge on .agents/ as the standard, this
@@ -160,14 +160,18 @@ def _process_symlink_item(item: Path, dst_item: Path) -> None:
             if real_src.name not in COPY_EXCLUDE_DIRS:
                 _copy_resolving_pointers(real_src, dst_item)
         elif real_src.is_file():
-            _process_file_item(real_src, dst_item)
+            _process_file_item(real_src, dst_item, link_dir=item.parent)
     except (OSError, RuntimeError) as e:
         print(f"    ! Could not resolve symlink {item.name}: {e}")
 
 
 # Follow each text pointer until reaching content, a missing target, or a cycle.
-def _process_file_item(item: Path, dst_item: Path) -> None:
-    """Copy a file after resolving any chain of relative-path pointer files."""
+def _process_file_item(item: Path, dst_item: Path, link_dir: Path | None = None) -> None:
+    """Copy a file after resolving any chain of relative-path pointer files.
+
+    A pointer reached through a skill symlink may be written relative to that link's
+    directory rather than its own; link_dir is tried when the pointer's own base fails.
+    """
     resolved_sources: set[Path] = set()
     try:
         while True:
@@ -184,6 +188,9 @@ def _process_file_item(item: Path, dst_item: Path) -> None:
             # Resolve the pointer relative to the file that contains it.
             rel_target = real_src.read_text(encoding="utf-8").strip()
             target = (real_src.parent / rel_target).resolve()
+            if not target.exists() and link_dir is not None:
+                target = (link_dir / rel_target).resolve()
+            link_dir = None
             if not target.exists():
                 # Pointer target missing — copy the pointer as-is (best effort).
                 shutil.copy2(real_src, dst_item)
@@ -616,10 +623,10 @@ def deploy_rules(plugin_path: Path, plugin_name: str, targets: list,
     """Deploy rule files into .agent/rules/ and target agent environments.
 
     .agent/rules/ (singular "agent") is the workspace-rules convention shared
-    by Gemini CLI and os-init's sync_rules() — see
+    by Gemini CLI and os-control-init's sync_rules() — see
     ecosystem-authoritative-sources/references/workflows.md. It is distinct
     from .agents/ (plural), the canonical multi-IDE skills/agents/workflows
-    store. Writing rules anywhere else means os-init --sync-rules and native
+    store. Writing rules anywhere else means os-control-init --sync-rules and native
     Gemini workspace rules never see them.
 
     Args:
@@ -1087,7 +1094,7 @@ def provision_central_and_symlink(plugin_path: Path, metadata: dict, targets: li
         targets: List of detected IDE folder names (e.g. ['.claude']).
         dry_run: If True, print planned actions without writing any files.
         install_rules: If True (default), also deploy plugin rules into
-            .agent/rules/ — the same workspace-rules directory os-init's
+            .agent/rules/ — the same workspace-rules directory os-control-init's
             sync_rules() reconciles from. Pass False to skip.
         append_rules_to_ide_files: If False, skip "append" mode IDE targets
             (e.g. injecting rule content into CLAUDE.md) while still writing

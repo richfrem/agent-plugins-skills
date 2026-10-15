@@ -988,7 +988,7 @@
         "correct": true
       },
       {
-        "input": "os-init and os-health-check are complete; discover my available agent runtimes and write my low, medium, and high model preferences before setting up the project.",
+        "input": "os-control-init and os-control-health are complete; discover my available agent runtimes and write my low, medium, and high model preferences before setting up the project.",
         "should_trigger": true,
         "matched_keywords": [
           "agent",

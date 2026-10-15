@@ -9,7 +9,7 @@ Purpose:
     agent's simulation key (any key enrolled under AGENT_SIMULATION_PRINCIPAL). Which one may
     approve is decided by the DATABASE, never by a row inside it:
       - real work   : every control-plane database EXCEPT one named SIMULATION_DB_NAME. This is
-                      the repository's <repo>/context/control_plane.db that work-intake and the
+                      the repository's <repo>/context/control_plane.db that os-control-intake and the
                       push/merge gates use. Only human keys approve; the agent key is refused on
                       every gate.
       - simulation  : a database file named SIMULATION_DB_NAME (for example

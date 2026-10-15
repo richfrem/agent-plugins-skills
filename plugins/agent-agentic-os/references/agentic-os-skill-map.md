@@ -1,8 +1,8 @@
 # Agentic OS Skill Map
 
 Read this before routing to, recommending, or handing off to any `agent-agentic-os` skill. It says
-what each of the 15 skills does, grouped by purpose and function into two clusters (7 skills each, plus
-`repository-improvement`, which is pending a move to `dev-utils`), and how the clusters relate. For Cluster 1 and Cluster 2 side by side, see
+what each of the 14 skills does, grouped by purpose and function into two clusters of 7, and how the
+clusters relate. For Cluster 1 and Cluster 2 side by side, see
 [two-improvement-paths.md](two-improvement-paths.md).
 
 A project installs only part of this plugin. Check `.agents/ownership/agent-agentic-os.json`
@@ -19,7 +19,7 @@ A project installs only part of this plugin. Check `.agents/ownership/agent-agen
 
 | Cluster | Skills | Job | Scope |
 |---|---|---|---|
-| Cluster 1: Control Plane | 7 | Run large engineering tasks under signed human gates | Any repository, any kind of work |
+| Cluster 1: Control Plane | 7 (plus the `os-control-setup-agent` agent) | Run large engineering tasks under signed human gates | Any repository, any kind of work |
 | Cluster 2: Skill Improvement Lab | 7 (plus the `os-lab-agent` agent) | Plan, run and verify experiments that improve skills and agents | Skills and agents in this ecosystem |
 
 ## How the clusters relate
@@ -36,43 +36,41 @@ in the files `context/kernel.py` maintains: `context/events.jsonl`, `context/.lo
 `context/memory.md`, the improvement ledger and the experiment log. `os-lab-agent` is its front door.
 
 ```text
-                         ┌───────────────────────────────────────────┐
- Cluster 1               │ os-init ─► work-intake ─► Gate 1          │
- Control Plane           │   ─► worktree-manager ─► execute          │   context/control_plane.db
- (independent)           │   ─► Gate 3 ─► closure (DONE)             │   + human SSH key
-                         │ os-signing-setup, transition-simulator,   │
-                         │ os-control-plane-mode, os-health-check    │
-                         └───────────────────────────────────────────┘
+                    ┌──────────────────────────────────────────────────────┐
+ Cluster 1          │ os-control-init ─► os-control-intake ─► Gate 1       │
+ Control Plane      │   ─► os-control-worktree ─► execute                  │   context/control_plane.db
+ (independent)      │   ─► Gate 3 ─► closure (DONE)                        │   + human SSH key
+                    │ supported by os-control-signing-setup,               │
+                    │ os-control-simulator, os-control-mode,               │
+                    │ os-control-health                                    │
+                    └──────────────────────────────────────────────────────┘
 
                          os-lab-agent (front door)
                            │  plan a change: os-lab-planner
                            ▼
  Cluster 2   os-lab-setup ─► os-lab-loop ⇄ os-lab-scorer
  Skill            ─► os-lab-backport ─► os-lab-log
- Improvement Lab  close and debrief: os-memory-manager
+ Improvement Lab  close and debrief: os-lab-memory
                   (context/events.jsonl, context/.locks/, context/memory.md)
 ```
 
-`os-init` belongs to Cluster 1 but also installs the kernel files (`context/kernel.py`, memory folders)
-that Cluster 2 uses. `os-health-check` belongs to Cluster 1 but also reports on those kernel files.
+`os-control-init` belongs to Cluster 1 but also installs the kernel files (`context/kernel.py`, memory folders)
+that Cluster 2 uses. `os-control-health` belongs to Cluster 1 but also reports on those kernel files.
 
 ## Cluster 1: Control Plane
 
 General-purpose pipeline for large work in any repository. Big tasks use it; quick tasks can switch it off.
 
-### Planned renames (separate branch)
+### How it works
 
-Renames of the Cluster 1 skills are planned on a separate branch and are not part of the current
-state: every skill below still has its current name. The diagram and table show the planned names.
-The `os-control-` prefix groups the skills that set up, run or govern the pipeline. `os-health-check`
-keeps its name because it reports on the whole OS, not only the control plane.
+The `os-control-` prefix groups the skills that set up, run, check or govern the pipeline.
 
 ```mermaid
 flowchart TD
     subgraph SETUP [Once per repository]
         IN["<b>os-control-init</b><br/><small>scaffold or retrofit the OS, control_plane.db, memory</small>"]
         SG["<b>os-control-signing-setup</b><br/><small>human creates the SSH approval key</small>"]
-        HC["<b>os-health-check</b><br/><small>readiness: database, signing, kernel files</small>"]
+        HC["<b>os-control-health</b><br/><small>readiness: database, signing, kernel files</small>"]
         IN --> SG --> HC
     end
     U([User request: large task]) --> CI
@@ -87,28 +85,17 @@ flowchart TD
     SIM["<b>os-control-simulator</b><br/><small>test transitions on the simulation database</small>"] -.-> G1
 ```
 
-| Current skill or agent | Planned name | Note |
-|---|---|---|
-| `os-init` | `os-control-init` | Renamed; also installs the kernel files Cluster 2 uses |
-| `work-intake` | `os-control-intake` | Renamed |
-| `worktree-manager` | `os-control-worktree` | Renamed; listed in `plugin-retention.json` `protected_defaults` |
-| `os-signing-setup` | `os-control-signing-setup` | Renamed |
-| `transition-simulator` | `os-control-simulator` | Renamed |
-| `os-control-plane-mode` | `os-control-mode` | Renamed |
-| `os-health-check` | `os-health-check` | Kept: reports on the whole OS |
-| `agentic-os-setup` (agent) | `os-control-setup-agent` | Renamed; wraps `os-control-init` |
-
-### Current skills
+### Skills
 
 | Skill | What it does |
 |---|---|
-| `os-init` | Probes a repository (fresh, complete, or drifted), interviews for stack and AI platforms, makes `AGENTS.md` the single instruction file, creates the 3-layer memory and `context/control_plane.db`, and sets up the simulation signing identity. Wrapped by the `agentic-os-setup` agent. |
-| `work-intake` | Front door for every non-trivial task. Read-only discovery, at most one question per turn, registers the task, writes the four-pillar `TASK_SPEC.md` (the job, the why, guardrails, definition of done) and stages the plan: `INTAKE -> INTERVIEW -> DRAFT_PLAN -> PLAN_REVIEW -> AWAITING_APPROVAL`. |
-| `worktree-manager` | Picks the runtime's native worktree facility, or a portable `.worktrees/<task-id>` based on fresh `origin/main`. Reconciles uncommitted state and reports cleanup commands. |
-| `os-signing-setup` | Walks the human through creating the SSH signing key and `allowed_signers` that authorize Gate 1, Gate 3 and closure, then runs a signing self-test. The agent never signs. |
-| `transition-simulator` | Tests the control-plane state machine without touching real state: deterministic simulation, or cheap-model dry runs that grade what the agent asks, runs, and hands to the human. Uses the separate simulation database and key. |
-| `os-control-plane-mode` | Turns Cluster 1 on or off as one unit (member skills and rule, the commit and push guards, the declared mode) and reports its status. |
-| `os-health-check` | Deterministic readiness and liveness report, run by `os-init` and the control plane's setup checks: signing and identity readiness, plus the kernel's event log, hook errors, memory size and stale locks. |
+| `os-control-init` | Probes a repository (fresh, complete, or drifted), interviews for stack and AI platforms, makes `AGENTS.md` the single instruction file, creates the 3-layer memory and `context/control_plane.db`, and sets up the simulation signing identity. Wrapped by the `os-control-setup-agent` agent. |
+| `os-control-intake` | Front door for every non-trivial task. Read-only discovery, at most one question per turn, registers the task, writes the four-pillar `TASK_SPEC.md` (the job, the why, guardrails, definition of done) and stages the plan: `INTAKE -> INTERVIEW -> DRAFT_PLAN -> PLAN_REVIEW -> AWAITING_APPROVAL`. |
+| `os-control-worktree` | Picks the runtime's native worktree facility, or a portable `.worktrees/<task-id>` based on fresh `origin/main`. Reconciles uncommitted state and reports cleanup commands. |
+| `os-control-signing-setup` | Walks the human through creating the SSH signing key and `allowed_signers` that authorize Gate 1, Gate 3 and closure, then runs a signing self-test. The agent never signs. |
+| `os-control-simulator` | Tests the control-plane state machine without touching real state: deterministic simulation, or cheap-model dry runs that grade what the agent asks, runs, and hands to the human. Uses the separate simulation database and key. |
+| `os-control-mode` | Turns Cluster 1 on or off as one unit (member skills and rule, the commit and push guards, the declared mode) and reports its status. |
+| `os-control-health` | Deterministic readiness and liveness report, run by `os-control-init` and the control plane's setup checks: signing and identity readiness, plus the kernel's event log, hook errors, memory size and stale locks. |
 
 ## Cluster 2: Skill Improvement Lab
 
@@ -118,7 +105,7 @@ against a locked eval set, and verify the result.
 ### Skills and agent
 
 One agent holds the conversation; the skills do the steps. The `os-lab-` prefix groups the cluster's
-skills so they sort together, and `os-memory-manager` is the shared close step.
+skills so they sort together, and `os-lab-memory` is the shared close step.
 
 ```mermaid
 flowchart TD
@@ -132,7 +119,7 @@ flowchart TD
     LP -->|run complete| BP["<b>os-lab-backport</b><br/><small>review the lab diff, backport approved changes</small>"]
     LP --> LG["<b>os-lab-log</b><br/><small>run log, summary and charts</small>"]
     BP --> LG
-    LP -->|close| MM["<b>os-memory-manager</b><br/><small>session log and memory promotion</small>"]
+    LP -->|close| MM["<b>os-lab-memory</b><br/><small>session log and memory promotion</small>"]
     BP -->|debrief| MM
 ```
 
@@ -141,8 +128,8 @@ flowchart TD
 | `os-lab-agent` (agent) | Front door, interactive, runs in the main session. Holds one plain-language conversation: what to improve and why, what already exists, and the run settings (depth, success criteria, available tools, second-opinion check). Writes `references/program.md` and `improvement/run-config.json`, then calls the `os-lab-*` skills in order. |
 | `os-lab-planner` | Non-interactive. Turns the confirmed brief into a plan: audits what already exists, chooses to orchestrate existing skills, update one or create new, brainstorms two or three options with tradeoffs, and writes the task plan and a self-contained delegation prompt. |
 | `os-lab-setup` | Builds an isolated lab repository for one skill: copies the plugin with links resolved, renders `eval-instructions.md`, commits a baseline, and offers manual or autonomous launch. |
-| `os-lab-loop` | The only improvement loop: orient from the ledger, `evals/results.tsv`, `references/program.md` and open map debt, mutate one thing, send every change to `os-lab-scorer`, then close with surveys, ledger update, metrics and memory promotion through `os-memory-manager`. |
+| `os-lab-loop` | The only improvement loop: orient from the ledger, `evals/results.tsv`, `references/program.md` and open map debt, mutate one thing, send every change to `os-lab-scorer`, then close with surveys, ledger update, metrics and memory promotion through `os-lab-memory`. |
 | `os-lab-scorer` | The locked KEEP / DISCARD check for one change: runs `evaluate.py` headlessly, compares against the baseline in `evals/results.tsv`, applies the holdout overfitting gate, and reverts a DISCARD. Also runs a single-pass RED-GREEN-REFACTOR fix on one skill. |
 | `os-lab-backport` | After a lab run, reads the lab's progress log and diff, classifies each changed file (accept, adapt, reject, review), applies approved changes to the master plugin source, and records learnings. |
 | `os-lab-log` | Append-only log of runs in `context/experiment-log/` with `append`, `query` and `summary` modes, plus the improvement trend chart and progress report. |
-| `os-memory-manager` | The close and debrief step of `os-lab-loop` and `os-lab-backport`, and the repository's memory manager: writes the dated session log, promotes vetted facts to `context/memory.md` with conflict checks, and archives when the file exceeds 50,000 bytes, all under the kernel's `memory` lock. |
+| `os-lab-memory` | The close and debrief step of `os-lab-loop` and `os-lab-backport`, and the repository's memory manager: writes the dated session log, promotes vetted facts to `context/memory.md` with conflict checks, and archives when the file exceeds 50,000 bytes, all under the kernel's `memory` lock. |

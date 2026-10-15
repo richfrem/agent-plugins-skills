@@ -8,7 +8,7 @@ Purpose:
     issue #639). Signs a generated challenge with YOUR key through the real ssh-keygen prompt
     (passphrase or hardware touch), verifies it against the SEPARATE `allowed_signers_selftest`
     (namespace control-plane-selftest@agentic-os.local), and proves the signature can never act as a Gate 1 approval.
-    Same behavior as `agent_control.py test-signing-mechanics`, but usable from the os-signing-setup
+    Same behavior as `agent_control.py test-signing-mechanics`, but usable from the os-control-signing-setup
     skill without the rest of the control plane. A human tool: it refuses to run without a terminal.
 
 Key Input Dependencies:

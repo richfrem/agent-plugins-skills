@@ -7,7 +7,7 @@ sequenceDiagram
     participant MASTER as Master Repo<br/>(agent-plugins-skills)
     participant LABAGENT as Lab Agent<br/>(os-lab-loop session)
     participant LOG as os-lab-log
-    participant MEM as os-memory-manager<br/>(if OS present)
+    participant MEM as os-lab-memory<br/>(if OS present)
 
     User->>BR: Trigger: "backport the lab results"<br/>"review what the lab agent changed"
     BR->>User: Phase 0 — Intake<br/>Q1: lab repo path?<br/>Q2: master plugin path?<br/>Q3: baseline commit SHA?
@@ -55,7 +55,7 @@ sequenceDiagram
     BR->>LOG: Phase 5c — Log the Run<br/>os-lab-log: append the run to context/experiment-log/
     LOG-->>BR: Entry indexed
 
-    BR->>MEM: Phase 6a — Session Log<br/>os-memory-manager: write context/memory/YYYY-MM-DD.md<br/>(skill, baseline→final, iterations, backported, rejected, snags)
+    BR->>MEM: Phase 6a — Session Log<br/>os-lab-memory: write context/memory/YYYY-MM-DD.md<br/>(skill, baseline→final, iterations, backported, rejected, snags)
     MEM-->>BR: Log written
 
     Note over BR: Phase 6b — Non-obvious filter:<br/>"Would future agent get burned without this?"

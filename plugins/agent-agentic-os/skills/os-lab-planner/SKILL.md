@@ -10,7 +10,7 @@ description: >
   os-lab-agent has a confirmed brief. DO NOT USE to build the lab repo (os-lab-setup), run
   mutation iterations (os-lab-loop), score a change (os-lab-scorer), review or backport lab
   results (os-lab-backport), write run logs or charts (os-lab-log), or manage memory
-  (os-memory-manager).
+  (os-lab-memory).
 ---
 
 # OS Lab Planner

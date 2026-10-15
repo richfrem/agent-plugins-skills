@@ -69,3 +69,22 @@ def test_copy_resolving_pointers_reports_pointer_cycles(
 
     assert not (destination / "scripts" / "helper.ps1").exists()
     assert "pointer cycle" in capsys.readouterr().out.lower()
+
+
+# Verify a pointer reached through a skill symlink resolves from the link's directory.
+def test_symlink_to_pointer_resolves_relative_to_link_directory(tmp_path: Path) -> None:
+    """Copy the real body when a pointer's path is written relative to the skill link."""
+    plugin = tmp_path / "plugin"
+    hub = plugin / "references"
+    (hub / "architecture").mkdir(parents=True)
+    (hub / "architecture" / "architecture.md").write_text("# real body\n", encoding="utf-8")
+    (hub / "architecture.md").write_text("../../../references/architecture/architecture.md", encoding="utf-8")
+    skill_refs = plugin / "skills" / "demo" / "references"
+    skill_refs.mkdir(parents=True)
+    link = skill_refs / "architecture.md"
+    link.symlink_to("../../../references/architecture.md")
+    destination = tmp_path / "installed.md"
+
+    plugin_installer._process_symlink_item(link, destination)
+
+    assert destination.read_text(encoding="utf-8") == "# real body\n"

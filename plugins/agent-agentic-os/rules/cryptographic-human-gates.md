@@ -32,7 +32,7 @@ Each edge declares `requires_cryptographic_proof` in `transition_templates.yaml`
 - Never offer a prompt, typed word, `--answers`, `--human-confirmed`, flag, or actor string as authorization for cryptographic edges.
 - Never record a decision on the human's behalf.
 - Never bypass or work around a `HUMAN_PROOF_REQUIRED` refusal; report it and provide the exact command for the human to run in their own terminal.
-- `os-init` and `os-health-check` only report signing readiness (read-only); they never enroll a key.
+- `os-control-init` and `os-control-health` only report signing readiness (read-only); they never enroll a key.
 
 ---
 

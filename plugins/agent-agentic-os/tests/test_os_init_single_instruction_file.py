@@ -4,7 +4,7 @@ test_os_init_single_instruction_file.py
 =======================================
 
 Purpose:
-    os-init keeps AGENTS.md as the ONLY agent-instruction file and is idempotent:
+    os-control-init keeps AGENTS.md as the ONLY agent-instruction file and is idempotent:
       - it never creates GEMINI.md or .github/copilot-instructions.md;
       - CLAUDE.md is at most a pointer to AGENTS.md (never enriched with rules);
       - it never overwrites AGENTS.md with CLAUDE.md content (the old fallback replaced a full
@@ -12,13 +12,13 @@ Purpose:
       - a CLAUDE.md with real content and no AGENTS.md is migrated into AGENTS.md, not discarded;
       - fresh setup writes AGENTS.md and a pointer CLAUDE.md, no CLAUDE.local.md;
       - a second run changes nothing;
-      - --install-hooks installs the current guard scripts (shipped with the os-init skill) and
+      - --install-hooks installs the current guard scripts (shipped with the os-control-init skill) and
         touches no instruction file.
     Runs the real init_agentic_os.py as a subprocess against temp git repositories.
 
 Key Input Dependencies:
     plugins/agent-agentic-os/scripts/init_agentic_os.py
-    plugins/agent-agentic-os/skills/os-init/scripts/ (installed-skill layout, for the hook sources)
+    plugins/agent-agentic-os/skills/os-control-init/scripts/ (installed-skill layout, for the hook sources)
 
 Layer: Development / Testing
 
@@ -122,7 +122,7 @@ def test_existing_duplicate_files_are_left_alone(repo):
     (repo / ".github" / "copilot-instructions.md").write_text("Copilot instructions\n")
     (repo / "CLAUDE.local.md").write_text("Local Claude instructions\n")
     res = _run(repo, "--retrofit")
-    assert (repo / "GEMINI.md").read_text() == "# GEMINI.md\nold\n"  # never deleted or rewritten by os-init
+    assert (repo / "GEMINI.md").read_text() == "# GEMINI.md\nold\n"  # never deleted or rewritten by os-control-init
     assert (repo / ".github" / "copilot-instructions.md").read_text() == "Copilot instructions\n"
     assert (repo / "CLAUDE.local.md").read_text() == "Local Claude instructions\n"
     assert "GEMINI.md" in res.stdout  # reported as a duplicate
@@ -150,12 +150,12 @@ def test_install_hooks_installs_current_guards_and_touches_no_instructions(repo)
     (repo / "AGENTS.md").write_text(AGENTS)
     (repo / "CLAUDE.md").write_text(POINTER)
     before = _digest(repo)
-    installed_skill = repo.parent / "installed" / "os-init"
+    installed_skill = repo.parent / "installed" / "os-control-init"
     installed_scripts = installed_skill / "scripts"
     installed_scripts.mkdir(parents=True)
     installed_init = installed_scripts / "init_agentic_os.py"
     shutil.copy2(INIT, installed_init)
-    # The installer copies the whole os-init scripts/ folder with symlinks dereferenced, which
+    # The installer copies the whole os-control-init scripts/ folder with symlinks dereferenced, which
     # includes the shared control_plane_hooks.py helper that init_agentic_os.py imports.
     for name in ("pre-commit-evolution-guard", "pre-commit-pipeline-guard", "pre-push-review-guard",
                  "control_plane_hooks.py"):

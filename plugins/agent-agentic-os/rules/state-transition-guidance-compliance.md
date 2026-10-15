@@ -1,7 +1,7 @@
 ---
 description: >
   Mandatory compliance rule for agents driving SQLite-control-plane state transitions
-  (work-intake and equivalent pipelines). Exists because agents, including Claude, have
+  (os-control-intake and equivalent pipelines). Exists because agents, including Claude, have
   repeatedly skipped or self-answered YAML transition guidance instead of following it
   literally.
 globs: ["**/*"]
@@ -11,7 +11,7 @@ globs: ["**/*"]
 
 ## The Failure Pattern This Rule Targets
 
-Agents driving a control-plane pipeline (work-intake or
+Agents driving a control-plane pipeline (os-control-intake or
 equivalent) have a documented, repeated failure mode: treating the YAML
 transition guidance (`transition_templates.yaml`'s `human_questions`,
 `next_steps_hint`, `stage_question_ids`) as advisory prose to summarize,
@@ -119,8 +119,8 @@ refusing all further transitions, commits, and pushes until a human explicitly
 runs `clear-guidance-block --human-confirmed ...`.
 
 **Before changing any transition's YAML guidance or the coordinator's
-question-handling logic**, use the `transition-simulator` skill
-(`plugins/agent-agentic-os/skills/transition-simulator/`) to verify the
+question-handling logic**, use the `os-control-simulator` skill
+(`plugins/agent-agentic-os/skills/os-control-simulator/`) to verify the
 guidance is still followable by an agent reading it cold — run
 `run_transition_simulation.py --from <STATE> --to <STATE>` for the specific
 edge you changed. This is opt-in (costs real time via LLM calls), not part of

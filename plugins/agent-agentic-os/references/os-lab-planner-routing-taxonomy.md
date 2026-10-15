@@ -7,7 +7,7 @@
 | Lab setup / improvement | "improve X", "stress test", "run N iterations" | Orchestrate |
 | Capability gap | "no skill for", "doesn't exist yet" | Create (after audit) |
 | Multi-target | "improve several", "in parallel" | One plan and prompt per target, run sequentially |
-| System evolution | "tier 3 friction", "state machine refactor" | Out of lab scope: route to the control plane (`work-intake`) if installed |
+| System evolution | "tier 3 friction", "state machine refactor" | Out of lab scope: route to the control plane (`os-control-intake`) if installed |
 
 Confidence: High = 2+ signals for one category. Medium = one signal or minor overlap.
 Low = no clear signal or overlap across 2+ categories. At Low, stop and return one targeted

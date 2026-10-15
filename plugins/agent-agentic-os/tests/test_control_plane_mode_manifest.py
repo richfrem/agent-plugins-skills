@@ -1,5 +1,5 @@
 """
-test_control_plane_mode_manifest.py - keeps os-control-plane-mode's knowledge honest.
+test_control_plane_mode_manifest.py - keeps os-control-mode's knowledge honest.
 
 Purpose:
     The toggle only knows what the control plane consists of from control-plane.manifest.json.
@@ -20,14 +20,14 @@ import control_plane_hooks as cph
 
 PLUGIN = Path(__file__).resolve().parent.parent
 REPO = PLUGIN.parent.parent
-SKILL = PLUGIN / "skills" / "os-control-plane-mode"
+SKILL = PLUGIN / "skills" / "os-control-mode"
 _manifest_file = SKILL / "references" / "control-plane.manifest.json"
 if not _manifest_file.is_file():
     _manifest_file = SKILL / "control-plane.manifest.json"
 MANIFEST = json.loads(_manifest_file.read_text())
 
-MENTIONS = re.compile(r"work-intake|control[_ -]plane|agent_control", re.IGNORECASE)
-SELF = "skills/os-control-plane-mode"
+MENTIONS = re.compile(r"os-control-intake|control[_ -]plane|agent_control", re.IGNORECASE)
+SELF = "skills/os-control-mode"
 
 
 def _defs():
@@ -67,8 +67,8 @@ def test_members_and_excluded_exist_and_do_not_overlap():
 
 
 def test_the_substrate_skills_are_never_members():
-    # os-init creates the substrate and os-health-check verifies it, in both modes.
-    assert not ({"skills/os-init", "skills/os-health-check", SELF} & _members())
+    # os-control-init creates the substrate and os-control-health verifies it, in both modes.
+    assert not ({"skills/os-control-init", "skills/os-control-health", SELF} & _members())
 
 
 def test_manifest_guards_match_the_helper_and_exist():
@@ -81,14 +81,14 @@ def test_manifest_guards_match_the_helper_and_exist():
 
 def test_skills_are_registered_in_plugin_yaml():
     declared = set(yaml.safe_load((PLUGIN / "plugin.yaml").read_text())["skills"])
-    assert "os-control-plane-mode" in declared
+    assert "os-control-mode" in declared
     assert set(MANIFEST["members"]["skills"]) <= declared
 
 
 def test_skill_definition_is_well_formed_and_triggers_on_plain_language():
     text = (SKILL / "SKILL.md").read_text()
     front = yaml.safe_load(text.split("---")[1])
-    assert front["name"] == "os-control-plane-mode" and front["plugin"] == "agent-agentic-os"
+    assert front["name"] == "os-control-mode" and front["plugin"] == "agent-agentic-os"
     description = front["description"].lower()
     for phrase in ("enable the control plane", "disable the control plane", "control plane status"):
         assert phrase in description, f"description must trigger on {phrase!r}"
@@ -97,8 +97,8 @@ def test_skill_definition_is_well_formed_and_triggers_on_plain_language():
 def test_shared_helper_symlinks_are_registered_and_resolve():
     registry = json.loads((REPO / "symlinks.json").read_text())["links"]
     wanted = {
-        "plugins/agent-agentic-os/skills/os-init/scripts/control_plane_hooks.py",
-        "plugins/agent-agentic-os/skills/os-control-plane-mode/scripts/control_plane_hooks.py",
+        "plugins/agent-agentic-os/skills/os-control-init/scripts/control_plane_hooks.py",
+        "plugins/agent-agentic-os/skills/os-control-mode/scripts/control_plane_hooks.py",
     }
     registered = {l["dst"] for l in registry if l["src"] == "plugins/agent-agentic-os/scripts/control_plane_hooks.py"}
     assert wanted <= registered

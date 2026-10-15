@@ -16,12 +16,12 @@ Purpose:
         A missing file means `enabled`, so every existing install behaves exactly as before.
       * The guards read the same file and exit 0 immediately when it says `disabled`.
       * `init_agentic_os.py` reads it too, so a re-run never silently re-enables a gate.
-      * The `os-control-plane-mode` skill uses `wire_guard` / `unwire_guard` to flip the
+      * The `os-control-mode` skill uses `wire_guard` / `unwire_guard` to flip the
         wiring in `.git/hooks` and `read_mode` / `write_mode` to flip the declaration.
 
 Layer:
     Codify / shared helper (stdlib only; imported by init_agentic_os.py and
-    skills/os-control-plane-mode/scripts/control_plane_mode.py via registered symlinks).
+    skills/os-control-mode/scripts/control_plane_mode.py via registered symlinks).
 
 Key Functions:
     - read_mode(root) / write_mode(root, mode)       declared mode
@@ -30,7 +30,7 @@ Key Functions:
     - common_repo_root                               worktree-safe repo root (matches the guards)
 
 The evolution guard (`pre-commit-evolution-guard`) is deliberately NOT a control-plane guard:
-it enforces map-debt / evolution-log discipline and is independent of work-intake.
+it enforces map-debt / evolution-log discipline and is independent of os-control-intake.
 """
 
 from __future__ import annotations

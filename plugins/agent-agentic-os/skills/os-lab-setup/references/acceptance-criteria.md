@@ -1,1 +1,1 @@
-../../../references/acceptance-criteria.md
+../../../references/os-lab-setup-acceptance-criteria.md

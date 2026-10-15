@@ -11,7 +11,7 @@ description: >
   "summarize all experiment runs", "show me the improvement chart", "progress report",
   "graph the eval scores", "what's the trend". DO NOT USE to run the improvement loop
   (use os-lab-loop), to score one skill change (use os-lab-scorer), to review or backport a
-  lab diff (use os-lab-backport), or to write session memory (use os-memory-manager).
+  lab diff (use os-lab-backport), or to write session memory (use os-lab-memory).
 argument-hint: "[append --source-type TYPE | query <term> | summary | report [--skill NAME]]"
 allowed-tools: Bash, Read, Write
 ---

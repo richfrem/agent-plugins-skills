@@ -18,6 +18,6 @@
   {"prompt": "write a plan and delegation prompt for improving this agent", "should_trigger": false, "note": "os-lab-planner"},
   {"prompt": "review the lab diff and backport the approved changes to the master plugin", "should_trigger": false, "note": "os-lab-backport"},
   {"prompt": "show me the eval scores and a progress chart from the last cycle", "should_trigger": false, "note": "os-lab-log"},
-  {"prompt": "write a memory log of what we learned today", "should_trigger": false, "note": "os-memory-manager"},
+  {"prompt": "write a memory log of what we learned today", "should_trigger": false, "note": "os-lab-memory"},
   {"prompt": "I want to improve one of our agents, help me figure out what to do", "should_trigger": false, "note": "os-lab-agent"}
 ]

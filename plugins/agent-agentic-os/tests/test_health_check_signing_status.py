@@ -4,7 +4,7 @@ tests/test_health_check_signing_status.py
 
 Purpose:
     Failing-first acceptance tests for T14 (auth-ciba-increment-b, issue #639, spec case 17): the
-    os-health-check skill gains a READ-ONLY, ADVISORY phase reporting the Gate 1 signing-identity
+    os-control-health skill gains a READ-ONLY, ADVISORY phase reporting the Gate 1 signing-identity
     status. The health check is a phased procedure in SKILL.md executed by an agent, so the phase
     text and the spoked status command are the deliverables: the phase must name the exact read-only
     command, state that a green result is not proof of human presence, and forbid the agent from
@@ -13,7 +13,7 @@ Purpose:
     The self-test-age record planned in the ledger is deferred (no self-test record exists yet).
 
 Key Input Dependencies:
-    - skills/os-health-check/SKILL.md, skills/os-health-check/scripts/ (spokes)
+    - skills/os-control-health/SKILL.md, skills/os-control-health/scripts/ (spokes)
     - scripts/setup_ciba_identity.py (--check), control_plane/identity_*.py
 
 Key Functions (test cases):
@@ -28,7 +28,7 @@ import sys
 from pathlib import Path
 
 PLUGIN = Path(__file__).resolve().parent.parent
-SKILL = PLUGIN / "skills" / "os-health-check"
+SKILL = PLUGIN / "skills" / "os-control-health"
 _scripts_dir = str(PLUGIN / "scripts")
 if _scripts_dir not in sys.path:
     sys.path.insert(0, _scripts_dir)

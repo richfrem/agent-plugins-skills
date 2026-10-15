@@ -60,6 +60,6 @@ Record gated critic results as PASS/REVISE/REJECT; only PASS satisfies approval.
 
 Check installed help before using planning, autopilot, custom agents, subsidiary
 agents or cost-limit flags. Native delegation is appropriate only for authorized
-independent work. Delegate governed worktree setup to worktree-manager when no
+independent work. Delegate governed worktree setup to os-control-worktree when no
 native worktree facility exists. Autopilot and permission flags do not replace
 human approval or pipeline receipts.

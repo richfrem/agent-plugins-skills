@@ -7,26 +7,25 @@
     "plugin-syncer",
     "plugin-pruner",
     "symlink-manager",
-    "worktree-manager"
+    "os-control-worktree"
   ],
   "plugins": {
     "agent-agentic-os": {
       "skills": {
-        "os-control-plane-mode": true,
-        "os-health-check": true,
-        "os-init": true,
-        "os-memory-manager": true,
-        "repository-improvement": true,
-        "transition-simulator": true,
-        "work-intake": true,
-        "worktree-manager": true,
-        "os-signing-setup": true,
         "os-lab-planner": true,
         "os-lab-setup": false,
         "os-lab-loop": false,
         "os-lab-scorer": true,
         "os-lab-backport": false,
-        "os-lab-log": false
+        "os-lab-log": false,
+        "os-control-mode": true,
+        "os-control-simulator": true,
+        "os-control-signing-setup": true,
+        "os-control-worktree": true,
+        "os-control-intake": true,
+        "os-control-init": true,
+        "os-control-health": true,
+        "os-lab-memory": true
       },
       "rules": {
         "adversarial-reasoning-before-agreement-rule.md": true,
@@ -42,8 +41,8 @@
         "cryptographic-human-gates.md": true
       },
       "agents": {
-        "agent-agentic-os-agentic-os-setup.md": true,
-        "agent-agentic-os-os-lab-agent.md": true
+        "agent-agentic-os-os-lab-agent.md": true,
+        "agent-agentic-os-os-control-setup-agent.md": true
       }
     },
     "agent-memory": {
@@ -182,7 +181,8 @@
         "link-checker-agent": false,
         "optimize-context": true,
         "symlink-manager": true,
-        "todo-check": true
+        "todo-check": true,
+        "github-issue-refactor-proposer": true
       },
       "rules": {
         "coding-conventions.md": true,

@@ -26,18 +26,18 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 | T10 | os-lab-loop | Memory persistence: at least one promoted fact in context/memory.md after cycle | MEDIUM |
 | T11 | os-lab-loop | Auto-trigger: Triple-Loop Retrospective triggered when friction_events_total reaches 3 | HIGH |
 | T12 | os-lab-loop | Lock contention: second agent attempting same lock receives clear failure, not hang | HIGH |
-| T18 | os-memory-manager | Baseline promotion: ephemeral state skipped, architectural decisions promoted | HIGH |
-| T19 | os-memory-manager | Dedup detection: semantic duplicate caught and flagged before write | HIGH |
-| T20 | os-memory-manager | Test registry preservation: registry.md skipped by archive logic, never deleted | HIGH |
-| T21 | os-memory-manager | Conflict detection: <CONFLICT> marker emitted before any write with overlap | HIGH |
-| T22 | os-memory-manager | Size enforcement: memory.md over 50KB triggers archive, not silent truncation | MEDIUM |
-| T23 | os-memory-manager | Survey completion: memory manager completes self-assessment after every session | HIGH |
-| T24 | os-memory-manager | Rollback protocol: rejected write triggers git stash pop, file reverted | MEDIUM |
-| T25 | os-memory-manager | Falsified hypothesis: DO NOT RE-TEST entry added to memory.md when hypothesis falsified | HIGH |
+| T18 | os-lab-memory | Baseline promotion: ephemeral state skipped, architectural decisions promoted | HIGH |
+| T19 | os-lab-memory | Dedup detection: semantic duplicate caught and flagged before write | HIGH |
+| T20 | os-lab-memory | Test registry preservation: registry.md skipped by archive logic, never deleted | HIGH |
+| T21 | os-lab-memory | Conflict detection: <CONFLICT> marker emitted before any write with overlap | HIGH |
+| T22 | os-lab-memory | Size enforcement: memory.md over 50KB triggers archive, not silent truncation | MEDIUM |
+| T23 | os-lab-memory | Survey completion: memory manager completes self-assessment after every session | HIGH |
+| T24 | os-lab-memory | Rollback protocol: rejected write triggers git stash pop, file reverted | MEDIUM |
+| T25 | os-lab-memory | Falsified hypothesis: DO NOT RE-TEST entry added to memory.md when hypothesis falsified | HIGH |
 | T26 | learning-loop | Baseline 3-phase completion: observe, hypothesize, test phases all execute | HIGH |
 | T27 | learning-loop | Survey Phase V: survey completed and saved to retrospectives/ after every run | HIGH |
 | T28 | learning-loop | Metrics Phase VI: post_run_metrics.py fires and emits metric event | HIGH |
-| T29 | learning-loop | Memory Phase VII: os-memory-manager invoked before handoff | HIGH |
+| T29 | learning-loop | Memory Phase VII: os-lab-memory invoked before handoff | HIGH |
 | T30 | learning-loop | Handoff gate: Phase VIII only starts after survey saved + metrics emitted + memory written | HIGH |
 | T31 | triple-loop | Baseline handoff: outer loop assigns task, inner loop completes and signals back | HIGH |
 | T32 | triple-loop | Survey both agents: outer loop AND inner loop both complete self-assessment | HIGH |
@@ -57,8 +57,8 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 | T46 | hooks | Friction count: post_run_metrics.py correctly counts type:friction events from events.jsonl | HIGH |
 | T47 | hooks | Metrics on Stop: metrics report written to disk on every Stop hook fire | HIGH |
 | T48 | hooks | Auto-trigger threshold: friction_events_total >= 3 emits metric that triggers Triple-Loop Retrospective | HIGH |
-| T49 | os-init | Interview skip: init does not repeat questions already answered in conversation | MEDIUM |
-| T50 | os-init | Survey completion: init completes self-assessment after every onboarding run | HIGH |
+| T49 | os-control-init | Interview skip: init does not repeat questions already answered in conversation | MEDIUM |
+| T50 | os-control-init | Survey completion: init completes self-assessment after every onboarding run | HIGH |
 
 ---
 
@@ -240,9 +240,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T18 — os-memory-manager: Baseline Promotion Decision Accuracy
+### T18 — os-lab-memory: Baseline Promotion Decision Accuracy
 
-- **Target**: os-memory-manager
+- **Target**: os-lab-memory
 - **Hypothesis**: The manager correctly promotes architectural decisions and skips ephemeral state
   at a rate of 80%+ agreement with human judgment on a standard 10-item test set.
 - **Why now**: Promotion accuracy is the core function. Baseline must be established first.
@@ -254,9 +254,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T19 — os-memory-manager: Semantic Deduplication Detection
+### T19 — os-lab-memory: Semantic Deduplication Detection
 
-- **Target**: os-memory-manager
+- **Target**: os-lab-memory
 - **Hypothesis**: The manager catches a semantically duplicate fact (same meaning, different words)
   and emits <CONFLICT> before writing.
 - **Why now**: Semantic dedup is the core "dementia defense". If it fails, memory fills with
@@ -269,9 +269,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T20 — os-memory-manager: Test Registry Preservation
+### T20 — os-lab-memory: Test Registry Preservation
 
-- **Target**: os-memory-manager
+- **Target**: os-lab-memory
 - **Hypothesis**: The archive logic in Phase 4 never archives context/memory/tests/registry.md,
   even when memory.md exceeds 50KB and archive is triggered.
 - **Why now**: Registry preservation is a new explicit rule in Phase 3 (added this session).
@@ -284,9 +284,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T21 — os-memory-manager: Conflict Detection Before Write
+### T21 — os-lab-memory: Conflict Detection Before Write
 
-- **Target**: os-memory-manager
+- **Target**: os-lab-memory
 - **Hypothesis**: When a proposed promoted fact overlaps with an existing rule in skills/,
   the manager emits <CONFLICT> rather than silently writing.
 - **Why now**: Cross-skill conflict detection was added to Phase 4. Unverified.
@@ -298,9 +298,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T22 — os-memory-manager: Memory Size Limit Enforcement
+### T22 — os-lab-memory: Memory Size Limit Enforcement
 
-- **Target**: os-memory-manager
+- **Target**: os-lab-memory
 - **Hypothesis**: When context/memory.md exceeds 50KB, the manager archives the oldest lines
   rather than silently allowing unbounded growth.
 - **Why now**: Unbounded memory.md degrades context quality and model performance.
@@ -313,9 +313,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T23 — os-memory-manager: Survey Completion
+### T23 — os-lab-memory: Survey Completion
 
-- **Target**: os-memory-manager
+- **Target**: os-lab-memory
 - **Hypothesis**: The memory manager completes Phase 5 self-assessment survey after every
   session close, including sessions with zero promotions.
 - **Why now**: Survey is new (added this session). First test.
@@ -327,9 +327,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T24 — os-memory-manager: Rollback on Rejected Write
+### T24 — os-lab-memory: Rollback on Rejected Write
 
-- **Target**: os-memory-manager
+- **Target**: os-lab-memory
 - **Hypothesis**: When the user rejects a proposed write during the git stash + diff preview,
   git stash pop restores the original file correctly.
 - **Why now**: Safe Write Protocol is critical for non-destructive memory updates.
@@ -341,9 +341,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T25 — os-memory-manager: Falsified Hypothesis Entry
+### T25 — os-lab-memory: Falsified Hypothesis Entry
 
-- **Target**: os-memory-manager
+- **Target**: os-lab-memory
 - **Hypothesis**: When a test registry entry is falsified (DISCARD verdict), the manager adds
   a "DO NOT RE-TEST" entry to context/memory.md with the cycle ID as evidence.
 - **Why now**: Without DO NOT RE-TEST entries, Triple-Loop Retrospective will re-test the same
@@ -401,13 +401,13 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 ### T29 — learning-loop: Memory Written at Phase VII
 
 - **Target**: learning-loop
-- **Hypothesis**: os-memory-manager is invoked during Phase VII and writes a session log
+- **Hypothesis**: os-lab-memory is invoked during Phase VII and writes a session log
   before the handoff in Phase VIII.
 - **Why now**: Phase VII is new — added this session.
 - **Prior results**: None.
 - **Acceptance criteria**: Session log file created in context/memory/YYYY-MM-DD.md before Phase VIII event.
 - **Failure criteria**: No session log; or Phase VIII starts before memory write.
-- **Known weaknesses**: Requires os-memory-manager to work correctly (dependency).
+- **Known weaknesses**: Requires os-lab-memory to work correctly (dependency).
 - **Recommended next test**: T30 (Phase VIII gate) — full sequence validation.
 
 ---
@@ -690,9 +690,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T49 — os-init: Interview Skip for Already-Answered Questions
+### T49 — os-control-init: Interview Skip for Already-Answered Questions
 
-- **Target**: os-init
+- **Target**: os-control-init
 - **Hypothesis**: When the user has already stated their project type and use case in conversation,
   the init interview skips those questions and only asks what is still unclear.
 - **Why now**: Redundant questioning is friction. Phase 1 says to skip answered questions but
@@ -706,9 +706,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T50 — os-init: Survey Completion After Onboarding
+### T50 — os-control-init: Survey Completion After Onboarding
 
-- **Target**: os-init
+- **Target**: os-control-init
 - **Hypothesis**: Phase 5 self-assessment survey is completed and saved after every init run,
   including partial inits that stop after the interview phase.
 - **Why now**: Phase 5 is new — added this session.
@@ -718,7 +718,7 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 - **Failure criteria**: Survey absent after init; or sections blank.
 - **Known weaknesses**: Survey may not be saved if init is interrupted mid-phase.
 - **Recommended next test**: Review whether the improvement recommendation from T50
-  leads to an update of the os-init SKILL.md — completing the Triple-Loop cycle.
+  leads to an update of the os-control-init SKILL.md — completing the Triple-Loop cycle.
 
 ---
 
@@ -733,5 +733,5 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 Priority ordering within a target: start with HIGH, then MEDIUM.
 Cross-target ordering: run kernel.py and hooks tests first (foundational infrastructure),
-then os-memory-manager and Triple-Loop Retrospective (most impactful for Triple-Loop),
+then os-lab-memory and Triple-Loop Retrospective (most impactful for Triple-Loop),
 then os-lab-loop and triple-loop (integration tests).

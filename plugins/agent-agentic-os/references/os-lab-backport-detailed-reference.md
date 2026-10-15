@@ -120,16 +120,16 @@ Incorporate any new operational findings into the relevant templates and skills 
 
 Every completed backport session produces knowledge worth preserving. Two destinations, two scopes:
 
-### 6a: Dated Session Log (project-level, via os-memory-manager)
+### 6a: Dated Session Log (project-level, via os-lab-memory)
 
 Check whether the Agentic OS is initialized in the master repo:
 ```bash
 ls context/kernel.py 2>/dev/null && echo "OS present" || echo "OS absent"
 ```
 
-**If OS is present** — delegate to `os-memory-manager` to write the dated session log:
+**If OS is present** — delegate to `os-lab-memory` to write the dated session log:
 ```
-Invoke os-memory-manager to write a session log for the eval backport session just completed.
+Invoke os-lab-memory to write a session log for the eval backport session just completed.
 Include: skill optimized, baseline vs final score, files backported, changes rejected and why,
 and any snags or non-obvious findings from the run log or self-assessment survey.
 ```
@@ -191,7 +191,7 @@ Then add a pointer line to `MEMORY.md`.
 
 ### 6c: Promote to context/memory.md (if OS present)
 
-If the OS is initialized and the non-obvious filter passed, also ask `os-memory-manager` to promote the finding as a long-term fact to `context/memory.md` with a deduplication ID.
+If the OS is initialized and the non-obvious filter passed, also ask `os-lab-memory` to promote the finding as a long-term fact to `context/memory.md` with a deduplication ID.
 
 ## Master Source Mapping Reference
 

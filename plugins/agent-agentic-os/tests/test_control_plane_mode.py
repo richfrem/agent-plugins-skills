@@ -1,5 +1,5 @@
 """
-test_control_plane_mode.py - behavioural tests for skills/os-control-plane-mode.
+test_control_plane_mode.py - behavioural tests for skills/os-control-mode.
 
 Purpose:
     Proves the status / enable / disable engine on a realistic throwaway repo:
@@ -8,8 +8,8 @@ Purpose:
     reconciled, and a failed sync leaves a predictable state.
 
 Key Input Dependencies:
-    - skills/os-control-plane-mode/scripts/control_plane_mode.py
-    - skills/os-control-plane-mode/control-plane.manifest.json
+    - skills/os-control-mode/scripts/control_plane_mode.py
+    - skills/os-control-mode/control-plane.manifest.json
     - tests/helpers/control_plane_repo.py (fixture repo + fake syncer)
 """
 
@@ -52,7 +52,7 @@ def test_dry_run_changes_nothing_and_prints_the_plan(repo):
     before = snapshot(repo)
     res = run_mode(repo, "disable", "--dry-run")
     assert res.returncode == 0
-    assert "DISABLE the control plane" in res.stdout and "work-intake" in res.stdout
+    assert "DISABLE the control plane" in res.stdout and "os-control-intake" in res.stdout
     assert snapshot(repo) == before
 
 
@@ -140,17 +140,17 @@ def test_repeating_a_toggle_is_a_no_op(repo):
 
 def test_status_reports_drift_and_disable_reconciles_it(repo):
     run_mode(repo, "disable", "--yes")
-    (repo / ".agents/skills/work-intake").mkdir(parents=True)  # a stray resync brought it back
+    (repo / ".agents/skills/os-control-intake").mkdir(parents=True)  # a stray resync brought it back
     own = _own(repo)
-    own["components"]["skills"]["work-intake"]["should_install"] = True
+    own["components"]["skills"]["os-control-intake"]["should_install"] = True
     (repo / OWNERSHIP).write_text(json.dumps(own, indent=2) + "\n")
 
     st = run_mode(repo, "status")
-    assert st.returncode == 1 and "skills/work-intake is still installed" in st.stdout
+    assert st.returncode == 1 and "skills/os-control-intake is still installed" in st.stdout
 
     res = run_mode(repo, "disable", "--yes")
     assert res.returncode == 0 and "RESULT: consistent" in res.stdout
-    assert not (repo / ".agents/skills/work-intake").exists()
+    assert not (repo / ".agents/skills/os-control-intake").exists()
 
 
 def test_status_reports_an_unwired_guard_while_enabled_and_enable_repairs_it(repo):
@@ -183,11 +183,11 @@ def test_a_failed_sync_while_enabling_never_declares_enabled(repo):
 
 def test_manifest_member_missing_from_ownership_aborts_before_any_change(repo):
     own = _own(repo)
-    del own["components"]["skills"]["transition-simulator"]
+    del own["components"]["skills"]["os-control-simulator"]
     (repo / OWNERSHIP).write_text(json.dumps(own, indent=2) + "\n")
     before = snapshot(repo)
     res = run_mode(repo, "disable", "--yes")
-    assert res.returncode == 2 and "transition-simulator" in res.stderr
+    assert res.returncode == 2 and "os-control-simulator" in res.stderr
     assert snapshot(repo) == before
 
 

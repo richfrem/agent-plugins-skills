@@ -12,7 +12,7 @@ Purpose:
 Key Input Dependencies:
     - control_plane/transition_simulation_cases.py (canonical; symlinked into tests/)
     - control_plane/edge_matrix.py (expected class per edge)
-    - skills/work-intake/SKILL.md (front door text given to the agent)
+    - skills/os-control-intake/SKILL.md (front door text given to the agent)
 
 Index:
     - test_prompt_contains_edge_guidance_skill_and_format
@@ -71,7 +71,7 @@ def test_prompt_contains_edge_guidance_skill_and_format():
     assert row["to_state"] in prompt
     assert row["from_state"] in prompt
     assert "WHO_RUNS:" in prompt and "SAY_TO_HUMAN:" in prompt and "READS_FIRST:" in prompt
-    assert "work-intake" in prompt  # front-door SKILL.md text is included
+    assert "os-control-intake" in prompt  # front-door SKILL.md text is included
 
 
 def test_prompt_does_not_leak_expected_class():

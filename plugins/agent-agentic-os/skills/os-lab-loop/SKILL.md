@@ -4,13 +4,13 @@ description: >
   The only improvement loop in the skill lab: orient from the improvement ledger, evals/results.tsv,
   references/program.md and open map debt, mutate one thing, call os-lab-scorer for every change
   (KEEP or DISCARD), then close with surveys, ledger update, metrics and memory promotion through
-  os-memory-manager. Runs solo or as ORCHESTRATOR with INNER_AGENT and PEER_AGENT sessions sharing
+  os-lab-memory. Runs solo or as ORCHESTRATOR with INNER_AGENT and PEER_AGENT sessions sharing
   the kernel event bus. Use when the user says "run the improvement loop", "run the autoresearch
   loop on", "optimize this skill for N iterations", "run an improvement cycle", "continuous
   improvement loop with KEEP or DISCARD", "ORCHESTRATOR and PEER_AGENT", or "close the loop".
   DO NOT USE for a single KEEP/DISCARD check or one RED-GREEN-REFACTOR patch (os-lab-scorer),
   building the lab repo (os-lab-setup), planning (os-lab-planner), reviewing and porting results
-  (os-lab-backport), run logs and charts (os-lab-log), or session memory alone (os-memory-manager).
+  (os-lab-backport), run logs and charts (os-lab-log), or session memory alone (os-lab-memory).
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 ---
 
@@ -53,7 +53,7 @@ Each iteration: classify the failure, propose one change, invoke `os-lab-scorer`
 3. **Score (Stage 2)**: invoke `os-lab-scorer`. With a PEER_AGENT, the peer scores independently from its own session. See [stage-2-verification.md](references/stage-2-verification.md).
 4. **Decide (Stage 3)**: KEEP is applied and committed; DISCARD writes a correction packet and re-signals the inner agent. See [stage-3-decision.md](references/stage-3-decision.md).
 5. **Repeat** from step 2 until the cap, the target score or the budget guard.
-6. **Close (Stage 4)**: friction gate, surveys, post-run metrics, session log, loop report, test registry, improvement ledger, then `os-memory-manager` for L3 promotion, auto-memory, Triple-Loop trigger check and lock release. See [stage-4-close.md](references/stage-4-close.md).
+6. **Close (Stage 4)**: friction gate, surveys, post-run metrics, session log, loop report, test registry, improvement ledger, then `os-lab-memory` for L3 promotion, auto-memory, Triple-Loop trigger check and lock release. See [stage-4-close.md](references/stage-4-close.md).
 
 When the lab run is complete, hand the diff to `os-lab-backport` and the run record to `os-lab-log`.
 

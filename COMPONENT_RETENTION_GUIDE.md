@@ -1,12 +1,12 @@
 # Repository Skill & Rule Configuration Guide
 
-This document catalogs which skills, rules, and agents should be enabled (`true`) versus disabled (`false`) when configuring this repository for minimal overhead, specifically centering around `os-init` workflows and core repository governance.
+This document catalogs which skills, rules, and agents should be enabled (`true`) versus disabled (`false`) when configuring this repository for minimal overhead, specifically centering around `os-control-init` workflows and core repository governance.
 
 ---
 
 ## 1. Quick Summary of Configuration Goals
 
-- **Focus**: Maintain core repo governance, issue tracking, scaffolding, and the `os-init` bootstrap suite.
+- **Focus**: Maintain core repo governance, issue tracking, scaffolding, and the `os-control-init` bootstrap suite.
 - **De-bloat**: Disable unused high-token agent patterns, RLM/vector stores, obsidian wiki notes, and heavy prototyping pipelines until explicitly needed.
 
 ---
@@ -16,16 +16,16 @@ This document catalogs which skills, rules, and agents should be enabled (`true`
 ### A. `agent-agentic-os` (OS Kernel & Bootstrap)
 | Skill | Status | Rationale |
 |---|---|---|
-| `os-init` | **`true`** | Core skill to bootstrap and retrofit Agentic OS, 3-Layer memory, and repo structure. |
-| `os-health-check` | **`true`** | Verification gate required by `os-init` Phase 5 to confirm DB, memory, and substrate health. |
-| `os-signing-setup` | **`true`** | Guides SSH cryptographic human approval gate enrollment and verification. |
-| `os-memory-manager` | **`true`** | Manages memory tiers (`MEMORY.md`, `context/memory.md`, session logs). |
-| `work-intake` | `false` | Control-plane interview state machine; disable if doing direct/manual tasking. |
-| `worktree-manager` | `false` | Worktree orchestration engine; turn on if using automated isolated task worktrees. |
+| `os-control-init` | **`true`** | Core skill to bootstrap and retrofit Agentic OS, 3-Layer memory, and repo structure. |
+| `os-control-health` | **`true`** | Verification gate required by `os-control-init` Phase 5 to confirm DB, memory, and substrate health. |
+| `os-control-signing-setup` | **`true`** | Guides SSH cryptographic human approval gate enrollment and verification. |
+| `os-lab-memory` | **`true`** | Manages memory tiers (`MEMORY.md`, `context/memory.md`, session logs). |
+| `os-control-intake` | `false` | Control-plane interview state machine; disable if doing direct/manual tasking. |
+| `os-control-worktree` | `false` | Worktree orchestration engine; turn on if using automated isolated task worktrees. |
 | `os-lab-planner` | `false` | Architectural synthesis subagent; disable if doing manual architecture review. |
-| `os-control-plane-mode` | `false` | Control-plane database mode switcher. |
-| `transition-simulator` | `false` | Control-plane transition dry-run simulator. |
-| `repository-improvement`| `false` | Automated friction cluster synthesizer. |
+| `os-control-mode` | `false` | Control-plane database mode switcher. |
+| `os-control-simulator` | `false` | Control-plane transition dry-run simulator. |
+| `github-issue-refactor-proposer`| `false` | Automated friction cluster synthesizer. |
 | `os-lab-*` (setup, loop, scorer, backport, log) | `false` | Skill improvement lab: isolated lab setup, improvement loop, KEEP/DISCARD scorer, backport review, run log and charts. |
 
 ---
@@ -35,7 +35,7 @@ This document catalogs which skills, rules, and agents should be enabled (`true`
 
 | Skill | Status | Rationale |
 |---|---|---|
-| `memory-management` | `false` | Standalone memory helper (covered by `os-memory-manager`). |
+| `memory-management` | `false` | Standalone memory helper (covered by `os-lab-memory`). |
 | `rlm-*` (6 skills) | `false` | Recursive Language Model summary ledger distillation & curation. |
 | `vector-db-*` (6 skills)| `false` | ChromaDB vector storage, ingestion, and search. |
 

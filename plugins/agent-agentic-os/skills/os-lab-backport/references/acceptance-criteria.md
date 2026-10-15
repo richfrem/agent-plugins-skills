@@ -1,1 +1,1 @@
-../../../references/acceptance-criteria.md
+../../../references/os-lab-backport-acceptance-criteria.md

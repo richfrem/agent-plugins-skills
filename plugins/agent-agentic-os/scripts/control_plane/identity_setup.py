@@ -9,7 +9,7 @@ Purpose:
     public key into the production `allowed_signers` (namespace control-plane@agentic-os.local) and the SEPARATE
     `allowed_signers_selftest` (namespace control-plane-selftest@agentic-os.local), list enrolled keys with their
     fingerprints, check that a private key is passphrase-protected, and report a read-only status
-    (also used by os-init and os-health-check). Stdlib only; uses the real `ssh-keygen`.
+    (also used by os-control-init and os-control-health). Stdlib only; uses the real `ssh-keygen`.
     The setup CLI (scripts/setup_ciba_identity.py) is the interactive front end; nothing here
     prompts, and nothing here runs privileged commands.
 

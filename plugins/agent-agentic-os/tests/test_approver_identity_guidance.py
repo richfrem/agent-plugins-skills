@@ -8,12 +8,12 @@ Purpose:
     approver; the default is the human operator's signing identity for all main
     work, and only simulation work (signed off by the human) may use the agent's
     test identity. The rule must reach agents through the INTERVIEW stage
-    contract (surfaced by transition-guidance) and as the first work-intake rule.
+    contract (surfaced by transition-guidance) and as the first os-control-intake rule.
 
 Key Input Dependencies:
     plugins/agent-agentic-os/scripts/control_plane/transition_templates.yaml — stages.INTERVIEW.approver_identity
-    plugins/agent-agentic-os/skills/work-intake/SKILL.md — Critical Operational Rule 1
-    plugins/agent-agentic-os/skills/transition-simulator/SKILL.md — simulation approver section
+    plugins/agent-agentic-os/skills/os-control-intake/SKILL.md — Critical Operational Rule 1
+    plugins/agent-agentic-os/skills/os-control-simulator/SKILL.md — simulation approver section
 
 Layer: Development / Testing
 
@@ -44,7 +44,7 @@ def test_interview_contract_declares_single_human_default_approver():
 
 
 def test_work_intake_confirms_approver_identity_first():
-    text = (PLUGIN_ROOT / "skills" / "work-intake" / "SKILL.md").read_text(encoding="utf-8")
+    text = (PLUGIN_ROOT / "skills" / "os-control-intake" / "SKILL.md").read_text(encoding="utf-8")
     heading = "## Critical Constraints" if "## Critical Constraints" in text else "## Critical Operational Rules"
     rules = text.split(heading, 1)[1]
     first_rule = next(line for line in rules.splitlines() if line.startswith("1. "))
@@ -53,7 +53,7 @@ def test_work_intake_confirms_approver_identity_first():
 
 
 def test_transition_simulator_documents_simulation_approver():
-    text = (PLUGIN_ROOT / "skills" / "transition-simulator" / "SKILL.md").read_text(encoding="utf-8")
+    text = (PLUGIN_ROOT / "skills" / "os-control-simulator" / "SKILL.md").read_text(encoding="utf-8")
     assert "## Approver Identity in Simulations" in text
     assert "test-human@local" in text
 
@@ -65,8 +65,8 @@ def test_guidance_describes_the_two_database_split():
     contract = TransitionRegistry.load_default().get_stage_contract("INTERVIEW")["approver_identity"]
     surfaces = {
         "yaml": " ".join(str(v) for v in contract.values()),
-        "work-intake": (PLUGIN_ROOT / "skills" / "work-intake" / "SKILL.md").read_text(encoding="utf-8"),
-        "transition-simulator": (PLUGIN_ROOT / "skills" / "transition-simulator" / "SKILL.md").read_text(encoding="utf-8"),
+        "os-control-intake": (PLUGIN_ROOT / "skills" / "os-control-intake" / "SKILL.md").read_text(encoding="utf-8"),
+        "os-control-simulator": (PLUGIN_ROOT / "skills" / "os-control-simulator" / "SKILL.md").read_text(encoding="utf-8"),
     }
     for name, text in surfaces.items():
         assert "simulation_control_plane.db" in text, name

@@ -1,1 +1,0 @@
-../../../references/os-health-check/acceptance-criteria.md

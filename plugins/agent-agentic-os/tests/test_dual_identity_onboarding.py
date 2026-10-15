@@ -4,7 +4,7 @@ test_dual_identity_onboarding.py
 ================================
 
 Purpose:
-    Contracts for dual-identity onboarding (control_plane/simulation_identity.py and os-init):
+    Contracts for dual-identity onboarding (control_plane/simulation_identity.py and os-control-init):
       - the simulation identity lives in its own folder and trust file
         (<repo>/context/simulation/identity/) and is created, reused and enrolled additively;
       - it never writes the human's production trust file (<repo>/context/identity/allowed_signers);
@@ -125,8 +125,8 @@ def test_account_existence_does_not_prove_runtime_isolation(tmp_path, monkeypatc
 
 def test_full_simulation_runs_standalone_from_the_installed_skill(tmp_path):
     """Outside the test suite (no stand-in signer, no fake review menu, real PATH), a simulation runs
-    INTAKE -> DONE from the transition-simulator skill's own scripts, approved only by its simulation key."""
-    source = Path(__file__).resolve().parents[1] / "skills" / "transition-simulator"
+    INTAKE -> DONE from the os-control-simulator skill's own scripts, approved only by its simulation key."""
+    source = Path(__file__).resolve().parents[1] / "skills" / "os-control-simulator"
     installed = tmp_path / "installed-skill"
     shutil.copytree(source, installed, symlinks=False)
     assert not any(path.is_symlink() for path in installed.rglob("*"))

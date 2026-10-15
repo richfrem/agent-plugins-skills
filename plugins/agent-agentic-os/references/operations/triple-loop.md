@@ -7,7 +7,7 @@
 
 Canonical reference for the overarching orchestrator, strategy packet (Double-Loop), and tactical verification protocol (Single-Loop) used by `os-lab-loop`.
 
-Diagram: [`references/diagrams/triple-loop-learning-system.mmd`](../assets/diagrams/triple-loop-learning-system.mmd)
+Diagram: none (the original `triple-loop-learning-system.mmd` no longer exists).
 
 ---
 
