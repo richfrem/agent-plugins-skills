@@ -26,21 +26,21 @@ Current scale (read from `plugins/` — verify with `find plugins -name SKILL.md
 `find plugins/*/agents -maxdepth 1 -name '*.md' | wc -l` before quoting a number elsewhere;
 `plugins/spec-kitty-plugin` was removed 2026-09-05, never part of this count):
 - **10 plugins**
-- **139 skills** (active SKILL.md definitions across plugins)
-- **46 agent definitions** (`agents/*.md` across plugins)
+- **128 skills** (active SKILL.md definitions across plugins)
+- **45 agent definitions** (`agents/*.md` across plugins)
 
 ## 2. Project Structure
 
 ```
 [Project Root]/
 ├── plugins/                        # CANONICAL SOURCE — authoritative for all skills/agents
-│   ├── agent-agentic-os/           # OS improvement loop, memory, evolution planning (27 skills)
+│   ├── agent-agentic-os/           # Control plane + skill improvement lab (15 skills)
 │   ├── agent-orchestration/        # OS-decoupled execution primitives (10 skills)
 │   ├── agent-memory/               # RLM summary cache + ChromaDB vector store (13 skills)
 │   ├── agent-scaffolders/          # Plugin/skill/agent/rule scaffolding & auditing (27 skills)
 │   ├── cli-agents/                 # Multi-LLM CLI dispatch (Claude/Copilot/Gemini/Agy/Codex) (11 skills)
 │   ├── dependency-management/      # pip-compile / dependency tier workflow (1 skill)
-│   ├── dev-utils/                  # ADR mgmt, symlinks, context bundling, GitHub issues, worktrees (17 skills)
+│   ├── dev-utils/                  # ADR mgmt, symlinks, context bundling, GitHub issues, worktrees, TODO scan (18 skills)
 │   ├── exploration-cycle-plugin/   # Business discovery workflow + SQLite control plane (20 skills)
 │   ├── obsidian-wiki-engine/       # Karpathy-style LLM wiki over the codebase (10 skills)
 │   ├── plugin-manager/             # Install/remove/sync plugins into target projects (3 skills)
@@ -127,8 +127,8 @@ unmodified, into any number of target projects.
 
 ### 4.2. Plugin: agent-agentic-os
 The self-improvement kernel. Core loop: `os-lab-planner → os-lab-loop → os-lab-scorer →
-os-lab-backport → os-lab-log`. Owns memory management (`os-memory-manager`), evolution
-planning (`os-lab-planner`/`os-evolution-verifier`), setup (`os-init`, `agentic-os-setup` agent),
+os-lab-backport → os-lab-log`. Owns memory management (`os-memory-manager`), lab
+planning (`os-lab-planner`, front door agent `os-lab-agent`), setup (`os-init`, `agentic-os-setup` agent),
 and Layer 2 Wiki & Map Debt governance (`distill_playbook`, `audit_map_debt`, `pre-commit-evolution-guard`,
 and `turn_evolution_guard`). Three control-plane edges are cryptographic human gates: Gate 1 (`AWAITING_APPROVAL -> APPROVED`), Gate 3 (`WORKTREE_REVIEW` or `MULTI_AGENT_CODE_REVIEW` `-> VERIFY_EXIT`) and closure (any edge into `DONE`). Each declares `requires_cryptographic_proof`: the coordinator halts with `HUMAN_PROOF_REQUIRED` and a pending, content-bound `transition_request` (Gate 3 binds the commit SHA, tracked-diff hash and untracked-files hash; closure also binds the retrospective digest); the human signs it out of band with `ssh-keygen -Y sign` (OpenSSH prompts for the private-key passphrase) via `show-challenge` and `approve-transition`; the signature is verified outside the database write lock and the request is consumed exactly once in the commit transaction. No prompt, typed word, flag, receipt or actor string can authorize these edges, and there is no skip or force-close path. `os-signing-setup` creates the key; residual risk (a same-account agent with direct DB or coordinator access) is documented in `plugins/agent-agentic-os/references/isolation-setup.md`.
 
@@ -157,7 +157,7 @@ mining, standalone command, path-repair, deep-audit, and self-audit wrappers are
 
 ### 4.6. Plugin: cli-agents (11 skills)
 Multi-LLM task router (`run_agent.py`) consolidated from claude-cli/copilot-cli/gemini-cli.
-6 backends, `--isolated` security contract, 12 expert-persona sub-agents (architect-review,
+6 backends, `--isolated` security contract, 13 expert-persona sub-agents (architect-review,
 security-auditor, tdd-contract-reviewer, red-team-reviewer, etc.) — the first three form the
 "Graph Planning Phase 1 Fan-Out Trio" per `graph-planning-superpowers-policy.md`. Model selection
 driven by `references/copilot-models.json` cost tiers. Gemini CLI consumer access ended June 18,
@@ -174,7 +174,7 @@ first — no casual convenience bypasses to the authorization gate or path enfor
 Karpathy-style LLM wiki generation over the codebase; standalone or combined with agent-memory as
 the third leg of the Super-RAG stack.
 
-### 4.9. Plugin: dev-utils (17 skills)
+### 4.9. Plugin: dev-utils (18 skills)
 Consolidated utilities: ADR management, coding-conventions enforcement,
 context bundling (including Multi-Persona Fan-Out mode for parallel adversarial plan
 review), mermaid conversion, HuggingFace init/upload, humanize, link-checking, context

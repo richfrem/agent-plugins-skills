@@ -55,7 +55,7 @@
     },
     {
       "name": "cli-agents",
-      "description": "Multi-LLM Task Router Suite. run_agent.py routes bounded tasks to 6 backends (Claude, Copilot, Gemini, Agy, Codex, local Gemma 4 12B — ~2s). 12 expert agent personas: security auditor, red-team reviewer, TDD contract reviewer, architect review, compliance, PR reviewer, test writer, debate synthesizer, output validator, self-critic, performance analyst, refactor expert. Includes model catalog manager (update-cli-models), KV cache orchestrator, API compatibility proxy, and AGENTS.md-canonical instruction maintenance with explicit opt-in legacy mirroring. v2.2.0.",
+      "description": "Multi-LLM Task Router Suite. run_agent.py routes bounded tasks to 6 backends (Claude, Copilot, Gemini, Agy, Codex, local Gemma 4 12B — ~2s). 13 expert agent personas: security auditor, red-team reviewer, critical auditor, TDD contract reviewer, architect review, compliance, PR reviewer, test writer, debate synthesizer, output validator, self-critic, performance analyst, refactor expert. Includes model catalog manager (update-cli-models), KV cache orchestrator, API compatibility proxy, and AGENTS.md-canonical instruction maintenance with explicit opt-in legacy mirroring. v2.2.0.",
       "source": "./plugins/cli-agents",
       "strict": true,
       "category": "cli-agents",
@@ -63,7 +63,7 @@
     },
     {
       "name": "dev-utils",
-      "description": "Unified Developer Utilities Suite — 17 skills covering ADR management, coding conventions, context bundling, Mermaid diagrams, GitHub issue logging & friction management, GitHub issue backlog bridge, issue prioritizer & Projects v2 sync, GitHub issue worktree manager, GitHub issue PR lifecycle orchestrator, GitHub issue resolution reviewer, HuggingFace integration, text humanization, link validation, symlink management, and agent context hygiene.",
+      "description": "Unified Developer Utilities Suite — 18 skills covering ADR management, coding conventions, context bundling, Mermaid diagrams, GitHub issue logging & friction management, GitHub issue backlog bridge, issue prioritizer & Projects v2 sync, GitHub issue worktree manager, GitHub issue PR lifecycle orchestrator, GitHub issue resolution reviewer, TODO scanning, HuggingFace integration, text humanization, link validation, symlink management, and agent context hygiene.",
       "source": "./plugins/dev-utils",
       "strict": true,
       "category": "workflow",
