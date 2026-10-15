@@ -11,16 +11,16 @@ globs: ["**/*"]
 Never run `git stash`, `git stash pop`, or `git stash apply` unless the user explicitly says to.
 **Reason:** Stashing risks applying stale edits onto new branches and causing silent regressions.
 
-### 2. Lockfile Conflict Protocol (`skills-lock.json`)
-`skills-lock.json` contains machine-generated timestamps. When a branch or PR has conflicts in `skills-lock.json`:
-- **NEVER** edit conflict markers by hand (`<<<<<<<`, `=======`, `>>>>>>>`).
-- **NEVER** leave a PR in conflict state after pushing.
-- **ALWAYS** resolve immediately via:
+### 2. Machine-Local Install State Is Never Committed
+`skills-lock.json` (installed skill hashes and timestamps) and `plugin-retention.json` (per-machine
+enable/disable choices) describe one machine's `.agents/` install, like `.agents/ownership/`. All are
+gitignored.
+- **NEVER** commit or force-add them.
+- If an old branch still tracks either file and conflicts, untrack it instead of resolving markers:
   ```bash
-  git checkout --ours skills-lock.json
-  python3 plugins/plugin-manager/scripts/plugin_add.py plugins/ -y
-  git add skills-lock.json
+  git rm --cached skills-lock.json plugin-retention.json
   ```
+- **NEVER** edit conflict markers by hand (`<<<<<<<`, `=======`, `>>>>>>>`), and never leave a PR in conflict state.
 
 ### 3. Pre-Push Freshness & Quality Gate
 Before **explicitly pushing** changes to GitHub (i.e., only when the user has issued a direct push command):
@@ -29,7 +29,7 @@ Before **explicitly pushing** changes to GitHub (i.e., only when the user has is
    git fetch origin main
    git merge origin/main
    ```
-   If `skills-lock.json` conflicts occur, apply Rule 2 immediately.
+   If `skills-lock.json` or `plugin-retention.json` conflicts occur, apply Rule 2.
 
 2. **Pre-Push Quality Audits (Mandatory)**:
    Run standard compliance, coding conventions, and structural audits on all modified plugins and skills from the repository root:
@@ -56,7 +56,7 @@ Before **explicitly pushing** changes to GitHub (i.e., only when the user has is
 ### 4. When a push is rejected
 If `git push` is rejected because the remote is ahead:
 1. Run `git fetch origin` and `git merge origin/<branch>` or `git pull --rebase` (no stash).
-2. If conflicts occur in `skills-lock.json`, resolve via Rule 2.
+2. If conflicts occur in `skills-lock.json` or `plugin-retention.json`, resolve via Rule 2.
 3. Push once clean. Never force-push around a rejected push.
 
 ### 5. No force push to main/master
@@ -77,7 +77,7 @@ Never skip hooks with `--no-verify` unless the user explicitly requests it.
 ### 9. Commit only what is asked & required
 - Commit only files within the task scope.
 - Auto-modified files like `.DS_Store` or `uv.lock` should not be committed unless relevant.
-- When `skills-lock.json` or `symlinks.json` changes as a direct result of adding/modifying skills or plugins, commit them together with the changes.
+- When `symlinks.json` changes as a direct result of adding/modifying skills or plugins, commit it together with the changes.
 
 ### 10. Evolution Integrity Gate — update map-debt BEFORE committing core logic
 Any commit that touches files under `plugins/`, `src/`, or `py_services/` **must** do one of the following before `git commit`:

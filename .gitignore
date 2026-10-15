@@ -133,3 +133,7 @@ docs/MAF-research-analysis/
 context/identity/
 context/simulation/
 plugins/agent-agentic-os/scripts/context/
+
+# Machine-local plugin install state (see .agent/rules/git-operations.md Rule 2)
+skills-lock.json
+plugin-retention.json
