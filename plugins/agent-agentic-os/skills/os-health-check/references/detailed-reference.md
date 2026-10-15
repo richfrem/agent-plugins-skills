@@ -1,1 +1,0 @@
-../../../references/os-health-check-detailed-reference.md

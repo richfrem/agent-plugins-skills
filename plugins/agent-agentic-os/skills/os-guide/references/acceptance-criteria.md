@@ -1,1 +1,0 @@
-../../../references/os-guide-acceptance-criteria.md

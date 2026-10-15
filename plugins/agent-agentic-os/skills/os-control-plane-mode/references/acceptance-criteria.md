@@ -1,1 +1,0 @@
-../../../references/os-control-plane-mode-acceptance-criteria.md

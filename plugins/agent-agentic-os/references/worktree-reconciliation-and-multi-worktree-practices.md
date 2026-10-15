@@ -1,6 +1,6 @@
 # Worktree Reconciliation & Multi-Worktree Practices
 
-Consumed by: `worktree-manager` skill.
+Consumed by: `os-control-worktree` skill.
 
 Origin: [github issue #609](https://github.com/richfrem/agent-plugins-skills/issues/609) — an agent
 was asked twice, explicitly, whether pre-worktree dirty changes on the source checkout had been

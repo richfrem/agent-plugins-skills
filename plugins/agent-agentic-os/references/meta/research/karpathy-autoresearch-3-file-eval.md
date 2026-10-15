@@ -113,7 +113,7 @@ This section documents how the 3-file architecture was applied to optimize agent
 
 ### The Setup
 
-**What is being optimized:** A SKILL.md file that teaches an agent when to trigger the `os-eval-runner` skill.
+**What is being optimized:** A SKILL.md file that teaches an agent when to trigger the `os-lab-scorer` skill.
 
 **Why this works:** A skill file's trigger language is a mutation target with a clear objective metric — keyword routing accuracy against golden test cases.
 
@@ -198,7 +198,7 @@ This architecture is not magic; it has rigid anti-patterns:
 
 ---
 
-## 📖 How We Actually Built It: Full Tour of `os-eval-runner`
+## 📖 How We Actually Built It: Full Tour of `os-lab-scorer`
 
 This section is a complete annotated walkthrough of the first autoresearch loop built in this repo, warts and all. It is intended as a learning reference — connecting every file back to the Karpathy concepts above.
 
@@ -219,7 +219,7 @@ The autoresearch loop only touches the first part — the trigger language. This
 
 ---
 
-### Every File in `os-eval-runner` and What It Does
+### Every File in `os-lab-scorer` and What It Does
 
 ```
 <SKILL_PATH>/

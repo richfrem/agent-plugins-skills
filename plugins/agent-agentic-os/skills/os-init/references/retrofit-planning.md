@@ -1,1 +1,0 @@
-../../../references/os-init/retrofit-planning.md

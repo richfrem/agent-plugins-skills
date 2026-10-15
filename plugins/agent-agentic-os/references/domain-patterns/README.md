@@ -5,7 +5,7 @@ Each file covers one skill category and documents mutations that have produced c
 
 ## What domain patterns are
 
-When `os-improvement-loop` encounters a failure type it has seen before, it can apply
+When `os-lab-loop` encounters a failure type it has seen before, it can apply
 a proven escape strategy instead of generating a fresh hypothesis from scratch.
 This reduces wasted iterations on already-solved problems and accelerates convergence.
 
@@ -14,14 +14,14 @@ patterns from manual improvement sessions.
 
 ## When to read them
 
-`os-improvement-loop` checks this directory at **Phase 1 Step A** — before formulating a hypothesis.
+`os-lab-loop` checks this directory at **Phase 1 Step A** — before formulating a hypothesis.
 If the current failure type matches a known pattern, apply that pattern's documented escape
 as the Step B proposal. Only fall back to a novel hypothesis if no pattern matches.
 
 ## How to contribute a new pattern
 
 1. A novel KEEP occurs and the failure type was not in any existing pattern file.
-2. `os-improvement-loop` logs: `"Novel failure — tracking as candidate pattern."` in the run log.
+2. `os-lab-loop` logs: `"Novel failure — tracking as candidate pattern."` in the run log.
 3. After a **2nd KEEP confirmation** on the same failure type (in any run), promote the entry:
    - Add it under `## Novel Candidates` in the relevant file first.
    - After the 2nd confirmation, move it to `## Known Successful Mutations`.

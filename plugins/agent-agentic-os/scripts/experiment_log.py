@@ -21,10 +21,10 @@ Usage:
     python3 experiment_log.py synthesize [--last N] [--output PATH]
 
 Source types and result kinds:
-    verifier      os-evolution-verifier: EVOLUTION_VERIFICATION blocks      result_type=qualitative
-    tester        os-architect-tester: AC-1–4 pass/fail scenario report     result_type=qualitative
+    verifier      EVOLUTION_VERIFICATION report blocks                       result_type=qualitative
+    tester        AC-1–4 pass/fail scenario report                         result_type=qualitative
     orchestrator  triple-loop-orchestrator: LOG_PROGRESS.md + wal.log       result_type=numeric
-    planner       os-evolution-planner: task plan (workstreams + gaps)       result_type=qualitative
+    planner       os-lab-planner: task plan (workstreams + gaps)       result_type=qualitative
     survey        post_run_survey: session friction + north star metrics     result_type=mixed
 
 Result type determines how downstream tools parse entries:
@@ -157,7 +157,7 @@ def _extract_section(text: str, start_heading: str) -> str:
 # ---------------------------------------------------------------------------
 
 def _parse_verifier(text: str) -> dict:
-    """Count PASS/PARTIAL/FAIL VERDICT: tokens in an os-evolution-verifier report."""
+    """Count PASS/PARTIAL/FAIL VERDICT: tokens in a verifier report."""
     verdicts = {"PASS": 0, "PARTIAL": 0, "FAIL": 0}
     for m in re.findall(r"VERDICT:\s*(PASS|PARTIAL|FAIL)", text):
         verdicts[m] += 1
@@ -213,7 +213,7 @@ def _parse_orchestrator(text: str) -> dict:
 
 
 def _parse_planner(text: str) -> dict:
-    """Count workstream rows and gap-analysis bullets in an os-evolution-planner report."""
+    """Count workstream rows and gap-analysis bullets in an os-lab-planner report."""
     workstreams = len(re.findall(r"(?m)^\| WS-[A-Z]", text))
     # Restrict gap count to the Gaps Identified section only
     gaps_section = _extract_section(text, "## Gaps Identified")

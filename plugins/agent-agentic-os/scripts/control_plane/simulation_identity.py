@@ -161,7 +161,7 @@ def dual_identity_status(repo_root: Any) -> Dict[str, Dict[str, Any]]:
         "ready": sim_key.exists() and bool(sim_prints),
         "keys": sorted(sim_prints),
         "database": str(simulation_db_path(repo_root)),
-        "detail": "Simulation identity ready." if sim_key.exists() and sim_prints else "No simulation identity yet (os-init creates it).",
+        "detail": "Simulation identity ready." if sim_key.exists() and sim_prints else "No simulation identity yet (os-control-init creates it).",
     }
     return {"human": human, "simulation": simulation, "isolation": _isolation_status()}
 

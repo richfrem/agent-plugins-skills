@@ -22,27 +22,16 @@ _HERE = Path(__file__).resolve().parent
 _PLUGINS_DIR = _HERE / "plugins"
 
 _SKILL_DIRS = [
-    # agent-agentic-os (20 skills)
-    ("agent-agentic-os",         "critical-auditor"),
-    ("agent-agentic-os",         "work-intake"),
-    ("agent-agentic-os",         "optimize-agent-instructions"),
-    ("agent-agentic-os",         "os-architect"),
-    ("agent-agentic-os",         "os-clean-locks"),
-    ("agent-agentic-os",         "os-environment-probe"),
-    ("agent-agentic-os",         "os-eval-backport"),
-    ("agent-agentic-os",         "os-eval-lab-setup"),
-    ("agent-agentic-os",         "os-eval-runner"),
-    ("agent-agentic-os",         "os-evolution-planner"),
-    ("agent-agentic-os",         "os-evolution-verifier"),
-    ("agent-agentic-os",         "os-experiment-log"),
-    ("agent-agentic-os",         "os-guide"),
-    ("agent-agentic-os",         "os-improvement-loop"),
-    ("agent-agentic-os",         "os-improvement-report"),
-    ("agent-agentic-os",         "os-init"),
-    ("agent-agentic-os",         "os-memory-manager"),
-    ("agent-agentic-os",         "os-skill-improvement"),
-    ("agent-agentic-os",         "self-evolution"),
-    ("agent-agentic-os",         "todo-check"),
+    # agent-agentic-os (15 skills on disk; the subset registered here)
+    ("agent-agentic-os",         "os-control-intake"),
+    ("agent-agentic-os",         "os-lab-planner"),
+    ("agent-agentic-os",         "os-lab-backport"),
+    ("agent-agentic-os",         "os-lab-setup"),
+    ("agent-agentic-os",         "os-lab-scorer"),
+    ("agent-agentic-os",         "os-lab-log"),
+    ("agent-agentic-os",         "os-lab-loop"),
+    ("agent-agentic-os",         "os-control-init"),
+    ("agent-agentic-os",         "os-lab-memory"),
 
     # agent-orchestration/ (6 skills)
     ("agent-orchestration/",              "agent-swarm"),
@@ -101,7 +90,7 @@ _SKILL_DIRS = [
     # dependency-management (1 skill)
     ("dependency-management",    "dependency-management"),
 
-    # dev-utils (16 skills)
+    # dev-utils (19 skills)
     ("dev-utils",                "adr-management"),
     ("dev-utils",                "coding-conventions-agent"),
     ("dev-utils",                "context-bundler"),
@@ -110,6 +99,8 @@ _SKILL_DIRS = [
     ("dev-utils",                "github-issue-backlog-agent"),
     ("dev-utils",                "github-issue-pr-lifecycle-agent"),
     ("dev-utils",                "github-issue-prioritizer"),
+    ("dev-utils",                "github-issue-refactor-proposer"),
+    ("dev-utils",                "github-issue-resolution-reviewer"),
     ("dev-utils",                "github-issue-worktree-agent"),
     ("dev-utils",                "hf-download"),
     ("dev-utils",                "hf-init"),
@@ -118,6 +109,7 @@ _SKILL_DIRS = [
     ("dev-utils",                "link-checker-agent"),
     ("dev-utils",                "optimize-context"),
     ("dev-utils",                "symlink-manager"),
+    ("dev-utils",                "todo-check"),
 
     # exploration-cycle-plugin (20 skills)
     ("exploration-cycle-plugin", "business-requirements-capture"),
@@ -155,7 +147,6 @@ _SKILL_DIRS = [
 
     # plugin-manager (4 skills)
     ("plugin-manager",           "plugin-installer"),
-    ("plugin-manager",           "plugin-pruner"),
     ("plugin-manager",           "plugin-remover"),
     ("plugin-manager",           "plugin-syncer"),
 

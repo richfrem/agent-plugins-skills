@@ -23,7 +23,7 @@ import sys
 REPORT_FILE = "environment_probe_report.txt"
 
 PROBES = [
-    ("Agy CLI (gemini replacement)", ["agy", "--version"]),
+    ("Agy CLI (Antigravity)", ["agy", "--version"]),
     ("Copilot CLI", ["gh", "copilot", "explain", "test"]),
     ("Cursor CLI", ["cursor", "--version"]),
 ]

@@ -59,7 +59,7 @@ The core turn-management patterns this plugin enables:
 
 **Triple-Loop Learning System** - A unified architectural model where the outer loop (Orchestrator) is a supervisor that sets goals, manages memory, and triggers evaluation runs overnight. The inner loops (Strategic Planner and Tactical Executor) handle the iterative patching of code/skills. The entire stack communicates via shared memory and event logs without tight coupling.
 
-**Background + foreground** - a foreground session agent does active work while a background agent (`Triple-Loop Retrospective`, `os-health-check`) runs asynchronously. Simple locks prevent collisions. The background agent's findings are available to the foreground agent in the next session through promoted memory.
+**Background + foreground** - a foreground session agent does active work while a background agent (`Triple-Loop Retrospective`, `os-control-health`) runs asynchronously. Simple locks prevent collisions. The background agent's findings are available to the foreground agent in the next session through promoted memory.
 
 **Sequential agent handoff** - agent A completes a phase and writes a completion state to the event log. Agent B picks up where A left off by reading the log, not by being told what A did. No tight coupling; agents are swappable.
 
@@ -86,13 +86,13 @@ The original design leaned heavily on an operating system metaphor to explain de
 | App launcher | Skill metadata descriptions - scanned to route to the right skill |
 | Opening an application | A skill triggering - full body loads into context window |
 | Library loaded on demand | `references/` files via progressive disclosure - only the specific doc, only when needed |
-| Background daemon | `Triple-Loop Retrospective`, `os-health-check` - runs, acquires lock, does work, terminates |
+| Background daemon | `Triple-Loop Retrospective`, `os-control-health` - runs, acquires lock, does work, terminates |
 | Cron scheduler | `/loop` + `heartbeat.md` |
 | Working files | `context/memory/YYYY-MM-DD.md` session logs (L2) |
 | Permanent storage | `context/memory.md` (L3) - curated facts |
 | System event log | `context/events.jsonl` |
 | Mutex / process lock | `context/.locks/` + `kernel.py` |
-| Self-updating software | `Triple-Loop Retrospective` + `os-eval-runner` |
+| Self-updating software | `Triple-Loop Retrospective` + `os-lab-scorer` |
 | **No OS equivalent** | **Instruction-level self-improvement** - the system rewrites its own SKILL.md and CLAUDE.md based on observed usage |
 | **No OS equivalent** | **LLM reasoning engine** - the CPU follows instructions; the LLM understands intent, fills gaps, and generates new skills on demand |
 
@@ -111,10 +111,10 @@ This is why `CLAUDE.md` has a 300-line discipline and skill descriptions are del
 
 ## How to Use It
 
-Install the plugin, then ask your agent to "set up an agentic OS" or "run the agentic-os-setup agent." The setup agent runs a discovery interview and scaffolds the environment for your project. After that:
+Install the plugin, then ask your agent to "set up an agentic OS" or "run the os-control-setup-agent agent." The setup agent runs a discovery interview and scaffolds the environment for your project. After that:
 
-- **Memory runs automatically** - session logs are written at the end of each session; the `os-memory-manager` promotes important facts to long-term memory
-- **Loops run on command** - run `/os-loop` to trigger a retrospective that mines the event log and proposes skill improvements
-- **Health checks on demand** - run `os-health-check` to inspect system state, event log, and memory integrity
+- **Memory runs automatically** - session logs are written at the end of each session; the `os-lab-memory` promotes important facts to long-term memory
+- **Loops run on command** - run the `os-lab-loop` skill (if installed) to trigger a retrospective that mines the event log and proposes skill improvements
+- **Health checks on demand** - run `os-control-health` to inspect system state, event log, and memory integrity
 
 The Triple-Loop learning system starts generating useful signal after a few sessions. By session ten, the skills and CLAUDE.md instructions are meaningfully more accurate for your specific workflow than they were at install.

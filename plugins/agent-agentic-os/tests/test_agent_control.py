@@ -254,9 +254,9 @@ def test_task_lifecycle_transitions(control_plane):
     assert control_plane.get_task(task_id)["state"] == STATE_INTERVIEW
 
     # 3. Transition to DRAFT_PLAN
-    control_plane.record_plan_mode_entry(task_id=task_id, actor="work-intake")
+    control_plane.record_plan_mode_entry(task_id=task_id, actor="os-control-intake")
     stage_interview_answers(control_plane, task_id)
-    control_plane.transition(task_id=task_id, to_state=STATE_DRAFT_PLAN, actor="work-intake", reason="4-Pillar Spec compiled")
+    control_plane.transition(task_id=task_id, to_state=STATE_DRAFT_PLAN, actor="os-control-intake", reason="4-Pillar Spec compiled")
     assert control_plane.get_task(task_id)["state"] == STATE_DRAFT_PLAN
 
     # 4. Critic review passes, merge at PLAN_REVIEW, then move to AWAITING_APPROVAL
@@ -1655,7 +1655,7 @@ def test_registry_loads_stage_entry_question_contracts():
     )
     assert planning_question["selection_mode"] == "confirm_or_change"
     assert planning_question["recommendation_source"] == "model_effort_guidance"
-    assert planning_question["availability_sources"] == ["os-init", "project-setup", "cli-agents"]
+    assert planning_question["availability_sources"] == ["os-control-init", "project-setup", "cli-agents"]
     assert planning_question["complexity_options"]["high"]["recommended_effort"] == "medium"
     assert interview["progress_display"]["enabled"] is True
     assert interview["progress_display"]["count_adaptive_questions"] is True

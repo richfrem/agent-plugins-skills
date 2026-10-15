@@ -89,7 +89,7 @@ If the user reveals at any point (Phase 1 trigger, Phase 2 Domain, Nature, or Pr
 
 ### Desired output
 > What do you need to come out of this exploration?
-- **Technical Codebase Discovery** (→ Technical Diagnostic Brief, `exploration/DIAGNOSTIC_BRIEF.md`, feeding downstream `work-intake`)
+- **Technical Codebase Discovery** (→ Technical Diagnostic Brief, `exploration/DIAGNOSTIC_BRIEF.md`, feeding downstream `os-control-intake`)
 - Just want to think it through and understand it better
 - Need a formal spec (→ 4-Pillar Spec, `TASK_SPEC.md`)
 - Need a planning document or roadmap update
@@ -101,7 +101,7 @@ When the user indicates they want to explore a technical task, refactor, bug, or
 1. **Emit Technical Brief:** Direct the downstream workflow to compile `exploration/DIAGNOSTIC_BRIEF.md` using `technical_diagnostic_engine.py`.
 2. **Enforce Read-Only Sandboxing:** Emphasize that technical discovery sub-agents inspect coupling surfaces, SQLite schemas, and cross-plugin symlinks in strictly read-only mode.
    - **Operational Why:** Premature mutations during discovery invalidate verifier baselines, cause main checkout leaks, and violate the mandatory Human Gate before a 4-Pillar Spec is approved.
-3. **Control Plane Alignment:** Delegate to the `work-intake` skill to register the task in the control plane (`INTAKE` -> `INTERVIEW`) rather than attempting direct cross-plugin database writes.
+3. **Control Plane Alignment:** Delegate to the `os-control-intake` skill to register the task in the control plane (`INTAKE` -> `INTERVIEW`) rather than attempting direct cross-plugin database writes.
 
 ### Urgency / scope
 > How time-constrained is this?
@@ -156,7 +156,7 @@ questions, defeating the optimization.
 
 ## Execution Expectations
 [Any stated preference for task tracking, cheaper-model delegation, and execution disciplines
-governing the build phase — isolated workspace (`worktree-manager`), TDD (`test-driven-development`),
+governing the build phase — isolated workspace (`os-control-worktree`), TDD (`test-driven-development`),
 DAG orchestration (`graph-planner`), and exit verification gates. Default: per `engineering-lifecycle-policy.md`.]
 
 ## Current System Behavior

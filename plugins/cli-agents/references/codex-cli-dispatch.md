@@ -33,7 +33,7 @@ availability is not authorization to dispatch or change backends.
 Check `codex --help` and `codex exec --help` for installed sandbox, approval,
 review and session facilities. A host's native delegation tools are distinct
 from the Codex binary. Do not infer plan, worktree or subagent support from a
-model name. Delegate portable worktree coordination to worktree-manager when needed.
+model name. Delegate portable worktree coordination to os-control-worktree when needed.
 `--isolated` adds task restrictions; it is not an OS sandbox. Preserve native
 sandbox/approval controls for tool-enabled work. Permission-bypass execution
 requires explicit authorization and suitable external containment.

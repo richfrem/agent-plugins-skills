@@ -60,7 +60,7 @@ Scoring formula:
 Consumed by:
     - evaluate.py (autoresearch loop gate, via --json)
     - CI/CD validation, standalone manual scoring
-    - os-skill-improvement proposer (via --snapshot before mutation proposals)
+    - os-lab-scorer proposer (via --snapshot before mutation proposals)
 """
 
 import json

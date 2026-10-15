@@ -6,7 +6,7 @@ Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-s
 
 This is the authoritative instruction file for agents working in this repository. Preserve the project-specific rules below while applying behavioral guidelines and platform-specific conventions.
 
-For local planning, backlog status, and current task handoffs, consult `docs/plans/start-here.md` (a local-only, gitignored planning file; if absent on fresh clones, start directly with `work-intake`).
+For local planning, backlog status, and current task handoffs, consult `docs/plans/start-here.md` (a local-only, gitignored planning file; if absent on fresh clones, start directly with `os-control-intake`).
 
 ---
 
@@ -35,6 +35,10 @@ For local planning, backlog status, and current task handoffs, consult `docs/pla
    Never introduce magic string literals or answer sequences. All domain constants must be imported from `constants.py`. SQL queries must use `?` bind parameters.
 7. **Three-Attempt Maximum & Map Debt Logging**:
    Autonomous repair attempts are capped at 3. Every friction event must update the map (playbooks, rules, references), log `Status: RESOLVED` in `references/map-debt.md` if fixed inline, or record an open debt entry if deferred.
+8. **Only Installed Skills Exist at Runtime**:
+   `plugins/` is source; only what is installed in `.agents/skills/` and enabled in `.agents/ownership/<plugin>.json` (`should_install: true`) can run. A skill present in `plugins/` may be disabled on purpose (context size). Before recommending, routing to, or writing a handoff to any skill or agent, verify it is installed (`ls .agents/skills/<name>`, `grep '"<name>"' .agents/ownership/*.json`); never route through a disabled one. If the right target is disabled, say so and ask. `os-control-mode` toggles only the control-plane family (`os-control-intake`, `os-control-simulator`, `os-control-signing-setup`); it says nothing about other skills.
+   Not every skill, rule or agent is installed at once: only what the current work needs is enabled, to save context. To enable or disable a component, set `should_install` in `.agents/ownership/<plugin>.json`, then run the plugin sync (`plugin-syncer` skill: `python3 plugins/plugin-manager/scripts/sync_with_inventory.py --dry-run`, then without `--dry-run`). Sync installs from the sources in `plugin-sources.json`, so unmerged branch edits do not reach `.agents/`. Never edit `.agents/` copies by hand.
+   Before working with the Agentic OS, read the [Agentic OS Skill Map](plugins/agent-agentic-os/references/agentic-os-skill-map.md) (what every skill does and how the clusters relate) and [Two Improvement Paths](plugins/agent-agentic-os/references/two-improvement-paths.md) (control plane vs improvement lab).
 
 ---
 

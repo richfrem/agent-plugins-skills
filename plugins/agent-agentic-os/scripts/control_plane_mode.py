@@ -3,7 +3,7 @@
 control_plane_mode.py - status / enable / disable the Agentic OS control plane as one unit.
 
 Purpose:
-    The control plane is more than one switch: the `work-intake` family of skills, a rule,
+    The control plane is more than one switch: the `os-control-intake` family of skills, a rule,
     two git guards in `.git/hooks`, and a declared mode. This script reads the list of what
     belongs to it from `control-plane.manifest.json` and makes the repository match the
     declared mode, then proves it with `status`.
@@ -29,7 +29,7 @@ Exit codes:  0 consistent / success   1 inconsistent after the operation   2 ref
              3 the plugin sync failed (earlier steps are listed in the output)
 
 Layer:
-    Codify (stdlib only). Shares control_plane_hooks.py (registered symlink) with os-init.
+    Codify (stdlib only). Shares control_plane_hooks.py (registered symlink) with os-control-init.
 """
 
 from __future__ import annotations
@@ -46,8 +46,8 @@ from typing import Optional
 import control_plane_hooks as cph
 
 _HERE = Path(__file__).resolve().parent
-if (_HERE.parent / "skills" / "os-control-plane-mode").is_dir():
-    SKILL_DIR = _HERE.parent / "skills" / "os-control-plane-mode"
+if (_HERE.parent / "skills" / "os-control-mode").is_dir():
+    SKILL_DIR = _HERE.parent / "skills" / "os-control-mode"
 elif (_HERE.parent / "control-plane.manifest.json").is_file():
     SKILL_DIR = _HERE.parent
 else:
@@ -93,9 +93,9 @@ def manifest_guards(manifest: dict) -> list[cph.Guard]:
 def guard_source(root: Path, guard: cph.Guard) -> Optional[Path]:
     """Where the current copy of a guard script lives (installed skill, or this plugin)."""
     candidates = [
-        root / ".agents" / "skills" / "os-init" / "scripts" / guard.name,
+        root / ".agents" / "skills" / "os-control-init" / "scripts" / guard.name,
         _HERE / guard.name,
-        SKILL_DIR.parent / "os-init" / "scripts" / guard.name,
+        SKILL_DIR.parent / "os-control-init" / "scripts" / guard.name,
         SKILL_DIR.parent.parent / "scripts" / guard.name,
     ]
     return next((c for c in candidates if c.exists()), None)
@@ -268,7 +268,7 @@ def collect_status(root: Path, manifest: dict) -> dict:
 
     db = root / "context" / "control_plane.db"
     if want_on and not db.is_file():
-        warnings.append("context/control_plane.db is missing; run os-init --retrofit to create it")
+        warnings.append("context/control_plane.db is missing; run os-control-init --retrofit to create it")
 
     tracked = tracked_member_files(root, own, manifest)
     deleted = uncommitted_deletions(root, own, manifest)
@@ -381,7 +381,7 @@ def plan_text(root: Path, manifest: dict, want: str, own: dict, hdir: Optional[P
         lines.append("  3. ownership: set should_install=false for: "
                      + (", ".join(f"{k}/{n}" for k, n, _ in changes) or "(already set)"))
         lines.append("  4. run the plugin-syncer so those components are removed")
-    lines.append("  Never touched: context/control_plane.db (task history), os-init, os-health-check, "
+    lines.append("  Never touched: context/control_plane.db (task history), os-control-init, os-control-health, "
                  "plugin hooks, the evolution guard.")
     lines.append("  Backups of the ownership file, mode file and hook files go to context/control-plane-backup/.")
     if hdir is None:

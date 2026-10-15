@@ -1,1 +1,0 @@
-../../../references/stage-0-orientation.md

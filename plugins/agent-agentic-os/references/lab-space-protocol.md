@@ -2,7 +2,7 @@
 
 When a skill runs in a **lab repo** (a standalone test repo with copies of plugin files — not the master source), there is a mandatory handoff stage after the loop completes. Lab repos use real file copies; the master repo uses hub-and-spoke symlinks pointing to canonical sources. Changes must be reviewed and backported — never blindly copied.
 
-**Lab runs with `os-eval-runner` installed as a peer:** When the lab repo has both the target skill and `os-eval-runner` installed side by side (the `os-eval-lab-setup` default), the improvement loop will sometimes propose changes to `os-eval-runner` itself — its SKILL.md, eval scripts, or evals. This is expected and productive: the agent finds the highest-leverage change available across all installed skills. The physical copy in the lab is safe to mutate. Treat these changes in backport review with extra scrutiny (see note in Stage 6 below).
+**Lab runs with `os-lab-scorer` installed as a peer:** When the lab repo has both the target skill and `os-lab-scorer` installed side by side (the `os-lab-setup` default), the improvement loop will sometimes propose changes to `os-lab-scorer` itself — its SKILL.md, eval scripts, or evals. This is expected and productive: the agent finds the highest-leverage change available across all installed skills. The physical copy in the lab is safe to mutate. Treat these changes in backport review with extra scrutiny (see note in Stage 6 below).
 
 ## Stage 6: Backport to Master Repo
 
@@ -26,14 +26,14 @@ git diff <baseline-commit> HEAD --name-only  # all files changed since baseline
 |:---|:---|:---|
 | `<plugin>/skills/<skill>/SKILL.md` | Deployed Skill | `plugins/<plugin>/skills/<skill>/SKILL.md` |
 | `<plugin>/skills/<skill>/evals/evals.json` | Deployed Evals | `plugins/<plugin>/skills/<skill>/evals/evals.json` |
-| `.agents/skills/os-eval-runner/` (if patched) | Deployed Engine | `plugins/agent-agentic-os/skills/os-eval-runner/` |
+| `.agents/skills/os-lab-scorer/` (if patched) | Deployed Engine | `plugins/agent-agentic-os/skills/os-lab-scorer/` |
 
 **4. For each file — read the diff and assess:**
 - **Accept as-is**: change is clearly an improvement, apply verbatim
 - **Adapt**: change direction is right but needs adjustment for master context
 - **Reject**: change was eval-specific, doesn't generalize, or is a regression
 
-> **Extra scrutiny for `os-eval-runner` changes:** If the loop mutated `eval_runner.py` or `evaluate.py` in the lab, verify the change does not introduce scoring bias that inflates future KEEP rates. The evaluator rewriting its own verdict logic to always exit 0 is the Goodhart failure mode for meta-circular runs. Check the score trajectory in `results.tsv` — a suspiciously high acceptance rate after the change is a red flag.
+> **Extra scrutiny for `os-lab-scorer` changes:** If the loop mutated `eval_runner.py` or `evaluate.py` in the lab, verify the change does not introduce scoring bias that inflates future KEEP rates. The evaluator rewriting its own verdict logic to always exit 0 is the Goodhart failure mode for meta-circular runs. Check the score trajectory in `results.tsv` — a suspiciously high acceptance rate after the change is a red flag.
 
 **5. Apply approved changes deliberately:**
 ```
@@ -87,4 +87,4 @@ git add plugins/<plugin>/...
 git commit -m "backport: <what was accepted from lab run>"
 ```
 
-> **Trigger the `os-eval-backport` skill** from the master repo session to orchestrate this review. It reads the lab run log, produces a structured diff assessment, and guides the edit.
+> **Trigger the `os-lab-backport` skill** from the master repo session to orchestrate this review. It reads the lab run log, produces a structured diff assessment, and guides the edit.

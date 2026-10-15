@@ -1,6 +1,6 @@
 # Chart Reading Guide
 
-Reference for interpreting `os-improvement-report` output charts and text summaries.
+Reference for interpreting `os-lab-log` output charts and text summaries.
 
 ---
 
@@ -36,7 +36,7 @@ turned into effective improvements. This is the target state.
 
 **No data / empty chart**
 The improvement ledger exists but has no Section 1 rows. At least one complete
-`os-improvement-loop` cycle must run before the chart has meaningful data.
+`os-lab-loop` cycle must run before the chart has meaningful data.
 
 ---
 

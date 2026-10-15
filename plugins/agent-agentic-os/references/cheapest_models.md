@@ -1,16 +1,20 @@
 # CLI Cheapest Models Reference
 
-This is the single source of truth for current model costs per CLI engine.
-Update here only — do not hardcode model names or cost claims in SKILL.md or agent files.
+This file lists no model IDs, prices or versions. Model choice belongs to the `cli-agents` plugin;
+ask its skills, which stay current:
 
-| CLI Engine | Model | Cost Tier | Notes |
-|---|---|---|---|
-| `llama` | `gemma-4-12b` | **Free** (self-hosted) | Local `llama-server` on port 8089. Only truly zero-cost option. |
-| `copilot` | `gpt-5.6-luna` | Paid (AI Credits) | 20 cr/1M input, 120 cr/1M output. MAI-Code-1.1-Flash: 25/200; cache read 2.5, cache write 0. |
-| `agy` | `gemini-3.8-flash` | Paid (Per-token / Pro quotas) | Antigravity CLI — replacement for deprecated `gemini` CLI; select Low effort separately for cost-sensitive calls. |
-| `claude` | `claude-haiku-4-5` | Paid (Per-token) | $1/MTok input, $5/MTok output. |
-| `codex` | `gpt-5.6-luna` | Paid (Per-token) | $0.20/1M input, $1.20/1M output; current cost-sensitive OpenAI model. |
+| Need | Skill (in `cli-agents`) |
+|---|---|
+| Latest model IDs, capability tiers, cheapest models and prices | `update-cli-models` |
+| Which providers and models this project can use | `project-setup` (provider capability profile) |
+| Dispatch through a backend | `claude-cli-agent`, `copilot-cli-agent`, `agy-cli-agent`, `codex-cli-agent` |
+| Free local model | `local-llm-bridge` |
 
-> [!WARNING]
-> Only `llama` (self-hosted Gemma 4) is free. Copilot, Gemini/Agy, and Claude all bill per token as of June 2026.
-> The standalone `gemini` CLI (Google) was deprecated and shut down June 18, 2026 — use `agy` instead.
+Do not hard-code model IDs or cost claims in SKILL.md or agent files; name a tier and let the
+dispatch skill resolve it.
+
+## Lab guidance
+
+- Pick the cheapest suitable tier for proposer and heartbeat calls; reserve the frontier tier for
+  work that needs it.
+- The local model (`local-llm-bridge`) is the only zero-cost option; every other backend bills.

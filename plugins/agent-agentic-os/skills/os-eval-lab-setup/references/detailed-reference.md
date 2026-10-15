@@ -1,1 +1,0 @@
-../../../references/os-eval-lab-setup-detailed-reference.md

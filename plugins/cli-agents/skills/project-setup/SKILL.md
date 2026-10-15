@@ -20,7 +20,7 @@ Configure the selected project and establish one reusable capability baseline.
 
 ## Constraints
 
-Require plugin installation, os-init and os-health-check before declaring readiness.
+Require plugin installation, os-control-init and os-control-health before declaring readiness.
 Reuse confirmed answers; ask one question at a time for missing information.
 Installed alone never counts as provider access or project authorization.
 Never store credentials, tokens, prompts or raw provider output in the profile.

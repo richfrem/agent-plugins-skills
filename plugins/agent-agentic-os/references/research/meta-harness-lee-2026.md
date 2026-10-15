@@ -22,7 +22,7 @@ The ablation study directly measures the value of that access:
 
 Summaries are worse than scores-only. Raw execution traces are the key ingredient.
 
-**The current `os-eval-runner` gives the proposer scores and a TSV. It does not give it traces.**
+**The current `os-lab-scorer` gives the proposer scores and a TSV. It does not give it traces.**
 
 ---
 
@@ -41,7 +41,7 @@ Instead of fixed waits, send `echo '__CMDEND__<seq>__'` after each command and p
 ### 3. Native tool calling with structured reasoning fields
 Tool schema includes `analysis` (what the proposer observes) and `plan` (what it intends to do) as required fields before `commands`. Forces explicit chain-of-thought before action.
 
-**Equivalent for this repo:** Require a **hypothesis block** before any SKILL.md mutation in `os-skill-improvement`. See `enhancement-recommendations.md` Recommendation 3.
+**Equivalent for this repo:** Require a **hypothesis block** before any SKILL.md mutation in `os-lab-scorer`. See `enhancement-recommendations.md` Recommendation 3.
 
 ### 4. Layered context management
 - Proactive: check context fill level each episode, summarize before hitting limit

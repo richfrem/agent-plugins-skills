@@ -4,7 +4,7 @@ test_os_init_dual_identity.py
 =============================
 
 Purpose:
-    os-init onboarding for both approval identities (round-3 review follow-up):
+    os-control-init onboarding for both approval identities (round-3 review follow-up):
       - the readiness report lists human approval, simulation and isolation separately;
       - --with-simulation-identity creates (and on reruns reuses) the agent's simulation identity in
         context/simulation/identity/ and never creates or writes the human's production trust file;

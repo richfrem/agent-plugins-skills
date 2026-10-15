@@ -118,7 +118,7 @@ def test_refuses_when_running_as_the_agent_uid(env):
 
 def test_check_mode_is_read_only_and_needs_no_tty(env):
     code, printed = _run(env, "--check", tty=False)
-    assert code == 1  # not ready: a nonzero exit lets os-init / the health check use the exit code
+    assert code == 1  # not ready: a nonzero exit lets os-control-init / the health check use the exit code
     assert "not set up" in printed.lower() or "missing" in printed.lower()
     assert not env["layout"].root.exists()
 

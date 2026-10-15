@@ -39,8 +39,8 @@ specifically needed, never as a default/every-session regression.
 
 ## How to run it
 
-**Mechanism (confirmed working, harness-agnostic):** both `agy` (`agy -p ... --model gemini-2.5-flash`)
-and `claude` (`claude -p ... --model haiku`) CLI tools support non-interactive, single-shot calls via
+**Mechanism (confirmed working, harness-agnostic):** both `agy` (`agy -p ... --model <cheapest-suitable-tier model>`)
+and `claude` (`claude -p ... --model <cheapest-suitable-tier model>`) CLI tools support non-interactive, single-shot calls via
 `-p`/`--print` and `--model`. `run_transition_simulation.py` auto-detects the available backend or accepts
 `--backend {auto,agy,claude}`. That's enough to drive a cheap model directly from a plain shell or Python
 script without an SDK or API key dependency:
@@ -98,8 +98,8 @@ proof the gate is unfollowable.
 
 ## Improvement ideas (not yet implemented)
 
-- Run the same fixed assignment across several cheap models (Haiku, a
-  low-tier Gemini, a low-tier GPT) and diff their behavior — a wording that
+- Run the same fixed assignment across several cheap models (a
+  low-tier Claude, a low-tier agy model, a low-tier GPT) and diff their behavior — a wording that
   only one model handles correctly is a wording problem, not a model problem.
 - Automate the comparison step (subagent report vs. registry contract vs. DB
   state) into a script instead of manual reading, so this can run as an actual

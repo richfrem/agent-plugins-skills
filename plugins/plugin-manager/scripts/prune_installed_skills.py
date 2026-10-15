@@ -134,7 +134,7 @@ DEFAULT_PROTECTED = [
     "plugin-syncer",
     "plugin-pruner",
     "symlink-manager",
-    "worktree-manager",
+    "os-control-worktree",
 ]
 
 _STOPWORDS = {

@@ -1,5 +1,5 @@
 """
-test_init_respects_control_plane_mode.py - os-init must never silently re-enable a gate.
+test_init_respects_control_plane_mode.py - os-control-init must never silently re-enable a gate.
 
 Purpose:
     `init_agentic_os.py --install-hooks` (and --retrofit, which shares the same code) used to

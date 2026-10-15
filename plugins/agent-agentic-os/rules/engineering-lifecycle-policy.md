@@ -30,7 +30,7 @@ globs: ["**/*"]
 All STANDARD-classified engineering tasks MUST progress through the 4-phase lifecycle below. This replaces legacy waterfall approaches and couples upstream discovery to deterministic execution.
 
 ```
-Phase 0: Intake & Socratic Gate (exploration-cycle-plugin + work-intake)
+Phase 0: Intake & Socratic Gate (exploration-cycle-plugin + os-control-intake)
    │
    ├─ TRIVIAL classification (single-file/few-line, no architectural impact):
    │    Verified against the real state machine (see
@@ -48,7 +48,7 @@ Phase 0: Intake & Socratic Gate (exploration-cycle-plugin + work-intake)
    │    disproportionate, the correct choice is NOT a fabricated shortcut
    │    through this pipeline — it is to skip this control plane entirely
    │    (direct commit/push, `--no-verify` if the push hook blocks it) with the
-   │    user's explicit authorization. See work-intake/SKILL.md and GitHub
+   │    user's explicit authorization. See os-control-intake/SKILL.md and GitHub
    │    Issue #534 for the original (aspirational, never implemented) design
    │    this correction supersedes.
    │
@@ -56,16 +56,17 @@ Phase 0: Intake & Socratic Gate (exploration-cycle-plugin + work-intake)
    │
 Phase 1: Native Plan Mode, Strategy & Adversarial Review (critical-auditor + select-loop-strategy + Human Gate)
    │
-Phase 2: Worktree Isolation & TDD Execution (.worktrees/task-<id> + worktree-manager + pattern runner)
+Phase 2: Worktree Isolation & TDD Execution (.worktrees/task-<id> + os-control-worktree + pattern runner)
    │
 Phase 3: Deterministic Exit Gates & Asymmetric Persistence (6-State Vocabulary + Wiki)
 ```
 
 **Scope note:** this policy governs tasks tracked in `agent_control.py`'s SQLite control
-plane. The `self-evolution` skill runs a separate, independent lifecycle
-(`evolution_state.py`, TRIAGE→...→COMPLETED/ROLLBACK/ESCALATED) with its own worktree
-convention and approval flow — see `self-evolution-policy.md` and Section 4's note below.
-Whether these two systems should eventually be reconciled into one is an open architectural
+plane. The `self-evolution` skill is retired: gated changes to skills, rules and agents go
+through this control plane (`os-control-intake`). The `evolution_state.py` controller
+(TRIAGE→...→COMPLETED/ROLLBACK/ESCALATED) remains as a script with its own worktree
+convention — see `self-evolution-policy.md` and Section 4's note below.
+Whether it should eventually be reconciled with the control plane is an open architectural
 question tracked in [GitHub Issue #537](https://github.com/richfrem/agent-plugins-skills/issues/537); until that's decided, treat them as two separately-governed systems, not one universal mechanism.
 
 ---
@@ -73,7 +74,7 @@ question tracked in [GitHub Issue #537](https://github.com/richfrem/agent-plugin
 ## 2. Phase 0: Pre-Planning Intake Bookend & Socratic Gate
 
 Before Plan Mode can ever be entered, the task must be bounded. Immediately after task
-registration and before any Socratic question, `work-intake` asks one direct triage
+registration and before any Socratic question, `os-control-intake` asks one direct triage
 question — TRIVIAL or STANDARD — with a heuristic-derived recommended default (see the
 TRIVIAL fast-track branch in Section 1). Only STANDARD-classified tasks proceed through the
 rest of this phase and into Phase 1:
@@ -82,7 +83,7 @@ rest of this phase and into Phase 1:
    - Execute read-only codebase discovery via `exploration-cycle-plugin` (`technical_diagnostic_engine.py`).
    - Inspect coupling surfaces (touched files, SQLite schemas, cross-plugin symlinks), surface hidden assumptions, and evaluate candidate architectural forks.
    - Emit `exploration/DIAGNOSTIC_BRIEF.md`.
-2. **Interview Gate (`work-intake`):**
+2. **Interview Gate (`os-control-intake`):**
    - **Native-First Deferral:** Inspect session environment markers first (`CLAUDE_CODE_ENTRY`, `ANTIGRAVITY_IDE`). Defer to native interactive intake if present. Fall back to Socratic Defaulting loop for headless/Copilot sessions.
    - Socratic Defaulting: 1–3 questions max, structured options with explicit recommended default (`Option A [Recommended]` vs. `Option B`).
    - Compiles the immutable **4-Pillar Spec** (`TASK_SPEC.md`):
@@ -117,13 +118,12 @@ rest of this phase and into Phase 1:
 
 ## 4. Phase 2: Worktree Isolation & TDD Execution
 
-1. **Standard Worktree Topology (`worktree-manager`):**
-   - Implementation MUST execute in dedicated isolated worktrees at `.worktrees/task-<task_id>/` (governed by `worktree-manager` and `issue_worktree_manage.py`). Never use sibling directories (`../worktree-...`).
+1. **Standard Worktree Topology (`os-control-worktree`):**
+   - Implementation MUST execute in dedicated isolated worktrees at `.worktrees/task-<task_id>/` (governed by `os-control-worktree` and `issue_worktree_manage.py`). Never use sibling directories (`../worktree-...`).
    - Update `worktree_state` in `context/control_plane.db` to `written_in_worktree`.
-   - **This convention applies to `agent_control.py`-tracked tasks only.** `self-evolution`
+   - **This convention applies to `agent_control.py`-tracked tasks only.** `evolution_state.py`
      cycles use their own separate, documented convention — sibling directories under
-     `../worktree-evolution-<cycle_id>/` — per `self-evolution/SKILL.md` and
-     `self-evolution-policy.md`. This is not a violation of the rule above; it's a
+     `../worktree-evolution-<cycle_id>/` — per `self-evolution-policy.md`. This is not a violation of the rule above; it's a
      different, independently-governed system (see Section 1's scope note and
      [#537](https://github.com/richfrem/agent-plugins-skills/issues/537)).
 2. **Deterministic Orchestration & TDD Execution:**

@@ -5,13 +5,13 @@ tests/test_skip_receipt_guidance.py
 Purpose:
     Failing-first tests for T16 (auth-ciba-increment-b, issue #639): guidance must never let an agent
     record a review-skip decision on the human's behalf (incident 2026-09-19, receipt 158).
-    The PLAN_REVIEW and PLAN_REVIEW->AWAITING_APPROVAL hints, and work-intake SKILL.md, must say the
+    The PLAN_REVIEW and PLAN_REVIEW->AWAITING_APPROVAL hints, and os-control-intake SKILL.md, must say the
     human records the skip through the interactive command and that the agent never runs
     `record-review-skip` from a chat message.
 
 Key Input Dependencies:
     - scripts/control_plane/transition_templates.yaml
-    - skills/work-intake/SKILL.md
+    - skills/os-control-intake/SKILL.md
 
 Key Functions (test cases):
     - test_plan_review_hints_name_the_human_as_skip_recorder
@@ -24,7 +24,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 YAML = (ROOT / "scripts/control_plane/transition_templates.yaml").read_text()
-SKILL = (ROOT / "skills/work-intake/SKILL.md").read_text()
+SKILL = (ROOT / "skills/os-control-intake/SKILL.md").read_text()
 
 
 def _hint_lines():

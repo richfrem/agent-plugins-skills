@@ -32,4 +32,4 @@ is insufficient: verify the requested content and record failure evidence withou
 Confirm installed help before using plan permissions, native worktree sessions,
 custom agents or background agents. Prefer native facilities only when Claude Code
 is the selected runtime. Otherwise delegate portable worktree coordination to the
-worktree-manager skill. Native autonomy does not replace pipeline approval receipts.
+os-control-worktree skill. Native autonomy does not replace pipeline approval receipts.

@@ -13,7 +13,7 @@ Layer:
     CLI / Initialization & Retrofitting
 
 Key Input Dependencies:
-    - Template directory: assets/templates/ or skills/os-init/assets/templates/
+    - Template directory: assets/templates/ or skills/os-control-init/assets/templates/
     - Agent control plane schema: context/control_plane.db (auto-initialized)
     - Instruction files: AGENTS.md (canonical); CLAUDE.md may be a pointer
     - Ecosystem rules: .agent/rules/ (synced across workspaces)
@@ -80,7 +80,7 @@ except ImportError:  # imported from another working directory, or an incomplete
         sys.exit(
             "ERROR: control_plane_hooks.py was not found next to init_agentic_os.py "
             f"({Path(__file__).resolve().parent}).\n"
-            "It is part of the os-init skill's scripts/ folder. Re-run the plugin sync "
+            "It is part of the os-control-init skill's scripts/ folder. Re-run the plugin sync "
             "(plugin-syncer) to restore it, then retry."
         )
 
@@ -99,8 +99,8 @@ def load_template(filename: str) -> str:
     plugin_root = _get_plugin_root()
     search_paths = [
         plugin_root / "assets" / "templates" / filename,
-        plugin_root / "skills" / "os-init" / "assets" / "templates" / filename,
-        plugin_root / "skills" / "os-init" / "templates" / filename,
+        plugin_root / "skills" / "os-control-init" / "assets" / "templates" / filename,
+        plugin_root / "skills" / "os-control-init" / "templates" / filename,
     ]
     for p in search_paths:
         if p.exists():
@@ -118,7 +118,7 @@ def copy_runtime_file(filename: str) -> str:
     if canonical_path.exists():
         return canonical_path.read_text(encoding="utf-8")
     
-    legacy_path = plugin_root / "skills" / "os-init" / "templates" / filename
+    legacy_path = plugin_root / "skills" / "os-control-init" / "templates" / filename
     if legacy_path.exists():
         return legacy_path.read_text(encoding="utf-8")
 
@@ -241,10 +241,10 @@ def _merge_instructions_with_judgment(existing_text: str, project_name: str) -> 
     text = existing_text
     
     # Check for Phase 0 Intake & Socratic Gate
-    if "Phase 0 Intake & Socratic Gate" not in text and "work-intake" not in text:
+    if "Phase 0 Intake & Socratic Gate" not in text and "os-control-intake" not in text and "work-intake" not in text:
         intake_block = (
             "\n\n## Phase 0 Intake & Socratic Gate (Mandatory)\n"
-            "> Every engineering task, feature proposal, bugfix, or improvement MUST trigger `work-intake` first.\n"
+            "> Every engineering task, feature proposal, bugfix, or improvement MUST trigger `os-control-intake` first.\n"
             "- Register the task in `context/control_plane.db` via `python3 scripts/agent_control.py init`.\n"
             "- Enforce host-native Plan Mode (strictly read-only discovery).\n"
             "- Socratic Pacing: Interrogate ONE question per turn with structured options and explicit `[Recommended]` default.\n"
@@ -497,7 +497,7 @@ def _scaffold_plugin_evolution_substrates(target: Path, dry_run: bool, force: bo
         if not evo_log.exists():
             content = (
                 f"# Evolution Log — {p.name}\n\n"
-                "Append-only record of every self-evolution event. Written by the `self-evolution` skill.\n"
+                "Append-only record of every self-evolution event. Appended by agents when a friction or failure event is recorded.\n"
                 "Do not edit manually except to correct a factual error.\n\n"
                 "| Date | Tier | Friction / Failure | Patch | Edit Type | Outcome |\n"
                 "|------|------|-------------------|-------|-----------|---------|\n"
@@ -661,7 +661,7 @@ def _install_control_plane_guards(target: Path, git_hooks_dir: Path, plugin_root
     """Install and wire pre-commit-pipeline-guard and pre-push-review-guard.
 
     Honours the declared mode in `context/control-plane-mode`: when it says `disabled`,
-    nothing is installed or wired, so a re-run of os-init never silently re-enables a gate.
+    nothing is installed or wired, so a re-run of os-control-init never silently re-enables a gate.
     A missing file means `enabled` (every pre-existing install is unchanged). An unreadable
     mode file fails closed: the guards are installed and the problem is announced.
     """
@@ -676,7 +676,7 @@ def _install_control_plane_guards(target: Path, git_hooks_dir: Path, plugin_root
         announce(
             "Control plane is DISABLED (context/control-plane-mode): not installing or wiring "
             "pre-commit-pipeline-guard / pre-push-review-guard. "
-            "Re-enable with the os-control-plane-mode skill.",
+            "Re-enable with the os-control-mode skill.",
             dry_run,
         )
         return
@@ -849,7 +849,7 @@ def signing_identity_notice(target: Path) -> List[str]:
 
     Reports whether ssh-keygen can verify SSHSIG, whether `allowed_signers` holds a key scoped to the gate
     namespace, and prints the exact command a HUMAN runs to set the identity up. It never creates a key, never writes `context/identity/` and never runs the
-    setup: os-init is an agent-run surface, so enrolling a key from here would be an enrollment path
+    setup: os-control-init is an agent-run surface, so enrolling a key from here would be an enrollment path
     for an agent."""
     lines = ["\n6. Signing identity (cryptographic gates: APPROVED, VERIFY_EXIT, DONE):"]
     try:
@@ -858,7 +858,7 @@ def signing_identity_notice(target: Path) -> List[str]:
 
         status = identity_status(default_layout(target))
     except Exception as exc:  # older installed copies may not ship the signing modules
-        return lines + [f"   (signing status unavailable: {exc}; see the os-signing-setup skill)"]
+        return lines + [f"   (signing status unavailable: {exc}; see the os-control-signing-setup skill)"]
     cap = status["ssh_keygen"]
     lines.append(
         "   ssh-keygen: " + (f"OpenSSH {cap['version']}, SSHSIG {'supported' if cap['supports_sshsig'] else 'NOT supported (needs >= 8.1)'}"
@@ -876,7 +876,7 @@ def signing_identity_notice(target: Path) -> List[str]:
         note = machine_key_note()
         if note:
             lines.append(f"   This machine already has your signing key {note}: that command enrolls it in this repo (no new key or passphrase).")
-        lines.append("   Run os-init yourself in an interactive terminal and it offers to do this for you. Run by an agent, os-init never creates or enrolls a key (see the os-signing-setup skill).")
+        lines.append("   Run os-control-init yourself in an interactive terminal and it offers to do this for you. Run by an agent, os-control-init never creates or enrolls a key (see the os-control-signing-setup skill).")
         for failure in status["failures"][:3]:
             lines.append(f"   - {failure}")
     return lines + dual_identity_notice(target)
@@ -901,7 +901,7 @@ def dual_identity_notice(target: Path) -> List[str]:
     sim = status["simulation"]
     lines.append(f"   - Simulation: {'ready' if sim['ready'] else 'not set up'} ({sim['detail']})")
     if not sim["ready"]:
-        lines.append("       The agent may create it (it is the agent's own key, kept apart from yours). A normal os-init run does so;")
+        lines.append("       The agent may create it (it is the agent's own key, kept apart from yours). A normal os-control-init run does so;")
         lines.append("       re-run it, or `init_agentic_os.py --target . --retrofit`, to create it now.")
     iso = status["isolation"]
     lines.append(f"   - Isolation: {'ready' if iso['ready'] else 'not ready'} ({iso['detail']})")
@@ -915,8 +915,8 @@ def dual_identity_notice(target: Path) -> List[str]:
 def find_setup_script(target: Path) -> Optional[Path]:
     """Return the human setup script for `target`'s layout (installed skills first, then beside this file)."""
     candidates = [
-        target / ".agents" / "skills" / "os-signing-setup" / "scripts" / "setup_ciba_identity.py",
-        target / ".agents" / "skills" / "os-health-check" / "scripts" / "setup_ciba_identity.py",
+        target / ".agents" / "skills" / "os-control-signing-setup" / "scripts" / "setup_ciba_identity.py",
+        target / ".agents" / "skills" / "os-control-health" / "scripts" / "setup_ciba_identity.py",
         target / "plugins" / "agent-agentic-os" / "scripts" / "setup_ciba_identity.py",
         Path(__file__).resolve().parent / "setup_ciba_identity.py",
     ]
@@ -927,7 +927,7 @@ def human_setup_command(target: Path) -> str:
     """The exact command a human runs, using the path that really exists in this repository."""
     script = find_setup_script(target)
     if script is None:
-        return "python3 <path to setup_ciba_identity.py>   (see the os-signing-setup skill)"
+        return "python3 <path to setup_ciba_identity.py>   (see the os-control-signing-setup skill)"
     try:
         shown = script.relative_to(target)
     except ValueError:
@@ -956,7 +956,7 @@ def register_human_identity_step(target: Path, dry_run: bool, *, interactive: Op
                                  run=subprocess.run, ask=input) -> str:
     """Register the human's signing identity in this repo, if a human is at the terminal.
 
-    os-init is normally agent-run, and enrolling a key from an agent would be an enrollment path for
+    os-control-init is normally agent-run, and enrolling a key from an agent would be an enrollment path for
     that agent. So this never enrolls on its own: it only *offers*, and only when stdin and stdout are
     both a terminal. It delegates to `setup_ciba_identity.py`, which independently refuses to run without
     a terminal and refuses to run as the agent account, so it is no new power for an agent.
@@ -982,7 +982,7 @@ def register_human_identity_step(target: Path, dry_run: bool, *, interactive: Op
         return "not-interactive"
     script = find_setup_script(target)
     if script is None:
-        print("  Human signing identity is not set up and the setup script was not found; see the os-signing-setup skill.")
+        print("  Human signing identity is not set up and the setup script was not found; see the os-control-signing-setup skill.")
         return "unavailable"
     note = machine_key_note()
     print("\n  Your signing identity is not registered in this repo, so no gate (APPROVED, VERIFY_EXIT, DONE) can be approved yet.")
@@ -1012,7 +1012,7 @@ def ensure_simulation_identity_step(target: Path, dry_run: bool) -> None:
         info = ensure_simulation_identity(target)
     except Exception as exc:  # e.g. no ssh-keygen: report, never fail the whole init
         print(f"  WARNING: could not create the simulation identity ({exc}). Transition simulations need it; "
-              "install OpenSSH >= 8.1 and re-run os-init.")
+              "install OpenSSH >= 8.1 and re-run os-control-init.")
         return
     verb = "Created" if info["created"] else "Reused"
     print(f"  {verb} the simulation identity {info['fingerprint']} in {info['layout'].root}")
@@ -1042,7 +1042,7 @@ def print_next_steps(target: Path, did_global: bool, did_retrofit: bool) -> None
     print("   context/memory/, context/status.md, context/os-state.json, context/events.jsonl, context/.locks/, .claude/")
     print("\n5. Recommended Verification Check:")
     print("   Immediately run the health check skill/engine to verify substrate liveness:")
-    print("   • Slash command / Skill: /os-health-check")
+    print("   • Slash command / Skill: /os-control-health")
     print("   • Deterministic substrate check:")
     print("     test -f context/control_plane.db && test -f .claude/hooks/hooks.json && test -f .git/hooks/pre-commit-evolution-guard && test -f .github/workflows/verify-evolution-integrity.yml && echo 'OK: All OS substrates active'")
     for line in signing_identity_notice(target):
@@ -1168,7 +1168,7 @@ def _execute_action(target: Path, args: argparse.Namespace) -> None:
 
 # External comment: CLI entry point
 def main() -> None:
-    """Entry point for os-init / init_agentic_os CLI engine."""
+    """Entry point for os-control-init / init_agentic_os CLI engine."""
     args = _parse_args()
     target = Path(args.target).expanduser().resolve()
 

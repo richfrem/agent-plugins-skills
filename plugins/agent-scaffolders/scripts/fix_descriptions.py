@@ -31,13 +31,12 @@ import os
 import re
 
 files_to_fix = [
-    "plugins/agent-agentic-os/skills/os-eval-backport/SKILL.md",
-    "plugins/agent-agentic-os/skills/os-eval-lab-setup/SKILL.md",
-    "plugins/agent-agentic-os/skills/os-eval-runner/SKILL.md",
-    "plugins/agent-agentic-os/skills/os-guide/SKILL.md",
-    "plugins/agent-agentic-os/skills/os-improvement-report/SKILL.md",
-    "plugins/agent-agentic-os/skills/os-init/SKILL.md",
-    "plugins/agent-agentic-os/skills/os-memory-manager/SKILL.md",
+    "plugins/agent-agentic-os/skills/os-lab-backport/SKILL.md",
+    "plugins/agent-agentic-os/skills/os-lab-setup/SKILL.md",
+    "plugins/agent-agentic-os/skills/os-lab-scorer/SKILL.md",
+    "plugins/agent-agentic-os/skills/os-lab-log/SKILL.md",
+    "plugins/agent-agentic-os/skills/os-control-init/SKILL.md",
+    "plugins/agent-agentic-os/skills/os-lab-memory/SKILL.md",
     "plugins/agent-scaffolders/skills/create-skill/SKILL.md",
     "plugins/excel-to-csv/skills/excel-to-csv/SKILL.md"
 ]

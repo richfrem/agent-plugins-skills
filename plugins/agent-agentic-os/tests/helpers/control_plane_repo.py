@@ -21,17 +21,17 @@ from pathlib import Path
 
 PLUGIN = Path(__file__).resolve().parents[2]
 SCRIPTS = PLUGIN / "scripts"
-SKILL = PLUGIN / "skills" / "os-control-plane-mode"
+SKILL = PLUGIN / "skills" / "os-control-mode"
 MODE_SCRIPT = SKILL / "scripts" / "control_plane_mode.py"
 MANIFEST = SKILL / "references" / "control-plane.manifest.json" if (SKILL / "references" / "control-plane.manifest.json").is_file() else (SKILL / "control-plane.manifest.json")
 
 MEMBERS = {
-    "skills": ["work-intake", "transition-simulator", "os-signing-setup"],
+    "skills": ["os-control-intake", "os-control-simulator", "os-control-signing-setup"],
     "rules": ["state-transition-guidance-compliance"],
     "agents": [],
 }
 BYSTANDERS = {
-    "skills": ["os-init", "os-health-check", "self-evolution"],
+    "skills": ["os-control-init", "os-control-health", "self-evolution"],
     "rules": ["destructive-action-guard"],
     "agents": ["os-architect-agent"],
 }

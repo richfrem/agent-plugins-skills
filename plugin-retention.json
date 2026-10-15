@@ -7,39 +7,25 @@
     "plugin-syncer",
     "plugin-pruner",
     "symlink-manager",
-    "worktree-manager"
+    "os-control-worktree"
   ],
   "plugins": {
     "agent-agentic-os": {
       "skills": {
-        "critical-auditor": true,
-        "evo-smoketest": false,
-        "issue-resolution-reviewer": true,
-        "optimize-agent-instructions": true,
-        "os-architect": true,
-        "os-clean-locks": true,
-        "os-control-plane-mode": true,
-        "os-environment-probe": true,
-        "os-eval-backport": false,
-        "os-eval-lab-setup": false,
-        "os-eval-runner": false,
-        "os-evolution-planner": false,
-        "os-evolution-verifier": true,
-        "os-experiment-log": false,
-        "os-guide": true,
-        "os-health-check": true,
-        "os-improvement-loop": false,
-        "os-improvement-report": false,
-        "os-init": true,
-        "os-memory-manager": true,
-        "os-skill-improvement": true,
-        "repository-improvement": true,
-        "self-evolution": true,
-        "todo-check": true,
-        "transition-simulator": true,
-        "work-intake": true,
-        "worktree-manager": true,
-        "os-signing-setup": true
+        "os-lab-planner": true,
+        "os-lab-setup": false,
+        "os-lab-loop": false,
+        "os-lab-scorer": true,
+        "os-lab-backport": false,
+        "os-lab-log": false,
+        "os-control-mode": true,
+        "os-control-simulator": true,
+        "os-control-signing-setup": true,
+        "os-control-worktree": true,
+        "os-control-intake": true,
+        "os-control-init": true,
+        "os-control-health": true,
+        "os-lab-memory": true
       },
       "rules": {
         "adversarial-reasoning-before-agreement-rule.md": true,
@@ -55,10 +41,8 @@
         "cryptographic-human-gates.md": true
       },
       "agents": {
-        "agent-agentic-os-agentic-os-setup.md": true,
-        "agent-agentic-os-improvement-intake-agent.md": true,
-        "agent-agentic-os-os-architect-agent.md": true,
-        "agent-agentic-os-os-architect-tester-agent.md": true
+        "agent-agentic-os-os-lab-agent.md": true,
+        "agent-agentic-os-os-control-setup-agent.md": true
       }
     },
     "agent-memory": {
@@ -165,7 +149,8 @@
         "cli-agents-security-auditor.md": true,
         "cli-agents-self-critic.md": true,
         "cli-agents-tdd-contract-reviewer.md": true,
-        "cli-agents-test-writer.md": true
+        "cli-agents-test-writer.md": true,
+        "cli-agents-critical-auditor.md": true
       }
     },
     "dependency-management": {
@@ -179,6 +164,7 @@
     },
     "dev-utils": {
       "skills": {
+        "github-issue-resolution-reviewer": true,
         "adr-management": false,
         "coding-conventions-agent": false,
         "context-bundler": true,
@@ -194,7 +180,9 @@
         "humanize": false,
         "link-checker-agent": false,
         "optimize-context": true,
-        "symlink-manager": true
+        "symlink-manager": true,
+        "todo-check": true,
+        "github-issue-refactor-proposer": true
       },
       "rules": {
         "coding-conventions.md": true,

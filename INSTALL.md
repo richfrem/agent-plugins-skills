@@ -35,7 +35,7 @@ Ownership manifests under `.agents/ownership/` contain one compact JSON line
 per component, such as:
 
 ```json
-"evo-smoketest": {"should_install": false, "artifacts": [".agents/skills/evo-smoketest"]}
+"os-lab-setup": {"should_install": false, "artifacts": [".agents/skills/os-lab-setup"]}
 ```
 
 This makes large inventories faster to review and update while retaining the

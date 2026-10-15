@@ -3,11 +3,11 @@ tests/test_identity_verification_readiness.py
 =============================================
 
 Purpose:
-    Failing-first acceptance tests for Item C (auth-ciba-increment-b, 2026-09-20): os-init and os-health-check
+    Failing-first acceptance tests for Item C (auth-ciba-increment-b, 2026-09-20): os-control-init and os-control-health
     report whether cryptographic verification can actually WORK, not just whether files exist. Readiness means
     (1) an `ssh-keygen` that supports SSHSIG (OpenSSH >= 8.1) is available, (2) `allowed_signers` parses to at
     least one key, and (3) every enrolled entry is scoped to the production namespace (otherwise no signature
-    could ever verify). os-init and the health check stay READ-ONLY reporters: they never create keys or write
+    could ever verify). os-control-init and the health check stay READ-ONLY reporters: they never create keys or write
     `allowed_signers*` (an agent-run surface that enrolled a key would be an enrollment path for an agent).
     Real ssh-keygen, real files in tmp_path; the missing-binary case points at a path that does not exist.
 
@@ -116,11 +116,11 @@ def test_init_notice_reports_ssh_keygen_readiness_without_writing(tmp_path):
     target.mkdir()
     lines = "\n".join(signing_identity_notice(target))
     assert "ssh-keygen" in lines
-    assert not (target / "context").exists()  # os-init's notice never creates the identity folder or any key
+    assert not (target / "context").exists()  # os-control-init's notice never creates the identity folder or any key
 
 
 def test_health_check_skill_asserts_verification_readiness_not_actor_strings():
-    text = (PLUGIN / "skills" / "os-health-check" / "SKILL.md").read_text()
+    text = (PLUGIN / "skills" / "os-control-health" / "SKILL.md").read_text()
     lowered = text.lower()
     assert "ssh-keygen" in lowered and "allowed_signers" in lowered and "sshsig" in lowered
     for stale in ("actor = 'human'", "actor='human'", "force_done", "force_close", "--skip-review"):

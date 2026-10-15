@@ -10,39 +10,34 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-## Registry Index (All 50 Scenarios)
+## Registry Index (All 45 Scenarios)
 
 | ID | Target | Hypothesis | Priority |
 |----|--------|------------|----------|
-| T01 | os-eval-runner | Baseline routing: eval triggers on correct phrases, not on explain/describe | HIGH |
-| T02 | os-eval-runner | KEEP/DISCARD threshold: clearly improved skill scores KEEP, degraded scores DISCARD | HIGH |
-| T03 | os-eval-runner | Adversarial coverage: eval catches prompts designed to bypass routing | MEDIUM |
-| T04 | os-eval-runner | Edge case: graceful failure when evals.json is missing or malformed | MEDIUM |
-| T05 | os-eval-runner | Survey completion: evaluator completes self-assessment after every eval run | HIGH |
-| T06 | os-improvement-loop | Baseline 1-cycle smoke: all 14 mandatory loop steps execute in order | HIGH |
-| T07 | os-improvement-loop | Friction emission: agents emit type:friction events when encountering ambiguity | HIGH |
-| T08 | os-improvement-loop | Loop report written: report file created after every cycle regardless of outcome | HIGH |
-| T09 | os-improvement-loop | Survey completion: both ORCHESTRATOR and INNER_AGENT complete survey after cycle | HIGH |
-| T10 | os-improvement-loop | Memory persistence: at least one promoted fact in context/memory.md after cycle | MEDIUM |
-| T11 | os-improvement-loop | Auto-trigger: Triple-Loop Retrospective triggered when friction_events_total reaches 3 | HIGH |
-| T12 | os-improvement-loop | Lock contention: second agent attempting same lock receives clear failure, not hang | HIGH |
-| T13 | os-clean-locks | Baseline routing: triggers on /os-clean-locks and lock variants, not on list-locks | HIGH |
-| T14 | os-clean-locks | Stale lock cleanup: lock with PID that no longer exists gets removed | HIGH |
-| T15 | os-clean-locks | Active lock protection: lock held by running PID is preserved | HIGH |
-| T16 | os-clean-locks | Post-clean verification: state_update clears active_agent field after cleanup | MEDIUM |
-| T17 | os-clean-locks | Survey completion: os-clean-locks completes self-assessment after every run | MEDIUM |
-| T18 | os-memory-manager | Baseline promotion: ephemeral state skipped, architectural decisions promoted | HIGH |
-| T19 | os-memory-manager | Dedup detection: semantic duplicate caught and flagged before write | HIGH |
-| T20 | os-memory-manager | Test registry preservation: registry.md skipped by archive logic, never deleted | HIGH |
-| T21 | os-memory-manager | Conflict detection: <CONFLICT> marker emitted before any write with overlap | HIGH |
-| T22 | os-memory-manager | Size enforcement: memory.md over 50KB triggers archive, not silent truncation | MEDIUM |
-| T23 | os-memory-manager | Survey completion: memory manager completes self-assessment after every session | HIGH |
-| T24 | os-memory-manager | Rollback protocol: rejected write triggers git stash pop, file reverted | MEDIUM |
-| T25 | os-memory-manager | Falsified hypothesis: DO NOT RE-TEST entry added to memory.md when hypothesis falsified | HIGH |
+| T01 | os-lab-scorer | Baseline routing: eval triggers on correct phrases, not on explain/describe | HIGH |
+| T02 | os-lab-scorer | KEEP/DISCARD threshold: clearly improved skill scores KEEP, degraded scores DISCARD | HIGH |
+| T03 | os-lab-scorer | Adversarial coverage: eval catches prompts designed to bypass routing | MEDIUM |
+| T04 | os-lab-scorer | Edge case: graceful failure when evals.json is missing or malformed | MEDIUM |
+| T05 | os-lab-scorer | Survey completion: evaluator completes self-assessment after every eval run | HIGH |
+| T06 | os-lab-loop | Baseline 1-cycle smoke: all 14 mandatory loop steps execute in order | HIGH |
+| T07 | os-lab-loop | Friction emission: agents emit type:friction events when encountering ambiguity | HIGH |
+| T08 | os-lab-loop | Loop report written: report file created after every cycle regardless of outcome | HIGH |
+| T09 | os-lab-loop | Survey completion: both ORCHESTRATOR and INNER_AGENT complete survey after cycle | HIGH |
+| T10 | os-lab-loop | Memory persistence: at least one promoted fact in context/memory.md after cycle | MEDIUM |
+| T11 | os-lab-loop | Auto-trigger: Triple-Loop Retrospective triggered when friction_events_total reaches 3 | HIGH |
+| T12 | os-lab-loop | Lock contention: second agent attempting same lock receives clear failure, not hang | HIGH |
+| T18 | os-lab-memory | Baseline promotion: ephemeral state skipped, architectural decisions promoted | HIGH |
+| T19 | os-lab-memory | Dedup detection: semantic duplicate caught and flagged before write | HIGH |
+| T20 | os-lab-memory | Test registry preservation: registry.md skipped by archive logic, never deleted | HIGH |
+| T21 | os-lab-memory | Conflict detection: <CONFLICT> marker emitted before any write with overlap | HIGH |
+| T22 | os-lab-memory | Size enforcement: memory.md over 50KB triggers archive, not silent truncation | MEDIUM |
+| T23 | os-lab-memory | Survey completion: memory manager completes self-assessment after every session | HIGH |
+| T24 | os-lab-memory | Rollback protocol: rejected write triggers git stash pop, file reverted | MEDIUM |
+| T25 | os-lab-memory | Falsified hypothesis: DO NOT RE-TEST entry added to memory.md when hypothesis falsified | HIGH |
 | T26 | learning-loop | Baseline 3-phase completion: observe, hypothesize, test phases all execute | HIGH |
 | T27 | learning-loop | Survey Phase V: survey completed and saved to retrospectives/ after every run | HIGH |
 | T28 | learning-loop | Metrics Phase VI: post_run_metrics.py fires and emits metric event | HIGH |
-| T29 | learning-loop | Memory Phase VII: os-memory-manager invoked before handoff | HIGH |
+| T29 | learning-loop | Memory Phase VII: os-lab-memory invoked before handoff | HIGH |
 | T30 | learning-loop | Handoff gate: Phase VIII only starts after survey saved + metrics emitted + memory written | HIGH |
 | T31 | triple-loop | Baseline handoff: outer loop assigns task, inner loop completes and signals back | HIGH |
 | T32 | triple-loop | Survey both agents: outer loop AND inner loop both complete self-assessment | HIGH |
@@ -62,8 +57,8 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 | T46 | hooks | Friction count: post_run_metrics.py correctly counts type:friction events from events.jsonl | HIGH |
 | T47 | hooks | Metrics on Stop: metrics report written to disk on every Stop hook fire | HIGH |
 | T48 | hooks | Auto-trigger threshold: friction_events_total >= 3 emits metric that triggers Triple-Loop Retrospective | HIGH |
-| T49 | os-init | Interview skip: init does not repeat questions already answered in conversation | MEDIUM |
-| T50 | os-init | Survey completion: init completes self-assessment after every onboarding run | HIGH |
+| T49 | os-control-init | Interview skip: init does not repeat questions already answered in conversation | MEDIUM |
+| T50 | os-control-init | Survey completion: init completes self-assessment after every onboarding run | HIGH |
 
 ---
 
@@ -71,9 +66,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T01 — os-eval-runner: Baseline Routing Accuracy
+### T01 — os-lab-scorer: Baseline Routing Accuracy
 
-- **Target**: os-eval-runner
+- **Target**: os-lab-scorer
 - **Hypothesis**: The skill triggers correctly on "evaluate this skill" and related phrases,
   but does NOT trigger on "explain this skill", "describe this skill", or "show me the eval results".
 - **Why now**: All results.tsv baselines are empty. This establishes routing accuracy baseline.
@@ -85,9 +80,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T02 — os-eval-runner: KEEP/DISCARD Threshold
+### T02 — os-lab-scorer: KEEP/DISCARD Threshold
 
-- **Target**: os-eval-runner
+- **Target**: os-lab-scorer
 - **Hypothesis**: The evaluator correctly assigns KEEP to a skill with an added positive example
   and DISCARD to a skill with a removed description keyword.
 - **Why now**: Without a working KEEP/DISCARD signal the entire Triple-Loop cannot function.
@@ -99,9 +94,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T03 — os-eval-runner: Adversarial Prompt Coverage
+### T03 — os-lab-scorer: Adversarial Prompt Coverage
 
-- **Target**: os-eval-runner
+- **Target**: os-lab-scorer
 - **Hypothesis**: The current evals.json contains enough adversarial prompts to catch a skill
   that has been manipulated to trigger on unrelated keywords.
 - **Why now**: Adversarial coverage gap was identified in prior session as a known weakness.
@@ -113,9 +108,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T04 — os-eval-runner: Graceful Failure on Missing evals.json
+### T04 — os-lab-scorer: Graceful Failure on Missing evals.json
 
-- **Target**: os-eval-runner
+- **Target**: os-lab-scorer
 - **Hypothesis**: eval_runner.py exits with a clear error message (not a Python traceback) when
   evals.json is absent or malformed.
 - **Why now**: Agents calling eval_runner.py during Triple-Loop Retrospective Phase 3 should get
@@ -128,9 +123,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T05 — os-eval-runner: Self-Assessment Survey Completion
+### T05 — os-lab-scorer: Self-Assessment Survey Completion
 
-- **Target**: os-eval-runner
+- **Target**: os-lab-scorer
 - **Hypothesis**: The evaluator saves a survey file to retrospectives/ after every eval run,
   including runs that return DISCARD.
 - **Why now**: Survey was added to Phase 5 in this session. Needs first-run verification.
@@ -143,9 +138,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T06 — os-improvement-loop: Baseline 1-Cycle Smoke Test
+### T06 — os-lab-loop: Baseline 1-Cycle Smoke Test
 
-- **Target**: os-improvement-loop (SKILL.md v0.5.0)
+- **Target**: os-lab-loop (SKILL.md v0.5.0)
 - **Hypothesis**: A single loop cycle with 1 ORCHESTRATOR + 1 INNER_AGENT completes all
   14 mandatory steps listed in the CRITICAL section.
 - **Why now**: v0.5.0 added 7 new mandatory steps. First full validation needed.
@@ -157,9 +152,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T07 — os-improvement-loop: Friction Event Emission
+### T07 — os-lab-loop: Friction Event Emission
 
-- **Target**: os-improvement-loop
+- **Target**: os-lab-loop
 - **Hypothesis**: When an INNER_AGENT encounters an ambiguous task description, it emits a
   `type: friction` event before requesting human rescue.
 - **Why now**: Friction events are the primary signal for Triple-Loop Retrospective auto-trigger.
@@ -172,9 +167,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T08 — os-improvement-loop: Loop Report Written Every Cycle
+### T08 — os-lab-loop: Loop Report Written Every Cycle
 
-- **Target**: os-improvement-loop
+- **Target**: os-lab-loop
 - **Hypothesis**: A loop report is written to `context/memory/loop-reports/report_[CYCLE_ID].md`
   after every cycle, including cycles that end with DISCARD.
 - **Why now**: Report is always written, never auto-displayed. Needs first verification.
@@ -187,9 +182,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T09 — os-improvement-loop: Survey Completion by Both Agents
+### T09 — os-lab-loop: Survey Completion by Both Agents
 
-- **Target**: os-improvement-loop
+- **Target**: os-lab-loop
 - **Hypothesis**: Both ORCHESTRATOR and INNER_AGENT complete and save self-assessment surveys
   after every cycle, not just the one that ran evals.
 - **Why now**: Survey is mandatory per v0.5.0. If only one agent surveys, Triple-Loop data is incomplete.
@@ -201,9 +196,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T10 — os-improvement-loop: Memory Persistence After Cycle
+### T10 — os-lab-loop: Memory Persistence After Cycle
 
-- **Target**: os-improvement-loop
+- **Target**: os-lab-loop
 - **Hypothesis**: At least one fact is promoted to context/memory.md after a cycle that
   produces a KEEP verdict.
 - **Why now**: Memory persistence was missing from v0.3.0/v0.4.0. First test of new v0.5.0 behavior.
@@ -215,9 +210,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T11 — os-improvement-loop: Triple-Loop Retrospective Auto-Trigger at 3 Friction Events
+### T11 — os-lab-loop: Triple-Loop Retrospective Auto-Trigger at 3 Friction Events
 
-- **Target**: os-improvement-loop
+- **Target**: os-lab-loop
 - **Hypothesis**: When 3 friction events of the same type accumulate in events.jsonl,
   the ORCHESTRATOR flags Triple-Loop Retrospective to run at next session start.
 - **Why now**: Auto-trigger is the primary mechanism for systemic improvement. Unverified.
@@ -230,9 +225,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T12 — os-improvement-loop: Lock Contention Handling
+### T12 — os-lab-loop: Lock Contention Handling
 
-- **Target**: os-improvement-loop (kernel.py)
+- **Target**: os-lab-loop (kernel.py)
 - **Hypothesis**: When two agents attempt to acquire the same lock simultaneously, the second
   receives a clear failure message and does not hang or corrupt the lock file.
 - **Why now**: Lock contention is the main correctness risk in multi-session setup.
@@ -245,77 +240,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T13 — os-clean-locks: Baseline Routing
+### T18 — os-lab-memory: Baseline Promotion Decision Accuracy
 
-- **Target**: os-clean-locks
-- **Hypothesis**: The skill triggers on "/os-clean-locks", "clear all locks", "reset agent locks",
-  but does NOT trigger on "list locks", "show me the lock files", "what is locked".
-- **Why now**: Routing baseline is empty. Must confirm skill is reached before testing its logic.
-- **Prior results**: None.
-- **Acceptance criteria**: 3/3 positive phrases route to skill; 3/3 negative phrases do not.
-- **Failure criteria**: Any mis-routing in either direction.
-- **Known weaknesses**: Routing is inferred, not directly observable.
-- **Recommended next test**: T14 (stale lock cleanup) — test core function after routing confirmed.
-
----
-
-### T14 — os-clean-locks: Stale Lock Cleanup
-
-- **Target**: os-clean-locks
-- **Hypothesis**: A lock file referencing a PID that no longer exists is removed by os-clean-locks.
-- **Why now**: Stale locks from crashed sessions are the primary production failure mode.
-- **Prior results**: None.
-- **Acceptance criteria**: After creating a lock with PID 99999 (likely dead), os-clean-locks
-  removes it and emits a cleanup event.
-- **Failure criteria**: Lock preserved despite dead PID, or removed without event emission.
-- **Known weaknesses**: PID 99999 may theoretically exist on some systems.
-- **Recommended next test**: T15 (active lock protection) — opposite path with live PID.
-
----
-
-### T15 — os-clean-locks: Active Lock Protection
-
-- **Target**: os-clean-locks
-- **Hypothesis**: A lock file referencing the current session's PID is NOT removed by os-clean-locks.
-- **Why now**: Cleaning an active lock mid-session would corrupt the running agent's state.
-- **Prior results**: None.
-- **Acceptance criteria**: Lock with current PID preserved after os-clean-locks runs.
-- **Failure criteria**: Active lock removed.
-- **Known weaknesses**: Tests only the agent's own PID; multi-session scenario harder.
-- **Recommended next test**: T16 (post-clean state verification) — check state_update behavior.
-
----
-
-### T16 — os-clean-locks: Post-Clean State Verification
-
-- **Target**: os-clean-locks
-- **Hypothesis**: After cleanup, kernel state active_agent field is cleared via state_update.
-- **Why now**: If active_agent is not cleared after lock cleanup, next session reads stale state.
-- **Prior results**: None.
-- **Acceptance criteria**: os-state.json active_agent field is null/empty after clean run.
-- **Failure criteria**: active_agent still set to previous agent name after clean.
-- **Known weaknesses**: Does not test mode or other state fields.
-- **Recommended next test**: T17 (survey completion).
-
----
-
-### T17 — os-clean-locks: Survey Completion
-
-- **Target**: os-clean-locks
-- **Hypothesis**: os-clean-locks completes self-assessment survey after every run,
-  including trivial no-op runs where no locks were found.
-- **Why now**: Survey was not in the original skill. Added in this session's audit. First test.
-- **Prior results**: None.
-- **Acceptance criteria**: Survey file in retrospectives/ after run.
-- **Failure criteria**: No survey file, or survey skipped on no-op run.
-- **Known weaknesses**: Survey quality not tested.
-- **Recommended next test**: T14 again with survey quality review.
-
----
-
-### T18 — os-memory-manager: Baseline Promotion Decision Accuracy
-
-- **Target**: os-memory-manager
+- **Target**: os-lab-memory
 - **Hypothesis**: The manager correctly promotes architectural decisions and skips ephemeral state
   at a rate of 80%+ agreement with human judgment on a standard 10-item test set.
 - **Why now**: Promotion accuracy is the core function. Baseline must be established first.
@@ -327,9 +254,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T19 — os-memory-manager: Semantic Deduplication Detection
+### T19 — os-lab-memory: Semantic Deduplication Detection
 
-- **Target**: os-memory-manager
+- **Target**: os-lab-memory
 - **Hypothesis**: The manager catches a semantically duplicate fact (same meaning, different words)
   and emits <CONFLICT> before writing.
 - **Why now**: Semantic dedup is the core "dementia defense". If it fails, memory fills with
@@ -342,9 +269,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T20 — os-memory-manager: Test Registry Preservation
+### T20 — os-lab-memory: Test Registry Preservation
 
-- **Target**: os-memory-manager
+- **Target**: os-lab-memory
 - **Hypothesis**: The archive logic in Phase 4 never archives context/memory/tests/registry.md,
   even when memory.md exceeds 50KB and archive is triggered.
 - **Why now**: Registry preservation is a new explicit rule in Phase 3 (added this session).
@@ -357,9 +284,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T21 — os-memory-manager: Conflict Detection Before Write
+### T21 — os-lab-memory: Conflict Detection Before Write
 
-- **Target**: os-memory-manager
+- **Target**: os-lab-memory
 - **Hypothesis**: When a proposed promoted fact overlaps with an existing rule in skills/,
   the manager emits <CONFLICT> rather than silently writing.
 - **Why now**: Cross-skill conflict detection was added to Phase 4. Unverified.
@@ -371,9 +298,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T22 — os-memory-manager: Memory Size Limit Enforcement
+### T22 — os-lab-memory: Memory Size Limit Enforcement
 
-- **Target**: os-memory-manager
+- **Target**: os-lab-memory
 - **Hypothesis**: When context/memory.md exceeds 50KB, the manager archives the oldest lines
   rather than silently allowing unbounded growth.
 - **Why now**: Unbounded memory.md degrades context quality and model performance.
@@ -386,9 +313,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T23 — os-memory-manager: Survey Completion
+### T23 — os-lab-memory: Survey Completion
 
-- **Target**: os-memory-manager
+- **Target**: os-lab-memory
 - **Hypothesis**: The memory manager completes Phase 5 self-assessment survey after every
   session close, including sessions with zero promotions.
 - **Why now**: Survey is new (added this session). First test.
@@ -400,9 +327,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T24 — os-memory-manager: Rollback on Rejected Write
+### T24 — os-lab-memory: Rollback on Rejected Write
 
-- **Target**: os-memory-manager
+- **Target**: os-lab-memory
 - **Hypothesis**: When the user rejects a proposed write during the git stash + diff preview,
   git stash pop restores the original file correctly.
 - **Why now**: Safe Write Protocol is critical for non-destructive memory updates.
@@ -414,9 +341,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T25 — os-memory-manager: Falsified Hypothesis Entry
+### T25 — os-lab-memory: Falsified Hypothesis Entry
 
-- **Target**: os-memory-manager
+- **Target**: os-lab-memory
 - **Hypothesis**: When a test registry entry is falsified (DISCARD verdict), the manager adds
   a "DO NOT RE-TEST" entry to context/memory.md with the cycle ID as evidence.
 - **Why now**: Without DO NOT RE-TEST entries, Triple-Loop Retrospective will re-test the same
@@ -474,13 +401,13 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 ### T29 — learning-loop: Memory Written at Phase VII
 
 - **Target**: learning-loop
-- **Hypothesis**: os-memory-manager is invoked during Phase VII and writes a session log
+- **Hypothesis**: os-lab-memory is invoked during Phase VII and writes a session log
   before the handoff in Phase VIII.
 - **Why now**: Phase VII is new — added this session.
 - **Prior results**: None.
 - **Acceptance criteria**: Session log file created in context/memory/YYYY-MM-DD.md before Phase VIII event.
 - **Failure criteria**: No session log; or Phase VIII starts before memory write.
-- **Known weaknesses**: Requires os-memory-manager to work correctly (dependency).
+- **Known weaknesses**: Requires os-lab-memory to work correctly (dependency).
 - **Recommended next test**: T30 (Phase VIII gate) — full sequence validation.
 
 ---
@@ -763,9 +690,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T49 — os-init: Interview Skip for Already-Answered Questions
+### T49 — os-control-init: Interview Skip for Already-Answered Questions
 
-- **Target**: os-init
+- **Target**: os-control-init
 - **Hypothesis**: When the user has already stated their project type and use case in conversation,
   the init interview skips those questions and only asks what is still unclear.
 - **Why now**: Redundant questioning is friction. Phase 1 says to skip answered questions but
@@ -779,9 +706,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T50 — os-init: Survey Completion After Onboarding
+### T50 — os-control-init: Survey Completion After Onboarding
 
-- **Target**: os-init
+- **Target**: os-control-init
 - **Hypothesis**: Phase 5 self-assessment survey is completed and saved after every init run,
   including partial inits that stop after the interview phase.
 - **Why now**: Phase 5 is new — added this session.
@@ -791,7 +718,7 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 - **Failure criteria**: Survey absent after init; or sections blank.
 - **Known weaknesses**: Survey may not be saved if init is interrupted mid-phase.
 - **Recommended next test**: Review whether the improvement recommendation from T50
-  leads to an update of the os-init SKILL.md — completing the Triple-Loop cycle.
+  leads to an update of the os-control-init SKILL.md — completing the Triple-Loop cycle.
 
 ---
 
@@ -806,5 +733,5 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 Priority ordering within a target: start with HIGH, then MEDIUM.
 Cross-target ordering: run kernel.py and hooks tests first (foundational infrastructure),
-then os-memory-manager and Triple-Loop Retrospective (most impactful for Triple-Loop),
-then os-improvement-loop and triple-loop (integration tests).
+then os-lab-memory and Triple-Loop Retrospective (most impactful for Triple-Loop),
+then os-lab-loop and triple-loop (integration tests).

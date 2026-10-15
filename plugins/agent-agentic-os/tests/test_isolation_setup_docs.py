@@ -5,13 +5,13 @@ tests/test_isolation_setup_docs.py
 Purpose:
     Failing-first acceptance tests for T8 (auth-ciba-increment-b, issue #639, spec case 12): the
     isolation setup documentation `references/isolation-setup.md` exists at the path the Gate 1
-    remediation error names, is reachable from the os-signing-setup skill, states the ranked setups
+    remediation error names, is reachable from the os-control-signing-setup skill, states the ranked setups
     and the honest residual risks (D4), and describes the strict/legacy modes and the human-side flow.
     Real files only.
 
 Key Input Dependencies:
     - plugins/agent-agentic-os/references/isolation-setup.md
-    - plugins/agent-agentic-os/skills/os-signing-setup/ (SKILL.md, references/ symlink)
+    - plugins/agent-agentic-os/skills/os-control-signing-setup/ (SKILL.md, references/ symlink)
     - control_plane/coordinator.py (the `setup_docs` path in the remediation error)
 
 Key Functions (test cases):
@@ -57,7 +57,7 @@ def test_doc_states_setups_modes_and_honest_limits():
 
 
 def test_doc_is_reachable_from_the_skill():
-    skill = PLUGIN / "skills" / "os-signing-setup"
+    skill = PLUGIN / "skills" / "os-control-signing-setup"
     assert "references/isolation-setup.md" in (skill / "SKILL.md").read_text()
     link = skill / "references" / "isolation-setup.md"
     assert link.is_file() and link.resolve() == DOC.resolve()

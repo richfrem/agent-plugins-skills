@@ -7,8 +7,8 @@ flowchart TB
  subgraph subGraph0["Agent Layer (Actors)"]
         backend_agent["Backend Agent"]
         frontend_agent["Frontend Agent"]
-        os_learning_loop["os-learning-loop"]
-        memory_manager["session-memory-manager"]
+        os_lab_loop["os-lab-loop"]
+        memory_manager["os-lab-memory"]
   end
  subgraph subGraph1["Kernel Layer (Nervous System)"]
         kernel_controller["kernel.py<br>(Atomic Lock & Emit Broker)"]
@@ -17,8 +17,8 @@ flowchart TB
         registry[("agents.json<br>(Registry)")]
   end
  subgraph subGraph2["Observability & Loops"]
-        os_health_check["os-health-check"]
-        /loop["/loop scheduler"]
+        os_health_check["os-control-health"]
+        loop_scheduler["/loop scheduler"]
   end
  subgraph subGraph3["Durable Memory (Storage)"]
         memory_md["MEMORY.md"]
@@ -27,30 +27,29 @@ flowchart TB
   end
     backend_agent -- "Intent/Result" --> kernel_controller
     frontend_agent -- "Intent/Result" --> kernel_controller
-    os_learning_loop -- "Intent/Result" --> kernel_controller
+    os_lab_loop -- "Intent/Result" --> kernel_controller
     kernel_controller -- "Verifies & Appends" --> event_bus
     kernel_controller -- "Validates" --> registry
-    os_learning_loop -- Reads event history --> event_bus
-    os_learning_loop -- Reads diffs/logs --> dated_logs
-    os_learning_loop -- Updates Procedures --> context_memory_md
-    os_learning_loop -- Updates Kernel --> memory_md
-    /loop -. Triggers hourly/daily .-> os_health_check
-    /loop -. Triggers retrospect .-> os_learning_loop
+    memory_manager -- Reads event history --> event_bus
+    memory_manager -- Reads session logs --> dated_logs
+    memory_manager -- Promotes long-term facts --> context_memory_md
+    memory_manager -- Updates auto-memory index --> memory_md
+    loop_scheduler -. Triggers hourly/daily .-> os_health_check
     os_health_check -- Scans metrics/errors --> event_bus
     backend_agent -. Requests Lock .-> kernel_controller
-    os_learning_loop -. Requests Lock .-> kernel_controller
+    os_lab_loop -. Requests Lock .-> kernel_controller
     kernel_controller -- "Atomic mkdir" --> os_state
 
      backend_agent:::agent
      frontend_agent:::agent
-     os_learning_loop:::agent
+     os_lab_loop:::agent
      memory_manager:::agent
      kernel_controller:::daemon
      event_bus:::bus
      os_state:::bus
      registry:::bus
      os_health_check:::daemon
-     /loop:::daemon
+     loop_scheduler:::daemon
      memory_md:::storage
      context_memory_md:::storage
      dated_logs:::storage

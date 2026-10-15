@@ -104,7 +104,7 @@ def check_substrate_readiness(target: Optional[Path] = None) -> Tuple[bool, str]
     return (
         False,
         "Agentic OS execution substrate is not initialized. "
-        "Please run 'os-init' to establish repository control plane infrastructure before starting an exploration session.",
+        "Please run 'os-control-init' to establish repository control plane infrastructure before starting an exploration session.",
     )
 
 

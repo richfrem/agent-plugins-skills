@@ -1,1 +1,0 @@
-../../../references/gemini-detection-example.md

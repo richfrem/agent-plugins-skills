@@ -1444,3 +1444,171 @@ Persistent tracking of architectural friction, structural anomalies, and unclose
 - Severity: M
 - Repeat: NO
 - Status: RESOLVED
+## DEBT-20261014-DANGLING-ORCHESTRATOR-REF-AND-DRIFTED-COUNTS (RESOLVED)
+
+- Logged date: 2026-10-14
+- Cycle/Session ID: fix-docs-counts-and-graph-state-names
+- Artifact affected: `plugins/agent-agentic-os/agents/improvement-intake-agent.md`, `plugins/agent-orchestration/skills/graph-execution/SKILL.md`, `architecture.md`, `.claude-plugin/marketplace.json`
+- Friction observed: `improvement-intake-agent` handed runs to `improvement-lifecycle-orchestrator`, which exists in no plugin (`os-architect-agent` routes intake to `os-improvement-loop`). `graph-execution` mermaid used `VERIFY_GATE` where the Workflow says `VERIFIER_GATE`. `architecture.md` and `marketplace.json` skill and persona counts had drifted from `plugins/`.
+- Why not fixed now: Fixed immediately on branch `fix/docs-counts-and-graph-state-names`.
+- Recommended fix / fix applied: Intake agent handoff now checks that `os-improvement-loop` is installed and stops with a question if not and no longer claims the loop reads `run-config.json`; dropped the nonexistent `skill:os-state` and unused `skill:os-memory-manager` dependencies; kernel event now uses installed `context/kernel.py` and is skipped if absent; `os-architect-agent` gained an availability check so it never routes through a disabled skill ; README rewritten to list all 28 skills by workflow, drop the nonexistent /os-loop and /os-memory commands, add the missing Stop hook, and fix a stray code fence and a dead link (OPEN, deferred: no skill consumes `run-config.json` — decide whether intake should write `program.md` instead); mermaid unified on `VERIFIER_GATE`; counts set from `find plugins -name SKILL.md` (139 skills, `agent-scaffolders` 27, `cli-agents` 12 personas). Read counts from `plugins/`, never copy them from another doc.
+- Evidence/repro: `grep -rn improvement-lifecycle-orchestrator plugins` finds only the intake agent and a historical CHANGELOG line; `ls plugins/cli-agents/agents` lists 12 personas.
+- Severity: L
+- Repeat: NO
+- Status: RESOLVED
+
+## DEBT-20261014-INSTALLER-POINTER-CHAIN-STUBS
+
+- Logged date: 2026-10-14
+- Cycle/Session ID: fix-docs-counts-and-graph-state-names
+- Artifact affected: `plugins/plugin-manager/scripts/plugin_installer.py` (`_process_file_item`); pointer files in `plugins/agent-agentic-os/references/`
+- Friction observed: Skill links such as `os-guide/references/architecture.md` point at plugin-root pointer files (e.g. `references/architecture.md`, text `../../../references/architecture/architecture.md`). The path is correct from the skill folder, but the installer resolves a pointer relative to the pointer file itself (`real_src.parent`), finds nothing, and copies the one-line pointer text. Installed, enabled skills already contain stubs: `.agents/skills/os-init/references/architecture.md`, `project-setup-guide.md`, and one file each in `dependency-management`, `create-skill`, `audit-plugin`.
+- Why not fixed now: Fixed on the same branch (installer resolution base).
+- Recommended fix / fix applied: `_process_file_item` now also resolves a pointer relative to the symlink's directory when its own base fails; regression test `test_symlink_to_pointer_resolves_relative_to_link_directory`. Installed stubs clear on the next sync.
+- Evidence/repro: `find .agents/skills -type f -size -200c` then check for single-line `../` paths.
+- Severity: M
+- Repeat: NO
+- Status: RESOLVED
+
+## DEBT-20261014-UNREGISTERED-SKILL-SYMLINKS
+
+- Logged date: 2026-10-14
+- Cycle/Session ID: fix-docs-counts-and-graph-state-names
+- Artifact affected: `symlinks.json`; 21 relative symlinks under `plugins/agent-agentic-os/skills/`
+- Friction observed: The links resolve and install, but are not recorded in `symlinks.json` (plugin architecture policy Section 5), and `symlink_manager.py diagnose` only checks recorded links, so it reports "All links OK".
+- Why not fixed now: Deferred to the end-of-moves link pass on this branch.
+- Recommended fix / fix applied: Register each link through `symlink_manager.py`; also add the missing spokes `evo-smoketest/scripts/evaluate.py` and `repository-improvement/references/map-debt.md`.
+- Evidence/repro: Compare `find plugins/agent-agentic-os/skills -type l` with `dst` entries in `symlinks.json`.
+- Severity: L
+- Repeat: NO
+- Status: OPEN
+
+## DEBT-20261014-BROKEN-SKILL-LOCAL-REFERENCES
+
+- Logged date: 2026-10-14
+- Cycle/Session ID: fix-docs-counts-and-graph-state-names
+- Artifact affected: `os-evolution-verifier`, `os-improvement-report`, `os-improvement-loop`, `os-architect`, `os-health-check` (all `plugins/agent-agentic-os/skills/`)
+- Friction observed: `os-evolution-verifier` calls `scripts/run_evolution_scenario.py`, which exists nowhere. `os-improvement-report` uses repo-root paths (`plugins/agent-agentic-os/scripts/generate_report.py`) although its `scripts/` spoke exists (policy Section 6). `os-improvement-loop`'s quick start targets `skills/todo-check/`, which moved to `dev-utils`. `os-architect` calls `scripts/run_agent.py`, owned by `cli-agents` (ADR-001). `os-health-check` reads `os-state.json`; not confirmed that the file is still produced.
+- Why not fixed now: Path fixes are deferred to the end-of-moves link pass; `os-evolution-verifier` needs a repair-or-retire decision.
+- Recommended fix / fix applied: Pending.
+- Evidence/repro: `grep -n "scripts/" plugins/agent-agentic-os/skills/<skill>/SKILL.md` and check each path from the skill folder.
+- Severity: M
+- Repeat: NO
+- Status: OPEN
+
+## DEBT-20261014-STALE-CLI-AND-MODEL-REFERENCES
+
+- Logged date: 2026-10-14
+- Cycle/Session ID: fix-docs-counts-and-graph-state-names
+- Artifact affected: 11 `agent-agentic-os` skills (SKILL.md or references) mention Gemini CLI; `os-environment-probe`, `os-evolution-planner`, `os-evolution-verifier` hard-code `claude-sonnet-4*`
+- Friction observed: Gemini CLI consumer access ended 2026-06-18 (`architecture.md`); `agy-cli-agent` is the replacement. Model IDs belong in `cli-agents/references/copilot-models.json` tiers, not in skill text.
+- Why not fixed now: Fixed on the same branch.
+- Recommended fix / fix applied: Gemini CLI guidance rewritten to `agy-cli-agent`; hard-coded model IDs replaced with tier wording; the two cheapest-models references now point to the cli-agents catalog and `update-cli-models`. Left on purpose: GEMINI.md and `.gemini` cleanup mentions, historical reviewer attributions, and model IDs used as test data.
+- Evidence/repro: `grep -rniE "gemini[- ]cli|claude-sonnet-4" plugins/agent-agentic-os/skills`
+- Severity: L
+- Repeat: NO
+- Status: RESOLVED
+
+## DEBT-20261014-STALE-INSTRUCTION-FILE-GUIDANCE
+
+- Logged date: 2026-10-14
+- Cycle/Session ID: fix-docs-counts-and-graph-state-names
+- Artifact affected: `os-guide` (triggers and references), `os-memory-manager` references, `os-init` references
+- Friction observed: They still teach the "CLAUDE.md hierarchy" and `soul.md`, contradicting `AGENTS.md` as the single canonical instruction file. `os-guide` does not explain the control plane at all.
+- Why not fixed now: Needs an owner decision on `os-guide`: rewrite around the control plane and lab, or retire.
+- Recommended fix / fix applied: Pending decision.
+- Evidence/repro: `grep -rniE "soul\.md|CLAUDE\.md hierarchy" plugins/agent-agentic-os/skills`
+- Severity: L
+- Repeat: NO
+- Status: OPEN
+
+## DEBT-20261014-SHARED-ACCEPTANCE-CRITERIA-MISLABELED
+
+- Logged date: 2026-10-14
+- Cycle/Session ID: fix-docs-counts-and-graph-state-names
+- Artifact affected: `plugins/agent-agentic-os/references/acceptance-criteria.md`
+- Friction observed: 14 skills link their `references/acceptance-criteria.md` to this one hub file, but its title and content are for `optimize-agent-instructions`, which was retired on this branch. Those 14 skills point at another skill's criteria.
+- Why not fixed now: Fixed on the same branch.
+- Recommended fix / fix applied: Every skill now links its own `<skill>-acceptance-criteria.md`; criteria for `os-lab-setup` and `os-lab-backport` were written from their routing evals; the mislabeled shared file was removed (no users left).
+- Evidence/repro: `python3 -c "import json;print([e['dst'] for e in json.load(open('symlinks.json'))['links'] if e['src']=='plugins/agent-agentic-os/references/acceptance-criteria.md'])"`
+- Severity: M
+- Repeat: NO
+- Status: RESOLVED
+
+## DEBT-20261014-OVERLAPPING-SKILLS-DECISIONS
+
+- Logged date: 2026-10-14
+- Cycle/Session ID: fix-docs-counts-and-graph-state-names
+- Artifact affected: `os-skill-improvement` vs `os-improvement-loop`; `self-evolution` vs the control plane
+- Friction observed: `os-skill-improvement` runs the same eval gate as `os-improvement-loop` at smaller scope. `self-evolution` has its own approval and worktree states, parallel to the control plane's.
+- Why not fixed now: Owner decisions.
+- Recommended fix / fix applied: Pending decision: merge `os-skill-improvement` into the loop as a single-cycle mode; decide whether `self-evolution` should run through the control plane.
+- Evidence/repro: Compare the Workflow sections of the named SKILL.md files.
+- Severity: L
+- Repeat: NO
+- Status: OPEN
+
+## DEBT-20261014-RETIRED-SELF-EVOLUTION-DEPENDENTS
+
+- Logged date: 2026-10-14
+- Cycle/Session ID: fix-docs-counts-and-graph-state-names
+- Artifact affected: `plugins/agent-agentic-os/scripts/smoke_test.py`, `evolution_state.py`, `verify_evolution_receipt.py`; tests in `agent-agentic-os`, `agent-memory`, `agent-orchestration`; `agent-memory/skills/memory-management/SKILL.md`; rules `engineering-lifecycle-policy.md`, `self-evolution-policy.md`
+- Friction observed: The `self-evolution` and `evo-smoketest` skills were retired at the owner's instruction. Their hub scripts stay because other plugins' tests and `memory-management` use them, but `smoke_test.py` hard-codes `skills/evo-smoketest` and will fail, and both rules still name the `self-evolution` skill.
+- Why not fixed now: Deferred to the end-of-moves pass; script retirement needs the owner's instruction.
+- Recommended fix / fix applied: Decide whether to retire `smoke_test.py` and the evolution scripts; repoint or remove the rule text that names the skill.
+- Evidence/repro: `git grep -n "evo-smoketest" plugins/agent-agentic-os/scripts/smoke_test.py`; `git grep -ln "evolution_state\|verify_evolution_receipt" plugins`
+- Severity: M
+- Repeat: NO
+- Status: OPEN
+
+## DEBT-20261014-TEST-FOR-RETIRED-SELF-EVOLUTION
+
+- Logged date: 2026-10-14
+- Cycle/Session ID: fix-docs-counts-and-graph-state-names
+- Artifact affected: `plugins/agent-memory/tests/test_memory_layers.py::test_self_evolution_skill_line_budget`
+- Friction observed: The test asserts `plugins/agent-agentic-os/skills/self-evolution/SKILL.md` exists and stays within a line budget. The skill was retired at the owner's instruction, so the test now fails (it passes on origin/main).
+- Why not fixed now: Fixed on the same branch after the owner's instruction (Iron Law 5).
+- Recommended fix / fix applied: Deleted the test at the owner's instruction.
+- Evidence/repro: `python3 -m pytest plugins/agent-memory/tests -q` passes.
+- Severity: L
+- Repeat: NO
+- Status: RESOLVED
+
+## DEBT-20261014-DANGLING-ADR-LINKS-AGENT-SCAFFOLDERS
+
+- Logged date: 2026-10-14
+- Cycle/Session ID: fix-docs-counts-and-graph-state-names
+- Artifact affected: six symlinks in `plugins/agent-scaffolders/references/ADRs/` (001 to 006)
+- Friction observed: Each points at `../../../../ADRs/<file>.md`, outside the plugin, and does not resolve. Also dangling on origin/main, so not caused by this branch.
+- Why not fixed now: Outside the scope of the agentic-os consolidation.
+- Recommended fix / fix applied: Repoint to the canonical ADR location through `symlink_manager.py`, or remove.
+- Evidence/repro: `find plugins/agent-scaffolders/references/ADRs -type l ! -exec test -e {} \; -print`
+- Severity: L
+- Repeat: NO
+- Status: OPEN
+
+## DEBT-20261014-HERMES-REGISTRATION-INCOMPLETE
+
+- Logged date: 2026-10-14
+- Cycle/Session ID: fix-docs-counts-and-graph-state-names
+- Artifact affected: `__init__.py` (Hermes skill registration)
+- Friction observed: The registration list omits skills that exist on disk: all 10 `agent-orchestration` skills; `agent-scaffolders` audit-agents-md, audit-rule, audit-skill, audit-sub-agent, create-agents-md, create-rule; `cli-agents` agent-file-synchronization, update-cli-models; `agent-agentic-os` os-control-plane-mode, os-health-check, os-signing-setup, transition-simulator, worktree-manager, repository-improvement. Predates this branch; only the moved `dev-utils` skills were added here.
+- Why not fixed now: Outside the consolidation scope; confirm whether Hermes should register every skill or an intentional subset.
+- Recommended fix / fix applied: Generate the list from `plugins/*/skills/*/SKILL.md` instead of maintaining it by hand.
+- Evidence/repro: compare `re.findall` of the tuples in `__init__.py` with the skill folders on disk.
+- Severity: L
+- Repeat: NO
+- Status: OPEN
+
+## DEBT-20261014-CODING-CONVENTIONS-AGENT-AUDIT-FAIL
+
+- Logged date: 2026-10-14
+- Cycle/Session ID: fix-docs-counts-and-graph-state-names
+- Artifact affected: `plugins/dev-utils/skills/coding-conventions-agent`
+- Friction observed: `audit_skill.py --mode source` fails on this skill on origin/main as well; not touched by this branch.
+- Why not fixed now: Outside the consolidation scope.
+- Recommended fix / fix applied: Run the audit and fix the reported errors in a separate change.
+- Evidence/repro: `python3 plugins/agent-scaffolders/scripts/audit_skill.py plugins/dev-utils/skills/coding-conventions-agent --mode source`
+- Severity: L
+- Repeat: NO
+- Status: OPEN

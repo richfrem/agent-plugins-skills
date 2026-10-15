@@ -125,7 +125,7 @@ ORCHESTRATOR writes `context/memory/YYYY-MM-DD.md`:
 
 ## 4.5 Loop Report (Every Cycle — Published Before Memory Close)
 
-ORCHESTRATOR writes a Loop Report before running `os-memory-manager`. This is the
+ORCHESTRATOR writes a Loop Report before running `os-lab-memory`. This is the
 cycle's official record. Save to `context/memory/loop-reports/report_[CYCLE_ID].md`:
 
 ```markdown
@@ -237,27 +237,27 @@ python "$KERNEL_PY" emit_event \
 
 ## 4.8 Promote to Long-Term Memory
 
-Run `os-memory-manager` to evaluate session log entries for L3 promotion:
+Run `os-lab-memory` to evaluate session log entries for L3 promotion:
 - Ephemeral state -> SKIP
 - System facts, architectural decisions, new conventions -> PROMOTE with dedup ID
 - Use `<SUPERSEDE old_id=NNN>` if overwriting a prior fact
 
 ## 4.9 Update Claude Auto-Memory (MEMORY.md)
 
-After `os-memory-manager` runs, review the session for facts worth persisting in Claude's
+After `os-lab-memory` runs, review the session for facts worth persisting in Claude's
 **cross-session auto-memory** (`memory/MEMORY.md` in the project memory directory).
 
-This is distinct from `os-memory-manager` (which promotes facts into `context/memory.md`
+This is distinct from `os-lab-memory` (which promotes facts into `context/memory.md`
 inside the lab). Auto-memory persists across all future conversations — it is the agent's
 durable long-term knowledge about the user, project, and working patterns.
 
-**What belongs here** (not in os-memory-manager):
+**What belongs here** (not in os-lab-memory):
 - New non-obvious user preferences or feedback on how to collaborate
 - Structural decisions made this session (e.g. skill moved, plugin renamed, pattern adopted)
 - Surprising findings that should inform future sessions (e.g. sweep results, failed approaches)
 - Project state changes that will be non-obvious next session
 
-**What does NOT belong here** (use os-memory-manager instead, or skip):
+**What does NOT belong here** (use os-lab-memory instead, or skip):
 - Code patterns, file paths, architecture derivable by reading the repo
 - Temporary/ephemeral task state
 - Anything already in CLAUDE.md

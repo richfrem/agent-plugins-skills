@@ -16,32 +16,20 @@ provides_tools:
   - setup_ciba_identity
   - test_signing_mechanics
 skills:
-  - critical-auditor
-  - work-intake
-  - optimize-agent-instructions
-  - os-architect
-  - os-clean-locks
-  - os-control-plane-mode
-  - os-environment-probe
-  - os-eval-backport
-  - os-eval-lab-setup
-  - os-eval-runner
-  - os-evolution-planner
-  - os-evolution-verifier
-  - os-experiment-log
-  - os-guide
-  - os-improvement-loop
-  - os-improvement-report
-  - os-init
-  - os-memory-manager
-  - os-signing-setup
-  - os-skill-improvement
-  - self-evolution
-  - todo-check
-  - transition-simulator
+  - os-control-intake
+  - os-lab-planner
+  - os-control-mode
+  - os-lab-backport
+  - os-lab-setup
+  - os-lab-scorer
+  - os-lab-log
+  - os-lab-loop
+  - os-control-init
+  - os-lab-memory
+  - os-control-signing-setup
+  - os-control-simulator
+  - os-control-worktree
+  - os-control-health
 agents:
-  - agentic-os-setup
-  - improvement-intake-agent
-  - os-architect-agent
-  - os-architect-tester-agent
-  - os-health-check
+  - os-control-setup-agent
+  - os-lab-agent

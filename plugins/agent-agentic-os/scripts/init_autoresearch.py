@@ -8,7 +8,7 @@ Purpose:
     The mutation target is NOT assumed to be a SKILL.md — it can be any file:
     a skill definition, a Python script, a config file, a math model, etc.
 
-    Reads all three templates from the os-eval-runner assets directory and
+    Reads all three templates from the os-lab-scorer assets directory and
     renders/copies them into the experiment directory:
 
         <experiment-dir>/references/program.md   (from program.md.template, vars rendered)
@@ -19,7 +19,7 @@ Purpose:
     .lock.hashes is NOT created here — evaluate.py writes it at --baseline time.
 
 Templates live at:
-    skills/os-eval-runner/assets/templates/autoresearch/
+    skills/os-lab-scorer/assets/templates/autoresearch/
         program.md.template      (uses {{EXPERIMENT_NAME}}, {{EXPERIMENT_PATH}},
                                    {{MUTATION_TARGET}}, {{PLUGIN_ROOT}})
         evals.json.template      (uses {{EXPERIMENT_NAME}})
@@ -47,7 +47,7 @@ Workflow after scaffolding:
     4. Agent loop                  -- reads program.md, mutates target, runs evaluate.py
 
 Key Input Dependencies:
-    - skills/os-eval-runner/assets/templates/autoresearch/*.template
+    - skills/os-lab-scorer/assets/templates/autoresearch/*.template
 
 Key Functions:
     - _load_template() / _render() -- load and variable-render one template.
@@ -68,8 +68,8 @@ PLUGIN_ROOT = HERE.parent
 
 # Templates live at assets/templates/autoresearch/ relative to the script's
 # parent directory (the skill root). Using HERE.parent makes this agnostic
-# to whether the skill is installed standalone (.agents/skills/os-eval-runner/)
-# or inside the full plugin tree (plugins/agent-agentic-os/skills/os-eval-runner/).
+# to whether the skill is installed standalone (.agents/skills/os-lab-scorer/)
+# or inside the full plugin tree (plugins/agent-agentic-os/skills/os-lab-scorer/).
 TEMPLATES_DIR = PLUGIN_ROOT / "assets" / "templates" / "autoresearch"
 
 

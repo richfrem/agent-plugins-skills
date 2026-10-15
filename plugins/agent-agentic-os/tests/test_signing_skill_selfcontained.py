@@ -3,7 +3,7 @@ tests/test_signing_skill_selfcontained.py
 =========================================
 
 Purpose:
-    Failing-first tests for the os-signing-setup skill packaging (auth-ciba-increment-b, #639):
+    Failing-first tests for the os-control-signing-setup skill packaging (auth-ciba-increment-b, #639):
     the skill must be self-contained, so the self-test has a standalone hub CLI
     (`scripts/test_signing_mechanics.py`) whose spokes (and `signing_selftest.py`) are symlinked into
     the skill, the SKILL.md steps point only at skill-relative scripts, and a README for humans exists.
@@ -11,7 +11,7 @@ Purpose:
 
 Key Input Dependencies:
     - scripts/test_signing_mechanics.py, scripts/control_plane/signing_selftest.py
-    - skills/os-signing-setup/{SKILL.md,README.md,scripts/}
+    - skills/os-control-signing-setup/{SKILL.md,README.md,scripts/}
 
 Key Functions (test cases):
     - test_standalone_selftest_cli_refuses_without_a_terminal
@@ -27,7 +27,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-SKILL = ROOT / "skills" / "os-signing-setup"
+SKILL = ROOT / "skills" / "os-control-signing-setup"
 
 
 def test_standalone_selftest_cli_refuses_without_a_terminal(tmp_path):
@@ -71,7 +71,7 @@ def test_skill_md_uses_only_skill_relative_scripts():
 
 
 def test_readme_exists_with_the_high_level_steps():
-    guide = SKILL / "references" / "os-signing-setup-guide.md"
+    guide = SKILL / "references" / "os-control-signing-setup-guide.md"
     target = guide if guide.is_file() else (SKILL / "README.md")
     readme = target.read_text().lower()
     for needle in ("passphrase", "fingerprint", "setup_ciba_identity.py", "test_signing_mechanics.py", "show-challenge", "approve-transition", "agentic-os-local-agent", "never"):

@@ -26,21 +26,21 @@ Current scale (read from `plugins/` — verify with `find plugins -name SKILL.md
 `find plugins/*/agents -maxdepth 1 -name '*.md' | wc -l` before quoting a number elsewhere;
 `plugins/spec-kitty-plugin` was removed 2026-09-05, never part of this count):
 - **10 plugins**
-- **137 skills** (active SKILL.md definitions across plugins)
-- **46 agent definitions** (`agents/*.md` across plugins)
+- **128 skills** (active SKILL.md definitions across plugins)
+- **45 agent definitions** (`agents/*.md` across plugins)
 
 ## 2. Project Structure
 
 ```
 [Project Root]/
 ├── plugins/                        # CANONICAL SOURCE — authoritative for all skills/agents
-│   ├── agent-agentic-os/           # OS improvement loop, memory, evolution planning (28 skills)
+│   ├── agent-agentic-os/           # Control plane + skill improvement lab (14 skills)
 │   ├── agent-orchestration/        # OS-decoupled execution primitives (10 skills)
 │   ├── agent-memory/               # RLM summary cache + ChromaDB vector store (13 skills)
-│   ├── agent-scaffolders/          # Plugin/skill/agent/rule scaffolding & auditing (22 skills)
-│   ├── cli-agents/                 # Multi-LLM CLI dispatch (Claude/Copilot/Gemini/Agy) (11 skills)
+│   ├── agent-scaffolders/          # Plugin/skill/agent/rule scaffolding & auditing (27 skills)
+│   ├── cli-agents/                 # Multi-LLM CLI dispatch (Claude/Copilot/Gemini/Agy/Codex) (11 skills)
 │   ├── dependency-management/      # pip-compile / dependency tier workflow (1 skill)
-│   ├── dev-utils/                  # ADR mgmt, symlinks, context bundling, GitHub issues, worktrees (16 skills)
+│   ├── dev-utils/                  # ADR mgmt, symlinks, context bundling, GitHub issues, worktrees, TODO scan (19 skills)
 │   ├── exploration-cycle-plugin/   # Business discovery workflow + SQLite control plane (20 skills)
 │   ├── obsidian-wiki-engine/       # Karpathy-style LLM wiki over the codebase (10 skills)
 │   ├── plugin-manager/             # Install/remove/sync plugins into target projects (3 skills)
@@ -88,9 +88,9 @@ push, `gate_evidence.py` checks every proof-bearing history transition against i
 exact signed challenge, human trust anchor and single-key continuity. Missing historical signatures
 fail closed, including pre-rollout tasks; they cannot be recreated from unsigned receipts.
 
-`os-init --with-simulation-identity` creates or reuses only the simulation key and reports human,
+`os-control-init --with-simulation-identity` creates or reuses only the simulation key and reports human,
 simulation and isolation readiness separately. Human key setup remains a human operation through
-`os-signing-setup`. Simulation tools route explicitly per invocation, without a sticky environment
+`os-control-signing-setup`. Simulation tools route explicitly per invocation, without a sticky environment
 switch that could silently divert real intake. Source code and references remain plugin-owned;
 installed skill copies are deployment outputs.
 
@@ -126,21 +126,21 @@ unmodified, into any number of target projects.
 - `pyproject.toml` exposes these as console scripts: `plugin-add`, `plugin-remove`, `plugin-sync`.
 
 ### 4.2. Plugin: agent-agentic-os
-The self-improvement kernel. Core loop: `os-architect → os-improvement-loop → os-eval-runner →
-os-eval-backport → os-experiment-log`. Owns memory management (`os-memory-manager`), evolution
-planning (`os-evolution-planner`/`os-evolution-verifier`), setup (`os-init`, `agentic-os-setup` agent),
+The self-improvement kernel. Core loop: `os-lab-planner → os-lab-loop → os-lab-scorer →
+os-lab-backport → os-lab-log`. Owns memory management (`os-lab-memory`), lab
+planning (`os-lab-planner`, front door agent `os-lab-agent`), setup (`os-control-init`, `os-control-setup-agent` agent),
 and Layer 2 Wiki & Map Debt governance (`distill_playbook`, `audit_map_debt`, `pre-commit-evolution-guard`,
-and `turn_evolution_guard`). Three control-plane edges are cryptographic human gates: Gate 1 (`AWAITING_APPROVAL -> APPROVED`), Gate 3 (`WORKTREE_REVIEW` or `MULTI_AGENT_CODE_REVIEW` `-> VERIFY_EXIT`) and closure (any edge into `DONE`). Each declares `requires_cryptographic_proof`: the coordinator halts with `HUMAN_PROOF_REQUIRED` and a pending, content-bound `transition_request` (Gate 3 binds the commit SHA, tracked-diff hash and untracked-files hash; closure also binds the retrospective digest); the human signs it out of band with `ssh-keygen -Y sign` (OpenSSH prompts for the private-key passphrase) via `show-challenge` and `approve-transition`; the signature is verified outside the database write lock and the request is consumed exactly once in the commit transaction. No prompt, typed word, flag, receipt or actor string can authorize these edges, and there is no skip or force-close path. `os-signing-setup` creates the key; residual risk (a same-account agent with direct DB or coordinator access) is documented in `plugins/agent-agentic-os/references/isolation-setup.md`.
+and `turn_evolution_guard`). Three control-plane edges are cryptographic human gates: Gate 1 (`AWAITING_APPROVAL -> APPROVED`), Gate 3 (`WORKTREE_REVIEW` or `MULTI_AGENT_CODE_REVIEW` `-> VERIFY_EXIT`) and closure (any edge into `DONE`). Each declares `requires_cryptographic_proof`: the coordinator halts with `HUMAN_PROOF_REQUIRED` and a pending, content-bound `transition_request` (Gate 3 binds the commit SHA, tracked-diff hash and untracked-files hash; closure also binds the retrospective digest); the human signs it out of band with `ssh-keygen -Y sign` (OpenSSH prompts for the private-key passphrase) via `show-challenge` and `approve-transition`; the signature is verified outside the database write lock and the request is consumed exactly once in the commit transaction. No prompt, typed word, flag, receipt or actor string can authorize these edges, and there is no skip or force-close path. `os-control-signing-setup` creates the key; residual risk (a same-account agent with direct DB or coordinator access) is documented in `plugins/agent-agentic-os/references/isolation-setup.md`.
 
 #### Human gates: SSH-signed `transition_request` (CIBA/RAR lineage)
 **Why it matters:** the pipeline's guarantees (plan reviewed, code accepted, task closed) hold only if the human decision cannot be forged by the agent that benefits from it. Soft mechanisms (prompts, typed words, skip/force-close flags, `actor='human'` strings, SQLite triggers trusting an actor column) all failed that test, so Gate 1, Gate 3 and closure require a cryptographic proof instead.
 
 **Model:** a `transition_request` (task, edge, occupancy, nonce, 15-minute expiry, content snapshot) is the RAR-style structured authorization; the human's own SSH key is the CIBA-style out-of-band authenticator. The human signs the printed challenge with `ssh-keygen -Y sign`; the coordinator verifies it against `allowed_signers` (namespace `control-plane@agentic-os.local`) before `BEGIN IMMEDIATE`, then re-checks and consumes the request once inside the commit transaction. An external identity provider (real CIBA push) remains a possible future replacement for the local signer.
 
-**Setup:** per machine, by the human, via `setup_ciba_identity.py` (skill `os-signing-setup`). `allowed_signers*` and `context/identity/challenges/` are machine-local trust anchors and never committed; `os-init` and `os-health-check` report readiness read-only. **Residual risk:** an agent running as the same account with direct database or coordinator access can still tamper; see `plugins/agent-agentic-os/references/isolation-setup.md`.
+**Setup:** per machine, by the human, via `setup_ciba_identity.py` (skill `os-control-signing-setup`). `allowed_signers*` and `context/identity/challenges/` are machine-local trust anchors and never committed; `os-control-init` and `os-control-health` report readiness read-only. **Residual risk:** an agent running as the same account with direct database or coordinator access can still tamper; see `plugins/agent-agentic-os/references/isolation-setup.md`.
 
 ### 4.3. Plugin: agent-orchestration
-Execution primitives for loops and deterministic state graphs (orchestrator, select-loop-strategy, graph-planner, graph-execution, co-pilot-loop, learning-loop, dual-loop, agent-swarm, red-team-review, triple-loop-learning). Provides execution patterns only — no eval gate, no memory; `os-improvement-loop` delegates its inner loop to `triple-loop-learning` as substrate.
+Execution primitives for loops and deterministic state graphs (orchestrator, select-loop-strategy, graph-planner, graph-execution, co-pilot-loop, learning-loop, dual-loop, agent-swarm, red-team-review, triple-loop-learning). Provides execution patterns only — no eval gate, no memory; `os-lab-loop` delegates its inner loop to `triple-loop-learning` as substrate.
 
 ### 4.4. Plugin: agent-memory
 Two retrieval subsystems consolidated from former rlm-factory / vector-db / memory-management
@@ -148,7 +148,7 @@ plugins: RLM (dense-summary keyword cache, O(1) lookup, zero deps) and vector-db
 embeddings). Can run standalone or combined as part of a "Super-RAG" stack with
 `obsidian-wiki-engine`.
 
-### 4.5. Plugin: agent-scaffolders (24 skills)
+### 4.5. Plugin: agent-scaffolders (27 skills)
 Tooling for creating and auditing ecosystem components: `create-plugin`, `create-skill`, `create-rule`
 (invariant-driven, zero-fluff agent rules), `create-sub-agent`, `create-agents-md` (progressive-disclosure root files),
 `audit-plugin`, `audit-skill`, `audit-sub-agent`, `audit-rule`, and `audit-agents-md` (timeless root instruction auditing),
@@ -157,7 +157,7 @@ mining, standalone command, path-repair, deep-audit, and self-audit wrappers are
 
 ### 4.6. Plugin: cli-agents (11 skills)
 Multi-LLM task router (`run_agent.py`) consolidated from claude-cli/copilot-cli/gemini-cli.
-6 backends, `--isolated` security contract, 11 expert-persona sub-agents (architect-review,
+6 backends, `--isolated` security contract, 13 expert-persona sub-agents (architect-review,
 security-auditor, tdd-contract-reviewer, red-team-reviewer, etc.) — the first three form the
 "Graph Planning Phase 1 Fan-Out Trio" per `graph-planning-superpowers-policy.md`. Model selection
 driven by `references/copilot-models.json` cost tiers. Gemini CLI consumer access ended June 18,
@@ -174,7 +174,7 @@ first — no casual convenience bypasses to the authorization gate or path enfor
 Karpathy-style LLM wiki generation over the codebase; standalone or combined with agent-memory as
 the third leg of the Super-RAG stack.
 
-### 4.9. Plugin: dev-utils (16 skills)
+### 4.9. Plugin: dev-utils (19 skills)
 Consolidated utilities: ADR management, coding-conventions enforcement,
 context bundling (including Multi-Persona Fan-Out mode for parallel adversarial plan
 review), mermaid conversion, HuggingFace init/upload, humanize, link-checking, context

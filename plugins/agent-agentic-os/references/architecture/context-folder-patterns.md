@@ -91,7 +91,7 @@ Only promote facts that are durable and reusable.
 ## Dated Session Logs - `memory/YYYY-MM-DD.md`
 
 Written at the end of each significant session.
-Use the `os-memory-manager` skill to create these.
+Use the `os-lab-memory` skill to create these.
 
 ```markdown
 # Session Log: 2026-03-15

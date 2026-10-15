@@ -1,5 +1,5 @@
 """
-test_init_agentic_os_scaffolding.py — Contract & Unit Tests for os-init Scaffolding Parity
+test_init_agentic_os_scaffolding.py — Contract & Unit Tests for os-control-init Scaffolding Parity
 ========================================================================================
 
 Purpose:
@@ -7,7 +7,7 @@ Purpose:
     1. Scaffolds repository-level substrates (control_plane.db, hooks.json, evolution guard, 3-layer memory)
     2. Identifies and scaffolds missing plugin-level evolution substrates (references/evolution-log.md)
        when local plugins exist under plugins/
-    3. Directs the user/agent to run os-health-check in print_next_steps()
+    3. Directs the user/agent to run os-control-health in print_next_steps()
 
 Key Input Dependencies:
     - plugins/agent-agentic-os/scripts/init_agentic_os.py
@@ -32,7 +32,7 @@ INIT_SCRIPT = REPO_ROOT / "plugins" / "agent-agentic-os" / "scripts" / "init_age
 
 @pytest.fixture
 def target_repo(tmp_path):
-    """Creates a throwaway repository directory for testing os-init."""
+    """Creates a throwaway repository directory for testing os-control-init."""
     repo = tmp_path / "test_project"
     repo.mkdir()
     subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True)
@@ -75,14 +75,14 @@ def test_retrofit_scaffolds_plugin_evolution_logs_when_plugins_exist(target_repo
 
 
 def test_next_steps_directs_to_os_health_check(target_repo):
-    """Completion output of init_agentic_os.py must direct agent to run os-health-check."""
+    """Completion output of init_agentic_os.py must direct agent to run os-control-health."""
     res = subprocess.run(
         [sys.executable, str(INIT_SCRIPT), "--target", str(target_repo), "--retrofit"],
         capture_output=True,
         text=True,
     )
     assert res.returncode == 0
-    assert "os-health-check" in res.stdout, "Completion output must direct user/agent to run os-health-check"
+    assert "os-control-health" in res.stdout, "Completion output must direct user/agent to run os-control-health"
 
 
 def test_scaffolds_github_ci_evolution_workflow(target_repo):
@@ -114,7 +114,7 @@ def test_retrofit_enriches_claude_md_with_phase0_and_control_plane(target_repo):
     assert res.returncode == 0
     content = (target_repo / "AGENTS.md").read_text(encoding="utf-8")
     assert "Phase 0 Intake & Socratic Gate" in content, "AGENTS.md must be enriched with Phase 0 Intake Gate"
-    assert "work-intake" in content, "AGENTS.md must reference work-intake"
+    assert "os-control-intake" in content, "AGENTS.md must reference os-control-intake"
     assert claude_md.read_text(encoding="utf-8") == "# CLAUDE.md\n\nRead [AGENTS.md](AGENTS.md).\n"
     assert "Some custom domain context." in content, "Original project context must be preserved"
 
@@ -152,7 +152,7 @@ def test_notifies_consuming_agent_of_backup_files(target_repo):
 
 
 def test_scaffolded_control_plane_db_matches_agent_control_schema(target_repo):
-    """os-init's control_plane.db must match agent_control.py's canonical schema exactly
+    """os-control-init's control_plane.db must match agent_control.py's canonical schema exactly
     (task_type column, schema_version table) — not a hand-copied, drifted duplicate that
     reproduces the FK-corruption bug on the consumer repo's first agent_control.py run."""
     res = subprocess.run(

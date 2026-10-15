@@ -1,0 +1,1 @@
+../../../references/github-issue-resolution-reviewer-acceptance-criteria.md

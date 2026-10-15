@@ -1,6 +1,6 @@
 # Agentic OS Control Plane
 
-<!-- ECOSYSTEM_STATS_START -->**Current Scale:** 10 Plugins · 136 Skills · 46 Sub-Agents<!-- ECOSYSTEM_STATS_END -->
+<!-- ECOSYSTEM_STATS_START -->**Current Scale:** 10 Plugins · 125 Skills · 45 Sub-Agents<!-- ECOSYSTEM_STATS_END -->
 
 **A governed execution harness for AI coding agents.** This repository lets Claude Code, Codex,
 GitHub Copilot, Agy, and compatible tools use their native planning, coding, orchestration, and
@@ -62,8 +62,8 @@ simulation results cannot authorize a production push. The push guard verifies c
 gate evidence against the production human trust anchor, not merely a stored `DONE` state.
 Legacy tasks without captured signature evidence fail closed; do not fabricate historical evidence.
 
-The `os-init` skill guides both identities: use `--with-simulation-identity` to create/reuse the
-simulation identity additively, and invoke `os-signing-setup` for the human-controlled key setup.
+The `os-control-init` skill guides both identities: use `--with-simulation-identity` to create/reuse the
+simulation identity additively, and invoke `os-control-signing-setup` for the human-controlled key setup.
 Human enrollment is never overwritten. Simulations specify their database on each invocation;
 there is no sticky `.env` approval-mode switch. This is two approval contexts, not a requirement
 to spawn two agent processes.
@@ -93,9 +93,9 @@ Install the plugins, then initialize and check the Agentic OS substrate:
 uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills
 ```
 
-Then ask your agent to set up Agentic OS for the repository, or use `os-init`, followed by
-`os-health-check`. Start a governed task through `work-intake` when the work needs a
-plan-to-completion lifecycle. Approving a plan, accepting the code and closing a task each require a signature from a human-held SSH key (`ssh-keygen -Y sign`); the `os-signing-setup` skill walks you through creating and testing it. [Installation and onboarding](INSTALL.md) has platform-specific and
+Then ask your agent to set up Agentic OS for the repository, or use `os-control-init`, followed by
+`os-control-health`. Start a governed task through `os-control-intake` when the work needs a
+plan-to-completion lifecycle. Approving a plan, accepting the code and closing a task each require a signature from a human-held SSH key (`ssh-keygen -Y sign`); the `os-control-signing-setup` skill walks you through creating and testing it. [Installation and onboarding](INSTALL.md) has platform-specific and
 local-development instructions.
 
 ### Human approval gates: SSH signing (do this once per machine)
@@ -105,7 +105,7 @@ gates, so an agent can never approve its own work. Only an out-of-band OpenSSH s
 key advances them. This follows the CIBA/RAR idea (approve one exact, structured request out of band),
 done locally with SSH instead of an identity provider.
 
-1. Run `python3 plugins/agent-agentic-os/scripts/setup_ciba_identity.py` in your own terminal (the `os-signing-setup` skill explains each prompt); `--check` reports readiness.
+1. Run `python3 plugins/agent-agentic-os/scripts/setup_ciba_identity.py` in your own terminal (the `os-control-signing-setup` skill explains each prompt); `--check` reports readiness.
 2. Your private key stays in `~/.ssh`; `allowed_signers` and `context/identity/` are per-machine and never committed.
 3. When the agent stops with `HUMAN_PROOF_REQUIRED`, run its `coordinate-transition ... --interactive --key <your key>` command (with `SSH_AUTH_SOCK` unset) and enter your passphrase.
 

@@ -1,4 +1,4 @@
-# Optimization Program: os-eval-lab-setup
+# Optimization Program: os-lab-setup
 
 Goal: maximize `quality_score` (higher is better, max 1.0).
 Formula: `quality_score = (routing_accuracy * 0.7) + (heuristic_score * 0.3)`
@@ -8,7 +8,7 @@ Locked: `evals/evals.json`, `evaluate.py`, `eval_runner.py`
 
 How to run one iteration (from within this skill's directory):
 ```bash
-python ../os-eval-runner/scripts/evaluate.py \
+python ../os-lab-scorer/scripts/evaluate.py \
   --skill . \
   --desc "what changed"
 ```
@@ -16,8 +16,8 @@ python ../os-eval-runner/scripts/evaluate.py \
 NEVER STOP. Run until target score or human interruption.
 
 ## Notes
-- **Optimizing**: Routing accuracy for os-eval-lab-setup — triggers on SETUP/BOOTSTRAP requests for isolated eval lab repos, NOT on running the actual eval loop or backporting results
+- **Optimizing**: Routing accuracy for os-lab-setup — triggers on SETUP/BOOTSTRAP requests for isolated eval lab repos, NOT on running the actual eval loop or backporting results
 - **Target score**: 0.95
 - **Baseline**: starting fresh with formal tracking
-- **Key failure modes**: Confusion with os-eval-runner (run loop) vs os-eval-backport (review results) — this skill is only for SETUP
+- **Key failure modes**: Confusion with os-lab-scorer (run loop) vs os-lab-backport (review results) — this skill is only for SETUP
 - **Meta-circular note**: This skill sets up the very infrastructure that evaluates it. The lock on evals.json prevents the agent from gaming the metric by changing what "set up eval lab" means.

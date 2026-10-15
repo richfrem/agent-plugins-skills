@@ -6,17 +6,19 @@ flowchart LR
     M1["Master Repository<br>(agent-plugins-skills)"]:::master
     M2["Plugins & Skills"]:::master
     L1["Sibling Lab Repo<br>(../test-my-skill)"]:::lab
-    L2["Hard-copied files for eval"]:::lab
-    
-    Tool1{"os-eval-lab-setup"}:::tool
-    Tool2{"os-eval-backport"}:::tool
+    L2["Hard-copied files for the lab"]:::lab
+
+    Tool1{"os-lab-setup"}:::tool
+    Tool2{"os-lab-loop"}:::tool
+    Tool3{"os-lab-backport"}:::tool
 
     M1 -->|Contains| M2
     M2 -->|Bootstraps| Tool1
     Tool1 -->|Clones/Copies into| L1
     L1 -->|Contains| L2
-    
-    L2 -->|Runs iterations without fear<br>Auto-reverts on failure| L2
-    
-    L2 -->|When proven & Score improves| Tool2
-    Tool2 -->|Human/Agent review diffs| M2
+
+    L2 -->|Runs iterations without fear<br>Auto-reverts on failure| Tool2
+    Tool2 -->|Edits| L2
+
+    L2 -->|When proven & Score improves| Tool3
+    Tool3 -->|Human/Agent review diffs| M2

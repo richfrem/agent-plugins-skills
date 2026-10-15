@@ -9,14 +9,14 @@
   {{MUTATION_TARGET}}      File being optimised, almost always "SKILL.md"
   {{GITHUB_REPO_URL}}      Full HTTPS clone URL, e.g. "https://github.com/richfrem/test-link-checker-eval.git"
   {{ROUND_LABEL}}          Short label for logs/surveys, e.g. "link-checker-round1"
-  {{SKILL_EVAL_SOURCE}}    Absolute local path to os-eval-runner skill,
-                           e.g. "<SKILL_PATH>/os-eval-runner"
+  {{SKILL_EVAL_SOURCE}}    Absolute local path to os-lab-scorer skill,
+                           e.g. "<SKILL_PATH>/os-lab-scorer"
   {{MASTER_PLUGIN_PATH}}   Absolute path to master plugin in agent-plugins-skills,
                            e.g. "<SKILL_PATH>/link-checker"
 -->
 
 **Target skill:** `{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/{{MUTATION_TARGET}}`
-**Engine:** `os-eval-runner`
+**Engine:** `os-lab-scorer`
 **Goal:** Run 10 autonomous optimization iterations on the {{SKILL_NAME}} skill.
 
 ---
@@ -102,19 +102,19 @@ Consult the authoritative installation hub for current deployment commands:
 
 > ### 👉 [INSTALL.md](https://github.com/richfrem/agent-plugins-skills/blob/main/INSTALL.md)
 
-This section ensures the `os-eval-runner` and `copilot-cli-agent` skills are active in your environment.
+This section ensures the `os-lab-scorer` and `copilot-cli-agent` skills are active in your environment.
    > ⚠️ **Known CLI Issues:** The `-y` flag may crash on some versions — if so, run without it and press **Enter** when prompted to accept the default agent list.
-   > Both are required: `os-eval-runner` gates iterations, `copilot-cli-agent` proposes mutations.
+   > Both are required: `os-lab-scorer` gates iterations, `copilot-cli-agent` proposes mutations.
 
 5. **Verify eval engine scripts are present**:
    ```bash
-   ls {{SKILL_EVAL_SOURCE}}/scripts/evaluate.py && echo "engine OK" || echo "MISSING - install os-eval-runner first"
+   ls {{SKILL_EVAL_SOURCE}}/scripts/evaluate.py && echo "engine OK" || echo "MISSING - install os-lab-scorer first"
    ls {{SKILL_EVAL_SOURCE}}/scripts/plot_eval_progress.py && echo "plotter OK" || echo "MISSING - copy from APS_ROOT/plugins/agent-agentic-os/scripts/"
    ```
 
 6. **Final Seed & Push**:
    ```bash
-   git add . && git commit -m "seed: install os-eval-runner engine"
+   git add . && git commit -m "seed: install os-lab-scorer engine"
    git push origin main
    ```
 
@@ -206,7 +206,7 @@ python{SKILL_EVAL_SOURCE}}/scripts/init_autoresearch.py \
     --mutation-target {{MUTATION_TARGET}}
 ```
 
-> ⚠️ **Standalone Installation Snag:** If this fails with a `FileNotFoundError` or `TemplateNotFound` error referencing a `skills/os-eval-runner/` nested path, the script's `TEMPLATES_DIR` is resolving against the full plugin repo layout instead of the installed location. Patch it:
+> ⚠️ **Standalone Installation Snag:** If this fails with a `FileNotFoundError` or `TemplateNotFound` error referencing a `skills/os-lab-scorer/` nested path, the script's `TEMPLATES_DIR` is resolving against the full plugin repo layout instead of the installed location. Patch it:
 > ```python
 > # In {{SKILL_EVAL_SOURCE}}/scripts/init_autoresearch.py
 > # Change TEMPLATES_DIR to use HERE.parent (script-relative resolution):
