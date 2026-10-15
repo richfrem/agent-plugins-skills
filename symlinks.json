@@ -99,151 +99,61 @@
     },
     {
       "src": "plugins/agent-agentic-os/assets/templates/autoresearch/evals.json.template",
-      "dst": "plugins/agent-agentic-os/skills/os-eval-lab-setup/assets/templates/autoresearch/evals.json.template",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-setup/assets/templates/autoresearch/evals.json.template",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-agentic-os/assets/templates/autoresearch/program.md.template",
-      "dst": "plugins/agent-agentic-os/skills/os-eval-lab-setup/assets/templates/autoresearch/program.md.template",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-setup/assets/templates/autoresearch/program.md.template",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-agentic-os/assets/templates/autoresearch/results.tsv.template",
-      "dst": "plugins/agent-agentic-os/skills/os-eval-lab-setup/assets/templates/autoresearch/results.tsv.template",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-setup/assets/templates/autoresearch/results.tsv.template",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-agentic-os/assets/templates/eval-instructions.template.md",
-      "dst": "plugins/agent-agentic-os/skills/os-eval-lab-setup/assets/templates/eval-instructions.template.md",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-setup/assets/templates/eval-instructions.template.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-agentic-os/scripts/generate_eval_instructions.py",
-      "dst": "plugins/agent-agentic-os/skills/os-eval-lab-setup/scripts/generate_eval_instructions.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/assets/templates/autoresearch/copilot_proposer_prompt.md.template",
-      "dst": "plugins/agent-agentic-os/skills/os-eval-runner/assets/templates/autoresearch/copilot_proposer_prompt.md.template",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/assets/templates/autoresearch/evals.json.template",
-      "dst": "plugins/agent-agentic-os/skills/os-eval-runner/assets/templates/autoresearch/evals.json.template",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/assets/templates/autoresearch/program.md.template",
-      "dst": "plugins/agent-agentic-os/skills/os-eval-runner/assets/templates/autoresearch/program.md.template",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/assets/templates/autoresearch/results.tsv.template",
-      "dst": "plugins/agent-agentic-os/skills/os-eval-runner/assets/templates/autoresearch/results.tsv.template",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/assets/templates/eval-instructions.template.md",
-      "dst": "plugins/agent-agentic-os/skills/os-eval-runner/assets/templates/eval-instructions.template.md",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-setup/scripts/generate_eval_instructions.py",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-agentic-os/scripts/eval_runner.py",
-      "dst": "plugins/agent-agentic-os/skills/os-eval-runner/scripts/eval_runner.py",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-scorer/scripts/eval_runner.py",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-agentic-os/scripts/evaluate.py",
-      "dst": "plugins/agent-agentic-os/skills/os-eval-runner/scripts/evaluate.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/scripts/generate_milestone.py",
-      "dst": "plugins/agent-agentic-os/skills/os-eval-runner/scripts/generate_milestone.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/scripts/init_autoresearch.py",
-      "dst": "plugins/agent-agentic-os/skills/os-eval-runner/scripts/init_autoresearch.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/scripts/plot_eval_progress.py",
-      "dst": "plugins/agent-agentic-os/skills/os-eval-runner/scripts/plot_eval_progress.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/assets/diagrams/agentic-os-guide-flow.mmd",
-      "dst": "plugins/agent-agentic-os/skills/os-guide/assets/diagrams/agentic-os-guide-flow.mmd",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/assets/diagrams/agentic-os-guide-flow.mmd",
-      "dst": "plugins/agent-agentic-os/skills/os-guide/assets/resources/agentic-os-guide-flow.mmd",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/architecture/architecture-overview.md",
-      "dst": "plugins/agent-agentic-os/skills/os-improvement-loop/assets/architecture-overview.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/scripts/eval_runner.py",
-      "dst": "plugins/agent-agentic-os/skills/os-improvement-loop/scripts/eval_runner.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/scripts/evaluate.py",
-      "dst": "plugins/agent-agentic-os/skills/os-improvement-loop/scripts/evaluate.py",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-scorer/scripts/evaluate.py",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-agentic-os/scripts/generate_report.py",
-      "dst": "plugins/agent-agentic-os/skills/os-improvement-loop/scripts/generate_report.py",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-loop/scripts/generate_report.py",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-agentic-os/scripts/kernel.py",
-      "dst": "plugins/agent-agentic-os/skills/os-improvement-loop/scripts/kernel.py",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-loop/scripts/kernel.py",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-agentic-os/scripts/post_run_metrics.py",
-      "dst": "plugins/agent-agentic-os/skills/os-improvement-loop/scripts/post_run_metrics.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/scripts/analysis.ipynb",
-      "dst": "plugins/agent-agentic-os/skills/os-improvement-report/scripts/analysis.ipynb",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/scripts/generate_report.py",
-      "dst": "plugins/agent-agentic-os/skills/os-improvement-report/scripts/generate_report.py",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-loop/scripts/post_run_metrics.py",
       "strategy": "symlink",
       "description": ""
     },
@@ -322,12 +232,6 @@
     {
       "src": "plugins/agent-agentic-os/scripts/init_agentic_os.py",
       "dst": "plugins/agent-agentic-os/skills/os-init/scripts/init_agentic_os.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/scripts/eval_runner.py",
-      "dst": "plugins/agent-agentic-os/skills/os-skill-improvement/scripts/eval_runner.py",
       "strategy": "symlink",
       "description": ""
     },
@@ -2042,410 +1946,116 @@
       "description": ""
     },
     {
-      "src": "plugins/agent-agentic-os/scripts/probe_environments.py",
-      "dst": "plugins/agent-agentic-os/skills/os-environment-probe/scripts/probe_environments.py",
+      "src": "plugins/agent-agentic-os/references/acceptance-criteria.md",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-backport/references/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-lab-backport-phase-guide.md",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-backport/references/phase-guide.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-agentic-os/references/acceptance-criteria.md",
-      "dst": "plugins/agent-agentic-os/skills/os-environment-probe/references/acceptance-criteria.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/gemini-detection-example.md",
-      "dst": "plugins/agent-agentic-os/skills/os-environment-probe/references/gemini-detection-example.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/acceptance-criteria.md",
-      "dst": "plugins/agent-agentic-os/skills/os-eval-backport/references/acceptance-criteria.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/os-eval-backport-phase-guide.md",
-      "dst": "plugins/agent-agentic-os/skills/os-eval-backport/references/os-eval-backport-phase-guide.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/os-eval-backport-phases.mmd",
-      "dst": "plugins/agent-agentic-os/skills/os-eval-backport/references/os-eval-backport-phases.mmd",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/os-eval-backport-sequence.mmd",
-      "dst": "plugins/agent-agentic-os/skills/os-eval-backport/references/os-eval-backport-sequence.mmd",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/acceptance-criteria.md",
-      "dst": "plugins/agent-agentic-os/skills/os-eval-lab-setup/references/acceptance-criteria.md",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-setup/references/acceptance-criteria.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-agentic-os/references/operating-protocols.md",
-      "dst": "plugins/agent-agentic-os/skills/os-eval-lab-setup/references/operating-protocols.md",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-setup/references/operating-protocols.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-agentic-os/references/program.md",
-      "dst": "plugins/agent-agentic-os/skills/os-eval-lab-setup/references/program.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/acceptance-criteria.md",
-      "dst": "plugins/agent-agentic-os/skills/os-eval-runner/references/acceptance-criteria.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/autoresearch-architecture.md",
-      "dst": "plugins/agent-agentic-os/skills/os-eval-runner/references/autoresearch-architecture.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/autoresearch-overview.md",
-      "dst": "plugins/agent-agentic-os/skills/os-eval-runner/references/autoresearch-overview.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/autoresearch-program-md-overview.md",
-      "dst": "plugins/agent-agentic-os/skills/os-eval-runner/references/autoresearch-program-md-overview.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/diagrams/autoresearch-loop.mmd",
-      "dst": "plugins/agent-agentic-os/skills/os-eval-runner/references/diagrams/autoresearch-loop.mmd",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/diagrams/mapping-karpathy-to-skill-improvement-eval.mmd",
-      "dst": "plugins/agent-agentic-os/skills/os-eval-runner/references/diagrams/mapping-karpathy-to-skill-improvement-eval.mmd",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/lab-space-protocol.md",
-      "dst": "plugins/agent-agentic-os/skills/os-eval-runner/references/lab-space-protocol.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/memory/post_run_survey.md",
-      "dst": "plugins/agent-agentic-os/skills/os-eval-runner/references/memory/post_run_survey.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/mode-1-loop-protocol.md",
-      "dst": "plugins/agent-agentic-os/skills/os-eval-runner/references/mode-1-loop-protocol.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/mode-2-qa-protocol.md",
-      "dst": "plugins/agent-agentic-os/skills/os-eval-runner/references/mode-2-qa-protocol.md",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-setup/references/program.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-agentic-os/references/overfitting-gate.md",
-      "dst": "plugins/agent-agentic-os/skills/os-eval-runner/references/overfitting-gate.md",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-scorer/references/overfitting-gate.md",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-agentic-os/references/program.md",
-      "dst": "plugins/agent-agentic-os/skills/os-eval-runner/references/program.md",
+      "src": "plugins/agent-agentic-os/references/os-lab-scorer-troubleshooting.md",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-scorer/references/troubleshooting.md",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-agentic-os/references/quickstart-setup.md",
-      "dst": "plugins/agent-agentic-os/skills/os-eval-runner/references/quickstart-setup.md",
+      "src": "plugins/agent-agentic-os/references/os-lab-loop-lab-limits.md",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-loop/references/lab-limits.md",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-agentic-os/references/research/meta-harness-lee-2026.md",
-      "dst": "plugins/agent-agentic-os/skills/os-eval-runner/references/research/meta-harness-lee-2026.md",
+      "src": "plugins/agent-agentic-os/references/os-lab-loop-improvement-ledger-spec.md",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-loop/references/memory/improvement-ledger-spec.md",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-agentic-os/references/research/optimizer-engine-patterns.md",
-      "dst": "plugins/agent-agentic-os/skills/os-eval-runner/references/research/optimizer-engine-patterns.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/survey-protocol.md",
-      "dst": "plugins/agent-agentic-os/skills/os-eval-runner/references/survey-protocol.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/troubleshooting.md",
-      "dst": "plugins/agent-agentic-os/skills/os-eval-runner/references/troubleshooting.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/acceptance-criteria.md",
-      "dst": "plugins/agent-agentic-os/skills/os-evolution-planner/references/acceptance-criteria.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/acceptance-criteria.md",
-      "dst": "plugins/agent-agentic-os/skills/os-evolution-verifier/references/acceptance-criteria.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/acceptance-criteria.md",
-      "dst": "plugins/agent-agentic-os/skills/os-guide/references/acceptance-criteria.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/architecture/canonical-file-structure.md",
-      "dst": "plugins/agent-agentic-os/skills/os-guide/references/architecture/canonical-file-structure.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/architecture/claude-md-hierarchy.md",
-      "dst": "plugins/agent-agentic-os/skills/os-guide/references/architecture/claude-md-hierarchy.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/architecture/context-folder-patterns.md",
-      "dst": "plugins/agent-agentic-os/skills/os-guide/references/architecture/context-folder-patterns.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/architecture/sub-agents-and-hooks.md",
-      "dst": "plugins/agent-agentic-os/skills/os-guide/references/architecture/sub-agents-and-hooks.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/architecture.md",
-      "dst": "plugins/agent-agentic-os/skills/os-guide/references/architecture.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/canonical-file-structure.md",
-      "dst": "plugins/agent-agentic-os/skills/os-guide/references/canonical-file-structure.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/claude-md-hierarchy.md",
-      "dst": "plugins/agent-agentic-os/skills/os-guide/references/claude-md-hierarchy.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/context-folder-patterns.md",
-      "dst": "plugins/agent-agentic-os/skills/os-guide/references/context-folder-patterns.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/diagrams/agentic-os-guide-flow.mmd",
-      "dst": "plugins/agent-agentic-os/skills/os-guide/references/diagrams/agentic-os-guide-flow.mmd",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/loop-scheduler.md",
-      "dst": "plugins/agent-agentic-os/skills/os-guide/references/loop-scheduler.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/memory/memory-hygiene.md",
-      "dst": "plugins/agent-agentic-os/skills/os-guide/references/memory/memory-hygiene.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/memory-hygiene.md",
-      "dst": "plugins/agent-agentic-os/skills/os-guide/references/memory-hygiene.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/operations/loop-scheduler.md",
-      "dst": "plugins/agent-agentic-os/skills/os-guide/references/operations/loop-scheduler.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/research/karpathy-autoresearch-3-file-eval.md",
-      "dst": "plugins/agent-agentic-os/skills/os-guide/references/research/karpathy-autoresearch-3-file-eval.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/research/optimizer-engine-patterns.md",
-      "dst": "plugins/agent-agentic-os/skills/os-guide/references/research/optimizer-engine-patterns.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/sub-agents-and-hooks.md",
-      "dst": "plugins/agent-agentic-os/skills/os-guide/references/sub-agents-and-hooks.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/acceptance-criteria.md",
-      "dst": "plugins/agent-agentic-os/skills/os-improvement-loop/references/acceptance-criteria.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/dual-loop.md",
-      "dst": "plugins/agent-agentic-os/skills/os-improvement-loop/references/dual-loop.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/lab-limits.md",
-      "dst": "plugins/agent-agentic-os/skills/os-improvement-loop/references/lab-limits.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/memory/improvement-ledger-spec.md",
-      "dst": "plugins/agent-agentic-os/skills/os-improvement-loop/references/memory/improvement-ledger-spec.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/memory/metrics.md",
-      "dst": "plugins/agent-agentic-os/skills/os-improvement-loop/references/memory/metrics.md",
+      "src": "plugins/agent-agentic-os/references/os-lab-loop-metrics.md",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-loop/references/memory/metrics.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-agentic-os/references/memory/post_run_survey.md",
-      "dst": "plugins/agent-agentic-os/skills/os-improvement-loop/references/memory/post_run_survey.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/meta/backlog.md",
-      "dst": "plugins/agent-agentic-os/skills/os-improvement-loop/references/meta/backlog.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/operations/triple-loop.md",
-      "dst": "plugins/agent-agentic-os/skills/os-improvement-loop/references/operations/triple-loop.md",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-loop/references/memory/post_run_survey.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-agentic-os/references/orchestrator-meta-survey.md",
-      "dst": "plugins/agent-agentic-os/skills/os-improvement-loop/references/orchestrator-meta-survey.md",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-loop/references/orchestrator-meta-survey.md",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-agentic-os/references/program.md",
-      "dst": "plugins/agent-agentic-os/skills/os-improvement-loop/references/program.md",
+      "src": "plugins/agent-agentic-os/references/os-lab-loop-program.md",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-loop/references/program.md",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-agentic-os/references/stage-0-orientation.md",
-      "dst": "plugins/agent-agentic-os/skills/os-improvement-loop/references/stage-0-orientation.md",
+      "src": "plugins/agent-agentic-os/references/os-lab-loop-stage-0-orientation.md",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-loop/references/stage-0-orientation.md",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-agentic-os/references/stage-1-execution.md",
-      "dst": "plugins/agent-agentic-os/skills/os-improvement-loop/references/stage-1-execution.md",
+      "src": "plugins/agent-agentic-os/references/os-lab-loop-stage-1-execution.md",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-loop/references/stage-1-execution.md",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-agentic-os/references/stage-2-verification.md",
-      "dst": "plugins/agent-agentic-os/skills/os-improvement-loop/references/stage-2-verification.md",
+      "src": "plugins/agent-agentic-os/references/os-lab-loop-stage-2-verification.md",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-loop/references/stage-2-verification.md",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/agent-agentic-os/references/stage-3-decision.md",
-      "dst": "plugins/agent-agentic-os/skills/os-improvement-loop/references/stage-3-decision.md",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-loop/references/stage-3-decision.md",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-agentic-os/references/stage-4-close.md",
-      "dst": "plugins/agent-agentic-os/skills/os-improvement-loop/references/stage-4-close.md",
+      "src": "plugins/agent-agentic-os/references/os-lab-loop-stage-4-close.md",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-loop/references/stage-4-close.md",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-agentic-os/references/testing/test-registry-protocol.md",
-      "dst": "plugins/agent-agentic-os/skills/os-improvement-loop/references/testing/test-registry-protocol.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/acceptance-criteria.md",
-      "dst": "plugins/agent-agentic-os/skills/os-improvement-report/references/acceptance-criteria.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/chart-reading-guide.md",
-      "dst": "plugins/agent-agentic-os/skills/os-improvement-report/references/chart-reading-guide.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/memory/improvement-ledger-spec.md",
-      "dst": "plugins/agent-agentic-os/skills/os-improvement-report/references/memory/improvement-ledger-spec.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/memory/post_run_survey.md",
-      "dst": "plugins/agent-agentic-os/skills/os-improvement-report/references/memory/post_run_survey.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/operations/chart-reading-guide.md",
-      "dst": "plugins/agent-agentic-os/skills/os-improvement-report/references/operations/chart-reading-guide.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/testing/test-scenarios-seed.md",
-      "dst": "plugins/agent-agentic-os/skills/os-improvement-report/references/testing/test-scenarios-seed.md",
+      "src": "plugins/agent-agentic-os/references/os-lab-loop-test-registry-protocol.md",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-loop/references/testing/test-registry-protocol.md",
       "strategy": "symlink",
       "description": ""
     },
@@ -2512,12 +2122,6 @@
     {
       "src": "plugins/agent-agentic-os/references/memory-promotion-guide.md",
       "dst": "plugins/agent-agentic-os/skills/os-memory-manager/references/memory-promotion-guide.md",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/acceptance-criteria.md",
-      "dst": "plugins/agent-agentic-os/skills/os-skill-improvement/references/acceptance-criteria.md",
       "strategy": "symlink",
       "description": ""
     },
@@ -9422,112 +9026,46 @@
       "description": "github-issue-resolution-reviewer fallback tree"
     },
     {
-      "src": "plugins/agent-agentic-os/references/os-architect-acceptance-criteria.md",
-      "dst": "plugins/agent-agentic-os/skills/os-architect/references/acceptance-criteria.md",
-      "strategy": "symlink",
-      "description": "os-architect acceptance-criteria.md (issue-551 hub-and-spoke fix)"
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/os-architect-fallback-tree.md",
-      "dst": "plugins/agent-agentic-os/skills/os-architect/references/fallback-tree.md",
-      "strategy": "symlink",
-      "description": "os-architect fallback-tree.md (issue-551 hub-and-spoke fix)"
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/os-environment-probe-detailed-reference.md",
-      "dst": "plugins/agent-agentic-os/skills/os-environment-probe/references/detailed-reference.md",
-      "strategy": "symlink",
-      "description": "os-environment-probe detailed-reference.md (issue-551 hub-and-spoke fix)"
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/os-environment-probe-fallback-tree.md",
-      "dst": "plugins/agent-agentic-os/skills/os-environment-probe/references/fallback-tree.md",
-      "strategy": "symlink",
-      "description": "os-environment-probe fallback-tree.md (issue-551 hub-and-spoke fix)"
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/os-eval-backport-detailed-reference.md",
-      "dst": "plugins/agent-agentic-os/skills/os-eval-backport/references/detailed-reference.md",
+      "src": "plugins/agent-agentic-os/references/os-lab-backport-detailed-reference.md",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-backport/references/detailed-reference.md",
       "strategy": "symlink",
       "description": "os-eval-backport detailed-reference.md (issue-551 hub-and-spoke fix)"
     },
     {
-      "src": "plugins/agent-agentic-os/references/os-eval-backport-fallback-tree.md",
-      "dst": "plugins/agent-agentic-os/skills/os-eval-backport/references/fallback-tree.md",
+      "src": "plugins/agent-agentic-os/references/os-lab-backport-fallback-tree.md",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-backport/references/fallback-tree.md",
       "strategy": "symlink",
       "description": "os-eval-backport fallback-tree.md (issue-551 hub-and-spoke fix)"
     },
     {
-      "src": "plugins/agent-agentic-os/references/os-eval-lab-setup-detailed-reference.md",
-      "dst": "plugins/agent-agentic-os/skills/os-eval-lab-setup/references/detailed-reference.md",
+      "src": "plugins/agent-agentic-os/references/os-lab-setup-detailed-reference.md",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-setup/references/detailed-reference.md",
       "strategy": "symlink",
       "description": "os-eval-lab-setup detailed-reference.md (issue-551 hub-and-spoke fix)"
     },
     {
-      "src": "plugins/agent-agentic-os/references/os-eval-lab-setup-fallback-tree.md",
-      "dst": "plugins/agent-agentic-os/skills/os-eval-lab-setup/references/fallback-tree.md",
+      "src": "plugins/agent-agentic-os/references/os-lab-setup-fallback-tree.md",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-setup/references/fallback-tree.md",
       "strategy": "symlink",
       "description": "os-eval-lab-setup fallback-tree.md (issue-551 hub-and-spoke fix)"
     },
     {
-      "src": "plugins/agent-agentic-os/references/os-eval-runner-fallback-tree.md",
-      "dst": "plugins/agent-agentic-os/skills/os-eval-runner/references/fallback-tree.md",
-      "strategy": "symlink",
-      "description": "os-eval-runner fallback-tree.md (issue-551 hub-and-spoke fix)"
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/os-evolution-planner-detailed-reference.md",
-      "dst": "plugins/agent-agentic-os/skills/os-evolution-planner/references/detailed-reference.md",
-      "strategy": "symlink",
-      "description": "os-evolution-planner detailed-reference.md (issue-551 hub-and-spoke fix)"
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/os-evolution-planner-fallback-tree.md",
-      "dst": "plugins/agent-agentic-os/skills/os-evolution-planner/references/fallback-tree.md",
-      "strategy": "symlink",
-      "description": "os-evolution-planner fallback-tree.md (issue-551 hub-and-spoke fix)"
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/os-evolution-verifier-detailed-reference.md",
-      "dst": "plugins/agent-agentic-os/skills/os-evolution-verifier/references/detailed-reference.md",
-      "strategy": "symlink",
-      "description": "os-evolution-verifier detailed-reference.md (issue-551 hub-and-spoke fix)"
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/os-evolution-verifier-fallback-tree.md",
-      "dst": "plugins/agent-agentic-os/skills/os-evolution-verifier/references/fallback-tree.md",
-      "strategy": "symlink",
-      "description": "os-evolution-verifier fallback-tree.md (issue-551 hub-and-spoke fix)"
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/os-experiment-log-acceptance-criteria.md",
-      "dst": "plugins/agent-agentic-os/skills/os-experiment-log/references/acceptance-criteria.md",
+      "src": "plugins/agent-agentic-os/references/os-lab-log-acceptance-criteria.md",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-log/references/acceptance-criteria.md",
       "strategy": "symlink",
       "description": "os-experiment-log acceptance-criteria.md (issue-551 hub-and-spoke fix)"
     },
     {
-      "src": "plugins/agent-agentic-os/references/os-experiment-log-detailed-reference.md",
-      "dst": "plugins/agent-agentic-os/skills/os-experiment-log/references/detailed-reference.md",
+      "src": "plugins/agent-agentic-os/references/os-lab-log-detailed-reference.md",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-log/references/detailed-reference.md",
       "strategy": "symlink",
       "description": "os-experiment-log detailed-reference.md (issue-551 hub-and-spoke fix)"
     },
     {
-      "src": "plugins/agent-agentic-os/references/os-experiment-log-fallback-tree.md",
-      "dst": "plugins/agent-agentic-os/skills/os-experiment-log/references/fallback-tree.md",
+      "src": "plugins/agent-agentic-os/references/os-lab-log-fallback-tree.md",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-log/references/fallback-tree.md",
       "strategy": "symlink",
       "description": "os-experiment-log fallback-tree.md (issue-551 hub-and-spoke fix)"
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/os-guide-detailed-reference.md",
-      "dst": "plugins/agent-agentic-os/skills/os-guide/references/detailed-reference.md",
-      "strategy": "symlink",
-      "description": "os-guide detailed-reference.md (issue-551 hub-and-spoke fix)"
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/os-guide-fallback-tree.md",
-      "dst": "plugins/agent-agentic-os/skills/os-guide/references/fallback-tree.md",
-      "strategy": "symlink",
-      "description": "os-guide fallback-tree.md (issue-551 hub-and-spoke fix)"
     },
     {
       "src": "plugins/agent-agentic-os/references/os-health-check-detailed-reference.md",
@@ -9540,24 +9078,6 @@
       "dst": "plugins/agent-agentic-os/skills/os-health-check/references/fallback-tree.md",
       "strategy": "symlink",
       "description": "os-health-check fallback-tree.md (issue-551 hub-and-spoke fix)"
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/os-improvement-loop-fallback-tree.md",
-      "dst": "plugins/agent-agentic-os/skills/os-improvement-loop/references/fallback-tree.md",
-      "strategy": "symlink",
-      "description": "os-improvement-loop fallback-tree.md (issue-551 hub-and-spoke fix)"
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/os-improvement-report-detailed-reference.md",
-      "dst": "plugins/agent-agentic-os/skills/os-improvement-report/references/detailed-reference.md",
-      "strategy": "symlink",
-      "description": "os-improvement-report detailed-reference.md (issue-551 hub-and-spoke fix)"
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/os-improvement-report-fallback-tree.md",
-      "dst": "plugins/agent-agentic-os/skills/os-improvement-report/references/fallback-tree.md",
-      "strategy": "symlink",
-      "description": "os-improvement-report fallback-tree.md (issue-551 hub-and-spoke fix)"
     },
     {
       "src": "plugins/agent-agentic-os/references/os-init-detailed-reference.md",
@@ -9582,18 +9102,6 @@
       "dst": "plugins/agent-agentic-os/skills/os-memory-manager/references/fallback-tree.md",
       "strategy": "symlink",
       "description": "os-memory-manager fallback-tree.md (issue-551 hub-and-spoke fix)"
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/os-skill-improvement-detailed-reference.md",
-      "dst": "plugins/agent-agentic-os/skills/os-skill-improvement/references/detailed-reference.md",
-      "strategy": "symlink",
-      "description": "os-skill-improvement detailed-reference.md (issue-551 hub-and-spoke fix)"
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/os-skill-improvement-fallback-tree.md",
-      "dst": "plugins/agent-agentic-os/skills/os-skill-improvement/references/fallback-tree.md",
-      "strategy": "symlink",
-      "description": "os-skill-improvement fallback-tree.md (issue-551 hub-and-spoke fix)"
     },
     {
       "src": "plugins/agent-agentic-os/references/repository-improvement-fallback-tree.md",
@@ -10437,25 +9945,25 @@
     },
     {
       "src": "plugins/agent-agentic-os/assets/diagrams/sibling-repo-labs.mmd",
-      "dst": "plugins/agent-agentic-os/skills/os-eval-lab-setup/assets/diagrams/sibling-repo-labs.mmd",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-setup/assets/diagrams/sibling-repo-labs.mmd",
       "strategy": "symlink",
       "description": "Lab/master repo eval flow diagram linked into os-eval-lab-setup"
     },
     {
       "src": "plugins/agent-agentic-os/assets/diagrams/sibling-repo-labs.mmd",
-      "dst": "plugins/agent-agentic-os/skills/os-eval-backport/assets/diagrams/sibling-repo-labs.mmd",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-backport/assets/diagrams/sibling-repo-labs.mmd",
       "strategy": "symlink",
       "description": "Lab/master repo eval flow diagram linked into os-eval-backport"
     },
     {
-      "src": "plugins/agent-agentic-os/assets/diagrams/os-eval-backport-phases.mmd",
-      "dst": "plugins/agent-agentic-os/skills/os-eval-backport/assets/diagrams/os-eval-backport-phases.mmd",
+      "src": "plugins/agent-agentic-os/assets/diagrams/os-lab-backport-phases.mmd",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-backport/assets/diagrams/os-lab-backport-phases.mmd",
       "strategy": "symlink",
       "description": "Backport phase-flow diagram linked into os-eval-backport"
     },
     {
-      "src": "plugins/agent-agentic-os/assets/diagrams/os-eval-backport-sequence.mmd",
-      "dst": "plugins/agent-agentic-os/skills/os-eval-backport/assets/diagrams/os-eval-backport-sequence.mmd",
+      "src": "plugins/agent-agentic-os/assets/diagrams/os-lab-backport-sequence.mmd",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-backport/assets/diagrams/os-lab-backport-sequence.mmd",
       "strategy": "symlink",
       "description": "Backport sequence diagram linked into os-eval-backport"
     },
@@ -11805,27 +11313,15 @@
     },
     {
       "src": "plugins/agent-agentic-os/references/copilot_proposer_prompt.md",
-      "dst": "plugins/agent-agentic-os/skills/os-eval-lab-setup/references/copilot_proposer_prompt.md",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-setup/references/copilot_proposer_prompt.md",
       "strategy": "symlink",
       "description": "copilot proposer prompt for eval lab"
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/evolution-log.md",
-      "dst": "plugins/agent-agentic-os/skills/os-evolution-verifier/references/evolution-log.md",
-      "strategy": "symlink",
-      "description": "evolution log reference for verifier"
     },
     {
       "src": "plugins/agent-agentic-os/references/map-debt.md",
       "dst": "plugins/agent-agentic-os/skills/os-health-check/references/map-debt.md",
       "strategy": "symlink",
       "description": "map debt reference for os-health-check"
-    },
-    {
-      "src": "plugins/agent-agentic-os/references/testing/test-registry-protocol.md",
-      "dst": "plugins/agent-agentic-os/skills/os-improvement-report/references/testing/test-registry-protocol.md",
-      "strategy": "symlink",
-      "description": "test registry protocol reference for improvement report"
     },
     {
       "src": "plugins/agent-agentic-os/references/map-debt.md",
@@ -12090,6 +11586,180 @@
       "dst": "plugins/dev-utils/skills/github-issue-resolution-reviewer/references/map-debt.md",
       "strategy": "symlink",
       "description": "github-issue-resolution-reviewer map-debt ledger"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/post_run_metrics.py",
+      "dst": "plugins/agent-agentic-os/hooks/scripts/post_run_metrics.py",
+      "strategy": "symlink",
+      "description": "tracked symlink in agent-agentic-os never recorded in symlinks.json"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/control-plane.manifest.json",
+      "dst": "plugins/agent-agentic-os/skills/os-control-plane-mode/references/control-plane.manifest.json",
+      "strategy": "symlink",
+      "description": "tracked symlink in agent-agentic-os never recorded in symlinks.json"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/evolution-log.md",
+      "dst": "plugins/agent-agentic-os/skills/os-health-check/references/evolution-log.md",
+      "strategy": "symlink",
+      "description": "tracked symlink in agent-agentic-os never recorded in symlinks.json"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/evolution-log.md",
+      "dst": "plugins/agent-agentic-os/skills/os-init/references/evolution-log.md",
+      "strategy": "symlink",
+      "description": "tracked symlink in agent-agentic-os never recorded in symlinks.json"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/map-debt.md",
+      "dst": "plugins/agent-agentic-os/skills/os-init/references/map-debt.md",
+      "strategy": "symlink",
+      "description": "tracked symlink in agent-agentic-os never recorded in symlinks.json"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/operations/chart-reading-guide.md",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-log/references/chart-reading-guide.md",
+      "strategy": "symlink",
+      "description": "created by this plan"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/memory/improvement-ledger-spec.md",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-log/references/improvement-ledger-spec.md",
+      "strategy": "symlink",
+      "description": "created by this plan"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-lab-log-report-reference.md",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-log/references/report-reference.md",
+      "strategy": "symlink",
+      "description": "created by this plan"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/experiment_log.py",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-log/scripts/experiment_log.py",
+      "strategy": "symlink",
+      "description": "tracked symlink in agent-agentic-os never recorded in symlinks.json"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/generate_report.py",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-log/scripts/generate_report.py",
+      "strategy": "symlink",
+      "description": "created by this plan"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-lab-loop-cheapest_models.md",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-loop/references/cheapest_models.md",
+      "strategy": "symlink",
+      "description": "created by this plan"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/domain-patterns/README.md",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-loop/references/domain-patterns-README.md",
+      "strategy": "symlink",
+      "description": "created by this plan"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/domain-patterns/routing-skill.md",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-loop/references/domain-patterns-routing-skill.md",
+      "strategy": "symlink",
+      "description": "created by this plan"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-lab-loop-mutation-protocol.md",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-loop/references/mutation-protocol.md",
+      "strategy": "symlink",
+      "description": "created by this plan"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-lab-planner-audit-lenses.md",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-planner/references/audit-lenses.md",
+      "strategy": "symlink",
+      "description": "created by this plan"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-lab-planner-delegation.md",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-planner/references/delegation.md",
+      "strategy": "symlink",
+      "description": "created by this plan"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-lab-planner-fallback-tree.md",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-planner/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": "created by this plan"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/map-debt.md",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-planner/references/map-debt.md",
+      "strategy": "symlink",
+      "description": "created by this plan"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-lab-planner-routing-taxonomy.md",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-planner/references/routing-taxonomy.md",
+      "strategy": "symlink",
+      "description": "created by this plan"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-lab-planner-templates.md",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-planner/references/templates.md",
+      "strategy": "symlink",
+      "description": "created by this plan"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/agent_control.py",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-planner/scripts/agent_control.py",
+      "strategy": "symlink",
+      "description": "created by this plan"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-lab-scorer-check-protocol.md",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-scorer/references/check-protocol.md",
+      "strategy": "symlink",
+      "description": "created by this plan"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-lab-scorer-fallback-tree.md",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-scorer/references/fallback-tree.md",
+      "strategy": "symlink",
+      "description": "created by this plan"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-lab-scorer-red-green-refactor.md",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-scorer/references/red-green-refactor.md",
+      "strategy": "symlink",
+      "description": "created by this plan"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/cheapest_models.md",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-setup/references/cheapest_models.md",
+      "strategy": "symlink",
+      "description": "tracked symlink in agent-agentic-os never recorded in symlinks.json"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/kernel.py",
+      "dst": "plugins/agent-agentic-os/skills/os-memory-manager/scripts/kernel.py",
+      "strategy": "symlink",
+      "description": "tracked symlink in agent-agentic-os never recorded in symlinks.json"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-signing-setup-guide.md",
+      "dst": "plugins/agent-agentic-os/skills/os-signing-setup/references/os-signing-setup-guide.md",
+      "strategy": "symlink",
+      "description": "tracked symlink in agent-agentic-os never recorded in symlinks.json"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/testing/test-scenarios-seed.md",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-log/references/testing/test-scenarios-seed.md",
+      "strategy": "symlink",
+      "description": "os-lab-log reference"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/memory/improvement-ledger-spec.md",
+      "dst": "plugins/agent-agentic-os/skills/os-lab-log/references/memory/improvement-ledger-spec.md",
+      "strategy": "symlink",
+      "description": "os-lab-log reference"
     }
   ]
 }

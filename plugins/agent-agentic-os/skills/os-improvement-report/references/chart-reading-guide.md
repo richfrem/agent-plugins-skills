@@ -1,1 +1,0 @@
-../../../references/chart-reading-guide.md

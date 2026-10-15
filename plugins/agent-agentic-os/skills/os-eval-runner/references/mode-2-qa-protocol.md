@@ -1,1 +1,0 @@
-../../../references/mode-2-qa-protocol.md

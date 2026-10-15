@@ -1573,3 +1573,16 @@ Persistent tracking of architectural friction, structural anomalies, and unclose
 - Severity: L
 - Repeat: NO
 - Status: RESOLVED
+
+## DEBT-20261014-DANGLING-ADR-LINKS-AGENT-SCAFFOLDERS
+
+- Logged date: 2026-10-14
+- Cycle/Session ID: fix-docs-counts-and-graph-state-names
+- Artifact affected: six symlinks in `plugins/agent-scaffolders/references/ADRs/` (001 to 006)
+- Friction observed: Each points at `../../../../ADRs/<file>.md`, outside the plugin, and does not resolve. Also dangling on origin/main, so not caused by this branch.
+- Why not fixed now: Outside the scope of the agentic-os consolidation.
+- Recommended fix / fix applied: Repoint to the canonical ADR location through `symlink_manager.py`, or remove.
+- Evidence/repro: `find plugins/agent-scaffolders/references/ADRs -type l ! -exec test -e {} \; -print`
+- Severity: L
+- Repeat: NO
+- Status: OPEN

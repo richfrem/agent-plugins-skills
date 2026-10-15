@@ -1,0 +1,16 @@
+# CLI Cheapest Models Reference
+
+This is the single source of truth for current model costs per CLI engine.
+Update here only — do not hardcode model names or cost claims in SKILL.md or agent files.
+
+| CLI Engine | Model | Cost Tier | Notes |
+|---|---|---|---|
+| `llama` | `gemma-4-12b` | **Free** (self-hosted) | Local `llama-server` on port 8089. Only truly zero-cost option. |
+| `copilot` | `gpt-5.6-luna` | Paid (AI Credits) | 20 cr/1M input, 120 cr/1M output. MAI-Code-1.1-Flash: 25/200; cache read 2.5, cache write 0. |
+| `agy` | `gemini-3.8-flash` | Paid (Per-token / Pro quotas) | Driven through `agy-cli-agent`; select Low effort separately for cost-sensitive calls. |
+| `claude` | `claude-haiku-4-5` | Paid (Per-token) | $1/MTok input, $5/MTok output. |
+| `codex` | `gpt-5.6-luna` | Paid (Per-token) | $0.20/1M input, $1.20/1M output; current cost-sensitive OpenAI model. |
+
+> [!WARNING]
+> Only `llama` (self-hosted Gemma 4) is free. Copilot, Agy and Claude all bill per token as of June 2026.
+> Use `agy-cli-agent` for the Antigravity CLI.

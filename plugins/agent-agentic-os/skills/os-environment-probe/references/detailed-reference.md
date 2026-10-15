@@ -1,1 +1,0 @@
-../../../references/os-environment-probe-detailed-reference.md

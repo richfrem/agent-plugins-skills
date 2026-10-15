@@ -1,1 +1,0 @@
-../../../../references/operations/skill_optimization_guide.md

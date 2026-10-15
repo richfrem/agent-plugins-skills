@@ -1,1 +1,0 @@
-../../../references/stage-2-verification.md

@@ -1,1 +1,0 @@
-../../../references/autoresearch-architecture.md
