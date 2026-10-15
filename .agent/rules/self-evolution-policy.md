@@ -6,7 +6,7 @@ globs: ["**/*"]
 
 ## Self-Evolution & Self-Healing Policy
 
-**Full context and execution protocol -> `.agent/skills/self-evolution/SKILL.md` (if available)**  
+**Gated changes to skills, rules and agents go through the control plane -> `os-control-intake`**  
 **Skill/directory deletion rules -> `.agent/rules/destructive-action-guard.md` (Part 1)**
 
 Governs responses when any tool call, subprocess, automation step, selector query, script, workflow, or sub-agent encounters failure or friction. Agents must treat failures as evolution events governed by graph state machines (via `agent-orchestration:graph-execution` and `agent-orchestration:select-loop-strategy`) and 3-Layer Filesystem Memory.

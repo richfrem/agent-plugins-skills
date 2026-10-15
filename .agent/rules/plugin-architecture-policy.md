@@ -78,15 +78,17 @@ All symlink creation, repair, and auditing must go through `.agents/skills/symli
 
 1. **File-Level Symlinks ONLY**:
    All shared resources within or across plugins must use **file-level symlinks ONLY**. Directory-level symlinks are strictly forbidden because installation bridges drop them or fail on cross-platform checkouts.
-2. **Zero Manual `ln -s`**:
+2. **Relative Targets ONLY**:
+   Every symlink target is a relative path from the link's own location (e.g. `../../../scripts/kernel.py`). Never point a symlink at an absolute or machine-specific path. Plugin install and plugin sync (`plugin_add.py`, `sync_with_inventory.py`) resolve these links into hard copies in `.agents/`; an absolute target breaks on every other checkout.
+3. **Zero Manual `ln -s`**:
    Never invoke `ln -s` directly in the shell. Direct calls bypass the manifest, causing links to fail or disappear on fresh checkouts.
-3. **Canonical Source Locations**:
+4. **Canonical Source Locations**:
    | Resource Type | Canonical Master Copy | Installed / Spoke Location |
    |---|---|---|
    | Python scripts | `plugins/<plugin-name>/scripts/` | `plugins/<plugin-name>/skills/<skill>/scripts/` |
    | References / docs | `plugins/<plugin-name>/references/` | `plugins/<plugin-name>/skills/<skill>/references/` |
    | Assets / templates | `plugins/<plugin-name>/assets/` | `plugins/<plugin-name>/skills/<skill>/assets/` |
-4. **Required 5-Step Symlink Workflow**:
+5. **Required 5-Step Symlink Workflow**:
    - **Step 1: Diagnose first**
      ```bash
      python3 .agents/skills/symlink-manager/scripts/symlink_manager.py diagnose

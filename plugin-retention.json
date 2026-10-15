@@ -115,7 +115,9 @@
         "install-apm-package": true,
         "manage-marketplace": true,
         "audit-rule": true,
-        "audit-sub-agent": true
+        "audit-sub-agent": true,
+        "audit-agents-md": true,
+        "create-agents-md": true
       },
       "rules": {
         "plugin-architecture-policy.md": true
