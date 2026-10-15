@@ -69,10 +69,10 @@ Default: `traces` unless the user specifies otherwise.
 | Option | Command | Best when |
 |---|---|---|
 | `copilot` (default) | `copilot -p "..."` | GitHub Copilot CLI installed |
-| `gemini` | `gemini -p "..."` | Gemini CLI installed |
+| `agy` | `agy -p "..."` | Antigravity CLI installed (use `agy-cli-agent`) |
 | `self` | agent self-proposes | No CLI available (slowest, most tokens) |
 
-Check availability: `which copilot` / `which gemini`. Default to `copilot` if both are present.
+Check availability: `which copilot` / `which agy`. Default to `copilot` if both are present.
 The choice is written into `eval-instructions.md` Step 4 so the eval agent knows which command to use.
 
 **Confirm before proceeding:**
@@ -84,7 +84,7 @@ GitHub remote:     https://github.com/...
 Round label:       <label>
 Primary metric:    quality_score  (or: f1 / precision / recall / heuristic)
 Strategy:          traces         (or: scores-only / full)
-Proposer CLI:      copilot        (or: gemini / self)
+Proposer CLI:      copilot        (or: agy / self)
 ```
 
 ## Phase 1: Bootstrap the Lab Repo — full commands
@@ -182,13 +182,12 @@ python $APS_ROOT/plugins/agent-agentic-os/skills/os-lab-setup/scripts/generate_e
 
 ```bash
 # Run from within the lab repository
-# NOTE: standalone 'gemini' CLI deprecated June 18, 2026 — use 'agy' instead.
-# See references/cheapest_models.md for current model names.
+# Use the cheapest suitable tier; see references/cheapest_models.md for where the model catalog lives.
 nohup agy --yolo -p "You are the L1 Triple-Loop Orchestrator. Read eval-instructions.md completely and follow every step precisely. You are running headlessly — do NOT pause to ask for human confirmation on the evals.json setup; populate the JSON yourself and immediately execute all 10 iteration loops using copilot as your L2 proposer. Generate eval_progress.png at the end." > agy_orchestrator_<skill-name>.log 2>&1 < /dev/null &
 ```
 
 > [!IMPORTANT]
-> If you hit `Tool execution denied by policy`, run `gemini trust <lab-repo-path>` in your master terminal.
+> If you hit `Tool execution denied by policy`, grant the lab repo path access in your master terminal as described in the `agy-cli-agent` skill.
 
 ## What to Expect: Meta-Circular Improvement
 

@@ -9,7 +9,7 @@ Rather than offering multiple overlapping options for testing, we rely on **One 
 | Phase / Protocol | Managing Skill | How It Works | Deprecated Legacy Alternatives |
 |------------------|----------------|--------------|--------------------------------|
 | **1. Interactive Lab Setup** <br>*(Test Environment)* | `os-lab-setup` | **Sibling Repo Labs** <br> The skill creates isolated test repos alongside the main project folder (`../test-target-skill`). <br>*(See: `assets/diagrams/sibling-repo-labs.mmd`)* | ❌ Subfolder tests within repo <br> ❌ Manual Copilot CLI project generation |
-| **2. Unattended Execution** <br>*(Run Mechanism)* | `os-lab-loop` | **Headless Overnight Execution** <br> The loop runs the full improvement system headlessly overnight (e.g. via Gemini/Copilot CLI), using `evaluate.py` as an objective gate. <br>See os-lab-loop SKILL.md for headless execution details. | ❌ Interactive Step-by-Step Confirmation Loops <br> ❌ Single/Double/Dual loops presented as separate, disjoint options |
+| **2. Unattended Execution** <br>*(Run Mechanism)* | `os-lab-loop` | **Headless Overnight Execution** <br> The loop runs the full improvement system headlessly overnight (e.g. via agy/Copilot CLI), using `evaluate.py` as an objective gate. <br>See os-lab-loop SKILL.md for headless execution details. | ❌ Interactive Step-by-Step Confirmation Loops <br> ❌ Single/Double/Dual loops presented as separate, disjoint options |
 
 ## The Golden Path (End-to-End)
 

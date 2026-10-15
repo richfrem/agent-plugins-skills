@@ -1952,10 +1952,10 @@
       "description": "os-lab-backport acceptance criteria"
     },
     {
-      "src": "plugins/agent-agentic-os/references/os-lab-backport-phase-guide.md",
+      "src": "plugins/agent-agentic-os/references/operations/os-lab-backport-phase-guide.md",
       "dst": "plugins/agent-agentic-os/skills/os-lab-backport/references/phase-guide.md",
       "strategy": "symlink",
-      "description": ""
+      "description": "os-lab-backport phase guide"
     },
     {
       "src": "plugins/agent-agentic-os/references/os-lab-setup-acceptance-criteria.md",

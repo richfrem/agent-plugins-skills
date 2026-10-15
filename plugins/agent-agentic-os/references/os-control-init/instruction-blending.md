@@ -44,7 +44,7 @@ When executing `os-control-init` or retrofitting:
    - Never remove existing run/build/test commands, port definitions, or application-specific guidelines.
 2. **Inject Evolutionary Substrates**:
    - Merge `## 3-Layer Memory Architecture` and `## Pre-Completion Self-Evolution Gate` sections into the document.
-   - For `GEMINI.md`, preserve any custom tool mappings or append the standard Gemini CLI tool mapping table.
+   - For `GEMINI.md`, preserve any custom tool mappings or append the standard tool mapping table.
    - For `.github/copilot-instructions.md`, maintain the required Copilot header while syncing core instructions.
 3. **Diff Presentation**:
    - Highlight the non-destructive nature of the edits to give the user full visibility.

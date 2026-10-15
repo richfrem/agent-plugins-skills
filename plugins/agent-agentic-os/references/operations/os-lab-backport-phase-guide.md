@@ -2,7 +2,7 @@
 
 A concise reference for the 7 phases of the Lab-to-Master Handoff. For the full
 protocol see `SKILL.md`; for the flow diagram see
-`assets/diagrams/os-eval-backport-phases.mmd`.
+`assets/diagrams/os-lab-backport-phases.mmd`.
 
 ---
 

@@ -13,7 +13,7 @@ Read the source files, not the installed `.agents/` copies, which can be stale.
 - Paths: relative to the skill root; no repo-root `plugins/...` paths.
 - Evals: at least 10 real cases in `should_trigger` form, including sibling negatives.
 - Gotchas section, handoff block, smoke test present.
-- Hard-coded model IDs that should come from the cli-agents model catalog (copilot-models.json).
+- Hard-coded model IDs that should come from the `update-cli-models` skill in `cli-agents`.
 - Overlap with another skill that could be extended instead.
 
 ## Match quality

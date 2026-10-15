@@ -1502,12 +1502,12 @@ Persistent tracking of architectural friction, structural anomalies, and unclose
 - Cycle/Session ID: fix-docs-counts-and-graph-state-names
 - Artifact affected: 11 `agent-agentic-os` skills (SKILL.md or references) mention Gemini CLI; `os-environment-probe`, `os-evolution-planner`, `os-evolution-verifier` hard-code `claude-sonnet-4*`
 - Friction observed: Gemini CLI consumer access ended 2026-06-18 (`architecture.md`); `agy-cli-agent` is the replacement. Model IDs belong in `cli-agents/references/copilot-models.json` tiers, not in skill text.
-- Why not fixed now: Each mention needs reading in context; not part of the current move work.
-- Recommended fix / fix applied: Replace Gemini CLI with `agy-cli-agent`; replace model IDs with catalog tiers.
+- Why not fixed now: Fixed on the same branch.
+- Recommended fix / fix applied: Gemini CLI guidance rewritten to `agy-cli-agent`; hard-coded model IDs replaced with tier wording; the two cheapest-models references now point to the cli-agents catalog and `update-cli-models`. Left on purpose: GEMINI.md and `.gemini` cleanup mentions, historical reviewer attributions, and model IDs used as test data.
 - Evidence/repro: `grep -rniE "gemini[- ]cli|claude-sonnet-4" plugins/agent-agentic-os/skills`
 - Severity: L
 - Repeat: NO
-- Status: OPEN
+- Status: RESOLVED
 
 ## DEBT-20261014-STALE-INSTRUCTION-FILE-GUIDANCE
 
@@ -1596,6 +1596,19 @@ Persistent tracking of architectural friction, structural anomalies, and unclose
 - Why not fixed now: Outside the consolidation scope; confirm whether Hermes should register every skill or an intentional subset.
 - Recommended fix / fix applied: Generate the list from `plugins/*/skills/*/SKILL.md` instead of maintaining it by hand.
 - Evidence/repro: compare `re.findall` of the tuples in `__init__.py` with the skill folders on disk.
+- Severity: L
+- Repeat: NO
+- Status: OPEN
+
+## DEBT-20261014-CODING-CONVENTIONS-AGENT-AUDIT-FAIL
+
+- Logged date: 2026-10-14
+- Cycle/Session ID: fix-docs-counts-and-graph-state-names
+- Artifact affected: `plugins/dev-utils/skills/coding-conventions-agent`
+- Friction observed: `audit_skill.py --mode source` fails on this skill on origin/main as well; not touched by this branch.
+- Why not fixed now: Outside the consolidation scope.
+- Recommended fix / fix applied: Run the audit and fix the reported errors in a separate change.
+- Evidence/repro: `python3 plugins/agent-scaffolders/scripts/audit_skill.py plugins/dev-utils/skills/coding-conventions-agent --mode source`
 - Severity: L
 - Repeat: NO
 - Status: OPEN

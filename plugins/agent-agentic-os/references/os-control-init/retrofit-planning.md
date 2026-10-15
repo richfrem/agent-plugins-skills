@@ -7,7 +7,7 @@ Reference for component initialization and retrofit behaviors during `os-control
 | `CLAUDE.md` / `GEMINI.md` | Context Blend | Inject Phase 0 & Mirror | Enforce os-control-intake Socratic Intake Gate & Control Plane |
 | `architecture.md` | Create Initial Layout | Context Review & Enrich | High-level system architecture & agentic layout |
 | `CLAUDE.md` | Intelligent Seed | Context Blend & Reconcile | Authoritative project kernel |
-| `GEMINI.md` | Create Mirror | Context Blend & Tool Mapping | Gemini CLI mirror with tool mappings |
+| `GEMINI.md` | Create Mirror | Context Blend & Tool Mapping | GEMINI.md mirror with tool mappings |
 | `.github/copilot-instructions.md` | Create Mirror | Context Blend & Header | Copilot CLI instructions header |
 | `AGENTS.md` | Create Mirror | Context Blend | Cross-platform agent instructions |
 | `wiki/` | Create | Create Index | Layer 2 Confirmed Knowledge Base |

@@ -59,7 +59,7 @@ and return the gap to `os-lab-agent`.
    python3 scripts/agent_control.py log-prior-art --task-id <slug> --summary "<what was reviewed>" --repeat-yes-entries "<csv or empty>"
    ```
 4. **Brainstorm options.** Write 2-3 distinct approaches with effort and tradeoff, using the
-   cheapest suitable tier from the cli-agents model catalog (copilot-models.json). Put the audit
+   cheapest suitable tier from the `update-cli-models` skill in `cli-agents`. Put the audit
    gaps in the prompt. Give a recommendation. Template in
    [references/templates.md](references/templates.md).
 5. **Write the plan and prompt.** Plan to `tasks/todo/<date>-<slug>-plan.md`; delegation
