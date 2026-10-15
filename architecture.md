@@ -65,7 +65,7 @@ Current scale (read from `plugins/` — verify with `find plugins -name SKILL.md
 ├── plugin.yaml                      # Root manifest listing all skills_dirs
 ├── plugin-sources.json              # Tracks which plugins are installed where
 ├── symlinks.json                    # Manifest for symlink_manager.py (cross-platform symlinks)
-├── skills-lock.json                 # Lockfile for installed skill versions
+├── skills-lock.json                 # Installed skill lockfile (machine-local, gitignored)
 ├── pyproject.toml                   # setuptools packaging; exposes plugin-add/-remove/-sync CLIs
 ├── README.md                        # Ecosystem overview, version history, install guide
 └── CLAUDE.md                        # Behavioral guidelines + project-specific rules (this repo's law)

@@ -1612,3 +1612,16 @@ Persistent tracking of architectural friction, structural anomalies, and unclose
 - Severity: L
 - Repeat: NO
 - Status: OPEN
+
+## DEBT-20261015-RETIRE-PLUGIN-RETENTION-MANIFEST
+
+- Logged date: 2026-10-15
+- Cycle/Session ID: chore-post-merge-retention-and-lock
+- Artifact affected: `plugin-retention.json`; `plugins/plugin-manager/scripts/` (plugin_add, plugin_installer, plugin_remove, prune_installed_skills, retention_manifest, simulate_lifecycle, sync_with_inventory) and their tests
+- Friction observed: Two desired-state mechanisms disagree. `.agents/ownership/` holds the owner's enable/disable choices, but the legacy `plugin-retention.json` still marks 77 of those skills enabled, so a normal sync (which passes the prune confirmation token) would reinstall them. It now has to be run with `--no-prune`.
+- Why not fixed now: Retiring it touches seven plugin-manager scripts and their tests; separate change. As a first step the file is now gitignored (machine-local, like the ownership manifests).
+- Recommended fix / fix applied: Make `.agents/ownership/` the single desired-state source; drop retention enforcement from the sync, keeping the protected defaults in `retention_manifest.py`.
+- Evidence/repro: `python3 plugins/plugin-manager/scripts/sync_with_inventory.py --dry-run` lists "Skills to reinstall (enabled but missing)".
+- Severity: M
+- Repeat: NO
+- Status: OPEN
