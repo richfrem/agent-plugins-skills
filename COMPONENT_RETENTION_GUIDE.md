@@ -25,7 +25,7 @@ This document catalogs which skills, rules, and agents should be enabled (`true`
 | `work-intake` | `false` | Control-plane interview state machine; disable if doing direct/manual tasking. |
 | `self-evolution` | `false` | Autonomous state-machine autoresearch loop; turn on only when mutating skills. |
 | `worktree-manager` | `false` | Worktree orchestration engine; turn on if using automated isolated task worktrees. |
-| `os-architect` | `false` | Architectural synthesis subagent; disable if doing manual architecture review. |
+| `os-lab-planner` | `false` | Architectural synthesis subagent; disable if doing manual architecture review. |
 | `os-control-plane-mode` | `false` | Control-plane database mode switcher. |
 | `os-environment-probe` | `false` | Standalone probe script (probed internally by `os-init`). |
 | `os-evolution-verifier` | `false` | Receipt validation for autonomous evolution. |

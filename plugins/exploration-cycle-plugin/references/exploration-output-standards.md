@@ -30,7 +30,7 @@ recommended next steps. Any tool that reads markdown can consume it.
 
 If you want to improve exploration skills over time:
 
-- **agent-agentic-os** — `os-skill-improvement`, `os-eval-runner` for objective evaluation
+- **agent-agentic-os** — `os-lab-scorer`, `os-lab-scorer` for objective evaluation
   - https://github.com/richfrem/agent-plugins-skills/tree/main/plugins/agent-agentic-os
 - **agent-orchestration/stration/** — `triple-loop-learning` for meta-learning via eval gates
   - https://github.com/richfrem/agent-plugins-skills/tree/main/plugins/agent-orchestration

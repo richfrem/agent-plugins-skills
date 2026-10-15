@@ -1,4 +1,4 @@
-# os-eval-backport — Phase Guide
+# os-lab-backport — Phase Guide
 
 A concise reference for the 7 phases of the Lab-to-Master Handoff. For the full
 protocol see `SKILL.md`; for the flow diagram see

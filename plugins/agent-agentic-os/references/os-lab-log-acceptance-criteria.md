@@ -1,4 +1,4 @@
-# Acceptance Criteria: os-experiment-log
+# Acceptance Criteria: os-lab-log
 
 ## ✅ Scenarios that must trigger
 - "Append the latest evolution verifier results to the experiment log"
@@ -7,4 +7,4 @@
 
 ## ❌ Scenarios that must NOT trigger
 - "Run the evolution verifier on all scenarios"
-- "Show me the current eval score for os-architect"
+- "Show me the current eval score for os-lab-planner"

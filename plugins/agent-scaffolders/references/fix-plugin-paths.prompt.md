@@ -11,7 +11,7 @@ If a file inside `plugins/A/` references `plugins/A/scripts/foo.py`, replace wit
 ## Rule 2: Environment-specific `.agents/skills/<skill>/scripts/` paths → `scripts/`
 These are environment-specific and break across installations.
 
-**BEFORE:** `python .agents/skills/os-eval-runner/scripts/evaluate.py`
+**BEFORE:** `python .agents/skills/os-lab-scorer/scripts/evaluate.py`
 **AFTER:**  `python scripts/evaluate.py`
 
 ---
@@ -58,8 +58,8 @@ Rename this variable to the established standard when it appears as a placeholde
 ## Rule 7: `{{SKILL_EVAL_SOURCE}}` examples → INSTALL.md reference
 Replace hardcoded path examples for `SKILL_EVAL_SOURCE` with a pointer to INSTALL.md.
 
-**BEFORE:** `` `{{SKILL_EVAL_SOURCE}}` | `<APS_ROOT>/plugins/agent-agentic-os/skills/os-eval-runner` ``
-**AFTER:**  `` `{{SKILL_EVAL_SOURCE}}` | Path to installed `os-eval-runner` (see [INSTALL.md](https://github.com/richfrem/agent-plugins-skills/blob/main/INSTALL.md)) ``
+**BEFORE:** `` `{{SKILL_EVAL_SOURCE}}` | `<APS_ROOT>/plugins/agent-agentic-os/skills/os-lab-scorer` ``
+**AFTER:**  `` `{{SKILL_EVAL_SOURCE}}` | Path to installed `os-lab-scorer` (see [INSTALL.md](https://github.com/richfrem/agent-plugins-skills/blob/main/INSTALL.md)) ``
 
 ---
 

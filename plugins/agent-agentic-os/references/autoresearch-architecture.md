@@ -8,7 +8,7 @@
 
 ## Purpose
 
-`os-eval-runner` is a general-purpose evaluation SERVICE. It can run the
+`os-lab-scorer` is a general-purpose evaluation SERVICE. It can run the
 Karpathy autoresearch loop against ANY target — a SKILL.md, a Python script, a
 config file, anything with a measurable output. The scripts and templates live here.
 All experiment state lives with each target.
@@ -20,7 +20,7 @@ All experiment state lives with each target.
 This is the most important concept to understand before using this system.
 
 ```
-os-eval-runner/          <-- THE EVALUATOR (stateless service)
+os-lab-scorer/          <-- THE EVALUATOR (stateless service)
   scripts/                       scripts run here, never move
   assets/templates/autoresearch/ MASTER templates — never edit directly
     program.md.template
@@ -54,8 +54,8 @@ There is no separate orchestrator script. The agent IS the loop.
 | `program.md` | `program.md` | Spec: optimization goal, locked files, NEVER STOP | `<experiment-dir>/references/program.md` (deployed from template) |
 | `train.py` | any file | **Mutation target** — the only file the agent changes each iteration | `<experiment-dir>/<mutation-target>` (SKILL.md, .py, etc.) |
 | _(input to prepare.py)_ | `evals.json` | Test prompts with expected outcomes | `<experiment-dir>/evals/evals.json` (deployed from template) |
-| `prepare.py` | `eval_runner.py` | **Metric producer** — reads target + evals.json, outputs metrics JSON | `os-eval-runner/scripts/eval_runner.py` |
-| `prepare.py` (gate logic) | `evaluate.py` | **Loop gate** — calls runner, reads baseline, writes ledger row, exits 0/1 | `os-eval-runner/scripts/evaluate.py` |
+| `prepare.py` | `eval_runner.py` | **Metric producer** — reads target + evals.json, outputs metrics JSON | `os-lab-scorer/scripts/eval_runner.py` |
+| `prepare.py` (gate logic) | `evaluate.py` | **Loop gate** — calls runner, reads baseline, writes ledger row, exits 0/1 | `os-lab-scorer/scripts/evaluate.py` |
 | `results.tsv` | `results.tsv` | Scoring history for this experiment | `<experiment-dir>/evals/results.tsv` (deployed from template, appended by evaluate.py) |
 | The agent | The agent | Loop orchestrator — reads program.md, edits target, handles KEEP/DISCARD, loops forever | _(agent following program.md)_ |
 
@@ -68,10 +68,10 @@ We added a scaffold layer to standardize this:
 
 | Component | Role | Location |
 |---|---|---|
-| `program.md.template` | Master spec template with `{{PLACEHOLDERS}}` | `os-eval-runner/assets/templates/autoresearch/` |
-| `evals.json.template` | Master evals template with placeholder prompts | `os-eval-runner/assets/templates/autoresearch/` |
-| `results.tsv.template` | TSV schema header (column names only) | `os-eval-runner/assets/templates/autoresearch/` |
-| `init_autoresearch.py` | Renders and deploys all three templates to the experiment dir | `os-eval-runner/scripts/` |
+| `program.md.template` | Master spec template with `{{PLACEHOLDERS}}` | `os-lab-scorer/assets/templates/autoresearch/` |
+| `evals.json.template` | Master evals template with placeholder prompts | `os-lab-scorer/assets/templates/autoresearch/` |
+| `results.tsv.template` | TSV schema header (column names only) | `os-lab-scorer/assets/templates/autoresearch/` |
+| `init_autoresearch.py` | Renders and deploys all three templates to the experiment dir | `os-lab-scorer/scripts/` |
 
 **How to use:**
 ```bash
@@ -100,10 +100,10 @@ the KEEP/DISCARD decision. We split this because `eval_runner.py` is general-pur
 
 | Owner | Files | Purpose |
 |---|---|---|
-| **os-eval-runner** | `scripts/eval_runner.py` | Metric producer |
-| **os-eval-runner** | `scripts/evaluate.py` | Loop gate |
-| **os-eval-runner** | `scripts/init_autoresearch.py` | Scaffold deployer |
-| **os-eval-runner** | `assets/templates/autoresearch/*.template` | Master templates |
+| **os-lab-scorer** | `scripts/eval_runner.py` | Metric producer |
+| **os-lab-scorer** | `scripts/evaluate.py` | Loop gate |
+| **os-lab-scorer** | `scripts/init_autoresearch.py` | Scaffold deployer |
+| **os-lab-scorer** | `assets/templates/autoresearch/*.template` | Master templates |
 | **Each experiment** | `<mutation-target>` | What is being optimized |
 | **Each experiment** | `evals/evals.json` | Test prompts (deployed from template, locked during loop) |
 | **Each experiment** | `evals/results.tsv` | Scoring history (deployed from template, appended by evaluate.py) |

@@ -258,7 +258,7 @@ Simple task files. No kanban, no cross-agent visibility.
 |---|---|
 | learning-loop (default) | Single agent retrospective |
 | triple-loop | Inner agent + outer supervisor |
-| os-improvement-loop | Parallel agent fan-out |
+| os-lab-loop | Parallel agent fan-out |
 | custom | Domain-specific loop logic |
 
 ---
@@ -277,7 +277,7 @@ Most of the swappable backends already exist as plugins in this repo:
 - `memory-management` — tiered memory
 - `vector-db` — semantic retrieval
 - `rlm-factory` — long-term distillation
-- `triple-loop`, `os-improvement-loop`, `learning-loop` — loop patterns
+- `triple-loop`, `os-lab-loop`, `learning-loop` — loop patterns
 
 The work is not building new plugins — it is defining the adapter interfaces and wiring the existing plugins in.
 
@@ -340,7 +340,7 @@ The most fundamental departure from traditional operating systems:
 
 > A conventional OS is a static artifact — Windows does not rewrite its own kernel based on how you used it today. The Agentic OS does.
 
-Every session, `Triple-Loop Retrospective` observes failures, repeated friction, and patterns in the event log, then proposes and applies patches to the system's own skill instructions and `CLAUDE.md`. Using a Karpathy-style research loop, `os-eval-runner` validates each proposed change with `eval_runner` before it is committed. Over time, the OS becomes measurably better at the specific workflows of the project it lives in.
+Every session, `Triple-Loop Retrospective` observes failures, repeated friction, and patterns in the event log, then proposes and applies patches to the system's own skill instructions and `CLAUDE.md`. Using a Karpathy-style research loop, `os-lab-scorer` validates each proposed change with `eval_runner` before it is committed. Over time, the OS becomes measurably better at the specific workflows of the project it lives in.
 
 **Vision extensions:**
 

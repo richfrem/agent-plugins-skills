@@ -9,7 +9,7 @@ allowed-tools: Bash, Read, Write
 
 This skill requires **Python 3.8+** and standard library only.
 
-**Evaluation gate**: NOT included in this primitive. The calling system (e.g., agent-agentic-os os-improvement-loop) is responsible for wrapping this skill with an eval gate and experiment log.
+**Evaluation gate**: NOT included in this primitive. The calling system (e.g., agent-agentic-os os-lab-loop) is responsible for wrapping this skill with an eval gate and experiment log.
 
 ---
 

@@ -1,4 +1,4 @@
-# os-evolution-planner — Detailed Reference
+# os-lab-planner — Detailed Reference
 
 Extracted from SKILL.md per Layer-1 procedural-core line budget (issue #551).
 
@@ -125,7 +125,7 @@ python3 plugins/agent-agentic-os/scripts/experiment_log.py append \
   --report tasks/todo/<slug>-plan.md \
   --session-id "<slug>" \
   --target "<target-skill-or-agent>" \
-  --triggered-by os-evolution-planner
+  --triggered-by os-lab-planner
 ```
 This records the workstream count and gaps identified as a qualitative entry in
 `context/experiment-log/` — traceable alongside any subsequent verifier or tester runs.
@@ -145,6 +145,6 @@ If dispatch flag is NOT set, present the plan and prompt paths and ask:
 
 ## Smoke Test
 
-1. Given target = `os-eval-runner` skill, Phase 1 produces 3 named approaches with effort estimates before any plan file is written.
+1. Given target = `os-lab-scorer` skill, Phase 1 produces 3 named approaches with effort estimates before any plan file is written.
 2. After user selects an option, the plan file includes an "Approach Selected" section naming the chosen option and noting alternatives considered.
 3. Given `--dispatch` flag set and heartbeat passes, the skill calls `run_agent.py` with `claude-sonnet-4.6` and verifies output line count before reporting complete.

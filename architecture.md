@@ -126,9 +126,9 @@ unmodified, into any number of target projects.
 - `pyproject.toml` exposes these as console scripts: `plugin-add`, `plugin-remove`, `plugin-sync`.
 
 ### 4.2. Plugin: agent-agentic-os
-The self-improvement kernel. Core loop: `os-architect → os-improvement-loop → os-eval-runner →
-os-eval-backport → os-experiment-log`. Owns memory management (`os-memory-manager`), evolution
-planning (`os-evolution-planner`/`os-evolution-verifier`), setup (`os-init`, `agentic-os-setup` agent),
+The self-improvement kernel. Core loop: `os-lab-planner → os-lab-loop → os-lab-scorer →
+os-lab-backport → os-lab-log`. Owns memory management (`os-memory-manager`), evolution
+planning (`os-lab-planner`/`os-evolution-verifier`), setup (`os-init`, `agentic-os-setup` agent),
 and Layer 2 Wiki & Map Debt governance (`distill_playbook`, `audit_map_debt`, `pre-commit-evolution-guard`,
 and `turn_evolution_guard`). Three control-plane edges are cryptographic human gates: Gate 1 (`AWAITING_APPROVAL -> APPROVED`), Gate 3 (`WORKTREE_REVIEW` or `MULTI_AGENT_CODE_REVIEW` `-> VERIFY_EXIT`) and closure (any edge into `DONE`). Each declares `requires_cryptographic_proof`: the coordinator halts with `HUMAN_PROOF_REQUIRED` and a pending, content-bound `transition_request` (Gate 3 binds the commit SHA, tracked-diff hash and untracked-files hash; closure also binds the retrospective digest); the human signs it out of band with `ssh-keygen -Y sign` (OpenSSH prompts for the private-key passphrase) via `show-challenge` and `approve-transition`; the signature is verified outside the database write lock and the request is consumed exactly once in the commit transaction. No prompt, typed word, flag, receipt or actor string can authorize these edges, and there is no skip or force-close path. `os-signing-setup` creates the key; residual risk (a same-account agent with direct DB or coordinator access) is documented in `plugins/agent-agentic-os/references/isolation-setup.md`.
 
@@ -140,7 +140,7 @@ and `turn_evolution_guard`). Three control-plane edges are cryptographic human g
 **Setup:** per machine, by the human, via `setup_ciba_identity.py` (skill `os-signing-setup`). `allowed_signers*` and `context/identity/challenges/` are machine-local trust anchors and never committed; `os-init` and `os-health-check` report readiness read-only. **Residual risk:** an agent running as the same account with direct database or coordinator access can still tamper; see `plugins/agent-agentic-os/references/isolation-setup.md`.
 
 ### 4.3. Plugin: agent-orchestration
-Execution primitives for loops and deterministic state graphs (orchestrator, select-loop-strategy, graph-planner, graph-execution, co-pilot-loop, learning-loop, dual-loop, agent-swarm, red-team-review, triple-loop-learning). Provides execution patterns only — no eval gate, no memory; `os-improvement-loop` delegates its inner loop to `triple-loop-learning` as substrate.
+Execution primitives for loops and deterministic state graphs (orchestrator, select-loop-strategy, graph-planner, graph-execution, co-pilot-loop, learning-loop, dual-loop, agent-swarm, red-team-review, triple-loop-learning). Provides execution patterns only — no eval gate, no memory; `os-lab-loop` delegates its inner loop to `triple-loop-learning` as substrate.
 
 ### 4.4. Plugin: agent-memory
 Two retrieval subsystems consolidated from former rlm-factory / vector-db / memory-management

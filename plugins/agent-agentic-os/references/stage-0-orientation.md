@@ -3,7 +3,7 @@
 **Goal**: Every agent orients before any work begins. No agent starts cold.
 
 > **New target?** Before running any eval cycle on a target skill for the first time, use
-> `os-eval-lab-setup` to bootstrap the experiment dir. This deploys:
+> `os-lab-setup` to bootstrap the experiment dir. This deploys:
 > - `evals/evals.json` — test prompts with `should_trigger` boolean schema (REQUIRED — legacy
 >   `expected_behavior` string fields score 0.0 and will destroy accuracy)
 > - `evals/results.tsv` — baseline ledger (written when you run `evaluate.py --baseline`)
@@ -13,7 +13,7 @@
 
 1. **ORCHESTRATOR reads (in order):**
    - `context/memory/improvement-ledger.md` — cross-session OS-level trajectory per skill, survey-to-action trace, north star trend
-   - `<target-experiment-dir>/evals/results.tsv` — per-experiment baseline and iteration history (written by os-eval-runner's evaluate.py); this is the authoritative score history for the specific target being improved
+   - `<target-experiment-dir>/evals/results.tsv` — per-experiment baseline and iteration history (written by os-lab-scorer's evaluate.py); this is the authoritative score history for the specific target being improved
    - `context/memory/tests/registry.md` — what has been tested, what was recommended next
    - `context/memory.md` (L3 long-term facts)
    - Last session log: `context/memory/YYYY-MM-DD.md`

@@ -41,7 +41,7 @@ grouped into five clusters.
 | | Governed task pipeline | Improvement lab |
 |---|---|---|
 | Use it to | Deliver real engineering work under approval gates | Measure and improve one skill or agent against evals |
-| Start with | `os-init` once, then `work-intake` per task | `/os-architect` (Category 3, lab setup) |
+| Start with | `os-init` once, then `work-intake` per task | `/os-lab-planner` (Category 3, lab setup) |
 | State | `context/control_plane.db` | `evals/results.tsv`, improvement ledger, `context/events.jsonl` |
 | Human authority | SSH-signed approval at plan, code-acceptance and closure | Human review of the lab diff before backport |
 | Switch | `os-control-plane-mode` | Enable its skills in `.agents/ownership/` |
@@ -56,9 +56,9 @@ grouped into five clusters.
 |------|---------|
 | 1. Install & scaffold | `"Set up an agentic OS for this project"` — runs the `os-init` / `agentic-os-setup` interview |
 | 2. Human signing key (control plane) | `os-signing-setup` — human only; creates the key behind the approval gates |
-| 3. Probe your environment (lab path) | `/os-architect` → "probe my environment" — saves a delegation strategy profile |
+| 3. Probe your environment (lab path) | `/os-lab-planner` → "probe my environment" — saves a delegation strategy profile |
 
-**After each session (lab path):** run `os-improvement-loop` for the retrospective, then
+**After each session (lab path):** run `os-lab-loop` for the retrospective, then
 `os-memory-manager` to promote learnings, if those skills are installed.
 
 → Full day-to-day workflow: **[USAGE.md](./USAGE.md)**
@@ -73,16 +73,16 @@ grouped into five clusters.
 | Turn the control plane (work-intake gating, commit/push guards) on or off, or check its mode | `os-control-plane-mode` |
 | Work in an isolated worktree based on `origin/main` | `worktree-manager` |
 | Test a control-plane transition without touching real state | `transition-simulator` |
-| Start any skill improvement or creation task | `/os-architect` |
-| Discover which AI tools I have available | `/os-architect` → "probe my environment" |
-| Improve a specific skill with evals | `/os-architect` → describe the skill + goal |
-| Run an unattended improvement loop | `/os-architect` → "improve X skill with a lab" → `os-improvement-loop` |
-| See eval score trends and progress charts | `os-improvement-report` |
+| Start any skill improvement or creation task | `/os-lab-planner` |
+| Discover which AI tools I have available | `/os-lab-planner` → "probe my environment" |
+| Improve a specific skill with evals | `/os-lab-planner` → describe the skill + goal |
+| Run an unattended improvement loop | `/os-lab-planner` → "improve X skill with a lab" → `os-lab-loop` |
+| See eval score trends and progress charts | `os-lab-log` |
 | Search experiment history | `python3 scripts/experiment_log.py query <term>` |
 | Promote session learnings to long-term memory | `os-memory-manager` |
 | Check system health (event log, locks, memory) | `os-health-check` |
 | Fix a deadlocked agent (stale lock files) | `os-clean-locks` |
-| Verify os-architect still works after a change | `os-architect-tester` agent |
+| Verify os-lab-planner still works after a change | `os-architect-tester` agent |
 | Get a full explanation of how the OS works | `os-guide` |
 
 ---
@@ -94,9 +94,9 @@ grouped into five clusters.
 | Agent | Purpose |
 |-------|---------|
 | `agentic-os-setup` | Conversational setup guide; wraps `os-init` in discovery, plan and approve phases |
-| `os-architect` (`agents/os-architect-agent.md`) | Front-door agent for ecosystem evolution; classifies intent into six categories and routes |
-| `improvement-intake-agent` | Plain-language intake for a skill improvement run; writes `improvement/run-config.json` and `session-brief.md` (called by `os-architect` for Category 3) |
-| `os-architect-tester` | Validates `os-architect` against pre-scripted scenario transcripts; run after any change to it |
+| `os-lab-planner` (`agents/os-lab-agent.md`) | Front-door agent for ecosystem evolution; classifies intent into six categories and routes |
+| `os-lab-agent` | Plain-language intake for a skill improvement run; writes `improvement/run-config.json` and `session-brief.md` (called by `os-lab-planner` for Category 3) |
+| `os-architect-tester` | Validates `os-lab-planner` against pre-scripted scenario transcripts; run after any change to it |
 
 ### Skills (27)
 
@@ -124,9 +124,9 @@ What each skill does and how the clusters relate: [Agentic OS Skill Map](./refer
 
 | Skill | Purpose |
 |-------|---------|
-| `os-architect` | SME-facing front door: classifies intent, audits capabilities, proposes orchestrate / update / create, dispatches |
-| `os-evolution-planner` | Brainstorms 2-3 approaches with the cheapest model, then writes the task plan and delegation prompt |
-| `os-evolution-verifier` | Checks that `os-architect` produced real artifacts; PASS / PARTIAL / FAIL with evidence |
+| `os-lab-planner` | SME-facing front door: classifies intent, audits capabilities, proposes orchestrate / update / create, dispatches |
+| `os-lab-planner` | Brainstorms 2-3 approaches with the cheapest model, then writes the task plan and delegation prompt |
+| `os-evolution-verifier` | Checks that `os-lab-planner` produced real artifacts; PASS / PARTIAL / FAIL with evidence |
 | `self-evolution` | Deterministic 6-node graph controller for self-evolution: worktree isolation, verifier sovereignty, Layer 2 persistence |
 | `repository-improvement` | Turns friction-cluster hotspot reports into systemic refactoring proposals for human review (Tier 3 friction) |
 
@@ -134,13 +134,13 @@ What each skill does and how the clusters relate: [Agentic OS Skill Map](./refer
 
 | Skill | Purpose |
 |-------|---------|
-| `os-eval-lab-setup` | Bootstraps an isolated sibling-repo eval lab: `evals.json`, `results.tsv`, `program.md` |
-| `os-eval-runner` | Stateless eval engine; scores a proposed change against locked `evals.json`; KEEP / DISCARD |
-| `os-improvement-loop` | Five-stage improvement cycle: orient, execute, verify, decide, close |
-| `os-skill-improvement` | RED-GREEN-REFACTOR cycle for one skill whose routing accuracy or score is low |
-| `os-eval-backport` | Reviews a completed lab run and backports approved changes to master plugin sources |
-| `os-experiment-log` | Persistent dated log of experiment runs in `context/experiment-log/` |
-| `os-improvement-report` | Charts and trend summaries across improvement cycles |
+| `os-lab-setup` | Bootstraps an isolated sibling-repo eval lab: `evals.json`, `results.tsv`, `program.md` |
+| `os-lab-scorer` | Stateless eval engine; scores a proposed change against locked `evals.json`; KEEP / DISCARD |
+| `os-lab-loop` | Five-stage improvement cycle: orient, execute, verify, decide, close |
+| `os-lab-scorer` | RED-GREEN-REFACTOR cycle for one skill whose routing accuracy or score is low |
+| `os-lab-backport` | Reviews a completed lab run and backports approved changes to master plugin sources |
+| `os-lab-log` | Persistent dated log of experiment runs in `context/experiment-log/` |
+| `os-lab-log` | Charts and trend summaries across improvement cycles |
 | `evo-smoketest` | Fixture skill (temperature conversion) for the evolution end-to-end smoke test; not a user capability |
 
 #### Memory & observability
@@ -164,7 +164,7 @@ What each skill does and how the clusters relate: [Agentic OS Skill Map](./refer
 ### Invoking
 
 No separate slash-command files ship with this plugin. Invoke any skill by name (for example
-`/os-architect`, `/os-init`) or describe the goal and let routing pick it.
+`/os-lab-planner`, `/os-init`) or describe the goal and let routing pick it.
 
 ---
 
@@ -185,9 +185,9 @@ These fire without any user invocation.
 
 ### Learning Loop
 
-The core learning cycle: **os-improvement-loop** orchestrates multi-iteration improvement
-runs against a locked eval set. **os-eval-runner** scores each mutation (KEEP/DISCARD).
-**os-eval-lab-setup** isolates each run in a sibling repo. **os-eval-backport** provides
+The core learning cycle: **os-lab-loop** orchestrates multi-iteration improvement
+runs against a locked eval set. **os-lab-scorer** scores each mutation (KEEP/DISCARD).
+**os-lab-setup** isolates each run in a sibling repo. **os-lab-backport** provides
 the human review gate before any winning change reaches production.
 
 Execution pattern delegates to [agent-orchestration Pattern 5](../agent-orchestration/skills/triple-loop-learning/)
@@ -270,4 +270,4 @@ attribution are documented in [the companion reference](./references/superpowers
 |--------|------|
 | `agent-scaffolders` | Spec + Factory — what ecosystem artifacts are and how to create them |
 | **`agent-agentic-os`** | **Operations — eval-gated improvement loop, experiment log, memory** |
-| `agent-orchestration` | Execution patterns — loop substrate used by os-improvement-loop |
+| `agent-orchestration` | Execution patterns — loop substrate used by os-lab-loop |

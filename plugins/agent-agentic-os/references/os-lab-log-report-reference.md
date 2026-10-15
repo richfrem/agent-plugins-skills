@@ -1,4 +1,4 @@
-# os-improvement-report — Detailed Reference
+# os-lab-log — Detailed Reference
 
 Extracted from SKILL.md per Layer-1 procedural-core line budget (issue #551).
 
@@ -55,7 +55,7 @@ can consume it. Each numeric experiment log entry maps to one row:
 LEDGER="${CLAUDE_PROJECT_DIR}/context/memory/improvement-ledger.md"
 if [ ! -f "$LEDGER" ]; then
   echo "No improvement ledger found. Run at least one full loop cycle first."
-  echo "The ledger is created at Stage 4.7 of os-improvement-loop."
+  echo "The ledger is created at Stage 4.7 of os-lab-loop."
   exit 0
 fi
 wc -l "$LEDGER"
@@ -71,7 +71,7 @@ Do not run the report script on an empty ledger — it will produce an empty cha
 PLUGIN_DIR="${CLAUDE_PLUGIN_ROOT:-$(pwd)/.agents/skills/agent-agentic-os}"
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
 
-python "${PLUGIN_DIR}/skills/os-improvement-report/scripts/generate_report.py" \
+python "${PLUGIN_DIR}/skills/os-lab-log/scripts/generate_report.py" \
   --project-dir "$PROJECT_DIR" \
   --plugin-dir "$PLUGIN_DIR" \
   [--skill SESSION-MEMORY-MANAGER]   # optional: filter to one skill

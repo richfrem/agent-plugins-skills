@@ -37,7 +37,7 @@ One row per KEEP cycle per skill target. Written by ORCHESTRATOR at Stage 4.7.
 |------|----------|--------|----------|-------|-------|---------|-------------------|----------------|
 | 2026-03-21 | cycle-20260321-001 | os-memory-manager | 0.00 (first run) | 0.72 | +0.72 | KEEP | 1 | Added Phase 3 test registry preservation |
 | 2026-03-22 | cycle-20260322-001 | os-memory-manager | 0.72 | 0.78 | +0.06 | KEEP | 2 | Tightened dedup conflict detection wording |
-| 2026-03-22 | cycle-20260322-002 | os-eval-runner | 0.00 (first run) | 0.65 | +0.65 | KEEP | 1 | Established baseline — no change made |
+| 2026-03-22 | cycle-20260322-002 | os-lab-scorer | 0.00 (first run) | 0.65 | +0.65 | KEEP | 1 | Established baseline — no change made |
 | 2026-03-23 | cycle-20260323-001 | os-memory-manager | 0.78 | 0.76 | -0.02 | DISCARD | 3 | Reverted — adversarial prompt change degraded routing |
 ```
 
@@ -63,9 +63,9 @@ that resulted in a concrete change attempt (whether KEEP or DISCARD).
 
 | Date | Survey ID | Agent | Friction Item | Action Taken | Target File | Change Made | Eval Delta | Outcome |
 |------|-----------|-------|---------------|--------------|-------------|-------------|------------|---------|
-| 2026-03-21 | survey_20260321_1030_INNER_AGENT | INNER_AGENT | "eval_runner.py --skill flag not documented" | Added --skill flag to os-eval-runner SKILL.md examples | skills/os-eval-runner/SKILL.md | Added code block with --skill flag | +0.06 | KEEP |
+| 2026-03-21 | survey_20260321_1030_INNER_AGENT | INNER_AGENT | "eval_runner.py --skill flag not documented" | Added --skill flag to os-lab-scorer SKILL.md examples | skills/os-lab-scorer/SKILL.md | Added code block with --skill flag | +0.06 | KEEP |
 | 2026-03-22 | survey_20260322_1145_PEER_AGENT | PEER_AGENT | "dedup protocol ambiguous for paraphrased facts" | Rewrote Phase 4 dedup instruction in os-memory-manager | skills/os-memory-manager/SKILL.md | Phase 4 step 2 rewritten with example | +0.06 | KEEP |
-| 2026-03-22 | survey_20260322_1500_ORCHESTRATOR | ORCHESTRATOR | "registry.md orientation step unclear" | Added registry-read checklist to Stage 1 | skills/os-improvement-loop/SKILL.md | Stage 1 steps 1-2 expanded | +0.00 | BASELINE (neutral) |
+| 2026-03-22 | survey_20260322_1500_ORCHESTRATOR | ORCHESTRATOR | "registry.md orientation step unclear" | Added registry-read checklist to Stage 1 | skills/os-lab-loop/SKILL.md | Stage 1 steps 1-2 expanded | +0.00 | BASELINE (neutral) |
 | 2026-03-23 | survey_20260323_0930_INNER_AGENT | INNER_AGENT | "DO NOT RE-TEST entries hard to find" | Moved DO NOT RE-TEST to top of registry.md | context/memory/tests/registry.md | Added pinned section at top | N/A | Not eval'd |
 ```
 

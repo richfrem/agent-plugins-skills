@@ -306,7 +306,7 @@ To opt into cross-project bus: set `AGENT_BUS_GLOBAL=~/.agent-bus` explicitly.
 
 From Gemini: `eval_runner.py` keyword stuffing incentive. The learning loop will game its
 own eval metric by stuffing keywords. eval_runner must either use a real LLM router or
-penalize word count. This is a `os-eval-runner` issue, not a concurrent-loop issue,
+penalize word count. This is a `os-lab-scorer` issue, not a concurrent-loop issue,
 but it undermines the whole self-improvement pipeline. Tracked separately.
 
 From Claude: `update_memory.py` kernel fallback impersonates system agent. Tracked in

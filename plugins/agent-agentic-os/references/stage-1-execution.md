@@ -5,8 +5,8 @@ Every time INNER_AGENT receives `task.assigned`, it MUST:
 1. **Read the strategy packet** at the path in the event summary.
 2. **Execute the assigned work** — edit target skill, workflow doc, or artifact.
 3. **Emit friction events immediately** when hitting uncertainty, wrong syntax, or needing help.
-4. **Run the eval engine** using the os-eval-runner canonical scripts.
-   The experiment dir must have been bootstrapped by `os-eval-lab-setup` first
+4. **Run the eval engine** using the os-lab-scorer canonical scripts.
+   The experiment dir must have been bootstrapped by `os-lab-setup` first
    (deploys `evals/evals.json` with `should_trigger` boolean schema, `evals/results.tsv`,
    and `references/program.md`).
 
@@ -22,7 +22,7 @@ Every time INNER_AGENT receives `task.assigned`, it MUST:
    # Exit 0 = KEEP (accuracy AND F1 >= baseline). Exit 1 = DISCARD. Exit 2 = path error.
    # Exit 3 = tampered env (.lock.hashes mismatch) — delete .lock.hashes, re-run --baseline.
    ```
-   See `os-eval-runner` Troubleshooting section for exit code reference, keywords footgun,
+   See `os-lab-scorer` Troubleshooting section for exit code reference, keywords footgun,
    and 4-character word floor.
 
 5. If DISCARD: revert edit, note failure in output file, emit `task.complete --status fail`.

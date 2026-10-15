@@ -12,7 +12,7 @@ The exploration-cycle and agentic OS systems utilize a progression of loop archi
 
 **Purpose**: Strategic reframing combined with tactical execution. The outer loop challenges assumptions and mental models, while the inner loop executes the tactics.
 - **Primary Skill**: `plugins/agent-orchestration/skills/dual-loop/SKILL.md`
-- **Use Case**: Often used implicitly by `os-improvement-loop` to evolve agent behaviors and rules. Useful when the problem statement itself needs to be validated before solving.
+- **Use Case**: Often used implicitly by `os-lab-loop` to evolve agent behaviors and rules. Useful when the problem statement itself needs to be validated before solving.
 
 ## Triple Loop (Automated Autoresearch)
 

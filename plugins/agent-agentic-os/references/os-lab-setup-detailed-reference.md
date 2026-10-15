@@ -1,4 +1,4 @@
-# os-eval-lab-setup — Detailed Reference
+# os-lab-setup — Detailed Reference
 
 Extracted from SKILL.md per Layer-1 procedural-core line budget (issue #551).
 
@@ -102,7 +102,7 @@ SKILL_NAME=<skill-folder-name>                       # from Q3, e.g. convert-mer
 PLUGIN_NAME=$(echo "$PLUGIN_PATH" | cut -d'/' -f2)  # → mermaid-to-png
 
 LAB_PATH=<lab-repo-path>                             # from Q1
-SKILL_EVAL_SOURCE="$LAB_PATH/.agents/skills/os-eval-runner"
+SKILL_EVAL_SOURCE="$LAB_PATH/.agents/skills/os-lab-scorer"
 
 # Verify before proceeding:
 echo "PLUGIN_NAME=$PLUGIN_NAME  SKILL_NAME=$SKILL_NAME"
@@ -140,18 +140,18 @@ rm -rf <lab-repo>/<plugin-folder-name>/**/__pycache__
 ```
 
 ## Dependencies
-- **os-eval-runner** (agent-agentic-os plugin)
+- **os-lab-scorer** (agent-agentic-os plugin)
 - **copilot-cli-agent** (copilot-cli plugin)
 
 > [!TIP]
 > See [INSTALL.md](https://github.com/richfrem/agent-plugins-skills/blob/main/INSTALL.md) for instructions on how to install missing dependencies.
 > If `-y` crashes: run without it and press Enter to accept defaults.
-> Both skills are required: `os-eval-runner` gates iterations, `copilot-cli-agent` proposes mutations.
+> Both skills are required: `os-lab-scorer` gates iterations, `copilot-cli-agent` proposes mutations.
 
 ### 1e. Seed commit and push
 ```bash
 cd <lab-repo>
-git add . && git commit -m "seed: install os-eval-runner engine"
+git add . && git commit -m "seed: install os-lab-scorer engine"
 git push origin main
 ```
 
@@ -165,7 +165,7 @@ python --version  # must be 3.8+
 Use the `generate_eval_instructions.py` script provided in this skill's scripts directory to generate the filled instruction file:
 
 ```bash
-python $APS_ROOT/plugins/agent-agentic-os/skills/os-eval-lab-setup/scripts/generate_eval_instructions.py \
+python $APS_ROOT/plugins/agent-agentic-os/skills/os-lab-setup/scripts/generate_eval_instructions.py \
     --template $APS_ROOT/plugins/agent-agentic-os/assets/templates/eval-instructions.template.md \
     --out $LAB_PATH/eval-instructions.md \
     --skill-display-name "<Human-readable skill name>" \
@@ -192,21 +192,21 @@ nohup agy --yolo -p "You are the L1 Triple-Loop Orchestrator. Read eval-instruct
 
 ## What to Expect: Meta-Circular Improvement
 
-When `os-eval-runner` is installed as a peer in the lab repo alongside the target skill,
-the improvement loop may propose changes to `os-eval-runner` itself — its SKILL.md, scripts,
+When `os-lab-scorer` is installed as a peer in the lab repo alongside the target skill,
+the improvement loop may propose changes to `os-lab-scorer` itself — its SKILL.md, scripts,
 or evals — in addition to the target skill. **This is expected and welcome**, not a bug.
 
 Why it happens: the agent can read all installed skills and proposes the highest-leverage
-change it can find, regardless of which skill it's in. The lab copy of `os-eval-runner`
+change it can find, regardless of which skill it's in. The lab copy of `os-lab-scorer`
 is a safe mutation target because:
 
 - It's a physical copy, not a symlink to master
 - `evaluate.py` still gates every change — including changes to `eval_runner.py` itself
-- `os-eval-backport` review is the gate before any change reaches the canonical source
+- `os-lab-backport` review is the gate before any change reaches the canonical source
 
-**At backport review:** treat changes to `os-eval-runner` files with extra scrutiny —
+**At backport review:** treat changes to `os-lab-scorer` files with extra scrutiny —
 the evaluator modifying its own scoring logic is high-leverage. Verify the change doesn't
-introduce a scoring bias that inflates future KEEP rates. See `os-eval-backport` SKILL.md
+introduce a scoring bias that inflates future KEEP rates. See `os-lab-backport` SKILL.md
 for the review checklist.
 
 This pattern is structurally equivalent to what Meta-Harness (Lee et al., arXiv:2603.28052)

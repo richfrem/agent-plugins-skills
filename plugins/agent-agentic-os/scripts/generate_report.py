@@ -412,10 +412,10 @@ def _load_skill_frames(plugin_dir: Path, skill_filter: "str | None") -> dict[str
         df = load_results_tsv(path, skill_name)
         if not df.empty:
             skill_frames[skill_name] = df
-            print(f"[os-improvement-report] Loaded {len(df)} rows from {path}")
+            print(f"[os-lab-log] Loaded {len(df)} rows from {path}")
 
     if not skill_frames:
-        print("[os-improvement-report] No results.tsv data found. "
+        print("[os-lab-log] No results.tsv data found. "
               "Run at least one eval cycle to populate results.tsv files.")
         print(f"  Looked in: {plugin_dir}/skills/*/evals/results.tsv")
         print("  Generating placeholder chart...")
@@ -486,19 +486,19 @@ def main() -> None:
 
     ns_df = load_north_star(ledger_path)
     if not ns_df.empty:
-        print(f"[os-improvement-report] Loaded {len(ns_df)} session rows from ledger")
+        print(f"[os-lab-log] Loaded {len(ns_df)} session rows from ledger")
 
     fig = _build_progress_figure(skill_frames, ns_df, date_str)
 
     chart_path = out_dir / f"progress_{ts_str}.png"
     plt.savefig(chart_path, dpi=150, bbox_inches="tight")
     plt.close()
-    print(f"[os-improvement-report] Chart saved: {chart_path}")
+    print(f"[os-lab-log] Chart saved: {chart_path}")
 
     summary = generate_summary(skill_frames, ns_df, date_str)
     summary_path = out_dir / f"summary_{ts_str}.md"
     summary_path.write_text(summary)
-    print(f"[os-improvement-report] Summary saved: {summary_path}")
+    print(f"[os-lab-log] Summary saved: {summary_path}")
     print()
     print(summary)
 

@@ -1,11 +1,11 @@
 > **DEPRECATED**: The `triple-loop-architect` and `triple-loop-orchestrator` agents described
 > in this document have been removed as of v1.6.0. The capability is now handled by
-> `os-improvement-loop`. This document is retained for historical reference only.
-> For current operations, see [os-improvement-loop SKILL.md](../../skills/os-improvement-loop/SKILL.md).
+> `os-lab-loop`. This document is retained for historical reference only.
+> For current operations, see [os-lab-loop SKILL.md](../../skills/os-lab-loop/SKILL.md).
 
 # Triple-Loop Learning System (Outer Orchestrator + Inner Execution)
 
-Canonical reference for the overarching orchestrator, strategy packet (Double-Loop), and tactical verification protocol (Single-Loop) used by `os-improvement-loop`.
+Canonical reference for the overarching orchestrator, strategy packet (Double-Loop), and tactical verification protocol (Single-Loop) used by `os-lab-loop`.
 
 Diagram: [`references/diagrams/triple-loop-learning-system.mmd`](../assets/diagrams/triple-loop-learning-system.mmd)
 
@@ -19,7 +19,7 @@ Diagram: [`references/diagrams/triple-loop-learning-system.mmd`](../assets/diagr
 
 **Step 3 - Execute (INNER_AGENT):** Read packet, do work, emit `friction` events immediately on uncertainty, run `eval_runner.py`, write `handoffs/out-${CID}.md`, emit `task.complete`.
 
-**Step 4 - Verify (PEER_AGENT):** Run `os-eval-runner` independently (do not read score from event). Compare to `results.tsv` baseline.
+**Step 4 - Verify (PEER_AGENT):** Run `os-lab-scorer` independently (do not read score from event). Compare to `results.tsv` baseline.
 
 - **KEEP**: ORCHESTRATOR applies changes, emits `orchestrator.decision`.
 - **DISCARD**: Generate correction packet (`handoffs/correction-${CID}.md`) with severity (CRITICAL / MODERATE / MINOR). Re-signal INNER_AGENT. Do not emit `orchestrator.decision` until KEEP.

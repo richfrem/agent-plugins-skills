@@ -14,18 +14,18 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 | ID | Target | Hypothesis | Priority |
 |----|--------|------------|----------|
-| T01 | os-eval-runner | Baseline routing: eval triggers on correct phrases, not on explain/describe | HIGH |
-| T02 | os-eval-runner | KEEP/DISCARD threshold: clearly improved skill scores KEEP, degraded scores DISCARD | HIGH |
-| T03 | os-eval-runner | Adversarial coverage: eval catches prompts designed to bypass routing | MEDIUM |
-| T04 | os-eval-runner | Edge case: graceful failure when evals.json is missing or malformed | MEDIUM |
-| T05 | os-eval-runner | Survey completion: evaluator completes self-assessment after every eval run | HIGH |
-| T06 | os-improvement-loop | Baseline 1-cycle smoke: all 14 mandatory loop steps execute in order | HIGH |
-| T07 | os-improvement-loop | Friction emission: agents emit type:friction events when encountering ambiguity | HIGH |
-| T08 | os-improvement-loop | Loop report written: report file created after every cycle regardless of outcome | HIGH |
-| T09 | os-improvement-loop | Survey completion: both ORCHESTRATOR and INNER_AGENT complete survey after cycle | HIGH |
-| T10 | os-improvement-loop | Memory persistence: at least one promoted fact in context/memory.md after cycle | MEDIUM |
-| T11 | os-improvement-loop | Auto-trigger: Triple-Loop Retrospective triggered when friction_events_total reaches 3 | HIGH |
-| T12 | os-improvement-loop | Lock contention: second agent attempting same lock receives clear failure, not hang | HIGH |
+| T01 | os-lab-scorer | Baseline routing: eval triggers on correct phrases, not on explain/describe | HIGH |
+| T02 | os-lab-scorer | KEEP/DISCARD threshold: clearly improved skill scores KEEP, degraded scores DISCARD | HIGH |
+| T03 | os-lab-scorer | Adversarial coverage: eval catches prompts designed to bypass routing | MEDIUM |
+| T04 | os-lab-scorer | Edge case: graceful failure when evals.json is missing or malformed | MEDIUM |
+| T05 | os-lab-scorer | Survey completion: evaluator completes self-assessment after every eval run | HIGH |
+| T06 | os-lab-loop | Baseline 1-cycle smoke: all 14 mandatory loop steps execute in order | HIGH |
+| T07 | os-lab-loop | Friction emission: agents emit type:friction events when encountering ambiguity | HIGH |
+| T08 | os-lab-loop | Loop report written: report file created after every cycle regardless of outcome | HIGH |
+| T09 | os-lab-loop | Survey completion: both ORCHESTRATOR and INNER_AGENT complete survey after cycle | HIGH |
+| T10 | os-lab-loop | Memory persistence: at least one promoted fact in context/memory.md after cycle | MEDIUM |
+| T11 | os-lab-loop | Auto-trigger: Triple-Loop Retrospective triggered when friction_events_total reaches 3 | HIGH |
+| T12 | os-lab-loop | Lock contention: second agent attempting same lock receives clear failure, not hang | HIGH |
 | T13 | os-clean-locks | Baseline routing: triggers on /os-clean-locks and lock variants, not on list-locks | HIGH |
 | T14 | os-clean-locks | Stale lock cleanup: lock with PID that no longer exists gets removed | HIGH |
 | T15 | os-clean-locks | Active lock protection: lock held by running PID is preserved | HIGH |
@@ -71,9 +71,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T01 — os-eval-runner: Baseline Routing Accuracy
+### T01 — os-lab-scorer: Baseline Routing Accuracy
 
-- **Target**: os-eval-runner
+- **Target**: os-lab-scorer
 - **Hypothesis**: The skill triggers correctly on "evaluate this skill" and related phrases,
   but does NOT trigger on "explain this skill", "describe this skill", or "show me the eval results".
 - **Why now**: All results.tsv baselines are empty. This establishes routing accuracy baseline.
@@ -85,9 +85,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T02 — os-eval-runner: KEEP/DISCARD Threshold
+### T02 — os-lab-scorer: KEEP/DISCARD Threshold
 
-- **Target**: os-eval-runner
+- **Target**: os-lab-scorer
 - **Hypothesis**: The evaluator correctly assigns KEEP to a skill with an added positive example
   and DISCARD to a skill with a removed description keyword.
 - **Why now**: Without a working KEEP/DISCARD signal the entire Triple-Loop cannot function.
@@ -99,9 +99,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T03 — os-eval-runner: Adversarial Prompt Coverage
+### T03 — os-lab-scorer: Adversarial Prompt Coverage
 
-- **Target**: os-eval-runner
+- **Target**: os-lab-scorer
 - **Hypothesis**: The current evals.json contains enough adversarial prompts to catch a skill
   that has been manipulated to trigger on unrelated keywords.
 - **Why now**: Adversarial coverage gap was identified in prior session as a known weakness.
@@ -113,9 +113,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T04 — os-eval-runner: Graceful Failure on Missing evals.json
+### T04 — os-lab-scorer: Graceful Failure on Missing evals.json
 
-- **Target**: os-eval-runner
+- **Target**: os-lab-scorer
 - **Hypothesis**: eval_runner.py exits with a clear error message (not a Python traceback) when
   evals.json is absent or malformed.
 - **Why now**: Agents calling eval_runner.py during Triple-Loop Retrospective Phase 3 should get
@@ -128,9 +128,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T05 — os-eval-runner: Self-Assessment Survey Completion
+### T05 — os-lab-scorer: Self-Assessment Survey Completion
 
-- **Target**: os-eval-runner
+- **Target**: os-lab-scorer
 - **Hypothesis**: The evaluator saves a survey file to retrospectives/ after every eval run,
   including runs that return DISCARD.
 - **Why now**: Survey was added to Phase 5 in this session. Needs first-run verification.
@@ -143,9 +143,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T06 — os-improvement-loop: Baseline 1-Cycle Smoke Test
+### T06 — os-lab-loop: Baseline 1-Cycle Smoke Test
 
-- **Target**: os-improvement-loop (SKILL.md v0.5.0)
+- **Target**: os-lab-loop (SKILL.md v0.5.0)
 - **Hypothesis**: A single loop cycle with 1 ORCHESTRATOR + 1 INNER_AGENT completes all
   14 mandatory steps listed in the CRITICAL section.
 - **Why now**: v0.5.0 added 7 new mandatory steps. First full validation needed.
@@ -157,9 +157,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T07 — os-improvement-loop: Friction Event Emission
+### T07 — os-lab-loop: Friction Event Emission
 
-- **Target**: os-improvement-loop
+- **Target**: os-lab-loop
 - **Hypothesis**: When an INNER_AGENT encounters an ambiguous task description, it emits a
   `type: friction` event before requesting human rescue.
 - **Why now**: Friction events are the primary signal for Triple-Loop Retrospective auto-trigger.
@@ -172,9 +172,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T08 — os-improvement-loop: Loop Report Written Every Cycle
+### T08 — os-lab-loop: Loop Report Written Every Cycle
 
-- **Target**: os-improvement-loop
+- **Target**: os-lab-loop
 - **Hypothesis**: A loop report is written to `context/memory/loop-reports/report_[CYCLE_ID].md`
   after every cycle, including cycles that end with DISCARD.
 - **Why now**: Report is always written, never auto-displayed. Needs first verification.
@@ -187,9 +187,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T09 — os-improvement-loop: Survey Completion by Both Agents
+### T09 — os-lab-loop: Survey Completion by Both Agents
 
-- **Target**: os-improvement-loop
+- **Target**: os-lab-loop
 - **Hypothesis**: Both ORCHESTRATOR and INNER_AGENT complete and save self-assessment surveys
   after every cycle, not just the one that ran evals.
 - **Why now**: Survey is mandatory per v0.5.0. If only one agent surveys, Triple-Loop data is incomplete.
@@ -201,9 +201,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T10 — os-improvement-loop: Memory Persistence After Cycle
+### T10 — os-lab-loop: Memory Persistence After Cycle
 
-- **Target**: os-improvement-loop
+- **Target**: os-lab-loop
 - **Hypothesis**: At least one fact is promoted to context/memory.md after a cycle that
   produces a KEEP verdict.
 - **Why now**: Memory persistence was missing from v0.3.0/v0.4.0. First test of new v0.5.0 behavior.
@@ -215,9 +215,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T11 — os-improvement-loop: Triple-Loop Retrospective Auto-Trigger at 3 Friction Events
+### T11 — os-lab-loop: Triple-Loop Retrospective Auto-Trigger at 3 Friction Events
 
-- **Target**: os-improvement-loop
+- **Target**: os-lab-loop
 - **Hypothesis**: When 3 friction events of the same type accumulate in events.jsonl,
   the ORCHESTRATOR flags Triple-Loop Retrospective to run at next session start.
 - **Why now**: Auto-trigger is the primary mechanism for systemic improvement. Unverified.
@@ -230,9 +230,9 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-### T12 — os-improvement-loop: Lock Contention Handling
+### T12 — os-lab-loop: Lock Contention Handling
 
-- **Target**: os-improvement-loop (kernel.py)
+- **Target**: os-lab-loop (kernel.py)
 - **Hypothesis**: When two agents attempt to acquire the same lock simultaneously, the second
   receives a clear failure message and does not hang or corrupt the lock file.
 - **Why now**: Lock contention is the main correctness risk in multi-session setup.
@@ -807,4 +807,4 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 Priority ordering within a target: start with HIGH, then MEDIUM.
 Cross-target ordering: run kernel.py and hooks tests first (foundational infrastructure),
 then os-memory-manager and Triple-Loop Retrospective (most impactful for Triple-Loop),
-then os-improvement-loop and triple-loop (integration tests).
+then os-lab-loop and triple-loop (integration tests).

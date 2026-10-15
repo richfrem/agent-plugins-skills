@@ -105,7 +105,7 @@ scope unless the evidence identifies a concrete contract gap.
 
 ## Mandatory handoff
 
-Every completed loop emits this record, following the `os-improvement-loop`
+Every completed loop emits this record, following the `os-lab-loop`
 `HANDOFF_BLOCK` shape:
 
 ```markdown

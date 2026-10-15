@@ -76,7 +76,7 @@ def main() -> None:
     parser.add_argument("--mutation-target", required=True, help="Target file for mutation (e.g. SKILL.md)")
     parser.add_argument("--repo-url", required=True, help="GitHub clone URL for the lab repo")
     parser.add_argument("--round-label", required=True, help="Short label for run logs")
-    parser.add_argument("--engine-source", required=True, help="Absolute path to installed os-eval-runner")
+    parser.add_argument("--engine-source", required=True, help="Absolute path to installed os-lab-scorer")
     parser.add_argument("--master-plugin-path", required=True, help="Absolute path to the master plugin")
     
     args = parser.parse_args()

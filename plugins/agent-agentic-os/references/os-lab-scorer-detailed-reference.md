@@ -1,4 +1,4 @@
-# os-skill-improvement — Detailed Reference
+# os-lab-scorer — Detailed Reference
 
 Extracted from SKILL.md per Layer-1 procedural-core line budget (issue #551).
 
@@ -70,7 +70,7 @@ description: >
   - Include 2-3 <example> blocks: one standard use, one adversarial (when NOT to trigger),
     one edge case
   - Use specific vocabulary in the description text — terms that only appear in this skill's domain
-  - NEVER add a `keywords:` YAML field — it disables description scanning entirely (known footgun — see os-eval-runner Troubleshooting)
+  - NEVER add a `keywords:` YAML field — it disables description scanning entirely (known footgun — see os-lab-scorer Troubleshooting)
   - Avoid generic verbs (do, run, execute) as primary triggers -- they appear everywhere
 trigger: comma-separated, specific trigger phrases that ONLY appear in this skill's context
 allowed-tools: Read, Write, Edit, Bash   # list only what the skill actually needs
@@ -126,7 +126,7 @@ One-paragraph description of what the skill does and why.
 - [related skill or reference doc]
 ```
 
-## Phase 3 — os-eval-runner (commands and result interpretation)
+## Phase 3 — os-lab-scorer (commands and result interpretation)
 
 ```bash
 python ./scripts/eval_runner.py \
@@ -179,12 +179,12 @@ If a reference doc or script is shared with another skill in the same plugin:
 
 ### Dependencies
 - **agent-scaffolders** (plugin) — required for `create-skill` (filesystem scaffolding).
-- **os-eval-runner** (agent-agentic-os plugin) — required for RED-GREEN-REFACTOR scoring.
+- **os-lab-scorer** (agent-agentic-os plugin) — required for RED-GREEN-REFACTOR scoring.
 
 > [!TIP]
 > See [INSTALL.md](https://github.com/richfrem/agent-plugins-skills/blob/main/INSTALL.md) for instructions on how to install missing dependencies.
 
 **How they work together:**
 1. `create-skill` (agent-scaffolders) — runs the discovery interview, creates the directory, writes starter files
-2. `os-skill-improvement` (this skill) — takes the scaffolded skill and drives the RED-GREEN-REFACTOR quality cycle
-3. `os-eval-runner` (agent-agentic-os plugin) — provides the objective eval gate used in step 2
+2. `os-lab-scorer` (this skill) — takes the scaffolded skill and drives the RED-GREEN-REFACTOR quality cycle
+3. `os-lab-scorer` (agent-agentic-os plugin) — provides the objective eval gate used in step 2

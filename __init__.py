@@ -23,26 +23,15 @@ _PLUGINS_DIR = _HERE / "plugins"
 
 _SKILL_DIRS = [
     # agent-agentic-os (20 skills)
-    ("agent-agentic-os",         "critical-auditor"),
     ("agent-agentic-os",         "work-intake"),
-    ("agent-agentic-os",         "optimize-agent-instructions"),
-    ("agent-agentic-os",         "os-architect"),
-    ("agent-agentic-os",         "os-clean-locks"),
-    ("agent-agentic-os",         "os-environment-probe"),
-    ("agent-agentic-os",         "os-eval-backport"),
-    ("agent-agentic-os",         "os-eval-lab-setup"),
-    ("agent-agentic-os",         "os-eval-runner"),
-    ("agent-agentic-os",         "os-evolution-planner"),
-    ("agent-agentic-os",         "os-evolution-verifier"),
-    ("agent-agentic-os",         "os-experiment-log"),
-    ("agent-agentic-os",         "os-guide"),
-    ("agent-agentic-os",         "os-improvement-loop"),
-    ("agent-agentic-os",         "os-improvement-report"),
+    ("agent-agentic-os",         "os-lab-planner"),
+    ("agent-agentic-os",         "os-lab-backport"),
+    ("agent-agentic-os",         "os-lab-setup"),
+    ("agent-agentic-os",         "os-lab-scorer"),
+    ("agent-agentic-os",         "os-lab-log"),
+    ("agent-agentic-os",         "os-lab-loop"),
     ("agent-agentic-os",         "os-init"),
     ("agent-agentic-os",         "os-memory-manager"),
-    ("agent-agentic-os",         "os-skill-improvement"),
-    ("agent-agentic-os",         "self-evolution"),
-    ("agent-agentic-os",         "todo-check"),
 
     # agent-orchestration/ (6 skills)
     ("agent-orchestration/",              "agent-swarm"),
@@ -155,7 +144,6 @@ _SKILL_DIRS = [
 
     # plugin-manager (4 skills)
     ("plugin-manager",           "plugin-installer"),
-    ("plugin-manager",           "plugin-pruner"),
     ("plugin-manager",           "plugin-remover"),
     ("plugin-manager",           "plugin-syncer"),
 

@@ -5,7 +5,7 @@ description: >
   Consumes friction_cluster_agent hotspot reports and synthesizes systemic refactoring
   proposals for human review, for Tier 3 architecture friction. Trigger with "synthesize
   a refactoring proposal from the friction hotspots", "what's the systemic fix for this
-  friction cluster", or when os-architect/self-evolution escalates a Tier 3 (Regression /
+  friction cluster", or when os-lab-planner/self-evolution escalates a Tier 3 (Regression /
   Architecture) friction event per github-issue-logging-policy.md. Migrated from the
   former repository-improvement-agent (2026-09-05): deterministic report-synthesis task,
   no interview, no self-directed git/PR execution — fits the skill archetype, not the

@@ -23,4 +23,4 @@ These counts are collected via the `post_run_metrics.py` hook after every sessio
 
 ## Review Frequency
 - **Daily**: Review the `events.jsonl` log for high-friction counts.
-- **Weekly**: Run `os-health-check` to summarize trends and identify skills that need optimization via `os-eval-runner`.
+- **Weekly**: Run `os-health-check` to summarize trends and identify skills that need optimization via `os-lab-scorer`.

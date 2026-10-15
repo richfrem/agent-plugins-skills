@@ -15,7 +15,7 @@ automated evaluator, and one mutable file, you can run an autonomous overnight l
 to optimize anything.
 
 This system applies that pattern to any target — a skill definition, a Python module,
-a config, a scoring function. The evaluator scripts live in `os-eval-runner`.
+a config, a scoring function. The evaluator scripts live in `os-lab-scorer`.
 All experiment state (spec, test prompts, history) deploys into the target's own directory.
 
 ---
@@ -41,7 +41,7 @@ The evaluator owns three master templates. You NEVER edit templates directly.
 copies into your experiment directory.
 
 ```
-TEMPLATES (master, in os-eval-runner — never edit)
+TEMPLATES (master, in os-lab-scorer — never edit)
   assets/templates/autoresearch/program.md.template
   assets/templates/autoresearch/evals.json.template
   assets/templates/autoresearch/results.tsv.template
@@ -60,7 +60,7 @@ DEPLOYED COPIES (in your experiment dir — edit these)
 ## Directory Layout (Generic)
 
 ```
-os-eval-runner/                      THE EVALUATOR
+os-lab-scorer/                      THE EVALUATOR
   scripts/
     evaluate.py                              Loop gate (locked)
     eval_runner.py                           Pure scorer (locked)
@@ -87,13 +87,13 @@ os-eval-runner/                      THE EVALUATOR
 
 ---
 
-## Concrete Example: os-eval-runner (Meta-Circular Case)
+## Concrete Example: os-lab-scorer (Meta-Circular Case)
 
 > The skill evaluating itself. This is legitimate — the loop can optimize
-> os-eval-runner's own SKILL.md trigger phrases.
+> os-lab-scorer's own SKILL.md trigger phrases.
 
 ```
-<experiment-dir> = .agents/skills/os-eval-runner/
+<experiment-dir> = .agents/skills/os-lab-scorer/
 <mutation-target> = SKILL.md
 ```
 
@@ -197,6 +197,6 @@ Agent loop:
     -> KEEP: git commit | DISCARD: evaluate.py reverts automatically
     -> repeat forever
 
-Templates stay in os-eval-runner/assets/templates/ — untouched.
+Templates stay in os-lab-scorer/assets/templates/ — untouched.
 All experiment state lives in <experiment-dir> — isolated per target.
 ```

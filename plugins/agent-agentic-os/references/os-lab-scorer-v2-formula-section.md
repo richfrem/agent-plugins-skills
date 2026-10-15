@@ -1,4 +1,4 @@
-<!-- INSERT IMMEDIATELY BEFORE "# Skill Improvement Evaluator" in skills/os-eval-runner/SKILL.md -->
+<!-- INSERT IMMEDIATELY BEFORE "# Skill Improvement Evaluator" in skills/os-lab-scorer/SKILL.md -->
 
 ## Evaluation Formula
 

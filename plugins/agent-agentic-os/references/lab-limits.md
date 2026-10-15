@@ -1,6 +1,6 @@
 # Lab Limits, Guardrails, and Reference Appendix
 
-Reference material for os-improvement-loop. Active protocol steps are in SKILL.md.
+Reference material for os-lab-loop. Active protocol steps are in SKILL.md.
 
 ## Contents
 - [Architecture](#architecture)
@@ -30,11 +30,11 @@ ${CLAUDE_PROJECT_DIR}/context/
 
 Companion skills (all required for a complete loop):
 - `triple-loop` — strategy packet format, correction packet protocol, verification
-- `os-eval-lab-setup` — bootstrap experiment dirs (deploys program.md, evals.json, results.tsv); use **before** running any eval cycle on a new target
-- `os-eval-runner` — single-skill evaluation loop (inner loop used by this skill)
-- `os-eval-backport` — port validated skill improvements from test repo back to canonical source
+- `os-lab-setup` — bootstrap experiment dirs (deploys program.md, evals.json, results.tsv); use **before** running any eval cycle on a new target
+- `os-lab-scorer` — single-skill evaluation loop (inner loop used by this skill)
+- `os-lab-backport` — port validated skill improvements from test repo back to canonical source
 - `os-memory-manager` — session log format, memory promotion protocol
-- `os-improvement-report` — ASCII progress chart from improvement-ledger.tsv
+- `os-lab-log` — ASCII progress chart from improvement-ledger.tsv
 
 ---
 
@@ -83,11 +83,11 @@ poll_for_event() {
 ## Examples
 
 ### Example 1: Continuous Improvement Loop
-User: "run a continuous improvement loop on the os-eval-runner skill"
+User: "run a continuous improvement loop on the os-lab-scorer skill"
 ORCHESTRATOR reads last survey (notes INNER_AGENT flagged eval_runner.py flag confusion as
 biggest friction). Writes strategy packet incorporating that fix. INNER_AGENT runs, emits
 friction event when hitting the confusing flag, completes eval, saves survey noting the fix
-worked. PEER_AGENT runs os-eval-runner independently, produces KEEP verdict with
+worked. PEER_AGENT runs os-lab-scorer independently, produces KEEP verdict with
 score delta, saves survey noting zero friction. ORCHESTRATOR applies edit, runs post_run_metrics
 (friction count dropped from 3 to 0), writes session log with before/after scores, promotes
 fix to memory.md. No Triple-Loop Retrospective trigger needed — friction threshold not crossed.
@@ -111,11 +111,11 @@ Surveys compared — if both agents report same confusion point, Triple-Loop Ret
 
 ## References
 
-- This skill delegates to `agent-orchestration:triple-loop-learning` for the inner loop execution pattern. agent-orchestration is the execution substrate; os-improvement-loop adds the eval gate, experiment log, and lab isolation on top.
-- `os-eval-runner` — eval_runner.py, KEEP/DISCARD, results.tsv
+- This skill delegates to `agent-orchestration:triple-loop-learning` for the inner loop execution pattern. agent-orchestration is the execution substrate; os-lab-loop adds the eval gate, experiment log, and lab isolation on top.
+- `os-lab-scorer` — eval_runner.py, KEEP/DISCARD, results.tsv
 - `os-memory-manager` — session log template, L2/L3 promotion
 - `triple-loop` agent — root cause analysis, Full Loop patching
-- `os-improvement-report` — generate progress chart from improvement ledger
+- `os-lab-log` — generate progress chart from improvement ledger
 - [improvement-ledger-spec.md](memory/improvement-ledger-spec.md) — ledger format, Section 1/2/3 writing protocol
 - [post_run_survey.md](memory/post_run_survey.md) — self-assessment survey template (all sections mandatory)
 - [post_run_metrics.py](../scripts/post_run_metrics.py) — automated metric collection script

@@ -17,7 +17,7 @@ writing a handoff.
 | | Path 1: Control plane | Path 2: Improvement lab |
 |---|---|---|
 | Purpose | Do real engineering work under approval gates | Measure and improve one skill or agent against evals |
-| Entry point | `os-init`, then `work-intake` | `os-architect` (Category 3), then intake and lab setup |
+| Entry point | `os-init`, then `work-intake` | `os-lab-planner` (Category 3), then intake and lab setup |
 | State store | `context/control_plane.db` (SQLite) | `evals/results.tsv`, `improvement-ledger.md`, `context/events.jsonl` |
 | What changes | The user's repository, in an isolated worktree | A skill's `SKILL.md` in a lab repo, then backported |
 | Human authority | SSH-signed `transition_request` at Gate 1, Gate 3 and closure | Human reviews the diff and approves the backport |
@@ -56,21 +56,21 @@ approvals, and never use a skip or force-close path.
 
 Use to raise a skill's routing accuracy or quality score. It is not task delivery.
 
-1. **`os-architect`** (front door; agent `os-architect-agent`). Classifies intent. Category 3
+1. **`os-lab-planner`** (front door; agent `os-lab-agent`). Classifies intent. Category 3
    ("improve X skill", "run eval on Y", "stress test") routes to the lab path.
-2. **`improvement-intake-agent`**. Plain-language interview. Writes `improvement/run-config.json`
+2. **`os-lab-agent`**. Plain-language interview. Writes `improvement/run-config.json`
    and `improvement/session-brief.md`.
-3. **`os-eval-lab-setup`**. Creates an isolated sibling lab repo with `evals/evals.json` (routing
+3. **`os-lab-setup`**. Creates an isolated sibling lab repo with `evals/evals.json` (routing
    cases use `should_trigger: true/false`), `evals/results.tsv` (baseline ledger) and
    `references/program.md` (goal, target score, iteration cap). See `lab-space-protocol.md`.
-4. **`os-improvement-loop`**. Five stages per cycle: orientation, execution, independent
+4. **`os-lab-loop`**. Five stages per cycle: orientation, execution, independent
    verification, decision, close.
    - Stage 0 reads the improvement ledger, the target's `results.tsv`, the test registry,
      long-term memory, recent retrospectives, and open Map Debt.
-   - Stage 2 runs `evaluate.py` (via `os-eval-runner`) independently. The verdict is KEEP or DISCARD.
+   - Stage 2 runs `evaluate.py` (via `os-lab-scorer`) independently. The verdict is KEEP or DISCARD.
    - Stage 4 closes with surveys, ledger update and memory promotion (`os-memory-manager`).
-5. **`os-eval-backport`**. A human reviews the lab diff; approved changes are backported to the
-   master plugin source. Persist results with `os-experiment-log`.
+5. **`os-lab-backport`**. A human reviews the lab diff; approved changes are backported to the
+   master plugin source. Persist results with `os-lab-log`.
 
 Hard rules: every mutation passes the eval gate before it is kept; no manual rollback mid-cycle;
 `evals.json` and the scoring scripts are locked from the mutating agent.
@@ -83,8 +83,8 @@ Hard rules: every mutation passes the eval gate before it is kept; no manual rol
 - **Verify before routing.** Before recommending a skill or writing a handoff to it:
   `ls .agents/skills/<name>` and `grep '"<name>"' .agents/ownership/*.json`. If it is disabled,
   say so and ask. Do not route through it, and do not substitute another disabled skill.
-- **Path 2 needs a different skill set.** `os-architect`, `os-eval-lab-setup`, `os-eval-runner`,
-  `os-eval-backport`, `os-improvement-loop` and `os-experiment-log` must each be enabled. They are
+- **Path 2 needs a different skill set.** `os-lab-planner`, `os-lab-setup`, `os-lab-scorer`,
+  `os-lab-backport`, `os-lab-loop` and `os-lab-log` must each be enabled. They are
   independent of Path 1.
 - **Sync pulls from the registry, not your branch.** `plugin-syncer` runs
   `sync_with_inventory.py`, which installs from the sources in `plugin-sources.json` (a GitHub
@@ -94,7 +94,7 @@ Hard rules: every mutation passes the eval gate before it is kept; no manual rol
 
 ## Known gap between the paths
 
-`improvement-intake-agent` writes `run-config.json` and `session-brief.md`, but no skill reads them.
-`os-improvement-loop` orients from the ledger, `results.tsv` and `program.md`. Until intake writes
+`os-lab-agent` writes `run-config.json` and `session-brief.md`, but no skill reads them.
+`os-lab-loop` orients from the ledger, `results.tsv` and `program.md`. Until intake writes
 `program.md` (or the loop reads the run config), the intake output is a record for the human, not
 machine input. Tracked in `references/map-debt.md` as `DEBT-20261014-DANGLING-ORCHESTRATOR-REF-AND-DRIFTED-COUNTS`.

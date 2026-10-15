@@ -24,7 +24,7 @@ Source types and result kinds:
     verifier      os-evolution-verifier: EVOLUTION_VERIFICATION blocks      result_type=qualitative
     tester        os-architect-tester: AC-1–4 pass/fail scenario report     result_type=qualitative
     orchestrator  triple-loop-orchestrator: LOG_PROGRESS.md + wal.log       result_type=numeric
-    planner       os-evolution-planner: task plan (workstreams + gaps)       result_type=qualitative
+    planner       os-lab-planner: task plan (workstreams + gaps)       result_type=qualitative
     survey        post_run_survey: session friction + north star metrics     result_type=mixed
 
 Result type determines how downstream tools parse entries:
@@ -213,7 +213,7 @@ def _parse_orchestrator(text: str) -> dict:
 
 
 def _parse_planner(text: str) -> dict:
-    """Count workstream rows and gap-analysis bullets in an os-evolution-planner report."""
+    """Count workstream rows and gap-analysis bullets in an os-lab-planner report."""
     workstreams = len(re.findall(r"(?m)^\| WS-[A-Z]", text))
     # Restrict gap count to the Gaps Identified section only
     gaps_section = _extract_section(text, "## Gaps Identified")

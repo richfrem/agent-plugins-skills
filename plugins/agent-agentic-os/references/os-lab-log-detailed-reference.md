@@ -1,4 +1,4 @@
-# os-experiment-log — Detailed Reference
+# os-lab-log — Detailed Reference
 
 Extracted from SKILL.md per Layer-1 procedural-core line budget (issue #551).
 
@@ -10,7 +10,7 @@ python3 scripts/experiment_log.py append \
   --source-type verifier \
   --report temp/os-evolution-verifier/test-report.md \
   --session-id 2026-04-25-round1 \
-  --target os-architect \
+  --target os-lab-planner \
   --triggered-by os-evolution-verifier
 
 # After os-architect-tester run
@@ -18,24 +18,24 @@ python3 scripts/experiment_log.py append \
   --source-type tester \
   --report temp/test_report_consolidated.md \
   --session-id 2026-04-25-tester \
-  --target os-architect \
+  --target os-lab-planner \
   --triggered-by os-architect-tester
 
-# After os-improvement-loop run (numeric — has score delta)
+# After os-lab-loop run (numeric — has score delta)
 python3 scripts/experiment_log.py append \
   --source-type orchestrator \
   --report temp/logs/run-log.md \
   --session-id 2026-04-25-os-eval-runner \
-  --target os-eval-runner \
-  --triggered-by os-improvement-loop
+  --target os-lab-scorer \
+  --triggered-by os-lab-loop
 
-# After os-evolution-planner writes a task plan
+# After os-lab-planner writes a task plan
 python3 scripts/experiment_log.py append \
   --source-type planner \
   --report tasks/todo/0024-plan.md \
   --session-id 0024 \
-  --target os-eval-runner \
-  --triggered-by os-evolution-planner
+  --target os-lab-scorer \
+  --triggered-by os-lab-planner
 
 # After a post-run survey
 python3 scripts/experiment_log.py append \
@@ -64,11 +64,11 @@ result_type: qualitative
 date: 2026-04-25 15:12
 session_id: 2026-04-25-round1
 source: os-evolution-verifier
-target: os-architect
+target: os-lab-planner
 verdict: 8P/0Pa/0F of 8
 ---
 
-## Experiment — 2026-04-25 15:12 | verifier | os-architect
+## Experiment — 2026-04-25 15:12 | verifier | os-lab-planner
 
 | Field | Value |
 ...

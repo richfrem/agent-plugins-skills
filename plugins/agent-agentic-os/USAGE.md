@@ -6,17 +6,17 @@
 
 ## 1. The Human / Caller Entry Point
 
-### Recommended: `/os-architect`
+### Recommended: `/os-lab-planner`
 
 The practical entry point for any evolution activity is:
 
 ```
-/os-architect
+/os-lab-planner
 ```
 
-Describe what you want in plain language. The os-architect agent classifies your intent, audits existing capabilities, proposes an evolution path, and keeps the work inside the control-plane lifecycle. You do not need to know which internal state, contract, or helper to invoke.
+Describe what you want in plain language. The os-lab-planner agent classifies your intent, audits existing capabilities, proposes an evolution path, and keeps the work inside the control-plane lifecycle. You do not need to know which internal state, contract, or helper to invoke.
 
-**Intent categories os-architect handles:**
+**Intent categories os-lab-planner handles:**
 1. Pattern Abstraction — applying a new way of working to existing skills/agents
 2. Research Application — incorporating techniques from papers or external research
 3. Lab Setup / Improvement Loop — running eval iterations on an existing skill
@@ -29,13 +29,13 @@ For users who know exactly what they want, sub-agents can be invoked directly:
 
 ```bash
 # Configure a skill improvement run directly
-# → improvement-intake-agent
+# → os-lab-agent
 
-# Verify that os-architect actually caused evolution (post-run)
+# Verify that os-lab-planner actually caused evolution (post-run)
 # → os-evolution-verifier skill
 
 # Query or summarize experiment history
-# → os-experiment-log skill
+# → os-lab-log skill
 ```
 
 ### Low-level: kernel.py submission
@@ -44,7 +44,7 @@ For programmatic or scripted invocation, the kernel accepts direct task submissi
 
 ```bash
 python3 plugins/agent-agentic-os/scripts/kernel.py emit_event \
-  --agent improvement-intake-agent \
+  --agent os-lab-agent \
   --type lifecycle \
   --action intake-complete \
   --status success \
@@ -56,7 +56,7 @@ python3 plugins/agent-agentic-os/scripts/kernel.py emit_event \
 ## 2. The Experiment Log
 
 Every experiment run — whether from os-evolution-verifier, os-architect-tester,
-triple-loop-orchestrator, or os-evolution-planner — is persisted to a durable, folder-based
+triple-loop-orchestrator, or os-lab-planner — is persisted to a durable, folder-based
 log. This is the unified cross-cutting record across all evolution activity.
 
 ```
@@ -80,7 +80,7 @@ python3 plugins/agent-agentic-os/scripts/experiment_log.py append \
   --source-type verifier \          # verifier | tester | orchestrator | planner | survey
   --report temp/os-evolution-verifier/test-report.md \
   --session-id 2026-04-25-round1 \
-  --target os-architect \
+  --target os-lab-planner \
   --triggered-by os-evolution-verifier
 
 python3 plugins/agent-agentic-os/scripts/experiment_log.py summary
@@ -122,7 +122,7 @@ On initial installation (before any agent-discovered skills or gotchas have accu
 
 ## 5. Day-to-Day Operation Summary
 
-**Step 1:** Start with `/os-architect` or `work-intake` and describe the desired outcome.
+**Step 1:** Start with `/os-lab-planner` or `work-intake` and describe the desired outcome.
 **Step 2:** Answer the adaptive interview; after each answer, the agent updates the visible plan outline and asks the next necessary question.
 **Step 3:** Review the draft plan and any independent review results; approve before implementation.
 **Step 4:** Implement in the governed worktree, recording evidence as work proceeds.
@@ -130,4 +130,4 @@ On initial installation (before any agent-discovered skills or gotchas have accu
 
 The control plane may use native host planning and testing. Superpowers is an optional fallback, not a required installation. See [the boundary and attribution reference](./references/superpowers-boundary-and-attribution.md).
 
-> **TL;DR:** Start with `/os-architect`. End with `os-experiment-log append`. Everything in between is logged, gated, and traceable.
+> **TL;DR:** Start with `/os-lab-planner`. End with `os-lab-log append`. Everything in between is logged, gated, and traceable.

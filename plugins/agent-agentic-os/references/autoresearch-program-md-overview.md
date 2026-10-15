@@ -1,7 +1,7 @@
 # Overview of autoresearch program.md
 
 ## The Role of `program.md`
-The `program.md` file is the **governing specification** for an autonomous optimization loop. While `os-eval-runner` provides the scripts and engine, `program.md` defines the "DNA" of a specific experiment. It tells the agent exactly what is being measured, what the "North Star" metric is, and which files are strictly off-limits.
+The `program.md` file is the **governing specification** for an autonomous optimization loop. While `os-lab-scorer` provides the scripts and engine, `program.md` defines the "DNA" of a specific experiment. It tells the agent exactly what is being measured, what the "North Star" metric is, and which files are strictly off-limits.
 
 ---
 
@@ -23,7 +23,7 @@ $$quality\_score = (A \cdot 0.4) + (H \cdot 0.2) + (C \cdot 0.2) + (F \cdot 0.2)
 ---
 
 ## Anatomy of the File
-A standard `program.md` (deployed from the `os-eval-runner` template) contains the following sections:
+A standard `program.md` (deployed from the `os-lab-scorer` template) contains the following sections:
 
 ### 1. The Goal & Formula
 Defines the mathematical KEEP/DISCARD gate. It establishes that a change is only "kept" if the new score and F1-guard meet or exceed the established baseline.
@@ -60,6 +60,6 @@ By including these in the `program.md` formula, the agent is forced to write cle
 ---
 
 ## Summary of File Ownership
-* **Template Owner**: `os-eval-runner` (the engine).
+* **Template Owner**: `os-lab-scorer` (the engine).
 * **Deployment Owner**: The specific experiment directory (e.g., `.agents/skills/my-skill/`).
 * **Runtime Reader**: The AI agent and the `evaluate.py` gate.

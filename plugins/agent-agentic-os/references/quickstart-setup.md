@@ -6,7 +6,7 @@ Before running any loops in a new environment, ensure it is clean and correctly 
 1. **Check Git Remote**: `git remote -v`. If blank, ask the user for the repo URL.
 2. **Initialize Local Git**: `git init && git add . && git commit -m "init"`.
 3. **Delete Old Config**: `rm -rf .agent .agents .gemini .claude`.
-4. **Install Skill**: Ensure **os-eval-runner** is installed. See [INSTALL.md](https://github.com/richfrem/agent-plugins-skills/blob/main/INSTALL.md).
+4. **Install Skill**: Ensure **os-lab-scorer** is installed. See [INSTALL.md](https://github.com/richfrem/agent-plugins-skills/blob/main/INSTALL.md).
 5. **Verify Python 3**: `python --version` (must be 3.8+).
 
 ## Step 1 — Deploy templates into your experiment directory

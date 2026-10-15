@@ -97,7 +97,7 @@ Update `registry.md` row to CLOSED with verdict.
 | Cycle ID | Target | Date | Hypothesis | Status | Verdict |
 |----------|--------|------|------------|--------|---------|
 | cycle-20260321-001 | os-memory-manager | 2026-03-21 | Phase 5 survey addition improves routing | CLOSED | KEEP |
-| cycle-20260321-002 | os-eval-runner | 2026-03-21 | Adversarial prompt coverage gap | IN PROGRESS | - |
+| cycle-20260321-002 | os-lab-scorer | 2026-03-21 | Adversarial prompt coverage gap | IN PROGRESS | - |
 ```
 
 ---

@@ -16,8 +16,8 @@ discovered via the plugin registry.
 
 | Category | Default Provider | Skill / Entry Point | Fallback |
 |----------|-----------------|---------------------|----------|
-| `~~eval-gate` | `agent-agentic-os` | `os-eval-runner` — autoresearch eval loop, KEEP/DISCARD gate | Skip eval loop; manual quality review |
-| `~~skill-improvement` | `agent-agentic-os` | `os-skill-improvement` — RED-GREEN-REFACTOR TDD cycle | Manual skill refinement without score tracking |
+| `~~eval-gate` | `agent-agentic-os` | `os-lab-scorer` — autoresearch eval loop, KEEP/DISCARD gate | Skip eval loop; manual quality review |
+| `~~skill-improvement` | `agent-agentic-os` | `os-lab-scorer` — RED-GREEN-REFACTOR TDD cycle | Manual skill refinement without score tracking |
 
 
 

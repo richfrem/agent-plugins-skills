@@ -4,7 +4,7 @@ update_ranked_skills.py
 
 Purpose:
     CLI utility to update or add entries in summary-ranked-skills.json.
-    Legacy helper retained for historical data migrations; active evaluation uses os-eval-runner.
+    Legacy helper retained for historical data migrations; active evaluation uses os-lab-scorer.
 
 Key Input Dependencies:
     - summary-ranked-skills.json — Main database file containing skill scores and eval status

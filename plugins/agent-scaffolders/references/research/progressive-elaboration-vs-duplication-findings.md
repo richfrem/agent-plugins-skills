@@ -82,8 +82,8 @@ issue's own framing tests the wrong lever.
     solve the underlying authoring problem.
 - Sources 1, 3, and 8 (Skill-MAS, Skill-α, SkillGrad) are about skill
   *generation* and *evolution* quality (RL-based skill authoring, iterative
-  meta-skill refinement) — relevant to `os-skill-improvement` and
-  `os-evolution-planner`'s methodology (see the companion recommendations
+  meta-skill refinement) — relevant to `os-lab-scorer` and
+  `os-lab-planner`'s methodology (see the companion recommendations
   report), but not to the context-loading question itself.
 
 ### Directly observable confirmation in this repo
@@ -99,7 +99,7 @@ loading-tier gap. A companion sweep inside
 `plugins/agent-agentic-os/skills/` found the same pattern one level down: the
 Tier 0-3 friction taxonomy, the 4-Box Qualification Gate, and
 RED-GREEN-REFACTOR language are each independently restated across
-`os-skill-improvement`, `self-evolution`, and `os-guide`'s SKILL.md/reference
+`os-lab-scorer`, `self-evolution`, and `os-guide`'s SKILL.md/reference
 files rather than defined once and referenced.
 
 ## Follow-up finding: duplicate/clone detection at scale is an active, solvable research area

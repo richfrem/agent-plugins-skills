@@ -1,4 +1,4 @@
-# os-eval-backport — Detailed Reference
+# os-lab-backport — Detailed Reference
 
 Extracted from SKILL.md per Layer-1 procedural-core line budget (issue #551).
 
@@ -68,7 +68,7 @@ Produce an assessment table for the user before applying anything:
 |:---|:---|:---|:---|
 | `link-checker/skills/link-checker-agent/SKILL.md` | Added --dry-run clarification | **ACCEPT** | Factually correct, improves clarity |
 | `link-checker/skills/link-checker-agent/evals/evals.json` | Added eval-8 (ambiguous match) | **ACCEPT** | Good coverage gap |
-| `.agents/skills/os-eval-runner/evaluate.py` | Changed exit code logic | **REVIEW** | Needs testing against master version |
+| `.agents/skills/os-lab-scorer/evaluate.py` | Changed exit code logic | **REVIEW** | Needs testing against master version |
 
 **Verdicts:**
 - **ACCEPT** — apply verbatim to master
@@ -201,7 +201,7 @@ If the OS is initialized and the non-obvious filter passed, also ask `os-memory-
 | `<plugin>/skills/<skill>/evals/evals.json` | `plugins/<plugin>/skills/<skill>/evals/evals.json` |
 | `<plugin>/skills/<skill>/references/*.md` | `plugins/<plugin>/skills/<skill>/references/*.md` |
 | `<plugin>/scripts/*.py` | `plugins/<plugin>/scripts/*.py` |
-| `.agents/skills/os-eval-runner/` (if patched) | `<SKILL_PATH>` |
+| `.agents/skills/os-lab-scorer/` (if patched) | `<SKILL_PATH>` |
 
 > The master uses hub-and-spoke symlinks. Only the canonical source files listed above need
 > updating — deployed environments sync from master automatically.

@@ -1,4 +1,4 @@
-# os-eval-runner
+# os-lab-scorer
 
 Autonomous skill optimization service based on the Karpathy autoresearch pattern.
 

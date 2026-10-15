@@ -11,7 +11,7 @@ Every time PEER_AGENT receives `signal.wakeup` for eval, it MUST:
    # Note: PEER_AGENT runs this from its OWN session independently.
    ```
 3. DISCARD if exit code 1. Note: `results.tsv` is the authoritative per-experiment baseline
-   (written by os-eval-runner). The improvement-ledger.md tracks cross-cycle OS-level trajectory.
+   (written by os-lab-scorer). The improvement-ledger.md tracks cross-cycle OS-level trajectory.
 4. **Complete the Post-Run Self-Assessment Survey** (see Stage 4.2).
 5. Emit `eval.result` with KEEP/DISCARD verdict, score delta, and survey path:
    ```bash

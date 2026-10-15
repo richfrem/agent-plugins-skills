@@ -6,7 +6,7 @@
         "os-memory-manager",
         "os-health-check",
         "os-clean-locks",
-        "os-eval-runner",
+        "os-lab-scorer",
         "post_run_hook",
         "background-hook",
         "system"
