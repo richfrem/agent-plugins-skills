@@ -31,9 +31,6 @@ For users who know exactly what they want, sub-agents can be invoked directly:
 # Configure a skill improvement run directly
 # → os-lab-agent
 
-# Verify that os-lab-planner actually caused evolution (post-run)
-# → os-evolution-verifier skill
-
 # Query or summarize experiment history
 # → os-lab-log skill
 ```
@@ -55,8 +52,8 @@ python3 plugins/agent-agentic-os/scripts/kernel.py emit_event \
 
 ## 2. The Experiment Log
 
-Every experiment run — whether from os-evolution-verifier, os-architect-tester,
-triple-loop-orchestrator, or os-lab-planner — is persisted to a durable, folder-based
+Every experiment run — whether from os-lab-loop, os-lab-planner,
+triple-loop-orchestrator, or os-lab-scorer — is persisted to a durable, folder-based
 log. This is the unified cross-cutting record across all evolution activity.
 
 ```
@@ -64,7 +61,6 @@ context/experiment-log/
   index.md                            ← one row per run (date, source, target, verdict)
   2026-04-25-verifier-round1.md       ← qualitative: PASS/FAIL/PARTIAL per scenario
   2026-04-25-orchestrator-skill.md    ← numeric: best_score, baseline, delta, KEEP/DISCARD
-  2026-04-25-tester-os-architect.md   ← qualitative: AC-1–4 per scenario
   2026-04-25-planner-0024.md          ← qualitative: workstream count, gaps identified
   2026-04-25-survey-session.md        ← mixed: friction items + north_star metric
 ```
@@ -77,11 +73,11 @@ context/experiment-log/
 **Appending to the log** (run after every experiment):
 ```bash
 python3 plugins/agent-agentic-os/scripts/experiment_log.py append \
-  --source-type verifier \          # verifier | tester | orchestrator | planner | survey
-  --report temp/os-evolution-verifier/test-report.md \
-  --session-id 2026-04-25-round1 \
-  --target os-lab-planner \
-  --triggered-by os-evolution-verifier
+  --source-type planner \          # verifier | tester | orchestrator | planner | survey
+  --report tasks/todo/0024-plan.md \
+  --session-id 0024 \
+  --target os-lab-scorer \
+  --triggered-by os-lab-planner
 
 python3 plugins/agent-agentic-os/scripts/experiment_log.py summary
 python3 plugins/agent-agentic-os/scripts/experiment_log.py query FAIL

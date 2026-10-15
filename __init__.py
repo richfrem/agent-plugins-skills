@@ -22,7 +22,7 @@ _HERE = Path(__file__).resolve().parent
 _PLUGINS_DIR = _HERE / "plugins"
 
 _SKILL_DIRS = [
-    # agent-agentic-os (20 skills)
+    # agent-agentic-os (15 skills on disk; the subset registered here)
     ("agent-agentic-os",         "work-intake"),
     ("agent-agentic-os",         "os-lab-planner"),
     ("agent-agentic-os",         "os-lab-backport"),
@@ -90,7 +90,7 @@ _SKILL_DIRS = [
     # dependency-management (1 skill)
     ("dependency-management",    "dependency-management"),
 
-    # dev-utils (16 skills)
+    # dev-utils (18 skills)
     ("dev-utils",                "adr-management"),
     ("dev-utils",                "coding-conventions-agent"),
     ("dev-utils",                "context-bundler"),
@@ -99,6 +99,7 @@ _SKILL_DIRS = [
     ("dev-utils",                "github-issue-backlog-agent"),
     ("dev-utils",                "github-issue-pr-lifecycle-agent"),
     ("dev-utils",                "github-issue-prioritizer"),
+    ("dev-utils",                "github-issue-resolution-reviewer"),
     ("dev-utils",                "github-issue-worktree-agent"),
     ("dev-utils",                "hf-download"),
     ("dev-utils",                "hf-init"),
@@ -107,6 +108,7 @@ _SKILL_DIRS = [
     ("dev-utils",                "link-checker-agent"),
     ("dev-utils",                "optimize-context"),
     ("dev-utils",                "symlink-manager"),
+    ("dev-utils",                "todo-check"),
 
     # exploration-cycle-plugin (20 skills)
     ("exploration-cycle-plugin", "business-requirements-capture"),

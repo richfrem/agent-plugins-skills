@@ -62,10 +62,11 @@ Phase 3: Deterministic Exit Gates & Asymmetric Persistence (6-State Vocabulary +
 ```
 
 **Scope note:** this policy governs tasks tracked in `agent_control.py`'s SQLite control
-plane. The `self-evolution` skill runs a separate, independent lifecycle
-(`evolution_state.py`, TRIAGE→...→COMPLETED/ROLLBACK/ESCALATED) with its own worktree
-convention and approval flow — see `self-evolution-policy.md` and Section 4's note below.
-Whether these two systems should eventually be reconciled into one is an open architectural
+plane. The `self-evolution` skill is retired: gated changes to skills, rules and agents go
+through this control plane (`work-intake`). The `evolution_state.py` controller
+(TRIAGE→...→COMPLETED/ROLLBACK/ESCALATED) remains as a script with its own worktree
+convention — see `self-evolution-policy.md` and Section 4's note below.
+Whether it should eventually be reconciled with the control plane is an open architectural
 question tracked in [GitHub Issue #537](https://github.com/richfrem/agent-plugins-skills/issues/537); until that's decided, treat them as two separately-governed systems, not one universal mechanism.
 
 ---
@@ -120,10 +121,9 @@ rest of this phase and into Phase 1:
 1. **Standard Worktree Topology (`worktree-manager`):**
    - Implementation MUST execute in dedicated isolated worktrees at `.worktrees/task-<task_id>/` (governed by `worktree-manager` and `issue_worktree_manage.py`). Never use sibling directories (`../worktree-...`).
    - Update `worktree_state` in `context/control_plane.db` to `written_in_worktree`.
-   - **This convention applies to `agent_control.py`-tracked tasks only.** `self-evolution`
+   - **This convention applies to `agent_control.py`-tracked tasks only.** `evolution_state.py`
      cycles use their own separate, documented convention — sibling directories under
-     `../worktree-evolution-<cycle_id>/` — per `self-evolution/SKILL.md` and
-     `self-evolution-policy.md`. This is not a violation of the rule above; it's a
+     `../worktree-evolution-<cycle_id>/` — per `self-evolution-policy.md`. This is not a violation of the rule above; it's a
      different, independently-governed system (see Section 1's scope note and
      [#537](https://github.com/richfrem/agent-plugins-skills/issues/537)).
 2. **Deterministic Orchestration & TDD Execution:**

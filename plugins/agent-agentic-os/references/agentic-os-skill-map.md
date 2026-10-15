@@ -1,8 +1,8 @@
 # Agentic OS Skill Map
 
 Read this before routing to, recommending, or handing off to any `agent-agentic-os` skill. It says
-what each of the 20 skills does, grouped by purpose and function into two clusters, and how the
-clusters relate. For Cluster 1 and Cluster 2 side by side, see
+what each of the 15 skills does, grouped by purpose and function into two clusters (7 skills each, plus
+`repository-improvement`, which is pending a move to `dev-utils`), and how the clusters relate. For Cluster 1 and Cluster 2 side by side, see
 [two-improvement-paths.md](two-improvement-paths.md).
 
 A project installs only part of this plugin. Check `.agents/ownership/agent-agentic-os.json`
@@ -20,7 +20,7 @@ A project installs only part of this plugin. Check `.agents/ownership/agent-agen
 | Cluster | Skills | Job | Scope |
 |---|---|---|---|
 | Cluster 1: Control Plane | 7 | Run large engineering tasks under signed human gates | Any repository, any kind of work |
-| Cluster 2: Skill Improvement Lab | 13 | Plan, run and verify experiments that improve skills and agents | Skills and agents in this ecosystem |
+| Cluster 2: Skill Improvement Lab | 7 (plus the `os-lab-agent` agent) | Plan, run and verify experiments that improve skills and agents | Skills and agents in this ecosystem |
 
 ## How the clusters relate
 
@@ -33,7 +33,7 @@ separate `agent-orchestration` plugin (`select-loop-strategy`, `graph-planner`, 
 
 **Cluster 2: Skill Improvement Lab works on the ecosystem's own skills and agents.** Its state lives
 in the files `context/kernel.py` maintains: `context/events.jsonl`, `context/.locks/`,
-`context/memory.md`, the improvement ledger and the experiment log. `os-architect` is its front door, and `os-guide` explains how these pieces fit together.
+`context/memory.md`, the improvement ledger and the experiment log. `os-lab-agent` is its front door.
 
 ```text
                          ┌───────────────────────────────────────────┐
@@ -44,13 +44,12 @@ in the files `context/kernel.py` maintains: `context/events.jsonl`, `context/.lo
                          │ os-control-plane-mode, os-health-check    │
                          └───────────────────────────────────────────┘
 
-                         os-architect (front door)
-                           │  plan a change: os-evolution-planner
-                           │  check it landed: os-evolution-verifier
+                         os-lab-agent (front door)
+                           │  plan a change: os-lab-planner
                            ▼
- Cluster 2   os-eval-lab-setup ─► os-improvement-loop ⇄ os-eval-runner
- Skill            ─► os-eval-backport ─► os-experiment-log ─► os-improvement-report
- Improvement Lab  close and debrief: os-memory-manager     explain it: os-guide
+ Cluster 2   os-lab-setup ─► os-lab-loop ⇄ os-lab-scorer
+ Skill            ─► os-lab-backport ─► os-lab-log
+ Improvement Lab  close and debrief: os-memory-manager
                   (context/events.jsonl, context/.locks/, context/memory.md)
 ```
 
@@ -61,11 +60,12 @@ that Cluster 2 uses. `os-health-check` belongs to Cluster 1 but also reports on 
 
 General-purpose pipeline for large work in any repository. Big tasks use it; quick tasks can switch it off.
 
-### Proposed naming (not yet applied)
+### Planned renames (separate branch)
 
-How Cluster 1 works today, with proposed names. The `os-control-` prefix groups the skills that set up,
-run or govern the pipeline. `os-health-check` keeps its name because it reports on the whole OS, not
-only the control plane.
+Renames of the Cluster 1 skills are planned on a separate branch and are not part of the current
+state: every skill below still has its current name. The diagram and table show the planned names.
+The `os-control-` prefix groups the skills that set up, run or govern the pipeline. `os-health-check`
+keeps its name because it reports on the whole OS, not only the control plane.
 
 ```mermaid
 flowchart TD
@@ -87,7 +87,7 @@ flowchart TD
     SIM["<b>os-control-simulator</b><br/><small>test transitions on the simulation database</small>"] -.-> G1
 ```
 
-| Current skill or agent | Proposed name | Note |
+| Current skill or agent | Planned name | Note |
 |---|---|---|
 | `os-init` | `os-control-init` | Renamed; also installs the kernel files Cluster 2 uses |
 | `work-intake` | `os-control-intake` | Renamed |
@@ -97,8 +97,6 @@ flowchart TD
 | `os-control-plane-mode` | `os-control-mode` | Renamed |
 | `os-health-check` | `os-health-check` | Kept: reports on the whole OS |
 | `agentic-os-setup` (agent) | `os-control-setup-agent` | Renamed; wraps `os-control-init` |
-
-Result: no merges or retirements; 7 skills, 6 renamed.
 
 ### Current skills
 
@@ -117,11 +115,10 @@ Result: no merges or retirements; 7 skills, 6 renamed.
 Targeted work on this ecosystem's skills and agents: plan a change, make one skill measurably better
 against a locked eval set, and verify the result.
 
-### Proposed consolidation (not yet applied)
+### Skills and agent
 
-How Cluster 2 would work with one agent, six skills, and `os-memory-manager` as the shared close step.
-Proposed names use an `os-lab-` prefix so the cluster's skills read as one workflow and sort together.
-The agent holds the conversation; the skills do the steps.
+One agent holds the conversation; the skills do the steps. The `os-lab-` prefix groups the cluster's
+skills so they sort together, and `os-memory-manager` is the shared close step.
 
 ```mermaid
 flowchart TD
@@ -139,41 +136,13 @@ flowchart TD
     BP -->|debrief| MM
 ```
 
-| Current skill or agent | Proposed name | Note |
-|---|---|---|
-| `os-architect` | `os-lab-agent` + `os-lab-planner` | Merged: its interview moves to `os-lab-agent`; its audit and routing become the planner's first step |
-| `os-evolution-planner` | `os-lab-planner` | Merged: brainstorm options, write the plan and delegation prompt |
-| `os-evolution-verifier` | Retired | `os-lab-planner` routing evals cover it |
-| `os-environment-probe` | Retired | `cli-agents:project-setup` builds the provider capability profile |
-| `os-eval-lab-setup` | `os-lab-setup` | Renamed |
-| `os-improvement-loop` | `os-lab-loop` | Renamed; absorbs the Mode 1 loop from `os-eval-runner` |
-| `os-eval-runner` | `os-lab-scorer` | Renamed; keeps only the single KEEP / DISCARD check |
-| `os-skill-improvement` | `os-lab-scorer` | Merged: becomes its single-pass mode |
-| `os-eval-backport` | `os-lab-backport` | Renamed |
-| `os-experiment-log` | `os-lab-log` | Renamed |
-| `os-improvement-report` | `os-lab-log` | Merged: becomes its charts |
-| `os-memory-manager` | `os-memory-manager` | Kept: manages repository memory, not only the lab's |
-| `os-guide` | Retired | This map and `two-improvement-paths.md` cover orientation |
-| `os-architect-agent` (agent) | `os-lab-agent` | Merged: the single interactive front door |
-| `improvement-intake-agent` (agent) | `os-lab-agent` | Merged: its run-settings interview becomes part of the same conversation |
-| `os-architect-tester-agent` (agent) | Retired | Routing is tested through `os-lab-planner`'s evals |
-
-Result: 13 skills become 7 (six `os-lab-*` skills plus `os-memory-manager`), and 3 agents become 1 (`os-lab-agent`).
-
-### Current skills
-
-| Skill | What it does |
+| Skill or agent | What it does |
 |---|---|
-| `os-architect` | Front door for evolution work. Classifies intent (pattern abstraction, research application, lab setup, capability gap, multi-loop), audits what already exists, then orchestrates existing skills, updates via `os-evolution-planner`, or creates new ones. Lab requests go to the `improvement-intake-agent`. |
-| `os-evolution-planner` | `os-architect`'s update step. Brainstorms two or three approaches with the cheapest available model, checks the target for standard gaps, and writes a task plan plus a delegation prompt to `tasks/todo/`. Dispatches only after user confirmation. |
-| `os-evolution-verifier` | `os-architect`'s check step. Confirms that `os-architect` actually produced artifacts, not just text: dispatches it in simulation, checks files and handoff blocks, and logs PASS or FAIL through `os-experiment-log`. |
-| `os-environment-probe` | Detects which AI CLIs are really available (Claude, Copilot, Agy, Cursor) and writes `context/memory/environment.md`, which `os-architect` and `os-evolution-planner` read to choose a delegation backend. |
-| `os-eval-lab-setup` | Builds an isolated lab repository for one skill: copies the plugin with links resolved, renders `eval-instructions.md`, commits a baseline, and offers manual or autonomous launch. |
-| `os-eval-runner` | The scorer. Ensures `evals.json` and `program.md` exist, then either runs the autoresearch loop (propose, evaluate, keep or discard) or a single-shot KEEP/DISCARD check, with a holdout overfitting check. |
-| `os-improvement-loop` | The full cycle: orient from the ledger and history, execute, verify independently with `evaluate.py`, decide KEEP or DISCARD, then close with surveys, ledger update and memory promotion through `os-memory-manager`. |
-| `os-skill-improvement` | A focused RED-GREEN-REFACTOR pass on one skill: baseline the failure, state a hypothesis, patch `SKILL.md`, require a KEEP verdict, close edge cases. |
-| `os-eval-backport` | After a lab run, reads the lab's progress log and diff, classifies each change (accept, adapt, reject, review), applies approved changes to the master plugin source, and records learnings through `os-memory-manager`. |
-| `os-experiment-log` | Append-only log of runs in `context/experiment-log/`, with `append`, `query` and `summary` modes. |
-| `os-improvement-report` | Reads the experiment log, aggregates score progression and renders a chart and summary under `context/memory/reports/`. |
-| `os-memory-manager` | The close and debrief step of `os-improvement-loop` and `os-eval-backport`: writes the dated session log, promotes vetted facts to `context/memory.md` with conflict checks, and archives when the file exceeds 50,000 bytes, all under the kernel's `memory` lock. |
-| `os-guide` | Answers "how does the OS work" questions from its reference docs (memory layers, context folder, loop scheduling, hooks) and points the user to the right skill. |
+| `os-lab-agent` (agent) | Front door, interactive, runs in the main session. Holds one plain-language conversation: what to improve and why, what already exists, and the run settings (depth, success criteria, available tools, second-opinion check). Writes `references/program.md` and `improvement/run-config.json`, then calls the `os-lab-*` skills in order. |
+| `os-lab-planner` | Non-interactive. Turns the confirmed brief into a plan: audits what already exists, chooses to orchestrate existing skills, update one or create new, brainstorms two or three options with tradeoffs, and writes the task plan and a self-contained delegation prompt. |
+| `os-lab-setup` | Builds an isolated lab repository for one skill: copies the plugin with links resolved, renders `eval-instructions.md`, commits a baseline, and offers manual or autonomous launch. |
+| `os-lab-loop` | The only improvement loop: orient from the ledger, `evals/results.tsv`, `references/program.md` and open map debt, mutate one thing, send every change to `os-lab-scorer`, then close with surveys, ledger update, metrics and memory promotion through `os-memory-manager`. |
+| `os-lab-scorer` | The locked KEEP / DISCARD check for one change: runs `evaluate.py` headlessly, compares against the baseline in `evals/results.tsv`, applies the holdout overfitting gate, and reverts a DISCARD. Also runs a single-pass RED-GREEN-REFACTOR fix on one skill. |
+| `os-lab-backport` | After a lab run, reads the lab's progress log and diff, classifies each changed file (accept, adapt, reject, review), applies approved changes to the master plugin source, and records learnings. |
+| `os-lab-log` | Append-only log of runs in `context/experiment-log/` with `append`, `query` and `summary` modes, plus the improvement trend chart and progress report. |
+| `os-memory-manager` | The close and debrief step of `os-lab-loop` and `os-lab-backport`, and the repository's memory manager: writes the dated session log, promotes vetted facts to `context/memory.md` with conflict checks, and archives when the file exceeds 50,000 bytes, all under the kernel's `memory` lock. |

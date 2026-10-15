@@ -11,7 +11,7 @@ globs: ["**/*"]
 
 ## The Failure Pattern This Rule Targets
 
-Agents driving a control-plane pipeline (work-intake, self-evolution, or
+Agents driving a control-plane pipeline (work-intake or
 equivalent) have a documented, repeated failure mode: treating the YAML
 transition guidance (`transition_templates.yaml`'s `human_questions`,
 `next_steps_hint`, `stage_question_ids`) as advisory prose to summarize,

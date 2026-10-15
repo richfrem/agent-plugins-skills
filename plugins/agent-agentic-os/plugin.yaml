@@ -28,9 +28,9 @@ skills:
   - os-memory-manager
   - os-signing-setup
   - transition-simulator
+  - worktree-manager
+  - os-health-check
+  - repository-improvement
 agents:
   - agentic-os-setup
   - os-lab-agent
-  - os-lab-agent
-  - os-architect-tester-agent
-  - os-health-check

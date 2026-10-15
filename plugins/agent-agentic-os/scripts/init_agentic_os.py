@@ -497,7 +497,7 @@ def _scaffold_plugin_evolution_substrates(target: Path, dry_run: bool, force: bo
         if not evo_log.exists():
             content = (
                 f"# Evolution Log — {p.name}\n\n"
-                "Append-only record of every self-evolution event. Written by the `self-evolution` skill.\n"
+                "Append-only record of every self-evolution event. Appended by agents when a friction or failure event is recorded.\n"
                 "Do not edit manually except to correct a factual error.\n\n"
                 "| Date | Tier | Friction / Failure | Patch | Edit Type | Outcome |\n"
                 "|------|------|-------------------|-------|-----------|---------|\n"

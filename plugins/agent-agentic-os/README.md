@@ -36,12 +36,12 @@ for reliable execution.
 This plugin holds two unrelated workflows. Neither requires the other. See
 [references/two-improvement-paths.md](./references/two-improvement-paths.md) for the full comparison, and
 [references/agentic-os-skill-map.md](./references/agentic-os-skill-map.md) for what every skill does,
-grouped into five clusters.
+grouped into two clusters.
 
 | | Governed task pipeline | Improvement lab |
 |---|---|---|
 | Use it to | Deliver real engineering work under approval gates | Measure and improve one skill or agent against evals |
-| Start with | `os-init` once, then `work-intake` per task | `/os-lab-planner` (Category 3, lab setup) |
+| Start with | `os-init` once, then `work-intake` per task | `os-lab-agent` (one conversation, then `os-lab-planner`) |
 | State | `context/control_plane.db` | `evals/results.tsv`, improvement ledger, `context/events.jsonl` |
 | Human authority | SSH-signed approval at plan, code-acceptance and closure | Human review of the lab diff before backport |
 | Switch | `os-control-plane-mode` | Enable its skills in `.agents/ownership/` |
@@ -56,7 +56,7 @@ grouped into five clusters.
 |------|---------|
 | 1. Install & scaffold | `"Set up an agentic OS for this project"` — runs the `os-init` / `agentic-os-setup` interview |
 | 2. Human signing key (control plane) | `os-signing-setup` — human only; creates the key behind the approval gates |
-| 3. Probe your environment (lab path) | `/os-lab-planner` → "probe my environment" — saves a delegation strategy profile |
+| 3. Probe your environment (lab path) | `cli-agents:project-setup` — builds the provider capability profile |
 
 **After each session (lab path):** run `os-lab-loop` for the retrospective, then
 `os-memory-manager` to promote learnings, if those skills are installed.
@@ -73,17 +73,18 @@ grouped into five clusters.
 | Turn the control plane (work-intake gating, commit/push guards) on or off, or check its mode | `os-control-plane-mode` |
 | Work in an isolated worktree based on `origin/main` | `worktree-manager` |
 | Test a control-plane transition without touching real state | `transition-simulator` |
-| Start any skill improvement or creation task | `/os-lab-planner` |
-| Discover which AI tools I have available | `/os-lab-planner` → "probe my environment" |
-| Improve a specific skill with evals | `/os-lab-planner` → describe the skill + goal |
-| Run an unattended improvement loop | `/os-lab-planner` → "improve X skill with a lab" → `os-lab-loop` |
+| Start any skill improvement or creation task | `os-lab-agent` |
+| Discover which AI tools I have available | `cli-agents:project-setup` |
+| Improve a specific skill with evals | `os-lab-agent` → describe the skill + goal |
+| Run an unattended improvement loop | `os-lab-agent` → `os-lab-planner` → `os-lab-setup` → `os-lab-loop` |
+| Score one change (KEEP / DISCARD) | `os-lab-scorer` |
+| Review and backport a finished lab run | `os-lab-backport` |
 | See eval score trends and progress charts | `os-lab-log` |
 | Search experiment history | `python3 scripts/experiment_log.py query <term>` |
 | Promote session learnings to long-term memory | `os-memory-manager` |
 | Check system health (event log, locks, memory) | `os-health-check` |
-| Fix a deadlocked agent (stale lock files) | `os-clean-locks` |
-| Verify os-lab-planner still works after a change | `os-architect-tester` agent |
-| Get a full explanation of how the OS works | `os-guide` |
+| Fix a deadlocked agent (stale lock files) | Automatic: `kernel.py` `acquire_lock` clears stale locks; `os-health-check` reports them |
+| Understand how the OS fits together | [Skill map](./references/agentic-os-skill-map.md) and [two improvement paths](./references/two-improvement-paths.md) |
 
 ---
 
@@ -94,11 +95,9 @@ grouped into five clusters.
 | Agent | Purpose |
 |-------|---------|
 | `agentic-os-setup` | Conversational setup guide; wraps `os-init` in discovery, plan and approve phases |
-| `os-lab-planner` (`agents/os-lab-agent.md`) | Front-door agent for ecosystem evolution; classifies intent into six categories and routes |
-| `os-lab-agent` | Plain-language intake for a skill improvement run; writes `improvement/run-config.json` and `session-brief.md` (called by `os-lab-planner` for Category 3) |
-| `os-architect-tester` | Validates `os-lab-planner` against pre-scripted scenario transcripts; run after any change to it |
+| `os-lab-agent` | Front door for the skill improvement lab; one plain-language conversation (what to improve, what exists, run settings); writes `references/program.md` and `improvement/run-config.json`, then calls the `os-lab-*` skills in order |
 
-### Skills (27)
+### Skills (15)
 
 What each skill does and how the clusters relate: [Agentic OS Skill Map](./references/agentic-os-skill-map.md).
 
@@ -112,22 +111,18 @@ What each skill does and how the clusters relate: [Agentic OS Skill Map](./refer
 | `os-control-plane-mode` | Enables, disables or checks the control plane as one unit (member skills and rule, the two git guards, declared mode) |
 | `os-signing-setup` | Guides the human through creating the SSH key that authorizes the plan-approval, code-acceptance and closure gates |
 
-#### Setup, environment & guidance
+#### Setup & readiness
 
 | Skill | Purpose |
 |-------|---------|
 | `os-init` | Probes, scaffolds or retrofits the OS and 3-layer memory; keeps `AGENTS.md` canonical; creates the simulation identity |
-| `os-environment-probe` | Discovers available AI environments; writes the delegation profile to `context/memory/environment.md` |
-| `os-guide` | Full OS reference: layers, interactions, patterns |
+| `os-health-check` | Deterministic readiness and liveness report: signing and identity readiness, event log, hook errors, memory size and stale locks |
 
 #### Evolution planning
 
 | Skill | Purpose |
 |-------|---------|
-| `os-lab-planner` | SME-facing front door: classifies intent, audits capabilities, proposes orchestrate / update / create, dispatches |
-| `os-lab-planner` | Brainstorms 2-3 approaches with the cheapest model, then writes the task plan and delegation prompt |
-| `os-evolution-verifier` | Checks that `os-lab-planner` produced real artifacts; PASS / PARTIAL / FAIL with evidence |
-| `self-evolution` | Deterministic 6-node graph controller for self-evolution: worktree isolation, verifier sovereignty, Layer 2 persistence |
+| `os-lab-planner` | Non-interactive planner: audits what exists, chooses orchestrate / update / create, brainstorms 2-3 options, writes the task plan and delegation prompt |
 | `repository-improvement` | Turns friction-cluster hotspot reports into systemic refactoring proposals for human review (Tier 3 friction) |
 
 #### Eval lab & improvement loop
@@ -135,29 +130,16 @@ What each skill does and how the clusters relate: [Agentic OS Skill Map](./refer
 | Skill | Purpose |
 |-------|---------|
 | `os-lab-setup` | Bootstraps an isolated sibling-repo eval lab: `evals.json`, `results.tsv`, `program.md` |
-| `os-lab-scorer` | Stateless eval engine; scores a proposed change against locked `evals.json`; KEEP / DISCARD |
-| `os-lab-loop` | Five-stage improvement cycle: orient, execute, verify, decide, close |
-| `os-lab-scorer` | RED-GREEN-REFACTOR cycle for one skill whose routing accuracy or score is low |
+| `os-lab-loop` | The only improvement loop: orient, mutate, close; sends every change to `os-lab-scorer` |
+| `os-lab-scorer` | Locked KEEP / DISCARD check for one change; also a single-pass RED-GREEN-REFACTOR fix for one skill |
 | `os-lab-backport` | Reviews a completed lab run and backports approved changes to master plugin sources |
-| `os-lab-log` | Persistent dated log of experiment runs in `context/experiment-log/` |
-| `os-lab-log` | Charts and trend summaries across improvement cycles |
-| `evo-smoketest` | Fixture skill (temperature conversion) for the evolution end-to-end smoke test; not a user capability |
+| `os-lab-log` | Persistent dated log of experiment runs in `context/experiment-log/`, plus charts and trend summaries |
 
-#### Memory & observability
+#### Memory
 
 | Skill | Purpose |
 |-------|---------|
 | `os-memory-manager` | Deduplicates and promotes session facts to long-term memory (`context/memory.md`) |
-| `os-health-check` | Deterministic liveness report over the event log, locks and memory |
-| `os-clean-locks` | Removes stale lock files left by crashed agents |
-
-#### Audit & quality
-
-| Skill | Purpose |
-|-------|---------|
-| `critical-auditor` | Full-system adversarial audit of plugins, skills, specs and orchestration |
-| `optimize-agent-instructions` | Audits and rewrites the canonical `AGENTS.md`; reports legacy mirrors |
-| `todo-check` | Scans a file for TODOs and debt markers |
 
 ---
 
@@ -252,7 +234,7 @@ attribution are documented in [the companion reference](./references/superpowers
 |---------|---------|
 | [USAGE.md](./USAGE.md) | Day-to-day workflow, experiment log close steps, append commands |
 | [SUMMARY.md](./SUMMARY.md) | Full architecture, OS analogy, three-tier lazy loading, scope and limitations |
-| [references/agentic-os-skill-map.md](./references/agentic-os-skill-map.md) | What every skill does, grouped into five clusters, and how the clusters relate |
+| [references/agentic-os-skill-map.md](./references/agentic-os-skill-map.md) | What every skill does, grouped into two clusters, and how the clusters relate |
 | [references/two-improvement-paths.md](./references/two-improvement-paths.md) | Control plane vs skill improvement lab, side by side |
 | [references/superpowers-boundary-and-attribution.md](./references/superpowers-boundary-and-attribution.md) | Runtime boundary, optional fallback conditions, adapted practices, and attribution |
 | [references/architecture/](./references/architecture/) | Canonical file structure, CLAUDE.md hierarchy, context folder patterns |

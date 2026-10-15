@@ -10,7 +10,7 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 
 ---
 
-## Registry Index (All 50 Scenarios)
+## Registry Index (All 45 Scenarios)
 
 | ID | Target | Hypothesis | Priority |
 |----|--------|------------|----------|
@@ -26,11 +26,6 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 | T10 | os-lab-loop | Memory persistence: at least one promoted fact in context/memory.md after cycle | MEDIUM |
 | T11 | os-lab-loop | Auto-trigger: Triple-Loop Retrospective triggered when friction_events_total reaches 3 | HIGH |
 | T12 | os-lab-loop | Lock contention: second agent attempting same lock receives clear failure, not hang | HIGH |
-| T13 | os-clean-locks | Baseline routing: triggers on /os-clean-locks and lock variants, not on list-locks | HIGH |
-| T14 | os-clean-locks | Stale lock cleanup: lock with PID that no longer exists gets removed | HIGH |
-| T15 | os-clean-locks | Active lock protection: lock held by running PID is preserved | HIGH |
-| T16 | os-clean-locks | Post-clean verification: state_update clears active_agent field after cleanup | MEDIUM |
-| T17 | os-clean-locks | Survey completion: os-clean-locks completes self-assessment after every run | MEDIUM |
 | T18 | os-memory-manager | Baseline promotion: ephemeral state skipped, architectural decisions promoted | HIGH |
 | T19 | os-memory-manager | Dedup detection: semantic duplicate caught and flagged before write | HIGH |
 | T20 | os-memory-manager | Test registry preservation: registry.md skipped by archive logic, never deleted | HIGH |
@@ -242,74 +237,6 @@ skill establishes the baseline. Tests 1-N per skill should be designed as
 - **Failure criteria**: Deadlock, corruption of lock file, or silent success for second agent.
 - **Known weaknesses**: Hard to create true simultaneity in test; sequential near-miss is easier.
 - **Recommended next test**: Test stale lock auto-cleanup (T43) — related failure path.
-
----
-
-### T13 — os-clean-locks: Baseline Routing
-
-- **Target**: os-clean-locks
-- **Hypothesis**: The skill triggers on "/os-clean-locks", "clear all locks", "reset agent locks",
-  but does NOT trigger on "list locks", "show me the lock files", "what is locked".
-- **Why now**: Routing baseline is empty. Must confirm skill is reached before testing its logic.
-- **Prior results**: None.
-- **Acceptance criteria**: 3/3 positive phrases route to skill; 3/3 negative phrases do not.
-- **Failure criteria**: Any mis-routing in either direction.
-- **Known weaknesses**: Routing is inferred, not directly observable.
-- **Recommended next test**: T14 (stale lock cleanup) — test core function after routing confirmed.
-
----
-
-### T14 — os-clean-locks: Stale Lock Cleanup
-
-- **Target**: os-clean-locks
-- **Hypothesis**: A lock file referencing a PID that no longer exists is removed by os-clean-locks.
-- **Why now**: Stale locks from crashed sessions are the primary production failure mode.
-- **Prior results**: None.
-- **Acceptance criteria**: After creating a lock with PID 99999 (likely dead), os-clean-locks
-  removes it and emits a cleanup event.
-- **Failure criteria**: Lock preserved despite dead PID, or removed without event emission.
-- **Known weaknesses**: PID 99999 may theoretically exist on some systems.
-- **Recommended next test**: T15 (active lock protection) — opposite path with live PID.
-
----
-
-### T15 — os-clean-locks: Active Lock Protection
-
-- **Target**: os-clean-locks
-- **Hypothesis**: A lock file referencing the current session's PID is NOT removed by os-clean-locks.
-- **Why now**: Cleaning an active lock mid-session would corrupt the running agent's state.
-- **Prior results**: None.
-- **Acceptance criteria**: Lock with current PID preserved after os-clean-locks runs.
-- **Failure criteria**: Active lock removed.
-- **Known weaknesses**: Tests only the agent's own PID; multi-session scenario harder.
-- **Recommended next test**: T16 (post-clean state verification) — check state_update behavior.
-
----
-
-### T16 — os-clean-locks: Post-Clean State Verification
-
-- **Target**: os-clean-locks
-- **Hypothesis**: After cleanup, kernel state active_agent field is cleared via state_update.
-- **Why now**: If active_agent is not cleared after lock cleanup, next session reads stale state.
-- **Prior results**: None.
-- **Acceptance criteria**: os-state.json active_agent field is null/empty after clean run.
-- **Failure criteria**: active_agent still set to previous agent name after clean.
-- **Known weaknesses**: Does not test mode or other state fields.
-- **Recommended next test**: T17 (survey completion).
-
----
-
-### T17 — os-clean-locks: Survey Completion
-
-- **Target**: os-clean-locks
-- **Hypothesis**: os-clean-locks completes self-assessment survey after every run,
-  including trivial no-op runs where no locks were found.
-- **Why now**: Survey was not in the original skill. Added in this session's audit. First test.
-- **Prior results**: None.
-- **Acceptance criteria**: Survey file in retrospectives/ after run.
-- **Failure criteria**: No survey file, or survey skipped on no-op run.
-- **Known weaknesses**: Survey quality not tested.
-- **Recommended next test**: T14 again with survey quality review.
 
 ---
 

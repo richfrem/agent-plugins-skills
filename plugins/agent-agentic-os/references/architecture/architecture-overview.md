@@ -312,7 +312,7 @@ but it undermines the whole self-improvement pipeline. Tracked separately.
 From Claude: `update_memory.py` kernel fallback impersonates system agent. Tracked in
 agentic-os security backlog.
 
-From all: empty `results.tsv` baselines for os-memory-manager, os-guide,
+From all: empty `results.tsv` baselines for os-memory-manager,
 os-init. P0 before self-improvement loop is meaningful.
 
 ---

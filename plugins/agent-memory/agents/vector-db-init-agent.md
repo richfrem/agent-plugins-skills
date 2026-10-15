@@ -252,7 +252,7 @@ ls .agents/skills/vector-db-init/        2>/dev/null && echo "vector-db: INSTALL
 ls .agents/skills/obsidian-wiki-builder/ 2>/dev/null && echo "obsidian-wiki-engine: INSTALLED"  || echo "obsidian-wiki-engine: NOT INSTALLED"
 ```
 
-**If `optimize-agent-instructions` is available** (`.agents/skills/optimize-agent-instructions/`):
+**If `audit-agents-md` is available** (`.agents/skills/audit-agents-md/`):
 Invoke it — it handles detection, partial-stack awareness, and full instruction file optimization.
 
 **Otherwise**, manually append to `CLAUDE.md`, `GEMINI.md`, and `.github/copilot-instructions.md`

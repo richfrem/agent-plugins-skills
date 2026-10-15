@@ -70,7 +70,7 @@ Script Dependencies:
 Consumed by:
     - plugins/cli-agents/skills/agent-file-synchronization/scripts/sync_instruction_files.py (symlink)
 Related:
-    - plugins/agent-agentic-os/skills/optimize-agent-instructions/SKILL.md (content-quality audit, different scope)
+    - plugins/agent-scaffolders/skills/audit-agents-md/SKILL.md (content-quality audit, different scope)
 """
 
 import argparse

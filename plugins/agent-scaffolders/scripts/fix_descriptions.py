@@ -34,7 +34,6 @@ files_to_fix = [
     "plugins/agent-agentic-os/skills/os-lab-backport/SKILL.md",
     "plugins/agent-agentic-os/skills/os-lab-setup/SKILL.md",
     "plugins/agent-agentic-os/skills/os-lab-scorer/SKILL.md",
-    "plugins/agent-agentic-os/skills/os-guide/SKILL.md",
     "plugins/agent-agentic-os/skills/os-lab-log/SKILL.md",
     "plugins/agent-agentic-os/skills/os-init/SKILL.md",
     "plugins/agent-agentic-os/skills/os-memory-manager/SKILL.md",

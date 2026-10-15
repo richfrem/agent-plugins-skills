@@ -7,8 +7,8 @@
 - "Is the event bus healthy? any stuck agents?"
 
 ## ❌ Scenarios that must NOT trigger
-- "Clear stale locks from context/.locks" (use `os-clean-locks`)
-- "Summarize what the agentic OS ecosystem does" (use `os-guide`)
+- "Clear stale locks from context/.locks" (handled by the kernel: `acquire_lock` clears stale locks)
+- "Summarize what the agentic OS ecosystem does" (belongs to the Agentic OS skill map and two-paths reference docs, not this skill)
 
 ## Identity registration
 

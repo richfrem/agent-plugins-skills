@@ -5,22 +5,6 @@ Extracted from SKILL.md per Layer-1 procedural-core line budget (issue #551).
 ## Phase 2 — Execute (full command set)
 
 ```bash
-# After os-evolution-verifier run
-python3 scripts/experiment_log.py append \
-  --source-type verifier \
-  --report temp/os-evolution-verifier/test-report.md \
-  --session-id 2026-04-25-round1 \
-  --target os-lab-planner \
-  --triggered-by os-evolution-verifier
-
-# After os-architect-tester run
-python3 scripts/experiment_log.py append \
-  --source-type tester \
-  --report temp/test_report_consolidated.md \
-  --session-id 2026-04-25-tester \
-  --target os-lab-planner \
-  --triggered-by os-architect-tester
-
 # After os-lab-loop run (numeric — has score delta)
 python3 scripts/experiment_log.py append \
   --source-type orchestrator \
@@ -59,16 +43,15 @@ Each file has a YAML-like header fence followed by the full report:
 
 ```
 ---
-type: verifier
+type: planner
 result_type: qualitative
 date: 2026-04-25 15:12
-session_id: 2026-04-25-round1
-source: os-evolution-verifier
-target: os-lab-planner
-verdict: 8P/0Pa/0F of 8
+session_id: 0024
+source: os-lab-planner
+target: os-lab-scorer
 ---
 
-## Experiment — 2026-04-25 15:12 | verifier | os-lab-planner
+## Experiment — 2026-04-25 15:12 | planner | os-lab-scorer
 
 | Field | Value |
 ...
@@ -81,7 +64,7 @@ _[fill in: spec fix, new eval, new skill]_
 
 ## Smoke Tests
 
-**Smoke 1 — Append verifier**: Run `python3 scripts/experiment_log.py append --source-type verifier`.
+**Smoke 1 — Append planner**: Run `python3 scripts/experiment_log.py append --source-type planner`.
 Confirm new `.md` file appears in `context/experiment-log/` and `index.md` has a new row.
 
 **Smoke 2 — Query**: Run `python3 scripts/experiment_log.py query PASS`.

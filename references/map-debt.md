@@ -1586,3 +1586,16 @@ Persistent tracking of architectural friction, structural anomalies, and unclose
 - Severity: L
 - Repeat: NO
 - Status: OPEN
+
+## DEBT-20261014-HERMES-REGISTRATION-INCOMPLETE
+
+- Logged date: 2026-10-14
+- Cycle/Session ID: fix-docs-counts-and-graph-state-names
+- Artifact affected: `__init__.py` (Hermes skill registration)
+- Friction observed: The registration list omits skills that exist on disk: all 10 `agent-orchestration` skills; `agent-scaffolders` audit-agents-md, audit-rule, audit-skill, audit-sub-agent, create-agents-md, create-rule; `cli-agents` agent-file-synchronization, update-cli-models; `agent-agentic-os` os-control-plane-mode, os-health-check, os-signing-setup, transition-simulator, worktree-manager, repository-improvement. Predates this branch; only the moved `dev-utils` skills were added here.
+- Why not fixed now: Outside the consolidation scope; confirm whether Hermes should register every skill or an intentional subset.
+- Recommended fix / fix applied: Generate the list from `plugins/*/skills/*/SKILL.md` instead of maintaining it by hand.
+- Evidence/repro: compare `re.findall` of the tuples in `__init__.py` with the skill folders on disk.
+- Severity: L
+- Repeat: NO
+- Status: OPEN
