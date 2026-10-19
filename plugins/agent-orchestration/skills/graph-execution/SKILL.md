@@ -1,7 +1,7 @@
 ---
 name: graph-execution
 plugin: agent-orchestration
-description: Executes complex workflows using deterministic graph-state machines, explicit transition guards, transactional worktrees, and receipt gates.
+description: Executes a compiled graph-manifest.json (from graph-planner) with a deterministic DAG runner - bounded parallel reads, strictly ordered mutations in an isolated git worktree, verifier-hash gates, per-node commits, rollback on failure, and append-only receipts. Use when running, executing, or resuming an existing graph manifest.
 allowed-tools: Bash, Read, Write
 ---
 
@@ -15,12 +15,13 @@ Deterministic executor for task graphs compiled by `graph-planner`. Enforces tot
 - [Quick start](#quick-start)
 - [State Machine](#state-machine)
 - [Workflow](#workflow)
+- [Limitations](#limitations)
 - [Verification](#verification)
 - [References](#references)
 
 ## Constraints
 
-- **Workspace Confinement**: Mutations require an isolated git worktree via `--worktree` or `--create-worktree`. `--no-workspace` is permitted only for read-only DAGs.
+- **Workspace Confinement**: Mutations require an isolated git worktree via `--worktree` or `--create-worktree`. `--no-workspace` is permitted only for read-only DAGs and never resets or cleans the checkout.
 
 - **Caller Governance Contract**: Caller environment owns workspace lifecycle and human approval. The runner never pushes, merges, or deletes worktrees.
 
@@ -28,13 +29,19 @@ Deterministic executor for task graphs compiled by `graph-planner`. Enforces tot
 
 - **Mutation Boundaries**: Mutations must touch only declared `mutation_targets` and never modify `forbidden_paths`.
 
-- **Fail Closed**: If `--approval prompt` is selected in a non-interactive shell, execution halts immediately before any mutation.
+- **Human-Bound Manifest SHA**: Under `--approval none`, `--expect-manifest-sha256` must come from a human approval step (for example the control plane's signed Gate 1). Never compute it yourself for a manifest you wrote or edited.
+
+- **Fail Closed**: If `--approval prompt` is selected in a non-interactive shell (including an agent's Bash tool), execution halts immediately before any mutation. Ask the human to run the command in their terminal instead.
 
 ## Quick start
 
 ```bash
-# Execute compiled manifest inside an isolated worktree
+# Execute compiled manifest inside an isolated worktree (human runs this in a terminal)
 python3 scripts/graph_runner.py graph-manifest.json --worktree .worktrees/task-001 --approval prompt
+
+# Autonomous run of a human-approved manifest
+python3 scripts/graph_runner.py graph-manifest.json --worktree .worktrees/task-001 \
+  --approval none --expect-manifest-sha256 <approved-sha256>
 
 # Run read-only graph in current directory
 python3 scripts/graph_runner.py read-manifest.json --no-workspace --approval none
@@ -42,35 +49,31 @@ python3 scripts/graph_runner.py read-manifest.json --no-workspace --approval non
 
 ## State Machine
 
-```mermaid
-stateDiagram-v2
-    [*] --> PREFLIGHT: Check Clean Tree
-    PREFLIGHT --> APPROVAL_GATE: Validate Gate
-    APPROVAL_GATE --> PARALLEL_READS: Fan-Out Bounded Pool
-    PARALLEL_READS --> SYNC_BARRIER: Join & Check Hash
-    SYNC_BARRIER --> SEQUENTIAL_MUTATION: Strict Total Order
-    SEQUENTIAL_MUTATION --> VERIFIER_GATE: Hash & Exit 0
-    VERIFIER_GATE --> SUCCESS: All Nodes Done
-    VERIFIER_GATE --> FALLBACK: On Failure
-    FALLBACK --> SEQUENTIAL_MUTATION: Substituted
-    FALLBACK --> ROLLBACK_AND_HALT: Fallback Failed
-```
+The runner is a ready-set scheduler, not a fixed phase sequence: each loop it runs every ready `parallel_read` as one bounded batch, otherwise the first ready non-read node.
+
+See [graph_execution_state_machine.mmd](references/diagrams/graph_execution_state_machine.mmd) for the full transition diagram: VALIDATE -> PREFLIGHT -> SCHEDULE -> (READ_BATCH | SINGLE_NODE) -> SCHEDULE ... -> SUCCESS, with FALLBACK and HALT branches.
 
 ## Workflow
 
-1. **PREFLIGHT**: Verify working tree is clean (`git status --porcelain`). Record starting commit SHA.
+1. **VALIDATE**: Check manifest SHA (when given), schema, and topology. Mutation or irreversible graphs under `--approval none` need `--expect-manifest-sha256` and a root `verifier_gate` with `role: "approval"`.
 
-2. **APPROVAL_GATE**: If `--approval none` is set on a mutation graph, verify leading `verifier_gate` with `role: "approval"`.
+2. **PREFLIGHT**: Verify working tree is clean (`git status --porcelain`; skipped for `--no-workspace`). Record starting commit SHA.
 
-3. **PARALLEL_READS**: Execute read-only nodes concurrently up to `max_parallel_concurrency`. Calculate git status hash before scatter.
+3. **READ BATCHES**: Execute ready read-only nodes concurrently up to `max_parallel_concurrency`. After each batch, fail if `git status` or HEAD changed.
 
-4. **SYNC_BARRIER**: Join parallel reads. Verify git status hash is unchanged; fail barrier if modified.
+4. **SINGLE NODES**: Run ready gates, barriers, and mutations one at a time. Check `verifier_hash` first. Each node is judged by exit code; `output_contract` checks belong in the node's command.
 
-5. **SEQUENTIAL_MUTATIONS**: Execute mutation nodes one at a time in strict dependency order. Check `mutation_targets` and `forbidden_paths`. Commit once per successful mutation.
+5. **MUTATIONS**: Enforce `mutation_targets` and `forbidden_paths`, then commit once per mutation that changed files. A mutation with no changes succeeds without a commit.
 
-6. **VERIFIER_GATE**: Check `verifier_hash`, run verifier command, and confirm exit 0. On failure, attempt retries or transition to `fallback_node_id`.
+6. **FAILURE**: Retry up to `max_retries_per_node` (mutation debris reset between attempts), then run `fallback_node_id` once its dependencies are complete.
 
-7. **TERMINAL**: On completion, record terminal state in `state.json`. On unrecovered failure, execute `rollback_and_halt` (`git reset --hard <start_sha>` and `git clean -fd`).
+7. **TERMINAL**: Record `success`, `rolled_back` (worktree reset to `<start_sha>` with `git clean -fd`), or `halted` (`--no-workspace`, checkout untouched) in `state.json`.
+
+## Limitations
+
+- `tier` is a planning label; every `command_or_eval` runs with `bash -c`, so model nodes must call a CLI inside the command.
+- `input_bindings` and `output_contract` are not enforced by the runner. Nodes pass data through `$GRAPH_SCRATCH_DIR` sibling directories.
+- Boundary checks see only what git reports: writes to gitignored paths or outside the repo are not detected or rolled back.
 
 ## Verification
 
@@ -84,6 +87,9 @@ cat "$(git rev-parse --git-common-dir)/graph-run/<graph_id>/<run_id>/state.json"
 
 ## References
 
+- [graph-manifest-schema.json](references/graph-manifest-schema.json) - Manifest contract the runner validates.
+- [topology-rules.md](references/topology-rules.md) - Structural rules the runner enforces.
+- [acceptance-criteria.md](references/acceptance-criteria.md) - Startup gates, invariants, and evidence criteria.
+- [fallback-tree.md](references/fallback-tree.md) - Runner failure recovery protocols.
 - [PATTERN_GUIDE.md](references/PATTERN_GUIDE.md) - Comparative loop patterns.
-- [acceptance-criteria.md](references/acceptance-criteria.md) - Phase gates and exit criteria.
-- [fallback-tree.md](references/fallback-tree.md) - Error recovery protocols.
+- [map-debt.md](references/map-debt.md) - Open and resolved friction for agent-orchestration.

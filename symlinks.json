@@ -8726,13 +8726,13 @@
       "description": ""
     },
     {
-      "src": "plugins/agent-orchestration/references/acceptance-criteria.md",
+      "src": "plugins/agent-orchestration/references/graph-execution-acceptance-criteria.md",
       "dst": "plugins/agent-orchestration/skills/graph-execution/references/acceptance-criteria.md",
       "strategy": "symlink",
       "description": ""
     },
     {
-      "src": "plugins/agent-orchestration/references/fallback-tree.md",
+      "src": "plugins/agent-orchestration/references/graph-execution-fallback-tree.md",
       "dst": "plugins/agent-orchestration/skills/graph-execution/references/fallback-tree.md",
       "strategy": "symlink",
       "description": ""
@@ -11432,7 +11432,7 @@
       "description": ""
     },
     {
-      "src": "plugins/agent-orchestration/references/acceptance-criteria.md",
+      "src": "plugins/agent-orchestration/references/graph-planner-acceptance-criteria.md",
       "dst": "plugins/agent-orchestration/skills/graph-planner/references/acceptance-criteria.md",
       "strategy": "symlink",
       "description": ""
@@ -11778,6 +11778,24 @@
       "dst": "plugins/agent-agentic-os/skills/os-lab-loop/references/fallback-tree.md",
       "strategy": "symlink",
       "description": "os-lab-loop fallback tree"
+    },
+    {
+      "src": "plugins/agent-orchestration/references/graph-manifest-schema.json",
+      "dst": "plugins/agent-orchestration/skills/graph-execution/references/graph-manifest-schema.json",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-orchestration/references/topology-rules.md",
+      "dst": "plugins/agent-orchestration/skills/graph-execution/references/topology-rules.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/agent-orchestration/references/diagrams/graph_execution_state_machine.mmd",
+      "dst": "plugins/agent-orchestration/skills/graph-execution/references/diagrams/graph_execution_state_machine.mmd",
+      "strategy": "symlink",
+      "description": ""
     }
   ]
 }

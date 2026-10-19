@@ -1,5 +1,11 @@
 stateDiagram-v2
-    [*] --> Init
-    Init --> Process : Execute graph-planner
-    Process --> [*]
-    
+    [*] --> Ingest
+    Ingest --> GapAnalysis : Read briefs, specs, --decision record
+    GapAnalysis --> Interview : Unresolved topology gaps
+    GapAnalysis --> Topology : No gaps
+    Interview --> Topology : Gaps answered
+    Topology --> Compile : Fan-out reads, linear mutations, barriers, gates
+    Compile --> Validate : graph-manifest.json + Mermaid DAG
+    Validate --> Compile : validate_manifest.py errors
+    Validate --> Handoff : PASS
+    Handoff --> [*] : Manifest path, SHA256, approval mode, workspace flag

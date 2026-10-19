@@ -82,7 +82,7 @@
           },
           "command_or_eval": {
             "type": "string",
-            "description": "Executable bash command, verifier script, or prompt spec."
+            "description": "Shell command executed with bash -c in the workdir. Model-tier nodes invoke their model through a CLI inside this command."
           },
           "timeout_seconds": {
             "type": "integer",
@@ -93,7 +93,7 @@
           "verifier_hash": {
             "type": "string",
             "pattern": "^[a-f0-9]{64}$",
-            "description": "Expected SHA256 hex digest of verifier script or command."
+            "description": "Expected SHA256 hex digest of the first file named in command_or_eval, or of the command string when it names no file."
           },
           "mutation_targets": {
             "type": "array",
@@ -113,7 +113,7 @@
           "input_bindings": {
             "type": "array",
             "items": { "type": "string" },
-            "description": "Upstream node outputs bound as inputs."
+            "description": "Upstream node outputs bound as inputs. Declarative: the runner does not pass data; nodes read sibling scratch directories."
           },
           "output_contract": {
             "oneOf": [
@@ -126,7 +126,7 @@
                 "description": "Inline JSON schema object defining node output contract."
               }
             ],
-            "description": "Output validation contract as an on-disk schema path or an inline JSON schema object."
+            "description": "Output validation contract as an on-disk schema path or an inline JSON schema object. Declarative: the runner judges nodes by exit code; enforce contracts in a verifier_gate or sync_barrier command."
           },
           "depends_on": {
             "type": "array",
@@ -140,7 +140,7 @@
           },
           "fallback_node_id": {
             "type": "string",
-            "description": "Target fallback node ID required when failure_escalation is fallback_node."
+            "description": "Target fallback node ID required when failure_escalation is fallback_node. The target must have role 'fallback' and the same type as this node."
           }
         },
         "allOf": [

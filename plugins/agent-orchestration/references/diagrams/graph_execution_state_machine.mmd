@@ -1,0 +1,19 @@
+stateDiagram-v2
+    [*] --> VALIDATE: Schema + Topology + SHA
+    VALIDATE --> PREFLIGHT: Valid
+    VALIDATE --> [*]: Invalid (exit 1)
+    PREFLIGHT --> SCHEDULE: Record start SHA
+    SCHEDULE --> READ_BATCH: Ready parallel_reads
+    SCHEDULE --> SINGLE_NODE: Ready gate / barrier / mutation
+    READ_BATCH --> BATCH_CHECK: Pool drained
+    BATCH_CHECK --> SCHEDULE: Porcelain + HEAD unchanged
+    SINGLE_NODE --> COMMIT: Mutation in bounds
+    COMMIT --> SCHEDULE: Committed or no-op
+    SINGLE_NODE --> SCHEDULE: Gate / barrier exit 0
+    SINGLE_NODE --> FALLBACK: Retries exhausted
+    FALLBACK --> SCHEDULE: Substituted
+    FALLBACK --> HALT: Fallback failed
+    BATCH_CHECK --> HALT: Changed
+    SCHEDULE --> SUCCESS: No nodes remaining
+    HALT --> [*]: Rollback (worktree) or halt (no-workspace)
+    SUCCESS --> [*]

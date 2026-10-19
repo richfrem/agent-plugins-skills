@@ -1,1 +1,1 @@
-../../../references/acceptance-criteria.md
+../../../references/graph-planner-acceptance-criteria.md

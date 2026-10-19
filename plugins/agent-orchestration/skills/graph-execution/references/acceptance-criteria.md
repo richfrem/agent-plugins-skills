@@ -1,1 +1,1 @@
-../../../references/acceptance-criteria.md
+../../../references/graph-execution-acceptance-criteria.md
