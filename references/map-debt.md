@@ -1638,3 +1638,16 @@ Persistent tracking of architectural friction, structural anomalies, and unclose
 - Severity: M
 - Repeat: NO
 - Status: RESOLVED
+
+## DEBT-20261019-OS-CONTROL-INIT-AGENTS-JSON-UNRESOLVABLE (RESOLVED)
+
+- Logged date: 2026-10-19
+- Cycle/Session ID: fix/os-control-init-agents-json-symlink
+- Artifact affected: `plugins/agent-agentic-os/skills/os-control-init`, `plugins/agent-agentic-os/scripts/agents.json`, `symlinks.json`
+- Friction observed: `init_agentic_os.py` `copy_runtime_file("agents.json")` resolves against `<root>/scripts/` then `<root>/skills/os-control-init/templates/`. In an installed skill `<root>` is the skill folder, so only `scripts/agents.json` can match, but the file existed only in the skill's `templates/`. Init failed in consuming repos after the earlier ARCHITECTURE_MD.md fix. Source-tree runs hid this because `Path(__file__).resolve()` follows symlinks to the plugin root.
+- Why not fixed now: Fixed immediately in this change.
+- Recommended fix / fix applied: Moved the canonical `agents.json` to plugin `scripts/` and symlinked it into the skill's `scripts/` and `templates/` via `symlink_manager.py`, registered in `symlinks.json`.
+- Evidence/repro: A dereferenced copy of the skill (`shutil.copytree(symlinks=False)`) run with `--dry-run --target <consuming repo>` errored "Runtime file agents.json not found" before the fix and exits 0 after. `symlink_manager.py audit` reports all links OK. Source-tree tests cannot catch this class; validate packaging with a dereferenced copy.
+- Severity: M
+- Repeat: YES
+- Status: RESOLVED

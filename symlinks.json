@@ -11820,6 +11820,18 @@
       "dst": "plugins/agent-agentic-os/skills/os-control-init/references/worktree-reconciliation-and-multi-worktree-practices.md",
       "strategy": "symlink",
       "description": "Referenced by os-control-init scripts"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/agents.json",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/scripts/agents.json",
+      "strategy": "symlink",
+      "description": "Runtime file read by init_agentic_os.py copy_runtime_file"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/agents.json",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/templates/agents.json",
+      "strategy": "symlink",
+      "description": "Legacy lookup path for init_agentic_os.py"
     }
   ]
 }
