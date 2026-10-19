@@ -11,22 +11,24 @@ Features:
 - Approval gates (--approval none | prompt) with fail-closed non-interactive prompt
 - Strict null-byte delimited git status parsing for mutation_targets and forbidden_paths
 - Non-mutation node immutability enforcement (HEAD and porcelain check)
-- Verifier integrity (verifier_hash checks)
-- Main-thread rollback after thread pool drain
-- Append-only receipts (.graph-run/<graph_id>/<run_id>/receipts.jsonl) anchored outside worktree
+- Verifier integrity (verifier_hash binds the script file named in the command, else the command string)
+- Main-thread rollback after thread pool drain; destructive rollback is disabled for --no-workspace runs
+- Append-only receipts (<git-common-dir>/graph-run/<graph_id>/<run_id>/receipts.jsonl) anchored outside worktree
 - Pure Python standard library (zero external packages)
 """
 
 import sys
 import os
+import re
 import json
+import shlex
 import argparse
 import subprocess
 import signal
 import hashlib
 import fnmatch
-import shutil
 import datetime
+import threading
 import uuid
 from pathlib import Path
 from typing import Dict, List, Set, Any, Optional, Tuple
@@ -138,11 +140,27 @@ def parse_git_status_z(workdir: Path) -> List[str]:
     return changed_files
 
 
+GRAPH_ID_PATTERN = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
+
+
+def is_linked_worktree(directory: Path) -> bool:
+    """True when directory is a linked worktree (its git-dir differs from the shared common dir)."""
+    rc_gd, git_dir, _ = run_cmd(["git", "rev-parse", "--absolute-git-dir"], cwd=directory)
+    rc_cd, common_dir, _ = run_cmd(["git", "rev-parse", "--git-common-dir"], cwd=directory)
+    if rc_gd != 0 or rc_cd != 0:
+        return False
+    common = Path(common_dir.strip())
+    if not common.is_absolute():
+        common = (directory / common).resolve()
+    return Path(git_dir.strip()).resolve() != common.resolve()
+
+
 class GraphRunner:
     def __init__(self, manifest_path: Path, workdir: Path, approval_mode: str,
                  run_id: Optional[str] = None, run_dir: Optional[Path] = None,
                  expected_manifest_sha: Optional[str] = None,
-                 parsed_manifest: Optional[Tuple[Dict[str, Any], bytes]] = None):
+                 parsed_manifest: Optional[Tuple[Dict[str, Any], bytes]] = None,
+                 destructive_rollback: bool = True):
         self.manifest_path = manifest_path.resolve()
         if parsed_manifest:
             self.manifest, manifest_bytes = parsed_manifest
@@ -152,17 +170,28 @@ class GraphRunner:
             self.manifest = json.loads(manifest_bytes.decode("utf-8"))
             self.manifest_sha = hashlib.sha256(manifest_bytes).hexdigest()
 
-        self.graph_id = self.manifest["graph_id"]
+        if not isinstance(self.manifest, dict):
+            self.manifest = {}
+        raw_graph_id = self.manifest.get("graph_id")
+        # graph_id becomes a directory name before validation runs; never let it escape run_dir
+        self.graph_id = raw_graph_id if isinstance(raw_graph_id, str) and GRAPH_ID_PATTERN.match(raw_graph_id) else "invalid-graph-id"
         self.run_id = run_id or f"run_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:6]}"
         self.workdir = workdir.resolve()
         self.approval_mode = approval_mode
         self.expected_manifest_sha = expected_manifest_sha
+        # When False (--no-workspace runs in the caller's own checkout), failures halt without
+        # git reset/clean so concurrent work in that checkout is never destroyed.
+        self.destructive_rollback = destructive_rollback
 
         self.budget = self.manifest.get("budget", {})
         self.max_concurrency = self.budget.get("max_parallel_concurrency", 4)
         self.max_retries = self.budget.get("max_retries_per_node", 2)
 
-        self.nodes_list: List[Dict[str, Any]] = self.manifest.get("nodes", [])
+        raw_nodes = self.manifest.get("nodes", [])
+        self.nodes_list: List[Dict[str, Any]] = [
+            n for n in (raw_nodes if isinstance(raw_nodes, list) else [])
+            if isinstance(n, dict) and isinstance(n.get("id"), str)
+        ]
         self.nodes: Dict[str, Dict[str, Any]] = {n["id"]: n for n in self.nodes_list}
 
         # Anchor run directory outside the worktree mutation tree to survive git clean
@@ -186,7 +215,9 @@ class GraphRunner:
         self.is_git_repo = False
         self.completed_nodes: Set[str] = set()
         self.failed_nodes: Set[str] = set()
+        self.substituted_nodes: Dict[str, str] = {}  # primary_id -> fallback_id that replaced it
         self.has_prompted_mutation = False
+        self.prompt_lock = threading.Lock()
 
         # Identify fallback nodes (only nodes declaring role='fallback')
         self.fallback_nodes: Set[str] = {n["id"] for n in self.nodes_list if n.get("role") == "fallback"}
@@ -213,11 +244,12 @@ class GraphRunner:
                     f"Manifest SHA256 mismatch: expected '{self.expected_manifest_sha}', got '{actual_sha}'"
                 )
 
-        mutations = [n for n in self.nodes_list if n.get("type") == "sequential_mutation"]
-        if mutations and self.approval_mode == "none" and not self.expected_manifest_sha:
+        gated = [n for n in self.nodes_list
+                 if n.get("type") == "sequential_mutation" or n.get("reversible") is False]
+        if gated and self.approval_mode == "none" and not self.expected_manifest_sha:
             raise RuntimeError(
-                "Approval invariant: Running a mutation graph with --approval none requires "
-                "--expect-manifest-sha256 to cryptographically bind the approved manifest."
+                "Approval invariant: Running a graph with mutation or irreversible nodes under --approval none "
+                "requires --expect-manifest-sha256 to cryptographically bind the approved manifest."
             )
 
         # 2. Structural & Topological validation
@@ -255,8 +287,9 @@ class GraphRunner:
             "run_id": self.run_id,
             "status": status,
             "start_sha": self.start_sha,
-            "completed_nodes": list(self.completed_nodes),
-            "failed_nodes": list(self.failed_nodes),
+            "completed_nodes": sorted(self.completed_nodes),
+            "failed_nodes": sorted(self.failed_nodes),
+            "substituted_nodes": self.substituted_nodes,
             "error": error,
             "updated_at": datetime.datetime.now().isoformat()
         }
@@ -272,7 +305,9 @@ class GraphRunner:
 
         self.is_git_repo = True
         rc, out, _ = run_cmd(["git", "status", "--porcelain=v1"], cwd=self.workdir)
-        if out.strip():
+        # A clean tree is only needed when failure handling may reset it; a non-destructive
+        # (--no-workspace) read-only run compares porcelain hashes against the starting state instead.
+        if out.strip() and self.destructive_rollback:
             raise RuntimeError(
                 f"Target worktree '{self.workdir}' has uncommitted changes. "
                 "Clean working tree is strictly required before starting graph run."
@@ -303,6 +338,15 @@ class GraphRunner:
     def rollback_and_halt(self, reason: str) -> None:
         """Reset worktree to start SHA and clean untracked files created during run (main thread only)."""
         print(f"\n[TRIGGER] Rollback and halt: {reason}", file=sys.stderr)
+        if not self.destructive_rollback:
+            changed = parse_git_status_z(self.workdir) if self.is_git_repo else []
+            print("Non-destructive mode (--no-workspace): working tree left untouched.", file=sys.stderr)
+            if changed:
+                print("Paths currently differing from HEAD (inspect manually):", file=sys.stderr)
+                for path in changed:
+                    print(f"  {path}", file=sys.stderr)
+            self.save_state("halted", error=reason)
+            return
         if self.is_git_repo and self.start_sha:
             run_cmd(["git", "reset", "--hard", self.start_sha], cwd=self.workdir)
             run_cmd(["git", "clean", "-fd"], cwd=self.workdir)
@@ -314,12 +358,14 @@ class GraphRunner:
         if not sys.stdin.isatty():
             print(f"Non-interactive stdin detected; rejecting prompt for: {prompt_text}", file=sys.stderr)
             return False
-        print(f"\n[APPROVAL PROMPT] {prompt_text} (y/N): ", end="", flush=True)
-        try:
-            line = sys.stdin.readline().strip().lower()
-            return line in ("y", "yes")
-        except Exception:
-            return False
+        # Serialize prompts: irreversible parallel_read nodes may prompt from worker threads
+        with self.prompt_lock:
+            print(f"\n[APPROVAL PROMPT] {prompt_text} (y/N): ", end="", flush=True)
+            try:
+                line = sys.stdin.readline().strip().lower()
+                return line in ("y", "yes")
+            except Exception:
+                return False
 
     def verify_verifier_hash(self, node: Dict[str, Any]) -> None:
         """Check verifier_hash if declared."""
@@ -328,8 +374,18 @@ class GraphRunner:
             return
 
         cmd = node.get("command_or_eval", "")
-        file_path = self.workdir / cmd.split()[0] if cmd else None
-        if file_path and file_path.is_file():
+        # Bind the first command token naming a file in the workdir (e.g. the script in
+        # `python3 scripts/verify.py`), so editing the script cannot keep a stale hash valid.
+        # Commands that name no file fall back to hashing the command string itself.
+        try:
+            tokens = shlex.split(cmd)
+        except ValueError:
+            tokens = cmd.split()
+        file_path = next(
+            (self.workdir / t for t in tokens if not t.startswith("-") and (self.workdir / t).is_file()),
+            None,
+        )
+        if file_path:
             actual_hash = compute_file_sha256(file_path)
         else:
             actual_hash = compute_sha256(cmd)
@@ -470,6 +526,15 @@ class GraphRunner:
             commit_sha = None
             if rc == 0 and is_mutation and contract_ok and self.is_git_repo:
                 run_cmd(["git", "add", "."], cwd=self.workdir)
+            # A mutation that leaves the tree unchanged (already in the desired state) succeeds
+            # without a commit instead of failing on "nothing to commit".
+            nothing_staged = False
+            if rc == 0 and is_mutation and contract_ok and self.is_git_repo:
+                rc_staged, _, _ = run_cmd(["git", "diff", "--cached", "--quiet"], cwd=self.workdir)
+                nothing_staged = (rc_staged == 0)
+                if nothing_staged:
+                    print(f"[NODE {node_id}] No changes produced; nothing to commit")
+            if rc == 0 and is_mutation and contract_ok and self.is_git_repo and not nothing_staged:
                 commit_msg = (
                     f"graph({self.graph_id}): node {node_id} success\n\n"
                     "Evolution-Check: none\n"
@@ -507,6 +572,10 @@ class GraphRunner:
         if escalation == "fallback_node":
             fb_id = node.get("fallback_node_id")
             if fb_id and fb_id in self.nodes:
+                unmet = [d for d in self.nodes[fb_id].get("depends_on", []) if d not in self.completed_nodes]
+                if unmet:
+                    print(f"Fallback node '{fb_id}' cannot run: unmet dependencies {unmet}", file=sys.stderr)
+                    return False
                 print(f"[FALLBACK] Resetting debris and substituting node '{node_id}' with fallback node '{fb_id}'")
                 if is_mutation and self.is_git_repo and pre_node_head:
                     run_cmd(["git", "reset", "--hard", pre_node_head], cwd=self.workdir)
@@ -514,6 +583,8 @@ class GraphRunner:
 
                 fb_success = self.execute_node(fb_id)
                 if fb_success:
+                    self.failed_nodes.discard(node_id)
+                    self.substituted_nodes[node_id] = fb_id
                     self.completed_nodes.add(node_id)  # Mark original as substituted
                     return True
             print(f"Fallback node '{fb_id}' failed or missing", file=sys.stderr)
@@ -614,7 +685,54 @@ class GraphRunner:
             raise
 
 
+def create_isolated_worktree(base: str) -> Tuple[Path, str]:
+    """Create a linked worktree under <repo-root>/.worktrees/ and return (path, run_id); exit on failure."""
+    run_id = f"run_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:6]}"
+    rc_top, top_out, top_err = run_cmd(["git", "rev-parse", "--show-toplevel"])
+    if rc_top != 0 or not top_out.strip():
+        print(f"ERROR: --create-worktree must run inside a git repository: {top_err}", file=sys.stderr)
+        sys.exit(1)
+    worktree_path = Path(top_out.strip()) / ".worktrees" / f"graph-{run_id}"
+    worktree_path.parent.mkdir(parents=True, exist_ok=True)
+    rc, _, err = run_cmd(["git", "worktree", "add", "-b", f"graph-{run_id}", str(worktree_path), base])
+    if rc != 0:
+        print(f"ERROR: Failed to create git worktree at {worktree_path}: {err}", file=sys.stderr)
+        sys.exit(1)
+    print(f"Created isolated worktree at: {worktree_path}")
+    return worktree_path, run_id
+
+
+def resolve_workspace(args: argparse.Namespace, has_mutations: bool) -> Tuple[Path, Optional[str], bool]:
+    """Pick the workdir from CLI flags; return (workdir, run_id, destructive_rollback); exit on misuse.
+
+    Runs in the caller's own checkout (--no-workspace or no flag) never reset or clean it on failure.
+    """
+    if args.no_workspace and not has_mutations:
+        return Path.cwd(), None, False
+    if args.create_worktree and not args.no_workspace:
+        workdir, run_id = create_isolated_worktree(args.base)
+        return workdir, run_id, True
+    if args.worktree and not args.no_workspace:
+        workdir = Path(args.worktree)
+        if not workdir.is_dir():
+            print(f"ERROR: Specified worktree directory does not exist: {workdir}", file=sys.stderr)
+            sys.exit(1)
+        if has_mutations and not is_linked_worktree(workdir):
+            print(f"WARNING: --worktree '{workdir}' is not a linked git worktree (it may be your main checkout). "
+                  "Failure handling runs git reset --hard and git clean -fd there.", file=sys.stderr)
+        return workdir, None, True
+    if has_mutations:
+        if args.no_workspace:
+            print("ERROR: --no-workspace is prohibited for graphs containing sequential_mutation nodes. "
+                  "Mutations require an isolated git worktree.", file=sys.stderr)
+        else:
+            print("ERROR: Manifest contains mutations. You must specify --worktree <path> or --create-worktree.", file=sys.stderr)
+        sys.exit(1)
+    return Path.cwd(), None, False
+
+
 def main() -> None:
+    """Parse CLI arguments, resolve the workspace, and run the graph."""
     parser = argparse.ArgumentParser(description="Deterministic Graph Manifest Runner")
     parser.add_argument("manifest", help="Path to graph-manifest.json file")
     parser.add_argument("--worktree", help="Path to existing git worktree directory")
@@ -624,7 +742,8 @@ def main() -> None:
     parser.add_argument("--approval", choices=["prompt", "none"], default="prompt",
                         help="Approval mode: 'prompt' (interactive) or 'none' (requires --expect-manifest-sha256 for mutations)")
     parser.add_argument("--expect-manifest-sha256", help="Expected SHA256 hex digest of approved manifest")
-    parser.add_argument("--run-dir", help="Directory where .graph-run receipt and state records are stored")
+    parser.add_argument("--run-dir", help="Directory where graph-run receipt and state records are stored "
+                                          "(default: <git-common-dir>/graph-run)")
 
     args = parser.parse_args()
     manifest_path = Path(args.manifest)
@@ -639,37 +758,10 @@ def main() -> None:
         print(f"ERROR: Failed to read or parse manifest {manifest_path}: {e}", file=sys.stderr)
         sys.exit(1)
 
-    mutations = [n for n in manifest.get("nodes", []) if n.get("type") == "sequential_mutation"]
-
-    if args.no_workspace:
-        if mutations:
-            print("ERROR: --no-workspace is prohibited for graphs containing sequential_mutation nodes. "
-                  "Mutations require an isolated git worktree.", file=sys.stderr)
-            sys.exit(1)
-        workdir = Path.cwd()
-        run_id = None
-    elif args.create_worktree:
-        run_id = f"run_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:6]}"
-        worktree_path = Path(".worktrees") / f"graph-{run_id}"
-        worktree_path.parent.mkdir(parents=True, exist_ok=True)
-        rc, _, err = run_cmd(["git", "worktree", "add", "-b", f"graph-{run_id}", str(worktree_path), args.base])
-        if rc != 0:
-            print(f"ERROR: Failed to create git worktree at {worktree_path}: {err}", file=sys.stderr)
-            sys.exit(1)
-        print(f"Created isolated worktree at: {worktree_path}")
-        workdir = worktree_path
-    elif args.worktree:
-        workdir = Path(args.worktree)
-        if not workdir.is_dir():
-            print(f"ERROR: Specified worktree directory does not exist: {workdir}", file=sys.stderr)
-            sys.exit(1)
-        run_id = None
-    else:
-        if mutations:
-            print("ERROR: Manifest contains mutations. You must specify --worktree <path> or --create-worktree.", file=sys.stderr)
-            sys.exit(1)
-        workdir = Path.cwd()
-        run_id = None
+    raw_nodes = manifest.get("nodes", []) if isinstance(manifest, dict) else []
+    mutations = [n for n in (raw_nodes if isinstance(raw_nodes, list) else [])
+                 if isinstance(n, dict) and n.get("type") == "sequential_mutation"]
+    workdir, run_id, destructive_rollback = resolve_workspace(args, bool(mutations))
 
     custom_run_dir = Path(args.run_dir) if args.run_dir else None
 
@@ -680,7 +772,8 @@ def main() -> None:
         run_id=run_id,
         run_dir=custom_run_dir,
         expected_manifest_sha=args.expect_manifest_sha256,
-        parsed_manifest=(manifest, manifest_bytes)
+        parsed_manifest=(manifest, manifest_bytes),
+        destructive_rollback=destructive_rollback,
     )
     exit_code = runner.run()
     sys.exit(exit_code)

@@ -8,8 +8,10 @@ Validates graph-manifest.json files against:
 2. DAG acyclicity (topological sort / cycle detection)
 3. Unique node IDs and dependency validity
 4. Strict sequential total ordering of mutation nodes
-5. Fallback node target integrity (no self-fallback, no cycles, no primary depending on fallback)
-6. Approval gate semantics for autonomous execution mode (--check-approval-none)
+5. Fallback node target integrity (no self-fallback, no cycles, no primary depending on fallback,
+   fallback type matches its primary, fallback mutations occupy their primary's chain position)
+6. Approval gate semantics for autonomous execution mode (--check-approval-none), covering
+   mutations and irreversible (reversible: false) nodes
 7. Non-empty primary node set
 
 Zero external dependencies outside standard library and optional jsonschema.
@@ -177,19 +179,37 @@ def validate_schema(manifest: Dict[str, Any], schema: Optional[Dict[str, Any]]) 
     return validate_schema_fallback(manifest, schema)
 
 
+def collect_ancestors(node_id: str, node_map: Dict[str, Dict[str, Any]]) -> Set[str]:
+    """Return every node reachable by following depends_on edges upward from node_id."""
+    q = [d for d in node_map.get(node_id, {}).get("depends_on", []) if isinstance(d, str)]
+    seen = set(q)
+    while q:
+        d = q.pop(0)
+        if d in node_map:
+            for parent in node_map[d].get("depends_on", []):
+                if isinstance(parent, str) and parent not in seen:
+                    seen.add(parent)
+                    q.append(parent)
+    return seen
+
+
 def validate_graph_topology(manifest: Dict[str, Any], check_approval_none: bool = False) -> List[str]:
     """Perform topological, structural, and ordering validation on manifest nodes."""
     errors = []
-    nodes = manifest.get("nodes", [])
-    if not isinstance(nodes, list) or len(nodes) == 0:
+    if not isinstance(manifest, dict):
+        return ["Manifest root must be a JSON object"]
+    raw_nodes = manifest.get("nodes", [])
+    if not isinstance(raw_nodes, list) or len(raw_nodes) == 0:
         return ["Manifest contains no valid 'nodes' array"]
+    # Only well-formed nodes participate in topology checks; malformed ones are reported below
+    nodes = [n for n in raw_nodes if isinstance(n, dict) and isinstance(n.get("id"), str) and n.get("id")]
 
     node_ids: Set[str] = set()
     node_map: Dict[str, Dict[str, Any]] = {}
     fallback_map: Dict[str, str] = {}  # source_id -> fallback_id
 
     # 1. Unique IDs & map creation
-    for idx, node in enumerate(nodes):
+    for idx, node in enumerate(raw_nodes):
         if not isinstance(node, dict):
             errors.append(f"Node at index {idx} is not an object")
             continue
@@ -200,7 +220,11 @@ def validate_graph_topology(manifest: Dict[str, Any], check_approval_none: bool 
         if nid in node_ids:
             errors.append(f"Duplicate node ID detected: '{nid}'")
         node_ids.add(nid)
-        node_map[nid] = node
+        # Shallow copy with depends_on sanitized to a list of strings so graph walks never crash;
+        # malformed depends_on values are still reported from the original node in step 2.
+        raw_deps = node.get("depends_on", [])
+        clean_deps = [d for d in raw_deps if isinstance(d, str)] if isinstance(raw_deps, list) else []
+        node_map[nid] = {**node, "depends_on": clean_deps}
 
         if node.get("failure_escalation") == "fallback_node":
             f_id = node.get("fallback_node_id")
@@ -234,12 +258,25 @@ def validate_graph_topology(manifest: Dict[str, Any], check_approval_none: bool 
                 "by any node's fallback_node_id."
             )
 
+    # Invariant: A fallback must have the same type as the node it substitutes for, so that a
+    # read's fallback can never mutate (it would run inside the parallel pool) and a mutation's
+    # fallback can never silently skip the mutation.
+    for src_id, fb_id in fallback_map.items():
+        if src_id in node_map and fb_id in node_map:
+            src_type = node_map[src_id].get("type")
+            fb_type = node_map[fb_id].get("type")
+            if src_type != fb_type:
+                errors.append(
+                    f"Fallback type mismatch: Node '{src_id}' (type '{src_type}') targets fallback "
+                    f"'{fb_id}' of type '{fb_type}'. A fallback must have the same type as its primary."
+                )
+
     # 2. Dependency reference check & fallback validation
     for nid, node in node_map.items():
-        deps = node.get("depends_on", [])
-        if not isinstance(deps, list):
-            errors.append(f"Node '{nid}' 'depends_on' must be an array")
-            continue
+        raw_deps = next((n.get("depends_on", []) for n in nodes if n.get("id") == nid), [])
+        if not isinstance(raw_deps, list) or any(not isinstance(d, str) for d in raw_deps):
+            errors.append(f"Node '{nid}' 'depends_on' must be an array of node ID strings")
+        deps = node["depends_on"]
         for dep in deps:
             if dep not in node_map:
                 errors.append(f"Node '{nid}' depends on unknown node '{dep}'")
@@ -289,37 +326,48 @@ def validate_graph_topology(manifest: Dict[str, Any], check_approval_none: bool 
         errors.append(f"Cyclic dependency detected: Graph contains a cycle (visited {visited_count} of {len(node_map)} nodes)")
 
     # 4. Strict Total Ordering of Mutation Nodes
-    mutation_nodes = [node for node in nodes if isinstance(node, dict) and node.get("type") == "sequential_mutation"]
-    if len(mutation_nodes) > 1:
-        # Build reachability map for mutations
-        reachable: Dict[str, Set[str]] = {m["id"]: set() for m in mutation_nodes}
-        for m in mutation_nodes:
-            q = list(m.get("depends_on", []))
-            visited_deps = set(q)
-            while q:
-                d = q.pop(0)
-                if d in node_map:
-                    for parent in node_map[d].get("depends_on", []):
-                        if parent not in visited_deps:
-                            visited_deps.add(parent)
-                            q.append(parent)
-            reachable[m["id"]] = visited_deps
+    # Fallback mutations are alternatives to their primary, never extra links in the chain: they are
+    # excluded from the pairwise check and must instead sit at their primary's chain position.
+    mutation_nodes = [node for node in nodes if node.get("type") == "sequential_mutation"]
+    primary_mutation_ids = [m["id"] for m in mutation_nodes if m["id"] not in fallback_node_ids]
+    reachable: Dict[str, Set[str]] = {m["id"]: collect_ancestors(m["id"], node_map) for m in mutation_nodes}
 
-        # For every pair of mutations (A, B), either A reachable from B or B reachable from A
-        for i in range(len(mutation_nodes)):
-            for j in range(i + 1, len(mutation_nodes)):
-                m1 = mutation_nodes[i]["id"]
-                m2 = mutation_nodes[j]["id"]
-                m1_depends_on_m2 = m2 in reachable[m1]
-                m2_depends_on_m1 = m1 in reachable[m2]
-                if not (m1_depends_on_m2 or m2_depends_on_m1):
-                    errors.append(
-                        f"Mutation total ordering violation: Mutation nodes '{m1}' and '{m2}' "
-                        f"are unordered / parallel. All sequential_mutation nodes must form a strict linear chain."
-                    )
+    # For every pair of primary mutations (A, B), either A reachable from B or B reachable from A
+    for i in range(len(primary_mutation_ids)):
+        for j in range(i + 1, len(primary_mutation_ids)):
+            m1 = primary_mutation_ids[i]
+            m2 = primary_mutation_ids[j]
+            if not (m2 in reachable[m1] or m1 in reachable[m2]):
+                errors.append(
+                    f"Mutation total ordering violation: Mutation nodes '{m1}' and '{m2}' "
+                    f"are unordered / parallel. All sequential_mutation nodes must form a strict linear chain."
+                )
 
-    # 5. Approval Gate Check for --approval none on mutation graphs
-    if check_approval_none and len(mutation_nodes) > 0:
+    # A fallback mutation must follow exactly the mutations its primary follows
+    primary_of: Dict[str, str] = {fb: src for src, fb in fallback_map.items()}
+    mutation_id_set = {m["id"] for m in mutation_nodes}
+    for m in mutation_nodes:
+        fb_id = m["id"]
+        if fb_id not in fallback_node_ids:
+            continue
+        root = primary_of.get(fb_id)
+        seen_chain = {fb_id}
+        while root in primary_of and root not in seen_chain:
+            seen_chain.add(root)
+            root = primary_of[root]
+        if root not in reachable:
+            continue
+        fb_before = reachable[fb_id] & mutation_id_set
+        root_before = reachable[root] & mutation_id_set
+        if fb_before != root_before:
+            errors.append(
+                f"Fallback ordering violation: Fallback mutation '{fb_id}' must depend on the same preceding "
+                f"mutations as its primary '{root}' (expected {sorted(root_before)}, found {sorted(fb_before)})."
+            )
+
+    # 5. Approval Gate Check for --approval none on mutation or irreversible graphs
+    gated_nodes = [n for n in nodes if n.get("type") == "sequential_mutation" or n.get("reversible") is False]
+    if check_approval_none and len(gated_nodes) > 0:
         root_nodes = [n for n in nodes if not n.get("depends_on")]
         approval_gate = None
         for n in root_nodes:
@@ -329,35 +377,24 @@ def validate_graph_topology(manifest: Dict[str, Any], check_approval_none: bool 
 
         if not approval_gate:
             errors.append(
-                "Approval gate violation: Graph contains sequential_mutation nodes but lacks a leading "
+                "Approval gate violation: Graph contains sequential_mutation or irreversible nodes but lacks a leading "
                 "root verifier_gate with role='approval'. Running with --approval none is prohibited."
             )
         else:
             app_id = approval_gate["id"]
-            for m in mutation_nodes:
+            for m in gated_nodes:
                 mid = m["id"]
-                q = list(m.get("depends_on", []))
-                seen = set(q)
-                found = False
-                while q:
-                    curr = q.pop(0)
-                    if curr == app_id:
-                        found = True
-                        break
-                    if curr in node_map:
-                        for p in node_map[curr].get("depends_on", []):
-                            if p not in seen:
-                                seen.add(p)
-                                q.append(p)
-                if not found:
+                if mid == app_id:
+                    continue
+                if app_id not in collect_ancestors(mid, node_map):
                     errors.append(
-                        f"Approval dependency violation: sequential_mutation node '{mid}' "
+                        f"Approval dependency violation: {m.get('type')} node '{mid}' "
                         f"does not depend on leading approval gate '{app_id}'"
                     )
 
     # 6. Verifier gate tier check
     for n in nodes:
-        if isinstance(n, dict) and n.get("type") == "verifier_gate":
+        if n.get("type") == "verifier_gate":
             if n.get("tier") != "deterministic_script":
                 errors.append(f"Verifier gate '{n.get('id')}' must use tier='deterministic_script', found '{n.get('tier')}'")
 

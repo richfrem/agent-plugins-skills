@@ -1,7 +1,9 @@
 [
-  {"prompt": "Execute this self-evolution task using a deterministic state machine with isolated worktree and rollback.", "should_trigger": true},
-  {"prompt": "Run an autonomous repair cycle that gates code commit behind an objective verification receipt.", "should_trigger": true},
-  {"prompt": "We need a state graph with formal TRIAGE, PLAN, and VERIFY nodes to safely apply this patch.", "should_trigger": true},
+  {"prompt": "Execute this existing graph manifest in an isolated worktree and roll back if a node fails.", "should_trigger": true},
+  {"prompt": "Run the compiled graph-manifest.json with --approval none using the approved manifest sha256.", "should_trigger": true},
+  {"prompt": "Resume running our task DAG; the parallel read batch and sequential mutation nodes are already planned.", "should_trigger": true},
+  {"prompt": "Inspect the receipts.jsonl and state.json from the last graph runner execution.", "should_trigger": true},
+  {"prompt": "Design a new execution graph with scatter and gather barriers for this migration.", "should_trigger": false},
   {"prompt": "Run a simple exploratory research search across our documentation.", "should_trigger": false},
   {"prompt": "Batch process 100 images in parallel with an agent swarm.", "should_trigger": false},
   {"prompt": "Delegate a single bugfix to an inner loop executor.", "should_trigger": false}
