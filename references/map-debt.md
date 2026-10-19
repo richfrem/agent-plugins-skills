@@ -1625,3 +1625,16 @@ Persistent tracking of architectural friction, structural anomalies, and unclose
 - Severity: M
 - Repeat: NO
 - Status: OPEN
+
+## DEBT-20261019-OS-CONTROL-INIT-MISSING-SKILL-SYMLINKS (RESOLVED)
+
+- Logged date: 2026-10-19
+- Cycle/Session ID: fix/os-control-init-missing-resource-symlinks
+- Artifact affected: `plugins/agent-agentic-os/skills/os-control-init`, `symlinks.json`
+- Friction observed: `init_agentic_os.py` calls `load_template("ARCHITECTURE_MD.md")` but the template existed only at `plugins/agent-agentic-os/assets/templates/` and was never symlinked into the skill folder. Installers deploy only skill-folder contents, so `init_agentic_os.py` failed in every consuming repo. Three plugin references cited by name in the skill's scripts were also not linked.
+- Why not fixed now: Fixed immediately in this change.
+- Recommended fix / fix applied: Added four file-level relative symlinks via `symlink_manager.py create` (ARCHITECTURE_MD.md, isolation-setup.md, cheap-agent-transition-simulation.md, worktree-reconciliation-and-multi-worktree-practices.md), registered in `symlinks.json`.
+- Evidence/repro: In a consuming repo, `python .agents/skills/os-control-init/scripts/init_agentic_os.py --target . --dry-run` errored with "Template ARCHITECTURE_MD.md not found". `symlink_manager.py audit` reports all links OK after the fix.
+- Severity: M
+- Repeat: NO
+- Status: RESOLVED

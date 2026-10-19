@@ -11796,6 +11796,30 @@
       "dst": "plugins/agent-orchestration/skills/graph-execution/references/diagrams/graph_execution_state_machine.mmd",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "plugins/agent-agentic-os/assets/templates/ARCHITECTURE_MD.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/assets/templates/ARCHITECTURE_MD.md",
+      "strategy": "symlink",
+      "description": "Required by init_agentic_os.py load_template"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/isolation-setup.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/isolation-setup.md",
+      "strategy": "symlink",
+      "description": "Referenced by os-control-init scripts"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/cheap-agent-transition-simulation.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/cheap-agent-transition-simulation.md",
+      "strategy": "symlink",
+      "description": "Referenced by os-control-init scripts"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/worktree-reconciliation-and-multi-worktree-practices.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/worktree-reconciliation-and-multi-worktree-practices.md",
+      "strategy": "symlink",
+      "description": "Referenced by os-control-init scripts"
     }
   ]
 }

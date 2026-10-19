@@ -1,0 +1,1 @@
+../../../../assets/templates/ARCHITECTURE_MD.md
