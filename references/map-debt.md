@@ -1651,3 +1651,16 @@ Persistent tracking of architectural friction, structural anomalies, and unclose
 - Severity: M
 - Repeat: YES
 - Status: RESOLVED
+
+## DEBT-20261019-OS-CONTROL-INIT-ALL-RESOURCES-NOT-LINKED (RESOLVED)
+
+- Logged date: 2026-10-19
+- Cycle/Session ID: fix/os-control-init-all-missing-symlinks
+- Artifact affected: `plugins/agent-agentic-os/skills/os-control-init`, `symlinks.json`
+- Friction observed: The `os-control-init` skill folder did not link most resources from the parent plugin's `assets/`, `references/` and `scripts/`. Two earlier fixes (#700, #701) added only the files that init's code path failed on, one at a time, instead of reconciling the whole folder against the plugin hub.
+- Why not fixed now: Fixed immediately in this change.
+- Recommended fix / fix applied: Compared every file under the plugin's `assets/`, `references/` and `scripts/` against the skill folder and added all 151 missing file-level relative symlinks via `symlink_manager.py create`, registered in `symlinks.json`.
+- Evidence/repro: Diff of plugin hub vs skill folder listed 12 assets, 105 references and 34 scripts missing; `symlink_manager.py audit` reports all links OK after the change.
+- Severity: M
+- Repeat: YES
+- Status: RESOLVED
