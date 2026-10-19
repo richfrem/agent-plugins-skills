@@ -11832,6 +11832,912 @@
       "dst": "plugins/agent-agentic-os/skills/os-control-init/templates/agents.json",
       "strategy": "symlink",
       "description": "Legacy lookup path for init_agentic_os.py"
+    },
+    {
+      "src": "plugins/agent-agentic-os/assets/diagrams/agent-agentic-os-architecture.mmd",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/assets/diagrams/agent-agentic-os-architecture.mmd",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/assets/diagrams/agentic-os-memory-subsystem.mmd",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/assets/diagrams/agentic-os-memory-subsystem.mmd",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/assets/diagrams/architecture-overview.mmd",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/assets/diagrams/architecture-overview.mmd",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/assets/diagrams/event-bus-architecture.mmd",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/assets/diagrams/event-bus-architecture.mmd",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/assets/diagrams/os-lab-backport-phases.mmd",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/assets/diagrams/os-lab-backport-phases.mmd",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/assets/diagrams/os-lab-backport-sequence.mmd",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/assets/diagrams/os-lab-backport-sequence.mmd",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/assets/diagrams/sibling-repo-labs.mmd",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/assets/diagrams/sibling-repo-labs.mmd",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/assets/templates/eval-instructions.template.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/assets/templates/eval-instructions.template.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/assets/templates/autoresearch/copilot_proposer_prompt.md.template",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/assets/templates/autoresearch/copilot_proposer_prompt.md.template",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/assets/templates/autoresearch/evals.json.template",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/assets/templates/autoresearch/evals.json.template",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/assets/templates/autoresearch/program.md.template",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/assets/templates/autoresearch/program.md.template",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/assets/templates/autoresearch/results.tsv.template",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/assets/templates/autoresearch/results.tsv.template",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/agentic-os-skill-map.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/agentic-os-skill-map.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/cheapest_models.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/cheapest_models.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/control-plane-architecture.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/control-plane-architecture.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/control-plane-rebuild-recovery.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/control-plane-rebuild-recovery.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/control-plane-simulation-protocol.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/control-plane-simulation-protocol.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/control-plane.manifest.json",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/control-plane.manifest.json",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/copilot_proposer_prompt.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/copilot_proposer_prompt.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/edge-matrix.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/edge-matrix.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/implementation-ledger-contract.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/implementation-ledger-contract.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/lab-space-protocol.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/lab-space-protocol.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/memory-promotion-guide.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/memory-promotion-guide.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/multi-round-external-review-protocol.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/multi-round-external-review-protocol.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/operating-protocols.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/operating-protocols.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/orchestrator-meta-survey.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/orchestrator-meta-survey.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-control-health-detailed-reference.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-control-health-detailed-reference.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-control-health-fallback-tree.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-control-health-fallback-tree.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-control-init-acceptance-criteria.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-control-init-acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-control-init-detailed-reference.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-control-init-detailed-reference.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-control-init-fallback-tree.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-control-init-fallback-tree.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-control-intake-detailed-reference.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-control-intake-detailed-reference.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-control-intake-healthy-transcript.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-control-intake-healthy-transcript.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-control-mode-acceptance-criteria.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-control-mode-acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-control-mode-fallback-tree.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-control-mode-fallback-tree.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-control-signing-setup-acceptance-criteria.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-control-signing-setup-acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-control-signing-setup-fallback-tree.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-control-signing-setup-fallback-tree.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-control-signing-setup-guide.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-control-signing-setup-guide.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-control-simulator-acceptance-criteria.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-control-simulator-acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-control-simulator-fallback-tree.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-control-simulator-fallback-tree.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-lab-backport-acceptance-criteria.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-lab-backport-acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-lab-backport-detailed-reference.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-lab-backport-detailed-reference.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-lab-backport-fallback-tree.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-lab-backport-fallback-tree.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-lab-log-acceptance-criteria.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-lab-log-acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-lab-log-detailed-reference.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-lab-log-detailed-reference.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-lab-log-fallback-tree.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-lab-log-fallback-tree.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-lab-log-report-reference.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-lab-log-report-reference.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-lab-loop-cheapest_models.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-lab-loop-cheapest_models.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-lab-loop-fallback-tree.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-lab-loop-fallback-tree.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-lab-loop-improvement-ledger-spec.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-lab-loop-improvement-ledger-spec.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-lab-loop-lab-limits.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-lab-loop-lab-limits.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-lab-loop-metrics.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-lab-loop-metrics.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-lab-loop-mutation-protocol.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-lab-loop-mutation-protocol.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-lab-loop-program.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-lab-loop-program.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-lab-loop-stage-0-orientation.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-lab-loop-stage-0-orientation.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-lab-loop-stage-1-execution.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-lab-loop-stage-1-execution.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-lab-loop-stage-2-verification.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-lab-loop-stage-2-verification.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-lab-loop-stage-4-close.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-lab-loop-stage-4-close.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-lab-loop-test-registry-protocol.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-lab-loop-test-registry-protocol.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-lab-memory-acceptance-criteria.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-lab-memory-acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-lab-memory-detailed-reference.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-lab-memory-detailed-reference.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-lab-memory-fallback-tree.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-lab-memory-fallback-tree.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-lab-planner-acceptance-criteria.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-lab-planner-acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-lab-planner-audit-lenses.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-lab-planner-audit-lenses.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-lab-planner-delegation.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-lab-planner-delegation.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-lab-planner-fallback-tree.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-lab-planner-fallback-tree.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-lab-planner-routing-taxonomy.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-lab-planner-routing-taxonomy.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-lab-planner-templates.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-lab-planner-templates.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-lab-scorer-check-protocol.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-lab-scorer-check-protocol.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-lab-scorer-fallback-tree.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-lab-scorer-fallback-tree.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-lab-scorer-red-green-refactor.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-lab-scorer-red-green-refactor.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-lab-scorer-troubleshooting.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-lab-scorer-troubleshooting.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-lab-setup-acceptance-criteria.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-lab-setup-acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-lab-setup-detailed-reference.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-lab-setup-detailed-reference.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-lab-setup-fallback-tree.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-lab-setup-fallback-tree.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/overfitting-gate.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/overfitting-gate.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/program.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/program.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/self-evolution-profile.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/self-evolution-profile.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/SIGNING_WORKFLOW_OVERVIEW.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/SIGNING_WORKFLOW_OVERVIEW.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/stage-3-decision.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/stage-3-decision.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/stage-4-close.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/stage-4-close.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/superpowers-boundary-and-attribution.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/superpowers-boundary-and-attribution.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/two-improvement-paths.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/two-improvement-paths.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/architecture/architecture.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/architecture/architecture.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/architecture/claude-md-hierarchy.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/architecture/claude-md-hierarchy.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/architecture/context-folder-patterns.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/architecture/context-folder-patterns.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/architecture/vision.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/architecture/vision.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/diagrams/ciba-rar-transition-auth-flow.mermaid",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/diagrams/ciba-rar-transition-auth-flow.mermaid",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/diagrams/control-plane-architecture.mermaid",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/diagrams/control-plane-architecture.mermaid",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/diagrams/control-plane-lifecycle-baseline-no-ciba-rar.mermaid",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/diagrams/control-plane-lifecycle-baseline-no-ciba-rar.mermaid",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/diagrams/control-plane-lifecycle-hardened-with-ciba-rar.mermaid",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/diagrams/control-plane-lifecycle-hardened-with-ciba-rar.mermaid",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/diagrams/control-plane-pipeline-happy-path.mermaid",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/diagrams/control-plane-pipeline-happy-path.mermaid",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/diagrams/control-plane-pipeline.mermaid",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/diagrams/control-plane-pipeline.mermaid",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/diagrams/increment-b-human-only-transition-ssh-signing.mermaid",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/diagrams/increment-b-human-only-transition-ssh-signing.mermaid",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/domain-patterns/README.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/domain-patterns/README.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/domain-patterns/routing-skill.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/domain-patterns/routing-skill.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/memory/improvement-ledger-spec.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/memory/improvement-ledger-spec.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/memory/memory-promotion-guide.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/memory/memory-promotion-guide.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/meta/backlog.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/meta/backlog.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/meta/research/1330306.pdf",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/meta/research/1330306.pdf",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/meta/research/1387373.pdf",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/meta/research/1387373.pdf",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/meta/research/karpathy-autoresearch-3-file-eval.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/meta/research/karpathy-autoresearch-3-file-eval.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/meta/research/koubaa-2025-agent-os-blueprint.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/meta/research/koubaa-2025-agent-os-blueprint.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/meta/research/optimizer-engine-patterns.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/meta/research/optimizer-engine-patterns.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/meta/research/sharma-2026-aos-control-plane.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/meta/research/sharma-2026-aos-control-plane.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/operations/chart-reading-guide.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/operations/chart-reading-guide.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/operations/operating-protocols.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/operations/operating-protocols.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/operations/os-lab-backport-phase-guide.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/operations/os-lab-backport-phase-guide.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/operations/triple-loop.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/operations/triple-loop.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-control-health/acceptance-criteria.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-control-health/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-control-init/instruction-blending.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-control-init/instruction-blending.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-control-init/retrofit-planning.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-control-init/retrofit-planning.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-control-intake/acceptance-criteria.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-control-intake/acceptance-criteria.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/os-control-intake/fallback-tree.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/os-control-intake/fallback-tree.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/research/karpathy-autoresearch-3-file-eval.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/research/karpathy-autoresearch-3-file-eval.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/research/meta-harness-lee-2026.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/research/meta-harness-lee-2026.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/references/testing/test-scenarios-seed.md",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/references/testing/test-scenarios-seed.md",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/analysis.ipynb",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/scripts/analysis.ipynb",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/audit_map_debt.py",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/scripts/audit_map_debt.py",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/capability_probe.py",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/scripts/capability_probe.py",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/check_plan_links.py",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/scripts/check_plan_links.py",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane_mode.py",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/scripts/control_plane_mode.py",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/distill_playbook.py",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/scripts/distill_playbook.py",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/eval_runner.py",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/scripts/eval_runner.py",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/evaluate.py",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/scripts/evaluate.py",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/evolution_state.py",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/scripts/evolution_state.py",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/experiment_log.py",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/scripts/experiment_log.py",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/export_upstream_pr.py",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/scripts/export_upstream_pr.py",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/generate_eval_instructions.py",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/scripts/generate_eval_instructions.py",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/generate_milestone.py",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/scripts/generate_milestone.py",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/generate_report.py",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/scripts/generate_report.py",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/init_autoresearch.py",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/scripts/init_autoresearch.py",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/interview_spec_engine.py",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/scripts/interview_spec_engine.py",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/kernel.py",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/scripts/kernel.py",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/plot_eval_progress.py",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/scripts/plot_eval_progress.py",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/post_run_metrics.py",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/scripts/post_run_metrics.py",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/probe_environments.py",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/scripts/probe_environments.py",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/record_trace.py",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/scripts/record_trace.py",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/setup_ciba_identity.py",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/scripts/setup_ciba_identity.py",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/smoke_test.py",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/scripts/smoke_test.py",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/test_capability_probe.py",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/scripts/test_capability_probe.py",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/test_signing_mechanics.py",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/scripts/test_signing_mechanics.py",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/test_worktree_manager.py",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/scripts/test_worktree_manager.py",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/verify_evolution_receipt.py",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/scripts/verify_evolution_receipt.py",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/worktree_manager.py",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/scripts/worktree_manager.py",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/wrappers/__init__.py",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/scripts/control_plane/wrappers/__init__.py",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/wrappers/record_interview_question.py",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/scripts/control_plane/wrappers/record_interview_question.py",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/wrappers/record_retrospective.py",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/scripts/control_plane/wrappers/record_retrospective.py",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/wrappers/run_exit_verification.py",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/scripts/control_plane/wrappers/run_exit_verification.py",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/wrappers/run_verify_exit_bundle.py",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/scripts/control_plane/wrappers/run_verify_exit_bundle.py",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
+    },
+    {
+      "src": "plugins/agent-agentic-os/scripts/control_plane/wrappers/write_plan_document.py",
+      "dst": "plugins/agent-agentic-os/skills/os-control-init/scripts/control_plane/wrappers/write_plan_document.py",
+      "strategy": "symlink",
+      "description": "os-control-init resource from plugin hub"
     }
   ]
 }

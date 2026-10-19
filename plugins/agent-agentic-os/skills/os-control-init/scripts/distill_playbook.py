@@ -1,0 +1,1 @@
+../../../scripts/distill_playbook.py

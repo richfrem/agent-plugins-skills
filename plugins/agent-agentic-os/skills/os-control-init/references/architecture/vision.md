@@ -1,0 +1,1 @@
+../../../../references/architecture/vision.md

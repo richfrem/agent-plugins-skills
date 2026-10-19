@@ -1,0 +1,1 @@
+../../../scripts/setup_ciba_identity.py
