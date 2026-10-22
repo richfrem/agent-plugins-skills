@@ -92,14 +92,25 @@ flowchart LR
 
 ---
 
-## 6. Eliminating Hardcoded `.agents/` Instruction Staleness
+## 6. Comprehensive Elimination of Hardcoded `.agents/` References
 
-Over 400 lines across this repository (and dozens of consuming downstream repositories) contain hardcoded operational instructions like:
-- `python3 .agents/skills/<skill>/scripts/<script>.py`
-- `Full standards → .agents/skills/<skill>/SKILL.md`
-- `Skills run from .agents/skills/, never from plugins/ directly`
+Over 400 lines across this repository (and dozens of consuming downstream repositories) contain hardcoded operational references to `.agents/` across markdown, Python code, rules, and configuration files.
 
-When an APM consumer installs via `--target copilot`, those files land in `.github/`, not `.agents/`. If an agent is told to look strictly in `.agents/`, it fails.
+When developers use **workstation-level global installations** (`apm install ... --global --target copilot`):
+- Files reside centrally under `%USERPROFILE%\.apm\` and `%USERPROFILE%\.github` (or `.claude` / `.agents`).
+- Downstream consumer repositories have **zero `.agents/` directory on disk**.
+- Any file in any repo (source or consumer) that assumes `.agents/` exists will fail.
+
+### Complete Scope of Files Requiring Decoupling
+
+| File Type / Category | Current Rigid Pattern | APM / Workstation Target Pattern |
+| :--- | :--- | :--- |
+| **Markdown Instructions (`*.md`, `SKILL.md`)** | `python3 .agents/skills/<name>/scripts/<script>.py`<br>`Full standards → .agents/skills/<name>/SKILL.md` | `Activate the '<name>' skill or run scripts/<script>.py relative to the skill root`<br>`Full standards → Refer to '<name>' skill in your active harness or global profile` |
+| **Python Scripts (`*.py`)** | `Path(__file__).parents[...] / ".agents" / "skills"`<br>`sys.path.append(".agents/skills/...")` | Use standard dynamic lookup: check skill-local directory first (`Path(__file__).parent`), then active harness (`.github/`, `.claude/`, `.agents/`), then `%USERPROFILE%` global fallback. |
+| **Architecture & Rule Docs (`AGENTS.md`, `rules/*.md`)** | *"Skills run from .agents/skills/, never from plugins/"* | *"Skills run from your registered harness environment (.github/skills/, .claude/skills/, .agents/skills/, or global workstation profile)"* |
+| **CI & Test Workflows (`.github/workflows/*.yml`)** | Steps checking `test -d .agents/skills` or invoking `.agents/...` | Update CI steps to use `apm install --frozen` and verify against target harness paths (`.github/` or `.agents/`). |
+
+---
 
 ### The 3-Pillar Solution for This Repo and Consuming Repos:
 
@@ -115,13 +126,17 @@ We establish a canonical, harness-agnostic way to cite skills across all instruc
 #### 2. Automated Migration Script: `scripts/decouple_agent_paths.py`
 We will build a dedicated, dry-run-capable CLI tool in `plugins/agent-scaffolders/` that can be executed both **in this repository** and **in external consuming repositories**:
 ```bash
+# Preview changes across any repository
 python decouple_agent_paths.py --path <repo-root> --dry-run
+
+# Apply batch transformation to all .md, .py, .yaml, and config files
 python decouple_agent_paths.py --path <repo-root> --apply
 ```
 This script detects and transforms known patterns:
 - `.agents/skills/<name>/SKILL.md` → `<name>` skill reference
 - `.agents/skills/<name>/scripts/<script>` → portable skill script invocation
-- `.agents/` hardcoded path requirements → fallback path resolver
+- Python path discovery → harness-aware resolver helper (`find_skill_resource()`)
+- Hardcoded directory assertions → dynamic harness checks
 
 #### 3. Backward-Compatibility Fallback (Harness Symlink / Alias Bridge)
 In APM's `apm.yml`, we can configure multi-target compilation or an APM post-install hook to guarantee legacy links remain intact during the transition:
