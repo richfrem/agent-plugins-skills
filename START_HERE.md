@@ -43,6 +43,15 @@ completeness). Then verify the test suite: `python3 -m pytest plugins/ -q`. See
 
 Look for `[ ]` items in context/memory/ session logs from the last 7 days.
 
+## Next Session Priorities (APM Migration)
+
+- **Target Plan**: [`docs/plans/apm_migration_plan.md`](docs/plans/apm_migration_plan.md)
+- **Goal**: Transition from `uvx` / `plugin-manager` orchestration to Microsoft APM (Agent Package Manager) using a Strangler Fig approach.
+- **Immediate Task**: Execute Phase 1 Pilot Proof-of-Concept:
+  1. Build dereferencer pipeline (`inspect → normalize → validate → package → test deploy`) under `plugins/agent-scaffolders/skills/convert-plugin-to-apm/`.
+  2. Synthesize pilot `apm.yml` for `agent-scaffolders` with target mappings (`copilot`, `claude`, `agents`).
+  3. Validate against the Acceptance Verification Contract in `docs/plans/apm_migration_plan.md`.
+
 ## Confirm Readiness
 
 Say: "I am ready. Here is what I know: [brief summary of loaded context and open items]"
