@@ -147,3 +147,53 @@ targets:
   - agents    # Materializes into .agents/ (ensures zero disruption for legacy instructions)
 ```
 By mapping primitives into both `.github/` (for Copilot native context) and `.agents/` (or providing an alias bridge), older instructions in consuming repositories that still reference `.agents/` will **continue to work seamlessly without crashing**, giving consuming teams ample time to run the decoupling script.
+
+---
+
+## 7. Fleet-Wide Multi-Repo Migration Strategy
+
+Consuming repositories in the developer workspace depend heavily on `.agents/` paths. A localized scan across representative sibling repositories reveals:
+
+| Repository | Files Referencing `.agents/` | Occurrences | Role |
+| :--- | :---: | :---: | :--- |
+| **`jag-JUSTIN-Oracle-Forms-Analysis`** | 78 files | 865 occurrences | Oracle Forms backend analysis & pipelines |
+| **`jag-legacy-oracle-plugins`** | 183 files | 544 occurrences | Oracle legacy plugins & skill spokes |
+| **`CSB-intranet`** | 39 files | 242 occurrences | Web application & knowledge base |
+| **`sharepoint-knowledge-workbench`** | 46 files | 163 occurrences | Knowledge workbench & ingestion |
+| **`claude-design-bc-gov-design-system`** | 2 files | 15 occurrences | BC Gov UI Design System components & tokens |
+| **`agent-plugins-skills` (Source)** | 222 files | 1,110 occurrences | Central authoring monorepo |
+| **Fleet Total** | **570 files** | **2,939 occurrences** | Complete workspace ecosystem |
+
+### Synchronized Fleet Execution ("All At Once" Approach)
+
+To prevent split-brain states where some repos use global APM and others fail looking for local `.agents/`, we execute a coordinated sweep:
+
+1. **Fleet Inventory Config (`fleet-repos.json`)**:
+   Define the registry of consuming repositories to batch-process:
+   ```json
+   {
+     "workspace_root": "c:/Users/RICHFREM/source/repos",
+     "repos": [
+       "agent-plugins-skills",
+       "jag-JUSTIN-Oracle-Forms-Analysis",
+       "jag-legacy-oracle-plugins",
+       "CSB-intranet",
+       "sharepoint-knowledge-workbench",
+       "claude-design-bc-gov-design-system"
+     ]
+   }
+   ```
+
+2. **Orchestrated Batch Decoupling (`migrate_fleet_to_apm.py`)**:
+   A single orchestrator script loops over all registered repos:
+   - Creates a migration branch (`feat/decouple-agents-apm`) in each repo.
+   - Runs `decouple_agent_paths.py --apply`.
+   - Replaces local `plugin-manager` / `uvx` bootstrap files with consumer `apm.yml`.
+   - Generates a git diff report and verification summary across the entire fleet.
+
+3. **Single Global Workstation Activation**:
+   Once the fleet is decoupled, the developer workstation activates APM globally:
+   ```powershell
+   apm install richfrem/agent-plugins-skills#stable --global --target copilot
+   ```
+   All 5 repositories instantly read the global capabilities with zero per-repo `.agents/` folders needed.
