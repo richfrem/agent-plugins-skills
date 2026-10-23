@@ -72,9 +72,9 @@ The consolidated `agent-memory` suite registers the following 13 skills:
 ## Setup & Initialization
 
 ### Standard Installation
-All skills are installed into `.agents/skills/` via the unified local installer:
+Install the package via APM for your active client or globally:
 ```bash
-python plugins/plugin-manager/scripts/plugin_add.py --all -y
+apm install @richfrem/agent-memory
 ```
 
 ### Initializing RLM & Vector Database

@@ -141,9 +141,9 @@ permission by itself.
 
 The canonical diagrams provide visual views of this same inventory:
 
-- [`control-plane-pipeline.mermaid`](../../../docs/diagrams/control-plane-pipeline.mermaid)
-- [`control-plane-pipeline-happy-path.mermaid`](../../../docs/diagrams/control-plane-pipeline-happy-path.mermaid)
-- [`control-plane-architecture.mermaid`](../../../docs/diagrams/control-plane-architecture.mermaid)
+- [`control-plane-pipeline.mermaid`](diagrams/control-plane-pipeline.mermaid)
+- [`control-plane-pipeline-happy-path.mermaid`](diagrams/control-plane-pipeline-happy-path.mermaid)
+- [`control-plane-architecture.mermaid`](diagrams/control-plane-architecture.mermaid)
 
 ## Transition protocol
 

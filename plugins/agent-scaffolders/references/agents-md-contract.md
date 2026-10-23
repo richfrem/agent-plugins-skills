@@ -19,7 +19,7 @@ Root files must follow a strict separation of concerns:
 | **Invariants** | Non-negotiable MUST / NEVER constraints (1 line each) | Root file (`AGENTS.md`), inline | Invariant statement must be fully readable inline using uppercase modal constraint tokens (`MUST`, `NEVER`, `ALWAYS`, `DO NOT`, `REQUIRED`, `PROHIBITED`); link points to rationale/examples in `.agent/rules/`. Never hide the invariant itself behind an unread link. |
 | **Orientation** | Essential build/test commands, environment quirks, key paths (<= 16 lines total across Architecture and Commands) | Root file, inline | Minimal commands only; no multi-step walkthroughs. |
 | **Scoped Conventions** | Style rules or constraints applying only to specific languages or subdirectories | Path-scoped rules (`.claude/rules/*.md` with `paths:`, or nested `AGENTS.md` in subdirectories) | Must not bloat the global root context. |
-| **Procedures** | Workflows requiring multi-step sequential actions (>3 steps or branching logic) | Specialized Skills (`.agents/skills/<skill>/SKILL.md`) | No inlined execution guides in root file. |
+| **Procedures** | Workflows requiring multi-step sequential actions (>3 steps or branching logic) | Specialized Skills (`SKILL.md` in client harness or global profile) | No inlined execution guides in root file. |
 | **Reference Material** | Schemas, detailed catalogs, historical records, pitfall lists | Reference documents (`references/` or `docs/architecture/`) | Referenced via lazy pointers with clear "Read when..." triggers. |
 
 ## 4. Canonical Authority & Platform Bridges

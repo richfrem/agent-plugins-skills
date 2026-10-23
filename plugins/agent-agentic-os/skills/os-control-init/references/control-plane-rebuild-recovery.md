@@ -1,1 +1,0 @@
-../../../references/control-plane-rebuild-recovery.md

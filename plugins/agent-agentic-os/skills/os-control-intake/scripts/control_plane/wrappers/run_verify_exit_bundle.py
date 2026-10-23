@@ -1,1 +1,0 @@
-../../../../../scripts/control_plane/wrappers/run_verify_exit_bundle.py

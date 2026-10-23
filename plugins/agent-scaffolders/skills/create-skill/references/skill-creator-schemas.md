@@ -1,1 +1,0 @@
-../../../references/skill-creator-schemas.md

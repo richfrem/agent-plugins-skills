@@ -28,7 +28,7 @@ For local planning, backlog status, and current task handoffs, consult `docs/pla
 3. **Cryptographic Human Gates (CIBA/RAR Lineage)**:
    Three pipeline transitions are cryptographic: spec approval (`Gate 1`), worktree exit review (`Gate 3`), and task closure (`DONE`). Only an out-of-band OpenSSH signature from a human-held key can advance them. Agents must never run signing commands, manipulate keys, or synthesize approval proofs.
 4. **Hub-First Architecture & Loose Coupling**:
-   Shared resources reside at plugin roots (`plugins/<plugin>/scripts/`, etc.) as canonical authorities and are symlinked into skill spokes via `symlink_manager.py`. Installed skills in `.agents/` must be self-contained and dereferenced.
+   Shared resources reside at plugin roots (`plugins/<plugin>/scripts/`, etc.) as canonical authorities and are listed for each skill spoke in the copy manifest (`symlinks.json`, `strategy: "copy"`); never create symlinks. After cloning, run `materialize_copies.py` (convert-plugin-to-apm skill) to write the copies. Installed skills must be self-contained ([plugin-architecture-policy](.agent/rules/plugin-architecture-policy.md) Section 5).
 5. **Verifier Sovereignty & Proposal Mode**:
    Implementation agents cannot modify acceptance tests, evaluation baselines, or verification scripts. Pre-execution verifier hashes are locked. In Stage 1 (`PLAN`), workspace files are strictly read-only.
 6. **Config-Driven Constants Over Hardcoding**:
@@ -36,8 +36,11 @@ For local planning, backlog status, and current task handoffs, consult `docs/pla
 7. **Three-Attempt Maximum & Map Debt Logging**:
    Autonomous repair attempts are capped at 3. Every friction event must update the map (playbooks, rules, references), log `Status: RESOLVED` in `references/map-debt.md` if fixed inline, or record an open debt entry if deferred.
 8. **Only Installed Skills Exist at Runtime**:
-   `plugins/` is source; only what is installed in `.agents/skills/` and enabled in `.agents/ownership/<plugin>.json` (`should_install: true`) can run. A skill present in `plugins/` may be disabled on purpose (context size). Before recommending, routing to, or writing a handoff to any skill or agent, verify it is installed (`ls .agents/skills/<name>`, `grep '"<name>"' .agents/ownership/*.json`); never route through a disabled one. If the right target is disabled, say so and ask. `os-control-mode` toggles only the control-plane family (`os-control-intake`, `os-control-simulator`, `os-control-signing-setup`); it says nothing about other skills.
-   Not every skill, rule or agent is installed at once: only what the current work needs is enabled, to save context. To enable or disable a component, set `should_install` in `.agents/ownership/<plugin>.json`, then run the plugin sync (`plugin-syncer` skill: `python3 plugins/plugin-manager/scripts/sync_with_inventory.py --dry-run`, then without `--dry-run`). Sync installs from the sources in `plugin-sources.json`, so unmerged branch edits do not reach `.agents/`. Never edit `.agents/` copies by hand.
+   `plugins/` is source; only what is installed in your active runtime environment can run. Depending on whether installed locally or globally (via APM or legacy):
+   - Local project harnesses: `.claude/skills/<name>` (Claude) or `.agents/skills/<name>` (Copilot, Codex, Antigravity)
+   - Global workstation profile: `~/.claude/skills/<name>` (Claude) or `~/.agents/skills/<name>` (Copilot, Codex, Antigravity)
+   A skill present in `plugins/` may be disabled or uninstalled to save context. Before recommending, routing to, or writing a handoff to any skill or agent, verify it is installed in your active runtime harness or global profile; never route through an uninstalled one. If the right target is not installed, say so and ask. `os-control-mode` toggles only the control-plane family (`os-control-intake`, `os-control-simulator`, `os-control-signing-setup`); it says nothing about other skills.
+   Install or update packages with `apm install <pkg> [--global] --target claude,copilot,codex,antigravity`. Never edit installed skill copies by hand.
    Before working with the Agentic OS, read the [Agentic OS Skill Map](plugins/agent-agentic-os/references/agentic-os-skill-map.md) (what every skill does and how the clusters relate) and [Two Improvement Paths](plugins/agent-agentic-os/references/two-improvement-paths.md) (control plane vs improvement lab).
 
 ---
@@ -56,11 +59,12 @@ python3 plugins/agent-scaffolders/scripts/audit_sub_agent.py plugins --all
 # Audit rule policy invariants
 python3 plugins/agent-scaffolders/scripts/audit_rule.py plugins --all
 
-# Audit repository symlink health
-python3 .agents/skills/symlink-manager/scripts/symlink_manager.py audit
+# Materialize copy-manifest files after cloning, and check them for drift before committing
+python3 plugins/agent-scaffolders/skills/convert-plugin-to-apm/scripts/materialize_copies.py
+python3 plugins/agent-scaffolders/skills/convert-plugin-to-apm/scripts/materialize_copies.py --check
 
-# Synchronize registered plugins and enforce retention
-python3 plugins/plugin-manager/scripts/sync_with_inventory.py
+# Check installed APM packages and active client skills
+apm list
 ```
 
 ---
@@ -94,7 +98,7 @@ Detailed domain rules and behavioral invariants are maintained as modular docume
 - [Worktree Lifecycle Management](.agent/rules/worktree-lifecycle-management.md): Native worktree allocation, locking, and teardown protocols.
 - [Worktree Sub-Agent Leak Detection](.agent/rules/worktree-subagent-leak-detection.md): Verification preventing background child process leaks.
 - [GitHub Issue Logging Policy](.agent/rules/github-issue-logging-policy.md): Decision matrix and dry-run deduplication for logging friction.
-- [Cross-Platform Symlinks](.agent/rules/symlink-cross-platform.md): Junction fallbacks and cross-platform symlink conventions.
+- [Cross-Platform Symlinks](.agent/rules/symlink-cross-platform.md): Superseded by the copy manifest; no new symlinks.
 - [Pre-Push Audit](.agent/rules/pre-push-audit.md): Pre-push pipeline completion checks and review gates.
 
 ---

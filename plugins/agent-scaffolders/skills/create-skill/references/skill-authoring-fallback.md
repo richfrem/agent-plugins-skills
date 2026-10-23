@@ -1,1 +1,0 @@
-../../../references/skill-authoring-fallback.md

@@ -1,1 +1,0 @@
-../../../../agent-agentic-os/rules/destructive-action-guard.md

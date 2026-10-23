@@ -1,1 +1,0 @@
-../../../../assets/templates/python-tool-header-template.py

@@ -1,1 +1,0 @@
-../../../references/create-apm-package-acceptance-criteria.md

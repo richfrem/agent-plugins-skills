@@ -1,1 +1,0 @@
-../../../references/github-issue-resolution-reviewer-fallback-tree.md

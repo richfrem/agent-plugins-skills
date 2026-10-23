@@ -1,1 +1,0 @@
-../../../../assets/templates/adversarial-security-auditor.md

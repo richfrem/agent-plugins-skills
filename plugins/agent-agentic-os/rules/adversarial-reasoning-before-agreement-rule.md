@@ -9,7 +9,6 @@ globs:
   - "plugins/**/*.py"
   - "plugins/**/*.ts"
   - "plugins/**/*.tsx"
-  - ".agents/**/*.md"
   - ".agent/rules/**/*.md"
 ---
 

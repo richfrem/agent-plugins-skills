@@ -1,1 +1,0 @@
-../../../scripts/init_vault.py

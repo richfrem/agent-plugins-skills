@@ -1,1 +1,0 @@
-../../../references/business-requirements-capture-acceptance-criteria.md

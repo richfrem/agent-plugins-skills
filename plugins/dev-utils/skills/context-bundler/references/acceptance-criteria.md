@@ -1,1 +1,0 @@
-../../../references/context-bundler-acceptance-criteria.md

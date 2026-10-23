@@ -1,1 +1,0 @@
-../../../../assets/templates/skill-layout.md

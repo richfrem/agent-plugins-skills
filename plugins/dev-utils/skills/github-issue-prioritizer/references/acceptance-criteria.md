@@ -1,1 +1,0 @@
-../../../references/github-issue-prioritizer-acceptance-criteria.md

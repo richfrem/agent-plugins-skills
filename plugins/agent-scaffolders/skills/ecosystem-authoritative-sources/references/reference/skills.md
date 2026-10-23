@@ -1,1 +1,0 @@
-../../../../references/reference/skills.md

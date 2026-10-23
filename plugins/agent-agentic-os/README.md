@@ -44,11 +44,10 @@ grouped into two clusters.
 | Start with | `os-control-init` once, then `os-control-intake` per task | `os-lab-agent` (one conversation, then `os-lab-planner`) |
 | State | `context/control_plane.db` | `evals/results.tsv`, improvement ledger, `context/events.jsonl` |
 | Human authority | SSH-signed approval at plan, code-acceptance and closure | Human review of the lab diff before backport |
-| Switch | `os-control-mode` | Enable its skills in `.agents/ownership/` |
+| Switch | `os-control-mode` | Select skills via APM install |
 
-> **Skills are installed per project.** The skill list below describes the plugin source. A project
-> may install only some of it (`.agents/ownership/agent-agentic-os.json`, `should_install`). Before
-> relying on a skill, confirm it is installed: `ls .agents/skills/<name>`.
+> **Skills are installed per client or globally.** The skill list below describes the plugin source.
+> Before relying on a skill, confirm it is installed: check `apm list` or your active client harness.
 
 **First-time setup (run once):**
 

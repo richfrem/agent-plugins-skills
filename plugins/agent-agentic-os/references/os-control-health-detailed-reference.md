@@ -48,13 +48,14 @@ fi
 A first `os-control-init` wires the gates but cannot register the human's key (it is agent-run), so confirm it:
 
 ```bash
-python3 .agents/skills/os-control-health/scripts/setup_ciba_identity.py --check   # read-only, no terminal needed
+# Run from the os-control-health skill directory, or activate the skill:
+python3 scripts/setup_ciba_identity.py --check   # read-only, no terminal needed
 ```
 
 Read the "Approval identities" lines and apply the mode table in the skill's Phase 3.6. In short, with the
 control plane **enabled**: `Human approval: not ready` is Tier 1 (the human enrolls their key; `os-control-init` run in
 their own terminal offers to), `Simulation: not set up` is Tier 1 but agent-fixable
-(`python3 .agents/skills/os-control-init/scripts/init_agentic_os.py --target . --retrofit`), `Isolation: not ready` is a
+(run `scripts/init_agentic_os.py --target . --retrofit` from the `os-control-init` skill), `Isolation: not ready` is a
 Tier 2 recommendation. With it **disabled**, report all three as informational and raise no finding. Never run
 the setup yourself and never edit `allowed_signers*`.
 
@@ -64,7 +65,8 @@ The control plane can be switched off on purpose with the `os-control-mode` skil
 declared mode first, because it changes what "healthy" means:
 
 ```bash
-python3 .agents/skills/os-control-mode/scripts/control_plane_mode.py status
+# Run from the os-control-mode skill directory, or activate the skill:
+python3 scripts/control_plane_mode.py status
 ```
 
 - **Mode `enabled`, exit 0**: the members are installed and both control-plane guards are wired.
@@ -84,7 +86,8 @@ python3 .agents/skills/os-control-mode/scripts/control_plane_mode.py status
 Recommend re-running the retrofit immediately in the health check summary:
 
 ```bash
-python3 .agents/skills/os-control-init/scripts/init_agentic_os.py --target . --retrofit
+# Run from the os-control-init skill directory, or activate the skill:
+python3 scripts/init_agentic_os.py --target . --retrofit
 ```
 
 All substrates are idempotent to create (skip-if-exists), so re-running retrofit is always safe even

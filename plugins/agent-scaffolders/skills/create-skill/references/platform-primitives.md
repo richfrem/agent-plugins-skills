@@ -1,1 +1,0 @@
-../../../references/platform-primitives.md

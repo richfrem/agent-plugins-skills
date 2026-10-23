@@ -1,1 +1,0 @@
-../../../references/dispatch-strategies.md

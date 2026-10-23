@@ -1,1 +1,0 @@
-../../../../../references/meta/research/sharma-2026-aos-control-plane.md

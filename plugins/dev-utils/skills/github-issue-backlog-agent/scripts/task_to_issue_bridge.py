@@ -1,1 +1,0 @@
-../../../scripts/task_to_issue_bridge.py

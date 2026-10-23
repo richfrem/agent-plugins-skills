@@ -1,1 +1,0 @@
-../../../references/vibe-behavioral-test-capture-acceptance-criteria.md

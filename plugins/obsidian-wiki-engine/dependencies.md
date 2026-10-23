@@ -1,31 +1,12 @@
 # Plugin Dependencies: obsidian-wiki-engine
 
-## Required: rlm-factory
+## Companion Package: agent-memory (`rlm-init`)
 
-The `obsidian-wiki-engine` plugin delegates all distillation tasks to scripts
-in `rlm-factory`. Both plugins must be installed in the same `.agents/` folder.
-
-### Install both plugins at once
+The `obsidian-wiki-engine` plugin coordinates with distillation capabilities in `agent-memory`.
+Install packages via APM in your active project or globally:
 
 ```bash
-# Recommended — uvx (cross-platform, zero-setup):
-uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills --all -y
-
-# Or install individually:
-uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills
-# Then select: obsidian-wiki-engine, rlm-factory
-```
-
-### Zero-dep fallback (macOS/Linux)
-
-```bash
-curl -sL https://raw.githubusercontent.com/richfrem/agent-plugins-skills/main/bootstrap.py | python -
-```
-
-### Local clone (interactive TUI)
-
-```bash
-python plugins/plugin-manager/scripts/plugin_add.py
+apm install @richfrem/obsidian-wiki-engine @richfrem/agent-memory
 ```
 
 ---

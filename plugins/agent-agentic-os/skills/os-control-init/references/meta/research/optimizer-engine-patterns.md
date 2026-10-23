@@ -1,1 +1,0 @@
-../../../../../references/meta/research/optimizer-engine-patterns.md

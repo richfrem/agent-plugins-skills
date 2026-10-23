@@ -94,17 +94,21 @@ def test_skill_definition_is_well_formed_and_triggers_on_plain_language():
         assert phrase in description, f"description must trigger on {phrase!r}"
 
 
-def test_shared_helper_symlinks_are_registered_and_resolve():
+def test_shared_helper_copies_are_registered_and_materialized():
+    # Plugin architecture policy Section 5: the shared helper keeps one canonical copy and is
+    # listed in the copy manifest for each skill; materialize_copies.py writes the copies.
     registry = json.loads((REPO / "symlinks.json").read_text())["links"]
     wanted = {
         "plugins/agent-agentic-os/skills/os-control-init/scripts/control_plane_hooks.py",
         "plugins/agent-agentic-os/skills/os-control-mode/scripts/control_plane_hooks.py",
     }
-    registered = {l["dst"] for l in registry if l["src"] == "plugins/agent-agentic-os/scripts/control_plane_hooks.py"}
+    canonical = PLUGIN / "scripts" / "control_plane_hooks.py"
+    registered = {l["dst"] for l in registry
+                  if l["src"] == "plugins/agent-agentic-os/scripts/control_plane_hooks.py" and l.get("strategy") == "copy"}
     assert wanted <= registered
     for dst in wanted:
-        link = REPO / dst
-        assert link.is_symlink() and link.resolve() == (PLUGIN / "scripts" / "control_plane_hooks.py").resolve()
+        copy = REPO / dst
+        assert copy.is_file() and not copy.is_symlink() and copy.read_bytes() == canonical.read_bytes()
 
 
 def test_no_member_is_a_plugin_hook_or_the_evolution_feature():

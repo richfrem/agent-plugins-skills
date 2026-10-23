@@ -1,1 +1,0 @@
-../../../references/discovery-interview.md

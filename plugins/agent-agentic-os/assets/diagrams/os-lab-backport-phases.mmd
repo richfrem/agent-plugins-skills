@@ -20,7 +20,7 @@ flowchart TD
 
     subgraph P2["Phase 2 — Get Full Diff"]
         P2A["git log --oneline <baseline>..HEAD<BR>git diff <baseline> HEAD --name-only<BR>git diff <baseline> HEAD"] --> P2B
-        P2B["Key files to watch:<BR>skills/<skill>/SKILL.md<BR>skills/<skill>/evals/evals.json<BR>references/copilot_proposer_prompt.md<BR>.agents/skills/os-lab-scorer/ (if patched)<BR>scripts/*.py"] --> P2C
+        P2B["Key files to watch:<BR>skills/<skill>/SKILL.md<BR>skills/<skill>/evals/evals.json<BR>references/copilot_proposer_prompt.md<BR>skills/os-lab-scorer/ (if patched)<BR>scripts/*.py"] --> P2C
         P2C[Annotate each: what changed / why from log / generalizes to master?]
     end
 
@@ -94,7 +94,7 @@ flowchart TD
     subgraph MAPPING["Master Source Mapping Reference"]
         MAP1["Lab: <plugin>/skills/<skill>/SKILL.md<BR>→ Master: <Master Repository>/<plugin>/skills/<skill>/SKILL.md"]
         MAP2["Lab: <plugin>/skills/<skill>/evals/evals.json<BR>→ Master: <Master Repository>/<plugin>/skills/<skill>/evals/evals.json"]
-        MAP3["Lab: .agents/skills/os-lab-scorer/<BR>→ Master: <Master Repository>/agent-agentic-os/skills/os-lab-scorer/"]
+        MAP3["Lab: skills/os-lab-scorer/<BR>→ Master: <Master Repository>/agent-agentic-os/skills/os-lab-scorer/"]
         MAP4["Lab: references/copilot_proposer_prompt.md<BR>→ Contribute to: <Master Repository>/copilot-cli/skills/copilot-cli-agent/references/"]
     end
 

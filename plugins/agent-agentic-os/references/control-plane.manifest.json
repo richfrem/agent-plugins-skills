@@ -52,6 +52,14 @@
     {
       "component": "skills/os-lab-planner",
       "reason": "Stays installed: lab planning is useful with or without gating. It registers update and create work as control-plane tasks; that step applies only when the control plane is enabled, and making it conditional is a follow-up."
+    },
+    {
+      "component": "rules/engineering-lifecycle-policy",
+      "reason": "Core engineering lifecycle rule; defines the state machine taxonomy and remains active in both modes."
+    },
+    {
+      "component": "rules/self-evolution-policy",
+      "reason": "Evolution policy and friction tracking; applies across all development modes."
     }
   ]
 }

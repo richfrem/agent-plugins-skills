@@ -1,1 +1,0 @@
-../../../scripts/hf_download.py

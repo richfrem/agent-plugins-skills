@@ -1,1 +1,0 @@
-../../../references/obsidian-canvas-architect-acceptance-criteria.md

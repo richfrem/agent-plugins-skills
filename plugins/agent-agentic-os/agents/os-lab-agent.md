@@ -118,9 +118,8 @@ Ask before overwriting any existing file.
 
 ## Step 6 - Call the skills in order
 
-Before each handoff, check the skill is installed: `ls .agents/skills/<name>` and
-`should_install` in `.agents/ownership/agent-agentic-os.json`. If it is missing or disabled,
-say which one, say the files are saved, and ask whether to enable it. Never route around it.
+Before each handoff, check the skill is installed (`apm list` or checking the active client harness or global profile). If it is missing,
+say which one, say the files are saved, and ask whether to install it. Never route around it.
 
 | Order | Skill | Hand over |
 |---|---|---|

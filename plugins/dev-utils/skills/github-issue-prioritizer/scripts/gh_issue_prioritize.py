@@ -1,1 +1,0 @@
-../../../scripts/gh_issue_prioritize.py

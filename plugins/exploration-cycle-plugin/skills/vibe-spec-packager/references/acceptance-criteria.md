@@ -1,1 +1,0 @@
-../../../references/vibe-spec-packager-acceptance-criteria.md

@@ -80,7 +80,13 @@ def _find_vdb_query_script() -> Optional[Path]:
     """
     candidates = [
         _PROJECT_ROOT / ".agents" / "skills" / "vector-db-search" / "scripts" / "query.py",
+        _PROJECT_ROOT / ".claude" / "skills" / "vector-db-search" / "scripts" / "query.py",
+        _PROJECT_ROOT / "plugins" / "agent-memory" / "skills" / "vector-db-search" / "scripts" / "query.py",
+        _PROJECT_ROOT / "plugins" / "agent-memory" / "scripts" / "query.py",
         _PROJECT_ROOT / "plugins" / "vector-db" / "scripts" / "query.py",
+        Path.home() / ".agents" / "skills" / "vector-db-search" / "scripts" / "query.py",
+        Path.home() / ".claude" / "skills" / "vector-db-search" / "scripts" / "query.py",
+        Path.home() / ".apm" / "skills" / "vector-db-search" / "scripts" / "query.py",
     ]
     for c in candidates:
         if c.exists():

@@ -1,1 +1,0 @@
-../../../references/operating-protocols.md

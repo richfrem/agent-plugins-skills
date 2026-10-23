@@ -33,7 +33,7 @@ Usage:
 
     # For a skill:
     python scripts/init_autoresearch.py \\
-        --experiment-dir .agents/skills/my-skill
+        --experiment-dir plugins/agent-agentic-os/skills/my-skill
 
     # For a Python script:
     python scripts/init_autoresearch.py \\
@@ -68,7 +68,7 @@ PLUGIN_ROOT = HERE.parent
 
 # Templates live at assets/templates/autoresearch/ relative to the script's
 # parent directory (the skill root). Using HERE.parent makes this agnostic
-# to whether the skill is installed standalone (.agents/skills/os-lab-scorer/)
+# to whether the skill is installed standalone (e.g. in your client's skills folder)
 # or inside the full plugin tree (plugins/agent-agentic-os/skills/os-lab-scorer/).
 TEMPLATES_DIR = PLUGIN_ROOT / "assets" / "templates" / "autoresearch"
 

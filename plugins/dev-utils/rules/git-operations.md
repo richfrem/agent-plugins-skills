@@ -12,9 +12,7 @@ Never run `git stash`, `git stash pop`, or `git stash apply` unless the user exp
 **Reason:** Stashing risks applying stale edits onto new branches and causing silent regressions.
 
 ### 2. Machine-Local Install State Is Never Committed
-`skills-lock.json` (installed skill hashes and timestamps) and `plugin-retention.json` (per-machine
-enable/disable choices) describe one machine's `.agents/` install, like `.agents/ownership/`. All are
-gitignored.
+`skills-lock.json` and client runtime directories (`.agents/`, `.claude/`, `apm_modules/`) describe machine-local install state. All are gitignored.
 - **NEVER** commit or force-add them.
 - If an old branch still tracks either file and conflicts, untrack it instead of resolving markers:
   ```bash
@@ -45,11 +43,11 @@ Before **explicitly pushing** changes to GitHub (i.e., only when the user has is
      ```bash
      python3 plugins/agent-scaffolders/scripts/audit_plugin_structure.py plugins/<plugin-name>
      ```
-   - **Cross-Platform Symlink Check**:
+   - **Copy-Manifest Drift Check**:
      ```bash
-     python3 .agents/skills/symlink-manager/scripts/symlink_manager.py diagnose
+     python3 plugins/agent-scaffolders/skills/convert-plugin-to-apm/scripts/materialize_copies.py --check
      ```
-   *Resolution Action:* If errors, missing references, or broken symlinks are reported, resolve them before committing or pushing. Never push with broken symlinks or failing convention audits.
+   *Resolution Action:* If errors, missing references, or drifted copies are reported, resolve them before committing or pushing (edit the canonical file, never a copy). Never push with drifted copies or failing convention audits.
 
 3. **Verify Clean Working Tree**: Verify working directory is clean (`git status`) and push with `-u origin <branch>`.
 

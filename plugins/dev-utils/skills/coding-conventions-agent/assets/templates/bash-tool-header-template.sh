@@ -1,1 +1,0 @@
-../../../../assets/templates/bash-tool-header-template.sh

@@ -1,55 +1,67 @@
 ---
 name: install-apm-package
 description: >-
-  Activate when the user wants to install, deploy, test, or materialize an APM
-  package into runtime directories such as .agents/, .github/, .claude/,
-  .cursor/, .gemini/, .codex/, .opencode/, or .windsurf/. Use after creating
-  or converting an APM package.
+  Activate when the user wants to install, deploy, update, roll back, test, or materialize
+  an APM package into runtime directories (.agents/, .claude/, .github/, .codex/ and
+  others), globally or into one project, or do a dry run of an APM install. Use after
+  creating or converting an APM package.
 allowed-tools: Bash, Read, Glob
 ---
 
 # Install APM Package (`install-apm-package`)
 
-Manages the safe deployment and materialization of APM package primitives into target client runtimes (.agents/, .claude/, .github/, etc.) with lockfile reproducibility.
+Installs APM packages, including this repository's plugins, globally or into a project, pinned to a ref, with backup and rollback of the global state. Behaviour below was verified with APM `0.33.0`.
 
 ## Contents
 
 - [Critical Constraints](#critical-constraints)
 - [Quick start](#quick-start)
 - [Workflow](#workflow)
+- [Where Files Land](#where-files-land)
 - [Verification](#verification)
 - [References](#references)
 
 ## Critical Constraints
 
-1. **Source Integrity**: Never edit deployed files in `.agents/`, `.github/`, or `.claude/` directly. Always edit the source package and re-install.
-2. **Lockfile Enforcement**: `apm.lock.yaml` must be committed after install modifications. Use `--frozen` in CI.
-3. **Validation Pre-Condition**: Always run `validate_apm_package.py` before executing installations.
-4. **Project Root Discipline**: Run `apm install` from project root for converged skills (`.agents/skills/`).
+1. **Pin every install** to `#<tag>` or `#<commit-sha>`. `scripts/apm_consumer.py` refuses unpinned installs.
+2. **Never edit deployed files** in harness folders; change the source package and reinstall.
+3. **Commit `apm.yml` and `apm.lock.yaml` together** for project installs; use `apm install --frozen` in CI.
+4. **One installer per plugin**: do not install the same plugin with APM and the legacy `plugin-add` installer (duplicate skill names).
 
 ## Quick start
 
-Preview deployment targets and actions without mutating files:
-
 ```bash
-apm install --dry-run --verbose
+python3 scripts/apm_consumer.py install --plugins dev-utils --ref <tag-or-sha> --global
 ```
+
+Default targets are `claude,copilot,agy,codex`. Add `--skill <name>` (repeatable, one plugin) to install only some skills.
 
 ## Workflow
 
-1. **Pre-Check**: Verify `apm.yml` exists and run validation helper.
-2. **Select Context**: Choose project root (for standard converged skills) or package directory (for isolated testing).
-3. **Execute Installation**: Run `apm install [./path-to-pkg] [--target <slug>]`.
-   - Prefer minimal target lists for real use to avoid duplicate skill visibility in multi-client runtimes.
-4. **Persist Lockfile**: Ensure `apm.lock.yaml` is updated and staged.
+1. **Preview**: `apm install <package>#<ref> --target claude --dry-run`.
+2. **Install**: `scripts/apm_consumer.py install ...` (global installs back up `~/.apm/apm.yml` and `apm.lock.yaml` first), or `apm install <package>#<ref> --target <targets>` in a project.
+3. **Move to a new release**: `scripts/apm_consumer.py set-ref --ref <new-ref>` rewrites every global install from this repository and reinstalls (after a backup).
+4. **Roll back**: `scripts/apm_consumer.py rollback [--backup <id>]` uninstalls packages added since the backup, restores both files, and reinstalls. Restoring the files alone would leave orphaned skills.
+5. **Remove**: `apm uninstall <package> [--global]`. It keeps untracked files and stops (keeping its records) if a user file sits inside a package's skill folder.
+
+## Where Files Land
+
+| | Project install | Global install |
+|---|---|---|
+| Skills | `.claude/skills/`; `.agents/skills/` (copilot, codex, agy) | `~/.claude/skills/`; `~/.agents/skills/`; `~/.gemini/antigravity-cli/skills/` |
+| Agents | `.claude/agents/`, `.github/agents/`, `.codex/agents/` | `~/.claude/agents/`, `~/.copilot/agents/`, `~/.codex/agents/` |
+| Manifest, lockfile, cache | `apm.yml`, `apm.lock.yaml`, `apm_modules/` | `~/.apm/` (Windows: `%USERPROFILE%\.apm\`) |
+
+A global install writes nothing into any repository; every repository uses the same user-level copies. Global installs give agy no hooks or agents. Plugins whose shared files come from a copy manifest are installed from their packed bundle (`apm install <bundle>.zip`), not the raw git path.
 
 ## Verification
 
-Validate installed package integrity and lockfile compliance:
-
 ```bash
-python3 scripts/validate_apm_package.py --check-lockfile
+apm install --frozen          # project: reproduce exactly from the lockfile
+python3 scripts/apm_consumer.py list-backups
 ```
+
+In Claude Code the installed skills appear in the skills list; in Copilot CLI use `/skills list`. Tests: `plugins/agent-scaffolders/tests/test_apm_consumer.py`.
 
 ## References
 

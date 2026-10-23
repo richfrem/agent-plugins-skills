@@ -1,1 +1,0 @@
-../../../scripts/worktree_manager.py

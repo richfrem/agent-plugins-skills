@@ -1,1 +1,0 @@
-../../../../assets/templates/docs-synthesis-specialist.md

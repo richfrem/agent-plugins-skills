@@ -41,10 +41,18 @@ Ask once upfront what the user wants, then configure only what's needed.
 
 **Ask this before anything else.**
 
-Check what's installed:
+Check what's installed in the active runtime (project harnesses or global profile):
 ```bash
-ls .agents/skills/rlm-init/                  2>/dev/null && echo "rlm-factory: INSTALLED"           || echo "rlm-factory: NOT FOUND"
-ls .agents/skills/obsidian-wiki-builder/     2>/dev/null && echo "obsidian-wiki-engine: INSTALLED"  || echo "obsidian-wiki-engine: NOT FOUND"
+check_skill() {
+  local s="$1"
+  for d in .agents/skills .claude/skills .github/skills "$HOME/.agents/skills" "$HOME/.claude/skills" "$HOME/.apm/skills"; do
+    [ -d "$d/$s" ] && return 0
+  done
+  return 1
+}
+
+check_skill "rlm-init"               && echo "rlm-factory: INSTALLED"           || echo "rlm-factory: NOT FOUND"
+check_skill "obsidian-wiki-builder"  && echo "obsidian-wiki-engine: INSTALLED"  || echo "obsidian-wiki-engine: NOT FOUND"
 ```
 
 Present options:
@@ -57,12 +65,12 @@ What setup mode do you want for vector-db?
      - Index any directory → search by meaning
      - Works right now
 
-  B) vector-db + rlm-factory Phase 1 pre-filter  [requires: rlm-factory in .agents/]
+  B) vector-db + rlm-factory Phase 1 pre-filter  [requires: rlm-factory installed]
      - RLM keyword scan narrows candidates before vector search
      - Reduces noise, improves precision for large corpora
      - Requires rlm-factory to be initialized separately
 
-  C) vector-db as wiki Phase 2 search             [requires: obsidian-wiki-engine in .agents/]
+  C) vector-db as wiki Phase 2 search             [requires: obsidian-wiki-engine installed]
      - Adds a 'wiki' profile for indexing wiki nodes
      - /wiki-query uses vector search to find concept nodes by meaning
      - Requires obsidian-wiki-engine to be initialized separately
@@ -78,18 +86,15 @@ Enter A, B, C, or D (default: A):
 If required plugins are NOT installed for the chosen mode, show:
 
 ```
-[rlm-factory / obsidian-wiki-engine] is not installed in .agents/.
+[rlm-factory / obsidian-wiki-engine] is not installed in your active runtime.
 
-To install it now, run one of:
+To install it now via APM:
 
-  # Recommended (uvx — works on Mac, Linux, Windows)
-  uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills
+  # Install in active project:
+  apm install @richfrem/agent-memory
 
-  # npx (Mac/Linux)
-  npx skills add richfrem/agent-plugins-skills
-
-  # See full install guide
-  cat INSTALL.md
+  # Or install globally across Claude, Copilot, Codex, and Antigravity:
+  apm install -g --target claude,copilot,codex,antigravity @richfrem/agent-memory
 
 After installing, re-run /vector-db:init and choose your desired mode.
 
@@ -227,11 +232,17 @@ Show and confirm before writing to: `.agent/learning/vector_knowledge_manifest.j
 
 ## Step 6 — Validation Dry Run
 
+Run the ingest dry-run (locate `ingest.py` from the `vector-db-ingest` skill directory or via python):
 ```bash
-python .agents/skills/vector-db-ingest/scripts/ingest.py \
-  --profile knowledge \
-  --dry-run \
-  2>&1 | head -30
+python3 -c "
+import sys
+from pathlib import Path
+for d in ['.agents/skills/vector-db-ingest/scripts', '.claude/skills/vector-db-ingest/scripts', Path.home() / '.agents/skills/vector-db-ingest/scripts', Path.home() / '.claude/skills/vector-db-ingest/scripts']:
+    p = Path(d) / 'ingest.py'
+    if p.is_file():
+        import subprocess; subprocess.run([sys.executable, str(p), '--profile', 'knowledge', '--dry-run'])
+        break
+" 2>&1 | head -30
 ```
 
 If the script path doesn't exist, skip and note it.
@@ -243,16 +254,15 @@ Diagnose errors:
 
 ## Step 6.5 — Provision Super-RAG AI Search Protocol
 
-Detect which Super-RAG layers are installed in `.agents/skills/` (NOT `plugins/` — that is
-the source repo; only `.agents/skills/` contains active installed skills):
+Detect which Super-RAG layers are installed in active runtime harnesses or global profile:
 
 ```bash
-ls .agents/skills/rlm-init/              2>/dev/null && echo "rlm-factory: INSTALLED"           || echo "rlm-factory: NOT INSTALLED"
-ls .agents/skills/vector-db-init/        2>/dev/null && echo "vector-db: INSTALLED"             || echo "vector-db: NOT INSTALLED"
-ls .agents/skills/obsidian-wiki-builder/ 2>/dev/null && echo "obsidian-wiki-engine: INSTALLED"  || echo "obsidian-wiki-engine: NOT INSTALLED"
+check_skill "rlm-init"               && echo "rlm-factory: INSTALLED"           || echo "rlm-factory: NOT INSTALLED"
+check_skill "vector-db-init"         && echo "vector-db: INSTALLED"             || echo "vector-db: NOT INSTALLED"
+check_skill "obsidian-wiki-builder"  && echo "obsidian-wiki-engine: INSTALLED"  || echo "obsidian-wiki-engine: NOT INSTALLED"
 ```
 
-**If `audit-agents-md` is available** (`.agents/skills/audit-agents-md/`):
+**If `audit-agents-md` is available** (in your active runtime or global profile):
 Invoke it — it handles detection, partial-stack awareness, and full instruction file optimization.
 
 **Otherwise**, manually append to `CLAUDE.md`, `GEMINI.md`, and `.github/copilot-instructions.md`

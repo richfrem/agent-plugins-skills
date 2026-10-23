@@ -1,1 +1,0 @@
-../../../references/os-lab-loop-stage-1-execution.md

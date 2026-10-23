@@ -9,7 +9,7 @@ Do not surface results to the SME unless something is missing that affects the s
 - Confirm `superpowers:using-git-worktrees` resolves via the Skill tool.
 - **If missing AND session type is Greenfield or Brownfield:**
   > "The orba/superpowers plugin is required for prototype isolation and TDD validation.
-  > It looks like it isn't installed. Run: `uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills`
+  > It looks like it isn't installed. Run: `apm install richfrem/agent-plugins-skills --global --target claude,copilot,codex,antigravity`
   > Then restart the session."
   Stop. Do not proceed with Phase 3 work without superpowers.
 - **If missing AND session type is Analysis/Docs or Spike:** Warn once, then continue — superpowers is not required for non-build sessions.

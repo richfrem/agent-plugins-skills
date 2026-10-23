@@ -1,1 +1,0 @@
-../../../references/os-lab-scorer-red-green-refactor.md

@@ -1,1 +1,0 @@
-../../../references/os-lab-loop-test-registry-protocol.md

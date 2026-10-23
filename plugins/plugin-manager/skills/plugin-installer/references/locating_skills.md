@@ -1,1 +1,0 @@
-../../../references/locating_skills.md

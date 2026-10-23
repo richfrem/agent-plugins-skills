@@ -1,1 +1,0 @@
-../../../references/vibe-reengineer-acceptance-criteria.md

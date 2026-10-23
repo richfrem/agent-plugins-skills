@@ -42,7 +42,7 @@ Write the complete structured file or nothing.
 
 ```bash
 pythonscripts/dispatch.py \
-  --agent .agents/agents/exploration-cycle-plugin-prototype-companion-agent.md \
+  --agent plugins/exploration-cycle-plugin/agents/exploration-cycle-plugin-prototype-companion-agent.md \
   --context exploration/captures/walkthrough-notes.md \
   --optional-context exploration/captures/brd-draft.md \
   --instruction "Mode: prototype-observations. Extract structured observations from the walkthrough transcript." \

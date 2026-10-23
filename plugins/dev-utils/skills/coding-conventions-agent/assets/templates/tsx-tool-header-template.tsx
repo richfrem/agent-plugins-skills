@@ -1,1 +1,0 @@
-../../../../assets/templates/tsx-tool-header-template.tsx

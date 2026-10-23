@@ -1,1 +1,0 @@
-../../../references/dual-loop-acceptance-criteria.md

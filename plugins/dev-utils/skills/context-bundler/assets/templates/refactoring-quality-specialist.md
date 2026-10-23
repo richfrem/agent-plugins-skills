@@ -1,1 +1,0 @@
-../../../../assets/templates/refactoring-quality-specialist.md

@@ -1,1 +1,0 @@
-../../../references/worktree-reconciliation-and-multi-worktree-practices.md

@@ -1,1 +1,0 @@
-../../../../../scripts/control_plane/wrappers/write_plan_document.py

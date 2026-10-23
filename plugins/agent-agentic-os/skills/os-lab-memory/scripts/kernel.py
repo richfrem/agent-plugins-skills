@@ -1,1 +1,0 @@
-../../../scripts/kernel.py

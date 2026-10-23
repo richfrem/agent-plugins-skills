@@ -1,1 +1,0 @@
-../../../references/create-azure-agent-acceptance-criteria.md

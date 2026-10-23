@@ -51,29 +51,37 @@ Layer 3  obsidian-wiki-engine  →  Karpathy LLM wiki with cross-source synthesi
 
 ## PHASE 1 — Plugin Audit and Mode Selection
 
-> NOTE: Skills run from `.agents/skills/` (the deployed runtime).
-> The `plugins/` directory is the source — files there are NOT active until installed.
+> NOTE: Skills run from active runtime harnesses (`.claude/skills/`, `.agents/skills/`, or global workstation profile).
+> The `plugins/` directory is source authoring only.
 
 Run:
 ```bash
+check_skill() {
+  local s="$1"
+  for d in .agents/skills .claude/skills .github/skills "$HOME/.agents/skills" "$HOME/.claude/skills" "$HOME/.apm/skills"; do
+    [ -d "$d/$s" ] && return 0
+  done
+  return 1
+}
+
 echo "=== Super-RAG Plugin Audit ==="
 echo ""
-ls .agents/skills/rlm-init/              2>/dev/null && echo "  [✓] rlm-factory          (Layer 1: O(1) keyword summaries)" \
-                                                      || echo "  [✗] rlm-factory          NOT INSTALLED"
-ls .agents/skills/vector-db-init/        2>/dev/null && echo "  [✓] vector-db             (Layer 2: semantic embedding search)" \
-                                                      || echo "  [✗] vector-db             NOT INSTALLED"
-ls .agents/skills/obsidian-wiki-builder/ 2>/dev/null && echo "  [✓] obsidian-wiki-engine  (Layer 3: Karpathy LLM wiki)" \
-                                                      || echo "  [✗] obsidian-wiki-engine  NOT INSTALLED"
+check_skill "rlm-init"               && echo "  [✓] rlm-factory          (Layer 1: O(1) keyword summaries)" \
+                                     || echo "  [✗] rlm-factory          NOT INSTALLED"
+check_skill "vector-db-init"         && echo "  [✓] vector-db             (Layer 2: semantic embedding search)" \
+                                     || echo "  [✗] vector-db             NOT INSTALLED"
+check_skill "obsidian-wiki-builder"  && echo "  [✓] obsidian-wiki-engine  (Layer 3: Karpathy LLM wiki)" \
+                                     || echo "  [✗] obsidian-wiki-engine  NOT INSTALLED"
 ```
 
 If any plugins are missing, show install options:
 ```
-One or more plugins are not installed in .agents/.
+One or more plugins are not installed in your active runtime.
 
-To install all plugins at once — choose one method:
+To install plugins — choose one method:
 
-  # Option 1: uvx (recommended — works on Mac, Linux, Windows)
-  uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills
+  # Option 1: APM (works across Claude, Copilot, Codex, Antigravity)
+  apm install richfrem/agent-plugins-skills --global --target claude,copilot,codex,antigravity
 
   # Option 2: npx (Mac/Linux)
   npx skills add richfrem/agent-plugins-skills
@@ -167,7 +175,7 @@ Write `.agent/learning/rlm_manifest.json`:
 Write `.agent/learning/rlm_tools_manifest.json`:
 ```json
 {
-  "include": ["plugins/**/*.py", ".agents/skills/**/*.md", ".agents/agents/**/*.md"],
+  "include": ["plugins/**/*.py", ".claude/skills/**/*.md", ".agents/skills/**/*.md"],
   "exclude": ["__pycache__", "*.pyc"],
   "recursive": true
 }

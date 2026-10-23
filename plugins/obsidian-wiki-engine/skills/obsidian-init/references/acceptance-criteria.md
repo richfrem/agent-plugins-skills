@@ -1,1 +1,0 @@
-../../../references/obsidian-init-acceptance-criteria.md

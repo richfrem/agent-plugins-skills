@@ -36,11 +36,19 @@ vector-db (semantic search). Ask once upfront, then provision only what's needed
 
 **This is the first question. Ask before anything else.**
 
-First, check what's actually installed:
+First, check what's actually installed in the active runtime:
 
 ```bash
-ls .agents/skills/rlm-init/       2>/dev/null && echo "rlm-factory: INSTALLED" || echo "rlm-factory: NOT FOUND"
-ls .agents/skills/vector-db-init/ 2>/dev/null && echo "vector-db: INSTALLED"   || echo "vector-db: NOT FOUND"
+check_skill() {
+  local s="$1"
+  for d in .agents/skills .claude/skills .github/skills "$HOME/.agents/skills" "$HOME/.claude/skills" "$HOME/.apm/skills"; do
+    [ -d "$d/$s" ] && return 0
+  done
+  return 1
+}
+
+check_skill "rlm-init"        && echo "rlm-factory: INSTALLED" || echo "rlm-factory: NOT FOUND"
+check_skill "vector-db-init"  && echo "vector-db: INSTALLED"   || echo "vector-db: NOT FOUND"
 ```
 
 If `<wiki-root>/meta/config.yaml` exists, inform the user:
@@ -56,12 +64,12 @@ What setup mode do you want for the Obsidian Wiki Engine?
      - /wiki-build, /wiki-query with grep-based search
      - Perfect for instant gratification! You can run this wizard again later to seamlessly upgrade to Mode D.
 
-  B) Wiki + RLM summaries                     [requires: rlm-factory in .agents/]
+  B) Wiki + RLM summaries                     [requires: rlm-factory installed]
      - Adds /wiki-distill: generates dense summary layers per concept
      - /wiki-query uses RLM keyword pre-filter (Phase 1) before grep
      - Best for: navigating large knowledge bases by keyword
 
-  C) Wiki + Vector search                      [requires: vector-db in .agents/]
+  C) Wiki + Vector search                      [requires: vector-db installed]
      - Adds semantic Phase 2 search to /wiki-query
      - /wiki-query: grep → vector nearest-neighbor → concept node
      - Best for: finding concepts by meaning when you don't know the exact term
@@ -77,12 +85,12 @@ Enter A, B, C, or D (default: A):
 If the user picks B, C, or D but the required plugin is NOT installed, show:
 
 ```
-[rlm-factory / vector-db] is not installed in .agents/.
+[rlm-factory / vector-db] is not installed in your active runtime.
 
 To install it now, run one of:
 
-  # Recommended (uvx — works on Mac, Linux, Windows)
-  uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills
+  # Recommended (APM — works on Claude, Copilot, Codex, Antigravity)
+  apm install richfrem/agent-plugins-skills --global --target claude,copilot,codex,antigravity
 
   # npx (Mac/Linux)
   npx skills add richfrem/agent-plugins-skills
@@ -294,16 +302,15 @@ Update `<wiki-root>/meta/config.yaml`: set `vdb_profile: wiki`.
 
 ## Step 7.5 — Provision Super-RAG AI Search Protocol
 
-Detect which Super-RAG layers are installed in `.agents/skills/` (NOT `plugins/` — that is
-the source repo; only `.agents/skills/` contains active installed skills):
+Detect which Super-RAG layers are installed in active runtime harnesses or global profile:
 
 ```bash
-ls .agents/skills/rlm-init/              2>/dev/null && echo "rlm-factory: INSTALLED"           || echo "rlm-factory: NOT INSTALLED"
-ls .agents/skills/vector-db-init/        2>/dev/null && echo "vector-db: INSTALLED"             || echo "vector-db: NOT INSTALLED"
-ls .agents/skills/obsidian-wiki-builder/ 2>/dev/null && echo "obsidian-wiki-engine: INSTALLED"  || echo "obsidian-wiki-engine: NOT INSTALLED"
+check_skill "rlm-init"               && echo "rlm-factory: INSTALLED"           || echo "rlm-factory: NOT INSTALLED"
+check_skill "vector-db-init"         && echo "vector-db: INSTALLED"             || echo "vector-db: NOT INSTALLED"
+check_skill "obsidian-wiki-builder"  && echo "obsidian-wiki-engine: INSTALLED"  || echo "obsidian-wiki-engine: NOT INSTALLED"
 ```
 
-**If `audit-agents-md` is available** (`.agents/skills/audit-agents-md/`):
+**If `audit-agents-md` is available** (in your active runtime or global profile):
 Invoke it — it handles detection, partial-stack awareness, and full instruction file optimization.
 
 **Otherwise**, manually append to `CLAUDE.md`, `GEMINI.md`, and `.github/copilot-instructions.md`

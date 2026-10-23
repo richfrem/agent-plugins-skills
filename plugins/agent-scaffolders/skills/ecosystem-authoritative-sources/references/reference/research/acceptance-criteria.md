@@ -1,1 +1,0 @@
-../../../../../references/reference/research/acceptance-criteria.md

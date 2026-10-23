@@ -19,7 +19,7 @@ The local filesystem path to the lab git repository (e.g. `<USER_HOME>/Projects/
 If it doesn't exist: "Should I create a new directory at that path and initialize it as a git repo?"
 
 **Q2 — Target plugin path?**
-The canonical plugin path in `agent-plugins-skills` (e.g. `.agents/skills/link-checker`). This is
+The canonical plugin path in `agent-plugins-skills` (e.g. `plugins/dev-utils/skills/link-checker`). This is
 what gets hard-copied into the lab repo.
 
 **Q3 — Target skill name?**
@@ -102,7 +102,7 @@ SKILL_NAME=<skill-folder-name>                       # from Q3, e.g. convert-mer
 PLUGIN_NAME=$(echo "$PLUGIN_PATH" | cut -d'/' -f2)  # → mermaid-to-png
 
 LAB_PATH=<lab-repo-path>                             # from Q1
-SKILL_EVAL_SOURCE="$LAB_PATH/.agents/skills/os-lab-scorer"
+SKILL_EVAL_SOURCE="$LAB_PATH/plugins/agent-agentic-os/skills/os-lab-scorer"
 
 # Verify before proceeding:
 echo "PLUGIN_NAME=$PLUGIN_NAME  SKILL_NAME=$SKILL_NAME"

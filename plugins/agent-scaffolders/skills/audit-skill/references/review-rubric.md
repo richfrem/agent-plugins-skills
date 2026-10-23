@@ -1,1 +1,0 @@
-../../../references/review-rubric.md

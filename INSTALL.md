@@ -1,100 +1,151 @@
 # Repository Installation & Lifecycle — Central Authority
 
-This document defines the authoritative installation, retention, and lifecycle management methods for all plugins and skills in the Universal Agent Plugins & Skills repository.
+This document defines how to install, update, select and remove the plugins and skills in the Universal Agent Plugins & Skills repository.
+
+Plugins are installed with [APM](https://github.com/microsoft/apm) (Agent Package Manager). APM copies each plugin's skills and agents into the agent harness folders, keeps a manifest and lockfile, and handles updates and uninstall. Background and status: [APM migration plan](docs/plans/apm_migration_plan.md).
+
+Skills share files without symlinks: each shared file has one canonical copy, and `symlinks.json` lists the skill folders that need a copy. Those copies are not in git; a short step after cloning (`materialize_copies.py`) writes them. That is why plugins are installed **from a local clone**, not from the bare git path: the git path alone would give skills without their shared scripts. This works the same on Windows, macOS and Linux.
 
 ---
 
-## Consumer Installation & Management
+## Option 1: APM Package (Recommended)
 
-These commands are for consumers who want to add and manage plugins seamlessly in any project repository. Installed artifacts are deployed directly into `.agents/` and registered in `plugin-sources.json` and `plugin-retention.json`.
+### 1. Install APM
 
-### 1. Install Plugins (`plugin-add`)
+The repository pins the APM version it is tested with (`apm-cli==0.33.0` in `plugins/agent-scaffolders/requirements-dev.in`).
 
-Use [uvx](https://docs.astral.sh/uv/) for instant, isolated, cross-platform installation:
+On Windows:
+
+```powershell
+irm https://aka.ms/apm-windows | iex
+```
+
+On macOS / Linux:
 
 ```bash
-# Interactive TUI: select plugins and optionally toggle specific skills
-uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills
-
-# Install everything non-interactively (all plugins, all skills)
-uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills --all -y
-
-# Install a specific plugin non-interactively (e.g. agent-orchestration/)
-uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills/plugins/agent-orchestration -y
-
-# Dry-run preview
-uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills --dry-run
+curl -sSL https://aka.ms/apm-unix | sh -s -- @v0.33.0
 ```
 
-An explicit `plugin-add <plugin>` treats the request as a re-enable operation:
-all components discovered in that plugin are written with
-`should_install: true` and are installed. `plugin-sync` uses the existing
-ownership flags instead, so disabled components remain disabled during sync.
-
-Ownership manifests under `.agents/ownership/` contain one compact JSON line
-per component, such as:
-
-```json
-"os-lab-setup": {"should_install": false, "artifacts": [".agents/skills/os-lab-setup"]}
-```
-
-This makes large inventories faster to review and update while retaining the
-same machine-readable schema.
-
----
-
-### 2. Prune Unneeded Skills (`plugin-prune`)
-
-Reduce model context size and eliminate token bloat by retaining only the exact skills, rules, and agents you need:
+Verify:
 
 ```bash
-# Interactive TUI: review installed plugins and untoggle unneeded skills/rules/agents
-uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-prune --interactive
-
-# Headless execution against plugin-retention.json
-uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-prune --execute --confirm-token PRUNE-INSTALLED-SKILLS
-
-# Dry-run inspection
-uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-prune --dry-run
+apm --version
 ```
 
----
+### 2. Get a pinned clone and materialize the shared files
 
-### 3. Uninstall Plugins (`plugin-remove`)
-
-Safely remove installed plugins and scrub their artifacts from `.agents/`, `.claude/`, `.gemini/`, etc.:
+Clone the repository and check out the release tag or commit you want; that commit is the pinned version of everything you install from this clone.
 
 ```bash
-# Interactive uninstaller TUI
-uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-remove
-
-# Headless: remove a specific plugin
-uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-remove --plugins agent-orchestration/ --yes
-
-# Headless: remove all tracked plugins
-uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-remove --all --yes
+git clone https://github.com/richfrem/agent-plugins-skills.git
+cd agent-plugins-skills
+git checkout <tag-or-commit>
+python3 plugins/agent-scaffolders/skills/convert-plugin-to-apm/scripts/materialize_copies.py
 ```
 
----
+`materialize_copies.py` writes every shared copy into the skill folders and keeps them out of git (local exclude file). Run it again after every `git checkout` or `git pull`; `--check` reports missing or out-of-date copies.
 
-### 4. Sync Environment (`plugin-sync`)
+### 3. Install globally (available in every project)
 
-Re-synchronize all declared plugins from `plugin-sources.json` and enforce your retention settings from `plugin-retention.json`:
+The consumer script checks the clone is materialized, backs up your global APM state, and installs:
 
 ```bash
-# Full sync: reinstalls tracked plugins and runs post-sync retention pruning
-python3 plugins/plugin-manager/scripts/sync_with_inventory.py
+python3 plugins/agent-scaffolders/skills/install-apm-package/scripts/apm_consumer.py install --plugins <plugin-name> --checkout . --global
+```
 
-# Dry-run sync inspection
-python3 plugins/plugin-manager/scripts/sync_with_inventory.py --dry-run
+For example, two plugins at once: `--plugins dev-utils,agent-memory`. Default targets are `claude,copilot,agy,codex` (`--targets` to change). The direct APM equivalent is:
 
-# Sync without pruning
-python3 plugins/plugin-manager/scripts/sync_with_inventory.py --no-prune
+```bash
+apm install ./plugins/<plugin-name> --global --target claude,copilot,agy,codex
+```
+
+The global installation keeps the package cache separate from the agent folders and writes nothing into your other repositories; every repository uses the same user-level copies:
+
+```text
+APM state and cache          ~/.apm/                              (Windows: %USERPROFILE%\.apm\)
+Claude Code skills           ~/.claude/skills/
+Copilot and Codex skills     ~/.agents/skills/                    (shared)
+Antigravity (agy) skills     ~/.gemini/antigravity-cli/skills/
+```
+
+Global (user-scope) support differs by harness (APM 0.33.0): `claude` supports every primitive; `copilot`, `codex` and `agy` support skills but only some other primitives (for `agy`, hooks and agents are not installed globally). Plugins that depend on hooks need a project install for those harnesses. Executables in a plugin's `bin/` are skipped unless you pass `--trust-bin` (or approve the package with `apm approve`).
+
+### 4. Install only the skills you need
+
+Keep context small by installing named skills from one plugin. `--skill` is repeatable, and the selection is saved in the manifest:
+
+```bash
+python3 plugins/agent-scaffolders/skills/install-apm-package/scripts/apm_consumer.py install --plugins dev-utils --checkout . --global --skill adr-management --skill context-bundler
+```
+
+A later `--skill` adds to the selection. To drop a skill, remove it from the `skills:` list in `~/.apm/apm.yml` and run `apm install --global`. To go back to all skills, use `--skill '*'`. [COMPONENT_RETENTION_GUIDE.md](COMPONENT_RETENTION_GUIDE.md) lists the recommended selection per plugin.
+
+### 5. Install into one project instead
+
+From the project root, point at the materialized clone:
+
+```bash
+apm install <path-to-clone>/plugins/<plugin-name> --target claude,copilot,agy,codex
+```
+
+APM records the dependency in the project's `apm.yml`, writes `apm.lock.yaml`, deploys skills into `.claude/skills/` (Claude) and the shared `.agents/skills/` (Copilot, Codex and Antigravity), and adds `apm_modules/` to `.gitignore`. Commit `apm.yml` and `apm.lock.yaml` together. In CI, reproduce the exact install with `apm install --frozen`.
+
+### Verify
+
+```bash
+apm install ./plugins/<plugin-name> --target claude --dry-run      # preview without writing files
+python3 plugins/agent-scaffolders/skills/convert-plugin-to-apm/scripts/materialize_copies.py --check
+```
+
+In Claude Code, installed skills appear in the skills list. In Copilot CLI, check with `/skills list`, or restart VS Code.
+
+### Update
+
+Move the clone to the new release, re-materialize, and reinstall:
+
+```bash
+git fetch --tags && git checkout <new-tag-or-commit>
+python3 plugins/agent-scaffolders/skills/convert-plugin-to-apm/scripts/materialize_copies.py
+apm install --global
+```
+
+`apm install --global` re-reads every installed plugin from the clone. For a project install, run `apm install` in the project and commit the updated lockfile.
+
+### Roll back
+
+Every `apm_consumer.py install` backs up `~/.apm/apm.yml` and `apm.lock.yaml` first. To return to the previous state (uninstalls packages added since the backup, then restores and reinstalls):
+
+```bash
+python3 plugins/agent-scaffolders/skills/install-apm-package/scripts/apm_consumer.py list-backups
+python3 plugins/agent-scaffolders/skills/install-apm-package/scripts/apm_consumer.py rollback [--backup <id>]
+```
+
+### Uninstall
+
+```bash
+apm uninstall <path-to-clone>/plugins/<plugin-name> --global     # global install
+apm uninstall <path-to-clone>/plugins/<plugin-name>              # project install
+```
+
+Uninstall removes only the files APM deployed; it keeps your own files, and stops (keeping its records) if you added a file inside one of the package's skill folders.
+
+### Packed bundles
+
+`apm_build_pipeline.py --pack` (see [Local Development](#local-development-contributors--testing)) produces `build/dist/<plugin>-<version>.zip`, which installs with `apm install <bundle>.zip --global --target ...` without a clone. A bundle installs the whole plugin: `--skill` is not supported for bundles.
+
+### Do not use multiple installations of the same plugin
+
+APM and the older `plugin-add` installer both put skills into agent folders. Installing the same plugin both ways creates duplicate skill names, and which copy wins depends on the client.
+
+If a project was set up with `plugin-add`, it has a `.agents/ownership/` folder and a `plugin-sources.json` file. Remove the old installation of a plugin before installing it with APM:
+
+```bash
+uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-remove --plugins <plugin-name>/ --yes
 ```
 
 ---
 
-## Alternative: Native Marketplace (Claude Code / Copilot CLI)
+## Option 2: Native Marketplace (Claude Code / Copilot CLI)
 
 If using **Claude Code** or **Copilot CLI**, you can add this repository as a native marketplace:
 
@@ -116,19 +167,24 @@ copilot plugin install <plugin-name>@richfrem-agent-plugins-skills
 
 ## Local Development (Contributors & Testing)
 
-From a local clone of this repository:
+After cloning, and after editing any canonical shared file, write the copies into the skill folders:
 
 ```bash
-# Install from local directory
-python3 plugins/plugin-manager/scripts/plugin_add.py plugins/<plugin-name> -y
-python3 plugins/plugin-manager/scripts/plugin_add.py plugins/ --all -y
-
-# Interactive pruner
-python3 plugins/plugin-manager/scripts/prune_installed_skills.py --interactive
-
-# Interactive remover
-python3 plugins/plugin-manager/scripts/plugin_remove.py
-
-# Sync inventory
-python3 plugins/plugin-manager/scripts/sync_with_inventory.py
+python3 plugins/agent-scaffolders/skills/convert-plugin-to-apm/scripts/materialize_copies.py
 ```
+
+Edit the canonical file (at the plugin root), never a copy; `materialize_copies.py --check` reports copies that drifted. To share a new file with a skill, add a `symlinks.json` entry with `strategy: "copy"` and re-run the script. Never create symlinks.
+
+Install a plugin straight from the working tree to test changes before they are pushed:
+
+```bash
+apm install ./plugins/<plugin-name> --target claude,copilot,agy,codex
+```
+
+To check that a plugin packages cleanly for APM (copies created, links valid, test install and uninstall in a throwaway fixture), run the build pipeline; add `--pack` to build the bundle. It writes only to `build/` and never changes the source tree:
+
+```bash
+python3 plugins/agent-scaffolders/skills/convert-plugin-to-apm/scripts/apm_build_pipeline.py --plugin plugins/<plugin-name>
+```
+
+Each finding names its standard fix; see [APM alignment standard fixes](plugins/agent-scaffolders/skills/convert-plugin-to-apm/references/apm-alignment-fixes.md).

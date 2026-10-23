@@ -123,8 +123,7 @@ rest of this phase and into Phase 1:
    - Update `worktree_state` in `context/control_plane.db` to `written_in_worktree`.
    - **This convention applies to `agent_control.py`-tracked tasks only.** `evolution_state.py`
      cycles use their own separate, documented convention — sibling directories under
-     `../worktree-evolution-<cycle_id>/` — per `self-evolution/SKILL.md` and
-     `self-evolution-policy.md`. This is not a violation of the rule above; it's a
+     `../worktree-evolution-<cycle_id>/` — per `self-evolution-policy.md`. This is not a violation of the rule above; it's a
      different, independently-governed system (see Section 1's scope note and
      [#537](https://github.com/richfrem/agent-plugins-skills/issues/537)).
 2. **Deterministic Orchestration & TDD Execution:**

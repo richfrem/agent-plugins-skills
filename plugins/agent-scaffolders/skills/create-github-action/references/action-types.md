@@ -1,1 +1,0 @@
-../../../references/action-types.md

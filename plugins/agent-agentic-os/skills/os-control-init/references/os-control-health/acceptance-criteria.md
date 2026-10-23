@@ -1,1 +1,0 @@
-../../../../references/os-control-health/acceptance-criteria.md

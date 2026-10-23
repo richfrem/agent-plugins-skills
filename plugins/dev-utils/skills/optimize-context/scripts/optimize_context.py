@@ -1,1 +1,0 @@
-../../../scripts/optimize_context.py

@@ -1,1 +1,0 @@
-../../../references/copilot_proposer_prompt.md

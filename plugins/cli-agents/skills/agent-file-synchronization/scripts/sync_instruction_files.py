@@ -1,1 +1,0 @@
-../../../scripts/sync_instruction_files.py

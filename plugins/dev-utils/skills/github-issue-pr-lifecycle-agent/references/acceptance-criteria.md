@@ -1,1 +1,0 @@
-../../../references/github-issue-pr-lifecycle-agent-acceptance-criteria.md

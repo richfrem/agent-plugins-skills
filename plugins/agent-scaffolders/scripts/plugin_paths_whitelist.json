@@ -7,6 +7,5 @@
   "plugins/dependency-management",
   "plugins/dev-utils",
   "plugins/exploration-cycle-plugin",
-  "plugins/obsidian-wiki-engine",
-  "plugins/plugin-manager"
+  "plugins/obsidian-wiki-engine"
 ]

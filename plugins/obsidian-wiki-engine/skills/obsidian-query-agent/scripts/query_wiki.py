@@ -1,1 +1,0 @@
-../../../scripts/query_wiki.py

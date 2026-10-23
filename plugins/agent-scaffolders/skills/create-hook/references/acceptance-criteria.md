@@ -1,1 +1,0 @@
-../../../references/create-hook-acceptance-criteria.md

@@ -1,1 +1,0 @@
-../../../references/os-control-init-detailed-reference.md

@@ -10,6 +10,7 @@ Usage:
     python3 scripts/audit_skill.py <repository> --all --json
 """
 import argparse
+import functools
 import hashlib
 import json
 import os
@@ -291,6 +292,25 @@ def check_canonical_headings(res: SkillAuditResult, path: Path, content: str) ->
                 res.add("navigation.legacy-headings", f"Found legacy section '{legacy_name}'; refactor into canonical template sections", path, line_no)
 
 
+# Destinations listed in the repository copy manifest (symlinks.json, strategy "copy"):
+# files materialized there by materialize_copies.py are sanctioned copies, not duplicates.
+def _copy_manifest_destinations(skill: Path) -> set:
+    """Return absolute destination paths of copy-manifest entries for the repo containing skill."""
+    for parent in [skill.resolve(), *skill.resolve().parents]:
+        manifest = parent / "symlinks.json"
+        if manifest.is_file():
+            return _manifest_copy_dsts(str(manifest))
+    return set()
+
+
+@functools.lru_cache(maxsize=4)
+def _manifest_copy_dsts(manifest: str) -> frozenset:
+    """Parse one symlinks.json once per run."""
+    root = Path(manifest).parent
+    links = json.loads(Path(manifest).read_text(encoding="utf-8")).get("links", [])
+    return frozenset(str((root / e["dst"]).resolve()) for e in links if e.get("strategy") == "copy")
+
+
 def audit_skill(skill_path: Path | str, plugin_root: Optional[Path | str] = None,
                 fix: bool = False, mode: str = "source", profile: str = "repository") -> SkillAuditResult:
     """Audit one skill with explicit representation; never modify its files."""
@@ -358,8 +378,13 @@ def audit_skill(skill_path: Path | str, plugin_root: Optional[Path | str] = None
             elif resource.is_symlink() and not resource.exists():
                 res.add("packaging.pending-link", "Broken or pending managed resource link", resource)
             elif resource.is_file():
-                if mode == "source" and not resource.is_symlink():
-                    res.add("packaging.resource", f"Source resource '{resource.name}' is a real file, not a symlink to plugin-root ownership", resource)
+                # Plugin architecture policy Section 5: skill-owned real files are allowed; a committed
+                # copy of a plugin-root canonical file is not (share it via the copy manifest instead).
+                canonical = skill.parent.parent / category / resource.relative_to(folder)
+                if (mode == "source" and not resource.is_symlink() and canonical.is_file()
+                        and canonical.read_bytes() == resource.read_bytes()
+                        and str(resource.resolve()) not in _copy_manifest_destinations(skill)):
+                    res.add("packaging.resource", f"Source resource '{resource.name}' duplicates canonical {category}/{resource.relative_to(folder)}; list it in the copy manifest (symlinks.json, strategy \"copy\") instead", resource)
                 elif mode == "installed" and resource.is_symlink():
                     res.add("packaging.resource", "Installed resources must be materialized hard copies", resource)
     # Folder structure template checks

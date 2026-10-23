@@ -1,1 +1,0 @@
-../../../references/os-control-signing-setup-guide.md

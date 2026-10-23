@@ -1,1 +1,0 @@
-../../../references/os-lab-setup-detailed-reference.md

@@ -60,12 +60,8 @@ Worktree-related changes frequently suffer from ambiguity when multiple git stat
    merged. Only after that verification, delete via the native worktree-removal tool (or
    `git worktree remove` + `git worktree prune` if the native tool reports no active
    session), and confirm via `git worktree list` that it's gone.
-6. **All symlink creation/removal inside a worktree goes through
-   `.agents/skills/symlink-manager/scripts/symlink_manager.py`**, per
-   `.agent/rules/plugin-architecture-policy.md` Section 5 -- this applies inside worktrees exactly as
-   much as the main checkout. If the tool isn't present in the worktree, restore it from
-   the marketplace-cached copy or the sibling monorepo before touching any symlink, never
-   fall back to raw `ln -s`.
+6. **Shared resources inside a worktree use the copy manifest (`symlinks.json`, `strategy: "copy"`)**, per
+   `plugin-architecture-policy.md` Section 5. Never create git symlinks. Materialize copies in the worktree using `materialize_copies.py` (convert-plugin-to-apm skill).
 7. **When multiple worktrees exist, or worktree work spans several turns, restate the
    current state of every open worktree at the start of any status report** -- don't make
    the user re-derive it from scattered messages.

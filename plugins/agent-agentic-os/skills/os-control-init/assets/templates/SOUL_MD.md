@@ -1,1 +1,0 @@
-../../../../assets/templates/SOUL_MD.md

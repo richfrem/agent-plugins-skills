@@ -5,8 +5,7 @@ what each of the 14 skills does, grouped by purpose and function into two cluste
 clusters relate. For Cluster 1 and Cluster 2 side by side, see
 [two-improvement-paths.md](two-improvement-paths.md).
 
-A project installs only part of this plugin. Check `.agents/ownership/agent-agentic-os.json`
-(`should_install`) and `ls .agents/skills/<name>` before relying on any skill.
+Verify the skill is installed in your active runtime harness (via `apm list` or your client's installed skills directory) before relying on it.
 
 ## Contents
 

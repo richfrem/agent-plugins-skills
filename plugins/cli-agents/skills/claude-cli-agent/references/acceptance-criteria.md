@@ -1,1 +1,0 @@
-../../../references/claude-cli-agent-acceptance-criteria.md

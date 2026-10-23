@@ -1,1 +1,0 @@
-../../../references/rlm-search-acceptance-criteria.md

@@ -1,1 +1,1 @@
-../../../../../../.agents/skills/ecosystem-authoritative-sources/references/skills.md
+../skills-research.md

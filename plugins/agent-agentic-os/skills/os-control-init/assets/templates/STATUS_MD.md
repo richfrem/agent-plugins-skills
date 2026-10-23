@@ -1,1 +1,0 @@
-../../../../assets/templates/STATUS_MD.md

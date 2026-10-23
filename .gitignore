@@ -137,3 +137,6 @@ plugins/agent-agentic-os/scripts/context/
 # Machine-local plugin install state (see .agent/rules/git-operations.md Rule 2)
 skills-lock.json
 plugin-retention.json
+
+# APM can leave a .apm/ staging folder inside a local package; never commit it (APM migration plan)
+plugins/*/.apm/

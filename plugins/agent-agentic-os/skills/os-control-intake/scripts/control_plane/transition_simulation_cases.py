@@ -1,1 +1,0 @@
-../../../../scripts/control_plane/transition_simulation_cases.py

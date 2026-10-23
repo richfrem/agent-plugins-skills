@@ -27,16 +27,16 @@ By combining **Mode D (Full Super-RAG)**, you transform your repository into a h
 
 ## 🚀 Start Here
 
-**Skills run from `.agents/skills/`, not from `plugins/`.**
-The `plugins/` directory is the source—skills are inactive until installed.
+**Skills run from your client's installed harness or global profile, not from `plugins/`.**
+The `plugins/` directory is the upstream source—skills are inactive until installed via APM.
 
 ```bash
-# Verify the plugin is installed and active
-ls .agents/skills/obsidian-wiki-builder/   # should exist
-ls .agents/agents/wiki-init-agent.md        # should exist
+# Verify the plugin is installed and active in your project or global environment
+# (e.g. .agents/skills/, .claude/skills/, ~/.agents/skills/, ~/.claude/skills/)
+which apm && apm list
 
-# If missing — install via uvx:
-uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills
+# If missing — install via apm:
+apm install @richfrem/obsidian-wiki-engine
 ```
 
 **To initialize:** invoke `wiki-init-agent` (or say "set up my wiki" / `/wiki-init`).
@@ -106,7 +106,7 @@ graph TD
 | Dependency | Purpose | Location |
 |:-----------|:--------|:---------|
 | `pip:ruamel.yaml` | Lossless YAML frontmatter parsing. | System |
-| `rlm-factory` | Distillation & O(1) keyword lookup. | `.agents/skills/rlm-init/` |
-| `vector-db` | Semantic Phase 2 search. | `.agents/skills/vector-db-init/` |
+| `rlm-factory` | Distillation & O(1) keyword lookup. | `rlm-init` skill (local harness or global profile) |
+| `vector-db` | Semantic Phase 2 search. | `vector-db-init` skill (local harness or global profile) |
 
 **Mode A (Standalone) has zero external plugin dependencies.**

@@ -19,7 +19,7 @@ Locked (never modify):
 
 How to run one iteration:
 1. Edit `SKILL.md` (one focused change per iteration — frontmatter description/triggers only)
-2. `python scripts/evaluate.py --skill .agents/skills/eval-autoresearch-fit/SKILL.md --desc "what you changed"`
+2. `python scripts/evaluate.py --skill plugins/agent-scaffolders/skills/eval-autoresearch-fit/SKILL.md --desc "what you changed"`
 3. If KEEP (exit 0): `git add SKILL.md && git commit -m "keep: score=X <description>"`
 4. If DISCARD (exit 1): evaluate.py already reverted SKILL.md automatically
 

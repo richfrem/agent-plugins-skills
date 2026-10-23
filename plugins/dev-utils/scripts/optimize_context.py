@@ -369,6 +369,8 @@ def main() -> None:
     project_root = Path(args.project_root).resolve()
     plugins_dir = project_root / "plugins"
     local_skills_dir = project_root / ".agents" / "skills"
+    if not local_skills_dir.exists() and (project_root / ".claude" / "skills").exists():
+        local_skills_dir = project_root / ".claude" / "skills"
     ignore_file = Path(args.ignore_file) if args.ignore_file else project_root / ".claudeignore"
 
     plugin_skills, local_skills = _run_discovery(project_root, plugins_dir, local_skills_dir, args.verbose)

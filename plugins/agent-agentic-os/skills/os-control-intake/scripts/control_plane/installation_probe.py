@@ -1,1 +1,0 @@
-../../../../scripts/control_plane/installation_probe.py

@@ -1,1 +1,0 @@
-../../../references/domain-patterns/README.md

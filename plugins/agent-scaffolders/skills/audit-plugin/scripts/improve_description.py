@@ -1,1 +1,0 @@
-../../../scripts/improve_description.py

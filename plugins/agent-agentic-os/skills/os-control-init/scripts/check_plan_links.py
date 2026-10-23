@@ -1,1 +1,0 @@
-../../../scripts/check_plan_links.py

@@ -41,14 +41,24 @@ PROJECT_ROOT = _find_project_root(Path(__file__))
 def install_dependencies() -> None:
     """Installs required Python packages from the plugin lockfile."""
     print("[INIT] Installing Vector DB Dependencies from lockfile...")
-    # Try plugin source path first, then installed .agents/ path
-    req_txt = PROJECT_ROOT / "plugins" / "agent-memory" / "requirements.txt"
-    if not req_txt.exists():
-        req_txt = PROJECT_ROOT / ".agents" / "skills" / "vector-db-init" / "requirements.txt"
-        if not req_txt.exists():
-            print("[ERROR] Lockfile not found at plugins/agent-memory/requirements.txt or "
-                  ".agents/skills/vector-db-init/requirements.txt")
-            return
+    # Search skill-local root, monorepo source, project harnesses, and global profiles
+    candidates = [
+        Path(__file__).resolve().parent.parent / "requirements.txt",
+        PROJECT_ROOT / "plugins" / "agent-memory" / "requirements.txt",
+        PROJECT_ROOT / ".agents" / "skills" / "vector-db-init" / "requirements.txt",
+        PROJECT_ROOT / ".claude" / "skills" / "vector-db-init" / "requirements.txt",
+        Path.home() / ".agents" / "skills" / "vector-db-init" / "requirements.txt",
+        Path.home() / ".claude" / "skills" / "vector-db-init" / "requirements.txt",
+    ]
+    req_txt = None
+    for cand in candidates:
+        if cand.is_file():
+            req_txt = cand
+            break
+
+    if not req_txt:
+        print("[ERROR] Lockfile not found in skill folder, project harnesses, or global profiles.")
+        return
         
     try:
         subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", str(req_txt)])

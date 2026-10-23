@@ -1,1 +1,0 @@
-../../../references/marketplace-schema.md

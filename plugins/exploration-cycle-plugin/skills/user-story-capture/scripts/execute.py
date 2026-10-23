@@ -1,1 +1,0 @@
-../../../scripts/user_story_capture_execute.py

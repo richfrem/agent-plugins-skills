@@ -22,7 +22,7 @@ writing a handoff.
 | What changes | The user's repository, in an isolated worktree | A skill's `SKILL.md` in a lab repo, then backported |
 | Human authority | SSH-signed `transition_request` at Gate 1, Gate 3 and closure | Human reviews the diff and approves the backport |
 | Success signal | Task reaches `DONE` with verified evidence | `evaluate.py` verdict KEEP, score above baseline |
-| Toggled by | `os-control-mode` | Enabling its skills in `.agents/ownership/` |
+| Toggled by | `os-control-mode` | Enabling its skills in APM / package selection |
 
 `os-control-mode` flips only Path 1 (`os-control-intake`, `os-control-simulator`,
 `os-control-signing-setup`, the guidance-compliance rule, and the two git guards). A control plane that
@@ -78,17 +78,16 @@ Hard rules: every mutation passes the eval gate before it is kept; no manual rol
 ## Rules that prevent the common mistakes
 
 - **Plugin source is not runtime.** `plugins/` holds every skill. Only what is installed in
-  `.agents/skills/` and set `should_install: true` in `.agents/ownership/<plugin>.json` can run.
-  Many skills are disabled on purpose to save context.
-- **Verify before routing.** Before recommending a skill or writing a handoff to it:
-  `ls .agents/skills/<name>` and `grep '"<name>"' .agents/ownership/*.json`. If it is disabled,
-  say so and ask. Do not route through it, and do not substitute another disabled skill.
+  your active runtime harness or global workstation profile (installed via `apm install`) can run.
+  Many skills are omitted on purpose to save context.
+- **Verify before routing.** Before recommending a skill or writing a handoff to it, verify it
+  is installed in your active runtime harness or global workstation profile. If it is not installed,
+  say so and ask. Do not route through it, and do not substitute another uninstalled skill.
 - **Path 2 needs a different skill set.** `os-lab-planner`, `os-lab-setup`, `os-lab-scorer`,
-  `os-lab-backport`, `os-lab-loop` and `os-lab-log` must each be enabled. They are
+  `os-lab-backport`, `os-lab-loop` and `os-lab-log` must each be installed. They are
   independent of Path 1.
-- **Sync pulls from the registry, not your branch.** `plugin-syncer` runs
-  `sync_with_inventory.py`, which installs from the sources in `plugin-sources.json` (a GitHub
-  remote for most plugins). Edits on an unmerged branch reach `.agents/` only after merge.
+- **Install source.** APM installs packages locally or globally (`apm install <pkg> [--global] --target claude,copilot,codex,antigravity`).
+  Unmerged branch edits reach installed harnesses only after re-install or pack.
 - **Read counts from `plugins/`.** Use `find plugins -name SKILL.md | wc -l` and
   `find plugins/*/agents -maxdepth 1 -name '*.md' | wc -l`; never copy a count from another doc.
 
