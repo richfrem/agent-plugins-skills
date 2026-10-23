@@ -13,7 +13,6 @@ skills_dirs:
   - plugins/agent-memory/skills
   - plugins/agent-scaffolders/skills
   - plugins/cli-agents/skills
-  - plugins/dependency-management/skills
   - plugins/dev-utils/skills
   - plugins/exploration-cycle-plugin/skills
   - plugins/obsidian-wiki-engine/skills

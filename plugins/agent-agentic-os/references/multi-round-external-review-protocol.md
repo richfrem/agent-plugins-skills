@@ -2,7 +2,7 @@
 
 Applies at both `MULTI_AGENT_REVIEW` (plan) and `MULTI_AGENT_CODE_REVIEW` (implementation) gates
 whenever the user opts into external review rather than skipping it. Builds on
-`context-bundler`'s generic Multi-Persona Fan-Out mechanics (per-persona `responses/` subfolder,
+`bundling-context`'s generic Multi-Persona Fan-Out mechanics (per-persona `responses/` subfolder,
 regenerate-in-place per round) with the review-specific judgment calls those generic mechanics
 deliberately don't encode.
 
@@ -43,5 +43,5 @@ not a default.
 
 ## Reference
 
-See `plugins/dev-utils/skills/context-bundler/SKILL.md`'s Multi-Persona Fan-Out Mode section for
+See `plugins/dev-utils/skills/bundling-context/SKILL.md`'s Multi-Persona Fan-Out Mode section for
 the underlying generic folder/regeneration mechanics this protocol builds on.

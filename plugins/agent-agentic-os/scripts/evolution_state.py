@@ -41,11 +41,9 @@ DEFAULT_PROTECTED_SET = [
     "plugins/agent-agentic-os/scripts/evaluate.py",
     "plugins/agent-agentic-os/scripts/eval_runner.py",
     ".agent/rules/self-evolution-policy.md",
-    ".agent/rules/graph-planning-superpowers-policy.md",
     ".agent/rules/engineering-lifecycle-policy.md",
     "plugins/agent-agentic-os/rules/self-evolution-policy.md",
     "plugins/agent-agentic-os/rules/engineering-lifecycle-policy.md",
-    "plugins/dev-utils/rules/graph-planning-superpowers-policy.md",
 ]
 
 CANONICAL_NODES = [

@@ -113,7 +113,7 @@ Git checks out symlinks as plain-text stand-in files when `core.symlinks=false`.
 
 **Bulk scanner:**
 ```bash
-python plugins/dev-utils/scripts/bulk_symlink_fixer.py plugins/<plugin-name>
+python plugins/dev-utils/skills/managing-symlinks/scripts/bulk_symlink_fixer.py plugins/<plugin-name>
 ```
 
 **Verify resolution:**

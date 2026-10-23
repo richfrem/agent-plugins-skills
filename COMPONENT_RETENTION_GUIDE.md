@@ -259,7 +259,6 @@ Rules stay outside APM. Setup copies each enabled rule from its plugin's `rules/
 | `engineering-lifecycle-policy.md` | **`true`** | **Hard invariant**: Defines the 4-phase lifecycle and cryptographic approval human gate. |
 | `git-operations.md` | **`true`** | Prohibits unverified pushes and direct commits to main. |
 | `github-issue-logging-policy.md` | **`true`** | Standardizes friction and bug reporting to GitHub issues. |
-| `graph-planning-superpowers-policy.md` | not yet classified |  |
 | `plugin-architecture-policy.md` | not yet classified |  |
 | `pre-push-audit.md` | not yet classified |  |
 | `schema-driven-sharepoint-deployment.md` | not yet classified |  |

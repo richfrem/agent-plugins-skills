@@ -4,7 +4,7 @@
   TEMPLATE — copy this file into your eval test repo and replace all {{PLACEHOLDERS}}:
 
   {{SKILL_DISPLAY_NAME}}   Human-readable name, e.g. "Link Checker"
-  {{SKILL_NAME}}           Skill folder name, e.g. "link-checker-agent"
+  {{SKILL_NAME}}           Skill folder name, e.g. "checking-links"
   {{PLUGIN_DIR}}           Plugin folder name inside test repo, e.g. "link-checker"
   {{MUTATION_TARGET}}      File being optimised, almost always "SKILL.md"
   {{GITHUB_REPO_URL}}      Full HTTPS clone URL, e.g. "https://github.com/richfrem/test-link-checker-eval.git"
@@ -73,8 +73,8 @@ The ONLY permitted interruption: a fatal error (Python not found, git not initia
 0. **Verify Key Variables** (do this before everything else):
    ```bash
    # These should already be substituted by the L0 architect — verify they are correct:
-   echo "PLUGIN_DIR = {{PLUGIN_DIR}}"          # should be e.g. mermaid-to-png (NOT 'plugins')
-   echo "SKILL_NAME = {{SKILL_NAME}}"          # should be e.g. convert-mermaid
+   echo "PLUGIN_DIR = {{PLUGIN_DIR}}"          # should be e.g. dev-utils (NOT 'plugins')
+   echo "SKILL_NAME = {{SKILL_NAME}}"          # should be e.g. checking-links
    echo "SKILL_EVAL_SOURCE = {{SKILL_EVAL_SOURCE}}"
    ```
    > ⚠️ If `{{PLUGIN_DIR}}` shows literally `plugins` or is still an unfilled placeholder, STOP.
@@ -102,7 +102,7 @@ Consult the authoritative installation hub for current deployment commands:
 
 > ### 👉 [INSTALL.md](https://github.com/richfrem/agent-plugins-skills/blob/main/INSTALL.md)
 
-This section ensures the `os-lab-scorer` and `cli-agent` skills are active in your environment.
+This section ensures the `os-lab-scorer` and `cli-agent` skills are active in your environment. Below, `<cli-agent-skill-dir>` is the installed `cli-agent` skill directory for your harness.
    > ⚠️ **Known CLI Issues:** The `-y` flag may crash on some versions — if so, run without it and press **Enter** when prompted to accept the default agent list.
    > Both are required: `os-lab-scorer` gates iterations, `cli-agent` (`--cli copilot`) proposes mutations.
 
@@ -131,7 +131,7 @@ Before establishing the baseline or starting any iterations, you **MUST** verify
 
 ```bash
 # Run a zero-shot heartbeat test
-python3 .agents/skills/cli-agent/scripts/run_agent.py \
+python3 <cli-agent-skill-dir>/scripts/run_agent.py \
     /dev/null /dev/null ./HEARTBEAT_MD.md \
     "HEARTBEAT CHECK: Respond with 'HEARTBEAT_OK' only."
 
@@ -333,7 +333,7 @@ cp ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/{{MUTATION_TARGET}} ./current-skill.md
 cp ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/evals/evals.json ./current-evals.json
 
 # Use the Copilot run_agent orchestrator for low-cost mutations (see references/cheapest_models.md for current model)
-python3 .agents/skills/cli-agent/scripts/run_agent.py \
+python3 <cli-agent-skill-dir>/scripts/run_agent.py \
   $PROMPT_FILE \
   ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/{{MUTATION_TARGET}} \
   ./proposed-skill.md \
@@ -383,7 +383,7 @@ for overlap risk, then incorporate the most distinctive ones into the next mutat
 Use Copilot as a brainstorm partner — ask for *approaches to try*, not a rewrite:
 ```bash
 # Use the Copilot run_agent orchestrator for low-cost strategy brainstorming (see references/cheapest_models.md)
-python3 .agents/skills/cli-agent/scripts/run_agent.py \
+python3 <cli-agent-skill-dir>/scripts/run_agent.py \
   /dev/null /dev/null ./strategy-ideas.md \
   "I am optimizing a Claude Code SKILL.md routing description using a TF-IDF
 keyword scorer (4+ char words, exact match only, no semantics).

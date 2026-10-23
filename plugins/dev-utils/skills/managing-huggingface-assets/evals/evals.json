@@ -1,0 +1,70 @@
+[
+  {
+    "prompt": "Initialize HuggingFace integration for this project \u2014 validate my .env variables and test API connectivity.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Run hf-init to set up the dataset repository structure on HuggingFace Hub.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Onboard this project to HuggingFace: validate credentials, create the dataset repo, and upload the dataset card.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Upload a new snapshot file to my existing HuggingFace dataset repository.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Search HuggingFace Hub for pre-trained models suitable for text classification.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Configure my AWS S3 bucket credentials and test connectivity.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Download the Gemma 4 GGUF weights from HuggingFace.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Pull a single file from my HuggingFace dataset repository.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Download a folder snapshot from a HuggingFace model repo with exponential backoff.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Upload my fine-tuned model checkpoint to HuggingFace.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Initialize HuggingFace credentials and dataset structure for this project.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Upload this agent learning snapshot to HuggingFace for soul persistence.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Append these JSONL records to soul_traces.jsonl on the HuggingFace dataset with exponential backoff.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Persist this semantic cache file to HuggingFace using upload_semantic_cache.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Initialize HuggingFace credentials and create the dataset repository structure.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Download a model checkpoint from HuggingFace Hub for local fine-tuning.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Back up my local git repository to a remote server.",
+    "should_trigger": false
+  }
+]

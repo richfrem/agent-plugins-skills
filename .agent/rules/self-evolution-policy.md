@@ -54,7 +54,7 @@ Before triggering an autonomous self-evolution cycle, all 4 criteria must be sat
    - **Auto-approved**: New functions/exports, fallback routines/selectors, appending diffs for modified functions.
    - **Confirmation Gated**: Renaming or moving files.
    - **Hard Gated (Requires explicit human permission)**: Deletions of any file, function, skill, rule, manifest, eval, or reference.
-   - Composes with `graph-planning-superpowers-policy.md`'s Supreme Law Human Gate.
+   - Composes with `engineering-lifecycle-policy.md`'s Supreme Law Cryptographic Human Gate.
 5. **The Absorption Fallacy - always wrong**: Never conclude an asset is "redundant", "consolidated", or "superseded" and delete it autonomously. Flag overlap; never delete.
 6. **One Logical Fix at a Time**: Apply one clean fix per execution pass; never bundle independent repairs.
 7. **Fix Forward, Never Skip**: Fix failures at source immediately and update rules/playbooks. Never skip, work around, or add blind retries.

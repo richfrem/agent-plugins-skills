@@ -52,12 +52,6 @@
     "path": "./plugins/cli-agents"
   },
   {
-    "name": "dependency-management",
-    "description": "Python dependency management with pip-compile locked-file workflow and tiered hierarchy for Python backends.",
-    "version": "2.0.0",
-    "path": "./plugins/dependency-management"
-  },
-  {
     "name": "dev-utils",
     "description": "Unified Developer Utilities Suite. Collection of stateless tools for context bundling, diagram rendering, Kanban board task management, ADR auditing, text humanization, and markdown link verification.",
     "version": "1.0.0",

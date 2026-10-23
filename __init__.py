@@ -81,29 +81,15 @@ _SKILL_DIRS = [
     ("cli-agents",               "cli-agent"),
     ("cli-agents",               "maf-adapter"),
 
-    # dependency-management (1 skill)
-    ("dependency-management",    "dependency-management"),
-
-    # dev-utils (19 skills)
-    ("dev-utils",                "adr-management"),
-    ("dev-utils",                "coding-conventions-agent"),
-    ("dev-utils",                "context-bundler"),
-    ("dev-utils",                "convert-mermaid"),
-    ("dev-utils",                "github-issue-agent"),
-    ("dev-utils",                "github-issue-backlog-agent"),
-    ("dev-utils",                "github-issue-pr-lifecycle-agent"),
-    ("dev-utils",                "github-issue-prioritizer"),
-    ("dev-utils",                "github-issue-refactor-proposer"),
-    ("dev-utils",                "github-issue-resolution-reviewer"),
-    ("dev-utils",                "github-issue-worktree-agent"),
-    ("dev-utils",                "hf-download"),
-    ("dev-utils",                "hf-init"),
-    ("dev-utils",                "hf-upload"),
-    ("dev-utils",                "humanize"),
-    ("dev-utils",                "link-checker-agent"),
-    ("dev-utils",                "optimize-context"),
-    ("dev-utils",                "symlink-manager"),
-    ("dev-utils",                "todo-check"),
+    # dev-utils (8 skills)
+    ("dev-utils",                "bundling-context"),
+    ("dev-utils",                "checking-links"),
+    ("dev-utils",                "enforcing-coding-conventions"),
+    ("dev-utils",                "managing-adrs"),
+    ("dev-utils",                "managing-github-issues"),
+    ("dev-utils",                "managing-huggingface-assets"),
+    ("dev-utils",                "managing-symlinks"),
+    ("dev-utils",                "resolving-github-issues"),
 
     # exploration-cycle-plugin (20 skills)
     ("exploration-cycle-plugin", "business-requirements-capture"),

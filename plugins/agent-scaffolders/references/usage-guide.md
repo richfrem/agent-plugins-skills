@@ -150,7 +150,7 @@ After Phase 1 (SCAN), `inventory.json` contains:
   },
   "references": [
     {
-      "source_file": "skills/adr-management/SKILL.md",
+      "source_file": "skills/managing-adrs/SKILL.md",
       "reference": "./scripts/adr_manager.py",
       "line": 17,
       "status": null
@@ -165,7 +165,7 @@ After Phase 2 (VERIFY), each reference has a status:
   "status": {
     "exists": true,
     "type": "file",
-    "path": "skills/adr-management/scripts/adr_manager.py",
+    "path": "skills/managing-adrs/scripts/adr_manager.py",
     "resolved_path": "/full/path/..."
   }
 }

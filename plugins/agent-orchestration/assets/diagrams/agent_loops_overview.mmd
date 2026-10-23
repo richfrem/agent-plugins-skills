@@ -26,7 +26,7 @@ flowchart TB
     Assess -- "Needs Review" --> RedTeam
     subgraph RedTeam ["2. Red Team Review Loop"]
         direction TB
-        RT_Research["Research & Analyze"] --> RT_Bundle["Bundle Context<br>(context-bundler)"]
+        RT_Research["Research & Analyze"] --> RT_Bundle["Bundle Context<br>(bundling-context)"]
         RT_Bundle --> RT_Review{"Red Team Verdict?"}
         RT_Review -- "More Research" --> RT_Research
         RT_Review -- "Approved" --> RT_Seal["Seal<br>(Bundle Session Artifacts)"]

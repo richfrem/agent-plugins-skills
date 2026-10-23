@@ -59,7 +59,7 @@ globs: ["**/*"]
 2. **Scaffold & Author**: Write the rule to `plugins/<plugin>/rules/<name>.md` with frontmatter `description` and `globs`.
 3. **Draft The Iron Law**: Place the non-negotiable core constraint prominently in the first 20 lines.
 4. **Enumerate Invariants**: Add concrete MUST/NEVER operational bounds without historical narratives.
-5. **Register Rule Symlink**: Delegate rule registration to symlink-manager (`symlink_manager.py create`).
+5. **Register Rule Symlink**: Delegate rule registration to managing-symlinks (`symlink_manager.py create`).
 6. **Verify Invariants**: Run regex checks and line count validation to guarantee zero fluff and budget compliance.
 
 ## Verification

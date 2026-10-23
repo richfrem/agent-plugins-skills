@@ -15,7 +15,7 @@ Run the following checks from the repository root:
 1. **Workspace Coding Conventions Audit**:
    Ensure all file headers, Purpose, Key Input Dependencies, and function docstrings match codebase policies:
    ```bash
-   python3 plugins/dev-utils/scripts/workspace_conventions_auditor.py
+   python3 plugins/dev-utils/skills/enforcing-coding-conventions/scripts/workspace_conventions_auditor.py
    ```
 
 2. **Compliance Audit**:

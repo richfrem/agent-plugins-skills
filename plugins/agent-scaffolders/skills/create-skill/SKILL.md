@@ -26,7 +26,7 @@ Keep critical constraints and the first action early. Required references link d
 from SKILL.md; long references have early contents. Short skills may omit redundant
 navigation. The first 100 lines are a preview budget, not a universal loading limit.
 Canonical scripts/references/assets belong to the plugin root. Delegate managed
-file-level links to symlink-manager; never create direct links or overwrite existing assets.
+file-level links to managing-symlinks; never create direct links or overwrite existing assets.
 
 ## Quick start
 
@@ -44,7 +44,7 @@ Templates are in [assets/templates/skill-layout.md](assets/templates/skill-layou
 
 1. Choose the variant and observable task-success contract before extensive authoring.
 2. Generate; review the JSON receipt. `pending_links` means the workflow is incomplete.
-3. Delegate diagnose/register/restore/diagnose to symlink-manager using the proposed links.
+3. Delegate diagnose/register/restore/diagnose to managing-symlinks using the proposed links.
 4. Replace generic steps with necessary task knowledge, constraints, default commands,
    dependencies and validation loops. Add meaningful examples where useful.
 5. Link detailed resources directly and say when to read them. Omit unused folders,

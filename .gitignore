@@ -103,7 +103,7 @@ context/events.jsonl
 .github/copilot/
 .pytest_cache/
 
-# Local task scratchpad (ephemeral, not durable backlog — see github-issue-backlog-agent)
+# Local task scratchpad (ephemeral, not durable backlog — see the managing-github-issues backlog mode)
 tasks/
 handoffs/
 

@@ -59,7 +59,7 @@ Related tools in `scripts/`: `convert_symlinks_to_manifest.py` (symlinks to copy
 
 | Reference to | Write it as |
 |---|---|
-| Another skill or agent | Its name: "use the `adr-management` skill" |
+| Another skill or agent | Its name: "use the `managing-adrs` skill" |
 | A file in the same skill | A path relative to the skill folder (`references/`, `scripts/`) |
 | A document elsewhere in the plugin | A markdown link with a `../` path inside the plugin |
 | A script the skill runs | Keep it inside the skill (a copy-manifest entry if it is shared) |
