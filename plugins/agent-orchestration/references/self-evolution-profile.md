@@ -1,9 +1,10 @@
-# Self-Evolution Profile — Agent Loops
+# Self-Evolution Profile — Agent Orchestration
 
 ## Allowed Edit Directories
 
 - plugins/agent-orchestration/skills/
-- plugins/agent-orchestration/scripts/
+- plugins/agent-orchestration/skills/cli-agent/scripts/
+- plugins/agent-orchestration/skills/orchestrating-agent-work/scripts/
 - plugins/agent-orchestration/references/
 
 ## Explicit Confirmation Required

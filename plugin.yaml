@@ -12,7 +12,6 @@ skills_dirs:
   - plugins/agent-orchestration/skills
   - plugins/agent-memory/skills
   - plugins/agent-scaffolders/skills
-  - plugins/cli-agents/skills
   - plugins/dev-utils/skills
   - plugins/exploration-cycle-plugin/skills
   - plugins/obsidian-wiki-engine/skills

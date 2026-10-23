@@ -1,8 +1,0 @@
-[
-  {"prompt": "Run a batch formatting job across these 50 markdown files using parallel agents.", "should_trigger": true},
-  {"prompt": "Partition this checklist into independent sub-tasks and run them concurrently across worktrees.", "should_trigger": true},
-  {"prompt": "Launch multiple agents simultaneously to process these log files — they don't depend on each other.", "should_trigger": true},
-  {"prompt": "Delegate the database schema update to a worker agent and verify the result.", "should_trigger": false},
-  {"prompt": "Route this ambiguous task to the appropriate loop pattern.", "should_trigger": false},
-  {"prompt": "Start a new research session and synthesize findings into memory.", "should_trigger": false}
-]

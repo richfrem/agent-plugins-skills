@@ -6,7 +6,6 @@
         "agent-agentic-os",
         "agent-orchestration",
         "agent-scaffolders",
-        "cli-agents",
         "dev-utils"
       ]
     }

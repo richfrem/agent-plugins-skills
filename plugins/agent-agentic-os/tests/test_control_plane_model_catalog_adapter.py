@@ -10,7 +10,7 @@ Purpose:
 
 Key Input Dependencies:
     - Temporary JSON files via pytest's tmp_path fixture
-    - Real plugins/cli-agents/skills/cli-agent/references/ files (for the genuine end-to-end test)
+    - Real plugins/agent-orchestration/skills/cli-agent/references/ files (for the genuine end-to-end test)
 
 Key Functions:
     - test_load_catalog_returns_none_when_missing()
@@ -165,7 +165,7 @@ def test_model_catalog_adapter_helper_components_against_temp_files(tmp_path):
 
 def test_model_catalog_adapter_resolve_recommended_model_against_real_repo_files():
     """Genuine end-to-end call of the PUBLIC resolve_recommended_model() method, against the
-    real plugins/cli-agents/skills/cli-agent/references/ files in this repo (the same files
+    real plugins/agent-orchestration/skills/cli-agent/references/ files in this repo (the same files
     ControlPlane.resolve_recommended_model() resolves against in production) — proves the
     complete, real code path works, not just its individual helper pieces."""
     adapter = ModelCatalogAdapter()

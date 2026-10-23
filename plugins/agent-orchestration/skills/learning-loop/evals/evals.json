@@ -1,8 +1,0 @@
-[
-  {"prompt": "Start a new session: run orientation, load context snapshot, and begin research synthesis.", "should_trigger": true},
-  {"prompt": "We are done with the session — seal the session and persist memory to survive context reset.", "should_trigger": true},
-  {"prompt": "Perform a research synthesis loop on the latest React patterns and capture findings.", "should_trigger": true},
-  {"prompt": "Delegate this research task to the inner loop and verify the result.", "should_trigger": false},
-  {"prompt": "Partition this work into parallel sub-tasks and run them concurrently across worktrees.", "should_trigger": false},
-  {"prompt": "Send this architecture design to the red team for adversarial review.", "should_trigger": false}
-]

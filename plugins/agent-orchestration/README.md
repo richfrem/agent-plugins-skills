@@ -1,88 +1,69 @@
-# Agent Loops & Graphs: Execution Primitives
+# Agent Orchestration & Multi-LLM Routing
 
-A framework-agnostic library of structural execution patterns for AI agents. 
-From simple single-agent learning loops and parallel swarms to deterministic graph state machines and hierarchical meta-loops, this plugin provides the routing, structure, and Python execution engines required to orchestrate work reliably.
-
-It provides "LEGO bricks" for orchestration — bringing industry-standard agentic patterns (like Routing, Review-Critique, Parallel Swarm, Inner/Outer Delegation, and Deterministic State Graphs) into concrete, runnable primitives.
-
-> **Scope:** Designed to work with any CLI-accessible AI (Claude Code, Copilot CLI, Antigravity (agy) CLI, local models). It strictly provides *how* to loop. It does **not** provide personas, memory persistence, or evaluation infrastructure.
+A framework-agnostic execution and routing suite for AI agents. Combines structural execution topologies (deterministic state machines, DAG workflows, supervisor/worker loops, and parallel swarms) with multi-backend LLM task routing, governance sandboxing, and expert persona delegation.
 
 ---
 
-## Is This For You?
+## Skills
 
-**Good fit:**
-- Developers who need robust, repeatable ways to execute multi-agent workflows
-- Workflows that require work to be partitioned and run concurrently (`agent-swarm`)
-- Tasks that require an outer planner delegating to an inner executor (`dual-loop`)
-- Any system that needs an adversarial Red Team review loop before finalizing output
-
-**Not a fit:**
-- If you need persistent session memory or evaluation-gated continuous improvement (use `agent-agentic-os` instead, which runs on top of these loops)
-- If you just need a prompt library (this plugin provides structural execution, not domain-specific personas)
+| Skill | Role | Description |
+|---|---|---|
+| `orchestrating-agent-work` | Master Orchestrator | Interactive intake and execution planner for DAGs, supervisor/worker loops, and parallel swarms. Analyzes incoming tasks, determines topology, plans artifacts, and coordinates execution. |
+| `cli-agent` | Multi-LLM Router | Dispatches bounded tasks to six backends (`--cli claude\|codex\|copilot\|agy\|gemini\|llama`) via `run_agent.py`. Manages local llama-server setup, canonical model catalogs, project capability setup, and KV cache optimization. |
+| `agt-security` | Governance & Sandboxing | Microsoft Agent Governance Toolkit (AGT) sandbox validation, boundary verification, and HMAC key rotation. |
+| `maf-adapter` | Framework Adapter | Microsoft Agent Framework (MAF) manifest validation, adapter bindings, and local simulation harness. |
 
 ---
 
-## 🚀 Start Here
+## Architecture & Execution Modes
 
-> **Every execution starts with one router:**
->
-> ```bash
-> /orchestrator
-> ```
->
-> Describe your trigger (a question, issue, research need, or work assignment). The orchestrator acts as a **Routing Agent**, assessing the task and automatically dispatching it to the correct execution primitive below.
+### 1. Structural Orchestration (Loops & DAGs)
+```
+Task Trigger → orchestrating-agent-work
+  ├── Topology: Directed Acyclic Graph (DAG)
+  │     └── graph-manifest.json → graph_runner.py (isolated worktrees, receipts, rollback)
+  └── Topology: Loop Pattern
+        ├── Supervisor / Worker → agent_orchestrator.py (strategy packets, verification loop)
+        └── Parallel Swarm → swarm_run.py (partitioned jobs, concurrent batching, merged results)
+```
 
----
+### 2. Multi-LLM Backend Routing
+```
+Mode A — Interactive Model Replacement (routing_proxy.py)
+  Claude Code / Copilot / Agy / Codex → ANTHROPIC_BASE_URL=:4000
+  → routing_proxy → llama-server :8089 (Gemma 4 12B)
 
-## What's in the Box
-
-### Front Doors
-
-| Component | Role | Description |
-|-----------|------|-------------|
-| `select-loop-strategy` | Master Decision Tree | Evaluates task characteristics and navigates an interactive 6-gate decision tree to select the optimal topology. |
-| `orchestrator` | Router & Lifecycle Manager | Front-door routing agent. Assesses triggers and manages shared closure sequences (seal, persist, retrospective). |
-
----
-
-### Core Execution Patterns (The Primitives)
-
-| Skill | Pattern | Description |
-|-------|---------|-------------|
-| `learning-loop` | 1. Single Agent (Loop Agent) | Self-directed research and synthesis. Linear execution in a single context. No inner agents or review gates. |
-| `red-team-review` | 2. Review & Critique (Adversarial) | Research → bundle context → red team review → iterate in rounds until output is approved. |
-| `dual-loop` | 3. Sequential Agent (Manager/Worker) | Outer loop plans and delegates to an inner CLI agent via strategy packets, then verifies the output. |
-| `co-pilot-loop` | 3A. Fast-Tier Pair Preset | Specialized dual-loop pairing Claude (Supervisor) with Gemini Flash Low (Worker) via cheapest models configuration. |
-| `agent-swarm` | 4. Parallel Agent (Concurrent) | Partitions work → dispatches to N agents across isolated workspaces → verifies and merges all outputs. |
-| `triple-loop-learning` | 5. Hierarchical Meta-Loop | Orchestrates a 3-tier execution hierarchy for autonomous autoresearch and process self-optimization. |
-| `graph-planner` | 6A. DAG Architect & Compiler | Interactively architects, topologically validates, and compiles token-budgeted execution graphs into graph-manifest.json. |
-| `graph-execution` | 6B. Deterministic State Machine (DAG) | Formal node transitions, Proposal Mode, transactional worktree sandboxing, receipt gates, and rollback. |
+Mode B — Task Delegation (run_agent.py — fast task router)
+  Primary agent → run_agent.py cli=<backend>
+  ├── cli=llama   → http://localhost:8089/v1/chat/completions  (direct, ~2s)
+  ├── cli=copilot → GitHub Copilot CLI subprocess
+  ├── cli=gemini  → Gemini CLI subprocess
+  ├── cli=claude  → Claude CLI subprocess
+  ├── cli=agy     → Antigravity CLI subprocess
+  └── cli=codex   → Codex/OpenAI-compatible CLI subprocess
+```
 
 ---
 
-### Python Execution Engines
+## 13 Expert Agent Personas (`agents/`)
 
-The true power of this plugin lies in its robust Python execution scripts that back the patterns above:
+Host sub-agents that also serve as persona templates passed to `run_agent.py`:
 
-| Engine | Role | Description |
-|--------|------|-------------|
-| `swarm_run.py` | Parallel Engine | Token-efficient batching, rate-limit backoff, and checkpoint resume logic for the `agent-swarm`. |
-| `agent_orchestrator.py` | Sequential Engine | Provides reliable packet generation and verification steps for `dual-loop` without fragile LLM terminal parsing. |
-| `closure_guard.py` | Safety Hook | Checks local state for a `closure_done: true` flag to prevent premature session termination. |
-
----
-
-## Separation of Concerns & System Boundaries
-
-This plugin enforces a strict framework-agnostic boundary. It does **not** own the following concerns:
-
-| Concern | Owned By | Relationship |
-|---------|----------|-------------|
-| **Personas / System Prompts** | Calling Environment | `agent-orchestration` routes the work, but you supply the persona (e.g. from `.claude/prompts/` or your own plugins). |
-| **Memory & Persistence** | `agent-agentic-os` | Loop output is returned to the caller. Deduplication and memory promotion are handled externally. |
-| **Objective Evaluation** | `agent-agentic-os` | `triple-loop-learning` executes 3-tier mechanics, but the external caller provides the eval gate (KEEP/DISCARD). |
-| **Context Bundling** | `bundling-context` | Generic dependency required by `red-team-review` and for compiling session artifacts. |
+| Persona | Domain | Focus |
+|---|---|---|
+| `architect-review.md` | Architecture | C4/SOLID structural review, coupling, layer boundary compliance |
+| `compliance-reviewer.md` | Governance | Repository conventions, coding standards, drift detection |
+| `critical-auditor.md` | Adversarial | Failure-seeking audit of runtime contracts and assumptions |
+| `debate-synthesizer.md` | Adversarial | Dialectical synthesis across conflicting agent proposals |
+| `output-validator.md` | Safety | Output guardrail — hallucination, schema, and policy verification |
+| `performance-analyst.md` | Performance | Bottleneck analysis — Big-O scaling, I/O amplification |
+| `pr-reviewer.md` | Code Quality | Pull request diff review — correctness, blast radius, ship/hold |
+| `red-team-reviewer.md` | Adversarial | Exploit scenarios, privilege escalation, attack surface analysis |
+| `refactor-expert.md` | Code Quality | Code smell taxonomy, refactoring safety, SOLID/DRY cleanup |
+| `security-auditor.md` | Security | OWASP vulnerability audit, risk severity classification |
+| `self-critic.md` | Adversarial | Internal reflection loop — task-fit, completeness, blind spots |
+| `tdd-contract-reviewer.md` | Testing | Specification testability and Red-Green contract verification |
+| `test-writer.md` | Testing | Test suite generation — happy paths, boundaries, edge cases |
 
 ---
 
@@ -90,31 +71,43 @@ This plugin enforces a strict framework-agnostic boundary. It does **not** own t
 
 ```text
 agent-orchestration/
-├── .claude-plugin/      # Plugin manifest
-├── hooks/               # Lifecycle hooks (closure enforcement via closure_guard.py)
-├── assets/resources/
-│   ├── diagrams/        # Architecture diagrams
-│   └── templates/       # Structural templates (strategy-packets, generic retrospectives)
-├── scripts/             # Core execution engines (swarm_run.py, agent_orchestrator.py)
-├── skills/
-│   ├── orchestrator/         # Routes to patterns & lifecycle manager
-│   ├── select-loop-strategy/ # Master decision tree
-│   ├── learning-loop/        # Primitive 1
-│   ├── red-team-review/      # Primitive 2
-│   ├── dual-loop/            # Primitive 3
-│   ├── co-pilot-loop/        # Primitive 3A
-│   ├── agent-swarm/          # Primitive 4
-│   ├── triple-loop-learning/ # Primitive 5
-│   └── graph-execution/      # Primitive 6
-└── references/          # Pattern guide and generic execution protocols
+├── .claude-plugin/              # Claude Code plugin manifest
+├── hooks/                       # Lifecycle hooks (closure enforcement via closure_guard.py)
+├── plugin.yaml                  # Plugin manifest (skills, agents, tools, platforms)
+├── requirements.in / .txt       # Standard library dependencies
+├── README.md                    # This file
+├── agents/                      # 13 host sub-agents & persona templates
+├── references/                  # Plugin-wide acceptance criteria, fallback trees, evolution log
+├── tests/                       # Plugin-level authoring and execution contract tests
+└── skills/
+    ├── orchestrating-agent-work/ # Unified DAG and loop orchestrator
+    │   ├── SKILL.md             # Master router and execution planner
+    │   ├── scripts/             # swarm_run.py, agent_orchestrator.py, graph_runner.py, etc.
+    │   ├── assets/templates/    # Job, strategy packet, and retrospective templates
+    │   └── references/          # Pattern guides, schemas, and architecture diagrams
+    ├── cli-agent/               # Multi-LLM task router, local llama-server, and model catalog
+    │   ├── SKILL.md             # Central dispatcher across 6 CLI backends
+    │   ├── scripts/             # run_agent.py, run_server.py, routing_proxy.py, kv_cache_orchestrator.py
+    │   └── references/          # Backend dispatch guides, catalogs, setup guides
+    ├── agt-security/            # Microsoft Agent Governance Toolkit (AGT) sandboxing & HMAC
+    └── maf-adapter/             # Microsoft Agent Framework (MAF) adapter & test harness
 ```
 
 ---
 
-## Part of the Plugin Triad
+## Testing & Verification
 
-| Plugin | Role |
-|--------|------|
-| `agent-scaffolders` | Spec + Factory — what ecosystem artifacts are and how to create them |
-| `agent-agentic-os` | Operations — eval-gated improvement loop, experiment log, memory |
-| **`agent-orchestration`** | **Execution patterns — the loop substrate used by the ecosystem** |
+```bash
+# Plugin structure audit
+python3 plugins/agent-scaffolders/skills/audit-plugin/scripts/audit_plugin_structure.py plugins/agent-orchestration
+
+# Skill audits
+python3 plugins/agent-scaffolders/scripts/audit_skill.py plugins/agent-orchestration/skills/orchestrating-agent-work --mode source
+python3 plugins/agent-scaffolders/scripts/audit_skill.py plugins/agent-orchestration/skills/cli-agent --mode source
+
+# Sub-agent audits
+python3 plugins/agent-scaffolders/scripts/audit_sub_agent.py plugins/agent-orchestration --all
+
+# Unit tests
+python3 -m pytest plugins/agent-orchestration/skills/cli-agent/scripts -v
+```

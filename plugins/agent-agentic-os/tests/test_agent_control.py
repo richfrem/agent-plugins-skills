@@ -9,7 +9,7 @@ Purpose:
 
 Key Input Dependencies:
     - Temporary SQLite databases created in pytest fixtures
-    - Reference catalogs: plugins/cli-agents/skills/cli-agent/references/*.json
+    - Reference catalogs: plugins/agent-orchestration/skills/cli-agent/references/*.json
 
 Key Functions:
     - temp_db_path() — Pytest fixture yielding temporary database path

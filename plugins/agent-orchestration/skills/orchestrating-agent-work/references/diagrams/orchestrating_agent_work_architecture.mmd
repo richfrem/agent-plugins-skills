@@ -1,0 +1,102 @@
+---
+title: Orchestrating Agent Work - Unified Architecture
+---
+flowchart TD
+    subgraph Phase1["1. Interactive Triage & Strategy Selection"]
+        direction TB
+        Task["Incoming Engineering Task<BR>(Task Brief / Prompt / Requirements)"]
+        Analyze["Analyze Task Structure<BR>(Dependencies, Ordering Barriers, Concurrency, Risk)"]
+        Interview["Interactive Interview (1-3 Questions)<BR>(Unit structure, Ordering/convergence, Assurance)"]
+        SelectScript["Run scripts/select_strategy.py<BR>(Output: select-loop-strategy-decision.json)"]
+        Confirm["Human Confirmation / Override<BR>(Confirm Graph vs. Loop before planning)"]
+
+        Task --> Analyze
+        Analyze --> Interview
+        Interview --> SelectScript
+        SelectScript --> Confirm
+    end
+
+    Confirm -->|"Multiple steps, parallel fan-out,<BR>join barriers, or ordered mutations"| GraphBranch["Strategy: Graph (DAG)"]
+    Confirm -->|"Single bounded change<BR>(Supervisor / Worker)"| DualLoopBranch["Strategy: Dual-Loop"]
+    Confirm -->|"Many identical independent tasks<BR>(Bulk batch operations)"| SwarmBranch["Strategy: Parallel Swarm"]
+    Confirm -->|"Minimal localized edit"| DirectBranch["Strategy: Direct Edit"]
+
+    subgraph Phase2["2. Plan"]
+        direction TB
+        subgraph GraphPlan["Graph Planning (graph-planning.md)"]
+            DAGAuthor["Architect Nodes & Dependencies<BR>(Read fan-out, Join barriers, Verifier gates)"]
+            DAGValidate["Validate Manifest<BR>(scripts/validate_manifest.py)"]
+            DAGManifest["Emit graph-manifest.json"]
+            DAGAuthor --> DAGValidate --> DAGManifest
+        end
+
+        subgraph DualLoopPlan["Dual-Loop Planning (strategy-dual-loop.md)"]
+            TaskPacket["Author Task Packet<BR>(handoffs/task_packet_NNN.md)<BR>Enforce 'NO GIT' worker rule"]
+        end
+
+        subgraph SwarmPlan["Swarm Planning (strategy-agent-swarm.md)"]
+            SwarmJob["Partition Tasks & Author Job<BR>(docs/plans/work-tasks/<id>.job.md)<BR>Build file checklist"]
+        end
+
+        DirectPlan["Author Implementation Plan"]
+    end
+
+    GraphBranch --> GraphPlan
+    DualLoopBranch --> DualLoopPlan
+    SwarmBranch --> SwarmPlan
+    DirectBranch --> DirectPlan
+
+    subgraph Phase3["3. Execute"]
+        direction TB
+        subgraph GraphExec["Graph Execution (graph-execution.md)"]
+            GraphRunner["Deterministic DAG Runner<BR>(scripts/graph_runner.py)"]
+            WorktreeIso["Isolated Git Worktree<BR>(Mutations confined to .worktrees/)"]
+            StateReceipts["Per-Node Commits & Receipts<BR>(survives rollback outside worktree)"]
+            Rollback["Automatic Rollback on Failure<BR>(Restores clean start SHA)"]
+            GraphRunner --> WorktreeIso --> StateReceipts
+            StateReceipts -.->|Failure| Rollback
+        end
+
+        subgraph DualLoopExec["Dual-Loop Execution"]
+            WorkerDispatch["Dispatch Inner Worker<BR>(CLI dispatch with stdin < /dev/null)"]
+            NoGitWorker["Worker writes code & runs tests<BR>(Forbidden from running git write commands)"]
+            WorkerDispatch --> NoGitWorker
+        end
+
+        subgraph SwarmExec["Swarm Execution"]
+            SwarmRun["Parallel Worker Dispatch<BR>(scripts/swarm_run.py --workers N)"]
+            BatchResume["Independent worker execution with --resume"]
+            SwarmRun --> BatchResume
+        end
+
+        DirectExec["Execute localized edits directly"]
+    end
+
+    DAGManifest --> GraphExec
+    TaskPacket --> DualLoopExec
+    SwarmJob --> SwarmExec
+    DirectPlan --> DirectExec
+
+    subgraph Phase4["4. Supervised Verification & Closure"]
+        direction TB
+        DiffAudit["Diff Audit & Verifier<BR>(scripts/agent_orchestrator.py verify)"]
+        TestGate["Mechanically Run Automated Tests<BR>(pytest / project test suites)"]
+        Retro["Post-Run Retrospective Survey<BR>(post_run_survey.md)"]
+        OuterCommit["Outer Orchestrator Commits & Closes Session<BR>(Sole commit authority)"]
+
+        DiffAudit --> TestGate --> Retro --> OuterCommit
+    end
+
+    GraphExec --> DiffAudit
+    DualLoopExec --> DiffAudit
+    SwarmExec --> DiffAudit
+    DirectExec --> DiffAudit
+
+    style Phase1 fill:#e8f0fe,stroke:#1a73e8,stroke-width:2px
+    style Phase2 fill:#fef7e0,stroke:#f9ab00,stroke-width:2px
+    style Phase3 fill:#e6f4ea,stroke:#137333,stroke-width:2px
+    style Phase4 fill:#fce8e6,stroke:#c5221f,stroke-width:2px
+    style GraphBranch fill:#e8f0fe,stroke:#1a73e8
+    style DualLoopBranch fill:#fef7e0,stroke:#f9ab00
+    style SwarmBranch fill:#e6f4ea,stroke:#137333
+    style DirectBranch fill:#f1f3f4,stroke:#5f6368

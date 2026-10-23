@@ -1,8 +1,0 @@
-[
-  {"prompt": "Delegate the task of updating the user database schema to the inner loop agent.", "should_trigger": true},
-  {"prompt": "The inner loop finished the Python script — verify it and loop back if it fails.", "should_trigger": true},
-  {"prompt": "Use inner/outer agent delegation to implement and verify this feature with correction loops.", "should_trigger": true},
-  {"prompt": "Run a batch job across 50 files simultaneously with multiple parallel agents.", "should_trigger": false},
-  {"prompt": "Assess this incoming task and route it to the right loop pattern.", "should_trigger": false},
-  {"prompt": "Create an ADR documenting the decision to adopt hexagonal architecture.", "should_trigger": false}
-]
