@@ -22,9 +22,9 @@ before assuming this repo owns it.
 Current scale (read from `plugins/` — verify with `find plugins -name SKILL.md | wc -l` and
 `find plugins/*/agents -maxdepth 1 -name '*.md' | wc -l` before quoting a number elsewhere;
 `plugins/spec-kitty-plugin` was removed 2026-09-05, never part of this count):
-- **10 plugins**
-- **128 skills** (active SKILL.md definitions across plugins)
-- **45 agent definitions** (`agents/*.md` across plugins)
+- **7 plugins**
+- **93 skills** (active SKILL.md definitions across plugins)
+- **44 agent definitions** (`agents/*.md` across plugins)
 
 ## 2. Project Structure
 
@@ -32,10 +32,9 @@ Current scale (read from `plugins/` — verify with `find plugins -name SKILL.md
 [Project Root]/
 ├── plugins/                        # CANONICAL SOURCE — authoritative for all skills/agents
 │   ├── agent-agentic-os/           # Control plane + skill improvement lab (14 skills)
-│   ├── agent-orchestration/        # OS-decoupled execution primitives (10 skills)
+│   ├── agent-orchestration/        # Execution topologies & multi-LLM CLI routing (4 skills, 13 agents)
 │   ├── agent-memory/               # RLM summary cache + ChromaDB vector store (13 skills)
 │   ├── agent-scaffolders/          # Plugin/skill/agent/rule scaffolding & auditing (27 skills)
-│   ├── cli-agents/                 # Multi-LLM CLI dispatch (Claude/Copilot/Gemini/Agy/Codex) (3 skills)
 │   ├── dev-utils/                  # GitHub issues + worktrees, context bundling, links, conventions, ADRs, symlinks, HuggingFace (8 skills)
 │   ├── exploration-cycle-plugin/   # Business discovery workflow + SQLite control plane (20 skills)
 │   ├── obsidian-wiki-engine/       # Karpathy-style LLM wiki over the codebase (10 skills)
@@ -135,8 +134,8 @@ and `turn_evolution_guard`). Three control-plane edges are cryptographic human g
 
 **Setup:** per machine, by the human, via `setup_ciba_identity.py` (skill `os-control-signing-setup`). `allowed_signers*` and `context/identity/challenges/` are machine-local trust anchors and never committed; `os-control-init` and `os-control-health` report readiness read-only. **Residual risk:** an agent running as the same account with direct database or coordinator access can still tamper; see `plugins/agent-agentic-os/references/isolation-setup.md`.
 
-### 4.3. Plugin: agent-orchestration
-Execution primitives for loops and deterministic state graphs (orchestrator, select-loop-strategy, graph-planner, graph-execution, co-pilot-loop, learning-loop, dual-loop, agent-swarm, red-team-review, triple-loop-learning). Provides execution patterns only — no eval gate, no memory; `os-lab-loop` delegates its inner loop to `triple-loop-learning` as substrate.
+### 4.3. Plugin: agent-orchestration (4 skills, 13 agents)
+Unified execution topologies (DAGs, supervisor/worker loops, parallel swarms via `orchestrating-agent-work`) and multi-backend task routing (`run_agent.py` to Claude, Copilot, Gemini, Agy, Codex, and direct local llama-server via `cli-agent`, plus `agt-security` sandboxing and `maf-adapter` framework validation). Includes 13 expert agent personas (architect-review, security-auditor, tdd-contract-reviewer, red-team-reviewer, etc.) which form the Phase 1 adversarial review trio per `engineering-lifecycle-policy.md` §3.
 
 ### 4.4. Plugin: agent-memory
 Two retrieval subsystems consolidated from former rlm-factory / vector-db / memory-management
@@ -151,22 +150,14 @@ Tooling for creating and auditing ecosystem components: `create-plugin`, `create
 plus APM package conversion and marketplace management. Retired analyzer,
 mining, standalone command, path-repair, deep-audit, and self-audit wrappers are no longer catalogued.
 
-### 4.6. Plugin: cli-agents (11 skills)
-Multi-LLM task router (`run_agent.py`) consolidated from claude-cli/copilot-cli/gemini-cli.
-6 backends, `--isolated` security contract, 13 expert-persona sub-agents (architect-review,
-security-auditor, tdd-contract-reviewer, red-team-reviewer, etc.) — the first three form the
-Phase 1 adversarial review trio per `engineering-lifecycle-policy.md` §3. Model selection
-driven by `references/copilot-models.json` cost tiers. Gemini CLI consumer access ended June 18,
-2026 — `cli-agent --cli agy` is the forward path for frontier models.
-
-### 4.7. Plugin: exploration-cycle-plugin (20 skills) — security-sensitive
+### 4.6. Plugin: exploration-cycle-plugin (20 skills) — security-sensitive
 Business discovery workflow (Path 1: pre-build discovery; Path 2: vibe-coded-prototype
 migration). Backed by a hardened Python control plane in `scripts/`: `dispatch.py`,
 `state_engine.py` (SQLite, transactional, WAL), `sandbox_runner.py` (process sandboxing, HMAC-signed
 envelopes, approval gating). Any change to these files requires reading `docs/ADRs/007_maf_adapter_runtime_decision.md`
 first — no casual convenience bypasses to the authorization gate or path enforcement.
 
-### 4.8. Plugin: obsidian-wiki-engine (10 skills)
+### 4.7. Plugin: obsidian-wiki-engine (10 skills)
 Karpathy-style LLM wiki generation over the codebase; standalone or combined with agent-memory as
 the third leg of the Super-RAG stack.
 
@@ -251,7 +242,7 @@ This populates the target client harness (`.claude/skills/`, `.agents/skills/`, 
 
 - Plugin structural validation: `audit-plugin` skill.
 - Control-plane smoke tests: `plugins/exploration-cycle-plugin/scripts/smoke_test.py`.
-- `cli-agents` router: 76 TDD tests across 3 files (per README v1.5 notes).
+- `agent-orchestration` router (`cli-agent`): 76+ TDD tests across scripts and contract suites.
 - No single top-level test runner — tests are scoped per plugin, colocated with the plugin's
   `scripts/`.
 

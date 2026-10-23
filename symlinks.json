@@ -236,36 +236,6 @@
       "description": ""
     },
     {
-      "src": "plugins/agent-orchestration/assets/diagrams/agent_swarm.mmd",
-      "dst": "plugins/agent-orchestration/skills/agent-swarm/assets/resources/agent_swarm.mmd",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-orchestration/scripts/swarm_run.py",
-      "dst": "plugins/agent-orchestration/skills/agent-swarm/scripts/swarm_run.py",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-orchestration/scripts/agent_orchestrator.py",
-      "dst": "plugins/agent-orchestration/skills/orchestrator/scripts/agent_orchestrator.py",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-orchestration/scripts/swarm_run.py",
-      "dst": "plugins/agent-orchestration/skills/orchestrator/scripts/swarm_run.py",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-orchestration/assets/diagrams/red_team_review_loop.mmd",
-      "dst": "plugins/agent-orchestration/skills/red-team-review/assets/resources/red_team_review_loop.mmd",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
       "src": "plugins/agent-scaffolders/assets/templates/README.md.jinja",
       "dst": "plugins/agent-scaffolders/skills/audit-plugin/assets/templates/README.md.jinja",
       "strategy": "copy",
@@ -1376,18 +1346,6 @@
       "description": ""
     },
     {
-      "src": "plugins/agent-orchestration/references/cheapest_models.md",
-      "dst": "plugins/agent-orchestration/skills/agent-swarm/references/cheapest_models.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-orchestration/references/cheapest_models.json",
-      "dst": "plugins/agent-orchestration/skills/agent-swarm/references/cheapest_models.json",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
       "src": "plugins/exploration-cycle-plugin/scripts/validate_phase_gate.py",
       "dst": "plugins/exploration-cycle-plugin/skills/exploration-workflow/scripts/validate_phase_gate.py",
       "strategy": "copy",
@@ -1690,90 +1648,6 @@
     {
       "src": "plugins/agent-agentic-os/references/memory-promotion-guide.md",
       "dst": "plugins/agent-agentic-os/skills/os-lab-memory/references/memory-promotion-guide.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-orchestration/references/agent-swarm-acceptance-criteria.md",
-      "dst": "plugins/agent-orchestration/skills/agent-swarm/references/acceptance-criteria.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-orchestration/references/agent-swarm-fallback-tree.md",
-      "dst": "plugins/agent-orchestration/skills/agent-swarm/references/fallback-tree.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-orchestration/references/dual-loop-acceptance-criteria.md",
-      "dst": "plugins/agent-orchestration/skills/dual-loop/references/acceptance-criteria.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-orchestration/references/diagrams/dual_loop_architecture.mmd",
-      "dst": "plugins/agent-orchestration/skills/dual-loop/references/diagrams/dual_loop_architecture.mmd",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-orchestration/references/dual-loop-fallback-tree.md",
-      "dst": "plugins/agent-orchestration/skills/dual-loop/references/fallback-tree.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-orchestration/references/learning-loop-acceptance-criteria.md",
-      "dst": "plugins/agent-orchestration/skills/learning-loop/references/acceptance-criteria.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-orchestration/references/learning-loop-fallback-tree.md",
-      "dst": "plugins/agent-orchestration/skills/learning-loop/references/fallback-tree.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-orchestration/references/phases.md",
-      "dst": "plugins/agent-orchestration/skills/learning-loop/references/phases.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-orchestration/references/self-correction.md",
-      "dst": "plugins/agent-orchestration/skills/learning-loop/references/self-correction.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-orchestration/references/orchestrator-acceptance-criteria.md",
-      "dst": "plugins/agent-orchestration/skills/orchestrator/references/acceptance-criteria.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-orchestration/references/cli-agent-executor.md",
-      "dst": "plugins/agent-orchestration/skills/orchestrator/references/cli-agent-executor.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-orchestration/references/orchestrator-fallback-tree.md",
-      "dst": "plugins/agent-orchestration/skills/orchestrator/references/fallback-tree.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-orchestration/references/red-team-review-acceptance-criteria.md",
-      "dst": "plugins/agent-orchestration/skills/red-team-review/references/acceptance-criteria.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-orchestration/references/red-team-review-fallback-tree.md",
-      "dst": "plugins/agent-orchestration/skills/red-team-review/references/fallback-tree.md",
       "strategy": "copy",
       "description": ""
     },
@@ -7982,48 +7856,6 @@
       "description": ""
     },
     {
-      "src": "plugins/agent-orchestration/references/acceptance-criteria.md",
-      "dst": "plugins/agent-orchestration/skills/co-pilot-loop/references/acceptance-criteria.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-orchestration/references/acceptance-criteria.md",
-      "dst": "plugins/agent-orchestration/skills/select-loop-strategy/references/acceptance-criteria.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-orchestration/references/fallback-tree.md",
-      "dst": "plugins/agent-orchestration/skills/select-loop-strategy/references/fallback-tree.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-orchestration/references/graph-execution-acceptance-criteria.md",
-      "dst": "plugins/agent-orchestration/skills/graph-execution/references/acceptance-criteria.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-orchestration/references/graph-execution-fallback-tree.md",
-      "dst": "plugins/agent-orchestration/skills/graph-execution/references/fallback-tree.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-orchestration/references/acceptance-criteria.md",
-      "dst": "plugins/agent-orchestration/skills/triple-loop-learning/references/acceptance-criteria.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-orchestration/references/fallback-tree.md",
-      "dst": "plugins/agent-orchestration/skills/triple-loop-learning/references/fallback-tree.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
       "src": "plugins/agent-scaffolders/scripts/audit_skill.py",
       "dst": "plugins/agent-scaffolders/skills/audit-skill/scripts/audit_skill.py",
       "strategy": "copy",
@@ -8038,12 +7870,6 @@
     {
       "src": "plugins/agent-scaffolders/references/fallback-tree.md",
       "dst": "plugins/agent-scaffolders/skills/audit-skill/references/fallback-tree.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-orchestration/references/fallback-tree.md",
-      "dst": "plugins/agent-orchestration/skills/co-pilot-loop/references/fallback-tree.md",
       "strategy": "copy",
       "description": ""
     },
@@ -9860,48 +9686,6 @@
       "description": ""
     },
     {
-      "src": "plugins/agent-orchestration/references/post_run_survey.md",
-      "dst": "plugins/agent-orchestration/skills/dual-loop/references/post_run_survey.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-orchestration/references/cheapest_models.json",
-      "dst": "plugins/agent-orchestration/skills/dual-loop/references/cheapest_models.json",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-orchestration/references/cheapest_models.md",
-      "dst": "plugins/agent-orchestration/skills/co-pilot-loop/references/cheapest_models.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-orchestration/references/cheapest_models.json",
-      "dst": "plugins/agent-orchestration/skills/co-pilot-loop/references/cheapest_models.json",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-orchestration/references/PATTERN_GUIDE.md",
-      "dst": "plugins/agent-orchestration/skills/graph-execution/references/PATTERN_GUIDE.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-orchestration/references/PATTERN_GUIDE.md",
-      "dst": "plugins/agent-orchestration/skills/select-loop-strategy/references/PATTERN_GUIDE.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-orchestration/references/PATTERN_GUIDE.md",
-      "dst": "plugins/agent-orchestration/skills/agent-swarm/references/PATTERN_GUIDE.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
       "src": "plugins/obsidian-wiki-engine/references/obsidian-vault-onboarding-guide.md",
       "dst": "plugins/obsidian-wiki-engine/skills/obsidian-init/references/obsidian-vault-onboarding-guide.md",
       "strategy": "copy",
@@ -10032,54 +9816,6 @@
       "dst": "plugins/exploration-cycle-plugin/skills/vibe-reengineer/references/vibe-reengineer-guide.md",
       "strategy": "copy",
       "description": ""
-    },
-    {
-      "src": "plugins/agent-orchestration/references/graph-manifest-schema.json",
-      "dst": "plugins/agent-orchestration/skills/graph-planner/references/graph-manifest-schema.json",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-orchestration/references/topology-rules.md",
-      "dst": "plugins/agent-orchestration/skills/graph-planner/references/topology-rules.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-orchestration/references/graph-planner-acceptance-criteria.md",
-      "dst": "plugins/agent-orchestration/skills/graph-planner/references/acceptance-criteria.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-orchestration/scripts/graph_runner.py",
-      "dst": "plugins/agent-orchestration/skills/graph-execution/scripts/graph_runner.py",
-      "strategy": "copy",
-      "description": "Deterministic graph execution runner"
-    },
-    {
-      "src": "plugins/agent-orchestration/scripts/validate_manifest.py",
-      "dst": "plugins/agent-orchestration/skills/graph-planner/scripts/validate_manifest.py",
-      "strategy": "copy",
-      "description": "Deterministic graph manifest validator"
-    },
-    {
-      "src": "plugins/agent-orchestration/scripts/validate_manifest.py",
-      "dst": "plugins/agent-orchestration/skills/graph-execution/scripts/validate_manifest.py",
-      "strategy": "copy",
-      "description": "Deterministic graph manifest validator for runner"
-    },
-    {
-      "src": "plugins/agent-orchestration/scripts/select_strategy.py",
-      "dst": "plugins/agent-orchestration/skills/select-loop-strategy/scripts/select_strategy.py",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-orchestration/references/patterns.json",
-      "dst": "plugins/agent-orchestration/skills/select-loop-strategy/references/patterns.json",
-      "strategy": "copy",
-      "description": "Canonical patterns catalog for select-loop-strategy"
     },
     {
       "src": "plugins/agent-scaffolders/references/skill-authoring-contract.json",
@@ -10380,24 +10116,6 @@
       "dst": "plugins/agent-agentic-os/skills/os-lab-loop/references/fallback-tree.md",
       "strategy": "copy",
       "description": "os-lab-loop fallback tree"
-    },
-    {
-      "src": "plugins/agent-orchestration/references/graph-manifest-schema.json",
-      "dst": "plugins/agent-orchestration/skills/graph-execution/references/graph-manifest-schema.json",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-orchestration/references/topology-rules.md",
-      "dst": "plugins/agent-orchestration/skills/graph-execution/references/topology-rules.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/agent-orchestration/references/diagrams/graph_execution_state_machine.mmd",
-      "dst": "plugins/agent-orchestration/skills/graph-execution/references/diagrams/graph_execution_state_machine.mmd",
-      "strategy": "copy",
-      "description": ""
     },
     {
       "src": "plugins/agent-agentic-os/assets/templates/ARCHITECTURE_MD.md",
@@ -11824,12 +11542,6 @@
     {
       "src": "plugins/agent-memory/scripts/vector_consistency_check.py",
       "dst": "plugins/agent-memory/skills/vector-db-search/scripts/vector_consistency_check.py",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/agent-orchestration/references/map-debt.md",
-      "dst": "plugins/agent-orchestration/skills/graph-execution/references/map-debt.md",
       "strategy": "copy",
       "description": "converted from symlink (APM migration)"
     },

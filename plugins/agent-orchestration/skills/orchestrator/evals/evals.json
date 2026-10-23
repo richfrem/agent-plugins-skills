@@ -1,8 +1,0 @@
-[
-  {"prompt": "Assess this task and decide whether to run a learning loop, dual-loop delegation, or parallel swarm.", "should_trigger": true},
-  {"prompt": "Analyze this ambiguous work assignment and route it to the appropriate agent-loop pattern.", "should_trigger": true},
-  {"prompt": "Evaluate the incoming trigger and manage the shared closure — seal, persist, retrospective.", "should_trigger": true},
-  {"prompt": "Launch multiple parallel agents to process these independent tasks across worktrees.", "should_trigger": false},
-  {"prompt": "Delegate this well-defined task to the inner loop and verify execution with correction loops.", "should_trigger": false},
-  {"prompt": "Run a red team review on this design document through adversarial review rounds.", "should_trigger": false}
-]

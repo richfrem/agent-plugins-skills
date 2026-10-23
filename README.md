@@ -1,6 +1,6 @@
 # Agentic OS Control Plane
 
-<!-- ECOSYSTEM_STATS_START -->**Current Scale:** 8 Plugins · 102 Skills · 45 Sub-Agents<!-- ECOSYSTEM_STATS_END -->
+<!-- ECOSYSTEM_STATS_START -->**Current Scale:** 7 Plugins · 93 Skills · 44 Sub-Agents<!-- ECOSYSTEM_STATS_END -->
 
 **A governed execution harness for AI coding agents.** This repository lets Claude Code, Codex,
 GitHub Copilot, Agy, and compatible tools use their native planning, coding, orchestration, and
@@ -130,8 +130,7 @@ binding [ADRs](docs/ADRs/) before changing plugin structure, scripts, or shared 
 | Layer | Responsibility | Primary components |
 | --- | --- | --- |
 | Control plane | State transitions, human gates, policy checks, verification receipts, retrospectives | [`agent-agentic-os`](plugins/agent-agentic-os/README.md) |
-| Native runtime integration | Discover available CLIs, select suitable models, and delegate without hard runtime coupling | [`cli-agents`](plugins/cli-agents/README.md) |
-| Execution patterns | Composable loops, graph planning and execution, swarms, adversarial review | [`agent-orchestration`](plugins/agent-orchestration/README.md) |
+| Execution & routing | Composable loops, DAG execution, parallel swarms, and multi-LLM task routing (Claude, Copilot, Gemini, Agy, Codex, local llama) | [`agent-orchestration`](plugins/agent-orchestration/README.md) |
 | Learning and memory | Filesystem-native memory, retrieval options, experiment and improvement loops | [`agent-memory`](plugins/agent-memory/README.md), `agent-agentic-os` |
 | Plugin lifecycle | Create, audit, package, and maintain reusable plugins | [`agent-scaffolders`](plugins/agent-scaffolders/README.md) |
 
@@ -158,8 +157,7 @@ self-contained runtime copies into active client harnesses (`.claude/skills/`, `
 | Plugin | Use it for |
 | --- | --- |
 | [`agent-agentic-os`](plugins/agent-agentic-os/README.md) | Governed task lifecycle, health checks, evaluation, continuous improvement, and repository evolution |
-| [`cli-agents`](plugins/cli-agents/README.md) | CLI-agent discovery, delegation, model catalogs, and project/runtime setup |
-| [`agent-orchestration`](plugins/agent-orchestration/README.md) | Reusable orchestration and multi-agent execution primitives (graph-planner, graph-execution, dual-loop, swarm) |
+| [`agent-orchestration`](plugins/agent-orchestration/README.md) | Unified agent execution topologies (DAGs, supervisor/worker loops, parallel swarms) and multi-backend CLI routing (run_agent.py, 13 expert personas, AGT sandboxing, MAF validation) |
 | [`agent-memory`](plugins/agent-memory/README.md) | Filesystem memory, RLM, and vector-data capabilities |
 | [`agent-scaffolders`](plugins/agent-scaffolders/README.md) | Creating, auditing, packaging, and maintaining plugins and skills |
 | [`dev-utils`](plugins/dev-utils/README.md) | Repository utilities: GitHub issues and worktrees, context bundling, link checking, coding conventions, ADRs, symlinks, HuggingFace transfers |

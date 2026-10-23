@@ -7,9 +7,15 @@
   },
   {
     "name": "agent-orchestration",
-    "description": "Composable agent loop architectures for learning loops, agent orchestration (0-to-N inner agents), and red team coordination. Framework-agnostic: works with any CLI agent (Claude, Gemini, Copilot, OpenHands, etc.).",
-    "version": "2.0.0",
-    "path": "./plugins/agent-orchestration"
+    "description": "Composable agent loop and graph architectures — deterministic state machines, DAG workflows, supervisor/worker loops, and parallel swarms, paired with the multi-LLM task router suite (run_agent.py, 13 expert agent personas, AGT sandboxing, and MAF validation). Framework-agnostic: works with any CLI agent.",
+    "version": "3.0.0",
+    "path": "./plugins/agent-orchestration",
+    "skills": [
+      "agt-security",
+      "cli-agent",
+      "maf-adapter",
+      "orchestrating-agent-work"
+    ]
   },
   {
     "name": "agent-memory",
@@ -44,12 +50,6 @@
       "create-apm-package",
       "install-apm-package"
     ]
-  },
-  {
-    "name": "cli-agents",
-    "description": "Unified CLI sub-agent orchestration suite utilizing Claude, Gemini, and GitHub Copilot models for sandboxed, persona-based repository analysis, security audits, and QA.",
-    "version": "1.0.0",
-    "path": "./plugins/cli-agents"
   },
   {
     "name": "dev-utils",

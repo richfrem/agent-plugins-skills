@@ -1,6 +1,6 @@
 name: agent-orchestration
-version: 2.3.0
-description: "Composable agent loop and graph architectures — learning loops, deterministic state machines, 0-to-N inner agent orchestration, parallel swarms, and red team coordination. Framework-agnostic."
+version: 3.0.0
+description: "Composable agent loop and graph architectures — deterministic state machines, DAG workflows, supervisor/worker loops, and parallel swarms, paired with the multi-LLM task router suite (run_agent.py, 13 expert agent personas, AGT sandboxing, and MAF validation). Framework-agnostic."
 author: Richard Fremmerlid
 kind: standalone
 platforms:
@@ -9,17 +9,27 @@ platforms:
   - windows
 provides_tools:
   - agent_orchestrator
+  - graph_runner
+  - run_agent
+  - select_strategy
   - swarm_run
+  - validate_manifest
 skills:
-  - agent-swarm
-  - co-pilot-loop
-  - dual-loop
-  - graph-execution
-  - graph-planner
-  - learning-loop
-  - orchestrator
-  - red-team-review
-  - select-loop-strategy
-  - triple-loop-learning
+  - agt-security
+  - cli-agent
+  - maf-adapter
+  - orchestrating-agent-work
 agents:
-  - orchestrator
+  - architect-review
+  - compliance-reviewer
+  - critical-auditor
+  - debate-synthesizer
+  - output-validator
+  - performance-analyst
+  - pr-reviewer
+  - red-team-reviewer
+  - refactor-expert
+  - security-auditor
+  - self-critic
+  - tdd-contract-reviewer
+  - test-writer

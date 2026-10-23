@@ -1,0 +1,218 @@
+[
+  {
+    "prompt": "Assess this task and decide whether to run a learning loop, dual-loop delegation, or parallel swarm.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Analyze this ambiguous work assignment and route it to the appropriate agent-loop pattern.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Evaluate the incoming trigger and manage the shared closure \u2014 seal, persist, retrospective.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Launch multiple parallel agents to process these independent tasks across worktrees.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Delegate this well-defined task to the inner loop and verify execution with correction loops.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Run a red team review on this design document through adversarial review rounds.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Which looping or orchestration pattern should I use for a refactoring that has parallel exploration reads and ordered sequential mutations?",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Help me decide whether to use a dual-loop, a swarm, or a graph for this task.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "What is the best agent execution strategy for running 50 independent doc conversions in parallel?",
+    "should_trigger": true
+  },
+  {
+    "prompt": "how should I orchestrate this migration",
+    "should_trigger": true
+  },
+  {
+    "prompt": "which orchestration pattern fits this refactor",
+    "should_trigger": true
+  },
+  {
+    "prompt": "plan this workflow across multiple steps",
+    "should_trigger": true
+  },
+  {
+    "prompt": "should this be a DAG",
+    "should_trigger": true
+  },
+  {
+    "prompt": "run pytest",
+    "should_trigger": false
+  },
+  {
+    "prompt": "execute this existing graph manifest",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Run a batch job across 50 files simultaneously with swarm_run.py.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Delegate this task to the inner loop agent right now.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Audit this security design with adversarial red-teaming.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Delegate the task of updating the user database schema to the inner loop agent.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "The inner loop finished the Python script \u2014 verify it and loop back if it fails.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Use inner/outer agent delegation to implement and verify this feature with correction loops.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Run a batch job across 50 files simultaneously with multiple parallel agents.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Assess this incoming task and route it to the right loop pattern.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Create an ADR documenting the decision to adopt hexagonal architecture.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Run a batch formatting job across these 50 markdown files using parallel agents.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Partition this checklist into independent sub-tasks and run them concurrently across worktrees.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Launch multiple agents simultaneously to process these log files \u2014 they don't depend on each other.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Delegate the database schema update to a worker agent and verify the result.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Route this ambiguous task to the appropriate loop pattern.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Start a new research session and synthesize findings into memory.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "I have an ambiguous multi-step refactoring workflow that I need to break down into a DAG with token budgets and parallel steps.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Help me architect an execution graph with scatter and gather barriers for this code migration pipeline.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Compile a graph-manifest.json and Mermaid DAG diagram for this multi-step agent workflow.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Design an execution topology with parallel reads and sequential worktree writes for our test suite runner.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Architect a read-only multi-source dependency scan DAG that fans out across 4 repos and joins at a sync barrier.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Fix a single-line off-by-one bug in calculate_tax() within tax_calculator.py.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Execute this existing graph manifest and spawn the worktree sandbox.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Run pytest on the test_loop_strategies suite and check for failures.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Select between dual-loop and swarm strategy for bulk markdown formatting.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "What is the git status in the current repository?",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Execute this existing graph manifest in an isolated worktree and roll back if a node fails.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Run the compiled graph-manifest.json with --approval none using the approved manifest sha256.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Resume running our task DAG; the parallel read batch and sequential mutation nodes are already planned.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Inspect the receipts.jsonl and state.json from the last graph runner execution.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Design a new execution graph with scatter and gather barriers for this migration.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Run a simple exploratory research search across our documentation.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Batch process 100 images in parallel with an agent swarm.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Delegate a single bugfix to an inner loop executor.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Send this design document to the red team for adversarial review \u2014 iterate until approved.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Run a red team review on this architecture, cycling through research, bundle, and critique rounds.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Review this security design with a red team agent and continue iterating until it gets an Approved verdict.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Assess this incoming task and route it to the appropriate loop \u2014 learning loop, swarm, or dual-loop.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "The red team approved the design. Delegate implementation to the inner loop agent.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Partition the test suite into independent chunks and run them in parallel across worktrees.",
+    "should_trigger": true
+  }
+]
