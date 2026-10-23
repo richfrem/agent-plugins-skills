@@ -1,0 +1,26 @@
+%% DRAFT (Slice 0b) session setup: session type decides active phases, dispatch strategy decides who does the work.
+flowchart TD
+    Brief["Confirmed session-brief.md"] --> Type{"Session type"}
+    Type -->|"Greenfield"| GF["Phases 1, 2, 3, 4 all active"]
+    Type -->|"Brownfield"| BF["Phase 1 and 4 required<br/>Phase 2 optional when patterns exist<br/>Phase 3 builds into existing code"]
+    Type -->|"Analysis or docs"| AD["Phases 1, 2 (document structure), 4<br/>Phase 3 skipped"]
+    Type -->|"Spike"| SP["Phase 1 required<br/>other phases flexible, may loop"]
+
+    GF --> Dispatch
+    BF --> Dispatch
+    AD --> Dispatch
+    SP --> Dispatch
+
+    Dispatch{"Dispatch strategy<br/>chosen once, recorded in state"}
+    Dispatch -->|"copilot-cli"| CP["Cheap model per pass<br/>premium work batched into one request"]
+    Dispatch -->|"agy"| AG["Routed through the cli-agent skill<br/>not dispatch.py"]
+    Dispatch -->|"claude-subagents"| CS["Cheap model class for simple passes<br/>session model for synthesis"]
+    Dispatch -->|"direct"| DR["Current model does everything<br/>summarise between phases to save context"]
+
+    CP --> Avail{"Strategy still available?"}
+    AG --> Avail
+    CS --> Avail
+    DR --> Avail
+    Avail -->|"no"| Fallback["Fall back to direct<br/>tell the SME, record direct (fallback)"]
+    Avail -->|"yes"| Go(["Start Phase 1"])
+    Fallback --> Go

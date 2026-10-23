@@ -13,4 +13,4 @@ skills_dirs:
   - plugins/agent-memory/skills
   - plugins/agent-scaffolders/skills
   - plugins/dev-utils/skills
-  - plugins/exploration-cycle-plugin/skills
+  - plugins/agent-exploration-cycle/skills

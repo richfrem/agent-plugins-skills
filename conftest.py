@@ -15,7 +15,7 @@ from pathlib import Path
 
 collect_ignore = [
     "plugins/agent-agentic-os/scripts/smoke_test.py",
-    "plugins/exploration-cycle-plugin/scripts/smoke_test.py",
+    "plugins/agent-exploration-cycle/skills/running-exploration-cycle/scripts/smoke_test.py",
     "plugins/agent-orchestration/scripts/test_swarm_run.py",
 ]
 

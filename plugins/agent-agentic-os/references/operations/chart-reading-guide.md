@@ -57,7 +57,7 @@ The `summary_YYYYMMDD_HHMM.md` file produced alongside the chart contains:
 
 ## Cross-Plugin Reporting
 
-Both `agent-agentic-os` and `exploration-cycle-plugin` use the same ledger format.
+Both `agent-agentic-os` and `agent-exploration-cycle` use the same ledger format.
 To generate reports for both, run `generate_report.py` once per plugin, passing each
 plugin's project dir and plugin dir. Each run produces its own chart and summary.
 The text summaries can be concatenated for a combined view.

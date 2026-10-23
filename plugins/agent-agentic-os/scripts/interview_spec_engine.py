@@ -135,7 +135,7 @@ def detect_referenced_background_document(search_dir: Optional[Path] = None) -> 
 def locate_and_parse_diagnostic_brief(search_dir: Optional[Path] = None) -> Optional[Dict[str, Any]]:
     """
     Automatically locates and extracts diagnostic findings from DIAGNOSTIC_BRIEF.md
-    emitted by the upstream exploration-cycle-plugin.
+    emitted by the upstream agent-exploration-cycle.
     """
     if search_dir is None:
         repo_root = Path(__file__).resolve().parent.parent.parent.parent

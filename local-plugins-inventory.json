@@ -64,9 +64,9 @@
     "path": "./plugins/dev-utils"
   },
   {
-    "name": "exploration-cycle-plugin",
-    "description": "Autonomous discovery, business requirements capture, and prototyping loop for spec-driven engineering.",
-    "version": "0.1.0",
-    "path": "./plugins/exploration-cycle-plugin"
+    "name": "agent-exploration-cycle",
+    "description": "Business exploration and reengineering: guided discovery, requirements capture, interactive prototypes, risk-tiered handoff to engineering, and rescue of existing vibe-coded prototypes. Phase gates enforced by running-exploration-cycle.",
+    "version": "1.0.0",
+    "path": "./plugins/agent-exploration-cycle"
   }
 ]

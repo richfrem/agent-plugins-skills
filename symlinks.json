@@ -668,54 +668,6 @@
       "description": ""
     },
     {
-      "src": "plugins/exploration-cycle-plugin/scripts/business_requirements_capture_execute.py",
-      "dst": "plugins/exploration-cycle-plugin/skills/business-requirements-capture/scripts/execute.py",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/scripts/generate_workflow.py",
-      "dst": "plugins/exploration-cycle-plugin/skills/business-workflow-doc/scripts/generate_workflow.py",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/scripts/exploration_handoff_execute.py",
-      "dst": "plugins/exploration-cycle-plugin/skills/exploration-handoff/scripts/execute.py",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/scripts/exploration_optimizer_execute.py",
-      "dst": "plugins/exploration-cycle-plugin/skills/exploration-optimizer/scripts/execute.py",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/scripts/exploration_session_brief_execute.py",
-      "dst": "plugins/exploration-cycle-plugin/skills/exploration-session-brief/scripts/execute.py",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/scripts/check_gaps.py",
-      "dst": "plugins/exploration-cycle-plugin/skills/exploration-workflow/scripts/check_gaps.py",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/scripts/dispatch.py",
-      "dst": "plugins/exploration-cycle-plugin/skills/exploration-workflow/scripts/dispatch.py",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/scripts/user_story_capture_execute.py",
-      "dst": "plugins/exploration-cycle-plugin/skills/user-story-capture/scripts/execute.py",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
       "src": "plugins/agent-scaffolders/scripts/scaffold_apm.py",
       "dst": "plugins/agent-scaffolders/skills/create-apm-package/scripts/scaffold_apm.py",
       "strategy": "copy",
@@ -724,12 +676,6 @@
     {
       "src": "plugins/agent-scaffolders/scripts/migrate_to_apm.py",
       "dst": "plugins/agent-scaffolders/skills/convert-plugin-to-apm/scripts/migrate_to_apm.py",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/scripts/validate_phase_gate.py",
-      "dst": "plugins/exploration-cycle-plugin/skills/exploration-workflow/scripts/validate_phase_gate.py",
       "strategy": "copy",
       "description": ""
     },
@@ -778,78 +724,6 @@
     {
       "src": "plugins/agent-scaffolders/scripts/validate_github_agent.py",
       "dst": "plugins/agent-scaffolders/skills/create-agentic-workflow/scripts/validate_github_agent.py",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/references/acceptance-criteria.md",
-      "dst": "plugins/exploration-cycle-plugin/skills/discovery-planning/references/acceptance-criteria.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/references/copilot_proposer_prompt.md",
-      "dst": "plugins/exploration-cycle-plugin/skills/discovery-planning/references/copilot_proposer_prompt.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/references/program.md",
-      "dst": "plugins/exploration-cycle-plugin/skills/discovery-planning/references/program.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/references/acceptance-criteria.md",
-      "dst": "plugins/exploration-cycle-plugin/skills/exploration-workflow/references/acceptance-criteria.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/references/phase3-execution-discipline.md",
-      "dst": "plugins/exploration-cycle-plugin/skills/exploration-workflow/references/phase3-execution-discipline.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/references/acceptance-criteria.md",
-      "dst": "plugins/exploration-cycle-plugin/skills/subagent-driven-prototyping/references/acceptance-criteria.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/references/copilot_proposer_prompt.md",
-      "dst": "plugins/exploration-cycle-plugin/skills/subagent-driven-prototyping/references/copilot_proposer_prompt.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/references/program.md",
-      "dst": "plugins/exploration-cycle-plugin/skills/subagent-driven-prototyping/references/program.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/references/vibe-reengineer-acceptance-criteria.md",
-      "dst": "plugins/exploration-cycle-plugin/skills/vibe-reengineer/references/acceptance-criteria.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/references/acceptance-criteria.md",
-      "dst": "plugins/exploration-cycle-plugin/skills/visual-companion/references/acceptance-criteria.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/references/copilot_proposer_prompt.md",
-      "dst": "plugins/exploration-cycle-plugin/skills/visual-companion/references/copilot_proposer_prompt.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/references/program.md",
-      "dst": "plugins/exploration-cycle-plugin/skills/visual-companion/references/program.md",
       "strategy": "copy",
       "description": ""
     },
@@ -6746,12 +6620,6 @@
       "description": ""
     },
     {
-      "src": "plugins/exploration-cycle-plugin/scripts/technical_diagnostic_engine.py",
-      "dst": "plugins/exploration-cycle-plugin/skills/exploration-handoff/scripts/technical_diagnostic_engine.py",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
       "src": "plugins/agent-agentic-os/scripts/kernel.py",
       "dst": "plugins/agent-agentic-os/skills/os-control-health/scripts/kernel.py",
       "strategy": "copy",
@@ -6832,18 +6700,6 @@
     {
       "src": "plugins/agent-scaffolders/scripts/audit_skill.py",
       "dst": "plugins/agent-scaffolders/skills/audit-plugin/scripts/audit_skill.py",
-      "strategy": "copy",
-      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/scripts/sandbox_runner.py",
-      "dst": "plugins/exploration-cycle-plugin/skills/exploration-workflow/scripts/sandbox_runner.py",
-      "strategy": "copy",
-      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/scripts/state_engine.py",
-      "dst": "plugins/exploration-cycle-plugin/skills/exploration-workflow/scripts/state_engine.py",
       "strategy": "copy",
       "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
     },
@@ -8444,12 +8300,6 @@
       "description": "Skill authoring contract resource"
     },
     {
-      "src": "plugins/exploration-cycle-plugin/references/architecture-rules.md",
-      "dst": "plugins/exploration-cycle-plugin/skills/vibe-slice-migrator/references/architecture-rules.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
       "src": "plugins/agent-agentic-os/scripts/control_plane_mode.py",
       "dst": "plugins/agent-agentic-os/skills/os-control-mode/scripts/control_plane_mode.py",
       "strategy": "copy",
@@ -8512,36 +8362,6 @@
     {
       "src": "plugins/agent-scaffolders/references/agent-discovery-and-publication.md",
       "dst": "plugins/agent-scaffolders/skills/create-sub-agent/references/agent-discovery-and-publication.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/references/discovery-planning-tracks.md",
-      "dst": "plugins/exploration-cycle-plugin/skills/discovery-planning/references/discovery-planning-tracks.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/references/exploration-handoff-guide.md",
-      "dst": "plugins/exploration-cycle-plugin/skills/exploration-handoff/references/exploration-handoff-guide.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/references/exploration-orchestrator-guide.md",
-      "dst": "plugins/exploration-cycle-plugin/skills/exploration-workflow/references/exploration-orchestrator-guide.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/references/prototyping-build-guide.md",
-      "dst": "plugins/exploration-cycle-plugin/skills/subagent-driven-prototyping/references/prototyping-build-guide.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/references/vibe-reengineer-guide.md",
-      "dst": "plugins/exploration-cycle-plugin/skills/vibe-reengineer/references/vibe-reengineer-guide.md",
       "strategy": "copy",
       "description": ""
     },
@@ -9844,216 +9664,6 @@
     {
       "src": "plugins/agent-scaffolders/assets/diagrams/manage-marketplace-flow.mmd",
       "dst": "plugins/agent-scaffolders/skills/manage-marketplace/references/manage-marketplace-flow.mmd",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/references/business-requirements-capture-acceptance-criteria.md",
-      "dst": "plugins/exploration-cycle-plugin/skills/business-requirements-capture/references/acceptance-criteria.md",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/references/architecture.md",
-      "dst": "plugins/exploration-cycle-plugin/skills/business-requirements-capture/references/architecture.md",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/references/exploration-handoff-acceptance-criteria.md",
-      "dst": "plugins/exploration-cycle-plugin/skills/exploration-handoff/references/acceptance-criteria.md",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/references/architecture.md",
-      "dst": "plugins/exploration-cycle-plugin/skills/exploration-handoff/references/architecture.md",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/references/exploration-optimizer-acceptance-criteria.md",
-      "dst": "plugins/exploration-cycle-plugin/skills/exploration-optimizer/references/acceptance-criteria.md",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/references/architecture.md",
-      "dst": "plugins/exploration-cycle-plugin/skills/exploration-optimizer/references/architecture.md",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/references/cheapest_models.json",
-      "dst": "plugins/exploration-cycle-plugin/skills/exploration-optimizer/references/cheapest_models.json",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/references/cheapest_models.md",
-      "dst": "plugins/exploration-cycle-plugin/skills/exploration-optimizer/references/cheapest_models.md",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/references/dispatch-strategies.md",
-      "dst": "plugins/exploration-cycle-plugin/skills/exploration-optimizer/references/dispatch-strategies.md",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/references/exploration-output-standards.md",
-      "dst": "plugins/exploration-cycle-plugin/skills/exploration-optimizer/references/exploration-output-standards.md",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/references/exploration-session-brief-acceptance-criteria.md",
-      "dst": "plugins/exploration-cycle-plugin/skills/exploration-session-brief/references/acceptance-criteria.md",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/references/architecture.md",
-      "dst": "plugins/exploration-cycle-plugin/skills/exploration-session-brief/references/architecture.md",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/assets/resources/design-thinking/infographics/Opportunities-3-4-Prototyping-and-Engineering.png",
-      "dst": "plugins/exploration-cycle-plugin/skills/exploration-workflow/assets/Opportunities-3-4-Prototyping-and-Engineering.png",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/assets/diagrams/exploration-cycle-workflow.mmd",
-      "dst": "plugins/exploration-cycle-plugin/skills/exploration-workflow/assets/exploration-cycle-workflow.mmd",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/assets/templates/exploration-dashboard.md",
-      "dst": "plugins/exploration-cycle-plugin/skills/exploration-workflow/assets/exploration-dashboard.md",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/assets/diagrams/hybrid-workflow.mmd",
-      "dst": "plugins/exploration-cycle-plugin/skills/exploration-workflow/assets/hybrid-workflow.mmd",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/references/cheapest_models.json",
-      "dst": "plugins/exploration-cycle-plugin/skills/exploration-workflow/references/cheapest_models.json",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/references/cheapest_models.md",
-      "dst": "plugins/exploration-cycle-plugin/skills/exploration-workflow/references/cheapest_models.md",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/references/dispatch-strategies.md",
-      "dst": "plugins/exploration-cycle-plugin/skills/exploration-workflow/references/dispatch-strategies.md",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/agents/exploration-cycle-orchestrator-agent.md",
-      "dst": "plugins/exploration-cycle-plugin/skills/exploration-workflow/references/exploration-cycle-orchestrator-agent.md",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/agents/requirements-doc-agent.md",
-      "dst": "plugins/exploration-cycle-plugin/skills/exploration-workflow/references/requirements-doc-agent.md",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/references/prototype-builder-acceptance-criteria.md",
-      "dst": "plugins/exploration-cycle-plugin/skills/prototype-builder/references/acceptance-criteria.md",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/references/hard-gate-enforcement.md",
-      "dst": "plugins/exploration-cycle-plugin/skills/prototype-builder/references/hard-gate-enforcement.md",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/references/cheapest_models.json",
-      "dst": "plugins/exploration-cycle-plugin/skills/subagent-driven-prototyping/references/cheapest_models.json",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/references/cheapest_models.md",
-      "dst": "plugins/exploration-cycle-plugin/skills/subagent-driven-prototyping/references/cheapest_models.md",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/references/user-story-capture-acceptance-criteria.md",
-      "dst": "plugins/exploration-cycle-plugin/skills/user-story-capture/references/acceptance-criteria.md",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/references/architecture.md",
-      "dst": "plugins/exploration-cycle-plugin/skills/user-story-capture/references/architecture.md",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/references/vibe-behavioral-test-capture-acceptance-criteria.md",
-      "dst": "plugins/exploration-cycle-plugin/skills/vibe-behavioral-test-capture/references/acceptance-criteria.md",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/references/vibe-browser-audit-acceptance-criteria.md",
-      "dst": "plugins/exploration-cycle-plugin/skills/vibe-browser-audit/references/acceptance-criteria.md",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/references/vibe-domain-extractor-acceptance-criteria.md",
-      "dst": "plugins/exploration-cycle-plugin/skills/vibe-domain-extractor/references/acceptance-criteria.md",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/references/cheapest_models.json",
-      "dst": "plugins/exploration-cycle-plugin/skills/vibe-reengineer/references/cheapest_models.json",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/references/cheapest_models.md",
-      "dst": "plugins/exploration-cycle-plugin/skills/vibe-reengineer/references/cheapest_models.md",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/references/vibe-slice-migrator-acceptance-criteria.md",
-      "dst": "plugins/exploration-cycle-plugin/skills/vibe-slice-migrator/references/acceptance-criteria.md",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/references/vibe-spec-packager-acceptance-criteria.md",
-      "dst": "plugins/exploration-cycle-plugin/skills/vibe-spec-packager/references/acceptance-criteria.md",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/exploration-cycle-plugin/references/vibe-togaf-architect-acceptance-criteria.md",
-      "dst": "plugins/exploration-cycle-plugin/skills/vibe-togaf-architect/references/acceptance-criteria.md",
       "strategy": "copy",
       "description": "converted from symlink (APM migration)"
     }

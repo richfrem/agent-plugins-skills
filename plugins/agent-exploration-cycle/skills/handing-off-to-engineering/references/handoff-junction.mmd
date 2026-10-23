@@ -1,0 +1,21 @@
+%% DRAFT (Slice 0b) Phase 4 and the exit junction owned by S4; shared by Path 1, Path 2 and Path 3.
+flowchart TD
+    In["Captures, prototype notes, audit"] --> Scribe["Scribe: fill any missing capture<br/>BRD, stories, workflow diagram"]
+    Scribe --> Tier{"Risk and rigor assessment<br/>5 questions"}
+    Tier -->|"Q3 or Q4 yes, or Q1 and Q2 yes"| T3["Tier 3 hard stop<br/>write tier3-risk-summary.md first"]
+    Tier -->|"Q1, Q2 or Q5 yes"| T2["Tier 2 security or ethics review"]
+    Tier -->|"all no"| T1["Tier 1 low risk"]
+    Tier -->|"idea not viable"| T0["Throwaway: capture learnings"]
+    T3 --> Pkg["Write handoff-package.md<br/>risk block first for Tier 3"]
+    T2 --> Pkg
+    T1 --> Pkg
+    Pkg --> Sweep["Placeholder sweep and reader test<br/>3 blocker questions for the consumer"]
+    Sweep --> Val{{"validate_phase_gate 4<br/>and SME approval"}}
+    Val -->|"fail"| Pkg
+    Val -->|"pass: PHASE 4 COMPLETE"| Route{"Delivery route"}
+    Route -->|"formal engineering"| CPlane["User control plane<br/>os-control-intake by name"]
+    Route -->|"generic spec"| Gen["specification.md"]
+    Route -->|"technical discovery"| Diag["DIAGNOSTIC_BRIEF.md<br/>read-only, state to INTERVIEW"]
+    CPlane --> Eng(["Engineering cycle"])
+    Eng -->|"unresolved ambiguity"| Re["Re-entry scoping<br/>verbatim quote, new session brief"]
+    Re --> Back(["Back to S1 Phase 0"])

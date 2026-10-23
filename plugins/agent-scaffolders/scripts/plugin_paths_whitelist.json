@@ -5,5 +5,5 @@
   "plugins/agent-scaffolders",
   "plugins/cli-agents",
   "plugins/dev-utils",
-  "plugins/exploration-cycle-plugin"
+  "plugins/agent-exploration-cycle"
 ]

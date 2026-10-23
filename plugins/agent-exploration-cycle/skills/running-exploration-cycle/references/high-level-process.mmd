@@ -1,0 +1,13 @@
+%% DRAFT (Slice 0b) one-screen view of the four phases and the exit routes, for README use.
+flowchart LR
+    Start(["Raw idea, business problem,<br/>process pain point"]) --> P0["Intake<br/>session brief"]
+    subgraph D1["Exploration"]
+        direction LR
+        P1["1 Discovery Plan<br/>5 to 6 questions, one at a time<br/>HARD-GATE: SME approves"] --> P2["2 Visual Blueprinting<br/>3 plain-language options<br/>SME confirms"] --> P3["3 Prototype<br/>component by component<br/>self-reviewed"] --> P4["4 Handoff<br/>captures, risk tier,<br/>reader test"]
+    end
+    P0 --> P1
+    P4 --> Gate{"Risk and rigor gate<br/>harm, feasibility, tier"}
+    Gate -->|"flawed idea"| T0(["Fail fast<br/>zero cost"])
+    Gate -->|"Tier 1 or 2"| T1(["Self-deploy or<br/>security review"])
+    Gate -->|"Tier 3"| T3(["Formal engineering cycle"])
+    T3 -.->|"unknown unknown<br/>re-entry"| Start

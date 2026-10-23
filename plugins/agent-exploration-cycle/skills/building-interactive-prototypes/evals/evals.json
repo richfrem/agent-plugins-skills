@@ -1,0 +1,94 @@
+[
+  {
+    "prompt": "build an exploratory prototype to make the ambiguous product direction concrete",
+    "should_trigger": true
+  },
+  {
+    "prompt": "create a working frontend prototype to test the concept before we commit to specs",
+    "should_trigger": true
+  },
+  {
+    "prompt": "build or refine a full-stack learning artifact to clarify the scope",
+    "should_trigger": true
+  },
+  {
+    "prompt": "write up the formal business requirements document from our session",
+    "should_trigger": false
+  },
+  {
+    "prompt": "coordinate the exploration loop and route to specialized agents",
+    "should_trigger": false
+  },
+  {
+    "prompt": "prepare the final handoff package for the engineering team",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Build the prototype now.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Let's build it — I've approved the layout.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Start building the prototype components.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Assemble the prototype from the approved plan.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Kick off a planning session for this feature.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Generate a BRD using our session brief.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Show me wireframe options for the UI.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Fix the broken login form.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Run the test suite.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "What should it look like? Show me some options.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Show me layout options before we build.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Let me see the design options — I want to confirm the layout before anything gets built.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Help me visualise what the interface should look like.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Deploy the latest release to production.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Generate user stories from our requirements.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Deploy the latest release to staging.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Fix the failing tests.",
+    "should_trigger": false
+  }
+]

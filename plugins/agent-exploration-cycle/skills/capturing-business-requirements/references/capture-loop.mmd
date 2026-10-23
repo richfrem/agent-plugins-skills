@@ -1,0 +1,16 @@
+%% DRAFT (Slice 0b) capture loop owned by S2; called inside Phase 1, at prototype notes, and by the Phase 4 scribe.
+flowchart TD
+    In["Approved Discovery Plan<br/>and confirmed session brief"] --> Frame["Pass 1 problem framing<br/>problem, user groups, goals, scope"]
+    Frame --> Chk1{{"check_gaps"}}
+    Chk1 -->|"too many gaps"| Back(["Return to S1:<br/>refine the brief"])
+    Chk1 -->|"ok"| BRD["Pass 2 business requirements<br/>CONFIRMED and UNCONFIRMED markers"]
+    BRD --> Flow{"Process, approval flow<br/>or state machine involved?"}
+    Flow -->|"yes"| WF["Workflow diagram<br/>flowchart, state or sequence, marked DRAFT"]
+    Flow -->|"no"| Stories
+    WF --> Stories["Pass 3 user stories<br/>standard or Gherkin, each cites its source"]
+    Stories --> Issues["Pass 4 issues and opportunities"]
+    Issues --> Chk2{{"check_gaps on all captures"}}
+    Chk2 -->|"too many gaps"| Back
+    Chk2 -->|"ok"| Out(["Captures ready for Phase 2<br/>or Phase 4 scribe"])
+    Proto["After a prototype walkthrough"] --> Obs["Observation extraction<br/>prototype-notes.md,<br/>sole writer of that file"]
+    Obs --> Out2(["Feeds business-rule-audit-agent"])

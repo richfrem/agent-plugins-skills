@@ -175,30 +175,15 @@ python3 plugins/agent-scaffolders/skills/install-apm-package/scripts/apm_consume
 
 ---
 
-### H. `exploration-cycle-plugin` (Business Discovery & Prototyping)
+### H. `agent-exploration-cycle` (Business Discovery & Prototyping)
 
 | Skill | Status | Rationale |
 |---|---|---|
-| `business-requirements-capture` | `false` | Off for lean development; enable only for product discovery or prototype reverse-engineering. |
-| `business-workflow-doc` | `false` | Off for lean development; enable only for product discovery or prototype reverse-engineering. |
-| `discovery-planning` | `false` | Off for lean development; enable only for product discovery or prototype reverse-engineering. |
-| `exploration-handoff` | `false` | Off for lean development; enable only for product discovery or prototype reverse-engineering. |
-| `exploration-optimizer` | `false` | Off for lean development; enable only for product discovery or prototype reverse-engineering. |
-| `exploration-session-brief` | `false` | Off for lean development; enable only for product discovery or prototype reverse-engineering. |
-| `exploration-workflow` | `false` | Off for lean development; enable only for product discovery or prototype reverse-engineering. |
-| `prototype-builder` | `false` | Off for lean development; enable only for product discovery or prototype reverse-engineering. |
-| `subagent-driven-prototyping` | `false` | Off for lean development; enable only for product discovery or prototype reverse-engineering. |
-| `user-story-capture` | `false` | Off for lean development; enable only for product discovery or prototype reverse-engineering. |
-| `using-exploration-cycle` | `false` | Off for lean development; enable only for product discovery or prototype reverse-engineering. |
-| `vibe-behavioral-test-capture` | `false` | Off for lean development; enable only for product discovery or prototype reverse-engineering. |
-| `vibe-browser-audit` | `false` | Off for lean development; enable only for product discovery or prototype reverse-engineering. |
-| `vibe-domain-extractor` | `false` | Off for lean development; enable only for product discovery or prototype reverse-engineering. |
-| `vibe-reengineer` | `false` | Off for lean development; enable only for product discovery or prototype reverse-engineering. |
-| `vibe-slice-migrator` | `false` | Off for lean development; enable only for product discovery or prototype reverse-engineering. |
-| `vibe-spec-packager` | `false` | Off for lean development; enable only for product discovery or prototype reverse-engineering. |
-| `vibe-to-speckit-superpowers` | `false` | Off for lean development; enable only for product discovery or prototype reverse-engineering. |
-| `vibe-togaf-architect` | `false` | Off for lean development; enable only for product discovery or prototype reverse-engineering. |
-| `visual-companion` | `false` | Off for lean development; enable only for product discovery or prototype reverse-engineering. |
+| `running-exploration-cycle` | `false` | Off for lean development; enable only for product discovery or prototype reverse-engineering. |
+| `capturing-business-requirements` | `false` | Off for lean development; enable only for product discovery or prototype reverse-engineering. |
+| `building-interactive-prototypes` | `false` | Off for lean development; enable only for product discovery or prototype reverse-engineering. |
+| `handing-off-to-engineering` | `false` | Off for lean development; enable only for product discovery or prototype reverse-engineering. |
+| `reengineering-vibe-code` | `false` | Off for lean development; enable only for product discovery or prototype reverse-engineering. |
 
 No skills enabled: do not install this plugin.
 

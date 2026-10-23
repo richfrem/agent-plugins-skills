@@ -1,7 +1,7 @@
 [
   {"prompt": "Review the os-lab-loop skill and create a plan to improve it", "should_trigger": true},
-  {"prompt": "I want to apply the browser harness self-healing patterns to exploration-cycle-plugin - write a task plan and delegation prompt", "should_trigger": true},
-  {"prompt": "Create an evolution plan for the discovery-planning skill - it is missing Gotchas and a handoff block", "should_trigger": true},
+  {"prompt": "I want to apply the browser harness self-healing patterns to agent-exploration-cycle - write a task plan and delegation prompt", "should_trigger": true},
+  {"prompt": "Create an evolution plan for the running-exploration-cycle skill - it is missing Gotchas and a handoff block", "should_trigger": true},
   {"prompt": "Write a delegation prompt to improve my skill", "should_trigger": true},
   {"prompt": "Audit what already exists for plugin health monitoring before we decide whether to update a skill or create a new one", "should_trigger": true},
   {"prompt": "There is no skill for auditing cross-plugin dependencies - check whether an existing skill can be extended and plan it", "should_trigger": true},
@@ -9,7 +9,7 @@
   {"prompt": "I read a paper on meta-learning and want to apply those techniques to my improvement loops - brainstorm options and write the plan", "should_trigger": true, "note": "research application category"},
   {"prompt": "Brainstorm three approaches to improving routing accuracy for the os-lab-scorer skill and recommend one", "should_trigger": true},
   {"prompt": "Run the improvement loop on os-lab-scorer for 50 iterations", "should_trigger": false, "note": "sibling: os-lab-loop"},
-  {"prompt": "Set up an isolated lab repo for the discovery-planning skill and commit the baseline", "should_trigger": false, "note": "sibling: os-lab-setup"},
+  {"prompt": "Set up an isolated lab repo for the running-exploration-cycle skill and commit the baseline", "should_trigger": false, "note": "sibling: os-lab-setup"},
   {"prompt": "Score this SKILL.md change against the locked evals and tell me KEEP or DISCARD", "should_trigger": false, "note": "sibling: os-lab-scorer"},
   {"prompt": "Review the lab diff and backport the approved changes to the source skill", "should_trigger": false, "note": "sibling: os-lab-backport"},
   {"prompt": "Show me the run log and charts from last night's experiment", "should_trigger": false, "note": "sibling: os-lab-log"},

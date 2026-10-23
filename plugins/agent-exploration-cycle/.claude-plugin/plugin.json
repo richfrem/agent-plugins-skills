@@ -1,0 +1,26 @@
+{
+    "name": "agent-exploration-cycle",
+    "version": "1.0.0",
+    "description": "Business exploration and reengineering: guided discovery, requirements capture, interactive prototypes, risk-tiered handoff to engineering, and rescue of existing vibe-coded prototypes. Phase gates enforced by running-exploration-cycle.",
+    "author": {
+        "name": "Richard Fremmerlid"
+    },
+    "repository": "https://github.com/richfrem/agent-plugins-skills",
+    "license": "MIT",
+    "keywords": [
+        "exploration",
+        "discovery",
+        "requirements",
+        "business-requirements",
+        "prototype",
+        "user-stories",
+        "exploration-cycle"
+    ],
+    "capabilities": [
+        "exploration",
+        "requirements-capture",
+        "discovery",
+        "workflow-enforcement",
+        "phase-gate-validation"
+    ]
+}

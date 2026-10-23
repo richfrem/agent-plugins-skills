@@ -36,7 +36,7 @@ Current scale (read from `plugins/` — verify with `find plugins -name SKILL.md
 │   ├── agent-memory/               # Memory, RLM, vector retrieval and Obsidian wiki (4 skills)
 │   ├── agent-scaffolders/          # Plugin/skill/agent/rule scaffolding & auditing (27 skills)
 │   ├── dev-utils/                  # GitHub issues + worktrees, context bundling, links, conventions, ADRs, symlinks, HuggingFace (8 skills)
-│   ├── exploration-cycle-plugin/   # Business discovery workflow + SQLite control plane (20 skills)
+│   ├── agent-exploration-cycle/   # Business discovery workflow + SQLite state engine (5 skills)
 │   └── <plugin>/
 │       ├── skills/<skill>/SKILL.md # Skill definition (evals.json lives alongside)
 │       ├── agents/                 # Sub-agent definitions
@@ -156,9 +156,9 @@ Tooling for creating and auditing ecosystem components: `create-plugin`, `create
 plus APM package conversion and marketplace management. Retired analyzer,
 mining, standalone command, path-repair, deep-audit, and self-audit wrappers are no longer catalogued.
 
-### 4.6. Plugin: exploration-cycle-plugin (20 skills) — security-sensitive
+### 4.6. Plugin: agent-exploration-cycle (5 skills) — security-sensitive
 Business discovery workflow (Path 1: pre-build discovery; Path 2: vibe-coded-prototype
-migration). Backed by a hardened Python control plane in `scripts/`: `dispatch.py`,
+migration). Backed by a hardened Python state engine in `skills/running-exploration-cycle/scripts/`: `dispatch.py`,
 `state_engine.py` (SQLite, transactional, WAL), `sandbox_runner.py` (process sandboxing, HMAC-signed
 envelopes, approval gating). Any change to these files requires reading `docs/ADRs/007_maf_adapter_runtime_decision.md`
 first — no casual convenience bypasses to the authorization gate or path enforcement.
@@ -243,7 +243,7 @@ This populates the target client harness (`.claude/skills/`, `.agents/skills/`, 
 ## 10. Testing & Validation
 
 - Plugin structural validation: `audit-plugin` skill.
-- Control-plane smoke tests: `plugins/exploration-cycle-plugin/scripts/smoke_test.py`.
+- Control-plane smoke tests: `plugins/agent-exploration-cycle/skills/running-exploration-cycle/scripts/smoke_test.py`.
 - `agent-orchestration` router (`cli-agent`): 76+ TDD tests across scripts and contract suites.
 - No single top-level test runner — tests are scoped per plugin, colocated with the plugin's
   `scripts/`.
@@ -259,4 +259,4 @@ The ecosystem evolves via RFCs and binding Architecture Decision Records (ADRs).
 - **Bridge installer**: The legacy installer (superseded by native APM package distribution).
 - **RLM**: Dense-summary keyword cache used for fast O(1) file lookup (agent-memory plugin).
 - **MAF**: Microsoft Agent Framework — optional certified runtime adapter per ADR-007, not the primary kernel.
-- **Control plane**: The SQLite/HMAC-hardened state and sandboxing layer in exploration-cycle-plugin (`state_engine.py`, `sandbox_runner.py`, `dispatch.py`).
+- **Control plane**: The SQLite/HMAC-hardened state and sandboxing layer in agent-exploration-cycle (`state_engine.py`, `sandbox_runner.py`, `dispatch.py`).

@@ -1,0 +1,38 @@
+[
+  {
+    "prompt": "I finished my exploration session, help me write the handoff package.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Synthesize our session captures into a handoff for the engineering team.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Prepare a handoff document from all our exploration artifacts.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "We're done exploring — let's produce the handoff for the spec authors.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Schedule a code review for tomorrow morning.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Generate a BRD from our captures.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Create Gherkin acceptance criteria for these stories.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Audit the database schema for compliance issues.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Fix the failing auth test.",
+    "should_trigger": false
+  }
+]

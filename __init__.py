@@ -82,27 +82,12 @@ _SKILL_DIRS = [
     ("dev-utils",                "managing-symlinks"),
     ("dev-utils",                "resolving-github-issues"),
 
-    # exploration-cycle-plugin (20 skills)
-    ("exploration-cycle-plugin", "business-requirements-capture"),
-    ("exploration-cycle-plugin", "business-workflow-doc"),
-    ("exploration-cycle-plugin", "discovery-planning"),
-    ("exploration-cycle-plugin", "exploration-handoff"),
-    ("exploration-cycle-plugin", "exploration-optimizer"),
-    ("exploration-cycle-plugin", "exploration-session-brief"),
-    ("exploration-cycle-plugin", "exploration-workflow"),
-    ("exploration-cycle-plugin", "prototype-builder"),
-    ("exploration-cycle-plugin", "subagent-driven-prototyping"),
-    ("exploration-cycle-plugin", "user-story-capture"),
-    ("exploration-cycle-plugin", "using-exploration-cycle"),
-    ("exploration-cycle-plugin", "vibe-behavioral-test-capture"),
-    ("exploration-cycle-plugin", "vibe-browser-audit"),
-    ("exploration-cycle-plugin", "vibe-domain-extractor"),
-    ("exploration-cycle-plugin", "vibe-reengineer"),
-    ("exploration-cycle-plugin", "vibe-slice-migrator"),
-    ("exploration-cycle-plugin", "vibe-spec-packager"),
-    ("exploration-cycle-plugin", "vibe-to-speckit-superpowers"),
-    ("exploration-cycle-plugin", "vibe-togaf-architect"),
-    ("exploration-cycle-plugin", "visual-companion"),
+    # agent-exploration-cycle (5 skills)
+    ("agent-exploration-cycle", "running-exploration-cycle"),
+    ("agent-exploration-cycle", "capturing-business-requirements"),
+    ("agent-exploration-cycle", "building-interactive-prototypes"),
+    ("agent-exploration-cycle", "handing-off-to-engineering"),
+    ("agent-exploration-cycle", "reengineering-vibe-code"),
 
 ]
 

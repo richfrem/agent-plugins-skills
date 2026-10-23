@@ -1,0 +1,13 @@
+%% DRAFT (Slice 0b) where state lives and what enforces each gate today vs. the gap.
+flowchart LR
+    DB[("SQLite state engine<br/>sessions, tasks, approvals<br/>authoritative")] -->|"project_dashboard"| Dash["exploration-dashboard.md<br/>read-only projection"]
+    Dash -->|"read at session start"| Hook["SessionStart hook<br/>injects bootstrap and active phase"]
+    Hook --> Agent["Agent follows the process"]
+    Agent -->|"phase artifacts"| Files["exploration/ folder<br/>brief, plan, captures, prototype, handoffs"]
+    Files --> Val["validate_phase_gate 1 to 4<br/>exists, size, no placeholders,<br/>tier block, title match"]
+    Val -->|"pass or fail"| Agent
+    Agent -->|"advance phase"| Sess["exploration_session<br/>control plane states INTAKE, INTERVIEW, DRAFT_PLAN"]
+    Sess -.->|"future: one adapter seam"| CP[("Agentic OS control plane")]
+    Files -.->|"GAP: prose only today"| Guard["pre-write guard<br/>placeholder, not wired"]
+    classDef gap fill:#fff3e0,stroke:#ef6c00,stroke-dasharray:5
+    class Guard gap

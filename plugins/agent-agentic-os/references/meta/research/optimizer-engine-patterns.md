@@ -1,6 +1,6 @@
 # Optimizer Engine Patterns — Reference Design
 
-These patterns are validated through red team audit cycles on the exploration-cycle-plugin optimizer
+These patterns are validated through red team audit cycles on the agent-exploration-cycle optimizer
 (v4–v6). They apply to any optimizer loop that uses `eval_runner.py` as a subprocess scorer and
 manages a target file with propose → test → decide iterations.
 

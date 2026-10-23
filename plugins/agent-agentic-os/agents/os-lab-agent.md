@@ -7,7 +7,7 @@ description: >
   config, then calls the os-lab-* skills in order. Use at the start of any session to improve,
   stress test, or extend a skill or agent. Interactive, runs in the main session.
   <example>
-  user: "I want to improve my discovery-planning skill, run it about 50 times"
+  user: "I want to improve my running-exploration-cycle skill, run it about 50 times"
   assistant: [os-lab-agent confirms the target, checks what exists, asks about success and tools one question at a time, writes references/program.md and improvement/run-config.json, then hands the brief to os-lab-planner]
   </example>
   <example>
