@@ -245,3 +245,44 @@ Clean Monorepo (Crow-Style):
 └── plugins/agent-scaffolders/skills/create-apm-package (Lean authoring scaffold)
 ```
 Thousands of lines of brittle Windows symlink, junction, and custom syncer logic are permanently eliminated.
+
+---
+
+## 10. The Symlink Unwinding Strategy (2,328 Git Symlinks) & Policy Refactoring
+
+A deep inspection of the repository reveals **2,328 git-tracked symlinks (mode `120000`)** across plugins:
+- `plugins/agent-scaffolders`: 1,106 symlinks
+- `plugins/agent-agentic-os`: 507 symlinks
+- `plugins/agent-memory`: 257 symlinks
+- `plugins/dev-utils`: 128 symlinks
+- `plugins/cli-agents`: 117 symlinks
+- `plugins/exploration-cycle-plugin`: 65 symlinks
+- `plugins/obsidian-wiki-engine`: 64 symlinks
+- `plugins/agent-orchestration`: 48 symlinks
+- `plugins/plugin-manager`: 18 symlinks
+- `plugins/dependency-management`: 10 symlinks
+
+### 1. Do We Have to Unwind All 2,328 Symlinks in the Source Tree Immediately?
+**NO — and trying to do so by hand would create catastrophic git merge conflicts.**
+
+Instead, we use a two-phase decoupling approach:
+1. **Phase 1 (Packaging Decoupling via Build Dereferencer)**:
+   - APM packages require zero symlinks because APM's security checks (`is_symlink()`) skip them.
+   - Our build pipeline (`convert-plugin-to-apm`) resolves these 2,328 symlinks into physical hard copies **inside `build/staging/` at pack time**.
+   - **Result**: Consumers receiving APM packages receive 100% clean, standalone files. Symlink issues never reach any developer workstation or consumer repo.
+2. **Phase 2 (Monorepo Source Unwinding post-APM)**:
+   - Once APM collections and dependencies are authoritative, internal monorepo symlinks between `plugins/<plugin>/scripts/` and `plugins/<plugin>/skills/<skill>/scripts/` can be safely converted into either:
+     - Direct file copies (for truly independent skills), or
+     - Shared APM module dependencies (e.g. Crow's dependency model).
+   - Once unwound, `symlinks.json`, `symlink-manager`, and `bulk_symlink_fixer.py` are completely deleted.
+
+### 2. Refactoring `plugin-architecture-policy.md` (in `.agent/rules/` and `plugins/agent-scaffolders/rules/`)
+Both copies of `plugin-architecture-policy.md` must be updated to align with the APM end-state:
+
+1. **Retain Sections 1–4 & 6 (The Invariants)**:
+   - *Self-Contained Skills*: Still the #1 invariant. An installed/packaged skill must never depend on monorepo siblings.
+   - *Resource Placement*: Purpose-based structure (`scripts/`, `references/`, `assets/`, `evals/`) is identical to APM conventions.
+   - *Relative Execution*: Scripts must always execute relative to the skill root.
+2. **Rewrite Section 5 ("Mandatory Symlink Workflow")**:
+   - **Before**: Mandated using `symlink_manager.py` to create file-level symlinks and record them in `symlinks.json`.
+   - **After (APM Standard)**: Deprecates source symlinks. Declares that shared resources are distributed via APM Package Collections or dereferenced build packages. Prohibits introducing new symlinks in newly scaffolded plugins.
