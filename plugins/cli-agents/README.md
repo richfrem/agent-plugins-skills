@@ -38,7 +38,7 @@ cli-agents/
 ├── plugin.yaml                   # Plugin manifest (skills list, platforms)
 ├── README.md                     # This file
 ├── requirements.in / .txt        # Python dependencies
-├── agents/                       # Host sub-agents (also usable as run_agent.py personas)
+├── agents/                       # Host sub-agents; also the persona files passed to run_agent.py
 │   ├── architect-review.md       # C4/SOLID structural review, coupling, layer violations
 │   ├── compliance-reviewer.md    # Project conventions, coding standards, drift detection
 │   ├── critical-auditor.md       # Failure-seeking audit of enforced runtime contracts
@@ -54,14 +54,13 @@ cli-agents/
 │   └── test-writer.md            # Unit test generation — happy/boundary/edge/failure paths
 ├── tests/                        # Plugin-level authoring alignment tests
 ├── references/                   # Plugin-level governance and evolution records
-│   ├── acceptance-criteria.md    # Plugin-wide acceptance criteria
+│   ├── plugin-acceptance-criteria.md # Plugin-wide acceptance criteria
 │   ├── evolution-log.md          # Plugin evolution history
 │   ├── program.md                # Skill improvement lab specification
 │   └── self-evolution-profile.md # Self-evolution profile
 └── skills/
     ├── cli-agent/                # Consolidated Multi-LLM Router, Local Server & Model Catalog
     │   ├── SKILL.md              # Central dispatcher (Claude, Codex, Copilot, Agy, Llama)
-    │   ├── agents/               # Dispatch personas passed to run_agent.py
     │   ├── references/           # Backend dispatch guides, fallback tree, model catalogs, setup guides
     │   ├── scripts/              # run_agent.py, run_server.py, routing_proxy.py, sync_cheapest_models.py, unit tests
     │   ├── tests/                # Project-setup contract tests

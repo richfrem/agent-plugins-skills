@@ -23,7 +23,7 @@ native cost limit only when the installed CLI supports it.
 Analysis suppresses `--yolo` and adds the no-tools instruction:
 
 ```bash
-python3 scripts/run_agent.py agents/security-auditor.md <input> <output> "Find vulnerabilities in supplied source." --cli copilot --isolated --require-input
+python3 scripts/run_agent.py <personas>/security-auditor.md <input> <output> "Find vulnerabilities in supplied source." --cli copilot --isolated --require-input
 ```
 
 The router always wraps input in `---SOURCE---` blocks. With `--isolated` it also appends

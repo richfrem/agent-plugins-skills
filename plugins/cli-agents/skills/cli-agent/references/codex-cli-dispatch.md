@@ -18,7 +18,7 @@ Never print API keys, credentials or raw authentication output in a health check
 ## Execution
 
 ```bash
-python3 scripts/run_agent.py agents/refactor-expert.md <input> <output> "Analyze supplied code." --cli codex --isolated --require-input
+python3 scripts/run_agent.py <personas>/refactor-expert.md <input> <output> "Analyze supplied code." --cli codex --isolated --require-input
 ```
 
 The router always wraps input in `---SOURCE---` blocks. With `--isolated` it also appends

@@ -23,7 +23,7 @@ that the wrapper does not expose.
 ## Dispatch and timeout
 
 ```bash
-python3 scripts/run_agent.py agents/architect-review.md <input> <output> "Review supplied source." --cli agy --model <approved-model> --effort medium --print-timeout 15m0s --isolated --require-input
+python3 scripts/run_agent.py <personas>/architect-review.md <input> <output> "Review supplied source." --cli agy --model <approved-model> --effort medium --print-timeout 15m0s --isolated --require-input
 ```
 
 The router always wraps input in `---SOURCE---` blocks. With `--isolated` it also appends

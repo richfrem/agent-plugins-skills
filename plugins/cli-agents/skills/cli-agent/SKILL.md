@@ -11,7 +11,7 @@ Unified multi-LLM task router and execution engine for external CLI agents and l
 
 ## Contents
 
-- [Constraints](#constraints) • [Quick Start](#quick-start) • [Backends](#supported-backends--dispatch) • [Workflow](#workflow) • [Verification](#verification) • [Setup & Maintenance](#setup--maintenance) • [Personas](#-persona-registry-agents) • [References](#references)
+- [Constraints](#constraints) • [Quick Start](#quick-start) • [Backends](#supported-backends--dispatch) • [Workflow](#workflow) • [Verification](#verification) • [Setup & Maintenance](#setup--maintenance) • [Personas](#personas) • [References](#references)
 
 ## Constraints
 
@@ -23,7 +23,7 @@ Unified multi-LLM task router and execution engine for external CLI agents and l
 ## Quick Start
 
 ```bash
-python3 scripts/run_agent.py agents/security-auditor.md <input> <output> "Review supplied source." --cli claude --isolated --require-input
+python3 scripts/run_agent.py <personas>/security-auditor.md <input> <output> "Review supplied source." --cli claude --isolated --require-input
 ```
 
 ## Supported Backends & Dispatch
@@ -38,7 +38,7 @@ python3 scripts/run_agent.py agents/security-auditor.md <input> <output> "Review
 
 ## Workflow
 
-1. **Select Backend & Persona**: Check [backend capabilities](references/backend-capabilities.md) and [cheapest models](references/cheapest_models.md). Choose a persona from `agents/` (e.g. `security-auditor.md`, `refactor-expert.md`, `architect-review.md`).
+1. **Select Backend & Persona**: Check [backend capabilities](references/backend-capabilities.md) and [cheapest models](references/cheapest_models.md). Choose a persona from `<personas>/` (see [Personas](#personas)).
 2. **Dispatch & Verify**: Execute `scripts/run_agent.py` with `--cli <backend>`. Verify exit 0 and non-empty output. Empty or failed output is not a completed review.
 
 ## Verification
@@ -50,28 +50,12 @@ For gated reviews, record the result through control-plane `record-critic-review
 - **Project Setup & Catalogs**: Follow [project setup](references/project-setup.md), [capability baseline](references/project-capability-baseline.md), [workflow](references/project-configuration-workflow.md), [profile contract](references/capability-profile-contract.md), and [catalog maintenance](references/model-catalog-maintenance.md). Update catalog: `python3 scripts/sync_cheapest_models.py --repository . --dry-run` (refresh neither authorizes model calls nor starts reviews).
 - **Local LLM & Specs**: Start llama-server: `python3 scripts/run_server.py` (see [deep reference](references/local-llm-setup-deep-reference.md), [latency findings](references/routing_latency_findings.md), [proxy diagram](references/routing-proxy.mmd), and [debrief](references/local_llm_debrief.md)). Inspect [Claude spec](references/claude-directory-spec.md), [Claude settings](references/claude-settings-schema.md), [Antigravity spec](references/antigravity-directory-spec.md), [Gemini commands](references/gemini-cli-commands.md), [Codex fixture](references/p0-codex-observation-fixture.json), and [map debt](references/map-debt.md).
 
-## 🎭 Persona Registry (`agents/`)
+## Personas
 
-These personas are mirrored across CLI agent dispatchers to ensure consistent analytical behavior across the ecosystem.
+`<personas>` is the cli-agents host sub-agent directory, not part of this skill: the cli-agents plugin's top-level `agents/` folder in a source checkout, or the harness's installed agents (e.g. `.claude/agents/`). Any prompt file or `/dev/null` also works. Common: `security-auditor.md`, `refactor-expert.md`, `architect-review.md`, `red-team-reviewer.md`.
 
-| Persona | Use For |
-|:---|:---|
-| `security-auditor.md` | Red team, vulnerability scanning, threat modeling |
-| `refactor-expert.md` | Optimizing code for readability, performance, and DRY |
-| `architect-review.md` | Assessing system design, modularity, and complexity |
+Without `--isolated`, add to the prompt: "You are operating as an isolated sub-agent. Do NOT use tools. Do NOT access filesystem. Only use the provided input."
 
-### 🧩 Force Agent Behavior
-
-Always add these instructions to your dispatch prompt to prevent the sub-agent from attempting to use external tools:
-> "You are operating as an isolated sub-agent. Do NOT use tools. Do NOT access filesystem. Only use the provided input."
-
-### 🛠️ Orchestration Pattern: `run_agent.py` (Cross-Platform)
-
-For reusable sub-agent execution, use the provided Python orchestrator which handles temp file assembly and prompt concatenation reliably across Windows, macOS, and Linux:
-
-```bash
-python ./scripts/run_agent.py <PERSONA_FILE> <INPUT_FILE> <OUTPUT_FILE> "<INSTRUCTION>"
-```
 ## References
 
 - [Project Setup](references/project-setup.md) • [Capability Baseline](references/project-capability-baseline.md) • [Workflow](references/project-configuration-workflow.md) • [Profile Contract](references/capability-profile-contract.md) • [Acceptance Criteria](references/acceptance-criteria.md)

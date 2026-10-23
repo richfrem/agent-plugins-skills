@@ -13,7 +13,7 @@ Dispatches bounded tasks directly to the local Gemma 4 12B model running on `lla
 ## Workflow
 
 1. **Health Check**: `curl -s http://localhost:8089/health` must return `{"status":"ok"}`; otherwise start `python3 scripts/run_server.py`.
-2. **Select Persona**: Choose a persona file from `agents/` (or `/dev/null` for none).
+2. **Select Persona**: Choose a persona file from `<personas>/` (see SKILL.md *Personas*), or `/dev/null` for none.
 3. **Dispatch**: Run `scripts/run_agent.py` with `--cli llama` and a bounded `--max-tokens`.
 4. **Inspect**: Verify exit 0 and that the output file contains the completed response.
 
@@ -39,5 +39,5 @@ cat /tmp/test.md
 ## Example
 
 ```bash
-python3 scripts/run_agent.py agents/refactor-expert.md target.py review.md "List top 3 issues concisely." --cli llama
+python3 scripts/run_agent.py <personas>/refactor-expert.md target.py review.md "List top 3 issues concisely." --cli llama
 ```

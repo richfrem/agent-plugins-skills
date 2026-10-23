@@ -220,15 +220,15 @@ claude                              # cloud Sonnet (always works)
 
 ```bash
 # Local Gemma — fastest (2–5s, direct HTTP, no proxy)
-python3 scripts/run_agent.py agents/refactor-expert.md target.py output.md \
+python3 scripts/run_agent.py <personas>/refactor-expert.md target.py output.md \
   "List the top 3 issues. Be terse." --cli llama
 
 # Codex — code-focused tasks
-python3 scripts/run_agent.py agents/security-auditor.md target.py output.md \
+python3 scripts/run_agent.py <personas>/security-auditor.md target.py output.md \
   "Find vulnerabilities." --cli codex --model gpt-5-codex
 
 # Multi-agent pattern: red-team the output of another agent
-python3 scripts/run_agent.py agents/red-team-reviewer.md output.md redteam.md \
+python3 scripts/run_agent.py <personas>/red-team-reviewer.md output.md redteam.md \
   "Attack this design." --cli llama --max-tokens 300
 ```
 
@@ -243,7 +243,7 @@ python3 scripts/run_agent.py agents/red-team-reviewer.md output.md redteam.md \
 | `agy` | (agy selects) | cloud |
 | `codex` | gpt-5-codex | cloud |
 
-### Available Persona Agents (`agents/`)
+### Available Persona Agents (`<personas>/`, the cli-agents host sub-agents)
 
 | Persona | Use case |
 |---------|---------|

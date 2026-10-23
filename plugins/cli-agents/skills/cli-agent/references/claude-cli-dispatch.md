@@ -17,7 +17,7 @@ Do not refresh models or repeat setup merely because implementation has started.
 ## Execution
 
 ```bash
-python3 scripts/run_agent.py agents/architect-review.md <input> <output> "Review supplied source." --cli claude --model <approved-model> --effort medium --isolated --require-input
+python3 scripts/run_agent.py <personas>/architect-review.md <input> <output> "Review supplied source." --cli claude --model <approved-model> --effort medium --isolated --require-input
 ```
 
 The router always wraps input in `---SOURCE---` blocks. With `--isolated` it also appends

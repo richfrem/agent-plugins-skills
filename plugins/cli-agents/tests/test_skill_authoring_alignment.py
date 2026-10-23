@@ -36,14 +36,16 @@ def test_skill_navigation_and_installation(name, tmp_path):
     result = subprocess.run([sys.executable, str(AUDITOR), str(installed), "--mode", "installed", "--json"], capture_output=True, text=True)
     assert result.returncode == 0, result.stdout + result.stderr
     assert json.loads(result.stdout)["findings"] == []
-    for persona in ("architect-review.md", "security-auditor.md", "refactor-expert.md"):
-        assert (installed / "agents" / persona).is_file()
+    # Personas are the plugin's host sub-agents, not files bundled in the skill.
+    assert not (installed / "agents").exists()
+    persona = source.parents[1] / "agents" / "security-auditor.md"
+    assert persona.is_file()
     fake = tmp_path / "fixture-backend"
     fake.write_text(f'#!{sys.executable}\nimport sys\nif "--version" in sys.argv: print("fixture 1");sys.exit(0)\nprint("RESULT_OK")\n')
     fake.chmod(0o755)
     input_path, output_path = tmp_path / "input.md", tmp_path / "output.md"
     input_path.write_text("Bounded source for fixture review.")
-    result = subprocess.run([sys.executable, "scripts/run_agent.py", "agents/security-auditor.md", str(input_path), str(output_path), "Review supplied source.", "--cli", "claude", "--model", "fixture-model", "--isolated", "--require-input", "--executable", str(fake)], cwd=installed, capture_output=True, text=True)
+    result = subprocess.run([sys.executable, "scripts/run_agent.py", str(persona), str(input_path), str(output_path), "Review supplied source.", "--cli", "claude", "--model", "fixture-model", "--isolated", "--require-input", "--executable", str(fake)], cwd=installed, capture_output=True, text=True)
     assert result.returncode == 0, result.stdout + result.stderr
     assert "RESULT_OK" in output_path.read_text()
 
