@@ -34,7 +34,7 @@ Before deprecating any legacy code or marking tools obsolete, the migration must
 
 | Component | Role in Current Repo | Role in APM Target State | Transition Strategy |
 | :--- | :--- | :--- | :--- |
-| **`plugins/plugin-manager`** | Installs, syncs, and prunes plugins via `uvx` / Python. | Maintained as fallback and legacy installer during transition. | Kept active. Deprecated only after APM passes all Phase 1 pilot gates. |
+| **`plugins/plugin-manager`** | Installs, syncs, and prunes plugins via `uvx` / Python. | Decommissioned and deleted (PR #712). Replaced by APM CLI. | Fully retired. Deleted from git; references scrubbed. |
 | **`symlink-manager` & `symlinks.json`** | Manages internal monorepo symlinks between plugin roots and skills. | Internal authoring utility only; completely invisible to external APM consumers. | Retained internally for source authoring. The APM packager handles dereferencing so consumers never see symlinks. |
 | **`.agent/rules/plugin-architecture-policy.md`** | Rules governing modularity, resource placement, and symlinks. | Evolved to define packaging contracts, collection boundaries, and build dereferencing. | Sections 1–4, 6 remain invariants. Section 5 updated to clarify build-time vs source-time symlink boundaries. |
 | **`convert-plugin-to-apm`** | Prototype migration script. | Modular packaging and export pipeline (`inspect → normalize → validate → package`). | Refactored into composable stages with automated tests. |
@@ -488,3 +488,57 @@ APM supports both tool-level execution hooks and package-lifecycle automation:
 2. **Package Lifecycle Hooks (`lifecycle:` block in `apm.yml`)**:
    - Enables `post-update` or `post-install` automated shell commands (e.g. running reference migration scripts).
    - Guarded by APM's `lifecycle validate` and `lifecycle trust` security commands to prevent arbitrary untrusted execution.
+
+---
+
+## 12. Consuming Repository Migration Plan & Lessons Learned
+
+With the upstream monorepo migration completed and merged into `main` (PR #712, PR #713), downstream consuming repositories (beginning with `sharepoint-workbench`) transition to APM package consumption.
+
+### 1. Key Lessons Learned from Monorepo Refactoring
+
+| Lesson / Friction Point | Root Cause | Solution for Consuming Repos (e.g., SharePoint Workbench) |
+| :--- | :--- | :--- |
+| **Legacy Stale Skills in Context** | Old `.agents/skills/` folder lingered with deprecated `plugin-installer`, `plugin-syncer`, `plugin-remover` after git checkout. | **Purge `.agents/` before installing**: Remove the untracked `.agents/` directory completely (`rm -rf .agents .claude`) before running `apm install`. |
+| **Broken Symlinks on Windows** | Symlink files checked out on Windows without Developer Mode became 35-byte text stubs. | **Consume via APM packages or materialized clones only**: APM resolves files as true physical copies. If installing from a local clone of `agent-plugins-skills`, ensure `materialize_copies.py` has run on that clone first. |
+| **Context Window Bloat** | Installing all 122 skills into a focused domain repo overflows agent context with irrelevant instructions. | **Granular skill pinning (`--skill`)**: Do NOT install all plugins in downstream repos. Use `apm.yml` `skills:` list or `--skill` to install only required skills (e.g. `dev-utils`, `git-operations`, `coding-conventions`, domain-specific skills). |
+| **Untracked Copilot Agents in Git Status** | APM's `copilot` target generates `.github/agents/*.agent.md`, which dirties `git status` if `.github/*` has negative exceptions. | **Configure `.gitignore` cleanly**: Ensure `.github/agents/`, `.github/hooks/`, `.agents/`, `.claude/`, `.codex/`, and `apm_modules/` are cleanly ignored in downstream projects unless explicitly vendor-tracked. |
+| **Hardcoded `.agents/` Script Invocations** | Scripts or docs calling `python .agents/skills/<name>/scripts/...` directly break when installation targets change. | **Decouple invocations**: Run scripts by name through the runtime harness or via relative paths within self-contained skill execution contexts. |
+| **Control Plane Independence** | Control plane toggles (`control_plane_mode.py`) previously expected legacy `.agents/ownership/*.json` and `plugin-syncer`. | **Decoupled mode toggle**: `control_plane_mode.py` operates without `ownership/*.json`. Projects can enable or disable gating independently of APM manifests. |
+
+### 2. Execution Playbook for `sharepoint-workbench` (Tomorrow's Session)
+
+1. **Pre-Migration Audit**:
+   - Check existing `.agents/ownership/` to catalog which skills `sharepoint-workbench` currently utilizes.
+   - Run existing characterization test suite to establish the baseline.
+2. **Scrub Legacy Installation Artifacts**:
+   ```bash
+   rm -rf .agents/ .claude/ .codex/ apm_modules/
+   ```
+3. **Initialize or Update `apm.yml`**:
+   - Declare package dependencies targeting `agent-plugins-skills` (or specific plugins from local checkout / git release tag).
+   - Set targets:
+     ```yaml
+     targets:
+       - claude
+       - copilot
+       - codex
+       - agy
+     dependencies:
+       apm:
+         ./plugins/dev-utils:
+           skills:
+             - coding-conventions-agent
+             - link-checker-agent
+             - symlink-manager
+     ```
+4. **Install with APM**:
+   ```bash
+   apm install
+   ```
+5. **Verify Runtime & Lockfile**:
+   - Confirm `apm.lock.yaml` is generated and commit `apm.yml` + `apm.lock.yaml`.
+   - Verify deployed skills in `.agents/skills/` and `.claude/skills/`.
+6. **Execute Characterization Tests**:
+   - Verify `sharepoint-workbench` workflows and tests pass with 100% parity.
+

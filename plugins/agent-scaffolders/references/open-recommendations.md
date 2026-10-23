@@ -28,7 +28,7 @@ never delete or overwrite existing rows.
 | 2026-03-03 | Declare plugin-validator cross-plugin dependency | analyzer | low | implemented | skills/audit-plugin/CONNECTORS.md |
 | 2026-04-04 | Formalize Policy Plane Separation as canonical pattern | analyzer | high | implemented | pattern-catalog.md (ecosystem-robustness-refactor branch) |
 | 2026-04-04 | Integrate fix-plugin-paths into maintain-plugins workflow | plugin-manager | high | implemented | maintain-plugins SKILL.md Step 1.5 (ecosystem-robustness-refactor branch) |
-| 2026-04-04 | Document Discovery-over-Hardcoding migration path | plugin-manager | medium | open | N/A — capability declaration in plugin.json not yet standardized |
+| 2026-04-04 | Document Discovery-over-Hardcoding migration path | plugin-manager | medium | wont-fix | Superseded by APM migration and declarative apm.yml manifests (PR #712) |
 | 2026-04-04 | Convert hook validation .sh scripts to Python | agent-scaffolders | low | implemented | 14 scripts migrated: find_polluter.py, closure_guard.py, hook_linter.py, validate_agent.py, validate_hook_schema.py, test_hook.py, load_context.py, validate_bash.py, validate_write.py, apply_symlink_repairs.py + symlinks rewired |
 
 ## How to Append

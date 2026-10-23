@@ -144,12 +144,6 @@ _SKILL_DIRS = [
     ("obsidian-wiki-engine",     "obsidian-vault-crud"),
     ("obsidian-wiki-engine",     "obsidian-wiki-builder"),
     ("obsidian-wiki-engine",     "obsidian-wiki-linter"),
-
-    # plugin-manager (4 skills)
-    ("plugin-manager",           "plugin-installer"),
-    ("plugin-manager",           "plugin-remover"),
-    ("plugin-manager",           "plugin-syncer"),
-
 ]
 
 

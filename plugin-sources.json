@@ -8,8 +8,7 @@
         "agent-scaffolders",
         "cli-agents",
         "dependency-management",
-        "dev-utils",
-        "plugin-manager"
+        "dev-utils"
       ]
     }
   ]

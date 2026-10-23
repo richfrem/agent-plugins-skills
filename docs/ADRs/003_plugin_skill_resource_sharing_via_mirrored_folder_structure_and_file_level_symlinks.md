@@ -1,11 +1,12 @@
 # ADR-003: Plugin Skill Resource Sharing via Mirrored Folder Structure and File-Level Symlinks
 
 ## Status
-Accepted - Validated
+Superseded by ADR-010 and APM Copy Manifest Architecture (`docs/plans/apm_migration_plan.md` Section 10.3).
+(Historical: Accepted - Validated, 2026-09-06)
 
-Validated across 15+ plugins. All installed correctly via `npx skills add` with all symlinks
-resolved to real files. Approach confirmed working and aligned with the open Agent Skills spec
-(https://agentskills.io/specification).
+> [!NOTE]
+> **Superseded Note (2026-10-23)**:
+> File-level symlinks have been replaced by the declarative Copy Manifest in `symlinks.json` (`strategy: "copy"`). Filesystem symlinks caused failure modes on Windows checkouts where symlinks became text stubs. Under APM, `materialize_copies.py` writes physical copies into skill folders for local runs, and `apm pack` / `apm install` distributes fully self-contained skills across all client harnesses (Claude, Copilot, Codex, Antigravity) without symlink stubs.
 
 ## Context
 

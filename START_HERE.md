@@ -7,7 +7,7 @@
 Skip this section on every session after the first. If `context/control_plane.db` doesn't exist
 yet, run these once (assumes plugins are already installed per
 [INSTALL.md's "Local Development (For Developers)"](INSTALL.md#local-development-contributors--testing)
-— `git clone` + `plugin_add.py --all -y`):
+— `git clone`, `python3 plugins/agent-scaffolders/skills/convert-plugin-to-apm/scripts/materialize_copies.py`, and `apm install ./plugins/* --target agy,claude,copilot,codex`):
 
 ```bash
 python3 plugins/agent-agentic-os/scripts/init_agentic_os.py --target .
@@ -43,14 +43,17 @@ completeness). Then verify the test suite: `python3 -m pytest plugins/ -q`. See
 
 Look for `[ ]` items in context/memory/ session logs from the last 7 days.
 
-## Next Session Priorities (APM Migration)
+## Next Session Priorities (Consuming Repositories Migration)
 
-- **Target Plan**: [`docs/plans/apm_migration_plan.md`](docs/plans/apm_migration_plan.md)
-- **Goal**: Transition from `uvx` / `plugin-manager` orchestration to Microsoft APM (Agent Package Manager) using a Strangler Fig approach.
-- **Immediate Task**: Execute Phase 1 Pilot Proof-of-Concept:
-  1. Build dereferencer pipeline (`inspect → normalize → validate → package → test deploy`) under `plugins/agent-scaffolders/skills/convert-plugin-to-apm/`.
-  2. Synthesize pilot `apm.yml` for `agent-scaffolders` with target mappings (`copilot`, `claude`, `agents`).
-  3. Validate against the Acceptance Verification Contract in `docs/plans/apm_migration_plan.md`.
+- **Target Plan**: [`docs/plans/apm_migration_plan.md`](docs/plans/apm_migration_plan.md) (Section 12: Consuming Repository Migration)
+- **Monorepo Status**: **COMPLETE**. PR #712 merged; legacy plugin-manager retired; all 122 skills verified across Claude, Copilot, Codex, and Antigravity with zero copy-manifest drift; APM CLI 0.33.0 operational.
+- **Immediate Task for Tomorrow**: Begin downstream consuming repository migration, starting with `sharepoint-workbench`:
+  1. Audit current `.agents/ownership/` and installed skill dependencies in `sharepoint-workbench`.
+  2. Wipe legacy `.agents/` runtime folder to purge deprecated `plugin-*` skills.
+  3. Synthesize downstream `apm.yml` with declarative targets (`claude,copilot,codex,agy`) and granular `--skill` selections (avoiding token bloat).
+  4. Run `apm install` and commit `apm.yml` + `apm.lock.yaml`.
+  5. Decouple any custom scripts that execute `.agents/skills/...` directly.
+  6. Run characterization test suite to verify full regression parity.
 
 ## Confirm Readiness
 
