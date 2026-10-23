@@ -129,6 +129,41 @@ apm uninstall <path-to-clone>/plugins/<plugin-name>              # project insta
 
 Uninstall removes only the files APM deployed; it keeps your own files, and stops (keeping its records) if you added a file inside one of the package's skill folders.
 
+### Switching Between Local and Global Installs
+
+To switch a project from a local install (`.agents/`, `.claude/`) to a user-level global install (`~/.agents/`, `~/.claude/`):
+
+1. **Remove the project-level install**:
+   ```bash
+   apm uninstall ./plugins/<plugin-name>       # or: rm -rf .agents .claude .codex apm_modules apm.yml apm.lock.yaml
+   ```
+2. **Install globally from your materialized clone**:
+   ```bash
+   apm install ./plugins/<plugin-name> --global --target claude,copilot,agy,codex
+   ```
+
+> [!IMPORTANT]
+> **Antigravity (`agy`) Hook Scope**:
+> In APM 0.33.0, global installs deploy skills into `~/.gemini/antigravity-cli/skills/`, but lifecycle hooks (`SessionStart`, `PostToolUse`, `Stop`) are **only supported in project installs** (`.agents/hooks.json`). If your workflow depends on Antigravity runtime hooks, keep the project-local install (`apm install ... --target agy`).
+
+### Where Does `materialize_copies.py` Run?
+
+* **In Consuming Repositories (e.g., SharePoint Workbench)**:
+  Consuming projects **never** need to run `materialize_copies.py`! Consuming repositories do not contain `plugins/` or `symlinks.json`. When APM installs a package (from a materialized local clone, a packed `.zip` bundle, or a GitHub release tag), APM deploys **already fully self-contained physical copies**.
+* **In This Authoring Monorepo**:
+  `materialize_copies.py` is an upstream monorepo maintenance tool. It ensures canonical files at `plugins/<plugin>/scripts/` are copied into local `skills/<skill>/scripts/` for tests and local execution without committing duplicates.
+
+#### How to Invoke `materialize_copies.py` Across Different Harnesses:
+If invoking the script from an installed skill (`convert-plugin-to-apm`) or across different harness environments:
+
+| Context | Command |
+| :--- | :--- |
+| **Monorepo Source (Default)** | `python3 plugins/agent-scaffolders/skills/convert-plugin-to-apm/scripts/materialize_copies.py` |
+| **Local Project `.agents` Harness** | `python3 .agents/skills/convert-plugin-to-apm/scripts/materialize_copies.py --path <repo-root>` |
+| **Local Project `.claude` Harness** | `python3 .claude/skills/convert-plugin-to-apm/scripts/materialize_copies.py --path <repo-root>` |
+| **Global Claude Harness** | `python3 ~/.claude/skills/convert-plugin-to-apm/scripts/materialize_copies.py --path <repo-root>` |
+| **Global Copilot / Codex / Agy** | `python3 ~/.agents/skills/convert-plugin-to-apm/scripts/materialize_copies.py --path <repo-root>` |
+
 ### Packed bundles
 
 `apm_build_pipeline.py --pack` (see [Local Development](#local-development-contributors--testing)) produces `build/dist/<plugin>-<version>.zip`, which installs with `apm install <bundle>.zip --global --target ...` without a clone. A bundle installs the whole plugin: `--skill` is not supported for bundles.
