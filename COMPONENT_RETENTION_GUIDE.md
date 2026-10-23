@@ -238,21 +238,15 @@ No skills enabled: do not install this plugin.
 
 ---
 
-### J. `plugin-manager` (Legacy Installer)
+### J. `plugin-manager` (Decommissioned)
 
-> Legacy `uvx` / `plugin-add` installer. APM replaces it; it is retired at the end of the migration (plan Section 9). Keep it only while a project still uses `plugin-add`.
+> Legacy `uvx` / `plugin-add` installer has been fully retired and removed following the APM migration (plan Section 9). Replaced entirely by Microsoft APM CLI (`apm install`).
 
 | Skill | Status | Rationale |
 |---|---|---|
-| `plugin-installer` | **`true`** | Deploys new plugins from local or GitHub sources. |
-| `plugin-remover` | **`true`** | Uninstalls plugins cleanly. |
-| `plugin-syncer` | **`true`** | Syncs desired-state manifests and cleans orphans. |
-
-Install the enabled skills:
-
-```bash
-python3 plugins/agent-scaffolders/skills/install-apm-package/scripts/apm_consumer.py install --checkout . --global --plugins plugin-manager --skill plugin-installer --skill plugin-remover --skill plugin-syncer
-```
+| `plugin-installer` | **retired** | Replaced by `apm install`. |
+| `plugin-remover` | **retired** | Replaced by `apm uninstall`. |
+| `plugin-syncer` | **retired** | Replaced by `apm install` / `apm update`. |
 
 ---
 

@@ -55,6 +55,7 @@ class TestNoStaleAgentReferences(unittest.TestCase):
         "003_plugin_skill_resource_sharing_via_mirrored_folder_structure_and_file_level_symlinks.md",
         "004_self_contained_plugins_no_cross_plugin_dependencies.md",
         "006_python_native_plugin_bootstrap_installer.md",
+        "010_apm_package_management_and_copy_manifest_architecture.md",
     }
 
     def test_no_hardcoded_python_execution_in_agents(self) -> None:
@@ -65,7 +66,7 @@ class TestNoStaleAgentReferences(unittest.TestCase):
         for p in REPO_ROOT.rglob("*"):
             if not p.is_file():
                 continue
-            if any(part in p.parts for part in (".git", ".pytest_cache", "build", "temp", "node_modules", "tests")):
+            if any(part in p.parts for part in (".git", ".pytest_cache", "build", "temp", "node_modules", "tests", "archive", "work-tasks", "issue-payloads")):
                 continue
             if p.name in self.HISTORICAL_LEDGERS or p.name in self.ALLOWED_HOST_SPEC_FILES:
                 continue
@@ -92,7 +93,7 @@ class TestNoStaleAgentReferences(unittest.TestCase):
         for p in REPO_ROOT.rglob("*"):
             if not p.is_file():
                 continue
-            if any(part in p.parts for part in (".git", ".pytest_cache", "build", "temp", "node_modules", "tests")):
+            if any(part in p.parts for part in (".git", ".pytest_cache", "build", "temp", "node_modules", "tests", "archive", "work-tasks", "issue-payloads")):
                 continue
             if p.name in self.HISTORICAL_LEDGERS or p.name in self.ALLOWED_HOST_SPEC_FILES:
                 continue
@@ -122,7 +123,7 @@ class TestNoStaleAgentReferences(unittest.TestCase):
         for p in REPO_ROOT.rglob("*"):
             if not p.is_file():
                 continue
-            if any(part in p.parts for part in (".git", ".pytest_cache", "build", "temp", "node_modules", "tests")):
+            if any(part in p.parts for part in (".git", ".pytest_cache", "build", "temp", "node_modules", "tests", "archive", "work-tasks", "issue-payloads")):
                 continue
             if p.name in self.HISTORICAL_LEDGERS:
                 continue

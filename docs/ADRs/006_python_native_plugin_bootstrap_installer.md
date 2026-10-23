@@ -1,7 +1,12 @@
 # 006: Python-Native Plugin Bootstrap Installer (Replacing npx)
 
 ## Status
-Accepted
+Superseded by ADR-010 and Microsoft APM (Agent Package Manager) CLI (`apm install`).
+(Historical: Accepted, 2026-09-06)
+
+> [!NOTE]
+> **Superseded Note (2026-10-23)**:
+> Custom Python bootstrap installers (`plugin_add.py`, `plugin_installer.py`, `bootstrap.py`) and legacy `uvx` entry points have been decommissioned. Plugin installation, lockfile resolution, and multi-target deployments are now managed standardly via Microsoft APM CLI (`apm install`).
 
 ## Context
 Early versions of this repository relied on `npx skills add` to distribute and install plugins. While `npx` provided excellent ergonomics (on-the-fly execution from GitHub without cloning), it caused critical failures on Windows. Git for Windows, without Developer Mode enabled, checks out symlinks as plain text files containing paths. Because `npx` clones the repo into a temporary space, Windows users were left with broken text files in their `.agents/` directories instead of executable scripts.

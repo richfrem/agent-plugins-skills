@@ -46,7 +46,6 @@
             "auth.py": "Eval prompt example in rlm-curator/evals/evals.json.",
             "file.py": "Docstring usage example in rlm-curator distiller.py header comment."
         },
-        "obsidian-wiki-engine": {},
-        "plugin-manager": {}
+        "obsidian-wiki-engine": {}
     }
 }

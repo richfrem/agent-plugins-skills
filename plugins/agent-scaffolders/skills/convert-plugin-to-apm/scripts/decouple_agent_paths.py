@@ -25,7 +25,7 @@ Exit codes: 0 success, 2 usage error.
 
 Key Input Dependencies:
     - git (files are taken from `git ls-files` under --path)
-    - Default exclusions: plugins/plugin-manager/ (the legacy installer, retired later),
+    - Default exclusions: plugins/plugin-manager/ (decommissioned legacy installer),
       *ignore files, tests/, docs/plans/, .agent/rules/ (synced copies of plugin rules),
       history/ledger files (map-debt.md, evolution-log.md, CHANGELOG.md, backlog.md), research/
 

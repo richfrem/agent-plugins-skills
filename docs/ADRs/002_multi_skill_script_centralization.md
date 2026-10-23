@@ -1,7 +1,12 @@
 # ADR-002: Multi-Skill Script Centralization
 
 ## Status
-Accepted
+Superseded by ADR-010 and APM Copy Manifest Architecture (`docs/plans/apm_migration_plan.md` Section 10.3).
+(Historical: Accepted, 2026-09-06)
+
+> [!NOTE]
+> **Superseded Note (2026-10-23)**:
+> The Hub-and-Spoke model of canonical authority files at the plugin root (`plugins/<plugin-name>/scripts/`) remains authoritative. However, filesystem symlinks and the legacy `plugin-manager` (`plugin_installer.py`) have been decommissioned. File sharing across skill spokes is now managed deterministically via the Copy Manifest (`symlinks.json`, `strategy: "copy"`), materialized into source skill folders by `materialize_copies.py`, and packaged for cross-platform distribution via Microsoft APM (`apm install`).
 
 ## Context
 Within the `agent-plugins-skills` monorepo, a single Plugin often contains multiple distinct Skills (e.g., the `plugin-manager` plugin contains `maintain-plugins`, `replicate-plugin`, and `plugin-installer` skills). 
