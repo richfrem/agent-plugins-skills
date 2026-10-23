@@ -14,4 +14,3 @@ skills_dirs:
   - plugins/agent-scaffolders/skills
   - plugins/dev-utils/skills
   - plugins/exploration-cycle-plugin/skills
-  - plugins/obsidian-wiki-engine/skills

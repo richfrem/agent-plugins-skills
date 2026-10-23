@@ -41,20 +41,11 @@ _SKILL_DIRS = [
     ("agent-orchestration/",              "red-team-review"),
     ("agent-orchestration/",              "triple-loop-learning"),
 
-    # agent-memory (13 skills)
+    # agent-memory (4 skills)
+    ("agent-memory",             "managing-rlm-cache"),
+    ("agent-memory",             "managing-vector-db"),
+    ("agent-memory",             "managing-obsidian-vaults"),
     ("agent-memory",             "memory-management"),
-    ("agent-memory",             "rlm-audit"),
-    ("agent-memory",             "rlm-cleanup-agent"),
-    ("agent-memory",             "rlm-curator"),
-    ("agent-memory",             "rlm-distill-agent"),
-    ("agent-memory",             "rlm-init"),
-    ("agent-memory",             "rlm-search"),
-    ("agent-memory",             "vector-db-audit"),
-    ("agent-memory",             "vector-db-cleanup"),
-    ("agent-memory",             "vector-db-ingest"),
-    ("agent-memory",             "vector-db-init"),
-    ("agent-memory",             "vector-db-launch"),
-    ("agent-memory",             "vector-db-search"),
 
     # agent-scaffolders (30 skills)
     ("agent-scaffolders",        "audit-plugin"),
@@ -113,17 +104,6 @@ _SKILL_DIRS = [
     ("exploration-cycle-plugin", "vibe-togaf-architect"),
     ("exploration-cycle-plugin", "visual-companion"),
 
-    # obsidian-wiki-engine (10 skills)
-    ("obsidian-wiki-engine",     "obsidian-bases-manager"),
-    ("obsidian-wiki-engine",     "obsidian-canvas-architect"),
-    ("obsidian-wiki-engine",     "obsidian-graph-traversal"),
-    ("obsidian-wiki-engine",     "obsidian-init"),
-    ("obsidian-wiki-engine",     "obsidian-markdown-mastery"),
-    ("obsidian-wiki-engine",     "obsidian-query-agent"),
-    ("obsidian-wiki-engine",     "obsidian-rlm-distiller"),
-    ("obsidian-wiki-engine",     "obsidian-vault-crud"),
-    ("obsidian-wiki-engine",     "obsidian-wiki-builder"),
-    ("obsidian-wiki-engine",     "obsidian-wiki-linter"),
 ]
 
 

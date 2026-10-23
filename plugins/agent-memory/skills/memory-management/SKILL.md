@@ -41,9 +41,9 @@ rg "Status: CONFIRMED" wiki/ references/
 
 ## Workflow
 
-1. **Session Boot**: Inspect `references/map-debt.md` and relevant domain playbooks in `wiki/` before starting tasks.
+1. **Session Boot**: Inspect the consumer project's map-debt ledger and relevant domain playbooks in `wiki/` before starting tasks.
 2. **Execute & Learn**: Perform task under Layer 1 procedural guidance.
-3. **Asymmetric Recording**: On unexpected friction or failure, record findings to `references/map-debt.md` and Layer 2 playbooks before any rollback.
+3. **Asymmetric Recording**: On unexpected friction or failure, record findings to the consumer project's map-debt ledger and Layer 2 playbooks before any rollback.
 4. **Audit Trace**: Log cycle metadata into Layer 3 audit manifests.
 
 ## Verification
@@ -51,10 +51,12 @@ rg "Status: CONFIRMED" wiki/ references/
 Run the memory layer test suite to verify line budgets and native sub-50ms retrieval latency:
 
 ```bash
-pytest plugins/agent-memory/tests/test_memory_layers.py
+pytest scripts/test_memory_layers.py
 ```
 
 ## References
 
-- [acceptance-criteria.md](references/acceptance-criteria.md) — Acceptance criteria for memory layers and boot sequencing.
-- [fallback-tree.md](references/fallback-tree.md) — Fallback protocol when memory files or cache targets are missing.
+- [acceptance-criteria.md](references/memory-management-acceptance-criteria.md) — Acceptance criteria for memory layers and boot sequencing.
+- [fallback-tree.md](references/memory-management-fallback-tree.md) — Fallback protocol when memory files or cache targets are missing.
+
+Follow the [acceptance contract](references/acceptance-criteria.md); browse the [resource index](references/resource-index.md).

@@ -646,9 +646,9 @@ Following the validation and completion of the `cli-agents` pilot, the remaining
 
 | Wave | Plugin | Skills / Root Scripts | Primary Architectural Treatment |
 | :--- | :--- | :--- | :--- |
-| **Wave 0 (Pilot)** | `cli-agents` | 12 skills → 3 skills (0 root scripts) | **Status: Under Peer Re-Audit**. **Solution A**: Consolidated 8 micro-skills into unified `cli-agent`. Retained `agt-security` & `maf-adapter` (Solution B). Eliminated `agent-file-synchronization`. 136/136 tests pass; `audit_skill.py` reports PASS. Awaiting final audit approval before Step 7 legacy skill retirement. |
-| **Wave 1** | `dependency-management` | 1 skill (0 root scripts) | **Verified Self-Contained**: 1 skill (`dependency-management`). Zero root scripts. Audit path resolution. |
-| **Wave 1** | `agent-orchestration` | 10 skills (7 root scripts) | **Solution A & B**: Consolidate loop pattern micro-skills (e.g. `dual-loop`, `agent-swarm`, `orchestrator`, `learning-loop`, `graph-execution`, `graph-planner`). Move graph tools into `graph-planner`/`graph-execution`. |
+| **Wave 0 (Pilot)** | `cli-agents` | 12 skills → 3 skills (0 root scripts) | **Status: Done (PR #715 merged; subsequently absorbed into `agent-orchestration` in PR #717)**. Consolidated 8 micro-skills into unified `cli-agent`. Retained `agt-security` & `maf-adapter`. Standalone plugin directory retired. |
+| **Wave 1** | `dependency-management` | 1 skill (0 root scripts) | **Status: Done (PR #716 merged)**. Retired as standalone plugin; converted to rule in `plugins/dev-utils/rules/`. |
+| **Wave 1** | `agent-orchestration` | 10 skills → 4 skills (0 root scripts) | **Status: Done (PR #717 merged)**. **Solution A**: Consolidated all 10 loop/graph micro-skills into unified interactive `orchestrating-agent-work` skill. Absorbed `cli-agents` suite (`cli-agent`, `agt-security`, `maf-adapter`, 13 sub-agents). Standalone `plugins/cli-agents` retired. |
 | **Wave 1** | `obsidian-wiki-engine` | 10 skills (14 root scripts) | **Solution A**: Consolidate Karpathy-style wiki distillation and querying into unified obsidian skills; co-locate vault CRUD and graph traversal tools. |
 | **Wave 2** | `agent-memory` | 13 skills (21 root scripts) | **Solution A**: Consolidate Vector DB tools (`vector-db-init`, `ingest`, `search`, `cleanup`, `audit`, `launch`) into cohesive `vector-db` skill; consolidate RLM tools into `rlm-engine` skill. |
 | **Wave 2** | `exploration-cycle-plugin` | 20 skills (16 root scripts) | **Solution A**: Consolidate exploratory sub-skills (`exploration-workflow`, `discovery-planning`, `prototype-builder`, `vibe-*` migrators) into cohesive workflow stages with modular references. |
@@ -853,41 +853,77 @@ Decisions recorded:
 
 #### 10.2 `agent-orchestration`
 
-| Target skill | Absorbs | Solution |
-|---|---|---|
-| `orchestrator` | `orchestrator`, `select-loop-strategy`, `dual-loop`, `co-pilot-loop`, `agent-swarm`, `learning-loop`, `triple-loop-learning` | A (pattern router; one reference per loop pattern) |
-| `graph` | `graph-planner`, `graph-execution` (graph tools co-located) | A |
-| `red-team-review` | Kept separate | B |
-
-Decisions and risks:
-- **Keep `red-team-review` named as-is.** `graph-planning-superpowers-policy.md` §2.3 (the Phase 1 Fan-Out Trio) and the sub-agent definitions cite it.
-- **Update `hooks.json`** if it names absorbed skills.
-- **Review the 110 name hits by hand.** They are dominated by the generic word "orchestrator", so a blind find-and-replace is unsafe.
-
-#### 10.3 Knowledge plugin: `agent-memory` + `obsidian-wiki-engine` → one plugin, 4 skills
+Outcome: 10 loop skills → **1 unified orchestration skill** (`orchestrating-agent-work`), plus absorbed `cli-agents` suite (3 skills + 13 agent personas). Standalone `plugins/cli-agents` retired (PR #717 merged).
 
 | Target skill | Absorbs | Solution |
 |---|---|---|
-| `rlm` | `rlm-init`, `rlm-distill-agent`, `rlm-search`, `rlm-audit`, `rlm-cleanup-agent`, `rlm-curator`, and `obsidian-rlm-distiller` (wiki distillation becomes an `rlm` mode instead of a second distiller) | A |
-| `vector-db` | `vector-db-init`, `vector-db-ingest`, `vector-db-search`, `vector-db-audit`, `vector-db-cleanup`, `vector-db-launch` | A |
-| `memory-management` | Kept | B |
-| `obsidian` | `obsidian-init`, `obsidian-markdown-mastery`, `obsidian-vault-crud`, `obsidian-bases-manager`, `obsidian-canvas-architect`, `obsidian-graph-traversal`, `obsidian-wiki-builder`, `obsidian-query-agent`, `obsidian-wiki-linter`. One router `SKILL.md` with a 9-row mode table; each former skill becomes a reference (about 18 references in total). | A |
+| `orchestrating-agent-work` | `orchestrator`, `select-loop-strategy`, `dual-loop`, `co-pilot-loop`, `agent-swarm`, `learning-loop`, `triple-loop-learning`, `graph-planner`, `graph-execution`, `red-team-review` | A (Unified interactive router for DAGs, Supervisor/Worker loops, and Swarms; <= 80 lines; co-located scripts, templates, and diagrams) |
+| `cli-agent` | Absorbed from `cli-agents` (multi-LLM task router, local server, catalogs, proxy) | A |
+| `agt-security` | Absorbed from `cli-agents` (AGT sandbox verification and HMAC rotation) | B |
+| `maf-adapter` | Absorbed from `cli-agents` (MAF manifest validation and test harness) | B |
 
-Why merge the plugins:
-- **They already operate as one "Super-RAG knowledge stack".** `super-rag-setup-agent` lives in obsidian-wiki-engine but provisions RLM, vector-db and the wiki together.
-- **They cite each other heavily.** 39 obsidian files mention RLM, vector-db or agent-memory, and 47 agent-memory files mention obsidian or the wiki.
-- **The move is mechanical.** No Python imports cross the two plugins, and the shared configuration lives outside both, in `.agent/learning/`.
+Decisions and outcomes recorded:
+- **Single interactive orchestrator**: Rather than splitting into separate `orchestrator` and `graph` skills, all execution topologies are unified behind `orchestrating-agent-work`'s 5-step triage and execution workflow.
+- **Absorbed `cli-agents`**: Merged the 3 remaining skills (`cli-agent`, `agt-security`, `maf-adapter`) and 13 sub-agents into `agent-orchestration`. Standalone `plugins/cli-agents` directory was completely retired with `git rm -rf`.
+- **Plugin-prefix convention**: Plugin-level governance/evolution files colliding with skill files (`acceptance-criteria.md`, `fallback-tree.md`, `map-debt.md`) were renamed with the `plugin-` prefix (`plugin-acceptance-criteria.md`, `plugin-fallback-tree.md`, `plugin-map-debt.md`), eliminating `unregistered_duplicate` errors in `audit_plugin_structure.py` without symlinks.
+- **Cross-plugin constant update**: Updated `CLI_AGENT_CATALOG_DIR` in `agent-agentic-os/scripts/control_plane/constants.py` to point to `plugins/agent-orchestration/skills/cli-agent/references`. All 18 tests pass.
+- **Registries cleaned**: Removed `cli-agents` from `plugin.yaml`, `local-plugins-inventory.json`, `plugin-sources.json`, and `apm.yml`.
 
-Decisions and risks:
-- **Plugin name.** Choose either to absorb obsidian-wiki-engine into `agent-memory` (one name stays stable) or a new name (for example `agent-knowledge`). Either way, consumers' `apm.yml` entries, marketplace entries, `__init__.py`, `plugin-sources.json`, `local-plugins-inventory.json` and `plugin-retention.json` (while it still exists; §9 marks it retired) change, and plugin-prefixed sub-agent names change. Ship it as a major version.
-- **Standalone installs.** Both plugins were designed to work alone. That is preserved at skill level through per-skill installs (`apm_consumer.py install --plugins <plugin> --skill vector-db`, as in `COMPONENT_RETENTION_GUIDE.md`); for example, `vector-db` can be installed without `obsidian`. Document this in the plugin README.
-- **Single `obsidian` skill trigger precision.** It must trigger both for vault authoring ("make a canvas", "fix this wikilink") and for the wiki pipeline ("build/lint/query the wiki").
-  - Merge all 10 skills' evals first.
-  - If routing accuracy or F1 drops below the legacy baseline, fall back to two skills: `obsidian-vault` (init, markdown, crud, bases, canvas, graph) and `obsidian-wiki` (builder, query, linter).
-- **`rlm` absorbing `obsidian-rlm-distiller`.** Confirm that the wiki's three-layer output (`summary.md`, `bullets.md`, `deep.md`) is an `rlm` mode, not a separate format. Keep the wiki node frontmatter keys and `meta/agent-memory.json` unchanged.
-- **Plugin-root sub-agents.** All 12 stay at the plugin root: 9 RLM/vector agents, `super-rag-setup-agent`, `wiki-init-agent` and the agents README. Update their bodies to route to `rlm`, `vector-db` and `obsidian`.
-- **Script name collisions.** Both plugins have `ingest.py` and `audit*.py`. They land in different skills (`vector-db`, `obsidian`), so there is no clash, but the inventory CSV must map each one explicitly.
-- **End-to-end check.** After the move, re-run the Super-RAG setup flow for each mode (wiki only, wiki+RLM, wiki+vector, full stack).
+#### 10.3 Knowledge plugin: agent-memory consolidation — implemented, pending PR review
+
+The former agent-memory and obsidian-wiki-engine plugins are consolidated into
+agent-memory v2.0.0 on feat/agent-memory-consolidation. The user selected the
+Section 13 migration workflow outside the control plane and authorized source
+retirement after individual verification, plus commit/push/PR and branch-scoped
+push --no-verify. No signed control-plane state was fabricated.
+
+| Final skill | Absorbed capabilities |
+|---|---|
+| managing-rlm-cache | Six rlm-* workflows; guided setup, curation, lookup, distillation, audit and cleanup in the main session |
+| managing-vector-db | Six vector-db-* workflows; guided profiles/dependencies, ingest/query/audit/cleanup/server lifecycle |
+| managing-obsidian-vaults | All ten obsidian-* workflows including wiki three-layer distillation; vault setup and combined Super-RAG conversation |
+| memory-management | Retained filesystem-native three-layer memory, confidence decay, asymmetric persistence, session boot/seal and promotion/demotion criteria |
+
+**User-directed architectural corrections:** The eleven dedicated memory agents
+and obsidian-init command wrapper are absorbed directly into interactive skills,
+following orchestrating-agent-work. No agent/command wrapper remains. Each skill
+owns its scripts, executable assets and reading references; diagrams/research/docs
+are in skill references/, executable prompts/jobs/config templates in assets/.
+Plugin-specific governance remains at plugin root. Skill-specific tests live in
+the owning skill's scripts/; the independent verifier adjusted only the memory
+ test's repository locator and preserved all three tests/seven assertions.
+
+**Source cleanup:** The old Obsidian plugin, all 22 absorbed legacy skill directories,
+and plugin-root agents/commands/scripts/assets/resources/tests directories are removed.
+The copy manifest has zero entries for either migrated plugin (320 removed).
+
+**Knowledge/resource evidence:** All 23 legacy interfaces individually PASS static
+and independent manual parity review; 148 canonical resources and 320 resource
+edges resolve. Every old workflow is linked directly from its new SKILL.md, and
+resource indexes link the owned scripts/assets/references. Original 192 eval cases
+and outcomes are preserved; 20 additive interactive cases give 212 total, plus
+14 verifier-owned task-success scenarios. Model routing accuracy/F1 remains unmeasured.
+
+**Dependencies:** Each executing skill owns requirements.in/txt. No original vector
+or Obsidian declarations/floors were dropped; all 120 original vector lock pins are
+preserved. LangChain Core/Classic imports are explicitly declared. RLM owns optional
+requests/PyYAML, Obsidian owns ruamel.yaml/PyYAML. Memory's core is stdlib-only;
+its pytest dependency is isolated in requirements-dev.in/txt. SQLite comes from
+Python's runtime, not an added pip sqlite3 dependency. APM does not install Python
+packages. Fresh lock installation/full live Super-RAG are not claimed tested.
+
+**Verification:** 36 relevant tests PASS, 2 skip; all four skill audits, plugin
+structural audit, broad compliance audit, copy drift check and whitespace checks
+pass (nonblocking navigation warnings recorded separately). Thirteen isolated
+runtime probes pass. Original parser/model tests are unchanged; the relocated
+memory test's assertions are independently unchanged. The workspace-wide coding
+conventions scanner also reports existing repository-wide failures; newly added
+production helpers are checked independently and those results are retained.
+
+All moves, absorptions, reference/registry updates and retirements are recorded in
+master_migration_inventory.csv. Audit receipts live under
+work-tasks/agent-memory-consolidation/. Runtime reinstall remains a separate action.
+Next migration after review/merge: exploration-cycle-plugin.
 
 #### 10.4 `exploration-cycle-plugin`
 
@@ -950,43 +986,41 @@ Decisions and risks:
 
 #### 10.7 Recommended sequence and next plugin
 
-**Next plugin: `agent-orchestration` (§13.10.2).** `dev-utils` is done (PR #716). Earlier rationale for doing dev-utils first:
-- It is the lowest-risk way to repeat the full lifecycle, including the first **plugin merge**.
-- `dependency-management` is one skill with no Python, and every file in it is a copy-manifest duplicate. Retiring that plugin exercises every registry step (root `plugin.yaml`, `apm.yml`, `__init__.py`, inventories, retention, whitelists, the rule primitive) with almost no code risk.
-- Inside `dev-utils`, 106 of 115 sources go to exactly one skill. The two Solution A clusters (`github-issue`, `huggingface`) absorb nearly all of the 9 shared sources.
-- No control-plane code depends on it.
+**Current: agent-memory consolidation implemented and being submitted for PR review (§13.10.3). Next after merge: exploration-cycle-plugin.** agent-orchestration is done (PR #717 merged).
 
 | Order | Plugin work | Skills | Why here |
 |---|---|---|---|
-| 0 | `cli-agents` pilot | 12 → 3 | **Done** (PR #715 merged, deployed with `apm install`). |
-| 1 | `dev-utils` + `dependency-management` | 20 → 8 | **Done** (PR #716, in review). First plugin merge. |
-| 2 | **`agent-orchestration`** (next) | 10 → 3 | Small (7 root scripts). Its graph/loop names are cited by policies, so it is better done before scaffolders and agentic-os, which reference it. Hand review the name hits. |
-| 3 | Knowledge plugin (`agent-memory` + `obsidian-wiki-engine`) | 23 → 4 | Second plugin merge plus the first many-into-one router whose modes serve different user intents (`obsidian`: vault authoring vs. wiki pipeline; `cli-agent`'s modes were all one intent, dispatch). It needs eval-driven trigger checks, which are easier to learn here than on the control plane. Almost no outside root-path coupling (2). |
+| 0 | `cli-agents` pilot | 12 → 3 | **Done** (PR #715 merged; subsequently absorbed into `agent-orchestration` in PR #717). |
+| 1 | `dev-utils` + `dependency-management` | 20 → 8 | **Done** (PR #716 merged). First plugin merge (`dependency-management` retired). |
+| 2 | `agent-orchestration` + `cli-agents` absorption | 10 → 4 | **Done** (PR #717 merged). 10 loop skills → 1 interactive `orchestrating-agent-work` skill; absorbed `cli-agents` suite (`cli-agent`, `agt-security`, `maf-adapter`, 13 sub-agents); `cli-agents` retired. |
+| 3 | **Knowledge plugin** (`agent-memory` + `obsidian-wiki-engine`) (next) | 23 → 4 | Second plugin merge plus the first many-into-one router whose modes serve different user intents (`obsidian`: vault authoring vs. wiki pipeline; `cli-agent`'s modes were all one intent, dispatch). It needs eval-driven trigger checks, which are easier to learn here than on the control plane. Almost no outside root-path coupling (2). |
 | 4 | `exploration-cycle-plugin` | 20 → 4 | Its SessionStart hook injects skill names into every session, so hook-change handling is practised here before agentic-os. |
 | 5 | `agent-scaffolders` | 24 → 5 | The largest copy manifest (1,099 entries), but it hosts the verifiers (`audit_skill.py`, `materialize_copies.py`). Do it once most plugins no longer need materialization; keep the verifier entry points stable. |
 | 6 | `agent-agentic-os` | 14 → 2 | Last: the shared `control_plane/` package, cryptographic gates, 148 baseline test failures, and it consumes outputs of plugins 0, 3 and 5. |
 | 7 | Retire the copy-manifest tooling | — | Once every plugin is migrated, `symlinks.json` is empty: retire `materialize_copies.py` and remove the AGENTS.md copy-manifest instructions. |
 
-**Totals:** 111 skills in 8 plugins become about 26 skills in 6 plugins. Including the `cli-agents` pilot, 123 skills in 9 plugins become about 29 skills in 7 plugins (more if Step 0 usage checks retire further skills).
+**Current scale (agent-memory consolidation branch):** 74 skills across 6 plugins, down from 93 across 7 before this wave. When all waves finish, about 20-25 skills across 5 plugins remain.
 
-Before starting each plugin, complete §13.10's Step 0 (test baseline, consumer search, hooks/AGENTS.md scan) and open its inventory CSV (`docs/plans/<plugin>_migration_inventory.csv`).
-
+Before starting each plugin, complete §13.10's Step 0 (test baseline, consumer search, hooks/AGENTS.md scan) and record all moves in the master inventory CSV.
 
 ---
 
-#### 10.8 Inventory ledger requirements (every plugin)
+#### 10.8 Master Migration Inventory Ledger (`master_migration_inventory.csv`)
 
-Each plugin's `docs/plans/<plugin>_migration_inventory.csv` is the truth map for Step 6 (documentation remediation) and for anyone later chasing a broken reference. It must record **every** change the migration causes, not only moves inside the plugin.
+To prevent fragmented, out-of-sync per-plugin CSVs, all file moves, consolidations, renames, retirements, and registry updates across all migration waves are consolidated into a single authoritative master ledger:
+`docs/plans/master_migration_inventory.csv`
 
-**Gap found in the pilot.** `cli_agents_migration_inventory.csv` records all moves inside `plugins/cli-agents/`, but has **no rows** for:
-- the ~30 consumer files fixed outside the plugin (the agent-agentic-os control plane, transition templates and tests; orchestration and exploration-cycle references; root docs);
-- the registries (`__init__.py`, `plugin-retention.json`, `symlinks.json`, `.git/info/exclude`).
+**Columns:** `Old Path,New Path,Action,Notes`.
 
-Backfill these before the pilot's final approval.
-
-**Columns:** keep `Old Path,New Path,Action,Notes`. For reference rows, `Old Path` is the file containing the reference, `New Path` is the same file, and `Notes` gives the old → new reference text.
-
-**`Action` vocabulary:**
+**Action vocabulary:**
+- `MOVED_TO_SKILL`: Script, reference, or asset moved directly into a self-contained skill directory.
+- `CONSOLIDATED_INTO_SKILL`: Old skill or reference absorbed/consolidated into a broader skill spoke.
+- `REMOVED_OBSOLETE` / `REMOVED_DEPRECATED`: File or skill retired completely.
+- `PLUGIN_ABSORBED` / `PLUGIN_RETIRED`: Entire plugin retired or absorbed into a parent domain.
+- `PRESERVED_PLUGIN_ROOT`: Plugin-level manifest or documentation preserved.
+- `PRESERVED_PLUGIN_LEVEL`: Plugin-level governance or criteria retained.
+- `REGISTRY_UPDATED`: System registries (`plugin.yaml`, `local-plugins-inventory.json`, `apm.yml`, etc.) updated.
+- `REFERENCE_UPDATED`: Cross-plugin files updated with new paths.
 
 | Action | Use for |
 |---|---|

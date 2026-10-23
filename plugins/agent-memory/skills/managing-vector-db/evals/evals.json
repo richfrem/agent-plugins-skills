@@ -1,0 +1,485 @@
+[
+  {
+    "prompt": "Audit the vector database coverage for my project.",
+    "should_trigger": true,
+    "id": "vector-db-audit:1",
+    "source_skill": "vector-db-audit",
+    "source_case_index": 0,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "What files are missing from the ChromaDB vector index?",
+    "should_trigger": true,
+    "id": "vector-db-audit:2",
+    "source_skill": "vector-db-audit",
+    "source_case_index": 1,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Check vector DB gaps and generate a CSV of missing documents.",
+    "should_trigger": true,
+    "id": "vector-db-audit:3",
+    "source_skill": "vector-db-audit",
+    "source_case_index": 2,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Show me which files haven't been vectorized yet.",
+    "should_trigger": true,
+    "id": "vector-db-audit:4",
+    "source_skill": "vector-db-audit",
+    "source_case_index": 3,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Vector DB coverage report — what percentage of the repo is indexed?",
+    "should_trigger": true,
+    "id": "vector-db-audit:5",
+    "source_skill": "vector-db-audit",
+    "source_case_index": 4,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Add new documents to the vector database.",
+    "should_trigger": true,
+    "id": "vector-db-audit:6",
+    "source_skill": "vector-db-audit",
+    "source_case_index": 5,
+    "source_should_trigger": false,
+    "reclassification_reason": "Document ingestion is now a vector-DB mode."
+  },
+  {
+    "prompt": "Remove orphaned chunks from ChromaDB.",
+    "should_trigger": true,
+    "id": "vector-db-audit:7",
+    "source_skill": "vector-db-audit",
+    "source_case_index": 6,
+    "source_should_trigger": false,
+    "reclassification_reason": "Orphan cleanup is now a vector-DB mode."
+  },
+  {
+    "prompt": "Index my new plugin files into the vector database",
+    "should_trigger": true,
+    "id": "vector-db-audit:8",
+    "source_skill": "vector-db-audit",
+    "source_case_index": 7,
+    "source_should_trigger": false,
+    "reclassification_reason": "File indexing is now a vector-DB mode."
+  },
+  {
+    "prompt": "Run a full vector-db ingest to rebuild the ChromaDB index",
+    "should_trigger": true,
+    "id": "vector-db-audit:9",
+    "source_skill": "vector-db-audit",
+    "source_case_index": 8,
+    "source_should_trigger": false,
+    "reclassification_reason": "Full index rebuild is now a vector-DB mode."
+  },
+  {
+    "prompt": "Clean up the vector store after I deleted some files",
+    "should_trigger": true,
+    "id": "vector-db-cleanup:1",
+    "source_skill": "vector-db-cleanup",
+    "source_case_index": 0,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "The vector database has chunks for files that no longer exist, prune them",
+    "should_trigger": true,
+    "id": "vector-db-cleanup:2",
+    "source_skill": "vector-db-cleanup",
+    "source_case_index": 1,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Remove orphaned and stale chunks from ChromaDB after renaming files in the repo",
+    "should_trigger": true,
+    "id": "vector-db-cleanup:3",
+    "source_skill": "vector-db-cleanup",
+    "source_case_index": 2,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Dry-run the vector cleanup to see what stale chunks would be removed",
+    "should_trigger": true,
+    "id": "vector-db-cleanup:4",
+    "source_skill": "vector-db-cleanup",
+    "source_case_index": 3,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Index these new plugin files into the vector database",
+    "should_trigger": true,
+    "id": "vector-db-cleanup:5",
+    "source_skill": "vector-db-cleanup",
+    "source_case_index": 4,
+    "source_should_trigger": false,
+    "reclassification_reason": "File indexing is now a vector-DB mode."
+  },
+  {
+    "prompt": "Start the ChromaDB background server on port 8110",
+    "should_trigger": true,
+    "id": "vector-db-cleanup:6",
+    "source_skill": "vector-db-cleanup",
+    "source_case_index": 5,
+    "source_should_trigger": false,
+    "reclassification_reason": "Server startup is now a vector-DB mode."
+  },
+  {
+    "prompt": "Run a semantic search query against the vector store",
+    "should_trigger": true,
+    "id": "vector-db-cleanup:7",
+    "source_skill": "vector-db-cleanup",
+    "source_case_index": 6,
+    "source_should_trigger": false,
+    "reclassification_reason": "Semantic querying is now a vector-DB mode."
+  },
+  {
+    "prompt": "What files are missing from the ChromaDB vector index?",
+    "should_trigger": true,
+    "id": "vector-db-cleanup:8",
+    "source_skill": "vector-db-cleanup",
+    "source_case_index": 7,
+    "source_should_trigger": false,
+    "reclassification_reason": "Coverage auditing is now a vector-DB mode."
+  },
+  {
+    "prompt": "Audit the vector DB coverage — generate a report of unindexed files",
+    "should_trigger": true,
+    "id": "vector-db-cleanup:9",
+    "source_skill": "vector-db-cleanup",
+    "source_case_index": 8,
+    "source_should_trigger": false,
+    "reclassification_reason": "Coverage auditing is now a vector-DB mode."
+  },
+  {
+    "prompt": "Index these new plugin files into the vector database",
+    "should_trigger": true,
+    "id": "vector-db-ingest:1",
+    "source_skill": "vector-db-ingest",
+    "source_case_index": 0,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "The vector store is missing recent files, update it with ingest",
+    "should_trigger": true,
+    "id": "vector-db-ingest:2",
+    "source_skill": "vector-db-ingest",
+    "source_case_index": 1,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Run a full vector-db ingest to rebuild the ChromaDB index from the repository files",
+    "should_trigger": true,
+    "id": "vector-db-ingest:3",
+    "source_skill": "vector-db-ingest",
+    "source_case_index": 2,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Re-index the repository with a full rebuild of the vector store",
+    "should_trigger": true,
+    "id": "vector-db-ingest:4",
+    "source_skill": "vector-db-ingest",
+    "source_case_index": 3,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Remove orphaned chunks from the vector store for deleted files",
+    "should_trigger": true,
+    "id": "vector-db-ingest:5",
+    "source_skill": "vector-db-ingest",
+    "source_case_index": 4,
+    "source_should_trigger": false,
+    "reclassification_reason": "Orphan cleanup is now a vector-DB mode."
+  },
+  {
+    "prompt": "Initialize the vector database and install chromadb dependencies",
+    "should_trigger": true,
+    "id": "vector-db-ingest:6",
+    "source_skill": "vector-db-ingest",
+    "source_case_index": 5,
+    "source_should_trigger": false,
+    "reclassification_reason": "Initialization is now a vector-DB mode."
+  },
+  {
+    "prompt": "Start the ChromaDB server so I can run semantic searches",
+    "should_trigger": true,
+    "id": "vector-db-ingest:7",
+    "source_skill": "vector-db-ingest",
+    "source_case_index": 6,
+    "source_should_trigger": false,
+    "reclassification_reason": "Server startup is now a vector-DB mode."
+  },
+  {
+    "prompt": "What files are missing from the ChromaDB vector index?",
+    "should_trigger": true,
+    "id": "vector-db-ingest:8",
+    "source_skill": "vector-db-ingest",
+    "source_case_index": 7,
+    "source_should_trigger": false,
+    "reclassification_reason": "Coverage auditing is now a vector-DB mode."
+  },
+  {
+    "prompt": "Audit vector DB coverage — show me which files haven't been vectorized",
+    "should_trigger": true,
+    "id": "vector-db-ingest:9",
+    "source_skill": "vector-db-ingest",
+    "source_case_index": 8,
+    "source_should_trigger": false,
+    "reclassification_reason": "Coverage auditing is now a vector-DB mode."
+  },
+  {
+    "prompt": "Initialize the vector DB plugin and install chromadb dependencies",
+    "should_trigger": true,
+    "id": "vector-db-init:1",
+    "source_skill": "vector-db-init",
+    "source_case_index": 0,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Set up vector_profiles.json and run init.py to configure the Native Python Server connection",
+    "should_trigger": true,
+    "id": "vector-db-init:2",
+    "source_skill": "vector-db-init",
+    "source_case_index": 1,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "I'm getting ModuleNotFoundError for chromadb, run the vector-db-init setup",
+    "should_trigger": true,
+    "id": "vector-db-init:3",
+    "source_skill": "vector-db-init",
+    "source_case_index": 2,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "First-time setup of ChromaDB for this project",
+    "should_trigger": true,
+    "id": "vector-db-init:4",
+    "source_skill": "vector-db-init",
+    "source_case_index": 3,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Start the ChromaDB background server on port 8110",
+    "should_trigger": true,
+    "id": "vector-db-init:5",
+    "source_skill": "vector-db-init",
+    "source_case_index": 4,
+    "source_should_trigger": false,
+    "reclassification_reason": "Server startup is now a vector-DB mode."
+  },
+  {
+    "prompt": "Ingest new files into the vector store using ingest.py",
+    "should_trigger": true,
+    "id": "vector-db-init:6",
+    "source_skill": "vector-db-init",
+    "source_case_index": 5,
+    "source_should_trigger": false,
+    "reclassification_reason": "Ingestion is now a vector-DB mode."
+  },
+  {
+    "prompt": "Initialize the tool inventory RLM profile for this project",
+    "should_trigger": false,
+    "id": "vector-db-init:7",
+    "source_skill": "vector-db-init",
+    "source_case_index": 6,
+    "source_should_trigger": false
+  },
+  {
+    "prompt": "The server is already configured — just start the ChromaDB server so I can search",
+    "should_trigger": true,
+    "id": "vector-db-init:8",
+    "source_skill": "vector-db-init",
+    "source_case_index": 7,
+    "source_should_trigger": false,
+    "reclassification_reason": "Server startup is now a vector-DB mode."
+  },
+  {
+    "prompt": "Start the Native Python ChromaDB background server on port 8110",
+    "should_trigger": true,
+    "id": "vector-db-launch:1",
+    "source_skill": "vector-db-launch",
+    "source_case_index": 0,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Semantic search returns connection refused, launch the ChromaDB server",
+    "should_trigger": true,
+    "id": "vector-db-launch:2",
+    "source_skill": "vector-db-launch",
+    "source_case_index": 1,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "The vector-db server is not running, start chroma run on port 8110",
+    "should_trigger": true,
+    "id": "vector-db-launch:3",
+    "source_skill": "vector-db-launch",
+    "source_case_index": 2,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "ChromaDB is showing connection refused — I need to start the server",
+    "should_trigger": true,
+    "id": "vector-db-launch:4",
+    "source_skill": "vector-db-launch",
+    "source_case_index": 3,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Initialize the vector DB plugin and configure vector_profiles.json",
+    "should_trigger": true,
+    "id": "vector-db-launch:5",
+    "source_skill": "vector-db-launch",
+    "source_case_index": 4,
+    "source_should_trigger": false,
+    "reclassification_reason": "Profile initialization is now a vector-DB mode."
+  },
+  {
+    "prompt": "Ingest repository files into the ChromaDB vector store",
+    "should_trigger": true,
+    "id": "vector-db-launch:6",
+    "source_skill": "vector-db-launch",
+    "source_case_index": 5,
+    "source_should_trigger": false,
+    "reclassification_reason": "Repository ingestion is now a vector-DB mode."
+  },
+  {
+    "prompt": "Clean up stale chunks from the vector store after file deletions",
+    "should_trigger": true,
+    "id": "vector-db-launch:7",
+    "source_skill": "vector-db-launch",
+    "source_case_index": 6,
+    "source_should_trigger": false,
+    "reclassification_reason": "Stale-chunk cleanup is now a vector-DB mode."
+  },
+  {
+    "prompt": "First-time setup of ChromaDB — install dependencies and create profiles",
+    "should_trigger": true,
+    "id": "vector-db-launch:8",
+    "source_skill": "vector-db-launch",
+    "source_case_index": 7,
+    "source_should_trigger": false,
+    "reclassification_reason": "First-time dependency/profile setup is now a vector-DB mode."
+  },
+  {
+    "prompt": "Find code related to markdown parsing using the vector store.",
+    "should_trigger": true,
+    "id": "vector-db-search:1",
+    "source_skill": "vector-db-search",
+    "source_case_index": 0,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Search the repository semantically for authentication logic.",
+    "should_trigger": true,
+    "id": "vector-db-search:2",
+    "source_skill": "vector-db-search",
+    "source_case_index": 1,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Run a concept-based query in ChromaDB for AWS S3 bucket operations.",
+    "should_trigger": true,
+    "id": "vector-db-search:3",
+    "source_skill": "vector-db-search",
+    "source_case_index": 2,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Use Phase 2 semantic search to find similar code to this function",
+    "should_trigger": true,
+    "id": "vector-db-search:4",
+    "source_skill": "vector-db-search",
+    "source_case_index": 3,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Ingest the new documentation files into the vector database.",
+    "should_trigger": true,
+    "id": "vector-db-search:5",
+    "source_skill": "vector-db-search",
+    "source_case_index": 4,
+    "source_should_trigger": false,
+    "reclassification_reason": "Document ingestion is now a vector-DB mode."
+  },
+  {
+    "prompt": "Set up and initialize the ChromaDB vector store for this project.",
+    "should_trigger": true,
+    "id": "vector-db-search:6",
+    "source_skill": "vector-db-search",
+    "source_case_index": 5,
+    "source_should_trigger": false,
+    "reclassification_reason": "Store initialization is now a vector-DB mode."
+  },
+  {
+    "prompt": "Create a new kanban task for the database migration bug.",
+    "should_trigger": false,
+    "id": "vector-db-search:7",
+    "source_skill": "vector-db-search",
+    "source_case_index": 6,
+    "source_should_trigger": false
+  },
+  {
+    "prompt": "Keyword search the RLM summary ledger for payment processing files",
+    "should_trigger": false,
+    "id": "vector-db-search:8",
+    "source_skill": "vector-db-search",
+    "source_case_index": 7,
+    "source_should_trigger": false
+  },
+  {
+    "prompt": "What files are missing from the RLM cache after my refactor?",
+    "should_trigger": false,
+    "id": "vector-db-search:9",
+    "source_skill": "vector-db-search",
+    "source_case_index": 8,
+    "source_should_trigger": false
+  },
+  {
+    "prompt": "Promote this knowledge to long-term memory storage for future sessions",
+    "should_trigger": false,
+    "id": "vector-db-search:10",
+    "source_skill": "vector-db-search",
+    "source_case_index": 9,
+    "source_should_trigger": false
+  },
+  {
+    "id": "interactive-managing-vector-db:1",
+    "prompt": "Guide me through ChromaDB setup here in the current conversation, one unresolved question at a time.",
+    "should_trigger": true,
+    "case_origin": "interactive-main-session-scope-update"
+  },
+  {
+    "id": "interactive-managing-vector-db:2",
+    "prompt": "Add vector search to my existing RLM setup, no wiki; reuse the project and source paths I already gave.",
+    "should_trigger": true,
+    "case_origin": "interactive-main-session-scope-update"
+  },
+  {
+    "id": "interactive-managing-vector-db:3",
+    "prompt": "Configure the vector profile but do not install dependencies or download embedding models yet.",
+    "should_trigger": true,
+    "case_origin": "interactive-main-session-scope-update"
+  },
+  {
+    "id": "interactive-managing-vector-db:4",
+    "prompt": "Continue vector setup while preserving my configured localhost server, collections, and chunk sizes.",
+    "should_trigger": true,
+    "case_origin": "interactive-main-session-scope-update"
+  },
+  {
+    "id": "interactive-managing-vector-db:5",
+    "prompt": "Initialize only a zero-dependency RLM keyword summary ledger.",
+    "should_trigger": false,
+    "case_origin": "interactive-main-session-scope-update"
+  },
+  {
+    "id": "interactive-managing-vector-db:6",
+    "prompt": "Create a Canvas diagram in my Obsidian vault; no vector database.",
+    "should_trigger": false,
+    "case_origin": "interactive-main-session-scope-update"
+  }
+]

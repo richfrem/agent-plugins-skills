@@ -1,6 +1,7 @@
 {
   "extraPaths": [
-    "plugins/agent-memory/skills/rlm-curator/scripts",
-    "plugins/agent-memory/scripts"
+    "plugins/agent-memory/skills/managing-rlm-cache/scripts",
+    "plugins/agent-memory/skills/managing-vector-db/scripts",
+    "plugins/agent-memory/skills/managing-obsidian-vaults/scripts"
   ]
 }

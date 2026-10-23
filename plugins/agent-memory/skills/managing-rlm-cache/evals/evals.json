@@ -1,0 +1,473 @@
+[
+  {
+    "prompt": "Audit the RLM cache coverage for my project.",
+    "should_trigger": true,
+    "id": "rlm-audit:1",
+    "source_skill": "rlm-audit",
+    "source_case_index": 0,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Check what files are missing from the RLM cache.",
+    "should_trigger": true,
+    "id": "rlm-audit:2",
+    "source_skill": "rlm-audit",
+    "source_case_index": 1,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Show me which documentation files haven't been summarized yet.",
+    "should_trigger": true,
+    "id": "rlm-audit:3",
+    "source_skill": "rlm-audit",
+    "source_case_index": 2,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Generate a CSV of missing files in the RLM semantic cache.",
+    "should_trigger": true,
+    "id": "rlm-audit:4",
+    "source_skill": "rlm-audit",
+    "source_case_index": 3,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Report on RLM cache coverage — how complete is my summary ledger?",
+    "should_trigger": true,
+    "id": "rlm-audit:5",
+    "source_skill": "rlm-audit",
+    "source_case_index": 4,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Distill all my project documentation into the RLM cache.",
+    "should_trigger": true,
+    "id": "rlm-audit:6",
+    "source_skill": "rlm-audit",
+    "source_case_index": 5,
+    "source_should_trigger": false,
+    "reclassification_reason": "Ledger distillation is now an RLM-cache mode."
+  },
+  {
+    "prompt": "Remove stale entries from the RLM cache.",
+    "should_trigger": true,
+    "id": "rlm-audit:7",
+    "source_skill": "rlm-audit",
+    "source_case_index": 6,
+    "source_should_trigger": false,
+    "reclassification_reason": "Ledger cleanup is now an RLM-cache mode."
+  },
+  {
+    "prompt": "Update the stale summaries in the RLM cache after my refactor",
+    "should_trigger": true,
+    "id": "rlm-audit:8",
+    "source_skill": "rlm-audit",
+    "source_case_index": 7,
+    "source_should_trigger": false,
+    "reclassification_reason": "Refreshing stale summaries is now an RLM-cache mode."
+  },
+  {
+    "prompt": "Inject a new summary for auth.py into the RLM tool cache",
+    "should_trigger": true,
+    "id": "rlm-audit:9",
+    "source_skill": "rlm-audit",
+    "source_case_index": 8,
+    "source_should_trigger": false,
+    "reclassification_reason": "Summary injection is now an RLM-cache mode."
+  },
+  {
+    "prompt": "clean up the RLM cache after I renamed some files",
+    "should_trigger": true,
+    "id": "rlm-cleanup-agent:1",
+    "source_skill": "rlm-cleanup-agent",
+    "source_case_index": 0,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "The RLM ledger has entries for files that no longer exist — prune them",
+    "should_trigger": true,
+    "id": "rlm-cleanup-agent:2",
+    "source_skill": "rlm-cleanup-agent",
+    "source_case_index": 1,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "remove stale and orphaned entries from the RLM Summary Ledger after a refactor",
+    "should_trigger": true,
+    "id": "rlm-cleanup-agent:3",
+    "source_skill": "rlm-cleanup-agent",
+    "source_case_index": 2,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Prune deleted file references from the RLM summary cache",
+    "should_trigger": true,
+    "id": "rlm-cleanup-agent:4",
+    "source_skill": "rlm-cleanup-agent",
+    "source_case_index": 3,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "summarize new plugin files into the RLM ledger that are missing",
+    "should_trigger": true,
+    "id": "rlm-cleanup-agent:5",
+    "source_skill": "rlm-cleanup-agent",
+    "source_case_index": 4,
+    "source_should_trigger": false,
+    "reclassification_reason": "Missing-file distillation is now an RLM-cache mode."
+  },
+  {
+    "prompt": "initialize the RLM cache for the first time in this project",
+    "should_trigger": true,
+    "id": "rlm-cleanup-agent:6",
+    "source_skill": "rlm-cleanup-agent",
+    "source_case_index": 5,
+    "source_should_trigger": false,
+    "reclassification_reason": "Initial RLM setup is now an RLM-cache mode."
+  },
+  {
+    "prompt": "query the RLM ledger to find the summary for a specific file",
+    "should_trigger": true,
+    "id": "rlm-cleanup-agent:7",
+    "source_skill": "rlm-cleanup-agent",
+    "source_case_index": 6,
+    "source_should_trigger": false,
+    "reclassification_reason": "Ledger querying is now an RLM-cache mode."
+  },
+  {
+    "prompt": "Check the RLM cache coverage — which files haven't been summarized yet?",
+    "should_trigger": true,
+    "id": "rlm-cleanup-agent:8",
+    "source_skill": "rlm-cleanup-agent",
+    "source_case_index": 7,
+    "source_should_trigger": false,
+    "reclassification_reason": "Coverage auditing is now an RLM-cache mode."
+  },
+  {
+    "prompt": "Update stale RLM summaries that have changed since last distillation",
+    "should_trigger": true,
+    "id": "rlm-cleanup-agent:9",
+    "source_skill": "rlm-cleanup-agent",
+    "source_case_index": 8,
+    "source_should_trigger": false,
+    "reclassification_reason": "Refreshing stale summaries is now an RLM-cache mode."
+  },
+  {
+    "prompt": "Inject a summary for auth.py into the RLM tool cache.",
+    "should_trigger": true,
+    "id": "rlm-curator:1",
+    "source_skill": "rlm-curator",
+    "source_case_index": 0,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Run a batch distillation pass on the repository using the RLM curator.",
+    "should_trigger": true,
+    "id": "rlm-curator:2",
+    "source_skill": "rlm-curator",
+    "source_case_index": 1,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Query the semantic ledger to check cache coverage for the payment module.",
+    "should_trigger": true,
+    "id": "rlm-curator:3",
+    "source_skill": "rlm-curator",
+    "source_case_index": 2,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Update the stale RLM summaries after my refactor",
+    "should_trigger": true,
+    "id": "rlm-curator:4",
+    "source_skill": "rlm-curator",
+    "source_case_index": 3,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Search the vector store for code related to markdown parsing.",
+    "should_trigger": false,
+    "id": "rlm-curator:5",
+    "source_skill": "rlm-curator",
+    "source_case_index": 4,
+    "source_should_trigger": false
+  },
+  {
+    "prompt": "Create a new task for the login bug and assign it to the backlog.",
+    "should_trigger": false,
+    "id": "rlm-curator:6",
+    "source_skill": "rlm-curator",
+    "source_case_index": 5,
+    "source_should_trigger": false
+  },
+  {
+    "prompt": "Convert my memo.md file to a Microsoft Word document.",
+    "should_trigger": false,
+    "id": "rlm-curator:7",
+    "source_skill": "rlm-curator",
+    "source_case_index": 6,
+    "source_should_trigger": false
+  },
+  {
+    "prompt": "What files are missing from the RLM cache? Show me a coverage report.",
+    "should_trigger": true,
+    "id": "rlm-curator:8",
+    "source_skill": "rlm-curator",
+    "source_case_index": 7,
+    "source_should_trigger": false,
+    "reclassification_reason": "Coverage auditing is now an RLM-cache mode."
+  },
+  {
+    "prompt": "Remove stale orphaned entries from the RLM cache after I renamed files",
+    "should_trigger": true,
+    "id": "rlm-curator:9",
+    "source_skill": "rlm-curator",
+    "source_case_index": 8,
+    "source_should_trigger": false,
+    "reclassification_reason": "Orphan cleanup is now an RLM-cache mode."
+  },
+  {
+    "prompt": "summarize these new plugin files into the RLM ledger",
+    "should_trigger": true,
+    "id": "rlm-distill-agent:1",
+    "source_skill": "rlm-distill-agent",
+    "source_case_index": 0,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "The RLM ledger is missing 40 files — fill the gaps by reading and summarizing each file",
+    "should_trigger": true,
+    "id": "rlm-distill-agent:2",
+    "source_skill": "rlm-distill-agent",
+    "source_case_index": 1,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "distill uncached files into the RLM Summary Ledger using the agent as the distillation engine",
+    "should_trigger": true,
+    "id": "rlm-distill-agent:3",
+    "source_skill": "rlm-distill-agent",
+    "source_case_index": 2,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Run the distillation pipeline on the new files I added",
+    "should_trigger": true,
+    "id": "rlm-distill-agent:4",
+    "source_skill": "rlm-distill-agent",
+    "source_case_index": 3,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "use Ollama in batch mode to distill all project files into the ledger",
+    "should_trigger": false,
+    "id": "rlm-distill-agent:5",
+    "source_skill": "rlm-distill-agent",
+    "source_case_index": 4,
+    "source_should_trigger": false
+  },
+  {
+    "prompt": "remove stale orphaned entries from the RLM cache after renaming files",
+    "should_trigger": true,
+    "id": "rlm-distill-agent:6",
+    "source_skill": "rlm-distill-agent",
+    "source_case_index": 5,
+    "source_should_trigger": false,
+    "reclassification_reason": "Orphan cleanup is now an RLM-cache mode."
+  },
+  {
+    "prompt": "initialize a new RLM semantic cache profile for this project",
+    "should_trigger": true,
+    "id": "rlm-distill-agent:7",
+    "source_skill": "rlm-distill-agent",
+    "source_case_index": 6,
+    "source_should_trigger": false,
+    "reclassification_reason": "Profile initialization is now an RLM-cache mode."
+  },
+  {
+    "prompt": "Update stale RLM summaries that have changed since last distillation",
+    "should_trigger": true,
+    "id": "rlm-distill-agent:8",
+    "source_skill": "rlm-distill-agent",
+    "source_case_index": 7,
+    "source_should_trigger": false,
+    "reclassification_reason": "Refreshing stale summaries is now an RLM-cache mode."
+  },
+  {
+    "prompt": "Audit which files are missing from the RLM cache coverage report",
+    "should_trigger": true,
+    "id": "rlm-distill-agent:9",
+    "source_skill": "rlm-distill-agent",
+    "source_case_index": 8,
+    "source_should_trigger": false,
+    "reclassification_reason": "Coverage auditing is now an RLM-cache mode."
+  },
+  {
+    "prompt": "set up the RLM semantic cache for the first time in this project",
+    "should_trigger": true,
+    "id": "rlm-init:1",
+    "source_skill": "rlm-init",
+    "source_case_index": 0,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "initialize a new RLM cache profile for the docs and scripts in this repo",
+    "should_trigger": true,
+    "id": "rlm-init:2",
+    "source_skill": "rlm-init",
+    "source_case_index": 1,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "walk me through folder selection and extension config to create the RLM manifest and cache",
+    "should_trigger": true,
+    "id": "rlm-init:3",
+    "source_skill": "rlm-init",
+    "source_case_index": 2,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "summarize the new files added since last week into the existing RLM ledger",
+    "should_trigger": true,
+    "id": "rlm-init:4",
+    "source_skill": "rlm-init",
+    "source_case_index": 3,
+    "source_should_trigger": false,
+    "reclassification_reason": "Incremental distillation is now an RLM-cache mode."
+  },
+  {
+    "prompt": "clean up stale entries from the RLM Summary Ledger after renaming files",
+    "should_trigger": true,
+    "id": "rlm-init:5",
+    "source_skill": "rlm-init",
+    "source_case_index": 4,
+    "source_should_trigger": false,
+    "reclassification_reason": "Orphan cleanup is now an RLM-cache mode."
+  },
+  {
+    "prompt": "query what files are already in the RLM cache and check coverage",
+    "should_trigger": true,
+    "id": "rlm-init:6",
+    "source_skill": "rlm-init",
+    "source_case_index": 5,
+    "source_should_trigger": false,
+    "reclassification_reason": "Cache querying and coverage auditing are now RLM-cache modes."
+  },
+  {
+    "prompt": "Find all files related to user authentication in the RLM Factory repository using the 3-phase search strategy",
+    "should_trigger": true,
+    "id": "rlm-search:1",
+    "source_skill": "rlm-search",
+    "source_case_index": 0,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Search for the architecture documentation and context for the data pipeline in this codebase",
+    "should_trigger": true,
+    "id": "rlm-search:2",
+    "source_skill": "rlm-search",
+    "source_case_index": 1,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "I need to locate where the database schema is defined — use the RLM Summary Scan first, then escalate if needed",
+    "should_trigger": true,
+    "id": "rlm-search:3",
+    "source_skill": "rlm-search",
+    "source_case_index": 2,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Keyword search the RLM summaries for payment processing logic",
+    "should_trigger": true,
+    "id": "rlm-search:4",
+    "source_skill": "rlm-search",
+    "source_case_index": 3,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Phase 1 search: scan the RLM ledger for files about error handling",
+    "should_trigger": true,
+    "id": "rlm-search:5",
+    "source_skill": "rlm-search",
+    "source_case_index": 4,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Initialize the RLM learning module and create a new rlm_profiles.json for this project",
+    "should_trigger": true,
+    "id": "rlm-search:6",
+    "source_skill": "rlm-search",
+    "source_case_index": 5,
+    "source_should_trigger": false,
+    "reclassification_reason": "Profile initialization is now an RLM-cache mode."
+  },
+  {
+    "prompt": "Summarize all files in the repository by generating RLM embeddings for vector search",
+    "should_trigger": false,
+    "id": "rlm-search:7",
+    "source_skill": "rlm-search",
+    "source_case_index": 6,
+    "source_should_trigger": false
+  },
+  {
+    "prompt": "Run a grep search across the codebase to find all TODO comments",
+    "should_trigger": false,
+    "id": "rlm-search:8",
+    "source_skill": "rlm-search",
+    "source_case_index": 7,
+    "source_should_trigger": false
+  },
+  {
+    "prompt": "Semantic concept-based search in ChromaDB for authentication middleware",
+    "should_trigger": false,
+    "id": "rlm-search:9",
+    "source_skill": "rlm-search",
+    "source_case_index": 8,
+    "source_should_trigger": false
+  },
+  {
+    "prompt": "Load my session context from the memory tiers and tell me what we worked on last time",
+    "should_trigger": false,
+    "id": "rlm-search:10",
+    "source_skill": "rlm-search",
+    "source_case_index": 9,
+    "source_should_trigger": false
+  },
+  {
+    "id": "interactive-managing-rlm-cache:1",
+    "prompt": "Walk me through setting up the RLM summary cache in this conversation; ask one missing detail at a time.",
+    "should_trigger": true,
+    "case_origin": "interactive-main-session-scope-update"
+  },
+  {
+    "id": "interactive-managing-rlm-cache:2",
+    "prompt": "Use the RLM and vector layers for Project Atlas, no wiki; I already chose docs/ and src/.",
+    "should_trigger": true,
+    "case_origin": "interactive-main-session-scope-update"
+  },
+  {
+    "id": "interactive-managing-rlm-cache:3",
+    "prompt": "Add a docs RLM profile without resetting my existing project profile or asking the project name again.",
+    "should_trigger": true,
+    "case_origin": "interactive-main-session-scope-update"
+  },
+  {
+    "id": "interactive-managing-rlm-cache:4",
+    "prompt": "Continue the cache setup from my answers above, show the JSON diff, and stop if I cancel.",
+    "should_trigger": true,
+    "case_origin": "interactive-main-session-scope-update"
+  },
+  {
+    "id": "interactive-managing-rlm-cache:5",
+    "prompt": "Set up an Obsidian Canvas planning board only; no summary cache.",
+    "should_trigger": false,
+    "case_origin": "interactive-main-session-scope-update"
+  },
+  {
+    "id": "interactive-managing-rlm-cache:6",
+    "prompt": "Configure only the ChromaDB embedding index; no RLM ledger.",
+    "should_trigger": false,
+    "case_origin": "interactive-main-session-scope-update"
+  }
+]

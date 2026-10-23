@@ -1,30 +1,29 @@
 name: agent-memory
-version: 1.0.0
-description: "Unified Cognitive Memory & Retrieval Suite. Integrates RLM distills (summarization), ChromaDB vector semantic search, and session caching / tiered promotion-demotion memory management."
+version: 2.0.0
+description: 'Agent Memory & Knowledge: filesystem memory, RLM summary ledgers, vector retrieval, and Obsidian vault and wiki workflows.'
 author: Richard Fremmerlid
-kind: backend
+kind: standalone
 platforms:
-  - linux
-  - macos
-  - windows
+- linux
+- macos
+- windows
 provides_tools:
-  - rlm_search
-  - rlm_distill
-  - vector_search
-  - vector_ingest
-  - memory_promote
-  - memory_demote
+- rlm_search
+- rlm_distill
+- vector_search
+- vector_ingest
+- memory_promote
+- memory_demote
+- vault_ops
+- wiki_builder
+- distill_wiki
+- query_wiki
+- lint_wiki
+- graph_ops
+- canvas_gen
+- bases_ops
 skills:
-  - rlm-audit
-  - rlm-cleanup-agent
-  - rlm-curator
-  - rlm-distill-agent
-  - rlm-init
-  - rlm-search
-  - vector-db-audit
-  - vector-db-cleanup
-  - vector-db-ingest
-  - vector-db-init
-  - vector-db-launch
-  - vector-db-search
-  - memory-management
+- managing-rlm-cache
+- managing-vector-db
+- managing-obsidian-vaults
+- memory-management

@@ -7,7 +7,7 @@
   },
   {
     "name": "agent-orchestration",
-    "description": "Composable agent loop and graph architectures — deterministic state machines, DAG workflows, supervisor/worker loops, and parallel swarms, paired with the multi-LLM task router suite (run_agent.py, 13 expert agent personas, AGT sandboxing, and MAF validation). Framework-agnostic: works with any CLI agent.",
+    "description": "Composable agent loop and graph architectures \u2014 deterministic state machines, DAG workflows, supervisor/worker loops, and parallel swarms, paired with the multi-LLM task router suite (run_agent.py, 13 expert agent personas, AGT sandboxing, and MAF validation). Framework-agnostic: works with any CLI agent.",
     "version": "3.0.0",
     "path": "./plugins/agent-orchestration",
     "skills": [
@@ -19,9 +19,15 @@
   },
   {
     "name": "agent-memory",
-    "description": "Unified Cognitive Memory & Retrieval Suite. Integrates RLM summaries, ChromaDB vector semantic search, and session caching / tiered promotion-demotion memory management.",
-    "version": "1.0.0",
-    "path": "./plugins/agent-memory"
+    "description": "Agent Memory & Knowledge: filesystem memory, RLM summary ledgers, vector retrieval, and Obsidian vault and wiki workflows.",
+    "version": "2.0.0",
+    "path": "./plugins/agent-memory",
+    "skills": [
+      "managing-rlm-cache",
+      "managing-vector-db",
+      "managing-obsidian-vaults",
+      "memory-management"
+    ]
   },
   {
     "name": "agent-scaffolders",
@@ -62,11 +68,5 @@
     "description": "Autonomous discovery, business requirements capture, and prototyping loop for spec-driven engineering.",
     "version": "0.1.0",
     "path": "./plugins/exploration-cycle-plugin"
-  },
-  {
-    "name": "obsidian-wiki-engine",
-    "description": "Obsidian Wiki Engine - Karpathy-style LLM wiki + RLM distillation + vector search. Dual-representation knowledge graph: vault operations, cross-source concept synthesis, wiki node generation, RLM distillation, semantic health linting, graph traversal, canvas, bases, and progressive-disclosure query with vector DB Phase 2.",
-    "version": "3.1.0",
-    "path": "./plugins/obsidian-wiki-engine"
   }
 ]

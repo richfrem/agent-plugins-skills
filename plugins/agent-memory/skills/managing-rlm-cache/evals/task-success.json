@@ -1,0 +1,41 @@
+[
+  {
+    "id": "rlm-guided-standalone",
+    "prompt": "Set up RLM only for Atlas. Use docs/ and src/, and keep this conversation interactive.",
+    "expected_behavior": [
+      "Use the main-session guided setup without launching an agent or command wrapper.",
+      "Reuse Atlas and the supplied roots; ask at most one genuinely missing question per turn.",
+      "Preview merged project/tools profiles and flat manifests; preserve unknown existing keys.",
+      "Create no vector/wiki profiles, source registry or wiki output; separate setup from dependency/model execution."
+    ]
+  },
+  {
+    "id": "rlm-guided-no-wiki-transition",
+    "prompt": "We selected RLM plus vector, no wiki. RLM profiles are already configured; continue from my previous answers.",
+    "expected_behavior": [
+      "Retain the exact RLM-plus-vector scope and skip completed RLM interview/work.",
+      "Continue managing-vector-db setup inline with known namespace, roots and authorization.",
+      "Do not create a wiki profile, raw-source registry, wiki root or wiki metadata.",
+      "Report actual RLM/vector readiness and deferred dependency/model work without wiki next steps."
+    ]
+  },
+  {
+    "id": "rlm-conflict-cancel",
+    "prompt": "An existing project RLM profile has custom fields. Show me how adding a docs profile changes it; cancel if the names conflict.",
+    "expected_behavior": [
+      "Read the existing configuration and preserve custom/unknown fields.",
+      "Show the conflict and proposed JSON/diff before any affected write.",
+      "Offer merge, rename or cancel as appropriate; respect the requested cancellation.",
+      "Stop pending changes and report any previously applied work without continuing to another layer."
+    ]
+  },
+  {
+    "id": "rlm-direct-query",
+    "prompt": "Search the configured project RLM ledger for retry handling.",
+    "expected_behavior": [
+      "Use the existing search mode immediately rather than restarting setup.",
+      "Resolve the consumer root/profile, run the supported cache query and return source paths with actual summaries.",
+      "Do not launch a dedicated search agent or promise unsupported rankings/token statistics."
+    ]
+  }
+]

@@ -1,0 +1,274 @@
+#!/usr/bin/env python
+"""
+distill_one.py
+=====================================
+
+Purpose:
+    Single-file distillation smoke test. Reads one file, calls the specified
+    agent CLI to generate an RLM summary, then injects the result into the
+    correct cache directory via inject_summary.py.
+
+    Use this to verify the full pipeline works end-to-end before running the
+    full swarm batch.
+
+Key Input Dependencies:
+    - rlm_profiles.json         — Contains RLM configuration profiles
+    - cheapest_models.json      — Defines the cheapest active model configs per engine
+    - rlm_config.py             — RLMConfig state manager helper
+    - inject_summary.py         — Used to inject the generated summary into the cache
+    - Target source file        — Read from disk to construct the distillation payload
+
+Usage:
+    # 1. Copilot (GPT-5 mini)
+    python ./scripts/distill_one.py --profile wiki --file plugin-research/superpowers/decision.md --engine copilot
+
+    # 2. Gemini (Gemini-3 Flash Preview)
+    python ./scripts/distill_one.py --profile wiki --file plugin-research/superpowers/quick-wins.md --engine gemini --model gemini-3-flash-preview
+
+    # 3. Claude (Haiku-4.5)
+    python ./scripts/distill_one.py --profile wiki --file plugin-research/superpowers/capabilities-matrix.md --engine claude --model haiku-4.5
+
+    # Dry-run: print the prompt but don't call the CLI:
+    python ./scripts/distill_one.py --profile wiki --file plugins/dev-utils/README.md --dry-run
+
+Related:
+    - inject_summary.py  (cache persistence)
+    - rlm_config.py      (profile + path resolution)
+    - swarm_run.py       (batch version of this script)
+"""
+
+import json
+import sys
+import shlex
+import argparse
+import subprocess
+from pathlib import Path
+
+# ─── PATH BOOTSTRAP ─────────────────────────────────────────────────────────
+def _find_project_root(start: Path) -> Path:
+    """Resolve consumer data from the caller workspace or explicit override."""
+    from constants import consumer_project_root
+    return consumer_project_root()
+
+PROJECT_ROOT = _find_project_root(Path(__file__))
+SCRIPT_DIR   = Path(__file__).resolve().parent
+
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
+
+# ─── AUGMENT PATH for subprocesses ─────────────────────────────────────────
+# Antigravity runs with a stripped PATH. Add common locations for CLI tools.
+import os
+import platform as _platform
+
+_extra_paths = [
+    "/opt/homebrew/bin",
+    "/usr/local/bin",
+    os.path.expanduser("~/.local/bin"),
+    os.path.expanduser("~/.npm-global/bin"),
+    os.path.expanduser("~/n/bin"),
+    "/usr/local/share/npm/bin",
+]
+
+# Add the VSCode Copilot Chat extension's bundled copilot CLI.
+# The path varies by OS — detect at runtime rather than hardcoding.
+# Users who install copilot CLI via npm/brew don't need these fallbacks;
+# they're here for the common case where it's only installed via VSCode.
+_vscode_copilot_dir = {
+    "Darwin": os.path.expanduser(
+        "~/Library/Application Support/Code/User/globalStorage/"
+        "github.copilot-chat/copilotCli"
+    ),
+    "Windows": os.path.expanduser(
+        "~/AppData/Roaming/Code/User/globalStorage/"
+        "github.copilot-chat/copilotCli"
+    ),
+    "Linux": os.path.expanduser(
+        "~/.config/Code/User/globalStorage/"
+        "github.copilot-chat/copilotCli"
+    ),
+}.get(_platform.system())
+if _vscode_copilot_dir:
+    _extra_paths.append(_vscode_copilot_dir)
+
+for _p in _extra_paths:
+    if _p not in os.environ.get("PATH", "") and Path(_p).exists():
+        os.environ["PATH"] = _p + ":" + os.environ.get("PATH", "")
+
+try:
+    from rlm_config import RLMConfig
+except ImportError as e:
+    print(f"[ERROR] Cannot import rlm_config: {e}")
+    sys.exit(1)
+
+# ─── ENGINE DEFAULTS ─────────────────────────────────────────────────────────
+# Model names change over time. Consult references/cheapest_models.json for
+# current recommendations — do not hardcode model names inline.
+
+def _load_engine_defaults(ref_path: "Path | None" = None) -> dict:
+    """Load per-engine cheapest model names from cheapest_models.json, with fallbacks."""
+    fallbacks = {
+        "copilot": "gpt-5-mini",
+        "gemini":  "gemini-3-flash-preview",
+        "claude":  "claude-haiku-4-5",
+    }
+    try:
+        if ref_path is None:
+            script_dir = Path(__file__).resolve().parent
+            ref_path = script_dir.parent / "references" / "cheapest_models.json"
+        if ref_path.exists():
+            data = json.loads(ref_path.read_text())
+            if isinstance(data.get("engines"), list):
+                entries = (
+                    (item.get("cli"), item.get("model"))
+                    for item in data["engines"]
+                    if isinstance(item, dict)
+                )
+            else:
+                entries = (
+                    (engine, info.get("model"))
+                    for engine, info in data.items()
+                    if isinstance(info, dict)
+                )
+            for engine, model in entries:
+                if engine and model and engine in fallbacks:
+                    fallbacks[engine] = model
+    except Exception:
+        pass
+    return fallbacks
+
+ENGINE_DEFAULTS = _load_engine_defaults()
+
+
+def build_llm_cmd(engine: str, model: str, prompt_payload: str) -> tuple[list[str], str]:
+    """
+    Build the CLI command list and the stdin payload for the given engine.
+
+    Returns:
+        (cmd_args, stdin_text)
+    """
+    engine = engine.lower()
+
+    if engine == "claude":
+        return (
+            ["claude", "--model", model, "-p", prompt_payload, "--no-session-persistence"],
+            ""  # claude reads -p, no stdin needed
+        )
+    elif engine == "gemini":
+        return (
+            ["gemini", "--model", model, "-p", prompt_payload],
+            ""
+        )
+    elif engine == "copilot":
+        # Copilot CLI ignores -p; prepend instruction to stdin
+        return (
+            ["copilot", "--model", model],
+            prompt_payload
+        )
+    else:
+        print(f"[ERROR] Unknown engine: {engine}. Choose from: copilot, gemini, claude")
+        sys.exit(1)
+
+
+def _parse_distill_args() -> argparse.Namespace:
+    """Setup and parse CLI arguments for single-file distillation."""
+    parser = argparse.ArgumentParser(description="Single-file RLM distillation smoke test")
+    parser.add_argument("--profile", required=False, default=None, help="RLM profile name (from rlm_profiles.json)")
+    parser.add_argument("--file", required=False, default=None, help="Path to the file to summarize (relative to project root)")
+    parser.add_argument("--engine", default="copilot", choices=["copilot", "gemini", "claude"], help="AI CLI engine to use (default: copilot)")
+    parser.add_argument("--model", default=None, help="Model override. Defaults to cheapest model per references/cheapest_models.json.")
+    parser.add_argument("--dry-run", action="store_true", help="Print the prompt payload but do not call the CLI or write cache.")
+    parser.add_argument("--mock", action="store_true", help="Resolve model from cheapest_models.json, print JSON, and exit without running the CLI.")
+    return parser.parse_args()
+
+
+def _call_cli_process(cmd_args: list[str], stdin_text: str, engine: str) -> str:
+    """Execute the CLI subprocess and return the stdout string."""
+    print(f"[START] Calling: {' '.join(shlex.quote(a) for a in cmd_args[:3])} ...")
+    try:
+        proc = subprocess.run(
+            cmd_args, input=stdin_text or None, capture_output=True,
+            text=True, timeout=120, shell=(sys.platform == "win32")
+        )
+    except FileNotFoundError:
+        print(f"[ERROR] CLI binary '{engine}' not found on PATH.")
+        sys.exit(1)
+    except subprocess.TimeoutExpired:
+        print("[ERROR] CLI call timed out after 120s.")
+        sys.exit(1)
+
+    if proc.returncode != 0 or not proc.stdout.strip():
+        print(f"[ERROR] CLI returned exit code {proc.returncode}")
+        print(proc.stderr[:500] if proc.stderr else "(no stderr)")
+        sys.exit(1)
+    return proc.stdout.strip()
+
+
+def _inject_cache_summary(profile: str, rel_path: str, summary: str, cache_path: Path) -> None:
+    """Run inject_summary.py to commit the new summary block to the cache."""
+    inject_script = SCRIPT_DIR / "inject_summary.py"
+    inject_cmd = [
+        sys.executable, str(inject_script),
+        "--profile", profile,
+        "--file",    rel_path,
+        "--summary", summary,
+    ]
+    print(f"\n[SAVE] Injecting into cache...")
+    inject_proc = subprocess.run(inject_cmd, capture_output=True, text=True)
+    if inject_proc.returncode == 0:
+        print(inject_proc.stdout.strip())
+        print(f"\n[DONE] Done! Check: {cache_path}")
+    else:
+        print(f"[ERROR] inject_summary.py failed:")
+        print(inject_proc.stderr or inject_proc.stdout)
+        sys.exit(1)
+
+
+def main() -> None:
+    """CLI entry point: resolve configs, call the LLM backend, and inject the result into the cache."""
+    args = _parse_distill_args()
+    model = args.model or ENGINE_DEFAULTS.get(args.engine, "gpt-5-mini")
+
+    if args.mock:
+        print(json.dumps({"engine": args.engine, "model": model}))
+        sys.exit(0)
+
+    if not args.profile or not args.file:
+        print("[ERROR] --profile and --file are required unless --mock is used")
+        sys.exit(1)
+
+    try:
+        config = RLMConfig(profile_name=args.profile)
+    except SystemExit:
+        sys.exit(1)
+
+    file_path = PROJECT_ROOT / args.file
+    if not file_path.exists():
+        print(f"[ERROR] File not found: {file_path}")
+        sys.exit(1)
+
+    content = file_path.read_text(encoding="utf-8")
+    rel_path = str(file_path.relative_to(PROJECT_ROOT))
+
+    prompt_template = config.prompt_template or (
+        "Summarize the architectural purpose of this file in 2-3 concise sentences.\n"
+        "File: {file_path}\n\n{content}\n\n# Distilled Summary:"
+    )
+    prompt_payload = prompt_template.format(file_path=rel_path, content=content)
+
+    print(f"[SEARCH] Distilling: {rel_path}\n   Engine : {args.engine}\n   Model  : {model}\n   Profile: {args.profile}")
+    print(f"   Cache  : {config.cache_path}\n" + "-" * 60)
+
+    if args.dry_run:
+        print(f"[CONFIG]  DRY RUN — prompt payload preview:\n{prompt_payload[:500]}\n...")
+        return
+
+    cmd_args, stdin_text = build_llm_cmd(args.engine, model, prompt_payload)
+    summary = _call_cli_process(cmd_args, stdin_text, args.engine)
+
+    print(f"\n[OK] Summary received ({len(summary)} chars):\n" + "-" * 60 + f"\n{summary}\n" + "-" * 60)
+    _inject_cache_summary(args.profile, rel_path, summary, config.cache_path)
+
+
+if __name__ == "__main__":
+    main()
