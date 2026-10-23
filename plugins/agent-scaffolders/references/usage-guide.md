@@ -11,7 +11,7 @@ python ./path_reference_auditor.py --project . --phase scan
 ```
 
 **What it does:**
-- Walks all `plugins/`, `.agents/skills/`,  `.claude/skills/` directories
+- Walks all `plugins/` and active runtime skills directories (`.claude/skills/`, `.agents/skills/`)
 - Finds every `./reference` pattern in `.py`, `.md`, `.mmd`, `.json`, `.sh` files
 - Extracts file path, line number, reference string
 - Saves to `inventory.json` (raw, unverified)
@@ -91,9 +91,9 @@ python ./check_skill_boundaries.py inventory.json --skill plugins/<plugin-name>/
 
 **Example violation:**
 ```
-FILE: .agents/skills/<skill-name>/SKILL.md:45
+FILE: skills/<skill-name>/SKILL.md:45
   REF: ../../templates/some-template.md
-  SKILL ROOT: .agents/skills/<skill-name>/
+  SKILL ROOT: skills/<skill-name>/
   RESOLVES TO: plugins/<plugin-name>/templates/some-template.md  ❌ OUTSIDE!
 ```
 
@@ -113,10 +113,10 @@ Flag references in plugin root that point OUTSIDE the plugin.
 python ./check_plugin_boundaries.py inventory.json --batch all
 
 # Single plugin (by name)
-python ./check_plugin_boundaries.py inventory.json --plugin plugin-manager
+python ./check_plugin_boundaries.py inventory.json --plugin agent-scaffolders
 
 # Single plugin (by path)
-python ./check_plugin_boundaries.py inventory.json --plugin plugins/plugin-manager
+python ./check_plugin_boundaries.py inventory.json --plugin plugins/agent-scaffolders
 ```
 
 **Example violation:**
@@ -150,7 +150,7 @@ After Phase 1 (SCAN), `inventory.json` contains:
   },
   "references": [
     {
-      "source_file": ".agents/skills/adr-management/SKILL.md",
+      "source_file": "skills/adr-management/SKILL.md",
       "reference": "./scripts/adr_manager.py",
       "line": 17,
       "status": null
@@ -165,7 +165,7 @@ After Phase 2 (VERIFY), each reference has a status:
   "status": {
     "exists": true,
     "type": "file",
-    "path": ".agents/skills/adr-management/scripts/adr_manager.py",
+    "path": "skills/adr-management/scripts/adr_manager.py",
     "resolved_path": "/full/path/..."
   }
 }

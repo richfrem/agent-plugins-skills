@@ -1,1 +1,0 @@
-../../../../assets/resources/kepano-analysis-summary.md

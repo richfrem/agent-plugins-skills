@@ -47,17 +47,25 @@ what the user wants, then provision only what's needed.
 
 **Ask this before anything else.**
 
-Check what's installed in `.agents/` (the deployed runtime — NOT the `plugins/` source dir):
+Check what's installed in the active runtime (project harnesses or global user profile):
 ```bash
-echo "=== Checking installed plugins in .agents/skills/ ==="
-ls .agents/skills/rlm-init/               2>/dev/null && echo "  ✓ rlm-factory (self)"           || echo "  ✗ rlm-factory not found in .agents/"
-ls .agents/skills/vector-db-init/         2>/dev/null && echo "  ✓ vector-db"                    || echo "  ✗ vector-db: NOT INSTALLED"
-ls .agents/skills/obsidian-wiki-builder/  2>/dev/null && echo "  ✓ obsidian-wiki-engine"         || echo "  ✗ obsidian-wiki-engine: NOT INSTALLED"
+check_skill() {
+  local s="$1"
+  for d in .agents/skills .claude/skills .github/skills "$HOME/.agents/skills" "$HOME/.claude/skills" "$HOME/.apm/skills"; do
+    [ -d "$d/$s" ] && return 0
+  done
+  return 1
+}
+
+echo "=== Checking installed skills in active runtime ==="
+check_skill "rlm-init"               && echo "  ✓ rlm-factory (self)"           || echo "  ✗ rlm-factory: NOT INSTALLED"
+check_skill "vector-db-init"         && echo "  ✓ vector-db"                    || echo "  ✗ vector-db: NOT INSTALLED"
+check_skill "obsidian-wiki-builder"  && echo "  ✓ obsidian-wiki-engine"         || echo "  ✗ obsidian-wiki-engine: NOT INSTALLED"
 ```
 
-> NOTE: Skills must be installed into `.agents/skills/` to be available at runtime.
-> The `plugins/` directory is the source repo — files there are NOT active until installed.
-> Run the install command below if skills are missing.
+> NOTE: Skills must be installed in an active harness (`.claude/skills/`, `.agents/skills/`, or global workstation profile) to run.
+> The `plugins/` directory is source authoring only.
+> Install missing skills with APM or the legacy installer if needed.
 
 Then present modes (mark unavailable ones):
 
@@ -69,12 +77,12 @@ You can also combine it for enhanced retrieval. What would you like?
      - O(1) keyword search across dense summaries of every file
      - /rlm-factory:search "term" returns ranked summaries instantly
 
-  B) RLM + vector-db Phase 2            [requires: vector-db installed in .agents/]
+  B) RLM + vector-db Phase 2            [requires: vector-db installed]
      - RLM keyword scan narrows candidates first
      - Vector semantic search fills gaps when keywords don't match
      - Best for: large corpora where you know some topics but not exact terms
 
-  C) RLM as wiki distiller              [requires: obsidian-wiki-engine installed in .agents/]
+  C) RLM as wiki distiller              [requires: obsidian-wiki-engine installed]
      - Generates summary + bullets + full layers per wiki concept node
      - /wiki-query uses RLM Phase 1 before falling back to grep
      - Best for: Karpathy LLM wiki with fast concept lookup
@@ -88,18 +96,15 @@ Enter A, B, C, or D (default: A):
 
 If required plugins are NOT installed, show:
 ```
-[plugin-name] is not installed in .agents/skills/.
+[plugin-name] is not installed in your active runtime.
 
-To install missing plugins — choose one method:
+To install missing plugins — use APM:
 
-  # Option 1: uvx (recommended — works on Mac, Linux, Windows)
-  uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills
+  # Install in active project:
+  apm install @richfrem/agent-memory
 
-  # Option 2: npx (Mac/Linux)
-  npx skills add richfrem/agent-plugins-skills
-
-  # Option 3: See full install guide
-  cat INSTALL.md
+  # Or install globally across Claude, Copilot, Codex, and Antigravity:
+  apm install -g --target claude,copilot,codex,antigravity @richfrem/agent-memory
 
 After installing, re-run /rlm-factory:init and choose your desired mode.
 
@@ -122,7 +127,7 @@ Ask: "What directories should the `project` profile index?
 (defaults: README.md, docs/, architecture/ — press Enter to accept, or list your own)"
 
 Ask: "What directories should the `tools` profile index?
-(defaults: plugins/**/*.md, .agents/skills/**/*.md — press Enter to accept, or list your own)"
+(defaults: plugins/**/*.md, .claude/skills/**/*.md, .agents/skills/**/*.md — press Enter to accept, or list your own)"
 
 ---
 
@@ -188,7 +193,7 @@ Write `.agent/learning/rlm_manifest.json`:
 Write `.agent/learning/rlm_tools_manifest.json`:
 ```json
 {
-  "include": ["plugins/**/*.md", ".agents/skills/**/*.md", ".agents/agents/**/*.md"],
+  "include": ["plugins/**/*.md", ".claude/skills/**/*.md", ".agents/skills/**/*.md"],
   "exclude": ["__pycache__", "*.pyc"],
   "recursive": true
 }
@@ -200,10 +205,17 @@ Show both before writing. Confirm.
 
 ## Step 5 — Coverage Audit
 
-Run the inventory script to show what needs caching:
+Run the inventory script (locate `inventory.py` from the `rlm-init` skill directory or run via python):
 ```bash
-python .agents/skills/rlm-init/scripts/inventory.py --profile project 2>&1 | head -20
-python .agents/skills/rlm-init/scripts/inventory.py --profile tools   2>&1 | head -20
+python3 -c "
+import sys
+from pathlib import Path
+for d in ['.agents/skills/rlm-init/scripts', '.claude/skills/rlm-init/scripts', Path.home() / '.agents/skills/rlm-init/scripts', Path.home() / '.claude/skills/rlm-init/scripts']:
+    p = Path(d) / 'inventory.py'
+    if p.is_file():
+        import subprocess; subprocess.run([sys.executable, str(p), '--profile', 'project'])
+        break
+" 2>&1 | head -20
 ```
 
 If script path doesn't exist, skip and note: "Run /rlm-factory:distill after setup to build the cache."
@@ -212,16 +224,15 @@ Report: "N files in manifest, M already cached, K remaining."
 
 ## Step 5.5 — Provision Super-RAG AI Search Protocol
 
-Detect which Super-RAG layers are installed in `.agents/skills/` (NOT `plugins/` — that is
-the source repo; only `.agents/skills/` contains active installed skills):
+Detect which Super-RAG layers are installed in active runtime harnesses or global profile:
 
 ```bash
-ls .agents/skills/rlm-init/              2>/dev/null && echo "rlm-factory: INSTALLED"           || echo "rlm-factory: NOT INSTALLED"
-ls .agents/skills/vector-db-init/        2>/dev/null && echo "vector-db: INSTALLED"             || echo "vector-db: NOT INSTALLED"
-ls .agents/skills/obsidian-wiki-builder/ 2>/dev/null && echo "obsidian-wiki-engine: INSTALLED"  || echo "obsidian-wiki-engine: NOT INSTALLED"
+check_skill "rlm-init"               && echo "rlm-factory: INSTALLED"           || echo "rlm-factory: NOT INSTALLED"
+check_skill "vector-db-init"         && echo "vector-db: INSTALLED"             || echo "vector-db: NOT INSTALLED"
+check_skill "obsidian-wiki-builder"  && echo "obsidian-wiki-engine: INSTALLED"  || echo "obsidian-wiki-engine: NOT INSTALLED"
 ```
 
-**If `audit-agents-md` is available** (`.agents/skills/audit-agents-md/`):
+**If `audit-agents-md` is available** (in your active runtime or global profile):
 Invoke it — it handles detection, partial-stack awareness, and full instruction file optimization.
 
 **Otherwise**, manually append to `CLAUDE.md`, `GEMINI.md`, and `.github/copilot-instructions.md`
@@ -281,4 +292,4 @@ To upgrade to a higher mode later, re-run /rlm-factory:init.
 - NEVER write profiles without showing full JSON first.
 - NEVER create the `wiki` profile unless Mode C or D was chosen.
 - If `.agent/learning/rlm_profiles.json` already exists, always merge — never overwrite blindly.
-- If `inventory.py` is not found in `.agents/skills/rlm-init/scripts/`, note that the skill must be installed and skip the audit.
+- If `inventory.py` is not found, note that the skill must be installed in your active runtime or global profile and skip the audit.

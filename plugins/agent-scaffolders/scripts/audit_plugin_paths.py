@@ -46,7 +46,7 @@ def is_whitelisted(line, file_path_str, global_patterns, file_specific_patterns)
 # Catches lines in .py files where a variable is assigned a Path() that reaches into
 # plugins/<name>. These are always portability violations — a whitelist entry cannot
 # excuse them because they indicate actual code referencing the source repo layout at
-# runtime (e.g. BRIDGE_INSTALLER = PROJECT_ROOT / "plugins/plugin-manager/scripts/...").
+# runtime (e.g. HELPER = PROJECT_ROOT / "plugins/agent-scaffolders/scripts/...").
 _RUNTIME_PATH_PATTERN = re.compile(
     r'(?:PROJECT_ROOT|\bROOT\b|SCRIPT_DIR|Path\s*\(\s*__file__\s*\)'
     r'|path\.parents?\[\d+\])'

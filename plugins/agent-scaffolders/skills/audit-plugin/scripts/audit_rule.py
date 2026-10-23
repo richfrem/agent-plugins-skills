@@ -1,1 +1,0 @@
-../../../scripts/audit_rule.py

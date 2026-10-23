@@ -1,1 +1,0 @@
-../../../references/graph-planner-acceptance-criteria.md

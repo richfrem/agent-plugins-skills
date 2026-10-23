@@ -139,14 +139,14 @@ Agent({
 ```bash
 # Simple capture task — cheapest model per cheapest_models.md (low cost, AI Credits)
 python scripts/dispatch.py \
-  --agent .agents/agents/exploration-cycle-plugin-requirements-doc-agent.md \
+  --agent plugins/exploration-cycle-plugin/agents/exploration-cycle-plugin-requirements-doc-agent.md \
   --context exploration/session-brief.md \
   --instruction "Mode: problem-framing. Capture the problem statement, user groups, goals." \
   --output exploration/captures/problem-framing.md
 
 # Q&A clarification pass — cheapest model per cheapest_models.md (low cost, AI Credits)
 python scripts/dispatch.py \
-  --agent .agents/agents/exploration-cycle-plugin-requirements-doc-agent.md \
+  --agent plugins/exploration-cycle-plugin/agents/exploration-cycle-plugin-requirements-doc-agent.md \
   --context exploration/captures/brd-draft.md \
   --instruction "Ask 3 targeted questions to clarify the gaps marked [NEEDS HUMAN INPUT].
                  Write structured answers to clarifications-brd.md." \
@@ -155,7 +155,7 @@ python scripts/dispatch.py \
 # Complex synthesis — claude-sonnet (1 premium request, batch dense for value)
 # Pack all captures into one invocation — Copilot charges per request, not per token
 python scripts/dispatch.py \
-  --agent .agents/agents/exploration-cycle-plugin-handoff-preparer-agent.md \
+  --agent plugins/exploration-cycle-plugin/agents/exploration-cycle-plugin-handoff-preparer-agent.md \
   --context exploration/captures/problem-framing.md \
              exploration/captures/brd-draft.md \
              exploration/captures/user-stories-draft.md \

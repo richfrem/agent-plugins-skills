@@ -8,19 +8,19 @@ If a file inside `plugins/A/` references `plugins/A/scripts/foo.py`, replace wit
 
 ---
 
-## Rule 2: Environment-specific `.agents/skills/<skill>/scripts/` paths → `scripts/`
-These are environment-specific and break across installations.
+## Rule 2: Environment-specific install paths → `scripts/` relative to skill root
+Hardcoded install paths break across different harnesses and global installations.
 
 **BEFORE:** `python .agents/skills/os-lab-scorer/scripts/evaluate.py`
-**AFTER:**  `python scripts/evaluate.py`
+**AFTER:**  `python scripts/evaluate.py` (relative to skill directory)
 
 ---
 
-## Rule 3: Cross-skill `plugins/<plugin>/skills/<skill>/` paths → `.agents/skills/<skill>/`
-When referencing another skill's files, use the installed location.
+## Rule 3: Cross-skill references → Portable skill citation
+When referencing another skill's documents or rules, cite the skill by name or use a relative markdown link.
 
 **BEFORE:** `plugins/cli-agents/skills/copilot-cli-agent/references/foo.md`
-**AFTER:**  `.agents/skills/copilot-cli-agent/references/foo.md`
+**AFTER:**  `Refer to the 'copilot-cli-agent' skill (or relative link within package)`
 
 ---
 

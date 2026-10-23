@@ -1,1 +1,0 @@
-../../../references/authoring-acceptance.md

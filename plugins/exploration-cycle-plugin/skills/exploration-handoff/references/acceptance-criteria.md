@@ -1,1 +1,0 @@
-../../../references/exploration-handoff-acceptance-criteria.md

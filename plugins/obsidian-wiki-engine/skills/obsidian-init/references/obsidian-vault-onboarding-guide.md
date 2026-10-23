@@ -1,1 +1,0 @@
-../../../references/obsidian-vault-onboarding-guide.md

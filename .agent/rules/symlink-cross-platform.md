@@ -1,79 +1,24 @@
 ---
 trigger: always_on
-description: Enforce symlink_manager.py for all symlink creation, repair, and auditing.
+description: Superseded. No new symlinks; share files between skills through the copy manifest (plugin-architecture-policy Section 5).
 globs: ["**/*"]
 ---
 
-# Rule: Always Use symlink_manager.py for Symlink Operations
+# Rule: No New Symlinks (supersedes the symlink_manager.py workflow)
 
-## Mandatory Protocol
+Plugins no longer use symlinks to share files between skills (APM migration, `docs/plans/apm_migration_plan.md` Section 10.3). Symlinks broke on Windows checkouts, where each one becomes a short text stub that APM installs as the file.
 
-**NEVER create symlinks with `ln -s` directly.**
-**NEVER create real file copies where a symlink should exist.**
+1. **NEVER create symlinks** (`ln -s`, `symlink_manager.py create`, junctions or hardlinks).
+2. **Share a file between skills** by keeping one canonical copy at the plugin root and listing each skill path in `symlinks.json` with `strategy: "copy"`.
+3. **After cloning or changing a canonical file**, write the copies:
+   ```bash
+   python3 plugins/agent-scaffolders/skills/convert-plugin-to-apm/scripts/materialize_copies.py
+   ```
+   The copies are listed in the local git exclude file and are never committed.
+4. **Before committing**, check for drift and edit the canonical file, never a copy:
+   ```bash
+   python3 plugins/agent-scaffolders/skills/convert-plugin-to-apm/scripts/materialize_copies.py --check
+   ```
+5. **The one remaining symlink** (`plugins/agent-agentic-os/tests/transition_simulation_cases.py`) is test-only and is not packaged.
 
-All symlink creation, repair, and auditing in this project MUST go through:
-
-```
-.agents/skills/symlink-manager/scripts/symlink_manager.py
-```
-
----
-
-## Required Workflow — Every Time You Touch Symlinks
-
-### Step 1: Diagnose first
-```bash
-python3 .agents/skills/symlink-manager/scripts/symlink_manager.py diagnose
-```
-Read the output. Identify every `? regular file (not a link)` and `✗ broken symlink` before touching anything.
-
-### Step 2: Remove real-file imposters
-If a file that should be a symlink is a real file, delete it first:
-```bash
-rm -f path/to/real-file-that-should-be-symlink
-```
-
-### Step 3: Add new links to symlinks.json (the manifest)
-```python
-# Add entries via script, NOT by hand-editing symlinks.json:
-# { "src": "canonical/source.py", "dst": "skill/scripts/source.py", "strategy": "symlink", "description": "..." }
-```
-The `src` must be the canonical master copy (in plugin root scripts/, references/, assets/).
-The `dst` is the skill subfolder location.
-
-### Step 4: Restore all from manifest
-```bash
-python3 .agents/skills/symlink-manager/scripts/symlink_manager.py restore
-```
-
-### Step 5: Verify
-```bash
-python3 .agents/skills/symlink-manager/scripts/symlink_manager.py diagnose
-```
-Zero `? regular file` or `✗ broken symlink` entries must remain before committing.
-
----
-
-## Canonical Source Locations (Ecosystem Standard)
-
-| File | Canonical Master | All skills get a symlink |
-|------|-----------------|--------------------------|
-| `*.py` scripts | `plugins/<plugin-name>/scripts/` | → `skills/<skill>/scripts/` |
-| references | `plugins/<plugin-name>/references/` | → `skills/<skill>/references/` |
-| templates/assets | `plugins/<plugin-name>/assets/` | → `skills/<skill>/assets/` |
-
----
-
-## ❌ Prohibited Actions
-
-- ❌ `ln -s <src> <dst>` directly in shell (bypasses manifest, links won't be recreated on fresh checkout)
-- ❌ Copying file contents into a skill subfolder instead of symlinking
-- ❌ Editing symlinks.json by hand without running `restore` afterwards
-- ❌ Committing without running `diagnose` to confirm zero broken/real-file issues
-
----
-
-## Skill Reference
-
-Read the full skill before any symlink work:
-`.agents/skills/symlink-manager/SKILL.md`
+Full policy: [plugin-architecture-policy.md](plugin-architecture-policy.md) Section 5.

@@ -1,1 +1,0 @@
-../../../references/manage-marketplace-acceptance-criteria.md

@@ -1,1 +1,0 @@
-../../../scripts/validate_github_agent.py

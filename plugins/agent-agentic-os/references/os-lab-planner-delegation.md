@@ -4,7 +4,7 @@ Hand the prompt file to the backend the brief confirmed, by invoking the matchin
 dispatcher skill by name: `copilot-cli-agent`, `agy-cli-agent`, `claude-cli-agent` or
 `codex-cli-agent`. Do not call its scripts directly.
 
-1. Check the skill is installed: `ls .agents/skills/<dispatcher>`. If not, stop and ask.
+1. Check the skill is installed (`apm list` or checking the active client harness or global profile). If not, stop and ask.
 2. Run the dispatcher's own heartbeat check first, on its cheapest tier.
 3. Dispatch once with the full prompt. Pick the cheapest suitable tier from `cli-agents`
    the current models from the `update-cli-models` skill in `cli-agents`. Batch all work in one

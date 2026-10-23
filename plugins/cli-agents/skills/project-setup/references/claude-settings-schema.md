@@ -1,1 +1,0 @@
-../../../references/claude-settings-schema.md

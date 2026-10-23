@@ -8,13 +8,12 @@ Purpose:
 
 Key Input Dependencies:
     - Git repository (uses `git rev-parse --show-toplevel` to find repo root)
-    - symlink_manager.py (in .agents/skills/symlink-manager/scripts/ or
-      plugins/dev-utils/scripts/, used to create the corrected symlinks)
+    - symlink_manager.py (in plugins/dev-utils/scripts/ or installed skill scripts)
     - Target folder to scan (positional CLI argument)
 
 Usage:
   python bulk_symlink_fixer.py <folder-path>
-  python bulk_symlink_fixer.py plugins/plugin-manager/skills/plugin-installer/scripts
+  python bulk_symlink_fixer.py plugins/dev-utils/skills/link-checker-agent/scripts
 
 Returns:
   0 if all fixed successfully

@@ -1,1 +1,0 @@
-../../../scripts/verify_gate_evidence.py

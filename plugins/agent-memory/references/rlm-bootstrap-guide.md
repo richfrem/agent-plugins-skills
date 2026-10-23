@@ -19,8 +19,7 @@ Detailed interactive configuration and setup protocol for initializing a Recursi
 
 Before starting, check installed plugins:
 ```bash
-ls .agents/skills/vector-db-init/ 2>/dev/null && echo "vector-db: INSTALLED" || echo "vector-db: NOT FOUND"
-ls .agents/skills/obsidian-wiki-builder/ 2>/dev/null && echo "obsidian-wiki-engine: INSTALLED" || echo "obsidian-wiki-engine: NOT FOUND"
+apm list 2>/dev/null || ls -d .claude/skills/* .agents/skills/* ~/.agents/skills/* ~/.claude/skills/* 2>/dev/null
 ```
 
 Select a setup mode:

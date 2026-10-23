@@ -1,1 +1,0 @@
-../../../references/SIGNING_WORKFLOW_OVERVIEW.md

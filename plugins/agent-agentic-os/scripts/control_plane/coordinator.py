@@ -807,14 +807,25 @@ class TransitionCoordinator:
                 except Exception:
                     pass
                 if manifest_sha:
-                    runner_rel = "plugins/agent-orchestration/scripts/graph_runner.py"
-                    if not (repo_root / runner_rel).is_file():
-                        runner_rel = ".agents/skills/graph-execution/scripts/graph_runner.py"
+                    runner_cmd = "scripts/graph_runner.py"
+                    for c in [
+                        repo_root / "plugins" / "agent-orchestration" / "scripts" / "graph_runner.py",
+                        repo_root / ".agents" / "skills" / "graph-execution" / "scripts" / "graph_runner.py",
+                        repo_root / ".claude" / "skills" / "graph-execution" / "scripts" / "graph_runner.py",
+                        Path.home() / ".agents" / "skills" / "graph-execution" / "scripts" / "graph_runner.py",
+                        Path.home() / ".claude" / "skills" / "graph-execution" / "scripts" / "graph_runner.py",
+                    ]:
+                        if c.is_file():
+                            try:
+                                runner_cmd = str(c.relative_to(repo_root))
+                            except ValueError:
+                                runner_cmd = str(c)
+                            break
                     manifest_rel = manifest_file.relative_to(repo_root)
 
                     self._out.write(
                         "- Execution Command (strategy: graph):\n"
-                        f"  python3 {runner_rel} {manifest_rel} "
+                        f"  python3 {runner_cmd} {manifest_rel} "
                         f"--worktree .worktrees/{task_id} --approval none --expect-manifest-sha256 {manifest_sha}\n"
                     )
                 else:
@@ -885,11 +896,14 @@ class TransitionCoordinator:
                     validator_script_rel = strat_cfg.get("validator_script") or (validator_cmd[1] if len(validator_cmd) > 1 else None)
                     resolved_script = None
                     if validator_script_rel:
-                        # Search consumer locations (.agents/), monorepo plugins, and repo root
+                        # Search consumer locations (project harnesses, global profiles, monorepo plugins, repo root)
                         script_name = Path(validator_script_rel).name
                         candidates = [
                             repo_root / ".agents" / validator_script_rel,
                             repo_root / ".agents" / "skills" / "graph-planner" / "scripts" / script_name,
+                            repo_root / ".claude" / "skills" / "graph-planner" / "scripts" / script_name,
+                            Path.home() / ".agents" / "skills" / "graph-planner" / "scripts" / script_name,
+                            Path.home() / ".claude" / "skills" / "graph-planner" / "scripts" / script_name,
                             repo_root / ".agents" / "scripts" / script_name,
                             repo_root / "plugins" / "agent-orchestration" / validator_script_rel,
                             repo_root / "plugins" / "agent-orchestration" / "scripts" / script_name,

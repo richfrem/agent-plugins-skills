@@ -1,1 +1,0 @@
-../../../scripts/distill_one.py

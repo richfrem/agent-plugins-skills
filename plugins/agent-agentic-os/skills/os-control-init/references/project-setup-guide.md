@@ -1,1 +1,0 @@
-../../../references/project-setup-guide.md

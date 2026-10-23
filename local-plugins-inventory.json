@@ -74,11 +74,5 @@
     "description": "Obsidian Wiki Engine - Karpathy-style LLM wiki + RLM distillation + vector search. Dual-representation knowledge graph: vault operations, cross-source concept synthesis, wiki node generation, RLM distillation, semantic health linting, graph traversal, canvas, bases, and progressive-disclosure query with vector DB Phase 2.",
     "version": "3.1.0",
     "path": "./plugins/obsidian-wiki-engine"
-  },
-  {
-    "name": "plugin-manager",
-    "description": "Orchestration hub for the plugin ecosystem. Manages structural audits, agent environment sync (install + cleanup orphans), cross-repo plugin replication, and Universal Bridge Installation to adapt standard plugins to 30+ target environments (GitHub Copilot, Gemini, Cursor, Roo, etc).",
-    "version": "2.0.0",
-    "path": "./plugins/plugin-manager"
   }
 ]

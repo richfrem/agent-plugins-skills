@@ -1,1 +1,0 @@
-../../../scripts/validate_agent.py

@@ -1,1 +1,0 @@
-../../../../references/voice-profile/my-voice.md

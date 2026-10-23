@@ -1,1 +1,0 @@
-../../../references/os-control-intake-healthy-transcript.md

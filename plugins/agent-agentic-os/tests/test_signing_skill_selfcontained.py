@@ -22,6 +22,7 @@ Key Functions (test cases):
 """
 
 import os
+import json
 import subprocess
 import sys
 from pathlib import Path
@@ -39,11 +40,17 @@ def test_standalone_selftest_cli_refuses_without_a_terminal(tmp_path):
     assert "terminal" in (result.stdout + result.stderr).lower()
 
 
-def test_skill_scripts_are_symlinks_to_the_hub():
+def test_skill_scripts_are_copies_of_the_hub():
+    # Plugin architecture policy Section 5: each skill script is a copy-manifest entry whose
+    # source is the canonical hub file; materialize_copies.py writes the copy.
+    repo = SKILL.parents[3]
+    links = json.loads((repo / "symlinks.json").read_text())["links"]
+    sources = {l["dst"]: l["src"] for l in links if l.get("strategy") == "copy"}
     for rel in ("scripts/test_signing_mechanics.py", "scripts/setup_ciba_identity.py", "scripts/control_plane/signing_selftest.py"):
-        link = SKILL / rel
-        assert link.is_symlink(), rel
-        assert link.resolve().is_file(), rel
+        copy = SKILL / rel
+        dst = str(copy.relative_to(repo))
+        assert dst in sources, rel
+        assert copy.is_file() and copy.read_bytes() == (repo / sources[dst]).read_bytes(), rel
 
 
 def test_every_skill_script_import_resolves_inside_the_skill(tmp_path):

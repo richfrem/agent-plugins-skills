@@ -21,7 +21,7 @@ Extracted from SKILL.md per Layer-1 procedural-core line budget (issue #551).
 The local path to the test repo where the eval ran (e.g. `<USER_HOME>/Projects/test-link-checker-eval`).
 
 **Q2 — Master plugin path?**
-The canonical plugin path in `agent-plugins-skills` (e.g. `.agents/skills/link-checker`).
+The canonical plugin path in `agent-plugins-skills` (e.g. `plugins/dev-utils/skills/link-checker`).
 
 **Q3 — Baseline commit?**
 The git SHA of the baseline commit in the lab repo. Look for a commit starting with
@@ -68,7 +68,7 @@ Produce an assessment table for the user before applying anything:
 |:---|:---|:---|:---|
 | `link-checker/skills/link-checker-agent/SKILL.md` | Added --dry-run clarification | **ACCEPT** | Factually correct, improves clarity |
 | `link-checker/skills/link-checker-agent/evals/evals.json` | Added eval-8 (ambiguous match) | **ACCEPT** | Good coverage gap |
-| `.agents/skills/os-lab-scorer/evaluate.py` | Changed exit code logic | **REVIEW** | Needs testing against master version |
+| `skills/os-lab-scorer/evaluate.py` | Changed exit code logic | **REVIEW** | Needs testing against master version |
 
 **Verdicts:**
 - **ACCEPT** — apply verbatim to master
@@ -201,7 +201,7 @@ If the OS is initialized and the non-obvious filter passed, also ask `os-lab-mem
 | `<plugin>/skills/<skill>/evals/evals.json` | `plugins/<plugin>/skills/<skill>/evals/evals.json` |
 | `<plugin>/skills/<skill>/references/*.md` | `plugins/<plugin>/skills/<skill>/references/*.md` |
 | `<plugin>/scripts/*.py` | `plugins/<plugin>/scripts/*.py` |
-| `.agents/skills/os-lab-scorer/` (if patched) | `<SKILL_PATH>` |
+| `skills/os-lab-scorer/` (if patched) | `<SKILL_PATH>` |
 
 > The master uses hub-and-spoke symlinks. Only the canonical source files listed above need
 > updating — deployed environments sync from master automatically.

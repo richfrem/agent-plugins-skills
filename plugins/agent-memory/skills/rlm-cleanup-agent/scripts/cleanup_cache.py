@@ -1,1 +1,0 @@
-../../../scripts/cleanup_cache.py

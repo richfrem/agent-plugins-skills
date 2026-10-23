@@ -1,1 +1,0 @@
-../../../scripts/scaffold_azure_agent.py

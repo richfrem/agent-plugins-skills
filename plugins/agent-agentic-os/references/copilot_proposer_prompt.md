@@ -6,7 +6,7 @@
 > a better prompt produces better mutations and faster convergence.
 >
 > **After the session:** if this prompt evolved significantly, contribute a refined copy
-> to `.agents/skills/copilot-cli-agent/references/skill-proposer-prompt.md`
+> to `plugins/cli-agents/skills/copilot-cli-agent/references/skill-proposer-prompt.md`
 > so future loops start from a stronger baseline.
 
 ---

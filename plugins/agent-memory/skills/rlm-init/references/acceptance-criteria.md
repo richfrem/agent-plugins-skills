@@ -1,1 +1,0 @@
-../../../references/rlm-init-acceptance-criteria.md

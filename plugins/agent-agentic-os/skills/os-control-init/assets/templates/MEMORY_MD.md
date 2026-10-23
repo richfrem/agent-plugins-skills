@@ -1,1 +1,0 @@
-../../../../assets/templates/MEMORY_MD.md

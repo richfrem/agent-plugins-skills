@@ -1,1 +1,0 @@
-../../../references/os-lab-planner-delegation.md

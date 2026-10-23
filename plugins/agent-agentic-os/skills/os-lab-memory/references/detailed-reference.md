@@ -1,1 +1,0 @@
-../../../references/os-lab-memory-detailed-reference.md

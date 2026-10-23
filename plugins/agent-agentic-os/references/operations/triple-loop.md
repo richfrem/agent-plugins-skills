@@ -1,7 +1,7 @@
 > **DEPRECATED**: The `triple-loop-architect` and `triple-loop-orchestrator` agents described
 > in this document have been removed as of v1.6.0. The capability is now handled by
 > `os-lab-loop`. This document is retained for historical reference only.
-> For current operations, see [os-lab-loop SKILL.md](../../skills/os-lab-loop/SKILL.md).
+> For current operations, use the `os-lab-loop` skill.
 
 # Triple-Loop Learning System (Outer Orchestrator + Inner Execution)
 

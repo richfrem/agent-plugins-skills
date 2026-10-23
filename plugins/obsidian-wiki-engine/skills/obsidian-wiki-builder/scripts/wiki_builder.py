@@ -1,1 +1,0 @@
-../../../scripts/wiki_builder.py

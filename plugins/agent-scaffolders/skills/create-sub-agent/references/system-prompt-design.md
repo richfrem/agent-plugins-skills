@@ -1,1 +1,0 @@
-../../../references/system-prompt-design.md

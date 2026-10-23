@@ -1,1 +1,0 @@
-../../../references/wiki-linting-guide.md

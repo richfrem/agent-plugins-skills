@@ -1,1 +1,0 @@
-../../../references/hf-download-acceptance-criteria.md

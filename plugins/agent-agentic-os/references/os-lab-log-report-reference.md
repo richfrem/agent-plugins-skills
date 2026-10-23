@@ -68,12 +68,10 @@ Do not run the report script on an empty ledger — it will produce an empty cha
 ## Phase 2: Run the report (command)
 
 ```bash
-PLUGIN_DIR="${CLAUDE_PLUGIN_ROOT:-$(pwd)/.agents/skills/agent-agentic-os}"
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
 
-python "${PLUGIN_DIR}/skills/os-lab-log/scripts/generate_report.py" \
+python scripts/generate_report.py \
   --project-dir "$PROJECT_DIR" \
-  --plugin-dir "$PLUGIN_DIR" \
   [--skill SESSION-MEMORY-MANAGER]   # optional: filter to one skill
 ```
 

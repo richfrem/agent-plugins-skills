@@ -5,7 +5,7 @@ Tests alignment checks:
 1. Line budget (target <= 100 lines for Layer 1 dispatchers)
 2. Evals schema (JSON array of {should_trigger: bool})
 3. Frontmatter standards (name matches directory, 3rd-person description)
-4. Hub-and-spoke compliance (ADR-002/003 - scripts must be symlinks)
+4. Hub-and-spoke compliance (policy Section 5 - no committed duplicates of canonical files)
 5. Missing references (acceptance-criteria.md, fallback-tree.md)
 6. Fix mode (--fix) auto-repair capability
 
@@ -123,19 +123,30 @@ class TestAuditSkill(unittest.TestCase):
         self.assertTrue(any("should_trigger" in e for e in result.errors))
 
     def test_audit_detects_hub_and_spoke_violation(self):
-        """Assert real un-symlinked script in skill directory is flagged."""
+        """Assert a committed duplicate of a plugin-root canonical script is flagged.
+
+        Plugin architecture policy Section 5 (APM migration): shared files keep one canonical
+        copy and are listed in the copy manifest; a real duplicate in the skill is a violation,
+        while a skill-owned script with no plugin-root counterpart is allowed.
+        """
         skill_dir = self.skills_dir / "impure-script-skill"
         skill_dir.mkdir(parents=True)
         (skill_dir / "SKILL.md").write_text("---\nname: impure-script-skill\ndescription: Does work.\n---\n", encoding="utf-8")
-        
+
         scripts_dir = skill_dir / "scripts"
         scripts_dir.mkdir()
-        # Real file, not a symlink
+        canonical_dir = skill_dir.parent.parent / "scripts"
+        canonical_dir.mkdir(exist_ok=True)
+        (canonical_dir / "helper.py").write_text("print('hello')\n", encoding="utf-8")
+        # Real duplicate of the canonical plugin-root script
         (scripts_dir / "helper.py").write_text("print('hello')\n", encoding="utf-8")
-        
+        # Skill-owned script with no canonical counterpart
+        (scripts_dir / "own.py").write_text("print('own')\n", encoding="utf-8")
+
         result = audit_skill(skill_dir, plugin_root=self.plugin_root)
         self.assertFalse(result.passed)
-        self.assertTrue(any("ADR-002" in e or "not a symlink" in e for e in result.errors))
+        self.assertTrue(any("helper.py" in e and "copy manifest" in e for e in result.errors))
+        self.assertFalse(any("own.py" in e for e in result.errors))
 
     def test_fix_mode_refuses_inference_without_mutation(self):
         """Assert the same legacy fixture remains unchanged under disabled repair."""

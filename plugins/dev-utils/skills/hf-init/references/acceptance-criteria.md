@@ -1,1 +1,0 @@
-../../../references/hf-init-acceptance-criteria.md

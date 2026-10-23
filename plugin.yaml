@@ -17,4 +17,3 @@ skills_dirs:
   - plugins/dev-utils/skills
   - plugins/exploration-cycle-plugin/skills
   - plugins/obsidian-wiki-engine/skills
-  - plugins/plugin-manager/skills

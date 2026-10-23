@@ -1,1 +1,0 @@
-../../../references/vector-db-init-acceptance-criteria.md

@@ -1,1 +1,0 @@
-../../../../assets/templates/structural-architecture-reviewer.md

@@ -21,10 +21,11 @@ Scaffolds a complete agent plugin with multi-platform manifests and standard dir
 
 ## Constraints
 
+- **APM Package Manifest**: Every plugin must include an `apm.yml` specifying package name (`@richfrem/<plugin>`), version, description, and client targets (`claude,copilot,codex,antigravity`).
 - **Clean metadata**: `.claude-plugin/plugin.json` must never declare `skills`, `agents`, or `hooks` arrays (auto-discovered).
 - **Author object**: `author` must be an object `{"name": "...", "email": "..."}`, never a string.
-- **Hub-first scripts**: Reusable scripts live in `plugins/<plugin>/scripts/` and symlink into skills.
-- **File-level symlinks only**: Directory symlinks violate repository policy.
+- **Hub-first copy-manifest**: Reusable scripts live in `plugins/<plugin>/scripts/` and are mapped to skills in `symlinks.json` (strategy: "copy").
+- **No raw filesystem symlinks**: Under APM, skills must be self-contained packages. Raw symlinks are prohibited.
 - **No cross-plugin imports**: Never import Python code from another plugin.
 
 ## Quick start
@@ -36,19 +37,21 @@ mkdir -p plugins/<plugin-name>/{.claude-plugin,skills,references,scripts,tests}
 
 ## Workflow
 
-1. **Scaffold Root**: Create directory structure with `.claude-plugin/plugin.json` and `README.md`.
+1. **Scaffold Root**: Create directory structure with `apm.yml`, `.claude-plugin/plugin.json`, and `README.md`.
 2. **Configure Multi-Platform Manifests**:
-   - `.claude-plugin/plugin.json`: Minimal metadata format with author object.
-   - `plugin.yaml`: Hermes compatibility manifest (declaring kind, platforms, tools).
+   - `apm.yml`: Primary package manifest declaring targets `claude,copilot,codex,antigravity`.
+   - `.claude-plugin/plugin.json`: Minimal Claude compatibility manifest with author object.
 3. **Scaffold Components**: Use `create-skill` for skills and `create-hook` for hooks.
-4. **Symlink Hygiene**: Link hub scripts and references to skill folders.
-5. **Audit**: Run `audit-plugin` to verify structure, schemas, and symlinks.
+4. **Copy-Manifest Provisioning**: Register shared hub scripts/references in `symlinks.json` and run `materialize_copies.py`.
+5. **Audit**: Run `audit-plugin` to verify structure, schemas, and copy-manifest alignment.
 
 ## Verification
 
 ```bash
 # Validate plugin structure compliance
-python3 scripts/audit_plugin_structure.py plugins/<plugin-name>
+python3 plugins/agent-scaffolders/scripts/audit_plugin_structure.py plugins/<plugin-name>
+# Validate copy-manifest drift
+python3 plugins/agent-scaffolders/skills/convert-plugin-to-apm/scripts/materialize_copies.py --check
 # Validate hook schemas if hooks present
 python3 scripts/validate_hook_schema.py plugins/<plugin-name>/hooks/hooks.json
 ```

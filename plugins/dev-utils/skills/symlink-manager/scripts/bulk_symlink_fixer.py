@@ -1,1 +1,0 @@
-../../../scripts/bulk_symlink_fixer.py

@@ -1,1 +1,0 @@
-../../../references/edge-matrix.md

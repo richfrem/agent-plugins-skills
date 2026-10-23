@@ -1,6 +1,6 @@
 # Audit lenses
 
-Read the source files, not the installed `.agents/` copies, which can be stale.
+Read the source files in `plugins/`, not the installed client copies, which can be stale.
 
 ## Prior art
 - the plugin map-debt file: entries marked `Repeat: YES` for the target. If one matches, stop

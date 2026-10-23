@@ -76,9 +76,8 @@ and return the gap to `os-lab-agent`.
 
 ## Routing and installed check
 
-Before naming any skill as the next step, run `ls .agents/skills/<name>` and check
-`should_install` in `.agents/ownership/agent-agentic-os.json`. If it is missing or disabled,
-stop and ask whether to enable it. Never route around a missing skill. Intent categories and
+Before naming any skill as the next step, verify it is installed in your active runtime harness (`.claude/skills/<name>`, `.agents/skills/<name>`, or global workstation profile via `apm list`). If it is missing or uninstalled,
+stop and ask whether to install it (`apm install <pkg> [--skill <name>]`). Never route around a missing skill. Intent categories and
 signal phrases: [references/routing-taxonomy.md](references/routing-taxonomy.md).
 
 ## Verification

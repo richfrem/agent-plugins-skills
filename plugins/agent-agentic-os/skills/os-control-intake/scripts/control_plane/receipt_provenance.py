@@ -1,1 +1,0 @@
-../../../../scripts/control_plane/receipt_provenance.py

@@ -416,12 +416,34 @@ def _enforce_output_matches_target(args) -> None:
         sys.exit(1)
 
 
+def resolve_agent_file(agent_arg: str) -> str:
+    """Resolve an agent file path across project harnesses, global home, and plugin source."""
+    if os.path.isfile(agent_arg):
+        return agent_arg
+    target_name = os.path.basename(agent_arg)
+    if not target_name.endswith(".md"):
+        target_name += ".md"
+    from pathlib import Path
+    candidates = [
+        Path.cwd() / ".agents" / "agents" / target_name,
+        Path.cwd() / ".claude" / "agents" / target_name,
+        Path.home() / ".agents" / "agents" / target_name,
+        Path.home() / ".claude" / "agents" / target_name,
+        Path(__file__).resolve().parent.parent / "agents" / target_name,
+    ]
+    for cand in candidates:
+        if cand.is_file():
+            return str(cand)
+    return agent_arg
+
+
 def _load_prompt_context(args) -> tuple:
     """Read agent instructions + context files; returns (agent_content, context_content).
 
     Exits if frontmatter injection is detected in the agent file, or if zero
     context was loaded (a zero-context dispatch always hallucinates).
     """
+    args.agent = resolve_agent_file(args.agent)
     # Read the agent instructions and strip YAML frontmatter.
     # Frontmatter (---\n...\n---) is metadata, not instructions. Passing it verbatim
     # to CLI tools that treat --- as an argument delimiter (e.g. claude) causes parse failures.

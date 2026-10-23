@@ -1,1 +1,0 @@
-../../../scripts/test_capability_probe.py

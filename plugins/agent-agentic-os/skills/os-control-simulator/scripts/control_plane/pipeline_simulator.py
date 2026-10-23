@@ -1,1 +1,0 @@
-../../../../scripts/control_plane/pipeline_simulator.py

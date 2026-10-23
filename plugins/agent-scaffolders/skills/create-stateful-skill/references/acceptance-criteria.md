@@ -1,1 +1,0 @@
-../../../references/create-stateful-skill-acceptance-criteria.md

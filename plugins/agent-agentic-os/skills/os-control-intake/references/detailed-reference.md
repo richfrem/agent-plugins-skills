@@ -1,1 +1,0 @@
-../../../references/os-control-intake-detailed-reference.md

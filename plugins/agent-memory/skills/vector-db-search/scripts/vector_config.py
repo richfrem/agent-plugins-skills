@@ -1,1 +1,0 @@
-../../../scripts/vector_config.py

@@ -1,1 +1,0 @@
-../../../references/os-lab-loop-cheapest_models.md

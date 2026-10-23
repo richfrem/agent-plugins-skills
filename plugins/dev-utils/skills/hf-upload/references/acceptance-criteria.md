@@ -1,1 +1,0 @@
-../../../references/hf-upload-acceptance-criteria.md

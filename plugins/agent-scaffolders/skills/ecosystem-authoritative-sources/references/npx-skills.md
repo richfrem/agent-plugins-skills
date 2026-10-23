@@ -1,1 +1,0 @@
-../../../references/npx-skills.md

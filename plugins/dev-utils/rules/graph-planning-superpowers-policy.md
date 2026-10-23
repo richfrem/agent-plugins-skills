@@ -7,8 +7,8 @@ description: Deprecation bridge for engineering-lifecycle-policy.md (formerly gr
 
 > [!IMPORTANT]
 > **This policy has been permanently relocated and renamed.**
-> Canonical source: [`plugins/agent-agentic-os/rules/engineering-lifecycle-policy.md`](plugins/agent-agentic-os/rules/engineering-lifecycle-policy.md)
-> Active rule path: [`.agent/rules/engineering-lifecycle-policy.md`](.agent/rules/engineering-lifecycle-policy.md)
+> Canonical source: `engineering-lifecycle-policy.md` in the `agent-agentic-os` plugin's `rules/` folder
+> Active rule path: `.agent/rules/engineering-lifecycle-policy.md`
 
 This stub is retained as a zero-downtime bridge for backward compatibility with active worktrees, pinned prompts, and cached manifests. Refer directly to `engineering-lifecycle-policy.md` for normative requirements, the Cryptographic Human Gate, and the 4-phase lifecycle.
 

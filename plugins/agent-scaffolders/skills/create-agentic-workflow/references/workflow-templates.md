@@ -1,1 +1,0 @@
-../../../references/workflow-templates.md

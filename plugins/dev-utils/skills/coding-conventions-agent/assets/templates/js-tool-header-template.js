@@ -1,1 +1,0 @@
-../../../../assets/templates/js-tool-header-template.js

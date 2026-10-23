@@ -6,7 +6,7 @@
 
 Skip this section on every session after the first. If `context/control_plane.db` doesn't exist
 yet, run these once (assumes plugins are already installed per
-[INSTALL.md's "Local Development (For Developers)"](INSTALL.md#local-development-for-developers)
+[INSTALL.md's "Local Development (For Developers)"](INSTALL.md#local-development-contributors--testing)
 — `git clone` + `plugin_add.py --all -y`):
 
 ```bash

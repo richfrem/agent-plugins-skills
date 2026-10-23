@@ -1,1 +1,0 @@
-../../../scripts/friction_cluster_agent.py

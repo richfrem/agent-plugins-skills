@@ -59,5 +59,5 @@ def test_doc_states_setups_modes_and_honest_limits():
 def test_doc_is_reachable_from_the_skill():
     skill = PLUGIN / "skills" / "os-control-signing-setup"
     assert "references/isolation-setup.md" in (skill / "SKILL.md").read_text()
-    link = skill / "references" / "isolation-setup.md"
-    assert link.is_file() and link.resolve() == DOC.resolve()
+    copy = skill / "references" / "isolation-setup.md"  # copy-manifest copy of the canonical doc (policy Section 5)
+    assert copy.is_file() and copy.read_bytes() == DOC.read_bytes()

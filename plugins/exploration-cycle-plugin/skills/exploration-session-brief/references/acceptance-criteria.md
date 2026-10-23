@@ -1,1 +1,0 @@
-../../../references/exploration-session-brief-acceptance-criteria.md

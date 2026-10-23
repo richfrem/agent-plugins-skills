@@ -199,10 +199,14 @@ VERIFIER=""
 for CANDIDATE in \
     "$(cd "$(dirname "$0")" 2>/dev/null && pwd)/verify_gate_evidence.py" \
     "$REPO_ROOT/plugins/agent-agentic-os/scripts/verify_gate_evidence.py" \
+    "$REPO_ROOT/.claude/skills/os-control-intake/scripts/verify_gate_evidence.py" \
     "$REPO_ROOT/.agents/skills/os-control-intake/scripts/verify_gate_evidence.py" \
+    "$HOME/.claude/skills/os-control-intake/scripts/verify_gate_evidence.py" \
+    "$HOME/.agents/skills/os-control-intake/scripts/verify_gate_evidence.py" \
+    "$REPO_ROOT/.claude/skills/os-control-init/scripts/verify_gate_evidence.py" \
     "$REPO_ROOT/.agents/skills/os-control-init/scripts/verify_gate_evidence.py" \
-    "$REPO_ROOT/.agents/skills/work-intake/scripts/verify_gate_evidence.py" \
-    "$REPO_ROOT/.agents/skills/os-init/scripts/verify_gate_evidence.py"; do
+    "$HOME/.claude/skills/os-control-init/scripts/verify_gate_evidence.py" \
+    "$HOME/.agents/skills/os-control-init/scripts/verify_gate_evidence.py"; do
     if [ -f "$CANDIDATE" ]; then
         VERIFIER="$CANDIDATE"
         break

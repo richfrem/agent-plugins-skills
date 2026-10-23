@@ -113,8 +113,12 @@ def _detect_indent(text: str, data: object) -> int:
     return 2
 
 
-def load_ownership(path: Path) -> tuple[dict, int]:
+def load_ownership(path: Path) -> tuple[Optional[dict], int]:
+    root = path.parent.parent.parent if path.parent.name == "ownership" else path.parent
+    is_apm = (root / "apm.yml").is_file() or (root / "apm.lock.yaml").is_file() or (root / ".apm").is_dir()
     if not path.is_file():
+        if is_apm:
+            return None, 2
         raise ModeToggleError(
             f"ownership file not found: {path}. Run the plugin installer first (plugin-syncer)."
         )
@@ -137,7 +141,39 @@ def find_syncer(root: Path, override: Optional[str]) -> Optional[Path]:
 # --------------------------------------------------------------------------- status
 
 
-def _component(own: dict, kind: str, name: str, root: Path) -> dict:
+def _check_disk_presence(kind: str, name: str, root: Path) -> bool:
+    if kind == "skills":
+        for loc in (
+            root / ".claude" / "skills" / name,
+            root / ".agents" / "skills" / name,
+            root / "plugins" / "agent-agentic-os" / "skills" / name,
+            Path.home() / ".claude" / "skills" / name,
+            Path.home() / ".agents" / "skills" / name,
+            Path.home() / ".apm" / "skills" / name,
+        ):
+            if loc.is_dir() and (loc / "SKILL.md").exists():
+                return True
+        return False
+    elif kind == "rules":
+        for loc in (
+            root / ".agent" / "rules" / f"{name}.md",
+            root / ".claude" / "rules" / f"{name}.md",
+            root / ".agents" / "rules" / f"{name}.md",
+            root / "plugins" / "agent-agentic-os" / "rules" / f"{name}.md",
+        ):
+            if loc.is_file():
+                return True
+        return False
+    return False
+
+
+def _component(own: Optional[dict], kind: str, name: str, root: Path) -> dict:
+    if own is None:
+        on_disk = _check_disk_presence(kind, name, root)
+        return {
+            "kind": kind, "name": name, "listed": True,
+            "should_install": None, "on_disk": on_disk,
+        }
     entry = own.get("components", {}).get(kind, {}).get(name)
     if entry is None:
         return {"kind": kind, "name": name, "listed": False, "should_install": None, "on_disk": False}
@@ -149,7 +185,9 @@ def _component(own: dict, kind: str, name: str, root: Path) -> dict:
     }
 
 
-def _member_artifacts(own: dict, manifest: dict) -> list[str]:
+def _member_artifacts(own: Optional[dict], manifest: dict) -> list[str]:
+    if own is None:
+        return []
     paths: list[str] = []
     for kind in COMPONENT_KINDS:
         for name in manifest["members"][kind]:
@@ -239,10 +277,14 @@ def collect_status(root: Path, manifest: dict) -> dict:
         label = f"{c['kind']}/{c['name']}"
         if not c["listed"]:
             problems.append(f"{label} is in the manifest but not in the ownership file")
-        elif want_on and not (c["should_install"] and c["on_disk"]):
-            problems.append(f"{label} is not installed while the control plane is enabled")
-        elif not want_on and (c["should_install"] or c["on_disk"]):
-            problems.append(f"{label} is still installed while the control plane is disabled")
+        elif own is not None:
+            if want_on and not (c["should_install"] and c["on_disk"]):
+                problems.append(f"{label} is not installed while the control plane is enabled")
+            elif not want_on and (c["should_install"] or c["on_disk"]):
+                problems.append(f"{label} is still installed while the control plane is disabled")
+        else:
+            if want_on and not c["on_disk"]:
+                problems.append(f"{label} is not installed while the control plane is enabled")
 
     if hdir is None:
         warnings.append("no .git/hooks directory: guards cannot be checked")
@@ -327,7 +369,9 @@ def format_status(st: dict) -> str:
 def _backup(root: Path, manifest: dict, hdir: Optional[Path]) -> Path:
     dest = root / "context" / "control-plane-backup" / datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
     dest.mkdir(parents=True, exist_ok=True)
-    sources = [root / manifest["ownership_file"], cph.mode_path(root)]
+    sources = [cph.mode_path(root)]
+    if manifest.get("ownership_file"):
+        sources.append(root / manifest["ownership_file"])
     if hdir:
         sources += [hdir / g.dispatcher for g in manifest_guards(manifest)]
     for src in sources:
@@ -355,7 +399,7 @@ def _run_sync(syncer: Optional[Path], root: Path, skip: bool) -> str:
     if skip:
         return "skipped (--no-sync): run the plugin-syncer to apply the ownership change"
     if syncer is None:
-        return "skipped (plugin-syncer not found): run the plugin-syncer to apply the ownership change"
+        return "skipped (APM / standalone mode, plugin-syncer not required)"
     proc = subprocess.run([sys.executable, str(syncer)], cwd=root, capture_output=True, text=True)
     tail = "\n".join((proc.stdout + proc.stderr).strip().splitlines()[-6:])
     if proc.returncode != 0:
@@ -363,10 +407,27 @@ def _run_sync(syncer: Optional[Path], root: Path, skip: bool) -> str:
     return "ok\n" + tail
 
 
-def plan_text(root: Path, manifest: dict, want: str, own: dict, hdir: Optional[Path]) -> list[str]:
+def plan_text(root: Path, manifest: dict, want: str, own: Optional[dict], hdir: Optional[Path]) -> list[str]:
     desired = want == cph.MODE_ENABLED
     verb = "ENABLE" if desired else "DISABLE"
     lines = [f"Plan: {verb} the control plane in {root}"]
+    if own is None:
+        if desired:
+            lines.append("  1. install + wire the guards: " + ", ".join(g.name for g in manifest_guards(manifest)))
+            lines.append("  2. declare mode `enabled` in " + manifest["mode_file"])
+            lines.append("  (APM Mode: skills remain installed; gating is activated)")
+        else:
+            lines.append("  1. declare mode `disabled` in " + manifest["mode_file"] + " (guards now exit 0)")
+            lines.append("  2. unwire the guards from .git/hooks: " + ", ".join(g.name for g in manifest_guards(manifest))
+                         + " (scripts kept for re-enable)")
+            lines.append("  (APM Mode: skills remain installed; gating is deactivated)")
+        lines.append("  Never touched: context/control_plane.db (task history), os-control-init, os-control-health, "
+                     "plugin hooks, the evolution guard.")
+        lines.append("  Backups of the mode file and hook files go to context/control-plane-backup/.")
+        if hdir is None:
+            lines.append("  NOTE: no .git/hooks directory here: the guard steps are skipped.")
+        return lines
+
     changes = _flag_changes(own, manifest, desired)
     if want == cph.MODE_ENABLED:
         lines.append("  1. ownership: set should_install=true for: "
@@ -406,12 +467,16 @@ def apply_mode(root: Path, manifest: dict, want: str, *, syncer_override: Option
         missing = [n for n, s in sources.items() if s is None]
         if missing:
             raise ModeToggleError(f"cannot enable: guard script source not found for {', '.join(missing)}")
-    _flag_changes(own, manifest, desired)  # raises early if the manifest and ownership disagree
+    if own is not None:
+        _flag_changes(own, manifest, desired)  # raises early if the manifest and ownership disagree
 
     log.append(f"backup: {_backup(root, manifest, hdir)}")
     syncer = find_syncer(root, syncer_override)
 
     def set_flags() -> None:
+        if own is None:
+            log.append("ownership: skipped (APM / standalone mode, no ownership file)")
+            return
         data, ind = load_ownership(own_path)
         for kind in COMPONENT_KINDS:
             for name in manifest["members"][kind]:
@@ -434,7 +499,8 @@ def apply_mode(root: Path, manifest: dict, want: str, *, syncer_override: Option
 
     if desired:
         set_flags()
-        log.append("sync: " + _run_sync(syncer, root, no_sync))
+        if own is not None:
+            log.append("sync: " + _run_sync(syncer, root, no_sync))
         guards_step()
         cph.write_mode(root, cph.MODE_ENABLED, actor)
         log.append("mode: enabled")
@@ -443,7 +509,8 @@ def apply_mode(root: Path, manifest: dict, want: str, *, syncer_override: Option
         log.append("mode: disabled")
         guards_step()
         set_flags()
-        log.append("sync: " + _run_sync(syncer, root, no_sync))
+        if own is not None:
+            log.append("sync: " + _run_sync(syncer, root, no_sync))
     return log
 
 

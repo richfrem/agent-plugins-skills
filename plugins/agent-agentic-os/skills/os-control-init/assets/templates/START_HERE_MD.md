@@ -1,1 +1,0 @@
-../../../../assets/templates/START_HERE_MD.md

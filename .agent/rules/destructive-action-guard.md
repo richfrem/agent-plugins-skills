@@ -76,7 +76,7 @@ git log --all --oneline --full-history -- "**/filename"
 
 #### Step 4 — SKILL_ALIAS check (commands/ and agents/)
 If content matches `../skills/<name>/SKILL.md` pattern AND the target SKILL.md exists:
-- Classify as **SKILL_ALIAS** → convert to symlink via `symlink_manager create`, do not delete
+- Classify as **SKILL_ALIAS** → replace with a short standalone agent/command definition that uses the skill by name (standard fix SF-12), do not delete
 
 #### Step 5 — Produce audit table before any change
 Output this table and wait for explicit confirmation:
@@ -98,7 +98,7 @@ Output this table and wait for explicit confirmation:
 | `DEAD_CROSS_REPO_REFERENCE` | Delete |
 | `MISLOCATED_REFERENCE` | Propose corrected path; do not modify |
 | `POSSIBLE_ACCIDENTAL_DELETION` | Escalate to Map Debt; do not modify |
-| `SKILL_ALIAS` | Convert to symlink via `symlink_manager create` |
+| `SKILL_ALIAS` | Replace with a standalone definition that uses the skill by name (SF-12) |
 
 ---
 

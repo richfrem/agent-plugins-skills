@@ -1,20 +1,16 @@
 [build-system]
-requires = ["setuptools>=42"]
+requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "agent-plugins"
-version = "0.1.0"
-description = "Universal cross-platform plugin installer for agentic ecosystems."
+name = "agent-plugins-skills"
+version = "2.3.0"
+description = "Universal AI Agent Plugins and Skills Monorepo (APM-packaged)"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 dependencies = []
 
-[project.scripts]
-plugin-add = "bootstrap:add_main"
-plugin-remove = "bootstrap:remove_main"
-plugin-sync = "bootstrap:sync_main"
-plugin-prune = "bootstrap:prune_main"
-
-[tool.setuptools]
-py-modules = ["bootstrap"]
+[tool.pytest.ini_options]
+testpaths = ["plugins"]
+python_files = ["test_*.py"]
+addopts = "-v --import-mode=importlib"

@@ -32,8 +32,7 @@ python -c "from sentence_transformers import SentenceTransformer; print('sentenc
 
 Check installed plugins:
 ```bash
-ls .agents/skills/rlm-init/ 2>/dev/null && echo "rlm-factory: INSTALLED" || echo "rlm-factory: NOT FOUND"
-ls .agents/skills/obsidian-wiki-builder/ 2>/dev/null && echo "obsidian-wiki-engine: INSTALLED" || echo "obsidian-wiki-engine: NOT FOUND"
+apm list 2>/dev/null || ls -d .claude/skills/* .agents/skills/* ~/.agents/skills/* ~/.claude/skills/* 2>/dev/null
 ```
 
 Select a mode:

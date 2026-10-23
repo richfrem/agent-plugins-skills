@@ -90,7 +90,11 @@ deterministic verification, or the audit trail.
 Install the plugins, then initialize and check the Agentic OS substrate:
 
 ```bash
-uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills
+# Install via APM (project scope for your active client):
+apm install @richfrem/agent-agentic-os
+
+# Or install globally across all clients (Claude Code, GitHub Copilot, Codex, Antigravity):
+apm install -g --target claude,copilot,codex,antigravity @richfrem/agent-agentic-os
 ```
 
 Then ask your agent to set up Agentic OS for the repository, or use `os-control-init`, followed by
@@ -112,8 +116,8 @@ done locally with SSH instead of an identity provider.
 ### I want one capability or plugin
 
 Plugins are independently installable. Choose only the parts you need—the control plane is not a
-runtime dependency of standalone skills. Use the interactive installer above or install a specific
-plugin from `plugins/<plugin-name>`; see [INSTALL.md](INSTALL.md).
+runtime dependency of standalone skills. Install specific packages with `apm install @richfrem/<plugin-name>`
+(or select individual skills via `--skill`); see [INSTALL.md](INSTALL.md).
 
 ### I am contributing to this repository
 
@@ -129,7 +133,7 @@ binding [ADRs](docs/ADRs/) before changing plugin structure, scripts, or shared 
 | Native runtime integration | Discover available CLIs, select suitable models, and delegate without hard runtime coupling | [`cli-agents`](plugins/cli-agents/README.md) |
 | Execution patterns | Composable loops, graph planning and execution, swarms, adversarial review | [`agent-orchestration`](plugins/agent-orchestration/README.md) |
 | Learning and memory | Filesystem-native memory, retrieval options, experiment and improvement loops | [`agent-memory`](plugins/agent-memory/README.md), `agent-agentic-os` |
-| Plugin lifecycle | Create, audit, install, synchronize, and maintain reusable plugins | [`agent-scaffolders`](plugins/agent-scaffolders/README.md), [`plugin-manager`](plugins/plugin-manager/README.md) |
+| Plugin lifecycle | Create, audit, package, and maintain reusable plugins | [`agent-scaffolders`](plugins/agent-scaffolders/README.md) |
 
 ## Continuous improvement is part of the product
 
@@ -148,8 +152,8 @@ authority matters, and evidence is more important than an agent saying that work
 
 ## Plugin map
 
-The repository is an upstream source monorepo. `plugins/` is authoritative; installers materialize
-self-contained runtime copies into `.agents/`.
+The repository is an upstream source monorepo. `plugins/` is authoritative; APM installs
+self-contained runtime copies into active client harnesses (`.claude/skills/`, `.agents/skills/`, or global profiles).
 
 | Plugin | Use it for |
 | --- | --- |
@@ -162,7 +166,6 @@ self-contained runtime copies into `.agents/`.
 | [`exploration-cycle-plugin`](plugins/exploration-cycle-plugin/README.md) | Discovery, requirements, prototyping, and handoff into engineering work |
 | [`obsidian-wiki-engine`](plugins/obsidian-wiki-engine/README.md) | Obsidian vault, graph, and wiki workflows |
 | [`dependency-management`](plugins/dependency-management/README.md) | Python dependency and environment management |
-| [`plugin-manager`](plugins/plugin-manager/README.md) | Installing, synchronizing, and maintaining the plugin ecosystem |
 
 For individual skills, agents, supported surfaces, and version detail, use each plugin's README
 and manifest rather than treating this landing page as a volatile inventory.

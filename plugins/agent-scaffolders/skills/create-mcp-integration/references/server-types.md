@@ -1,1 +1,0 @@
-../../../references/server-types.md

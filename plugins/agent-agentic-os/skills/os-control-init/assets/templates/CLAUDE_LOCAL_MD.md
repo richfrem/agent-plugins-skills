@@ -1,1 +1,0 @@
-../../../../assets/templates/CLAUDE_LOCAL_MD.md

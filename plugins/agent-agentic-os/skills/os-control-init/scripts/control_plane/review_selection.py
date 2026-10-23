@@ -1,1 +1,0 @@
-../../../../scripts/control_plane/review_selection.py

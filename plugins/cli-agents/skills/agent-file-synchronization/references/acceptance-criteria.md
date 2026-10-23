@@ -1,1 +1,0 @@
-../../../references/agent-file-synchronization-acceptance-criteria.md

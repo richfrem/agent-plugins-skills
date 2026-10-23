@@ -1,1 +1,0 @@
-../../../references/exploration-output-standards.md

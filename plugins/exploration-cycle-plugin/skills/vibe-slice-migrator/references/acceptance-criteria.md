@@ -1,1 +1,0 @@
-../../../references/vibe-slice-migrator-acceptance-criteria.md

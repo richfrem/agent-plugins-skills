@@ -1,1 +1,0 @@
-../../../../assets/templates/compliance-standards-reviewer.md

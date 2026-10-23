@@ -1,1 +1,0 @@
-../../../scripts/scaffold_github_action.py

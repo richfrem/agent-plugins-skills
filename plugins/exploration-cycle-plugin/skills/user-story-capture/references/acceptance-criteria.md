@@ -1,1 +1,0 @@
-../../../references/user-story-capture-acceptance-criteria.md

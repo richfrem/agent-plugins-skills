@@ -26,7 +26,7 @@ git diff <baseline-commit> HEAD --name-only  # all files changed since baseline
 |:---|:---|:---|
 | `<plugin>/skills/<skill>/SKILL.md` | Deployed Skill | `plugins/<plugin>/skills/<skill>/SKILL.md` |
 | `<plugin>/skills/<skill>/evals/evals.json` | Deployed Evals | `plugins/<plugin>/skills/<skill>/evals/evals.json` |
-| `.agents/skills/os-lab-scorer/` (if patched) | Deployed Engine | `plugins/agent-agentic-os/skills/os-lab-scorer/` |
+| Active client harness (if patched) | Deployed Engine | `plugins/agent-agentic-os/skills/os-lab-scorer/` |
 
 **4. For each file — read the diff and assess:**
 - **Accept as-is**: change is clearly an improvement, apply verbatim
@@ -61,7 +61,7 @@ Routing precision view:
 
 Regression view:
   Do any other installed skills have overlapping keywords with this change?
-  grep -r "<new keyword>" .agents/skills/*/SKILL.md
+  grep -r "<new keyword>" plugins/*/skills/*/SKILL.md
 ```
 
 For **unattended** (`os-nightly-evolver`) runs: write this commentary to
@@ -75,7 +75,7 @@ compare it against the canonical template. If it substantially improved proposal
 to the copilot-cli plugin as a reference example:
 ```bash
 cp <lab-experiment-dir>/references/copilot_proposer_prompt.md \
-   .agents/skills/copilot-cli-agent/references/skill-proposer-prompt.md
+   plugins/cli-agents/skills/copilot-cli-agent/references/skill-proposer-prompt.md
 ```
 This closes the loop: the prompt that emerged from real eval feedback becomes the new starting
 baseline for future experiments.

@@ -1,1 +1,0 @@
-../../../scripts/adr_manager.py

@@ -1,1 +1,0 @@
-../../../references/orchestrator-acceptance-criteria.md

@@ -1,1 +1,0 @@
-../../../scripts/redaction_gate.py

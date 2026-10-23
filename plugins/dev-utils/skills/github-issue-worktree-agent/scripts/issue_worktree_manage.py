@@ -1,1 +1,0 @@
-../../../scripts/issue_worktree_manage.py

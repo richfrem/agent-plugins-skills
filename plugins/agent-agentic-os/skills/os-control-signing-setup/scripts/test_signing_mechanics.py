@@ -1,1 +1,0 @@
-../../../scripts/test_signing_mechanics.py

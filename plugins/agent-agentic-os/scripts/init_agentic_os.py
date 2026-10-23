@@ -916,7 +916,12 @@ def find_setup_script(target: Path) -> Optional[Path]:
     """Return the human setup script for `target`'s layout (installed skills first, then beside this file)."""
     candidates = [
         target / ".agents" / "skills" / "os-control-signing-setup" / "scripts" / "setup_ciba_identity.py",
+        target / ".claude" / "skills" / "os-control-signing-setup" / "scripts" / "setup_ciba_identity.py",
+        Path.home() / ".agents" / "skills" / "os-control-signing-setup" / "scripts" / "setup_ciba_identity.py",
+        Path.home() / ".claude" / "skills" / "os-control-signing-setup" / "scripts" / "setup_ciba_identity.py",
+        Path.home() / ".apm" / "skills" / "os-control-signing-setup" / "scripts" / "setup_ciba_identity.py",
         target / ".agents" / "skills" / "os-control-health" / "scripts" / "setup_ciba_identity.py",
+        target / ".claude" / "skills" / "os-control-health" / "scripts" / "setup_ciba_identity.py",
         target / "plugins" / "agent-agentic-os" / "scripts" / "setup_ciba_identity.py",
         Path(__file__).resolve().parent / "setup_ciba_identity.py",
     ]
@@ -1032,12 +1037,10 @@ def print_next_steps(target: Path, did_global: bool, did_retrofit: bool) -> None
     print(f"   - Layer 3: Append-only trace manifests ({target}/.agent/learning/traces/)")
     print(f"\n3. Install/Update Agent Plugins:")
     print("   Run one of the following based on your preferred package manager / tooling:")
-    print("   • uvx (Universal / Recommended):")
-    print("     uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills")
-    print("   • Claude Code Marketplace:")
-    print("     claude plugin add richfrem/agent-plugins-skills")
-    print("   • Local Source Reinstall:")
-    print("     python3 plugins/plugin-manager/scripts/plugin_add.py --all -y")
+    print("   • APM (Universal cross-client package manager):")
+    print("     apm install @richfrem/agent-agentic-os")
+    print("   • Global user install across all clients:")
+    print("     apm install -g --target claude,copilot,codex,antigravity @richfrem/agent-agentic-os")
     print("\n4. Add to .gitignore:")
     print("   context/memory/, context/status.md, context/os-state.json, context/events.jsonl, context/.locks/, .claude/")
     print("\n5. Recommended Verification Check:")
