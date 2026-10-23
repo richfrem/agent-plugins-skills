@@ -308,3 +308,28 @@ The biggest breakthrough in unwinding symlinks is understanding that **avoiding 
 1. **Zero Duplicate Content in Git**: `architecture.md` is authored and maintained in exactly one place.
 2. **Zero Filesystem Tricks**: No OS symlinks, no Windows junctions, no admin rights, no Developer Mode, and no `.pointer` files.
 3. **Guaranteed Resolution via APM**: Because APM installs sibling skills side-by-side into the harness (e.g. `%USERPROFILE%\.github\skills\` or `.claude/skills/`), the relative path `../os-core/references/...` resolves naturally on disk on **every operating system** (Windows, macOS, Linux).
+
+---
+
+## 11. Granular Primitive Selection & Hook Architecture
+
+### 1. Granular Selection (Cherry-Picking Specific Skills & Agents)
+APM eliminates the need for interactive Python selection TUIs and retention manifests by providing declarative granularity natively:
+- **Individual Skill Installation**:
+  ```bash
+  apm install richfrem/agent-plugins-skills/.apm/skills/os-memory-manager#stable --global --target copilot
+  ```
+- **Individual Agent Installation (`.agent.md`)**:
+  ```bash
+  apm install richfrem/agent-plugins-skills/.apm/agents/coding-conventions-agent.agent.md#stable --global --target copilot
+  ```
+- **Declarative `apm.yml` Dependency**: Downstream projects can specify exact subpaths under `dependencies.apm` to pull only the specific primitives they need, resulting in zero token bloat and byte-identical lockfile reproducibility.
+
+### 2. Dual-Layer Hook Support
+APM supports both tool-level execution hooks and package-lifecycle automation:
+1. **Agent Runtime Hooks (`.apm/hooks/*.json`)**:
+   - Captures tool events like `PreToolUse`, `PostToolUse`, `SessionStart`, and `Stop`.
+   - When deployed (`apm install --target claude`), APM compiles and merges these definitions into the native harness hook registry (e.g. `.claude/hooks/hooks.json` or `.github/hooks/`).
+2. **Package Lifecycle Hooks (`lifecycle:` block in `apm.yml`)**:
+   - Enables `post-update` or `post-install` automated shell commands (e.g. running reference migration scripts).
+   - Guarded by APM's `lifecycle validate` and `lifecycle trust` security commands to prevent arbitrary untrusted execution.
