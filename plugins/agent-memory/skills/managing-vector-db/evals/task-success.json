@@ -1,0 +1,42 @@
+[
+  {
+    "id": "vector-guided-preserve-storage",
+    "prompt": "Configure my existing vector knowledge profile for the same Atlas sources, retaining its server and chunk sizes.",
+    "expected_behavior": [
+      "Stay in the main conversation and reuse the known project/source choices.",
+      "Read and preserve connection, collection, manifest, chunking and unknown values unless their change is explicitly selected.",
+      "Set chroma_host consistently with the selected in-process/server client contract.",
+      "Preview the merged JSON before writes; do not run generic init defaults over chosen values."
+    ]
+  },
+  {
+    "id": "vector-no-wiki",
+    "prompt": "Set up RLM plus vector only. The project, roots and RLM answers are already above; no wiki.",
+    "expected_behavior": [
+      "Reuse answers and continue only the selected layers inline; do not restart completed interviews.",
+      "Create no wiki profile, source registry, output directory or metadata.",
+      "Use separate flat manifests for vector and ledger data, retaining explicit profile manifest fields.",
+      "Report source/config readiness separately from ingestion and retrieval evidence."
+    ]
+  },
+  {
+    "id": "vector-deferred-runtime",
+    "prompt": "Prepare vector config, but do not install packages or download models.",
+    "expected_behavior": [
+      "Preview/configure only authorized profiles/manifests.",
+      "Explain unavailable dependencies or future embedding downloads without performing them.",
+      "Preview configuration and source scope through supported read-only checks; do not invent ingest --dry-run.",
+      "Report setup-only readiness, with live ingestion/query deferred rather than marked passed."
+    ]
+  },
+  {
+    "id": "vector-direct-cleanup",
+    "prompt": "Preview stale chunks in the configured wiki vector collection; do not delete them.",
+    "expected_behavior": [
+      "Run the cleanup mode in the main conversation without a setup or cleanup agent.",
+      "Use the selected profile and supported API/script in its default preview mode.",
+      "Do not pass --apply or directly access backing SQLite/Parquet files.",
+      "Report actual candidates and retained collection state; do not claim removals."
+    ]
+  }
+]

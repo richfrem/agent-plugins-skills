@@ -33,11 +33,10 @@ Current scale (read from `plugins/` — verify with `find plugins -name SKILL.md
 ├── plugins/                        # CANONICAL SOURCE — authoritative for all skills/agents
 │   ├── agent-agentic-os/           # Control plane + skill improvement lab (14 skills)
 │   ├── agent-orchestration/        # Execution topologies & multi-LLM CLI routing (4 skills, 13 agents)
-│   ├── agent-memory/               # RLM summary cache + ChromaDB vector store (13 skills)
+│   ├── agent-memory/               # Memory, RLM, vector retrieval and Obsidian wiki (4 skills)
 │   ├── agent-scaffolders/          # Plugin/skill/agent/rule scaffolding & auditing (27 skills)
 │   ├── dev-utils/                  # GitHub issues + worktrees, context bundling, links, conventions, ADRs, symlinks, HuggingFace (8 skills)
 │   ├── exploration-cycle-plugin/   # Business discovery workflow + SQLite control plane (20 skills)
-│   ├── obsidian-wiki-engine/       # Karpathy-style LLM wiki over the codebase (10 skills)
 │   └── <plugin>/
 │       ├── skills/<skill>/SKILL.md # Skill definition (evals.json lives alongside)
 │       ├── agents/                 # Sub-agent definitions
@@ -137,11 +136,18 @@ and `turn_evolution_guard`). Three control-plane edges are cryptographic human g
 ### 4.3. Plugin: agent-orchestration (4 skills, 13 agents)
 Unified execution topologies (DAGs, supervisor/worker loops, parallel swarms via `orchestrating-agent-work`) and multi-backend task routing (`run_agent.py` to Claude, Copilot, Gemini, Agy, Codex, and direct local llama-server via `cli-agent`, plus `agt-security` sandboxing and `maf-adapter` framework validation). Includes 13 expert agent personas (architect-review, security-auditor, tdd-contract-reviewer, red-team-reviewer, etc.) which form the Phase 1 adversarial review trio per `engineering-lifecycle-policy.md` §3.
 
-### 4.4. Plugin: agent-memory
-Two retrieval subsystems consolidated from former rlm-factory / vector-db / memory-management
-plugins: RLM (dense-summary keyword cache, O(1) lookup, zero deps) and vector-db (ChromaDB semantic
-embeddings). Can run standalone or combined as part of a "Super-RAG" stack with
-`obsidian-wiki-engine`.
+### 4.4. Plugin: agent-memory (4 skills)
+Agent Memory & Knowledge combines filesystem memory, RLM summary ledgers, ChromaDB
+semantic retrieval and the Obsidian vault/wiki pipeline. `memory-management` remains
+filesystem-native; `managing-rlm-cache`, `managing-vector-db` and
+`managing-obsidian-vaults` own their scripts, assets and references directly.
+Wiki distillation and lint share one engine inside the Obsidian skill. The three-layer
+wiki summary format remains distinct from RLM file-summary ledgers. Consumer profiles
+stay under `.agent/learning/`; optional interoperability reads project data or uses
+explicit CLI contracts rather than importing sibling skills. The skills own main-session interviews, setup, operations and Super-RAG coordination;
+dedicated memory agents and command wrappers are retired. Skill-specific documents
+and diagrams live under references/, with executable templates in assets/. No copy
+manifest is needed by this plugin.
 
 ### 4.5. Plugin: agent-scaffolders (27 skills)
 Tooling for creating and auditing ecosystem components: `create-plugin`, `create-skill`, `create-rule`
@@ -156,10 +162,6 @@ migration). Backed by a hardened Python control plane in `scripts/`: `dispatch.p
 `state_engine.py` (SQLite, transactional, WAL), `sandbox_runner.py` (process sandboxing, HMAC-signed
 envelopes, approval gating). Any change to these files requires reading `docs/ADRs/007_maf_adapter_runtime_decision.md`
 first — no casual convenience bypasses to the authorization gate or path enforcement.
-
-### 4.7. Plugin: obsidian-wiki-engine (10 skills)
-Karpathy-style LLM wiki generation over the codebase; standalone or combined with agent-memory as
-the third leg of the Super-RAG stack.
 
 ### 4.9. Plugin: dev-utils (8 skills)
 Self-contained utilities: `managing-github-issues` (log, promote, rank, refactor proposals,

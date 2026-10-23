@@ -46,25 +46,18 @@ python3 plugins/agent-scaffolders/skills/install-apm-package/scripts/apm_consume
 
 ---
 
-### B. `agent-memory` (Cognitive Memory & Retrieval)
+### B. `agent-memory` (Agent Memory & Knowledge)
 
 | Skill | Status | Rationale |
 |---|---|---|
-| `memory-management` | `false` | Standalone memory helper (covered by `os-lab-memory`). |
-| `rlm-audit` | `false` | Recursive Language Model summary ledger distillation & curation. |
-| `rlm-cleanup-agent` | `false` | Recursive Language Model summary ledger distillation & curation. |
-| `rlm-curator` | `false` | Recursive Language Model summary ledger distillation & curation. |
-| `rlm-distill-agent` | `false` | Recursive Language Model summary ledger distillation & curation. |
-| `rlm-init` | `false` | Recursive Language Model summary ledger distillation & curation. |
-| `rlm-search` | `false` | Recursive Language Model summary ledger distillation & curation. |
-| `vector-db-audit` | `false` | ChromaDB vector storage, ingestion, and search. |
-| `vector-db-cleanup` | `false` | ChromaDB vector storage, ingestion, and search. |
-| `vector-db-ingest` | `false` | ChromaDB vector storage, ingestion, and search. |
-| `vector-db-init` | `false` | ChromaDB vector storage, ingestion, and search. |
-| `vector-db-launch` | `false` | ChromaDB vector storage, ingestion, and search. |
-| `vector-db-search` | `false` | ChromaDB vector storage, ingestion, and search. |
+| `memory-management` | `false` | Filesystem memory and session continuity. |
+| `managing-rlm-cache` | `false` | Summary ledger setup, search, distillation, audit, curation and cleanup. |
+| `managing-vector-db` | `false` | ChromaDB setup, ingest, semantic query, audit, cleanup and server lifecycle. |
+| `managing-obsidian-vaults` | `false` | Vault/Markdown/Bases/Canvas/graph operations and wiki build, distill, query and lint. |
 
-No skills enabled: do not install this plugin.
+Enable only the skills needed by the consumer. The former obsidian-wiki-engine
+plugin is absorbed into agent-memory; standalone wiki installs select
+`managing-obsidian-vaults` without vector or RLM dependencies.
 
 ---
 
@@ -206,25 +199,6 @@ python3 plugins/agent-scaffolders/skills/install-apm-package/scripts/apm_consume
 | `vibe-to-speckit-superpowers` | `false` | Off for lean development; enable only for product discovery or prototype reverse-engineering. |
 | `vibe-togaf-architect` | `false` | Off for lean development; enable only for product discovery or prototype reverse-engineering. |
 | `visual-companion` | `false` | Off for lean development; enable only for product discovery or prototype reverse-engineering. |
-
-No skills enabled: do not install this plugin.
-
----
-
-### I. `obsidian-wiki-engine` (Obsidian Vault & Wiki)
-
-| Skill | Status | Rationale |
-|---|---|---|
-| `obsidian-bases-manager` | `false` | Off for lean development; enable only when integrating directly with an Obsidian vault. |
-| `obsidian-canvas-architect` | `false` | Off for lean development; enable only when integrating directly with an Obsidian vault. |
-| `obsidian-graph-traversal` | `false` | Off for lean development; enable only when integrating directly with an Obsidian vault. |
-| `obsidian-init` | `false` | Off for lean development; enable only when integrating directly with an Obsidian vault. |
-| `obsidian-markdown-mastery` | `false` | Off for lean development; enable only when integrating directly with an Obsidian vault. |
-| `obsidian-query-agent` | `false` | Off for lean development; enable only when integrating directly with an Obsidian vault. |
-| `obsidian-rlm-distiller` | `false` | Off for lean development; enable only when integrating directly with an Obsidian vault. |
-| `obsidian-vault-crud` | `false` | Off for lean development; enable only when integrating directly with an Obsidian vault. |
-| `obsidian-wiki-builder` | `false` | Off for lean development; enable only when integrating directly with an Obsidian vault. |
-| `obsidian-wiki-linter` | `false` | Off for lean development; enable only when integrating directly with an Obsidian vault. |
 
 No skills enabled: do not install this plugin.
 

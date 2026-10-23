@@ -158,11 +158,10 @@ self-contained runtime copies into active client harnesses (`.claude/skills/`, `
 | --- | --- |
 | [`agent-agentic-os`](plugins/agent-agentic-os/README.md) | Governed task lifecycle, health checks, evaluation, continuous improvement, and repository evolution |
 | [`agent-orchestration`](plugins/agent-orchestration/README.md) | Unified agent execution topologies (DAGs, supervisor/worker loops, parallel swarms) and multi-backend CLI routing (run_agent.py, 13 expert personas, AGT sandboxing, MAF validation) |
-| [`agent-memory`](plugins/agent-memory/README.md) | Filesystem memory, RLM, and vector-data capabilities |
+| [`agent-memory`](plugins/agent-memory/README.md) | Filesystem memory, RLM, vector retrieval, and Obsidian vault/wiki workflows |
 | [`agent-scaffolders`](plugins/agent-scaffolders/README.md) | Creating, auditing, packaging, and maintaining plugins and skills |
 | [`dev-utils`](plugins/dev-utils/README.md) | Repository utilities: GitHub issues and worktrees, context bundling, link checking, coding conventions, ADRs, symlinks, HuggingFace transfers |
 | [`exploration-cycle-plugin`](plugins/exploration-cycle-plugin/README.md) | Discovery, requirements, prototyping, and handoff into engineering work |
-| [`obsidian-wiki-engine`](plugins/obsidian-wiki-engine/README.md) | Obsidian vault, graph, and wiki workflows |
 
 For individual skills, agents, supported surfaces, and version detail, use each plugin's README
 and manifest rather than treating this landing page as a volatile inventory.

@@ -1664,3 +1664,74 @@ Persistent tracking of architectural friction, structural anomalies, and unclose
 - Severity: M
 - Repeat: YES
 - Status: RESOLVED
+
+
+## DEBT-20261023-MEMORY-CONSOLIDATION-POINTER-STUBS
+
+Status: RESOLVED
+
+Source memory resources contained broken pointer-only Markdown, JSON, PNG and
+Mermaid aliases. Static skill audits did not detect these invalid assets. During
+the agent-memory consolidation, co-locate real Mermaid sources, remove fake PNG
+aliases, provide valid schema examples once under RLM assets/examples and repair
+links. Missing historical reference content is explicitly identified rather than
+claimed recovered. Independent review scans every resource, not only SKILL.md.
+Map update: docs/plans/work-tasks/agent-memory-consolidation/PLAN.md records the
+resource scan and ownership decisions; master_migration_inventory.csv records moves.
+
+## DEBT-20261023-MEMORY-CONSOLIDATION-CONSUMER-PATHS
+
+Status: RESOLVED
+
+Global installs and worktrees exposed script-relative project discovery and
+wrong-owner combined setup commands. Resolve consumer state from the explicit
+AGENT_MEMORY_PROJECT_ROOT or caller workspace; keep executable assets skill-local.
+RLM batch helpers now use explicit skill-root/python template substitutions and
+consumer subprocess working directories. Quote brace-leading YAML scalars.
+Independent probes cover spaces in install/project/source paths, outside-root
+rejection, real cache check/post helpers and dry-run discovery without model calls.
+Map update: owning skill entry points, host setup workflows and the plugin README
+now specify the consumer/skill root contract and explicit optional vector query path.
+
+## DEBT-20261023-MEMORY-CONSOLIDATION-ROUTING-MEASUREMENT
+
+Status: OPEN
+
+All 192 legacy routing cases are preserved; an independent verifier reclassified
+69 former sibling-boundary negatives for the consolidated interfaces. Static
+preservation and command probes do not establish routing accuracy/F1. Run and
+record baseline-versus-consolidated routing measurements before claiming routing
+parity; split the Obsidian router if the measured result regresses, per migration
+plan Section 13.10.3. No paid model campaign has been run or score invented.
+
+
+## DEBT-20261023-MEMORY-INTERACTIVE-AGENT-ABSORPTION
+
+Status: RESOLVED
+
+The first consolidation preserved dedicated setup agents at plugin level and left
+its four skill routers without their complete interview behavior. The user
+corrected this: setup conversations and operation modes belong directly in the
+skills, following orchestrating-agent-work; command wrappers are unnecessary.
+Moved the 11 definitions' behaviors into four guided references and seven operational
+mode references, linked from the main-session entry points. Reuse supplied/slash
+arguments, ask one unresolved question per turn and carry root/scope across skill
+modes; do not fork a wizard. Dedicated agent/command source directories and manifest
+entries are removed under the user's explicit instruction. Skill documents/diagrams
+now reside in skill references; executable templates remain in skill assets.
+Map update: skill interaction sections, guided setup docs, README, architecture,
+agent-interaction-inventory.csv and master_migration_inventory.csv. Review legacy
+agent interactions before declaring any future plugin's consolidation ready.
+
+
+## DEBT-20261023-MEMORY-FINAL-AUDIT-LIMITS
+
+Status: OPEN
+
+The workspace-wide conventions audit reports existing repository-wide violations;
+new helper files are checked independently in this migration. The skill auditor
+also reports nonblocking transitive reference navigation aliases despite concrete
+links resolving. Routing F1, fresh locked environment installation and live full
+Super-RAG integration are not certified by this source-preservation change.
+Map update: migration plan Section13.10.3, dependency/individual/interactive audit
+receipts, and the master inventory distinguish source parity from those measures.

@@ -1,0 +1,12 @@
+{
+  "include": [
+    "src/**/*.py",
+    "plugins/**/*.md"
+  ],
+  "exclude": [
+    ".git/",
+    "node_modules/",
+    "__pycache__/"
+  ],
+  "recursive": true
+}

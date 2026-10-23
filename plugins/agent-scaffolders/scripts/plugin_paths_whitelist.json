@@ -5,6 +5,5 @@
   "plugins/agent-scaffolders",
   "plugins/cli-agents",
   "plugins/dev-utils",
-  "plugins/exploration-cycle-plugin",
-  "plugins/obsidian-wiki-engine"
+  "plugins/exploration-cycle-plugin"
 ]

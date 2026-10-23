@@ -1,7 +1,7 @@
 {
   "name": "agent-memory",
-  "version": "1.0.0",
-  "description": "Unified Cognitive Memory & Retrieval Suite. Integrates RLM distills (summarization), ChromaDB vector semantic search, and session caching / tiered promotion-demotion memory management.",
+  "version": "2.0.0",
+  "description": "Agent Memory & Knowledge: filesystem memory, RLM summary ledgers, vector retrieval, and Obsidian vault and wiki workflows.",
   "author": {
     "name": "Richard Fremmerlid"
   },
@@ -15,7 +15,12 @@
     "distill",
     "cache",
     "session-continuity",
-    "rag"
+    "rag",
+    "obsidian",
+    "wiki",
+    "knowledge-graph",
+    "canvas",
+    "bases"
   ],
   "capabilities": [
     "semantic-search",

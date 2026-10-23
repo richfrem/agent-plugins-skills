@@ -1,0 +1,163 @@
+#!/usr/bin/env python
+"""
+query_cache.py
+=====================================
+
+Purpose:
+    RLM Search: Instant keyword-based lookup against the semantic ledger.
+    Searches entry paths and summary text to surface relevant cached records.
+
+Key Input Dependencies:
+    - rlm_profiles.json         — Contains RLM configuration profiles
+    - rlm_config.py             — RLMConfig state manager and cache loader
+    - live filesystem           — Target paths checked for presence in RLM cache
+
+Layer: Search / Rlm
+
+Usage:
+    python ./scripts/query_cache.py --profile plugins "rlm"
+    python ./scripts/query_cache.py --profile tools --list
+    python ./scripts/query_cache.py --profile plugins "factory" --json
+
+Related:
+    - rlm_config.py (configuration & cache utilities)
+    - distiller.py (cache population)
+"""
+import sys
+import json
+import argparse
+from pathlib import Path
+from typing import List, Dict, Any
+
+# ============================================================
+# PATHS
+# File is at: ./scripts/query_cache.py
+# Root is 6 levels up (scripts->rlm-search->skills->rlm-factory->plugins->ROOT)
+# rlm_config is symlinked into the same directory
+# ============================================================
+def _find_project_root(start_path: Path) -> Path:
+    """Resolve consumer data from the caller workspace or explicit override."""
+    from constants import consumer_project_root
+    return consumer_project_root()
+
+PROJECT_ROOT = _find_project_root(Path(__file__))
+SCRIPT_DIR = Path(__file__).resolve().parent
+
+# Add the script's directory to sys.path to allow local imports
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
+
+try:
+    from rlm_config import RLMConfig, load_cache
+except ImportError as e:
+    print(f"[ERROR] Could not import local rlm_config from {SCRIPT_DIR}: {e}")
+    sys.exit(1)
+
+
+# ----------------------------------------------------------
+# search_cache — keyword search across paths and summaries
+# ----------------------------------------------------------
+def search_cache(
+    term: str,
+    config: RLMConfig,
+    show_summary: bool = True,
+    output_json: bool = False
+) -> None:
+    """
+    Search the RLM cache for entries matching the given term.
+
+    Matches against both the file path and the summary text. Results are
+    sorted by path and printed to stdout (or serialized as JSON).
+
+    Args:
+        term: Keyword to search for (case-insensitive).
+        config: Active RLMConfig providing the cache path.
+        show_summary: If True, print a preview of the summary text.
+        output_json: If True, serialize results as JSON instead of formatted text.
+    """
+    data = load_cache(config.cache_path)
+    term_lower = term.lower()
+
+    if not output_json:
+        print(f"[SEARCH] Searching [{config.profile_name.upper()}] for: '{term}'...")
+
+    matches: List[Dict[str, Any]] = []
+    for rel_path, entry in data.items():
+        summary_str = str(entry.get("summary", ""))
+        if term_lower in rel_path.lower() or term_lower in summary_str.lower():
+            matches.append({"path": rel_path, "entry": entry})
+
+    matches.sort(key=lambda x: x["path"])
+
+    if output_json:
+        print(json.dumps(matches, indent=2))
+        return
+
+    if not matches:
+        print("   No matches found.")
+        return
+
+    print(f"[OK] Found {len(matches)} match(es):\n")
+    for match in matches:
+        path = match["path"]
+        entry = match["entry"]
+        print(f"📄 {path}")
+        print(f"   🕒 Indexed: {entry.get('summarized_at', 'Unknown')}")
+        if show_summary:
+            summary_str = str(entry.get("summary", "No summary."))
+            preview = (summary_str[:300] + "...") if len(summary_str) > 300 else summary_str
+            print(f"   [NOTE] {preview}")
+        print("-" * 50)
+
+
+# ----------------------------------------------------------
+# list_cache — enumerate all entries in a cache
+# ----------------------------------------------------------
+def list_cache(config: RLMConfig) -> None:
+    """
+    List all file paths currently indexed in the cache.
+
+    Args:
+        config: Active RLMConfig providing the cache path.
+    """
+    data = load_cache(config.cache_path)
+    print(f"📚 [{config.profile_name.upper()}] — {len(data)} entries:\n")
+    for rel_path in sorted(data.keys()):
+        print(f"   - {rel_path}")
+
+
+# ============================================================
+# CONFIG / PATHS
+# ============================================================
+def _find_project_root(start_path: Path) -> Path:
+    """Resolve consumer data from the caller workspace or explicit override."""
+    from constants import consumer_project_root
+    return consumer_project_root()
+
+PROJECT_ROOT = _find_project_root(Path(__file__))
+
+# ============================================================
+# CLI ENTRY POINT
+# ============================================================
+def main() -> None:
+    """Parse CLI arguments and dispatch to search_cache() or list_cache()."""
+    parser = argparse.ArgumentParser(description="RLM Cache — keyword search and listing")
+    parser.add_argument("term", nargs="?", help="Search term (filename fragment or content keyword)")
+    parser.add_argument("--profile", required=True, help="RLM profile name (from rlm_profiles.json)")
+    parser.add_argument("--list", action="store_true", help="List all cached file paths")
+    parser.add_argument("--no-summary", action="store_true", help="Hide summary text in results")
+    parser.add_argument("--json", action="store_true", help="Output results as JSON")
+
+    args = parser.parse_args()
+    config = RLMConfig(profile_name=args.profile)
+
+    if args.list:
+        list_cache(config)
+    elif args.term:
+        search_cache(args.term, config, show_summary=not args.no_summary, output_json=args.json)
+    else:
+        parser.print_help()
+
+
+if __name__ == "__main__":
+    main()

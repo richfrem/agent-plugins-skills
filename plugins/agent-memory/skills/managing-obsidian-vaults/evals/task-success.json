@@ -1,0 +1,61 @@
+[
+  {
+    "id": "stack-no-wiki",
+    "prompt": "Set up the full retrieval combination I selected: RLM plus vector, no wiki. Atlas and docs/ are already known.",
+    "expected_behavior": [
+      "Use the main-session stack setup while retaining the explicit RLM-plus-vector selection.",
+      "Continue the two selected skill modes inline and reuse Atlas/docs/ rather than asking again.",
+      "Create no wiki root, wiki profile, raw-source registry, meta/config.yaml or meta/agent-memory.json.",
+      "Report only selected-layer state and next steps; no wiki build/distill/query or extra setup agents."
+    ]
+  },
+  {
+    "id": "wiki-only",
+    "prompt": "Set up a standalone wiki in .wiki from docs/; no RLM ledger or vector database.",
+    "expected_behavior": [
+      "Continue guided wiki setup in the current conversation, asking one unresolved source-label/filter detail at a time.",
+      "Preview the nested sources registry and wiki directory/config plan, preserving raw sources.",
+      "Build/query/audit with this skill alone; do not create sibling ledger/vector profiles.",
+      "Explain that optional semantic distillation/lint needs the selected cloud CLI rather than calling it dependency-free."
+    ]
+  },
+  {
+    "id": "wiki-existing-merge",
+    "prompt": "Add a research source to my existing wiki. Preserve every existing source, metadata hash and custom config field.",
+    "expected_behavior": [
+      "Read the existing nested source registry, config and meta/agent-memory.json.",
+      "Merge source objects by key; do not treat the registry as a flat include array.",
+      "Preview only the incremental change and resolve key conflicts by merge/rename/cancel.",
+      "Preserve existing hashes/mappings and creation time; cancellation stops pending writes."
+    ]
+  },
+  {
+    "id": "wiki-full-stack-contracts",
+    "prompt": "Set up wiki plus RLM plus vector, using the source and storage choices I already gave.",
+    "expected_behavior": [
+      "Keep all phases in the main conversation and skip completed interviews while retaining shared answers.",
+      "Keep flat RLM/vector manifests separate from the nested wiki registry; retain explicit vector manifest fields.",
+      "Populate requested per-file summaries before vector enrichment, then build concept nodes and separately distill concept layers when authorized.",
+      "Set AGENT_MEMORY_PROJECT_ROOT for each owner, AGENT_MEMORY_VECTOR_QUERY for integrated semantic lookup and matching custom concept-cache CLI flags."
+    ]
+  },
+  {
+    "id": "wiki-direct-note",
+    "prompt": "Append a warning callout to my existing Obsidian note; do not set up a wiki or change retrieval layers.",
+    "expected_behavior": [
+      "Use note/Markdown mode directly without a setup interview or dedicated agent.",
+      "Preserve lossless frontmatter, locking and atomic/concurrent-edit safeguards required by the mode.",
+      "Create no wiki/ledger/vector configuration as an incidental side effect."
+    ]
+  },
+  {
+    "id": "wiki-missing-sibling",
+    "prompt": "Use wiki plus vector, but the vector skill is not installed.",
+    "expected_behavior": [
+      "Check installed capability names instead of inferring availability from the source checkout.",
+      "Explain the missing selected capability and offer an available subset or authorized APM installation.",
+      "Do not silently drop vector, install it, or create a misleading configured vector profile.",
+      "Report the remaining dependency and unvalidated integration honestly."
+    ]
+  }
+]

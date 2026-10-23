@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "default_profile": "project",
+  "profiles": {
+    "project": {
+      "description": "Project documentation",
+      "manifest": ".agent/learning/rlm_summary_cache_manifest.json",
+      "cache": ".agent/learning/rlm_summary_cache.json",
+      "extensions": [
+        ".md"
+      ],
+      "parser": "directory_glob"
+    },
+    "tools": {
+      "description": "Source code and skill documentation",
+      "manifest": ".agent/learning/rlm_tools_manifest.json",
+      "cache": ".agent/learning/rlm_tools_cache.json",
+      "extensions": [
+        ".py",
+        ".md"
+      ],
+      "parser": "directory_glob"
+    }
+  }
+}

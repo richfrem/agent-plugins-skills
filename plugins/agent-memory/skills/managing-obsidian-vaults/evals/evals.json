@@ -1,0 +1,693 @@
+[
+  {
+    "prompt": "Read the project-tracker.base file and show me all rows in the Obsidian Base.",
+    "should_trigger": true,
+    "id": "obsidian-bases-manager:1",
+    "source_skill": "obsidian-bases-manager",
+    "source_case_index": 0,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Append a new row to the tasks.base database view in my Obsidian vault.",
+    "should_trigger": true,
+    "id": "obsidian-bases-manager:2",
+    "source_skill": "obsidian-bases-manager",
+    "source_case_index": 1,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Update the status cell in row 3 of the sprint-board.base file to 'done'.",
+    "should_trigger": true,
+    "id": "obsidian-bases-manager:3",
+    "source_skill": "obsidian-bases-manager",
+    "source_case_index": 2,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Traverse the vault graph and find all backlinks to the Architecture note.",
+    "should_trigger": true,
+    "id": "obsidian-bases-manager:4",
+    "source_skill": "obsidian-bases-manager",
+    "source_case_index": 3,
+    "source_should_trigger": false,
+    "reclassification_reason": "Vault graph queries are now an Obsidian mode."
+  },
+  {
+    "prompt": "Create a new Obsidian Canvas file with nodes representing the project workflow.",
+    "should_trigger": true,
+    "id": "obsidian-bases-manager:5",
+    "source_skill": "obsidian-bases-manager",
+    "source_case_index": 4,
+    "source_should_trigger": false,
+    "reclassification_reason": "Canvas authoring is now an Obsidian mode."
+  },
+  {
+    "prompt": "Create a new note in the vault and update its frontmatter YAML.",
+    "should_trigger": true,
+    "id": "obsidian-bases-manager:6",
+    "source_skill": "obsidian-bases-manager",
+    "source_case_index": 5,
+    "source_should_trigger": false,
+    "reclassification_reason": "Vault-note CRUD is now an Obsidian mode."
+  },
+  {
+    "prompt": "Create a new Obsidian Canvas file mapping the project architecture with nodes and edges.",
+    "should_trigger": true,
+    "id": "obsidian-canvas-architect:1",
+    "source_skill": "obsidian-canvas-architect",
+    "source_case_index": 0,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Add a text node and connect it to the existing 'Backend' node in my architecture.canvas file.",
+    "should_trigger": true,
+    "id": "obsidian-canvas-architect:2",
+    "source_skill": "obsidian-canvas-architect",
+    "source_case_index": 1,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Build a planning board canvas (.canvas) showing the sprint workflow as a visual flowchart.",
+    "should_trigger": true,
+    "id": "obsidian-canvas-architect:3",
+    "source_skill": "obsidian-canvas-architect",
+    "source_case_index": 2,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Write a new Obsidian note and update its frontmatter status to 'active'.",
+    "should_trigger": true,
+    "id": "obsidian-canvas-architect:4",
+    "source_skill": "obsidian-canvas-architect",
+    "source_case_index": 3,
+    "source_should_trigger": false,
+    "reclassification_reason": "Vault-note CRUD is now an Obsidian mode."
+  },
+  {
+    "prompt": "Read the project-tracker.base database view and show me the open tasks.",
+    "should_trigger": true,
+    "id": "obsidian-canvas-architect:5",
+    "source_skill": "obsidian-canvas-architect",
+    "source_case_index": 4,
+    "source_should_trigger": false,
+    "reclassification_reason": "Base-view reading is now an Obsidian mode."
+  },
+  {
+    "prompt": "Render the architecture.mmd Mermaid diagram as a PNG image.",
+    "should_trigger": false,
+    "id": "obsidian-canvas-architect:6",
+    "source_skill": "obsidian-canvas-architect",
+    "source_case_index": 5,
+    "source_should_trigger": false
+  },
+  {
+    "prompt": "Build the vault graph index and show me all backlinks to the 'Architecture' note.",
+    "should_trigger": true,
+    "id": "obsidian-graph-traversal:1",
+    "source_skill": "obsidian-graph-traversal",
+    "source_case_index": 0,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Find all 2nd-degree connections of the 'API Design' note in my Obsidian vault.",
+    "should_trigger": true,
+    "id": "obsidian-graph-traversal:2",
+    "source_skill": "obsidian-graph-traversal",
+    "source_case_index": 1,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Scan the vault and list all orphaned notes that have no incoming or outgoing links.",
+    "should_trigger": true,
+    "id": "obsidian-graph-traversal:3",
+    "source_skill": "obsidian-graph-traversal",
+    "source_case_index": 2,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Append a new row to the sprint-board.base Obsidian Base database view.",
+    "should_trigger": true,
+    "id": "obsidian-graph-traversal:4",
+    "source_skill": "obsidian-graph-traversal",
+    "source_case_index": 3,
+    "source_should_trigger": false,
+    "reclassification_reason": "Base-view mutation is now an Obsidian mode."
+  },
+  {
+    "prompt": "Create a new vault note and write frontmatter metadata to it.",
+    "should_trigger": true,
+    "id": "obsidian-graph-traversal:5",
+    "source_skill": "obsidian-graph-traversal",
+    "source_case_index": 4,
+    "source_should_trigger": false,
+    "reclassification_reason": "Vault-note CRUD is now an Obsidian mode."
+  },
+  {
+    "prompt": "Build a canvas file showing the component architecture as a visual diagram.",
+    "should_trigger": true,
+    "id": "obsidian-graph-traversal:6",
+    "source_skill": "obsidian-graph-traversal",
+    "source_case_index": 5,
+    "source_should_trigger": false,
+    "reclassification_reason": "Canvas authoring is now an Obsidian mode."
+  },
+  {
+    "prompt": "Set up Obsidian for my project repository for the first time.",
+    "should_trigger": true,
+    "id": "obsidian-init:1",
+    "source_skill": "obsidian-init",
+    "source_case_index": 0,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Initialize my repo at /Users/me/Projects/MyApp as an Obsidian vault.",
+    "should_trigger": true,
+    "id": "obsidian-init:2",
+    "source_skill": "obsidian-init",
+    "source_case_index": 1,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Check if my project is ready to use as an Obsidian vault and configure the exclusion filters.",
+    "should_trigger": true,
+    "id": "obsidian-init:3",
+    "source_skill": "obsidian-init",
+    "source_case_index": 2,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Update the note Projects/MyProject.md with the new status In Progress.",
+    "should_trigger": true,
+    "id": "obsidian-init:4",
+    "source_skill": "obsidian-init",
+    "source_case_index": 3,
+    "source_should_trigger": false,
+    "reclassification_reason": "Vault-note mutation is now an Obsidian mode."
+  },
+  {
+    "prompt": "Write a callout block in my Obsidian note using the warning style.",
+    "should_trigger": true,
+    "id": "obsidian-init:5",
+    "source_skill": "obsidian-init",
+    "source_case_index": 4,
+    "source_should_trigger": false,
+    "reclassification_reason": "Callout authoring is now an Obsidian mode."
+  },
+  {
+    "prompt": "Deploy my web application to the production server.",
+    "should_trigger": false,
+    "id": "obsidian-init:6",
+    "source_skill": "obsidian-init",
+    "source_case_index": 5,
+    "source_should_trigger": false
+  },
+  {
+    "prompt": "Add a wikilink to the Architecture Overview note in my Obsidian vault.",
+    "should_trigger": true,
+    "id": "obsidian-markdown-mastery:1",
+    "source_skill": "obsidian-markdown-mastery",
+    "source_case_index": 0,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Embed the diagram from Diagrams/System.md into my current note.",
+    "should_trigger": true,
+    "id": "obsidian-markdown-mastery:2",
+    "source_skill": "obsidian-markdown-mastery",
+    "source_case_index": 1,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Create a callout block with the warning style in my Obsidian markdown file.",
+    "should_trigger": true,
+    "id": "obsidian-markdown-mastery:3",
+    "source_skill": "obsidian-markdown-mastery",
+    "source_case_index": 2,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Initialize my project repository as an Obsidian vault for the first time.",
+    "should_trigger": true,
+    "id": "obsidian-markdown-mastery:4",
+    "source_skill": "obsidian-markdown-mastery",
+    "source_case_index": 3,
+    "source_should_trigger": false,
+    "reclassification_reason": "Vault initialization is now an Obsidian mode."
+  },
+  {
+    "prompt": "Delete the folder Archive and all its notes from my vault.",
+    "should_trigger": true,
+    "id": "obsidian-markdown-mastery:5",
+    "source_skill": "obsidian-markdown-mastery",
+    "source_case_index": 4,
+    "source_should_trigger": false,
+    "reclassification_reason": "Authorized safe vault deletion is now an Obsidian CRUD mode; routing does not authorize the deletion."
+  },
+  {
+    "prompt": "Debug the authentication error in my Python API server.",
+    "should_trigger": false,
+    "id": "obsidian-markdown-mastery:6",
+    "source_skill": "obsidian-markdown-mastery",
+    "source_case_index": 5,
+    "source_should_trigger": false
+  },
+  {
+    "prompt": "Search the wiki for anything about authentication and give me a quick summary",
+    "should_trigger": true,
+    "id": "obsidian-query-agent:1",
+    "source_skill": "obsidian-query-agent",
+    "source_case_index": 0,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "What does the wiki say about the Oracle Forms module architecture?",
+    "should_trigger": true,
+    "id": "obsidian-query-agent:2",
+    "source_skill": "obsidian-query-agent",
+    "source_case_index": 1,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Look up the API design concept in the LLM wiki",
+    "should_trigger": true,
+    "id": "obsidian-query-agent:3",
+    "source_skill": "obsidian-query-agent",
+    "source_case_index": 2,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "List all indexed concepts in the wiki",
+    "should_trigger": true,
+    "id": "obsidian-query-agent:4",
+    "source_skill": "obsidian-query-agent",
+    "source_case_index": 3,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Give me the full wiki node for the authentication flow concept",
+    "should_trigger": true,
+    "id": "obsidian-query-agent:5",
+    "source_skill": "obsidian-query-agent",
+    "source_case_index": 4,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Rebuild the wiki from the raw source folders",
+    "should_trigger": true,
+    "id": "obsidian-query-agent:6",
+    "source_skill": "obsidian-query-agent",
+    "source_case_index": 5,
+    "source_should_trigger": false,
+    "reclassification_reason": "Wiki rebuilding is now an Obsidian mode."
+  },
+  {
+    "prompt": "Create a new canvas file for the component architecture",
+    "should_trigger": true,
+    "id": "obsidian-query-agent:7",
+    "source_skill": "obsidian-query-agent",
+    "source_case_index": 6,
+    "source_should_trigger": false,
+    "reclassification_reason": "Canvas authoring is now an Obsidian mode."
+  },
+  {
+    "prompt": "Distill these files into RLM summaries",
+    "should_trigger": false,
+    "id": "obsidian-query-agent:8",
+    "source_skill": "obsidian-query-agent",
+    "source_case_index": 7,
+    "source_should_trigger": false
+  },
+  {
+    "prompt": "Generate RLM summaries for all stale wiki nodes using the cheapest available model",
+    "should_trigger": true,
+    "id": "obsidian-rlm-distiller:1",
+    "source_skill": "obsidian-rlm-distiller",
+    "source_case_index": 0,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Distill my wiki source files into summary.md and bullets.md",
+    "should_trigger": true,
+    "id": "obsidian-rlm-distiller:2",
+    "source_skill": "obsidian-rlm-distiller",
+    "source_case_index": 1,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Run the distillation pipeline using Copilot gpt-5-mini on the arch-docs source",
+    "should_trigger": true,
+    "id": "obsidian-rlm-distiller:3",
+    "source_skill": "obsidian-rlm-distiller",
+    "source_case_index": 2,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Refresh all missing RLM summaries in the wiki",
+    "should_trigger": true,
+    "id": "obsidian-rlm-distiller:4",
+    "source_skill": "obsidian-rlm-distiller",
+    "source_case_index": 3,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Build wiki nodes from the raw source folders",
+    "should_trigger": true,
+    "id": "obsidian-rlm-distiller:5",
+    "source_skill": "obsidian-rlm-distiller",
+    "source_case_index": 4,
+    "source_should_trigger": false,
+    "reclassification_reason": "Wiki building is now an Obsidian mode."
+  },
+  {
+    "prompt": "Search the wiki for a concept about API design",
+    "should_trigger": true,
+    "id": "obsidian-rlm-distiller:6",
+    "source_skill": "obsidian-rlm-distiller",
+    "source_case_index": 5,
+    "source_should_trigger": false,
+    "reclassification_reason": "Wiki querying is now an Obsidian mode."
+  },
+  {
+    "prompt": "Distill repo files using Ollama",
+    "should_trigger": false,
+    "id": "obsidian-rlm-distiller:7",
+    "source_skill": "obsidian-rlm-distiller",
+    "source_case_index": 6,
+    "source_should_trigger": false
+  },
+  {
+    "prompt": "Update the note Projects/MyProject.md with the new status In Progress.",
+    "should_trigger": true,
+    "id": "obsidian-vault-crud:1",
+    "source_skill": "obsidian-vault-crud",
+    "source_case_index": 0,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Create a new note called Meeting Notes in my Obsidian vault.",
+    "should_trigger": true,
+    "id": "obsidian-vault-crud:2",
+    "source_skill": "obsidian-vault-crud",
+    "source_case_index": 1,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Delete the folder Archive from my vault safely.",
+    "should_trigger": true,
+    "id": "obsidian-vault-crud:3",
+    "source_skill": "obsidian-vault-crud",
+    "source_case_index": 2,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Initialize my project repository as an Obsidian vault for the first time.",
+    "should_trigger": true,
+    "id": "obsidian-vault-crud:4",
+    "source_skill": "obsidian-vault-crud",
+    "source_case_index": 3,
+    "source_should_trigger": false,
+    "reclassification_reason": "Vault initialization is now an Obsidian mode."
+  },
+  {
+    "prompt": "Write a callout block using Obsidian markdown syntax in my note.",
+    "should_trigger": true,
+    "id": "obsidian-vault-crud:5",
+    "source_skill": "obsidian-vault-crud",
+    "source_case_index": 4,
+    "source_should_trigger": false,
+    "reclassification_reason": "Callout authoring is now an Obsidian mode."
+  },
+  {
+    "prompt": "Write a Python script to parse a CSV file into a pandas DataFrame.",
+    "should_trigger": false,
+    "id": "obsidian-vault-crud:6",
+    "source_skill": "obsidian-vault-crud",
+    "source_case_index": 5,
+    "source_should_trigger": false
+  },
+  {
+    "prompt": "Build wiki nodes from my architecture docs folder",
+    "should_trigger": true,
+    "id": "obsidian-wiki-builder:1",
+    "source_skill": "obsidian-wiki-builder",
+    "source_case_index": 0,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Regenerate the Karpathy wiki index from all registered sources",
+    "should_trigger": true,
+    "id": "obsidian-wiki-builder:2",
+    "source_skill": "obsidian-wiki-builder",
+    "source_case_index": 1,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Create wiki node pages from the raw-sources.json manifest",
+    "should_trigger": true,
+    "id": "obsidian-wiki-builder:3",
+    "source_skill": "obsidian-wiki-builder",
+    "source_case_index": 2,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Build the _index.md and _toc.md for the LLM wiki",
+    "should_trigger": true,
+    "id": "obsidian-wiki-builder:4",
+    "source_skill": "obsidian-wiki-builder",
+    "source_case_index": 3,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Rebuild the wiki cluster pages from scratch",
+    "should_trigger": true,
+    "id": "obsidian-wiki-builder:5",
+    "source_skill": "obsidian-wiki-builder",
+    "source_case_index": 4,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "Distill this file into the RLM summary layer",
+    "should_trigger": false,
+    "id": "obsidian-wiki-builder:6",
+    "source_skill": "obsidian-wiki-builder",
+    "source_case_index": 5,
+    "source_should_trigger": false
+  },
+  {
+    "prompt": "Search the wiki for authentication patterns",
+    "should_trigger": true,
+    "id": "obsidian-wiki-builder:7",
+    "source_skill": "obsidian-wiki-builder",
+    "source_case_index": 6,
+    "source_should_trigger": false,
+    "reclassification_reason": "Wiki querying is now an Obsidian mode."
+  },
+  {
+    "prompt": "Add a new row to the Obsidian bases database",
+    "should_trigger": true,
+    "id": "obsidian-wiki-builder:8",
+    "source_skill": "obsidian-wiki-builder",
+    "source_case_index": 7,
+    "source_should_trigger": false,
+    "reclassification_reason": "Base-view mutation is now an Obsidian mode."
+  },
+  {
+    "prompt": "Run a semantic health check on my wiki",
+    "should_trigger": true,
+    "id": "obsidian-wiki-linter:1",
+    "source_skill": "obsidian-wiki-linter",
+    "source_case_index": 0,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "lint the wiki",
+    "should_trigger": true,
+    "id": "obsidian-wiki-linter:2",
+    "source_skill": "obsidian-wiki-linter",
+    "source_case_index": 1,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "check my wiki for inconsistencies",
+    "should_trigger": true,
+    "id": "obsidian-wiki-linter:3",
+    "source_skill": "obsidian-wiki-linter",
+    "source_case_index": 2,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "find missing articles in my knowledge base",
+    "should_trigger": true,
+    "id": "obsidian-wiki-linter:4",
+    "source_skill": "obsidian-wiki-linter",
+    "source_case_index": 3,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "what articles should I add to my wiki",
+    "should_trigger": true,
+    "id": "obsidian-wiki-linter:5",
+    "source_skill": "obsidian-wiki-linter",
+    "source_case_index": 4,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "analyze my wiki for quality issues",
+    "should_trigger": true,
+    "id": "obsidian-wiki-linter:6",
+    "source_skill": "obsidian-wiki-linter",
+    "source_case_index": 5,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "wiki health report",
+    "should_trigger": true,
+    "id": "obsidian-wiki-linter:7",
+    "source_skill": "obsidian-wiki-linter",
+    "source_case_index": 6,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "find contradictions in my wiki notes",
+    "should_trigger": true,
+    "id": "obsidian-wiki-linter:8",
+    "source_skill": "obsidian-wiki-linter",
+    "source_case_index": 7,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "suggest wikilinks I should add",
+    "should_trigger": true,
+    "id": "obsidian-wiki-linter:9",
+    "source_skill": "obsidian-wiki-linter",
+    "source_case_index": 8,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "which wiki pages are stale or outdated",
+    "should_trigger": true,
+    "id": "obsidian-wiki-linter:10",
+    "source_skill": "obsidian-wiki-linter",
+    "source_case_index": 9,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "run lint_wiki.py on my vault",
+    "should_trigger": true,
+    "id": "obsidian-wiki-linter:11",
+    "source_skill": "obsidian-wiki-linter",
+    "source_case_index": 10,
+    "source_should_trigger": true
+  },
+  {
+    "prompt": "check for broken wikilinks in my vault",
+    "should_trigger": true,
+    "id": "obsidian-wiki-linter:12",
+    "source_skill": "obsidian-wiki-linter",
+    "source_case_index": 11,
+    "source_should_trigger": false,
+    "reclassification_reason": "Wikilink inspection is now an Obsidian syntax/graph mode."
+  },
+  {
+    "prompt": "list all my wiki concepts",
+    "should_trigger": true,
+    "id": "obsidian-wiki-linter:13",
+    "source_skill": "obsidian-wiki-linter",
+    "source_case_index": 12,
+    "source_should_trigger": false,
+    "reclassification_reason": "Wiki concept listing is now an Obsidian query mode."
+  },
+  {
+    "prompt": "ingest my research notes into the wiki",
+    "should_trigger": true,
+    "id": "obsidian-wiki-linter:14",
+    "source_skill": "obsidian-wiki-linter",
+    "source_case_index": 13,
+    "source_should_trigger": false,
+    "reclassification_reason": "Research-note ingestion is now an Obsidian build mode."
+  },
+  {
+    "prompt": "distill my wiki nodes into RLM summaries",
+    "should_trigger": true,
+    "id": "obsidian-wiki-linter:15",
+    "source_skill": "obsidian-wiki-linter",
+    "source_case_index": 14,
+    "source_should_trigger": false,
+    "reclassification_reason": "Wiki three-layer distillation is now an Obsidian mode."
+  },
+  {
+    "prompt": "query the wiki about authentication flow",
+    "should_trigger": true,
+    "id": "obsidian-wiki-linter:16",
+    "source_skill": "obsidian-wiki-linter",
+    "source_case_index": 15,
+    "source_should_trigger": false,
+    "reclassification_reason": "Wiki querying is now an Obsidian mode."
+  },
+  {
+    "prompt": "build wiki nodes from raw sources",
+    "should_trigger": true,
+    "id": "obsidian-wiki-linter:17",
+    "source_skill": "obsidian-wiki-linter",
+    "source_case_index": 16,
+    "source_should_trigger": false,
+    "reclassification_reason": "Wiki building is now an Obsidian mode."
+  },
+  {
+    "prompt": "check orphaned wiki nodes",
+    "should_trigger": true,
+    "id": "obsidian-wiki-linter:18",
+    "source_skill": "obsidian-wiki-linter",
+    "source_case_index": 17,
+    "source_should_trigger": false,
+    "reclassification_reason": "Orphan discovery is now an Obsidian graph/audit mode."
+  },
+  {
+    "id": "interactive-managing-obsidian-vaults:1",
+    "prompt": "Set up my Obsidian vault and wiki here in the main conversation without spawning a setup agent.",
+    "should_trigger": true,
+    "case_origin": "interactive-main-session-scope-update"
+  },
+  {
+    "id": "interactive-managing-obsidian-vaults:2",
+    "prompt": "Initialize the full knowledge stack using RLM, vector retrieval and a wiki; keep my answers across each layer.",
+    "should_trigger": true,
+    "case_origin": "interactive-main-session-scope-update"
+  },
+  {
+    "id": "interactive-managing-obsidian-vaults:3",
+    "prompt": "Set up the Super-RAG combination with RLM and vector only, no wiki or wiki output folders.",
+    "should_trigger": true,
+    "case_origin": "interactive-main-session-scope-update"
+  },
+  {
+    "id": "interactive-managing-obsidian-vaults:4",
+    "prompt": "Add a source to my existing wiki, preserve its metadata and show the incremental change first.",
+    "should_trigger": true,
+    "case_origin": "interactive-main-session-scope-update"
+  },
+  {
+    "id": "interactive-managing-obsidian-vaults:5",
+    "prompt": "Configure a standalone wiki without forcing an RLM ledger or ChromaDB installation.",
+    "should_trigger": true,
+    "case_origin": "interactive-main-session-scope-update"
+  },
+  {
+    "id": "interactive-managing-obsidian-vaults:6",
+    "prompt": "Use my current answers for wiki plus vector setup; make semantic search use the explicitly selected vector query script.",
+    "should_trigger": true,
+    "case_origin": "interactive-main-session-scope-update"
+  },
+  {
+    "id": "interactive-managing-obsidian-vaults:7",
+    "prompt": "Deploy my API service to production.",
+    "should_trigger": false,
+    "case_origin": "interactive-main-session-scope-update"
+  },
+  {
+    "id": "interactive-managing-obsidian-vaults:8",
+    "prompt": "Configure an ordinary relational SQL database without an Obsidian wiki or retrieval stack.",
+    "should_trigger": false,
+    "case_origin": "interactive-main-session-scope-update"
+  }
+]
