@@ -17,7 +17,7 @@ The proposer prompt lives in `<experiment-dir>/references/copilot_proposer_promp
 iteration, do not rebuild it inline. If it is missing, run `os-lab-setup` to redeploy it.
 
 Call through the CLI agent skills, not raw CLI strings (quoting and piping are fragile):
-- `copilot-cli-agent` (default), or `agy-cli-agent` if the plan says so.
+- `cli-agent` with `--cli copilot` (default), or `--cli agy` if the plan says so.
 - Self-propose only if neither is available.
 
 Pass the prompt file, the target `SKILL.md`, an output path and a one-line brief naming the failure

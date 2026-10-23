@@ -43,7 +43,7 @@ Layer:
 
 Key Input Dependencies:
     - SQLite database: context/control_plane.db (auto-initialized with WAL mode)
-    - Optional model catalog references: plugins/cli-agents/references/*.json
+    - Optional model catalog references: plugins/cli-agents/skills/cli-agent/references/*.json
 
 Key Functions:
     - ControlPlane.init_db() — Initializes tables and WAL mode
@@ -248,7 +248,7 @@ class ControlPlane:
         return create_default_controller(queue_path, dispatch, review, fix, **kwargs)
 
     def resolve_recommended_model(self, runtime_tool: str, tier: str = "low") -> Dict[str, str]:
-        """Resolves model recommendation and model_id from plugins/cli-agents/references/.
+        """Resolves model recommendation and model_id from plugins/cli-agents/skills/cli-agent/references/.
         Full resolution (tool-alias, tier strategy, fallback) is delegated to
         self._model_catalog — this method is a pure delegate (issue-524, post-round-2-review
         correction: tier-selection/strategy logic previously still lived in ControlPlane)."""

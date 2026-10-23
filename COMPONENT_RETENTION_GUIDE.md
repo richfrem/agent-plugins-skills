@@ -128,22 +128,14 @@ python3 plugins/agent-scaffolders/skills/install-apm-package/scripts/apm_consume
 
 | Skill | Status | Rationale |
 |---|---|---|
-| `agent-file-synchronization` | not yet classified |  |
 | `agt-security` | not yet classified |  |
-| `agy-cli-agent` | **`true`** | Dispatches tasks via Antigravity CLI. |
-| `claude-cli-agent` | **`true`** | Dispatches sub-tasks to Claude CLI. |
-| `codex-cli-agent` | **`true`** | Dispatches sub-tasks to OpenAI Codex CLI. |
-| `copilot-cli-agent` | **`true`** | Dispatches sub-tasks to Copilot CLI. |
-| `local-llm-bridge` | `false` | Local Gemma/llama-server bridge. |
-| `local-llm-setup` | `false` | Local inference stack setup wizard. |
+| `cli-agent` | **`true`** | Dispatches tasks to Claude, Codex, Copilot, Agy and local llama CLIs; also covers local LLM setup, model catalog maintenance and project capability setup. |
 | `maf-adapter` | `false` | Microsoft Agent Framework adapter. |
-| `project-setup` | **`true`** | Configures model capability profiles. |
-| `update-cli-models` | `false` | CLI model catalog updater. |
 
 Install the enabled skills:
 
 ```bash
-python3 plugins/agent-scaffolders/skills/install-apm-package/scripts/apm_consumer.py install --checkout . --global --plugins cli-agents --skill agy-cli-agent --skill claude-cli-agent --skill codex-cli-agent --skill copilot-cli-agent --skill project-setup
+python3 plugins/agent-scaffolders/skills/install-apm-package/scripts/apm_consumer.py install --checkout . --global --plugins cli-agents --skill cli-agent
 ```
 
 ---

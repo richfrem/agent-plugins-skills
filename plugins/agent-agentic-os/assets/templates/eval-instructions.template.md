@@ -102,9 +102,9 @@ Consult the authoritative installation hub for current deployment commands:
 
 > ### 👉 [INSTALL.md](https://github.com/richfrem/agent-plugins-skills/blob/main/INSTALL.md)
 
-This section ensures the `os-lab-scorer` and `copilot-cli-agent` skills are active in your environment.
+This section ensures the `os-lab-scorer` and `cli-agent` skills are active in your environment.
    > ⚠️ **Known CLI Issues:** The `-y` flag may crash on some versions — if so, run without it and press **Enter** when prompted to accept the default agent list.
-   > Both are required: `os-lab-scorer` gates iterations, `copilot-cli-agent` proposes mutations.
+   > Both are required: `os-lab-scorer` gates iterations, `cli-agent` (`--cli copilot`) proposes mutations.
 
 5. **Verify eval engine scripts are present**:
    ```bash
@@ -131,7 +131,7 @@ Before establishing the baseline or starting any iterations, you **MUST** verify
 
 ```bash
 # Run a zero-shot heartbeat test
-pythonagents/skills/copilot-cli-agent/scripts/run_agent.py \
+python3 .agents/skills/cli-agent/scripts/run_agent.py \
     /dev/null /dev/null ./HEARTBEAT_MD.md \
     "HEARTBEAT CHECK: Respond with 'HEARTBEAT_OK' only."
 
@@ -317,7 +317,7 @@ If it is, pick a different approach — do not re-run a test that already has a 
 ### Step B: Propose Mutation via Copilot CLI
 
 > ⚠️ **MANDATORY**: You MUST run the `copilot` bash command below. Do NOT self-propose.
-> Do NOT use the copilot-cli-agent skill. Execute the command and pipe output to disk.
+> Do NOT use the cli-agent skill. Execute the command and pipe output to disk.
 
 The proposer prompt lives in `references/copilot_proposer_prompt.md` — read it from file each
 iteration. Do NOT rebuild the prompt inline. This file is a first-class evolvable artifact.
@@ -333,7 +333,7 @@ cp ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/{{MUTATION_TARGET}} ./current-skill.md
 cp ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/evals/evals.json ./current-evals.json
 
 # Use the Copilot run_agent orchestrator for low-cost mutations (see references/cheapest_models.md for current model)
-pythonagents/skills/copilot-cli-agent/scripts/run_agent.py \
+python3 .agents/skills/cli-agent/scripts/run_agent.py \
   $PROMPT_FILE \
   ./{{PLUGIN_DIR}}/skills/{{SKILL_NAME}}/{{MUTATION_TARGET}} \
   ./proposed-skill.md \
@@ -358,7 +358,7 @@ Gate it the same way: edit → eval → KEEP or revert. Log it as "prompt evolut
 
 Other second-order mutations if the loop stalls for 5+ consecutive DISCARDs:
 - **`references/program.md`** — clarify the goal or locked-files list if it has become ambiguous
-- **`copilot-cli-agent/SKILL.md`** — if the proposer skill description is missing patterns you rely on
+- **`cli-agent/SKILL.md`** — if the proposer skill description is missing patterns you rely on
 
 ### Step B.2: Creativity Unblocking (when out of ideas)
 
@@ -383,7 +383,7 @@ for overlap risk, then incorporate the most distinctive ones into the next mutat
 Use Copilot as a brainstorm partner — ask for *approaches to try*, not a rewrite:
 ```bash
 # Use the Copilot run_agent orchestrator for low-cost strategy brainstorming (see references/cheapest_models.md)
-pythonagents/skills/copilot-cli-agent/scripts/run_agent.py \
+python3 .agents/skills/cli-agent/scripts/run_agent.py \
   /dev/null /dev/null ./strategy-ideas.md \
   "I am optimizing a Claude Code SKILL.md routing description using a TF-IDF
 keyword scorer (4+ char words, exact match only, no semantics).

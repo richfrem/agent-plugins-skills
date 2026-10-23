@@ -355,7 +355,7 @@ def test_plan_review_review_method_offers_other_review_method():
     hint = review_edge.next_steps_hint
     assert "CLI/runtime, model, and effort" in hint
     assert "one question at a time" in hint
-    assert "update-cli-models" in hint
+    assert "cli-agent model catalog" in hint
     assert "--interactive" in hint
 
 
@@ -372,8 +372,8 @@ def test_plan_and_implementation_reviews_share_environment_and_model_selection_c
         "review_method",
         "internal_runtime_model_effort",
     ]
-    assert contract["catalog_authority_skill"] == "update-cli-models"
-    assert contract["catalog_resolution"]["authority"] == "update-cli-models"
+    assert contract["catalog_authority_skill"] == "cli-agent"
+    assert contract["catalog_resolution"]["authority"] == "cli-agent"
     assert contract["catalog_resolution"]["do_not_duplicate_catalogs"] is True
     assert "current model IDs" in contract["catalog_resolution"]["instruction"]
     assert "--interactive" in contract["human_answer_provenance"]["chat_answer"]

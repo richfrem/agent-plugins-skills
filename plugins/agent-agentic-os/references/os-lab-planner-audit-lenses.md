@@ -13,7 +13,7 @@ Read the source files in `plugins/`, not the installed client copies, which can 
 - Paths: relative to the skill root; no repo-root `plugins/...` paths.
 - Evals: at least 10 real cases in `should_trigger` form, including sibling negatives.
 - Gotchas section, handoff block, smoke test present.
-- Hard-coded model IDs that should come from the `update-cli-models` skill in `cli-agents`.
+- Hard-coded model IDs that should come from the `cli-agent` skill's model catalogs in `cli-agents`.
 - Overlap with another skill that could be extended instead.
 
 ## Match quality

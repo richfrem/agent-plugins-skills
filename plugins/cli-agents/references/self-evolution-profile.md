@@ -3,7 +3,7 @@
 ## Allowed Edit Directories
 
 - plugins/cli-agents/skills/
-- plugins/cli-agents/scripts/
+- plugins/cli-agents/skills/cli-agent/scripts/
 - plugins/cli-agents/references/
 
 ## Explicit Confirmation Required

@@ -10,7 +10,7 @@ Generate exactly 3 distinct approaches. For each: name (2-4 words), what it does
 sentences), what it trades off (1 sentence), effort (Small / Medium / Large).
 ```
 
-Run it on the cheapest suitable tier reported by the `update-cli-models` skill in `cli-agents`.
+Run it on the cheapest suitable tier reported by the `cli-agent` skill's model catalogs in `cli-agents`.
 If no backend is available, write the options yourself and say so.
 
 ## Options block (returned in the plan)

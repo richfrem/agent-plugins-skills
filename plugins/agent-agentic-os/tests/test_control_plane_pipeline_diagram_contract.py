@@ -55,7 +55,7 @@ def test_runtime_skills_expose_final_dispatch_contracts():
     for marker in ("transition-guidance", "advisory", "SQLite"):
         assert marker.lower() in interview.lower()
 
-    for skill_name in ("copilot-cli-agent", "claude-cli-agent"):
+    for skill_name in ("cli-agent",):
         skill = (REPO_ROOT / f"plugins/cli-agents/skills/{skill_name}/SKILL.md").read_text()
         for marker in ("--require-input", "---SOURCE---", "record-critic-review", "REVISE"):
             assert marker in skill

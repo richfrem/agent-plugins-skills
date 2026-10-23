@@ -69,7 +69,7 @@ Default: `traces` unless the user specifies otherwise.
 | Option | Command | Best when |
 |---|---|---|
 | `copilot` (default) | `copilot -p "..."` | GitHub Copilot CLI installed |
-| `agy` | `agy -p "..."` | Antigravity CLI installed (use `agy-cli-agent`) |
+| `agy` | `agy -p "..."` | Antigravity CLI installed (use `cli-agent --cli agy`) |
 | `self` | agent self-proposes | No CLI available (slowest, most tokens) |
 
 Check availability: `which copilot` / `which agy`. Default to `copilot` if both are present.
@@ -141,12 +141,12 @@ rm -rf <lab-repo>/<plugin-folder-name>/**/__pycache__
 
 ## Dependencies
 - **os-lab-scorer** (agent-agentic-os plugin)
-- **copilot-cli-agent** (copilot-cli plugin)
+- **cli-agent** (cli-agents plugin)
 
 > [!TIP]
 > See [INSTALL.md](https://github.com/richfrem/agent-plugins-skills/blob/main/INSTALL.md) for instructions on how to install missing dependencies.
 > If `-y` crashes: run without it and press Enter to accept defaults.
-> Both skills are required: `os-lab-scorer` gates iterations, `copilot-cli-agent` proposes mutations.
+> Both skills are required: `os-lab-scorer` gates iterations, `cli-agent` (`--cli copilot`) proposes mutations.
 
 ### 1e. Seed commit and push
 ```bash
@@ -187,7 +187,7 @@ nohup agy --yolo -p "You are the L1 Triple-Loop Orchestrator. Read eval-instruct
 ```
 
 > [!IMPORTANT]
-> If you hit `Tool execution denied by policy`, grant the lab repo path access in your master terminal as described in the `agy-cli-agent` skill.
+> If you hit `Tool execution denied by policy`, grant the lab repo path access in your master terminal as described in the `cli-agent` skill's agy dispatch reference.
 
 ## What to Expect: Meta-Circular Improvement
 

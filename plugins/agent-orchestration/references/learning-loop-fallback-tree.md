@@ -9,7 +9,7 @@ If during Phase III (HITL) the user rejects the architectural findings or propos
 - **Action**: Backtrack to Phase II (Synthesis). Ask the user for specific directional constraints, rewrite the research artifacts, and present the new findings at the Strategic Gate again.
 
 ## 3. Red Team Auditor Subagent Fails to Boot
-If during Phase IV the attempt to spawn an adversarial CLI subagent (e.g., via `claude-cli-agent`) fails due to auth or pathing issues:
+If during Phase IV the attempt to spawn an adversarial CLI subagent (e.g., via `cli-agent --cli claude`) fails due to auth or pathing issues:
 - **Action**: Provide the context bundle directly to the User in the chat and ask them to perform the Red Team Review manually. Do not bypass the audit phase just because the subagent failed.
 
 ## 4. Forced Premature Exit

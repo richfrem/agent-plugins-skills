@@ -58,11 +58,11 @@ review_selection_contract:
   - worktree_review_to_multi_agent_code_review
   canonical_profile_path: context/agent-capability-profile.json
   environment_summary_fallback: context/memory/environment.md
-  profile_owner: project-setup
+  profile_owner: cli-agent
   profile_lifecycle:
-    establish: "Run the interactive project-setup capability baseline once during project setup."
+    establish: "Run the interactive cli-agent project-setup capability baseline (references/project-setup.md) once during project setup."
     consume: "Pipeline review and implementation stages read the profile and current catalog references; they do not repeat deep environment analysis."
-    refresh: "If the profile is missing, partial, invalid, stale, or the user reports an environment change, route back to project-setup for the provider and model questions."
+    refresh: "If the profile is missing, partial, invalid, stale, or the user reports an environment change, route back to cli-agent project setup for the provider and model questions."
   availability_rule: "Offer only runtimes and providers whose installation probe succeeds, whose subscription/account/license access is explicitly confirmed by the user, and whose project-use authorization is explicitly confirmed when applicable; never infer availability from the host agent, repository author, or a static option list."
   question_sequence:
   - review_decision
@@ -80,7 +80,7 @@ review_selection_contract:
     effort_question: "Which effort level should the internal reviewers use?"
     option_resolution:
       cli_runtime: "Render only providers with available=true in context/agent-capability-profile.json; do not infer availability from installed binaries, the host agent, or a static option list."
-      model: "After the runtime is selected, render only model IDs and capability tiers from update-cli-models for that runtime."
+      model: "After the runtime is selected, render only model IDs and capability tiers from the cli-agent model catalogs for that runtime."
       effort: "Render only effort levels supported by the selected runtime/model and current catalog."
     persistence: "Persist the runtime, model, and effort answers before dispatch; never dispatch an internal reviewer with an inferred or default route."
   user_must_choose_internal_route: true
@@ -90,12 +90,12 @@ review_selection_contract:
     scripted_use: "Use --answers only for non-human scripted tests or explicitly agent-authored decisions on edges that permit them."
   internal_selection_rule: "After the user selects an internal method, inspect the confirmed environment and current catalogs, recommend a proportional runtime/model/effort route, and ask the user to choose or confirm it. Do not dispatch an internal reviewer until that explicit user selection is recorded."
   premium_rule: "A premium model or high-effort route requires explicit user confirmation even when recommended."
-  catalog_authority_skill: update-cli-models
+  catalog_authority_skill: cli-agent
   catalog_resolution:
-    authority: update-cli-models
+    authority: cli-agent
     do_not_duplicate_catalogs: true
-    instruction: "Read update-cli-models for current model IDs, capability tiers, pricing, master and installed-copy resolution, and synchronization rules."
-    missing_catalog_rule: "If the profile or required catalog cannot be resolved, report the exact missing path and route back to project-setup for refresh; do not invent model choices or dispatch."
+    instruction: "Read cli-agent references/model-catalog-maintenance.md for current model IDs, capability tiers, pricing, catalog ownership, and synchronization rules."
+    missing_catalog_rule: "If the profile or required catalog cannot be resolved, report the exact missing path and route back to cli-agent project setup for refresh; do not invent model choices or dispatch."
   feedback_handoff:
     applies_to:
     - MULTI_AGENT_REVIEW
@@ -235,7 +235,7 @@ stages:
         recommendation_phase: plan
         availability_sources:
         - os-control-init
-        - project-setup
+        - cli-agent
         - cli-agents
         complexity_options:
           low:
@@ -1113,7 +1113,7 @@ templates:
   from_state: PLAN_REVIEW
   to_state: MULTI_AGENT_REVIEW
   purpose: Select the requested independent review method after the plan was submitted for review.
-  next_steps_hint: "PLAN_REVIEW uses review-selection-v1. Ask one question at a time using the same sequence as implementation review: (1) ask whether the user wants agents to review the draft plan; (2) only after Yes, show all four review methods together—single-agent internal, single-agent external bundle, multi-agent internal, and multi-agent external bundle; (3) only for an internal method, ask separately for the CLI/runtime, model, and effort, resolving each from the confirmed profile and update-cli-models catalog. Before asking, run agent_control.py inspect-decisions --task-id <task-id> to re-read what is already recorded instead of relying on memory. If context/agent-capability-profile.json is missing or unreadable, say so and route the human to project-setup (os-control-init); do not assume any runtime or model. Run agent_control.py list-review-options (read-only) so the human can copy the exact runtime and model identifiers instead of retyping them from memory. For an internal method the coordinator asks the three selections interactively and the human types each one; agents cannot supply them or apply defaults. Do not dispatch an internal reviewer before all three explicit selections are recorded. Persist chat answers through --interactive so SQLite records actor=human. If No, the HUMAN records the skip decision through the interactive command (--interactive); the agent never runs record-review-skip from a chat message or on the human's behalf. Then use PLAN_REVIEW -> AWAITING_APPROVAL. For an accepted review choice, run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to MULTI_AGENT_REVIEW, then immediately execute the MULTI_AGENT_REVIEW.kickoff.required_sequence through outcome recording; do not stop after acknowledging the transition."
+  next_steps_hint: "PLAN_REVIEW uses review-selection-v1. Ask one question at a time using the same sequence as implementation review: (1) ask whether the user wants agents to review the draft plan; (2) only after Yes, show all four review methods together—single-agent internal, single-agent external bundle, multi-agent internal, and multi-agent external bundle; (3) only for an internal method, ask separately for the CLI/runtime, model, and effort, resolving each from the confirmed profile and cli-agent model catalog. Before asking, run agent_control.py inspect-decisions --task-id <task-id> to re-read what is already recorded instead of relying on memory. If context/agent-capability-profile.json is missing or unreadable, say so and route the human to cli-agent project setup (os-control-init); do not assume any runtime or model. Run agent_control.py list-review-options (read-only) so the human can copy the exact runtime and model identifiers instead of retyping them from memory. For an internal method the coordinator asks the three selections interactively and the human types each one; agents cannot supply them or apply defaults. Do not dispatch an internal reviewer before all three explicit selections are recorded. Persist chat answers through --interactive so SQLite records actor=human. If No, the HUMAN records the skip decision through the interactive command (--interactive); the agent never runs record-review-skip from a chat message or on the human's behalf. Then use PLAN_REVIEW -> AWAITING_APPROVAL. For an accepted review choice, run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to MULTI_AGENT_REVIEW, then immediately execute the MULTI_AGENT_REVIEW.kickoff.required_sequence through outcome recording; do not stop after acknowledging the transition."
   review_selection_contract: review-selection-v1
   review_selection:
     scope: draft_plan
@@ -1158,7 +1158,7 @@ templates:
       question_id: plan_review_method
       answer_contains: '— internal'
   - question_id: plan_review_internal_model
-    question: 'Which model should the internal review use? Type one from the current update-cli-models catalog for that runtime; no default is applied.'
+    question: 'Which model should the internal review use? Type one from the current cli-agent model catalog for that runtime; no default is applied.'
     options: []
     choices_from:
       kind: model
@@ -1628,7 +1628,7 @@ templates:
   from_state: WORKTREE_REVIEW
   to_state: MULTI_AGENT_CODE_REVIEW
   purpose: Submit worktree code diff for independent multi-agent adversarial code review.
-  next_steps_hint: "WORKTREE_REVIEW uses review-selection-v1. Ask one question at a time: (1) ask whether the user wants agents to review the implementation; (2) only after Yes, show all four review methods together—single-agent internal, single-agent external bundle, multi-agent internal, and multi-agent external bundle; (3) only for an internal method, ask separately for the CLI/runtime, model, and effort, resolving each from the confirmed profile and update-cli-models catalog. Before asking, run agent_control.py inspect-decisions --task-id <task-id> to re-read what is already recorded instead of relying on memory. If context/agent-capability-profile.json is missing or unreadable, say so and route the human to project-setup (os-control-init); do not assume any runtime or model. Run agent_control.py list-review-options (read-only) so the human can copy the exact runtime and model identifiers instead of retyping them from memory. For an internal method the coordinator asks the three selections interactively and the human types each one; agents cannot supply them or apply defaults. Do not dispatch an internal reviewer before all three explicit selections are recorded. Persist chat answers through --interactive so SQLite records actor=human. Then complete this edge's checklist and run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to MULTI_AGENT_CODE_REVIEW."
+  next_steps_hint: "WORKTREE_REVIEW uses review-selection-v1. Ask one question at a time: (1) ask whether the user wants agents to review the implementation; (2) only after Yes, show all four review methods together—single-agent internal, single-agent external bundle, multi-agent internal, and multi-agent external bundle; (3) only for an internal method, ask separately for the CLI/runtime, model, and effort, resolving each from the confirmed profile and cli-agent model catalog. Before asking, run agent_control.py inspect-decisions --task-id <task-id> to re-read what is already recorded instead of relying on memory. If context/agent-capability-profile.json is missing or unreadable, say so and route the human to cli-agent project setup (os-control-init); do not assume any runtime or model. Run agent_control.py list-review-options (read-only) so the human can copy the exact runtime and model identifiers instead of retyping them from memory. For an internal method the coordinator asks the three selections interactively and the human types each one; agents cannot supply them or apply defaults. Do not dispatch an internal reviewer before all three explicit selections are recorded. Persist chat answers through --interactive so SQLite records actor=human. Then complete this edge's checklist and run: python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition --task-id <task-id> --to MULTI_AGENT_CODE_REVIEW."
   review_selection_contract: review-selection-v1
   review_selection:
     scope: implementation
@@ -1673,7 +1673,7 @@ templates:
       question_id: implementation_review_method
       answer_contains: '— internal'
   - question_id: implementation_review_internal_model
-    question: 'Which model should the internal review use? Type one from the current update-cli-models catalog for that runtime; no default is applied.'
+    question: 'Which model should the internal review use? Type one from the current cli-agent model catalog for that runtime; no default is applied.'
     options: []
     choices_from:
       kind: model

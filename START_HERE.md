@@ -1,36 +1,20 @@
 # Session Bootstrap
 
-<!-- Run this at the start of each session to load context -->
+<!-- Read at the start of each session: orientation only. Task steps live in the linked plans and skills. -->
 
-## First Time in This Clone? Set Up the Substrate Once
+## Rules First
 
-Skip this section on every session after the first. If `context/control_plane.db` doesn't exist
-yet, run these once (assumes plugins are already installed per
-[INSTALL.md's "Local Development (For Developers)"](INSTALL.md#local-development-contributors--testing)
-— `git clone`, `python3 plugins/agent-scaffolders/skills/convert-plugin-to-apm/scripts/materialize_copies.py`, and `apm install ./plugins/* --target agy,claude,copilot,codex`):
+[`AGENTS.md`](AGENTS.md) is the single source of agent instructions. Read it before acting, and
+re-read its git/worktree rules before any commit or branch step.
 
-```bash
-python3 plugins/agent-agentic-os/scripts/init_agentic_os.py --target .
-```
+## First Time in This Clone?
 
-This wires `.git/hooks/pre-commit-evolution-guard` and `.git/hooks/pre-push-review-guard`,
-initializes `context/control_plane.db` (self-healing schema, see [`docs/ADRs/`](docs/ADRs/)),
-and scaffolds `context/memory/`, `context/status.md`, and `.claude/hooks/hooks.json`.
-Re-running against an existing local setup instead uses `--retrofit` — see
-[`os-control-init/SKILL.md`](plugins/agent-agentic-os/skills/os-control-init/SKILL.md). It creates `.bak` files
-when updating existing guideline files (`CLAUDE.md`, `GEMINI.md`, `AGENTS.md`) — **do not blindly
-delete them**; review `git diff` and reconcile local customizations first.
+If `context/control_plane.db` does not exist yet, set up the substrate once:
 
-Then confirm the substrate is active:
-
-```bash
-test -f context/control_plane.db && echo "OK control_plane.db" || echo "MISSING control_plane.db"
-test -f .claude/hooks/hooks.json && echo "OK hooks.json" || echo "MISSING hooks.json"
-```
-
-Or invoke **`/os-control-health`** for the full audit (Event Bus, locks, memory arrays, substrate
-completeness). Then verify the test suite: `python3 -m pytest plugins/ -q`. See
-[`CLAUDE.md`](CLAUDE.md) for the full development workflow once the substrate is confirmed.
+- Install per [INSTALL.md — Local Development](INSTALL.md#local-development-contributors--testing).
+- Initialize with `python3 plugins/agent-agentic-os/scripts/init_agentic_os.py --target .`
+  (use `--retrofit` on an existing setup; review any `.bak` files before deleting them).
+- Confirm with **`/os-control-health`**.
 
 ## Load Context
 
@@ -41,19 +25,23 @@ completeness). Then verify the test suite: `python3 -m pytest plugins/ -q`. See
 
 ## Check Open Items
 
-Look for `[ ]` items in context/memory/ session logs from the last 7 days.
+Look for `[ ]` items in context/memory/ session logs from the last 7 days, and read
+[`context/status.md`](context/status.md).
 
-## Next Session Priorities (Consuming Repositories Migration)
+## Current Focus
 
-- **Target Plan**: [`docs/plans/apm_migration_plan.md`](docs/plans/apm_migration_plan.md) (Section 12: Consuming Repository Migration)
-- **Monorepo Status**: **COMPLETE**. PR #712 merged; legacy plugin-manager retired; all 122 skills verified across Claude, Copilot, Codex, and Antigravity with zero copy-manifest drift; APM CLI 0.33.0 operational.
-- **Immediate Task for Tomorrow**: Begin downstream consuming repository migration, starting with `sharepoint-workbench`:
-  1. Audit current `.agents/ownership/` and installed skill dependencies in `sharepoint-workbench`.
-  2. Wipe legacy `.agents/` runtime folder to purge deprecated `plugin-*` skills.
-  3. Synthesize downstream `apm.yml` with declarative targets (`claude,copilot,codex,agy`) and granular `--skill` selections (avoiding token bloat).
-  4. Run `apm install` and commit `apm.yml` + `apm.lock.yaml`.
-  5. Decouple any custom scripts that execute `.agents/skills/...` directly.
-  6. Run characterization test suite to verify full regression parity.
+The repository is consolidating plugins into fewer self-contained skills: no symlinks, no
+copy-manifest duplicates, APM as the only install path. The plan is the source of truth:
+[`docs/plans/apm_migration_plan.md`](docs/plans/apm_migration_plan.md).
+
+- **Where we are and what comes next**: §13.10.7 (plugin sequence and the next plugin).
+- **How each plugin is migrated**: §13.5 (7-step lifecycle), §13.9.1 (pilot lessons),
+  §13.10 (per-plugin subplan), §13.10.8 (inventory ledger and audit gate).
+- **Downstream consuming repositories**: §12.
+
+Do not start a plugin migration without its Step 0 baseline and inventory CSV
+(`docs/plans/<plugin>_migration_inventory.csv`). Deleting skills, staging, committing and
+running `apm install` need explicit user approval.
 
 ## Confirm Readiness
 
