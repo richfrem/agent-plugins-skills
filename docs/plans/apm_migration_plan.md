@@ -286,3 +286,25 @@ Both copies of `plugin-architecture-policy.md` must be updated to align with the
 2. **Rewrite Section 5 ("Mandatory Symlink Workflow")**:
    - **Before**: Mandated using `symlink_manager.py` to create file-level symlinks and record them in `symlinks.json`.
    - **After (APM Standard)**: Deprecates source symlinks. Declares that shared resources are distributed via APM Package Collections or dereferenced build packages. Prohibits introducing new symlinks in newly scaffolded plugins.
+
+### 3. The Core Paradigm Shift: From Filesystem Symlinks to Relative Path References
+
+The biggest breakthrough in unwinding symlinks is understanding that **avoiding duplicate files does NOT require creating filesystem symlink objects**:
+
+#### A. The Anti-Pattern (What We Had)
+- A shared file existed at `plugins/agent-agentic-os/references/architecture/architecture.md`.
+- Sibling skills (e.g. `os-control-init`) needed to cite it, so we created a physical filesystem symlink at `plugins/agent-agentic-os/skills/os-control-init/references/architecture.md`.
+- **The failure**: On Windows without Developer Mode, Git checked out this symlink as a plain text file containing `../../../references/architecture/architecture.md` (48 bytes). APM security skipped it, and agents reading it saw broken text.
+
+#### B. The APM / Crow Pattern (What We Are Moving To)
+- `architecture.md` exists in **exactly one canonical location** (e.g. inside `skills/os-core/references/architecture.md` or `.apm/context/`).
+- **No symlink file is created** inside `skills/os-control-init/references/`. That dummy file is deleted.
+- Inside `skills/os-control-init/SKILL.md`, the author simply writes a natural relative markdown link:
+  ```markdown
+  Before initializing, review the core [Architecture Principles](../os-core/references/architecture.md).
+  ```
+
+#### C. Why This Completely Eliminates Symlink Bugs:
+1. **Zero Duplicate Content in Git**: `architecture.md` is authored and maintained in exactly one place.
+2. **Zero Filesystem Tricks**: No OS symlinks, no Windows junctions, no admin rights, no Developer Mode, and no `.pointer` files.
+3. **Guaranteed Resolution via APM**: Because APM installs sibling skills side-by-side into the harness (e.g. `%USERPROFILE%\.github\skills\` or `.claude/skills/`), the relative path `../os-core/references/...` resolves naturally on disk on **every operating system** (Windows, macOS, Linux).
