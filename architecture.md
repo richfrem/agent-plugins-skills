@@ -158,7 +158,7 @@ Multi-LLM task router (`run_agent.py`) consolidated from claude-cli/copilot-cli/
 security-auditor, tdd-contract-reviewer, red-team-reviewer, etc.) — the first three form the
 "Graph Planning Phase 1 Fan-Out Trio" per `graph-planning-superpowers-policy.md`. Model selection
 driven by `references/copilot-models.json` cost tiers. Gemini CLI consumer access ended June 18,
-2026 — `agy-cli-agent` is the forward path for frontier models.
+2026 — `cli-agent --cli agy` is the forward path for frontier models.
 
 ### 4.7. Plugin: exploration-cycle-plugin (20 skills) — security-sensitive
 Business discovery workflow (Path 1: pre-build discovery; Path 2: vibe-coded-prototype
@@ -204,7 +204,7 @@ discipline), `self-evolution-policy.md`, `test-driven-development.md`, `destruct
 `github-issue-logging-policy.md`, `worktree-subagent-leak-detection.md`, `worktree-lifecycle-management.md`,
 and `adversarial-reasoning-before-agreement-rule.md`.
 Every file in `.agent/rules/` has a matching master under some `plugins/*/rules/` — verify with
-`python3 plugins/cli-agents/scripts/sync_instruction_files.py --check-rules`.
+`for f in .agent/rules/*.md; do ls plugins/*/rules/"$(basename "$f")" >/dev/null 2>&1 || echo "no master: $f"; done`.
 
 ## 6. Skill & Plugin Authoring Standards
 

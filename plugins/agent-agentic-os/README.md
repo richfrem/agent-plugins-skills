@@ -55,7 +55,7 @@ grouped into two clusters.
 |------|---------|
 | 1. Install & scaffold | `"Set up an agentic OS for this project"` — runs the `os-control-init` / `os-control-setup-agent` interview |
 | 2. Human signing key (control plane) | `os-control-signing-setup` — human only; creates the key behind the approval gates |
-| 3. Probe your environment (lab path) | `cli-agents:project-setup` — builds the provider capability profile |
+| 3. Probe your environment (lab path) | `cli-agents:cli-agent` project setup — builds the provider capability profile |
 
 **After each session (lab path):** run `os-lab-loop` for the retrospective, then
 `os-lab-memory` to promote learnings, if those skills are installed.
@@ -73,7 +73,7 @@ grouped into two clusters.
 | Work in an isolated worktree based on `origin/main` | `os-control-worktree` |
 | Test a control-plane transition without touching real state | `os-control-simulator` |
 | Start any skill improvement or creation task | `os-lab-agent` |
-| Discover which AI tools I have available | `cli-agents:project-setup` |
+| Discover which AI tools I have available | `cli-agents:cli-agent` (project setup) |
 | Improve a specific skill with evals | `os-lab-agent` → describe the skill + goal |
 | Run an unattended improvement loop | `os-lab-agent` → `os-lab-planner` → `os-lab-setup` → `os-lab-loop` |
 | Score one change (KEEP / DISCARD) | `os-lab-scorer` |

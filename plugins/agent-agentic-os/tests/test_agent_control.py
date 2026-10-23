@@ -9,7 +9,7 @@ Purpose:
 
 Key Input Dependencies:
     - Temporary SQLite databases created in pytest fixtures
-    - Reference catalogs: plugins/cli-agents/references/*.json
+    - Reference catalogs: plugins/cli-agents/skills/cli-agent/references/*.json
 
 Key Functions:
     - temp_db_path() — Pytest fixture yielding temporary database path
@@ -1655,7 +1655,7 @@ def test_registry_loads_stage_entry_question_contracts():
     )
     assert planning_question["selection_mode"] == "confirm_or_change"
     assert planning_question["recommendation_source"] == "model_effort_guidance"
-    assert planning_question["availability_sources"] == ["os-control-init", "project-setup", "cli-agents"]
+    assert planning_question["availability_sources"] == ["os-control-init", "cli-agent", "cli-agents"]
     assert planning_question["complexity_options"]["high"]["recommended_effort"] == "medium"
     assert interview["progress_display"]["enabled"] is True
     assert interview["progress_display"]["count_adaptive_questions"] is True

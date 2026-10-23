@@ -76,16 +76,10 @@ _SKILL_DIRS = [
     ("agent-scaffolders",        "install-apm-package"),
     ("agent-scaffolders",        "manage-marketplace"),
 
-    # cli-agents (11 skills) — consolidated from deleted claude-cli + copilot-cli + gemini-cli
+    # cli-agents — backend dispatch, local LLM, model catalogs and project setup live in cli-agent
     ("cli-agents",               "agt-security"),
-    ("cli-agents",               "agy-cli-agent"),
-    ("cli-agents",               "claude-cli-agent"),
-    ("cli-agents",               "codex-cli-agent"),
-    ("cli-agents",               "copilot-cli-agent"),
-    ("cli-agents",               "local-llm-bridge"),
-    ("cli-agents",               "local-llm-setup"),
+    ("cli-agents",               "cli-agent"),
     ("cli-agents",               "maf-adapter"),
-    ("cli-agents",               "project-setup"),
 
     # dependency-management (1 skill)
     ("dependency-management",    "dependency-management"),

@@ -1,4 +1,4 @@
-# Optimization Program: copilot-cli-agent
+# Optimization Program: cli-agent
 
 Goal: maximize `quality_score` (higher is better, max 1.0).
 Formula: `quality_score = (routing_accuracy * 0.7) + (heuristic_score * 0.3)`
@@ -16,7 +16,7 @@ python ../os-lab-scorer/scripts/evaluate.py \
 NEVER STOP. Run until target score or human interruption.
 
 ## Notes
-- **Optimizing**: Routing accuracy for copilot-cli-agent — triggers on piping large contexts to Copilot for security/QA/architecture analysis via CLI, NOT on Copilot installation/setup tasks
+- **Optimizing**: Routing accuracy for cli-agent — triggers on piping large contexts to an external CLI (Copilot, Claude, Codex, Agy, local llama) for security/QA/architecture analysis via CLI, NOT on Copilot installation/setup tasks
 - **Target score**: 0.95
 - **Baseline**: untracked prior history — current state is starting point
 - **Key failure modes**: Over-triggering on "install copilot", under-triggering on "pipe via shell to copilot"

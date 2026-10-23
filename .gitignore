@@ -118,6 +118,7 @@ context/status.md
 # stay tracked (gitignore doesn't retroactively untrack committed files).
 docs/plans/
 docs/superpowers/
+plugins/*/docs/plans/work-tasks/
 
 # Private research moved out of tracked docs; retain locally for planning only.
 docs/MAF-research-analysis/

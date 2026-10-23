@@ -10,7 +10,7 @@ Purpose:
 
 Key Input Dependencies:
     - Temporary JSON files via pytest's tmp_path fixture
-    - Real plugins/cli-agents/references/ files (for the genuine end-to-end test)
+    - Real plugins/cli-agents/skills/cli-agent/references/ files (for the genuine end-to-end test)
 
 Key Functions:
     - test_load_catalog_returns_none_when_missing()
@@ -28,11 +28,14 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+import pytest
+
 SCRIPTS_DIR = Path(__file__).resolve().parent.parent / "scripts"
 if str(SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_DIR))
 
 from control_plane.adapters import ModelCatalogAdapter
+from control_plane.constants import TOOL_CATALOG_ALIASES
 from control_plane.ports import ModelCatalogPort
 from agent_control import ControlPlane
 
@@ -162,7 +165,7 @@ def test_model_catalog_adapter_helper_components_against_temp_files(tmp_path):
 
 def test_model_catalog_adapter_resolve_recommended_model_against_real_repo_files():
     """Genuine end-to-end call of the PUBLIC resolve_recommended_model() method, against the
-    real plugins/cli-agents/references/ files in this repo (the same files
+    real plugins/cli-agents/skills/cli-agent/references/ files in this repo (the same files
     ControlPlane.resolve_recommended_model() resolves against in production) — proves the
     complete, real code path works, not just its individual helper pieces."""
     adapter = ModelCatalogAdapter()
@@ -170,6 +173,15 @@ def test_model_catalog_adapter_resolve_recommended_model_against_real_repo_files
     assert result["runtime_tool"] == "copilot"
     assert result["tier"] == "low"
     assert result["model_id"]  # some non-empty model id was resolved (real catalog or fallback)
+
+
+@pytest.mark.parametrize("runtime_tool", sorted(TOOL_CATALOG_ALIASES))
+def test_model_catalog_adapter_resolves_every_runtime_alias_against_real_catalogs(runtime_tool):
+    """Every runtime alias resolves against the cli-agent skill's real catalogs, so a moved or
+    deleted catalog directory fails here instead of at review-selection time."""
+    adapter = ModelCatalogAdapter()
+    result = adapter.resolve_recommended_model(runtime_tool=runtime_tool, tier="low")
+    assert result["model_id"]
 
 
 def test_control_plane_defaults_to_real_model_catalog_adapter(tmp_path):

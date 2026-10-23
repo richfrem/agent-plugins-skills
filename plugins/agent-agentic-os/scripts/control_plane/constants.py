@@ -188,6 +188,10 @@ DELEGATION_STATUSES = (
 DISALLOWED_MODEL_STATUSES = frozenset({"withdrawn", "deprecated", "unavailable"})
 STRATEGY_FALLBACK_KEYS = ("complex_reasoning", "architecture", "default")
 
+# Repo-relative directory holding the cli-agents model catalogs (*-models.json and
+# cheapest_models.json), owned by the consolidated cli-agent skill.
+CLI_AGENT_CATALOG_DIR = ("plugins", "cli-agents", "skills", "cli-agent", "references")
+
 # Tool key -> (canonical cli_id, catalog filename). Aliases map many recognized spellings
 # of the same runtime tool onto one canonical id; unrecognized/missing tool_key falls back
 # to "copilot" (ModelCatalogAdapter._resolve_tool_catalog's own default, not encoded here).

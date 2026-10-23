@@ -97,6 +97,7 @@ from control_plane.constants import (
     FOLLOW_UP_STATUSES,
     DELEGATION_STATUSES,
     DISALLOWED_MODEL_STATUSES, STRATEGY_FALLBACK_KEYS,
+    CLI_AGENT_CATALOG_DIR,
     TOOL_CATALOG_ALIASES,
     sql_in_list,
 )
@@ -2916,7 +2917,7 @@ class ModelCatalogAdapter(ModelCatalogPort):
         if tier not in COST_TIERS:
             raise ValueError(f"Unsupported capability tier: {tier}")
         repo_root = _resolve_repo_root()
-        cli_refs = repo_root / "plugins" / "cli-agents" / "references"
+        cli_refs = repo_root.joinpath(*CLI_AGENT_CATALOG_DIR)
         tool_key, catalog_file = self._resolve_tool_catalog(runtime_tool, cli_refs)
 
         cheapest_file = cli_refs / "cheapest_models.json"

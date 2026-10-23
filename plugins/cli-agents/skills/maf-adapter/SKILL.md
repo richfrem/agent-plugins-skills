@@ -28,10 +28,10 @@ Validates plugin manifests and simulates agent skill execution within the Micros
 
 ```bash
 # Validate plugin manifest for MAF compatibility
-python3 plugins/cli-agents/scripts/test_harness.py --validate --plugin plugins/<plugin>
+python3 scripts/test_harness.py --validate --plugin plugins/<plugin>
 
 # Simulate skill execution locally under MAF
-python3 plugins/cli-agents/scripts/test_harness.py \
+python3 scripts/test_harness.py \
   --skill plugins/<plugin>/skills/<skill-name> \
   --instruction "Analyze workspace"
 ```
@@ -47,7 +47,7 @@ python3 plugins/cli-agents/scripts/test_harness.py \
 
 ```bash
 # Validate plugin manifest
-python3 plugins/cli-agents/scripts/test_harness.py --validate --plugin plugins/cli-agents
+python3 scripts/test_harness.py --validate --plugin plugins/cli-agents
 
 # Audit skill compliance
 python3 plugins/agent-scaffolders/scripts/audit_skill.py plugins/cli-agents/skills/maf-adapter --mode source
@@ -55,3 +55,7 @@ python3 plugins/agent-scaffolders/scripts/audit_skill.py plugins/cli-agents/skil
 
 ## References
 - [acceptance-criteria.md](references/acceptance-criteria.md) - Plugin and skill acceptance criteria for MAF.
+- [decision-record.md](references/decision-record.md) - Five-reviewer red team synthesis leading to ADR-007.
+- [maf-initial-research.md](references/maf-initial-research.md) - MAF component inventory, providers, and architecture.
+- [maf-hands-on-experiment-analysis.md](references/maf-hands-on-experiment-analysis.md) - 12 working C# experiments on MAF 1.6.1.
+- [microsoft-agent-framework-assessment.md](references/microsoft-agent-framework-assessment.md) - Theoretical assessment and model evaluation.

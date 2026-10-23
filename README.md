@@ -1,6 +1,6 @@
 # Agentic OS Control Plane
 
-<!-- ECOSYSTEM_STATS_START -->**Current Scale:** 9 Plugins · 122 Skills · 45 Sub-Agents<!-- ECOSYSTEM_STATS_END -->
+<!-- ECOSYSTEM_STATS_START -->**Current Scale:** 9 Plugins · 114 Skills · 45 Sub-Agents<!-- ECOSYSTEM_STATS_END -->
 
 **A governed execution harness for AI coding agents.** This repository lets Claude Code, Codex,
 GitHub Copilot, Agy, and compatible tools use their native planning, coding, orchestration, and

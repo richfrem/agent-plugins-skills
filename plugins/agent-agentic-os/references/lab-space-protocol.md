@@ -75,7 +75,7 @@ compare it against the canonical template. If it substantially improved proposal
 to the copilot-cli plugin as a reference example:
 ```bash
 cp <lab-experiment-dir>/references/copilot_proposer_prompt.md \
-   plugins/cli-agents/skills/copilot-cli-agent/references/skill-proposer-prompt.md
+   plugins/cli-agents/skills/cli-agent/references/skill-proposer-prompt.md
 ```
 This closes the loop: the prompt that emerged from real eval feedback becomes the new starting
 baseline for future experiments.

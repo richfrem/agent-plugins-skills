@@ -48,6 +48,8 @@ from control_plane.measurement import (
 FIXTURE_PATH = (
     Path(__file__).resolve().parent.parent.parent
     / "cli-agents"
+    / "skills"
+    / "cli-agent"
     / "references"
     / "p0-codex-observation-fixture.json"
 )

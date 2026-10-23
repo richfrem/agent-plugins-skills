@@ -2,14 +2,14 @@
 name: agt-security
 plugin: cli-agents
 description: >-
-  Provides sandboxing validation, HMAC key rotation, and budget verification to 
-  manage security boundaries under Agentic Group Theory (AGT).
+  Provides sandboxing validation, HMAC key rotation, and boundary verification to
+  manage security boundaries under Microsoft Agent Governance Toolkit (AGT).
 allowed-tools: Bash, Read, Write
 ---
 
-# Agentic Group Theory Security (agt-security)
+# Agent Governance Toolkit Security (`agt-security`)
 
-Manages local execution sandboxes, verifies process hygiene limits, and rotates cryptographic HMAC bus keys under Agentic Group Theory (AGT).
+Manages local execution sandboxes, verifies process hygiene limits, and rotates cryptographic HMAC bus keys under Microsoft's Agent Governance Toolkit (AGT) security standards.
 
 ## Contents
 - [Critical Constraints](#critical-constraints)
@@ -28,10 +28,10 @@ Manages local execution sandboxes, verifies process hygiene limits, and rotates 
 
 ```bash
 # Verify sandbox hygiene and path containment
-python3 plugins/cli-agents/scripts/agt_ops.py verify-sandbox
+python3 scripts/agt_ops.py verify-sandbox
 
 # Rotate local HMAC session signing key
-python3 plugins/cli-agents/scripts/agt_ops.py rotate-key
+python3 scripts/agt_ops.py rotate-key
 ```
 
 ## Workflow
@@ -45,7 +45,7 @@ python3 plugins/cli-agents/scripts/agt_ops.py rotate-key
 
 ```bash
 # Run sandbox verification
-python3 plugins/cli-agents/scripts/agt_ops.py verify-sandbox
+python3 scripts/agt_ops.py verify-sandbox
 
 # Audit skill compliance
 python3 plugins/agent-scaffolders/scripts/audit_skill.py plugins/cli-agents/skills/agt-security --mode source
@@ -53,3 +53,4 @@ python3 plugins/agent-scaffolders/scripts/audit_skill.py plugins/cli-agents/skil
 
 ## References
 - [acceptance-criteria.md](references/acceptance-criteria.md) - AGT operational security criteria.
+- [agent-governance-toolkit-research.md](references/agent-governance-toolkit-research.md) - Microsoft Agent Governance Toolkit architecture, seven packages, and adapter integration.

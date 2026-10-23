@@ -46,7 +46,7 @@ python3 scripts/generate_eval_instructions.py --skill <skill-name> --lab-repo <p
 2. **Bootstrap Lab Repo**: Initialize git repository, clean slate, and copy plugin files via `cp -RL`.
 3. **Generate Instructions**: Render `eval-instructions.md` from `assets/templates/eval-instructions.template.md`.
 4. **Seed Commit**: Commit baseline state in lab repo and push to origin.
-5. **Launch Options**: Provide the user with manual instructions or an autonomous CLI launcher command (for `agy`-based launches, see `agy-cli-agent`). Hand the run itself to `os-lab-loop`.
+5. **Launch Options**: Provide the user with manual instructions or an autonomous CLI launcher command (for `agy`-based launches, see `cli-agent` with `--cli agy`). Hand the run itself to `os-lab-loop`.
 
 ## Verification
 
