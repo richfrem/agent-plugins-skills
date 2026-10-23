@@ -5,7 +5,7 @@
       "plugins": [
         "agent-agentic-os",
         "agent-orchestration",
-        "agent-scaffolders",
+        "agent-extension-authoring",
         "dev-utils"
       ]
     }

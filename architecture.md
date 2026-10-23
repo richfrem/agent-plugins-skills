@@ -34,7 +34,7 @@ Current scale (read from `plugins/` — verify with `find plugins -name SKILL.md
 │   ├── agent-agentic-os/           # Control plane + skill improvement lab (14 skills)
 │   ├── agent-orchestration/        # Execution topologies & multi-LLM CLI routing (4 skills, 13 agents)
 │   ├── agent-memory/               # Memory, RLM, vector retrieval and Obsidian wiki (4 skills)
-│   ├── agent-scaffolders/          # Plugin/skill/agent/rule scaffolding & auditing (27 skills)
+│   ├── agent-extension-authoring/  # Plugin/skill/subagent/instruction authoring & APM packaging (6 skills)
 │   ├── dev-utils/                  # GitHub issues + worktrees, context bundling, links, conventions, ADRs, symlinks, HuggingFace (8 skills)
 │   ├── agent-exploration-cycle/   # Business discovery workflow + SQLite state engine (5 skills)
 │   └── <plugin>/
@@ -149,10 +149,9 @@ dedicated memory agents and command wrappers are retired. Skill-specific documen
 and diagrams live under references/, with executable templates in assets/. No copy
 manifest is needed by this plugin.
 
-### 4.5. Plugin: agent-scaffolders (27 skills)
-Tooling for creating and auditing ecosystem components: `create-plugin`, `create-skill`, `create-rule`
-(invariant-driven, zero-fluff agent rules), `create-sub-agent`, `create-agents-md` (progressive-disclosure root files),
-`audit-plugin`, `audit-skill`, `audit-sub-agent`, `audit-rule`, and `audit-agents-md` (timeless root instruction auditing),
+### 4.5. Plugin: agent-extension-authoring (6 skills)
+Tooling for creating and auditing ecosystem components: `authoring-skills`, `authoring-plugins`,
+`authoring-subagents`, `authoring-instructions`, `authoring-github-workflows`, and `packaging-with-apm`.
 plus APM package conversion and marketplace management. Retired analyzer,
 mining, standalone command, path-repair, deep-audit, and self-audit wrappers are no longer catalogued.
 
@@ -204,14 +203,14 @@ Every file in `.agent/rules/` has a matching master under some `plugins/*/rules/
   schema silently produces 0% routing accuracy.
 - `SKILL.md`: under ~500 lines; overflow detail goes to `references/`.
 - Helper scripts: Python only — never bash (`.sh`).
-- New plugins/skills should be scaffolded via `create-plugin` / `create-skill`, then validated with
-  `audit-plugin`, then installed and verified with `apm install` — not hand-rolled.
+- New plugins/skills should be scaffolded via `authoring-plugins` / `authoring-skills`, then validated with
+  `authoring-plugins`, then installed and verified with `apm install` — not hand-rolled.
 
 ## 7. Resource Sharing & Copy Manifest
 
 `symlinks.json` tracks every shared resource across plugins using `strategy: "copy"`.
 Files are authored at plugin roots and copied into individual skill spokes:
-- After cloning, run `python3 plugins/agent-scaffolders/skills/convert-plugin-to-apm/scripts/materialize_copies.py` to populate working copies (which are git-excluded).
+- After cloning, run `python3 plugins/agent-extension-authoring/skills/packaging-with-apm/scripts/materialize_copies.py` to populate working copies (which are git-excluded).
 - The packaging pipeline (`apm_build_pipeline.py`) dereferences all copies into physical standalone files at staging/pack time.
 - No new git symlinks are created. Installed skills are 100% self-contained and run on any operating system without filesystem symlink support or admin rights.
 
@@ -242,7 +241,7 @@ This populates the target client harness (`.claude/skills/`, `.agents/skills/`, 
 
 ## 10. Testing & Validation
 
-- Plugin structural validation: `audit-plugin` skill.
+- Plugin structural validation: `authoring-plugins` skill.
 - Control-plane smoke tests: `plugins/agent-exploration-cycle/skills/running-exploration-cycle/scripts/smoke_test.py`.
 - `agent-orchestration` router (`cli-agent`): 76+ TDD tests across scripts and contract suites.
 - No single top-level test runner — tests are scoped per plugin, colocated with the plugin's

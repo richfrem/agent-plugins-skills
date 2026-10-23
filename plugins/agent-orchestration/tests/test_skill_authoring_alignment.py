@@ -13,7 +13,7 @@ from pathlib import Path
 import pytest
 
 PLUGIN = Path(__file__).resolve().parents[1]
-AUDITOR = PLUGIN.parent / "agent-scaffolders/scripts/audit_skill.py"
+AUDITOR = PLUGIN.parent / "agent-extension-authoring/skills/authoring-skills/scripts/audit_skill.py"
 SKILLS = ("cli-agent",)
 SYNC_SCRIPT = PLUGIN / "skills/cli-agent/scripts/sync_cheapest_models.py"
 

@@ -1781,3 +1781,21 @@ untracked apm.yml entry to ./plugins/agent-exploration-cycle, run apm install, r
 this plugin's .git/info/exclude lines and stale materialized copies in the main checkout,
 and retire the stale Codex plugin cache of the former plugin name.
 Map update: migration plan section 13.10.4 and the consolidation plan record the same list.
+
+## DEBT-20261023-SCAFFOLDERS-CONSOLIDATION-AND-RENAME
+
+Status: RESOLVED
+
+Consolidated plugins/agent-scaffolders from 24 skills down to 6 cohesive, self-contained skills and renamed the plugin to `agent-extension-authoring`.
+The 6 target skills are:
+1. `authoring-skills` (absorbs create-skill, create-stateful-skill, audit-skill, and references for docker, azure, mcp, standards)
+2. `authoring-plugins` (absorbs create-plugin, audit-plugin)
+3. `authoring-subagents` (absorbs create-sub-agent, audit-sub-agent)
+4. `authoring-instructions` (absorbs create-rule, audit-rule, create-agents-md, audit-agents-md, create-hook)
+5. `authoring-github-workflows` (absorbs create-github-action, create-agentic-workflow)
+6. `packaging-with-apm` (absorbs create-apm-package, convert-plugin-to-apm, compile-apm-package, install-apm-package, manage-marketplace)
+
+All 24 retired skills preserved as verbatim mode references under `references/modes/<old-name>.md`.
+Removed all plugin-root shared scripts, references, assets, and tests in accordance with the self-contained skills policy.
+All 6 skills pass deterministic `audit_skill.py --mode source` with 0 errors and 0 warnings.
+`audit_plugin_structure.py` and `audit.py` pass cleanly on `plugins/agent-extension-authoring`.

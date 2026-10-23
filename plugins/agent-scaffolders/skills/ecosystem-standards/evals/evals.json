@@ -1,8 +1,0 @@
-[
-  {"prompt": "Audit this new skill directory and validate it complies with ecosystem specs.", "should_trigger": true},
-  {"prompt": "Validate the directory structure and manifest schema of this new plugin.", "should_trigger": true},
-  {"prompt": "Review this workflow for ecosystem compliance — check naming, progressive disclosure, and reference paths.", "should_trigger": true},
-  {"prompt": "What are the authoritative specifications for creating Agent Skills?", "should_trigger": false},
-  {"prompt": "Show me the reference documentation for Sub-agents.", "should_trigger": false},
-  {"prompt": "Run pip-compile for the dependency lockfile.", "should_trigger": false}
-]

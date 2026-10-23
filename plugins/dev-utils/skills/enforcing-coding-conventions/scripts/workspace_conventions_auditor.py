@@ -39,13 +39,7 @@ EXCLUDE_DIRS = {
 
 # File-level exclusions: known-intentional test fixtures that must stay
 # out of conventions compliance to serve their own regression tests.
-EXCLUDE_FILES = {
-    # Deliberately broken security-scanner fixture — see
-    # plugins/agent-scaffolders/tests/flawed-plugin/README.md. Must keep
-    # its violations (missing docstrings, hardcoded creds, network calls)
-    # so inventory_plugin.py's scanner can be verified to detect them.
-    "plugins/agent-scaffolders/tests/flawed-plugin/scripts/bad_script.py",
-}
+EXCLUDE_FILES: set[str] = set()
 
 # File extensions to scan
 SUPPORTED_EXTENSIONS = {".py", ".ts", ".tsx", ".js"}

@@ -1,1 +1,0 @@
-../../../references/examples/triggering-examples.md

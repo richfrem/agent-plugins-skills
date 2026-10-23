@@ -18,7 +18,7 @@
 
 ```bash
 PYTHONDONTWRITEBYTECODE=1 python3 -m pytest plugins/agent-agentic-os/tests/test_approver_isolation.py plugins/agent-agentic-os/tests/test_dual_identity_onboarding.py -q -p no:cacheprovider
-python3 plugins/agent-scaffolders/scripts/audit_plugin_structure.py plugins/agent-agentic-os
+python3 plugins/agent-extension-authoring/skills/authoring-plugins/scripts/audit_plugin_structure.py plugins/agent-agentic-os
 ```
 
 Run from the source checkout. Installed-skill tests materialize symlinks as hard copies and execute

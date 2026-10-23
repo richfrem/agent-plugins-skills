@@ -1,0 +1,3 @@
+# packaging-with-apm runtime requirements (the scripts otherwise use the standard library only).
+# Compile with: pip-compile requirements.in
+pyyaml

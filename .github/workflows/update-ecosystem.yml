@@ -25,7 +25,7 @@ jobs:
           python-version: '3.11'
 
       - name: Run ecosystem indexer
-        run: python plugins/agent-scaffolders/scripts/update_ecosystem_index.py
+        run: python plugins/agent-extension-authoring/skills/authoring-plugins/scripts/update_ecosystem_index.py
 
       - name: Commit and push if changed
         run: |

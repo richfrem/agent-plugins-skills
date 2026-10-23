@@ -41,7 +41,7 @@ Entries marked **not yet classified** are skills or rules that exist in the repo
 Install the enabled skills:
 
 ```bash
-python3 plugins/agent-scaffolders/skills/install-apm-package/scripts/apm_consumer.py install --checkout . --global --plugins agent-agentic-os --skill os-control-health --skill os-control-init --skill os-control-signing-setup --skill os-lab-memory
+python3 plugins/agent-extension-authoring/skills/packaging-with-apm/scripts/apm_consumer.py install --checkout . --global --plugins agent-agentic-os --skill os-control-health --skill os-control-init --skill os-control-signing-setup --skill os-lab-memory
 ```
 
 ---
@@ -80,39 +80,21 @@ No skills enabled: do not install this plugin.
 
 ---
 
-### D. `agent-scaffolders` (Scaffolding, Auditing & APM)
+### D. `agent-extension-authoring` (Authoring & APM Packaging)
 
 | Skill | Status | Rationale |
 |---|---|---|
-| `audit-agents-md` | not yet classified |  |
-| `audit-plugin` | **`true`** | Audits plugin layout and `.claude-plugin/plugin.json`. |
-| `audit-rule` | not yet classified |  |
-| `audit-skill` | **`true`** | Validates skill structure and compliance. |
-| `audit-sub-agent` | not yet classified |  |
-| `compile-apm-package` | `false` | APM bundle compiler. |
-| `convert-plugin-to-apm` | `false` | APM converter. |
-| `create-agentic-workflow` | `false` | GitHub Agentic Workflow scaffolder. |
-| `create-agents-md` | not yet classified |  |
-| `create-apm-package` | `false` | APM package scaffolder. |
-| `create-azure-agent` | `false` | Azure AI Foundry deployment scaffolder. |
-| `create-docker-skill` | `false` | Docker skill environment scaffolder. |
-| `create-github-action` | `false` | CI/CD GitHub Action scaffolder. |
-| `create-hook` | `false` | Hook scaffolder. |
-| `create-mcp-integration` | `false` | MCP integration scaffolder. |
-| `create-plugin` | **`true`** | Scaffolds top-level plugins. |
-| `create-rule` | **`true`** | Scaffolds standard rules. |
-| `create-skill` | **`true`** | Scaffolds standard skills. |
-| `create-stateful-skill` | not yet classified |  |
-| `create-sub-agent` | not yet classified |  |
-| `ecosystem-authoritative-sources` | `false` | Reference specs. |
-| `ecosystem-standards` | `false` | Reference specs. |
-| `install-apm-package` | `false` | APM package installer. |
-| `manage-marketplace` | **`true`** | Manages catalog manifests. |
+| `authoring-skills` | **`true`** | Scaffolds, evaluates, and audits agent skills. |
+| `authoring-plugins` | **`true`** | Scaffolds and audits whole plugins. |
+| `authoring-subagents` | **`true`** | Scaffolds and audits sub-agents. |
+| `authoring-instructions` | **`true`** | Scaffolds and audits governance instructions, AGENTS.md, rules, hooks. |
+| `authoring-github-workflows` | **`true`** | Scaffolds GitHub workflows and Copilot custom agents. |
+| `packaging-with-apm` | **`true`** | Packages, builds, and distributes via APM. |
 
 Install the enabled skills:
 
 ```bash
-python3 plugins/agent-scaffolders/skills/install-apm-package/scripts/apm_consumer.py install --checkout . --global --plugins agent-scaffolders --skill audit-plugin --skill audit-skill --skill create-plugin --skill create-rule --skill create-skill --skill manage-marketplace
+python3 plugins/agent-extension-authoring/skills/packaging-with-apm/scripts/apm_consumer.py install --checkout . --global --plugins agent-extension-authoring --skill authoring-skills --skill authoring-plugins --skill authoring-subagents --skill authoring-instructions --skill authoring-github-workflows --skill packaging-with-apm
 ```
 
 ---
@@ -128,7 +110,7 @@ python3 plugins/agent-scaffolders/skills/install-apm-package/scripts/apm_consume
 Install the enabled skills:
 
 ```bash
-python3 plugins/agent-scaffolders/skills/install-apm-package/scripts/apm_consumer.py install --checkout . --global --plugins cli-agents --skill cli-agent
+python3 plugins/agent-extension-authoring/skills/packaging-with-apm/scripts/apm_consumer.py install --checkout . --global --plugins cli-agents --skill cli-agent
 ```
 
 ---
@@ -170,7 +152,7 @@ No skills enabled: do not install this plugin.
 Install the enabled skills:
 
 ```bash
-python3 plugins/agent-scaffolders/skills/install-apm-package/scripts/apm_consumer.py install --checkout . --global --plugins dev-utils --skill context-bundler --skill github-issue-agent --skill github-issue-backlog-agent --skill github-issue-pr-lifecycle-agent --skill github-issue-prioritizer --skill github-issue-worktree-agent --skill symlink-manager
+python3 plugins/agent-extension-authoring/skills/packaging-with-apm/scripts/apm_consumer.py install --checkout . --global --plugins dev-utils --skill context-bundler --skill github-issue-agent --skill github-issue-backlog-agent --skill github-issue-pr-lifecycle-agent --skill github-issue-prioritizer --skill github-issue-worktree-agent --skill symlink-manager
 ```
 
 ---
@@ -240,5 +222,5 @@ Rules stay outside APM. Setup copies each enabled rule from its plugin's `rules/
    apm install --global
    ```
 2. **Leave a plugin out entirely**: `apm uninstall <path-to-clone>/plugins/<plugin> --global`.
-3. **Undo the last change**: `python3 plugins/agent-scaffolders/skills/install-apm-package/scripts/apm_consumer.py rollback` (every `apm_consumer.py install` takes a backup first).
+3. **Undo the last change**: `python3 plugins/agent-extension-authoring/skills/packaging-with-apm/scripts/apm_consumer.py rollback` (every `apm_consumer.py install` takes a backup first).
 4. **Change a rule**: copy it into, or delete it from, the project's `.agent/rules/` and update the rules list in `AGENTS.md`.

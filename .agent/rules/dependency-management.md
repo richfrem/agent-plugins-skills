@@ -21,5 +21,5 @@ globs: ["requirements*.txt", "requirements*.in", "Dockerfile", "pyproject.toml",
 10. **`apm.yml` + `apm.lock.yaml` are a pair** — `apm.yml` is intent, `apm.lock.yaml` is the lockfile; commit them together, like `.in` + `.txt`. Never edit the lockfile by hand.
 11. **Pinned refs only** — every APM dependency pins `#<tag>` or `#<commit-sha>`; update deliberately with `apm outdated` / `apm update`, never floating refs.
 12. **Reproducible CI** — CI installs with `apm install --frozen`, which refuses when the lockfile and `apm.yml` disagree.
-13. **The APM CLI is a pinned dev dependency** — `apm-cli==<version>` in `plugins/agent-scaffolders/requirements-dev.in`, compiled with `pip-compile`; upgrade it only after re-verifying APM behaviour.
+13. **The APM CLI is a pinned dev dependency** — `apm-cli==<version>` in the `packaging-with-apm` skill's `requirements-dev.in` (the skill documents the install step), compiled with `pip-compile`; upgrade it only after re-verifying APM behaviour.
 14. **Skill Python dependencies are not installed by APM** — a skill with third-party imports keeps its own requirements file inside the skill (or documents the install step); plugin-root `requirements.txt` files are not deployed with skills.

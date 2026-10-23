@@ -1,0 +1,246 @@
+[
+  {
+    "prompt": "Create a new skill called link-validator in the agent-scaffolders plugin.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Scaffold a skill directory with SKILL.md and evals.json for a commit-message validator.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Generate a new skill setup for my code-review automation use case.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Create a brand-new plugin with multiple skills and commands.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Improve the trigger description for my existing link-checker skill.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Fix the routing accuracy on my commit skill.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Create a sub-agent that handles security reviews",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Build a stateful skill that maintains a session counter",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Scaffold an advanced stateful agent skill with L4 state management and lifecycle artifacts.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Create a new skill with persistent state, chained commands, and escalation taxonomy.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "I need to build a stateful skill with lifecycle checkpoints and tone configuration \u2014 use create-stateful-skill.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Create a simple skill without any state management.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Design and scaffold a Claude Code sub-agent file.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Install a plugin from the marketplace.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Create a new skill called link-validator",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Scaffold a new agentic workflow from an existing skill",
+    "should_trigger": false
+  },
+  {
+    "id": "audit-skill-pos-1",
+    "type": "positive",
+    "prompt": "Audit the select-loop-strategy skill to see if it meets our 100 line budget and standards.",
+    "should_trigger": true
+  },
+  {
+    "id": "audit-skill-pos-2",
+    "type": "positive",
+    "prompt": "Check if this skill aligns with our evolution standards and fix its evals schema.",
+    "should_trigger": true
+  },
+  {
+    "id": "audit-skill-pos-3",
+    "type": "positive",
+    "prompt": "Refactor my new skill so it follows ADR-002 hub and spoke and has a clean Layer 1 procedural core.",
+    "should_trigger": true
+  },
+  {
+    "id": "audit-skill-neg-1",
+    "type": "negative",
+    "prompt": "Audit the entire agent-orchestration plugin directory for marketplace compliance.",
+    "should_trigger": false
+  },
+  {
+    "id": "audit-skill-neg-2",
+    "type": "negative",
+    "prompt": "Create a new stateless skill called data-formatter.",
+    "should_trigger": false
+  },
+  {
+    "id": "audit-skill-neg-3",
+    "type": "negative",
+    "prompt": "Search the web for python asyncio best practices.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Scaffold an agent skill that depends on a Docker container runtime.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Create a skill with Docker pre-flight environment checks and subprocess execution.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Build a containerized skill that uses Nextflow for HPC workflows.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Create a GitHub Actions workflow that builds and publishes a Docker image.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Add an MCP server integration for the postgres database.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Scaffold a new plugin from scratch with a discovery interview.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Create a new skill called link-validator",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Deploy a skill as an Azure AI Foundry hosted agent",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Deploy my skill as an Azure AI Foundry hosted agent.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Generate Azure AI Foundry deployment wrappers for my existing skill.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Scaffold the Bicep templates and Azure deployment config for my agent skill.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Create a new sub-agent that handles code review tasks.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Deploy this skill as an AWS Lambda function.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Scaffold a GitHub Actions workflow for CI/CD deployment.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Scaffold an agent skill with Docker runtime support",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Add an MCP server integration to my plugin",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Add an MCP server integration for postgres to my plugin.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Scaffold a .mcp.json entry for the GitHub MCP server.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Connect my Claude Code plugin to a Slack MCP server over SSE transport.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Create a new sub-agent that handles database query analysis.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Scaffold a Docker-based skill for containerized workflows.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Create a GitHub Actions workflow to deploy the MCP server.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Create a brand-new plugin directory",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Deploy a skill as an Azure AI Foundry hosted agent",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Audit this new skill directory and validate it complies with ecosystem specs.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Validate the directory structure and manifest schema of this new plugin.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Review this workflow for ecosystem compliance \u2014 check naming, progressive disclosure, and reference paths.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "What are the authoritative specifications for creating Agent Skills?",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Show me the reference documentation for Sub-agents.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Run pip-compile for the dependency lockfile.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "What are the specifications and best practices for creating an Agent Skill?",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Explain the plugin architecture structure and the rules for plugin.json manifests.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "What are the authoritative sources and standards for Sub-agent setup and installation in this ecosystem?",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Audit this SKILL.md file for compliance with ecosystem standards.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Validate the directory structure of this new plugin against the spec.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Write a Python script to parse JSON files.",
+    "should_trigger": false
+  }
+]

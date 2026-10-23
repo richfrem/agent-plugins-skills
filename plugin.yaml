@@ -11,6 +11,6 @@ skills_dirs:
   - plugins/agent-agentic-os/skills
   - plugins/agent-orchestration/skills
   - plugins/agent-memory/skills
-  - plugins/agent-scaffolders/skills
+  - plugins/agent-extension-authoring/skills
   - plugins/dev-utils/skills
   - plugins/agent-exploration-cycle/skills
