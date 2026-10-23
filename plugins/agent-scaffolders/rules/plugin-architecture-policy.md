@@ -110,7 +110,7 @@ Installed skills run from different folders per harness and per install scope. N
 2. **How to refer to things**:
    | Reference to | Write it as |
    |---|---|
-   | Another skill or agent | Its name: "use the `adr-management` skill" |
+   | Another skill or agent | Its name: "use the `managing-adrs` skill" |
    | A file in the same skill | A path relative to the skill folder (`scripts/tool.py`, `references/guide.md`) |
    | A document elsewhere in the plugin | A markdown link (Section 5.2) |
    | Another plugin's capability | Its skill or agent by name |

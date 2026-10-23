@@ -1,7 +1,7 @@
 # Procedural Fallback Tree: Red Team Review
 
 ## 1. Manifest Context is Too Large
-If `context-bundler` generates a file too massive for the Red Team agent's context window:
+If `bundling-context` generates a file too massive for the Red Team agent's context window:
 - **Action**: Refine the `manifest.json`. Exclude massive unstructured logs or irrelevant boilerplate. Re-run the bundler. Adhere to the principle of "minimum viable context" for the reviewer.
 
 ## 2. Reviewer Persona is Missing

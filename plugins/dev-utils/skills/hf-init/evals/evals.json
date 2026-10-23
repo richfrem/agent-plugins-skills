@@ -1,8 +1,0 @@
-[
-  {"prompt": "Initialize HuggingFace integration for this project — validate my .env variables and test API connectivity.", "should_trigger": true},
-  {"prompt": "Run hf-init to set up the dataset repository structure on HuggingFace Hub.", "should_trigger": true},
-  {"prompt": "Onboard this project to HuggingFace: validate credentials, create the dataset repo, and upload the dataset card.", "should_trigger": true},
-  {"prompt": "Upload a new snapshot file to my existing HuggingFace dataset repository.", "should_trigger": false},
-  {"prompt": "Search HuggingFace Hub for pre-trained models suitable for text classification.", "should_trigger": false},
-  {"prompt": "Configure my AWS S3 bucket credentials and test connectivity.", "should_trigger": false}
-]

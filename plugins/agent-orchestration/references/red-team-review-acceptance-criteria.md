@@ -1,7 +1,7 @@
 # Acceptance Criteria: Red Team Review
 
 ## 1. Bundle Discipline
-- [ ] Agent relies entirely on `context-bundler` and `manifest.json` to compile review packets, rather than manually `cat`ing files into prompts.
+- [ ] Agent relies entirely on `bundling-context` and `manifest.json` to compile review packets, rather than manually `cat`ing files into prompts.
 - [ ] Packets always include an explicit "Prompt" guiding the reviewer's focus.
 
 ## 2. Iteration Mandate

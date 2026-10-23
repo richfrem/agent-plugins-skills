@@ -73,7 +73,7 @@ WHITELIST = [
     # kitty-specs example paths
     r"re:.*kitty-specs/.*",
     # Dead-link documentation references (files referenced in docs but never created)
-    r"re:.*requirements-core\.in",     # dependency-management docs example path
+    r"re:.*requirements-core\.in",     # dependency-management rule example path
     r"re:.*infinite-context-ecosystem\.mmd",  # rlm-* BLUEPRINT/research docs
     r"re:.*infinite-context-ecosystem\.png",  # same diagram, png variant
     r"re:.*Agent_Workflow_Orchestration_Design\.md",  # architecture doc never created

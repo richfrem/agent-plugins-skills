@@ -11,7 +11,7 @@ from pathlib import Path
 
 PLUGIN = Path(__file__).resolve().parents[1]
 REPO = PLUGIN.parents[1]
-MANAGER = REPO / "plugins/dev-utils/scripts/symlink_manager.py"
+MANAGER = REPO / "plugins/dev-utils/skills/managing-symlinks/scripts/symlink_manager.py"
 
 
 def run(*args, cwd=None):

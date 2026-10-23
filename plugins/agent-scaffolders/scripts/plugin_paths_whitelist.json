@@ -4,7 +4,6 @@
   "plugins/agent-memory",
   "plugins/agent-scaffolders",
   "plugins/cli-agents",
-  "plugins/dependency-management",
   "plugins/dev-utils",
   "plugins/exploration-cycle-plugin",
   "plugins/obsidian-wiki-engine"

@@ -28,19 +28,18 @@
             "plugin_installer.py": "example provided"
         },
         "cli-agents": {},
-        "dependency-management": {},
         "dev-utils": {
-            "constants.py": "Module organization diagram example in coding-conventions-agent/SKILL.md.",
-            "models.py": "Module organization diagram example in coding-conventions-agent/SKILL.md.",
-            "repositories.py": "Module organization diagram example in coding-conventions-agent/SKILL.md.",
-            "services.py": "Module organization diagram example in coding-conventions-agent/SKILL.md.",
-            "utils.py": "Module organization diagram example in coding-conventions-agent/SKILL.md.",
-            "dependency1.py": "Module organization diagram example in coding-conventions-agent/SKILL.md.",
-            "dependency2.py": "Module organization diagram example in coding-conventions-agent/SKILL.md.",
-            "foo.py": "Module organization diagram example in coding-conventions-agent/SKILL.md.",
-            "parent_script.py": "Module organization diagram example in coding-conventions-agent/SKILL.md.",
-            "file.py": "Dummy placeholder string in context-bundler/SKILL.md for missing file handling examples.",
-            "main.py": "Dummy script reference in context-bundler examples."
+            "constants.py": "Module organization diagram example in enforcing-coding-conventions/SKILL.md.",
+            "models.py": "Module organization diagram example in enforcing-coding-conventions/SKILL.md.",
+            "repositories.py": "Module organization diagram example in enforcing-coding-conventions/SKILL.md.",
+            "services.py": "Module organization diagram example in enforcing-coding-conventions/SKILL.md.",
+            "utils.py": "Module organization diagram example in enforcing-coding-conventions/SKILL.md.",
+            "dependency1.py": "Module organization diagram example in enforcing-coding-conventions/SKILL.md.",
+            "dependency2.py": "Module organization diagram example in enforcing-coding-conventions/SKILL.md.",
+            "foo.py": "Module organization diagram example in enforcing-coding-conventions/SKILL.md.",
+            "parent_script.py": "Module organization diagram example in enforcing-coding-conventions/SKILL.md.",
+            "file.py": "Dummy placeholder string in bundling-context/SKILL.md for missing file handling examples.",
+            "main.py": "Dummy script reference in bundling-context examples."
         },
         "agent-memory": {
             "auth.py": "Eval prompt example in rlm-curator/evals/evals.json.",

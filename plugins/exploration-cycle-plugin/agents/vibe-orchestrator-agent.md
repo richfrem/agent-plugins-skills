@@ -156,7 +156,7 @@ Phase 5 begins, silently check whether `superpowers:using-git-worktrees` and
 (install location varies — do not assume one fixed path).
 
 - **If available**: invoke `using-git-worktrees` now — create an isolated worktree at the
-  canonical `.worktrees/task-<task_id>/` path (per `graph-planning-superpowers-policy.md`
+  canonical `.worktrees/task-<task_id>/` path (per `engineering-lifecycle-policy.md`
   §4 — never a sibling `../worktree-...` directory) for all Phase 5-7 work, using the same
   `<task_id>` registered in Control Plane Registration above. Do not migrate slices directly
   on the main branch.

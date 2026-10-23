@@ -85,7 +85,6 @@ Detailed domain rules and behavioral invariants are maintained as modular docume
 - [Plugin Architecture Policy](.agent/rules/plugin-architecture-policy.md): Hub-and-spoke resource layout, script organization, and packaging boundaries.
 - [State Transition Guidance](.agent/rules/state-transition-guidance-compliance.md): Strict compliance with transition guidance templates.
 - [Self-Evolution Policy](.agent/rules/self-evolution-policy.md): 3-Layer filesystem memory and self-healing friction tiers.
-- [Graph Planning Superpowers](.agent/rules/graph-planning-superpowers-policy.md): DAG execution boundaries, fan-out limits, and token budgets.
 - [Config-Driven Constants](.agent/rules/config-driven-constants-over-hardcoding.md): Prohibition of string literals and SQL parameterization rules.
 
 ### Development & Operational Standards

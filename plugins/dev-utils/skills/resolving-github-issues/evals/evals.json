@@ -1,0 +1,46 @@
+[
+  {
+    "prompt": "Create an isolated git worktree for issue 42",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Set up a worktree under .worktrees/issue-105 to fix a bug",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Remove the worktree for issue 42",
+    "should_trigger": true
+  },
+  {
+    "prompt": "List active git worktrees for issues",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Create a local task scratchpad item",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Promote local task scratchpad to a GitHub issue",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Create a pull request for issue 42",
+    "should_trigger": true
+  },
+  {
+    "prompt": "orchestrate end to end flow from issue to pr creation and closing issue 42",
+    "should_trigger": true
+  },
+  {
+    "prompt": "run the pr lifecycle for issue 105",
+    "should_trigger": true
+  },
+  {
+    "prompt": "create a worktree for issue 42",
+    "should_trigger": true
+  },
+  {
+    "prompt": "log a bug report to github issue backlog",
+    "should_trigger": false
+  }
+]

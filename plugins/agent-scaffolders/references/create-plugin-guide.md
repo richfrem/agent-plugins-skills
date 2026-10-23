@@ -104,7 +104,7 @@ When a script or reference is shared across multiple skills in the same plugin:
 - Symlinks are created and registered via `symlink_manager.py create`.
 
 ```bash
-python plugins/dev-utils/scripts/symlink_manager.py create \
+python plugins/dev-utils/skills/managing-symlinks/scripts/symlink_manager.py create \
   --src plugins/<plugin>/scripts/<canonical>.py \
   --dst plugins/<plugin>/skills/<skill>/scripts/<name>.py
 ```

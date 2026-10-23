@@ -10,7 +10,7 @@ Purpose:
 
 Key Input Dependencies:
     - job file (.job.md)        — YAML configuration and Markdown system prompt
-    - manifest.json             — Optional context-bundler manifest for target file selection
+    - manifest.json             — Optional bundling-context manifest for target file selection
     - cheapest_models.json      — Customizes the model choice by resolving recommended names
     - live filesystem           — Target directories crawled for files
 
@@ -31,7 +31,7 @@ WHAT IS A JOB FILE?
                      If exit code 0, the file is skipped. Placeholder: {file}.
        - vars:       Key-value pairs available as {key} in post_cmd/check_cmd.
        - dir:        Default directory to crawl (overridden by --dir CLI arg).
-       - bundle:     Path to a context-bundler manifest JSON/YAML.
+       - bundle:     Path to a bundling-context manifest JSON/YAML.
 
     2. Markdown Body (after the second ---) — The Prompt:
        This is the exact text sent to Claude as the system prompt. The file
@@ -100,7 +100,7 @@ USAGE EXAMPLES:
     python ./scripts/swarm_run.py \\
         --job my_job.md --files docs/README.md docs/ARCHITECTURE.md
 
-    # 6. Use a context-bundler manifest
+    # 6. Use a bundling-context manifest
     python ./scripts/swarm_run.py \\
         --job my_job.md --bundle ../../output/manifest.json
 

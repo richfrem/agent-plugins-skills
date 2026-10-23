@@ -7,7 +7,7 @@ description: >
   Senior Security Auditor. Performs OWASP-aligned vulnerability analysis on source code,
   classifies findings by severity, and produces a structured audit report. Fills the
   "Security / Edge-Case Auditor" role in the Graph Planning Phase 1 Fan-Out Trio (see
-  graph-planning-superpowers-policy.md §2.3 and red-team-review/SKILL.md).
+  engineering-lifecycle-policy.md §3 and red-team-review/SKILL.md).
 ---
 
 # Role

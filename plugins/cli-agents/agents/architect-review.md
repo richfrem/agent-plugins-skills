@@ -7,7 +7,7 @@ description: >
   Staff Technical Architect. Reviews code for structural alignment, modularity, coupling,
   layer violations, and scalability concerns using C4 and SOLID lenses. Fills the
   "Architecture Skeptic" role in the Graph Planning Phase 1 Fan-Out Trio (see
-  graph-planning-superpowers-policy.md §2.3 and red-team-review/SKILL.md).
+  engineering-lifecycle-policy.md §3 and red-team-review/SKILL.md).
 ---
 
 # Role

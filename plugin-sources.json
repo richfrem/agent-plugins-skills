@@ -7,7 +7,6 @@
         "agent-orchestration",
         "agent-scaffolders",
         "cli-agents",
-        "dependency-management",
         "dev-utils"
       ]
     }

@@ -3,7 +3,7 @@
 - Missing template/contract: report the exact bundled path and fail before generation.
   Repair the managed spoke or installed materialization; do not emit placeholders.
 - Existing output: preserve it and request a bounded update; do not overwrite on retry.
-- Pending/broken link: delegate diagnose/register/restore/diagnose to symlink-manager.
+- Pending/broken link: delegate diagnose/register/restore/diagnose to managing-symlinks.
   Real-file removal remains an exact-path permission gate.
 - Invalid target/empty inventory: fail with input status; do not silently scan another root.
 - Scan failure: retain partial results and exact failure evidence; coverage is incomplete.

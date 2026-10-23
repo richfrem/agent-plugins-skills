@@ -236,12 +236,6 @@
       "description": ""
     },
     {
-      "src": "plugins/dev-utils/scripts/check_todos.py",
-      "dst": "plugins/dev-utils/skills/todo-check/scripts/check_todos.py",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
       "src": "plugins/agent-orchestration/assets/diagrams/agent_swarm.mmd",
       "dst": "plugins/agent-orchestration/skills/agent-swarm/assets/resources/agent_swarm.mmd",
       "strategy": "copy",
@@ -1382,150 +1376,6 @@
       "description": ""
     },
     {
-      "src": "plugins/dev-utils/references/convert-mermaid-acceptance-criteria.md",
-      "dst": "plugins/dev-utils/skills/convert-mermaid/references/acceptance-criteria.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/references/convert-mermaid-flow.mmd",
-      "dst": "plugins/dev-utils/skills/convert-mermaid/references/convert-mermaid-flow.mmd",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/references/convert-mermaid-flow.png",
-      "dst": "plugins/dev-utils/skills/convert-mermaid/references/convert-mermaid-flow.png",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/scripts/verify_png.py",
-      "dst": "plugins/dev-utils/skills/convert-mermaid/scripts/verify_png.py",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/scripts/convert.py",
-      "dst": "plugins/dev-utils/skills/convert-mermaid/scripts/convert.py",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/references/troubleshooting.md",
-      "dst": "plugins/dev-utils/skills/symlink-manager/references/troubleshooting.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/references/acceptance-criteria.md",
-      "dst": "plugins/dev-utils/skills/symlink-manager/references/acceptance-criteria.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/scripts/symlink_manager.py",
-      "dst": "plugins/dev-utils/skills/symlink-manager/scripts/symlink_manager.py",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/scripts/bulk_symlink_fixer.py",
-      "dst": "plugins/dev-utils/skills/symlink-manager/scripts/bulk_symlink_fixer.py",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/references/hf-upload-acceptance-criteria.md",
-      "dst": "plugins/dev-utils/skills/hf-upload/references/acceptance-criteria.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/scripts/hf_config.py",
-      "dst": "plugins/dev-utils/skills/hf-upload/scripts/hf_config.py",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/scripts/hf_upload.py",
-      "dst": "plugins/dev-utils/skills/hf-upload/scripts/hf_upload.py",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/references/acceptance-criteria.md",
-      "dst": "plugins/dev-utils/skills/adr-management/references/acceptance-criteria.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/scripts/adr_manager.py",
-      "dst": "plugins/dev-utils/skills/adr-management/scripts/adr_manager.py",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/scripts/next_number.py",
-      "dst": "plugins/dev-utils/skills/adr-management/scripts/next_number.py",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/assets/templates/adr-template.md",
-      "dst": "plugins/dev-utils/skills/adr-management/assets/templates/adr-template.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/references/humanize-acceptance-criteria.md",
-      "dst": "plugins/dev-utils/skills/humanize/references/acceptance-criteria.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/references/channel-rules.md",
-      "dst": "plugins/dev-utils/skills/humanize/references/channel-rules.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/references/patterns.md",
-      "dst": "plugins/dev-utils/skills/humanize/references/patterns.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/references/voice-profile/README.md",
-      "dst": "plugins/dev-utils/skills/humanize/references/voice-profile/README.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/references/voice-profile/my-voice.md",
-      "dst": "plugins/dev-utils/skills/humanize/references/voice-profile/my-voice.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/references/hf-init-acceptance-criteria.md",
-      "dst": "plugins/dev-utils/skills/hf-init/references/acceptance-criteria.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/scripts/hf_init.py",
-      "dst": "plugins/dev-utils/skills/hf-init/scripts/hf_init.py",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/scripts/hf_config.py",
-      "dst": "plugins/dev-utils/skills/hf-init/scripts/hf_config.py",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
       "src": "plugins/agent-orchestration/references/cheapest_models.md",
       "dst": "plugins/agent-orchestration/skills/agent-swarm/references/cheapest_models.md",
       "strategy": "copy",
@@ -1544,32 +1394,8 @@
       "description": ""
     },
     {
-      "src": "plugins/dev-utils/rules/coding-conventions.md",
-      "dst": "plugins/dev-utils/skills/coding-conventions-agent/references/coding-conventions.md",
-      "strategy": "copy",
-      "description": "Plugin reference \u2192 Skill reference"
-    },
-    {
-      "src": "plugins/dev-utils/scripts/workspace_conventions_auditor.py",
-      "dst": "plugins/dev-utils/skills/coding-conventions-agent/scripts/workspace_conventions_auditor.py",
-      "strategy": "copy",
-      "description": "Plugin script \u2192 Skill script"
-    },
-    {
-      "src": "plugins/dependency-management/rules/dependency-management.md",
-      "dst": "plugins/dependency-management/skills/dependency-management/references/dependency-management.md",
-      "strategy": "copy",
-      "description": "Plugin reference \u2192 Skill reference"
-    },
-    {
       "src": "plugins/agent-scaffolders/rules/plugin-architecture-policy.md",
       "dst": "plugins/agent-scaffolders/skills/audit-plugin/references/plugin-architecture-policy.md",
-      "strategy": "copy",
-      "description": "Plugin reference \u2192 Skill reference"
-    },
-    {
-      "src": "plugins/dev-utils/rules/graph-planning-superpowers-policy.md",
-      "dst": "plugins/dev-utils/skills/coding-conventions-agent/references/graph-planning-superpowers-policy.md",
       "strategy": "copy",
       "description": "Plugin reference \u2192 Skill reference"
     },
@@ -8156,198 +7982,6 @@
       "description": ""
     },
     {
-      "src": "plugins/dependency-management/references/acceptance-criteria.md",
-      "dst": "plugins/dependency-management/skills/dependency-management/references/acceptance-criteria.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/dependency-management/references/DEPENDENCY_MANAGEMENT.md",
-      "dst": "plugins/dependency-management/skills/dependency-management/references/DEPENDENCY_MANAGEMENT.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/dependency-management/references/DEPENDENCY_MANIFEST.md",
-      "dst": "plugins/dependency-management/skills/dependency-management/references/DEPENDENCY_MANIFEST.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/dependency-management/references/fallback-tree.md",
-      "dst": "plugins/dependency-management/skills/dependency-management/references/fallback-tree.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/dependency-management/references/policy_details.md",
-      "dst": "plugins/dependency-management/skills/dependency-management/references/policy_details.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/dependency-management/references/python_dependency_workflow.mmd",
-      "dst": "plugins/dependency-management/skills/dependency-management/references/python_dependency_workflow.mmd",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/dependency-management/references/self-evolution-profile.md",
-      "dst": "plugins/dependency-management/skills/dependency-management/references/self-evolution-profile.md",
-      "strategy": "copy",
-      "description": "self-evolution-profile reference"
-    },
-    {
-      "src": "plugins/dependency-management/references/evolution-log.md",
-      "dst": "plugins/dependency-management/skills/dependency-management/references/evolution-log.md",
-      "strategy": "copy",
-      "description": "evolution-log reference"
-    },
-    {
-      "src": "plugins/dependency-management/references/map-debt.md",
-      "dst": "plugins/dependency-management/skills/dependency-management/references/map-debt.md",
-      "strategy": "copy",
-      "description": "map-debt reference"
-    },
-    {
-      "src": "plugins/dev-utils/assets/templates/bash-tool-header-template.sh",
-      "dst": "plugins/dev-utils/skills/coding-conventions-agent/assets/templates/bash-tool-header-template.sh",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/scripts/optimize_context.py",
-      "dst": "plugins/dev-utils/skills/optimize-context/scripts/optimize_context.py",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/references/optimize-context-acceptance-criteria.md",
-      "dst": "plugins/dev-utils/skills/optimize-context/references/acceptance-criteria.md",
-      "strategy": "copy",
-      "description": "optimize-context acceptance criteria"
-    },
-    {
-      "src": "plugins/dev-utils/scripts/gh_issue_prioritize.py",
-      "dst": "plugins/dev-utils/skills/github-issue-prioritizer/scripts/gh_issue_prioritize.py",
-      "strategy": "copy",
-      "description": "Share gh_issue_prioritize script to github-issue-prioritizer skill"
-    },
-    {
-      "src": "plugins/dev-utils/scripts/issue_worktree_manage.py",
-      "dst": "plugins/dev-utils/skills/github-issue-worktree-agent/scripts/issue_worktree_manage.py",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/scripts/issue_pr_orchestrate.py",
-      "dst": "plugins/dev-utils/skills/github-issue-pr-lifecycle-agent/scripts/issue_pr_orchestrate.py",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/assets/templates/adversarial-security-auditor.md",
-      "dst": "plugins/dev-utils/skills/context-bundler/assets/templates/adversarial-security-auditor.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/assets/templates/tdd-contract-reviewer.md",
-      "dst": "plugins/dev-utils/skills/context-bundler/assets/templates/tdd-contract-reviewer.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/assets/templates/agent-task-delegator.md",
-      "dst": "plugins/dev-utils/skills/context-bundler/assets/templates/agent-task-delegator.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/assets/templates/compliance-standards-reviewer.md",
-      "dst": "plugins/dev-utils/skills/context-bundler/assets/templates/compliance-standards-reviewer.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/assets/templates/docs-synthesis-specialist.md",
-      "dst": "plugins/dev-utils/skills/context-bundler/assets/templates/docs-synthesis-specialist.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/assets/templates/plan-critique-reviewer.md",
-      "dst": "plugins/dev-utils/skills/context-bundler/assets/templates/plan-critique-reviewer.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/assets/templates/refactoring-quality-specialist.md",
-      "dst": "plugins/dev-utils/skills/context-bundler/assets/templates/refactoring-quality-specialist.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/assets/templates/structural-architecture-reviewer.md",
-      "dst": "plugins/dev-utils/skills/context-bundler/assets/templates/structural-architecture-reviewer.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/scripts/body_validator.py",
-      "dst": "plugins/dev-utils/skills/github-issue-agent/scripts/body_validator.py",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/scripts/friction_cluster_agent.py",
-      "dst": "plugins/dev-utils/skills/github-issue-agent/scripts/friction_cluster_agent.py",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/scripts/gh_issue_close.py",
-      "dst": "plugins/dev-utils/skills/github-issue-agent/scripts/gh_issue_close.py",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/scripts/gh_issue_comment.py",
-      "dst": "plugins/dev-utils/skills/github-issue-agent/scripts/gh_issue_comment.py",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/scripts/gh_issue_create.py",
-      "dst": "plugins/dev-utils/skills/github-issue-agent/scripts/gh_issue_create.py",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/scripts/gh_issue_search.py",
-      "dst": "plugins/dev-utils/skills/github-issue-agent/scripts/gh_issue_search.py",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/scripts/gh_issue_taxonomy_validate.py",
-      "dst": "plugins/dev-utils/skills/github-issue-agent/scripts/gh_issue_taxonomy_validate.py",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/scripts/redaction_gate.py",
-      "dst": "plugins/dev-utils/skills/github-issue-agent/scripts/redaction_gate.py",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/scripts/task_to_issue_bridge.py",
-      "dst": "plugins/dev-utils/skills/github-issue-backlog-agent/scripts/task_to_issue_bridge.py",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
       "src": "plugins/agent-orchestration/references/acceptance-criteria.md",
       "dst": "plugins/agent-orchestration/skills/co-pilot-loop/references/acceptance-criteria.md",
       "strategy": "copy",
@@ -8486,18 +8120,6 @@
       "description": "os-control-health skill acceptance criteria"
     },
     {
-      "src": "plugins/dev-utils/references/github-issue-resolution-reviewer-acceptance-criteria.md",
-      "dst": "plugins/dev-utils/skills/github-issue-resolution-reviewer/references/acceptance-criteria.md",
-      "strategy": "copy",
-      "description": "github-issue-resolution-reviewer skill acceptance criteria"
-    },
-    {
-      "src": "plugins/dev-utils/references/github-issue-refactor-proposer-acceptance-criteria.md",
-      "dst": "plugins/dev-utils/skills/github-issue-refactor-proposer/references/acceptance-criteria.md",
-      "strategy": "copy",
-      "description": "github-issue-refactor-proposer skill acceptance criteria"
-    },
-    {
       "src": "plugins/agent-agentic-os/references/multi-round-external-review-protocol.md",
       "dst": "plugins/agent-agentic-os/skills/os-control-intake/references/multi-round-external-review-protocol.md",
       "strategy": "copy",
@@ -8606,24 +8228,6 @@
       "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
     },
     {
-      "src": "plugins/dev-utils/scripts/gh_issue_create.py",
-      "dst": "plugins/dev-utils/skills/github-issue-backlog-agent/scripts/gh_issue_create.py",
-      "strategy": "copy",
-      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
-    },
-    {
-      "src": "plugins/dev-utils/scripts/hf_upload.py",
-      "dst": "plugins/dev-utils/skills/hf-init/scripts/hf_upload.py",
-      "strategy": "copy",
-      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
-    },
-    {
-      "src": "plugins/dev-utils/scripts/issue_worktree_manage.py",
-      "dst": "plugins/dev-utils/skills/github-issue-pr-lifecycle-agent/scripts/issue_worktree_manage.py",
-      "strategy": "copy",
-      "description": "Missing symlink for local import found by issue-551 broader scan \u2014 ModuleNotFoundError risk"
-    },
-    {
       "src": "plugins/exploration-cycle-plugin/scripts/sandbox_runner.py",
       "dst": "plugins/exploration-cycle-plugin/skills/exploration-workflow/scripts/sandbox_runner.py",
       "strategy": "copy",
@@ -8646,12 +8250,6 @@
       "dst": "plugins/agent-agentic-os/skills/os-control-intake/references/detailed-reference.md",
       "strategy": "copy",
       "description": "os-control-intake detailed-reference.md (issue-551 hub-and-spoke fix)"
-    },
-    {
-      "src": "plugins/dev-utils/references/github-issue-resolution-reviewer-fallback-tree.md",
-      "dst": "plugins/dev-utils/skills/github-issue-resolution-reviewer/references/fallback-tree.md",
-      "strategy": "copy",
-      "description": "github-issue-resolution-reviewer fallback tree"
     },
     {
       "src": "plugins/agent-agentic-os/references/os-lab-backport-detailed-reference.md",
@@ -8730,24 +8328,6 @@
       "dst": "plugins/agent-agentic-os/skills/os-lab-memory/references/fallback-tree.md",
       "strategy": "copy",
       "description": "os-lab-memory fallback-tree.md (issue-551 hub-and-spoke fix)"
-    },
-    {
-      "src": "plugins/dev-utils/references/github-issue-refactor-proposer-fallback-tree.md",
-      "dst": "plugins/dev-utils/skills/github-issue-refactor-proposer/references/fallback-tree.md",
-      "strategy": "copy",
-      "description": "github-issue-refactor-proposer fallback-tree.md (issue-551 hub-and-spoke fix)"
-    },
-    {
-      "src": "plugins/dev-utils/references/todo-check-acceptance-criteria.md",
-      "dst": "plugins/dev-utils/skills/todo-check/references/acceptance-criteria.md",
-      "strategy": "copy",
-      "description": "todo-check acceptance-criteria.md (issue-551 hub-and-spoke fix)"
-    },
-    {
-      "src": "plugins/dev-utils/references/todo-check-fallback-tree.md",
-      "dst": "plugins/dev-utils/skills/todo-check/references/fallback-tree.md",
-      "strategy": "copy",
-      "description": "todo-check fallback-tree.md (issue-551 hub-and-spoke fix)"
     },
     {
       "src": "plugins/agent-agentic-os/references/diagrams/control-plane-architecture.mermaid",
@@ -8838,144 +8418,6 @@
       "dst": "plugins/agent-scaffolders/skills/audit-skill/references/review-rubric.md",
       "strategy": "copy",
       "description": ""
-    },
-    {
-      "src": "plugins/dev-utils/scripts/body_validator.py",
-      "dst": "plugins/dev-utils/skills/github-issue-backlog-agent/scripts/body_validator.py",
-      "strategy": "copy",
-      "description": "Body validator for github-issue-backlog-agent"
-    },
-    {
-      "src": "plugins/dev-utils/scripts/gh_issue_taxonomy_validate.py",
-      "dst": "plugins/dev-utils/skills/github-issue-backlog-agent/scripts/gh_issue_taxonomy_validate.py",
-      "strategy": "copy",
-      "description": "Taxonomy validator for github-issue-backlog-agent"
-    },
-    {
-      "src": "plugins/dev-utils/scripts/redaction_gate.py",
-      "dst": "plugins/dev-utils/skills/github-issue-backlog-agent/scripts/redaction_gate.py",
-      "strategy": "copy",
-      "description": "Redaction gate for github-issue-backlog-agent"
-    },
-    {
-      "src": "plugins/dev-utils/references/github-issue-agent-acceptance-criteria.md",
-      "dst": "plugins/dev-utils/skills/github-issue-agent/references/acceptance-criteria.md",
-      "strategy": "copy",
-      "description": "github-issue-agent acceptance-criteria.md reference"
-    },
-    {
-      "src": "plugins/dev-utils/references/github-issue-agent-fallback-tree.md",
-      "dst": "plugins/dev-utils/skills/github-issue-agent/references/fallback-tree.md",
-      "strategy": "copy",
-      "description": "github-issue-agent fallback-tree.md reference"
-    },
-    {
-      "src": "plugins/dev-utils/references/github-issue-agent-operation-catalog.md",
-      "dst": "plugins/dev-utils/skills/github-issue-agent/references/operation-catalog.md",
-      "strategy": "copy",
-      "description": "github-issue-agent operation-catalog.md reference"
-    },
-    {
-      "src": "plugins/dev-utils/references/github-issue-agent-taxonomy-guide.md",
-      "dst": "plugins/dev-utils/skills/github-issue-agent/references/taxonomy-guide.md",
-      "strategy": "copy",
-      "description": "github-issue-agent taxonomy-guide.md reference"
-    },
-    {
-      "src": "plugins/dev-utils/references/github-issue-backlog-agent-acceptance-criteria.md",
-      "dst": "plugins/dev-utils/skills/github-issue-backlog-agent/references/acceptance-criteria.md",
-      "strategy": "copy",
-      "description": "github-issue-backlog-agent acceptance-criteria.md reference"
-    },
-    {
-      "src": "plugins/dev-utils/references/github-issue-backlog-agent-bridge-guide.md",
-      "dst": "plugins/dev-utils/skills/github-issue-backlog-agent/references/bridge-guide.md",
-      "strategy": "copy",
-      "description": "github-issue-backlog-agent bridge-guide.md reference"
-    },
-    {
-      "src": "plugins/dev-utils/references/github-issue-backlog-agent-fallback-tree.md",
-      "dst": "plugins/dev-utils/skills/github-issue-backlog-agent/references/fallback-tree.md",
-      "strategy": "copy",
-      "description": "github-issue-backlog-agent fallback-tree.md reference"
-    },
-    {
-      "src": "plugins/dev-utils/references/github-issue-pr-lifecycle-agent-acceptance-criteria.md",
-      "dst": "plugins/dev-utils/skills/github-issue-pr-lifecycle-agent/references/acceptance-criteria.md",
-      "strategy": "copy",
-      "description": "github-issue-pr-lifecycle-agent acceptance-criteria.md reference"
-    },
-    {
-      "src": "plugins/dev-utils/references/github-issue-pr-lifecycle-agent-fallback-tree.md",
-      "dst": "plugins/dev-utils/skills/github-issue-pr-lifecycle-agent/references/fallback-tree.md",
-      "strategy": "copy",
-      "description": "github-issue-pr-lifecycle-agent fallback-tree.md reference"
-    },
-    {
-      "src": "plugins/dev-utils/references/github-issue-pr-lifecycle-agent-lifecycle-guide.md",
-      "dst": "plugins/dev-utils/skills/github-issue-pr-lifecycle-agent/references/lifecycle-guide.md",
-      "strategy": "copy",
-      "description": "github-issue-pr-lifecycle-agent lifecycle-guide.md reference"
-    },
-    {
-      "src": "plugins/dev-utils/references/github-issue-prioritizer-acceptance-criteria.md",
-      "dst": "plugins/dev-utils/skills/github-issue-prioritizer/references/acceptance-criteria.md",
-      "strategy": "copy",
-      "description": "github-issue-prioritizer acceptance-criteria.md reference"
-    },
-    {
-      "src": "plugins/dev-utils/references/github-issue-prioritizer-fallback-tree.md",
-      "dst": "plugins/dev-utils/skills/github-issue-prioritizer/references/fallback-tree.md",
-      "strategy": "copy",
-      "description": "github-issue-prioritizer fallback-tree.md reference"
-    },
-    {
-      "src": "plugins/dev-utils/references/github-issue-prioritizer-priority-matrix.md",
-      "dst": "plugins/dev-utils/skills/github-issue-prioritizer/references/priority-matrix.md",
-      "strategy": "copy",
-      "description": "github-issue-prioritizer priority-matrix.md reference"
-    },
-    {
-      "src": "plugins/dev-utils/references/github-issue-worktree-agent-acceptance-criteria.md",
-      "dst": "plugins/dev-utils/skills/github-issue-worktree-agent/references/acceptance-criteria.md",
-      "strategy": "copy",
-      "description": "github-issue-worktree-agent acceptance-criteria.md reference"
-    },
-    {
-      "src": "plugins/dev-utils/references/github-issue-worktree-agent-fallback-tree.md",
-      "dst": "plugins/dev-utils/skills/github-issue-worktree-agent/references/fallback-tree.md",
-      "strategy": "copy",
-      "description": "github-issue-worktree-agent fallback-tree.md reference"
-    },
-    {
-      "src": "plugins/dev-utils/references/github-issue-worktree-agent-worktree-guide.md",
-      "dst": "plugins/dev-utils/skills/github-issue-worktree-agent/references/worktree-guide.md",
-      "strategy": "copy",
-      "description": "github-issue-worktree-agent worktree-guide.md reference"
-    },
-    {
-      "src": "plugins/dev-utils/references/optimize-context-deduplication-topology.md",
-      "dst": "plugins/dev-utils/skills/optimize-context/references/deduplication-topology.md",
-      "strategy": "copy",
-      "description": "optimize-context deduplication-topology.md reference"
-    },
-    {
-      "src": "plugins/dev-utils/references/optimize-context-fallback-tree.md",
-      "dst": "plugins/dev-utils/skills/optimize-context/references/fallback-tree.md",
-      "strategy": "copy",
-      "description": "optimize-context fallback-tree.md reference"
-    },
-    {
-      "src": "plugins/dev-utils/references/optimize-context-instruction-optimization.md",
-      "dst": "plugins/dev-utils/skills/optimize-context/references/instruction-optimization.md",
-      "strategy": "copy",
-      "description": "optimize-context instruction-optimization.md reference"
-    },
-    {
-      "src": "plugins/dev-utils/references/optimize-context-session-efficiency.md",
-      "dst": "plugins/dev-utils/skills/optimize-context/references/session-efficiency.md",
-      "strategy": "copy",
-      "description": "optimize-context session-efficiency.md reference"
     },
     {
       "src": "plugins/agent-agentic-os/scripts/control_plane/wrappers/record_interview_question.py",
@@ -10460,12 +9902,6 @@
       "description": ""
     },
     {
-      "src": "plugins/dev-utils/references/map-debt.md",
-      "dst": "plugins/dev-utils/skills/coding-conventions-agent/references/map-debt.md",
-      "strategy": "copy",
-      "description": ""
-    },
-    {
       "src": "plugins/obsidian-wiki-engine/references/obsidian-vault-onboarding-guide.md",
       "dst": "plugins/obsidian-wiki-engine/skills/obsidian-init/references/obsidian-vault-onboarding-guide.md",
       "strategy": "copy",
@@ -10760,12 +10196,6 @@
       "description": "AGENTS.md Jinja template symlink for create-agents-md"
     },
     {
-      "src": "plugins/dev-utils/references/map-debt.md",
-      "dst": "plugins/dev-utils/skills/github-issue-resolution-reviewer/references/map-debt.md",
-      "strategy": "copy",
-      "description": "github-issue-resolution-reviewer map-debt ledger"
-    },
-    {
       "src": "plugins/agent-agentic-os/scripts/post_run_metrics.py",
       "dst": "plugins/agent-agentic-os/hooks/scripts/post_run_metrics.py",
       "strategy": "copy",
@@ -10938,12 +10368,6 @@
       "dst": "plugins/agent-agentic-os/skills/os-lab-log/references/memory/improvement-ledger-spec.md",
       "strategy": "copy",
       "description": "os-lab-log reference"
-    },
-    {
-      "src": "plugins/dev-utils/references/map-debt.md",
-      "dst": "plugins/dev-utils/skills/github-issue-refactor-proposer/references/map-debt.md",
-      "strategy": "copy",
-      "description": "github-issue-refactor-proposer map-debt ledger"
     },
     {
       "src": "plugins/agent-agentic-os/references/os-lab-planner-acceptance-criteria.md",
@@ -12478,246 +11902,6 @@
     {
       "src": "plugins/agent-scaffolders/assets/diagrams/manage-marketplace-flow.mmd",
       "dst": "plugins/agent-scaffolders/skills/manage-marketplace/references/manage-marketplace-flow.mmd",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/dev-utils/assets/templates/js-tool-header-template.js",
-      "dst": "plugins/dev-utils/skills/coding-conventions-agent/assets/templates/js-tool-header-template.js",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/dev-utils/assets/templates/python-tool-header-template.py",
-      "dst": "plugins/dev-utils/skills/coding-conventions-agent/assets/templates/python-tool-header-template.py",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/dev-utils/assets/templates/tsx-tool-header-template.tsx",
-      "dst": "plugins/dev-utils/skills/coding-conventions-agent/assets/templates/tsx-tool-header-template.tsx",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/dev-utils/references/coding-conventions-agent-acceptance-criteria.md",
-      "dst": "plugins/dev-utils/skills/coding-conventions-agent/references/acceptance-criteria.md",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/dev-utils/references/coding-conventions-agent-fallback-tree.md",
-      "dst": "plugins/dev-utils/skills/coding-conventions-agent/references/fallback-tree.md",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/dev-utils/assets/resources/file-manifest-schema.json",
-      "dst": "plugins/dev-utils/skills/context-bundler/assets/resources/file-manifest-schema.json",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/dev-utils/assets/resources/file-manifest.json",
-      "dst": "plugins/dev-utils/skills/context-bundler/assets/resources/file-manifest.json",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/dev-utils/references/context-bundler-acceptance-criteria.md",
-      "dst": "plugins/dev-utils/skills/context-bundler/references/acceptance-criteria.md",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/dev-utils/references/context-bundler-fallback-tree.md",
-      "dst": "plugins/dev-utils/skills/context-bundler/references/fallback-tree.md",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/dev-utils/scripts/bundle.py",
-      "dst": "plugins/dev-utils/skills/context-bundler/scripts/bundle.py",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/dev-utils/scripts/bundle_zip.py",
-      "dst": "plugins/dev-utils/skills/context-bundler/scripts/bundle_zip.py",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/dev-utils/scripts/manifest_manager.py",
-      "dst": "plugins/dev-utils/skills/context-bundler/scripts/manifest_manager.py",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/dev-utils/scripts/path_resolver.py",
-      "dst": "plugins/dev-utils/skills/context-bundler/scripts/path_resolver.py",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/dev-utils/references/convert-mermaid-fallback-tree.md",
-      "dst": "plugins/dev-utils/skills/convert-mermaid/references/fallback-tree.md",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/dev-utils/references/mermaid-to-png-architecture.mmd",
-      "dst": "plugins/dev-utils/skills/convert-mermaid/references/mermaid-to-png-architecture.mmd",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/dev-utils/references/mermaid-to-png-architecture.png",
-      "dst": "plugins/dev-utils/skills/convert-mermaid/references/mermaid-to-png-architecture.png",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/dev-utils/references/issue-taxonomy.json",
-      "dst": "plugins/dev-utils/skills/github-issue-agent/references/issue-taxonomy.json",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/dev-utils/references/issue-taxonomy.md",
-      "dst": "plugins/dev-utils/skills/github-issue-agent/references/issue-taxonomy.md",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/dev-utils/references/hf-download-acceptance-criteria.md",
-      "dst": "plugins/dev-utils/skills/hf-download/references/acceptance-criteria.md",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/dev-utils/references/hf-download-fallback-tree.md",
-      "dst": "plugins/dev-utils/skills/hf-download/references/fallback-tree.md",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/dev-utils/scripts/hf_config.py",
-      "dst": "plugins/dev-utils/skills/hf-download/scripts/hf_config.py",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/dev-utils/scripts/hf_download.py",
-      "dst": "plugins/dev-utils/skills/hf-download/scripts/hf_download.py",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/dev-utils/references/hf-init-fallback-tree.md",
-      "dst": "plugins/dev-utils/skills/hf-init/references/fallback-tree.md",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/dev-utils/references/hf-upload-fallback-tree.md",
-      "dst": "plugins/dev-utils/skills/hf-upload/references/fallback-tree.md",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/dev-utils/assets/diagrams/link-checker-workflow.mmd",
-      "dst": "plugins/dev-utils/skills/link-checker-agent/assets/diagrams/link-checker-workflow.mmd",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/dev-utils/assets/diagrams/logic.mmd",
-      "dst": "plugins/dev-utils/skills/link-checker-agent/assets/diagrams/logic.mmd",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/dev-utils/assets/diagrams/workflow.mmd",
-      "dst": "plugins/dev-utils/skills/link-checker-agent/assets/diagrams/workflow.mmd",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/dev-utils/references/link-checker-agent-acceptance-criteria.md",
-      "dst": "plugins/dev-utils/skills/link-checker-agent/references/acceptance-criteria.md",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/dev-utils/references/link-checker-agent-fallback-tree.md",
-      "dst": "plugins/dev-utils/skills/link-checker-agent/references/fallback-tree.md",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/dev-utils/references/link-checker-workflow.mmd",
-      "dst": "plugins/dev-utils/skills/link-checker-agent/references/link-checker-workflow.mmd",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/dev-utils/references/link_checker_workflow.mmd",
-      "dst": "plugins/dev-utils/skills/link-checker-agent/references/link_checker_workflow.mmd",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/dev-utils/references/link_checker_workflow.png",
-      "dst": "plugins/dev-utils/skills/link-checker-agent/references/link_checker_workflow.png",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/dev-utils/references/logic.mmd",
-      "dst": "plugins/dev-utils/skills/link-checker-agent/references/logic.mmd",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/dev-utils/references/unpacking.mmd",
-      "dst": "plugins/dev-utils/skills/link-checker-agent/references/unpacking.mmd",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/dev-utils/references/workflow.mmd",
-      "dst": "plugins/dev-utils/skills/link-checker-agent/references/workflow.mmd",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/dev-utils/scripts/01_build_file_inventory.py",
-      "dst": "plugins/dev-utils/skills/link-checker-agent/scripts/01_build_file_inventory.py",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/dev-utils/scripts/02_extract_link_references.py",
-      "dst": "plugins/dev-utils/skills/link-checker-agent/scripts/02_extract_link_references.py",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/dev-utils/scripts/03_audit_broken_links.py",
-      "dst": "plugins/dev-utils/skills/link-checker-agent/scripts/03_audit_broken_links.py",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/dev-utils/scripts/04_autofix_unique_links.py",
-      "dst": "plugins/dev-utils/skills/link-checker-agent/scripts/04_autofix_unique_links.py",
-      "strategy": "copy",
-      "description": "converted from symlink (APM migration)"
-    },
-    {
-      "src": "plugins/dev-utils/scripts/05_report_unfixable_links.py",
-      "dst": "plugins/dev-utils/skills/link-checker-agent/scripts/05_report_unfixable_links.py",
       "strategy": "copy",
       "description": "converted from symlink (APM migration)"
     },

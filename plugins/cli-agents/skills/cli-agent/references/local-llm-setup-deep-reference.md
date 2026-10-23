@@ -155,7 +155,7 @@ cmake --build build --config Release -j$(nproc)
 ## Step 3 — Download Gemma 4 12B Model (~9GB)
 
 ```bash
-# Using huggingface-cli (or delegate to the hf-download skill)
+# Using huggingface-cli (or delegate to the managing-huggingface-assets skill)
 huggingface-cli download unsloth/gemma-4-12b-GGUF gemma-4-12b-UD-Q4_K_XL.gguf \
   --local-dir ~/Projects/local-llm-bench/llama.cpp/models
 

@@ -211,4 +211,4 @@ For coordinator scripts, workflow engines, master orchestrators, agent prompts, 
 
 - `.agent/rules/coding-conventions.md` — coding conventions and documentation standards
 - `superpowers:test-driven-development` skill (if available) — invoke BEFORE writing any implementation
-- `graph-planning-superpowers-policy.md` — test-driven execution and verification discipline
+- `engineering-lifecycle-policy.md` — test-driven execution and verification discipline

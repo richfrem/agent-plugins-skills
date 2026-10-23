@@ -33,7 +33,7 @@ Before **explicitly pushing** changes to GitHub (i.e., only when the user has is
    Run standard compliance, coding conventions, and structural audits on all modified plugins and skills from the repository root:
    - **Workspace Coding Conventions Audit**:
      ```bash
-     python3 plugins/dev-utils/scripts/workspace_conventions_auditor.py
+     python3 plugins/dev-utils/skills/enforcing-coding-conventions/scripts/workspace_conventions_auditor.py
      ```
    - **Compliance Audit**:
      ```bash

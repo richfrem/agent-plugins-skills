@@ -1,0 +1,118 @@
+[
+  {
+    "prompt": "Create a GitHub issue for agent execution friction when a script tool fails.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Search existing GitHub issues to check if this root cause was already reported.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Comment on existing GitHub issue #42 to attach stack trace evidence.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Log a durable repository bug for a failing authentication endpoint across sessions.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Create a temporary intra-session scratch task on the local kanban board for step 1 of my mission.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Write a python script to parse CSV files.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Promote local scratch task 0042 to a GitHub issue",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Bridge tasks/backlog/0012-migration.md into durable issue backlog",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Convert this task scratchpad item into a tracked GitHub Issue",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Create a local scratch task for adding unit tests",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Move task 5 to done in kanban board",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Log execution friction directly to GitHub issues",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Rank open GitHub issues by priority tier and sync with Projects v2 fields",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Calculate P0 P1 P2 P3 priority score for friction issues based on blockage and frequency",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Update GitHub Projects v2 custom priority single select field via GraphQL",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Add a quick TODO item to my local scratchpad tasks list",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Log a friction event issue on GitHub",
+    "should_trigger": true
+  },
+  {
+    "prompt": "synthesize a refactoring proposal from the friction hotspots",
+    "should_trigger": true
+  },
+  {
+    "prompt": "what's the systemic fix for this recurring friction cluster",
+    "should_trigger": true
+  },
+  {
+    "prompt": "we keep hitting the same bug pattern, propose a real fix not a patch",
+    "should_trigger": true
+  },
+  {
+    "prompt": "open a PR for this fix",
+    "should_trigger": false
+  },
+  {
+    "prompt": "just patch this one line",
+    "should_trigger": false
+  },
+  {
+    "prompt": "prioritize the github issue backlog",
+    "should_trigger": true
+  },
+  {
+    "prompt": "audit the issues we closed last week for resolution quality",
+    "should_trigger": true
+  },
+  {
+    "prompt": "was this issue actually fixed or did it just get relabeled",
+    "should_trigger": true
+  },
+  {
+    "prompt": "review issue resolution quality for the resolution:fixed label",
+    "should_trigger": true
+  },
+  {
+    "prompt": "close this issue",
+    "should_trigger": true
+  },
+  {
+    "prompt": "file a new github issue for this bug",
+    "should_trigger": true
+  },
+  {
+    "prompt": "prioritize the open issue backlog",
+    "should_trigger": true
+  }
+]

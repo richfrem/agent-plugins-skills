@@ -210,7 +210,7 @@ class suppress_monolithic_md:
 # ─── File Discovery ──────────────────────────────────────────────────────────
 
 def _parse_bundle_manifest(bundle_path: Path, root_dir: Path) -> List[str]:
-    """Parse a context-bundler manifest into a safe-path file list."""
+    """Parse a bundling-context manifest into a safe-path file list."""
     text = bundle_path.read_text(encoding="utf-8")
     data = None
     try:

@@ -24,19 +24,19 @@ Orchestrated adversarial review loop pairing iterative plan/code generation with
 4. **Non-Interactive Input Redirection**: Always append `< /dev/null` to headless CLI commands to prevent `SIGTTIN` hangs.
 
 ## Dependencies
-- **`context-bundler`** (dev-utils) — Required for creating review packets in Multi-Persona Fan-Out Mode
+- **`bundling-context`** (dev-utils) — Required for creating review packets in Multi-Persona Fan-Out Mode
 - **Adversarial personas**: `architect-review`, `security-auditor`, `tdd-contract-reviewer` in `cli-agents`
 
 ## Quick start
 
 ```bash
-# Bundle context using the context-bundler skill in dev-utils
-python3 plugins/dev-utils/scripts/bundle_context.py --manifest manifest.json --out temp/review/
+# Bundle context with the bundling-context skill (dev-utils)
+python3 plugins/dev-utils/skills/bundling-context/scripts/bundle.py --manifest manifest.json --bundle temp/review/bundle.md
 ```
 
 ## Workflow
 
-1. **Research & Packet Generation**: Draft `red-team-prompt.md`, prepare `manifest.json`, and run `context-bundler` in Multi-Persona Fan-Out Mode to generate persona packets.
+1. **Research & Packet Generation**: Draft `red-team-prompt.md`, prepare `manifest.json`, and run `bundling-context` in Multi-Persona Fan-Out Mode to generate persona packets.
 2. **Select Backend**: Interactively confirm CLI backend (`agy`, `claude`, `copilot`, `codex`) and model tier with user.
 3. **Parallel Dispatch**: Dispatch review bundles in parallel to designated persona reviewers.
 4. **Synthesize Feedback**: Capture verdicts. If "More Research Needed", iterate with targeted questions. If consensus is reached, advance.

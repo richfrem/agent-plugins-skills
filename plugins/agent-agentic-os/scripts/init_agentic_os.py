@@ -249,7 +249,7 @@ def _merge_instructions_with_judgment(existing_text: str, project_name: str) -> 
             "- Enforce host-native Plan Mode (strictly read-only discovery).\n"
             "- Socratic Pacing: Interrogate ONE question per turn with structured options and explicit `[Recommended]` default.\n"
             "- Compile draft 4-Pillar Spec (`TASK_SPEC.md`) and implementation plan in state `DRAFT_PLAN`.\n"
-            "- User Stage Gate: Ask user whether to run Multi-Agent Review (generate bundle in `temp/` via `context-bundler`) or proceed directly.\n"
+            "- User Stage Gate: Ask user whether to run Multi-Agent Review (generate bundle in `temp/` via `bundling-context`) or proceed directly.\n"
             "- Obtain explicit human authorization (\"Proceed\", \"Go\", or \"Execute\") before creating a worktree or modifying code.\n"
         )
         text += intake_block

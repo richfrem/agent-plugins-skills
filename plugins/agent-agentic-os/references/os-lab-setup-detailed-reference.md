@@ -23,7 +23,7 @@ The canonical plugin path in `agent-plugins-skills` (e.g. `plugins/dev-utils/ski
 what gets hard-copied into the lab repo.
 
 **Q3 — Target skill name?**
-The skill folder name to optimize (e.g. `link-checker-agent`). This is the skill whose
+The skill folder name to optimize (e.g. `checking-links`). This is the skill whose
 `SKILL.md` will be mutated each iteration.
 
 **Q4 — GitHub repo URL?**
@@ -96,10 +96,10 @@ Parse it explicitly using `cut` — do NOT infer PLUGIN_NAME from the `plugins/`
 ```bash
 APS_ROOT=<abs-path-to-agent-plugins-skills>          # from Q6
 PLUGIN_PATH=plugins/<plugin-name>                    # from Q2, e.g. plugins/dev-utils
-SKILL_NAME=<skill-folder-name>                       # from Q3, e.g. convert-mermaid
+SKILL_NAME=<skill-folder-name>                       # from Q3, e.g. checking-links
 
 # Extract plugin folder name (segment 2, NOT segment 1 which is 'plugins')
-PLUGIN_NAME=$(echo "$PLUGIN_PATH" | cut -d'/' -f2)  # → mermaid-to-png
+PLUGIN_NAME=$(echo "$PLUGIN_PATH" | cut -d'/' -f2)  # → dev-utils
 
 LAB_PATH=<lab-repo-path>                             # from Q1
 SKILL_EVAL_SOURCE="$LAB_PATH/plugins/agent-agentic-os/skills/os-lab-scorer"
@@ -108,7 +108,7 @@ SKILL_EVAL_SOURCE="$LAB_PATH/plugins/agent-agentic-os/skills/os-lab-scorer"
 echo "PLUGIN_NAME=$PLUGIN_NAME  SKILL_NAME=$SKILL_NAME"
 echo "SKILL_EVAL_SOURCE=$SKILL_EVAL_SOURCE"
 ```
-> ⚠️ `PLUGIN_NAME` = `mermaid-to-png`, NOT `plugins`. Always verify the echo output.
+> ⚠️ `PLUGIN_NAME` = `dev-utils`, NOT `plugins`. Always verify the echo output.
 
 > [!WARNING]
 > **Workspace Permissions:** The lab repo path is usually outside your current active workspace. Before modifying any files in the lab directory, you MUST ask the user for full file access / to turn off workspace validation. Once they confirm, you may use your normal code-editing tools securely. If they choose not to grant permission, you must bypass your internal file tools entirely and use only native bash operations (`mkdir`, `cp`, `echo` via `run_command`) to create the lab environment. Using file tools without permission will result in frozen operations.

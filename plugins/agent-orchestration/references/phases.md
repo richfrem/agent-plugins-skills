@@ -63,7 +63,7 @@ Every loop instance should track:
 2. **Hand off**: Stop generating new actions and explicitly pass your findings back to the Orchestrator.
 3. **DO NOT**:
    - Do not generate `learning_package_snapshot.md` (the primary agent's RLM Synthesizer does this).
-   - Do not run `context-bundler` to seal the session (the primary agent does this).
+   - Do not run `bundling-context` to seal the session (the primary agent does this).
    - Do not push traces to HuggingFace or update Vector DBs (the primary agent does this).
    - Do not commit to Git (the primary agent does this).
 

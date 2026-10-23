@@ -82,7 +82,7 @@ This plugin enforces a strict framework-agnostic boundary. It does **not** own t
 | **Personas / System Prompts** | Calling Environment | `agent-orchestration` routes the work, but you supply the persona (e.g. from `.claude/prompts/` or your own plugins). |
 | **Memory & Persistence** | `agent-agentic-os` | Loop output is returned to the caller. Deduplication and memory promotion are handled externally. |
 | **Objective Evaluation** | `agent-agentic-os` | `triple-loop-learning` executes 3-tier mechanics, but the external caller provides the eval gate (KEEP/DISCARD). |
-| **Context Bundling** | `context-bundler` | Generic dependency required by `red-team-review` and for compiling session artifacts. |
+| **Context Bundling** | `bundling-context` | Generic dependency required by `red-team-review` and for compiling session artifacts. |
 
 ---
 

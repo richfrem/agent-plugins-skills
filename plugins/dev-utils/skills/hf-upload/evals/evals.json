@@ -1,8 +1,0 @@
-[
-  {"prompt": "Upload this agent learning snapshot to HuggingFace for soul persistence.", "should_trigger": true},
-  {"prompt": "Append these JSONL records to soul_traces.jsonl on the HuggingFace dataset with exponential backoff.", "should_trigger": true},
-  {"prompt": "Persist this semantic cache file to HuggingFace using upload_semantic_cache.", "should_trigger": true},
-  {"prompt": "Initialize HuggingFace credentials and create the dataset repository structure.", "should_trigger": false},
-  {"prompt": "Download a model checkpoint from HuggingFace Hub for local fine-tuning.", "should_trigger": false},
-  {"prompt": "Back up my local git repository to a remote server.", "should_trigger": false}
-]

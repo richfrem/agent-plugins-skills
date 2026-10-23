@@ -1,7 +1,7 @@
 {
     "name": "dev-utils",
-    "version": "1.4.0",
-    "description": "Unified Developer Utilities Suite — 19 skills consolidated from standalone plugins. Covers ADR management, coding conventions, context bundling, Mermaid diagram rendering, GitHub issue logging & friction management, GitHub issue backlog bridge, issue prioritizer & Projects v2 sync, GitHub issue worktree manager, GitHub issue PR lifecycle orchestrator, GitHub issue resolution reviewer, GitHub issue refactor proposer, TODO scanning, HuggingFace download/upload/init, text humanization, link validation, symlink management, agent context hygiene (optimize-context), and red-team context bundling.",
+    "version": "2.0.0",
+    "description": "Developer utilities: 8 self-contained skills. Manages GitHub issues (log, promote, rank, refactor proposals, resolution audits) and resolves them in isolated worktrees through PR closure; bundles code and docs for review; checks links; enforces coding conventions; manages ADRs, symlinks, and HuggingFace dataset/model transfers.",
     "author": {
         "name": "Richard Fremmerlid"
     },
@@ -9,21 +9,15 @@
     "license": "MIT",
     "keywords": [
         "dev-utils",
-        "utilities",
-        "context-bundler",
-        "github-issue",
-        "github-issue-backlog",
-        "github-issue-prioritizer",
-        "github-issue-worktree",
-        "github-issue-pr-lifecycle",
-        "adr-manager",
-        "link-checker",
-        "huggingface",
-        "mermaid",
+        "github-issues",
+        "issue-worktrees",
+        "pr-lifecycle",
+        "context-bundling",
+        "link-checking",
         "coding-conventions",
-        "humanize",
-        "symlink-manager",
-        "optimize-context"
+        "adr",
+        "symlinks",
+        "huggingface"
     ],
     "capabilities": [
         "context-bundling",
@@ -31,10 +25,9 @@
         "github-projects-v2-sync",
         "worktree-isolation",
         "pr-lifecycle-orchestration",
-        "adr-auditing",
+        "adr-management",
         "link-checking",
-        "diagram-rendering",
-        "context-hygiene",
-        "code-conventions"
+        "code-conventions",
+        "huggingface-transfer"
     ]
 }

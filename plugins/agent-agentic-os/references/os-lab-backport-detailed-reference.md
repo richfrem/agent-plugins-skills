@@ -66,8 +66,8 @@ Produce an assessment table for the user before applying anything:
 
 | File | Change summary | Verdict | Reason |
 |:---|:---|:---|:---|
-| `link-checker/skills/link-checker-agent/SKILL.md` | Added --dry-run clarification | **ACCEPT** | Factually correct, improves clarity |
-| `link-checker/skills/link-checker-agent/evals/evals.json` | Added eval-8 (ambiguous match) | **ACCEPT** | Good coverage gap |
+| `dev-utils/skills/checking-links/SKILL.md` | Added --dry-run clarification | **ACCEPT** | Factually correct, improves clarity |
+| `dev-utils/skills/checking-links/evals/evals.json` | Added eval-8 (ambiguous match) | **ACCEPT** | Good coverage gap |
 | `skills/os-lab-scorer/evaluate.py` | Changed exit code logic | **REVIEW** | Needs testing against master version |
 
 **Verdicts:**

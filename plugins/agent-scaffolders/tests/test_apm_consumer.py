@@ -73,7 +73,7 @@ class TestApmConsumer(unittest.TestCase):
         (clone / "plugins" / "dev-utils").mkdir(parents=True)
         self.assertEqual(consumer.cmd_install(self._args(checkout=str(clone))), 2)  # no materialize tool
         consumer.checkout_ready = lambda checkout: True
-        self.assertEqual(consumer.cmd_install(self._args(checkout=str(clone), skill=["adr-management"])), 0)
+        self.assertEqual(consumer.cmd_install(self._args(checkout=str(clone), skill=["managing-adrs"])), 0)
         self.assertEqual(self.calls[-1][:2], ["install", str(clone.resolve() / "plugins" / "dev-utils")])
 
     def test_dependency_key_forms(self) -> None:

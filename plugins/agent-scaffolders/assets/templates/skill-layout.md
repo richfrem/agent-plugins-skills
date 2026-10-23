@@ -29,5 +29,5 @@ material and contracts in references, copied templates in assets. The authoring
 contract JSON declares available variants and required directories.
 
 Generation proposes manifest entries; delegate diagnose/register/restore/diagnose
-to symlink-manager. Installed resources become hard copies and must resolve from
+to managing-symlinks. Installed resources become hard copies and must resolve from
 the installed skill root without the source repository.

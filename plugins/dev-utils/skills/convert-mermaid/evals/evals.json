@@ -1,8 +1,0 @@
-[
-  {"prompt": "Convert architecture.mmd to a high-resolution PNG image.", "should_trigger": true},
-  {"prompt": "Render this .mermaid diagram file to a PNG at retina resolution (scale 3).", "should_trigger": true},
-  {"prompt": "Export the sequence diagram in flowchart.mmd as a .png for the documentation.", "should_trigger": true},
-  {"prompt": "Convert this Markdown file to a Word document.", "should_trigger": false},
-  {"prompt": "Generate a Mermaid diagram from this code architecture description.", "should_trigger": false},
-  {"prompt": "Convert the spreadsheet to CSV format for analysis.", "should_trigger": false}
-]

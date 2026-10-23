@@ -75,7 +75,7 @@ Global (user-scope) support differs by harness (APM 0.33.0): `claude` supports e
 Keep context small by installing named skills from one plugin. `--skill` is repeatable, and the selection is saved in the manifest:
 
 ```bash
-python3 plugins/agent-scaffolders/skills/install-apm-package/scripts/apm_consumer.py install --plugins dev-utils --checkout . --global --skill adr-management --skill context-bundler
+python3 plugins/agent-scaffolders/skills/install-apm-package/scripts/apm_consumer.py install --plugins dev-utils --checkout . --global --skill managing-adrs --skill bundling-context
 ```
 
 A later `--skill` adds to the selection. To drop a skill, remove it from the `skills:` list in `~/.apm/apm.yml` and run `apm install --global`. To go back to all skills, use `--skill '*'`. [COMPONENT_RETENTION_GUIDE.md](COMPONENT_RETENTION_GUIDE.md) lists the recommended selection per plugin.

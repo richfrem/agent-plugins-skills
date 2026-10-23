@@ -1,6 +1,6 @@
 # Agentic OS Control Plane
 
-<!-- ECOSYSTEM_STATS_START -->**Current Scale:** 9 Plugins · 114 Skills · 45 Sub-Agents<!-- ECOSYSTEM_STATS_END -->
+<!-- ECOSYSTEM_STATS_START -->**Current Scale:** 8 Plugins · 102 Skills · 45 Sub-Agents<!-- ECOSYSTEM_STATS_END -->
 
 **A governed execution harness for AI coding agents.** This repository lets Claude Code, Codex,
 GitHub Copilot, Agy, and compatible tools use their native planning, coding, orchestration, and
@@ -162,10 +162,9 @@ self-contained runtime copies into active client harnesses (`.claude/skills/`, `
 | [`agent-orchestration`](plugins/agent-orchestration/README.md) | Reusable orchestration and multi-agent execution primitives (graph-planner, graph-execution, dual-loop, swarm) |
 | [`agent-memory`](plugins/agent-memory/README.md) | Filesystem memory, RLM, and vector-data capabilities |
 | [`agent-scaffolders`](plugins/agent-scaffolders/README.md) | Creating, auditing, packaging, and maintaining plugins and skills |
-| [`dev-utils`](plugins/dev-utils/README.md) | Repository utilities: issues, worktrees, symlinks, context, documentation, and more |
+| [`dev-utils`](plugins/dev-utils/README.md) | Repository utilities: GitHub issues and worktrees, context bundling, link checking, coding conventions, ADRs, symlinks, HuggingFace transfers |
 | [`exploration-cycle-plugin`](plugins/exploration-cycle-plugin/README.md) | Discovery, requirements, prototyping, and handoff into engineering work |
 | [`obsidian-wiki-engine`](plugins/obsidian-wiki-engine/README.md) | Obsidian vault, graph, and wiki workflows |
-| [`dependency-management`](plugins/dependency-management/README.md) | Python dependency and environment management |
 
 For individual skills, agents, supported surfaces, and version detail, use each plugin's README
 and manifest rather than treating this landing page as a volatile inventory.
