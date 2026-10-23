@@ -211,3 +211,37 @@ The existing APM skills under [`plugins/agent-scaffolders/`](plugins/agent-scaff
 | **[`create-apm-package`](plugins/agent-scaffolders/skills/create-apm-package/SKILL.md)** | Scaffolds greenfield `.apm/` packages. | 1. Update manifest templates to include `targets: [copilot, claude, agents]`.<br>2. Scaffold collection definitions by default.<br>3. Ensure newly created packages generate runtime-agnostic instructions (no hardcoded `.agents/` paths in generated `README.md` or `SKILL.md`). |
 | **[`compile-apm-package`](plugins/agent-scaffolders/skills/compile-apm-package/SKILL.md)** | Compiles APM package primitives into top-level context docs (`AGENTS.md`, `CLAUDE.md`). | 1. Integrate with the runtime-agnostic instruction format.<br>2. Support compiling collection subsets into focused context documents.<br>3. Add verification check to confirm compiled fragments do not contain broken relative pointers or dead `.agents/` references. |
 | **[`audit-plugin`](plugins/agent-scaffolders/skills/audit-plugin/SKILL.md)** | Audits Claude plugin structure and boundaries. | 1. Add APM readiness check: verify valid `apm.yml`, absence of unmanaged symlinks in package definitions, and collection schema validity. |
+
+---
+
+## 9. End-State Architecture: Retirement & Codebase Simplification
+
+Following the gold-standard architecture observed in **[`bcgov/crow`](https://github.com/bcgov/crow)** (cloned at `temp/repos/crow/`), this migration culminates in a massive cleanup and elimination of legacy custom plumbing:
+
+### 1. Complete Retirement of `plugins/plugin-manager`
+Once the pilot and fleet validation passes, the entire `plugins/plugin-manager` plugin will be permanently decommissioned:
+- **`plugin_add.py` / `bootstrap.py`**: Retired (superseded by native `apm install`).
+- **`sync_with_inventory.py`**: Retired (superseded by `apm update` and lockfiles).
+- **`prune_installed_skills.py`**: Retired (superseded by modular APM collections like Crow's `starter-package`).
+- **`plugin_remove.py`**: Retired (superseded by `apm uninstall`).
+- **`plugin-retention.json` / `skills-lock.json`**: Retired (superseded by `apm.lock.yaml`).
+
+### 2. Rationalization of APM Skills (Temporary vs. Permanent)
+Not all APM skills need to remain forever. We classify them by lifecycle role:
+
+| Skill | Target Disposition | Rationale |
+| :--- | :--- | :--- |
+| **`convert-plugin-to-apm`** | **Sunset Post-Migration** | A temporary "one-and-done" migration tool. Once all 6 repositories have their native `apm.yml` and collection manifests committed, this tool is retired. In the future, capabilities are authored as APM-native from day one. |
+| **`compile-apm-package`** | **Sunset / Consolidate** | `apm compile` is a native 1-word CLI primitive in APM. Wrapping native commands in custom skills introduces unnecessary maintenance overhead. |
+| **`install-apm-package`** | **Sunset / Consolidate** | `apm install <pkg> --global --target copilot` is a standard shell command that requires no custom Python harness. |
+| **`create-apm-package`** | **PERMANENT CORE SKILL** | The sole remaining APM authoring skill. Generates greenfield skills, agents, prompts, and collection manifests modeled directly on Crow best practices. |
+
+### 3. Final Lean State
+```text
+Clean Monorepo (Crow-Style):
+├── apm.yml (Root manifest with targets: [copilot, claude, cursor])
+├── collections/ (Modular packages: starter, oracle, devops)
+├── apm.lock.yaml (Cryptographic content-addressed lockfile)
+└── plugins/agent-scaffolders/skills/create-apm-package (Lean authoring scaffold)
+```
+Thousands of lines of brittle Windows symlink, junction, and custom syncer logic are permanently eliminated.
