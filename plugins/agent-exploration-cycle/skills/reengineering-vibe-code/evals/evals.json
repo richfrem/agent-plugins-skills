@@ -1,0 +1,190 @@
+[
+  {
+    "prompt": "clean up and reengineer our rapid prototype at localhost:3000",
+    "should_trigger": true
+  },
+  {
+    "prompt": "run the 7-step vibe-reengineer pipeline on my active running local code",
+    "should_trigger": true
+  },
+  {
+    "prompt": "rebuild our prototype into production-grade clean architecture using specs/REQS.md",
+    "should_trigger": true
+  },
+  {
+    "prompt": "execute vibe-reengineer to audit, capture tests, extract domain, and migrate slices",
+    "should_trigger": true
+  },
+  {
+    "prompt": "launch browser-harness to audit my frontend dashboard at localhost:3000",
+    "should_trigger": true
+  },
+  {
+    "prompt": "extract pure domain models from the active rapid prototype files",
+    "should_trigger": true
+  },
+  {
+    "prompt": "capture behavioral tests for my legacy user sign-up flow",
+    "should_trigger": true
+  },
+  {
+    "prompt": "crawl the prototype using playwright and generate a DISCOVERY_REPORT.md",
+    "should_trigger": true
+  },
+  {
+    "prompt": "use puppeteer to capture network logs and DOM elements from the running prototype",
+    "should_trigger": true
+  },
+  {
+    "prompt": "perform a visual and functional audit on the active UI local server",
+    "should_trigger": true
+  },
+  {
+    "prompt": "scaffold a postgresql and redis codebase target repository layout",
+    "should_trigger": false
+  },
+  {
+    "prompt": "synthesize NFR questions and map out C4 sequence diagrams",
+    "should_trigger": false
+  },
+  {
+    "prompt": "format our C4 specifications into a standard specification package and configure the execution harness",
+    "should_trigger": false
+  },
+  {
+    "prompt": "run a link validation scan across the wiki markdown files",
+    "should_trigger": false
+  },
+  {
+    "prompt": "generate characterization tests under tests/characterization/ to lock down calculations",
+    "should_trigger": true
+  },
+  {
+    "prompt": "record HTTP response status and state mutations from the running prototype",
+    "should_trigger": true
+  },
+  {
+    "prompt": "build an executable safety net for my local running app behavior",
+    "should_trigger": true
+  },
+  {
+    "prompt": "scaffold a fresh postgresql schema and setup docker containers",
+    "should_trigger": false
+  },
+  {
+    "prompt": "extract clean domain models and value objects separated from frameworks",
+    "should_trigger": false
+  },
+  {
+    "prompt": "run vertical slice migration loop to deprecate legacy routes",
+    "should_trigger": true
+  },
+  {
+    "prompt": "isolate business invariants and value objects into /domain with zero express imports",
+    "should_trigger": true
+  },
+  {
+    "prompt": "refactor legacy calculations into framework-free pure functions",
+    "should_trigger": true
+  },
+  {
+    "prompt": "create pure domain services without any database or I/O imports",
+    "should_trigger": true
+  },
+  {
+    "prompt": "progressively migrate portfolio retrieval to clean application layer slice-by-slice",
+    "should_trigger": true
+  },
+  {
+    "prompt": "refactor route handlers to use clean architecture application ports and adapters",
+    "should_trigger": true
+  },
+  {
+    "prompt": "verify migrated routes against generated safety-net characterization tests",
+    "should_trigger": true
+  },
+  {
+    "prompt": "compile our TOGAF specs into a standard unified specification package",
+    "should_trigger": true
+  },
+  {
+    "prompt": "scaffold the codebase sandbox structure matching the approved tech mapping",
+    "should_trigger": true
+  },
+  {
+    "prompt": "bootstrap empty directory structure for FastAPI and postgresql backend app",
+    "should_trigger": true
+  },
+  {
+    "prompt": "instruct the user on invoking the engineering harness",
+    "should_trigger": true
+  },
+  {
+    "prompt": "launch browser-harness and extract DOM payload from the local server UI",
+    "should_trigger": false
+  },
+  {
+    "prompt": "conduct a visual audit and log CSS and Tailwind layouts",
+    "should_trigger": false
+  },
+  {
+    "prompt": "generate system context diagram and Mermaid database flows",
+    "should_trigger": false
+  },
+  {
+    "prompt": "interview the SME one by one to determine security and tenancy baselines",
+    "should_trigger": false
+  },
+  {
+    "prompt": "generate C4 context diagrams and sequence diagrams using Mermaid syntax",
+    "should_trigger": true
+  },
+  {
+    "prompt": "scaffold the TOGAF-style specification package inside the /specs directory",
+    "should_trigger": true
+  },
+  {
+    "prompt": "synthesize discovery findings and user NFRs into specs and run through the Tier Gate",
+    "should_trigger": true
+  },
+  {
+    "prompt": "create a system context diagram mapping system boundaries and database servers",
+    "should_trigger": true
+  },
+  {
+    "prompt": "launch Playwright on localhost:5173 to extract DOM and run UI audits",
+    "should_trigger": false
+  },
+  {
+    "prompt": "scaffold the target repository sandbox structure and set up the execution harness",
+    "should_trigger": false
+  },
+  {
+    "prompt": "package our finished C4 specifications into a standard specification format",
+    "should_trigger": false
+  },
+  {
+    "prompt": "audit an existing plugin's file layout and symlinks structure",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Convert my vibe-coded prototype into a Spec Kit specification package.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Transform this undocumented rapid prototype into a certified engineering-ready handoff.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Run the full vibe-to-engineering handoff pipeline — discovery, behavioral tests, domain extraction, certification.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Create a new feature spec from scratch using Spec Kitty.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Start a new exploration discovery session for my idea.",
+    "should_trigger": false
+  }
+]

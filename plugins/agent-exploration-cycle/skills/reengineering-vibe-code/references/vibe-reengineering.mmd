@@ -1,0 +1,30 @@
+%% DRAFT (Slice 0b) Path 2 owned by S5. Numbering follows the vibe orchestrator's seven phases.
+%% The reengineer guide's 7-step pipeline maps: guide step 3 = phases 3 and 4, step 5 = phase 6, step 6 = phase 7.
+flowchart TD
+    Start(["Existing working prototype<br/>localhost or raw code"]) --> Reg["Register the task with the control plane<br/>by command name, only if the user runs one"]
+    Reg --> P1["Phase 1 Visual and functional discovery<br/>browser audit plus runtime observer<br/>session memory bootstrapped first"]
+    P1 --> R1["DISCOVERY_REPORT.md<br/>preservation gems and technical debt"]
+    R1 --> P2["Phase 2 Behavioral safety net<br/>characterization tests, portable fixtures<br/>fixture portability gate"]
+    P2 --> P3["Phase 3 Interactive Q and A<br/>five questions, one at a time:<br/>scale and tenancy, data sensitivity,<br/>state and storage, integrations, deployment"]
+    P3 --> P4["Phase 4 Canonical contract<br/>specs/REQS.md and domain-lexicon.json<br/>optional full architecture package"]
+    P4 --> TC{"Truth conflict check<br/>tests vs REQS.md invariants"}
+    TC -->|"conflict: HUMAN_REQUIRED"| P4
+    TC -->|"none"| Tier{{"Risk gate<br/>user signs off the specs"}}
+    Tier -->|"rejected"| P4
+    Tier -->|"approved"| Iso["Isolated workspace<br/>os-control-worktree"]
+    Iso --> P5["Phase 5 Domain extraction<br/>PRESERVE vs REPLACE ledger"]
+    P5 --> DP["domain-purity-auditor"]
+    DP -->|"below 100 percent"| P5
+    DP -->|"purity certified"| P6["Phase 6 Target scaffolding<br/>ADRs, ports, seven-ledger session memory"]
+    P6 --> Slice["Phase 7 Pick a vertical slice"]
+    Slice --> Forbid{"Touches auth, billing,<br/>crypto or compliance?"}
+    Forbid -->|"yes"| Human(["Stop: hash-bound human-approval.json required"])
+    Forbid -->|"no"| Mig["Score migration risk 5 to 25<br/>migrate the slice"]
+    Mig --> SD["semantic-drift-auditor"]
+    SD --> CV["certification-verifier<br/>sole authority for slice-certified"]
+    CV -->|"rejected twice for the same issue"| Esc(["Escalate to the user"])
+    CV -->|"rejected"| Mig
+    CV -->|"certified"| More{"More slices?"}
+    More -->|"yes"| Slice
+    More -->|"no"| Final["Final safety net<br/>100 percent characterization parity"]
+    Final --> Hand(["To handing-off-to-engineering<br/>shared handoff junction"])

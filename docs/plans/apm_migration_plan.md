@@ -376,7 +376,7 @@ A deep inspection of the repository reveals **2,328 git-tracked symlinks (mode `
 - `plugins/agent-memory`: 257 symlinks
 - `plugins/dev-utils`: 128 symlinks
 - `plugins/cli-agents`: 117 symlinks
-- `plugins/exploration-cycle-plugin`: 65 symlinks
+- `plugins/agent-exploration-cycle`: 65 symlinks
 - `plugins/obsidian-wiki-engine`: 64 symlinks
 - `plugins/agent-orchestration`: 48 symlinks
 - `plugins/plugin-manager`: 18 symlinks
@@ -651,7 +651,7 @@ Following the validation and completion of the `cli-agents` pilot, the remaining
 | **Wave 1** | `agent-orchestration` | 10 skills → 4 skills (0 root scripts) | **Status: Done (PR #717 merged)**. **Solution A**: Consolidated all 10 loop/graph micro-skills into unified interactive `orchestrating-agent-work` skill. Absorbed `cli-agents` suite (`cli-agent`, `agt-security`, `maf-adapter`, 13 sub-agents). Standalone `plugins/cli-agents` retired. |
 | **Wave 1** | `obsidian-wiki-engine` | 10 skills (14 root scripts) | **Solution A**: Consolidate Karpathy-style wiki distillation and querying into unified obsidian skills; co-locate vault CRUD and graph traversal tools. |
 | **Wave 2** | `agent-memory` | 13 skills (21 root scripts) | **Solution A**: Consolidate Vector DB tools (`vector-db-init`, `ingest`, `search`, `cleanup`, `audit`, `launch`) into cohesive `vector-db` skill; consolidate RLM tools into `rlm-engine` skill. |
-| **Wave 2** | `exploration-cycle-plugin` | 20 skills (16 root scripts) | **Solution A**: Consolidate exploratory sub-skills (`exploration-workflow`, `discovery-planning`, `prototype-builder`, `vibe-*` migrators) into cohesive workflow stages with modular references. |
+| **Wave 2** | `agent-exploration-cycle` | 20 skills (16 root scripts) | **Solution A**: Consolidate exploratory sub-skills (`exploration-workflow`, `discovery-planning`, `prototype-builder`, `vibe-*` migrators) into cohesive workflow stages with modular references. |
 | **Wave 3** | `dev-utils` | 19 skills (39 root scripts) | **Solution B**: High 1-to-1 co-location (`coding-conventions`, `link-checker`, `humanize`, `symlink-manager`). Move each utility script directly into its owning skill. |
 | **Wave 3** | `agent-scaffolders` | 9 skills (12 root scripts) | **Solution A & B**: Consolidate scaffolding tools (`create-skill`, `create-sub-agent`, `create-rule`, `create-plugin`, `create-hook`, etc.) into cohesive generation skills; co-locate auditing tools. |
 | **Wave 4** | `agent-agentic-os` | 13 skills (32 root scripts) | **Core Control Plane**: Systematic unwinding of OS control plane and lab loops with cryptographic gate preservation. |
@@ -821,7 +821,7 @@ Each subplan applies the §13.5 7-step lifecycle and the §13.9.1 lessons. Propo
 | `dev-utils` + `dependency-management` | 20 → 8 (done, PR #716) | 136 | 9 | 63 | no |
 | `agent-orchestration` | 10 → 3 | 48 | 3 | 110\* | yes |
 | `agent-memory` + `obsidian-wiki-engine` → one knowledge plugin | 23 → 4 | 320 | 2 | 24 | no |
-| `exploration-cycle-plugin` | 20 → 4 | 65 | 2 | 8 | yes |
+| `agent-exploration-cycle` | 20 → 4 | 65 | 2 | 8 | yes |
 | `agent-scaffolders` | 24 → 5 | 1,099 | 29 | 28 | no |
 | `agent-agentic-os` | 14 → 2 | 505 | 13 | 43 | yes |
 
@@ -923,9 +923,9 @@ production helpers are checked independently and those results are retained.
 All moves, absorptions, reference/registry updates and retirements are recorded in
 master_migration_inventory.csv. Audit receipts live under
 work-tasks/agent-memory-consolidation/. Runtime reinstall remains a separate action.
-Next migration after review/merge: exploration-cycle-plugin.
+Next migration after review/merge: agent-exploration-cycle.
 
-#### 10.4 `exploration-cycle-plugin`
+#### 10.4 `agent-exploration-cycle`
 
 | Target skill | Absorbs | Solution |
 |---|---|---|
@@ -986,7 +986,7 @@ Decisions and risks:
 
 #### 10.7 Recommended sequence and next plugin
 
-**Current: agent-memory consolidation implemented and being submitted for PR review (§13.10.3). Next after merge: exploration-cycle-plugin.** agent-orchestration is done (PR #717 merged).
+**Current: agent-memory consolidation implemented and being submitted for PR review (§13.10.3). Next after merge: agent-exploration-cycle.** agent-orchestration is done (PR #717 merged).
 
 | Order | Plugin work | Skills | Why here |
 |---|---|---|---|
@@ -994,7 +994,7 @@ Decisions and risks:
 | 1 | `dev-utils` + `dependency-management` | 20 → 8 | **Done** (PR #716 merged). First plugin merge (`dependency-management` retired). |
 | 2 | `agent-orchestration` + `cli-agents` absorption | 10 → 4 | **Done** (PR #717 merged). 10 loop skills → 1 interactive `orchestrating-agent-work` skill; absorbed `cli-agents` suite (`cli-agent`, `agt-security`, `maf-adapter`, 13 sub-agents); `cli-agents` retired. |
 | 3 | **Knowledge plugin** (`agent-memory` + `obsidian-wiki-engine`) (next) | 23 → 4 | Second plugin merge plus the first many-into-one router whose modes serve different user intents (`obsidian`: vault authoring vs. wiki pipeline; `cli-agent`'s modes were all one intent, dispatch). It needs eval-driven trigger checks, which are easier to learn here than on the control plane. Almost no outside root-path coupling (2). |
-| 4 | `exploration-cycle-plugin` | 20 → 4 | Its SessionStart hook injects skill names into every session, so hook-change handling is practised here before agentic-os. |
+| 4 | `agent-exploration-cycle` | 20 → 4 | Its SessionStart hook injects skill names into every session, so hook-change handling is practised here before agentic-os. |
 | 5 | `agent-scaffolders` | 24 → 5 | The largest copy manifest (1,099 entries), but it hosts the verifiers (`audit_skill.py`, `materialize_copies.py`). Do it once most plugins no longer need materialization; keep the verifier entry points stable. |
 | 6 | `agent-agentic-os` | 14 → 2 | Last: the shared `control_plane/` package, cryptographic gates, 148 baseline test failures, and it consumes outputs of plugins 0, 3 and 5. |
 | 7 | Retire the copy-manifest tooling | — | Once every plugin is migrated, `symlinks.json` is empty: retire `materialize_copies.py` and remove the AGENTS.md copy-manifest instructions. |

@@ -79,7 +79,7 @@ The script exits 0 on success and prints the chart path and text summary to stdo
 
 ## Phase 4: Cross-plugin reporting (optional, full detail)
 
-If the user wants improvement tracking across both `agent-agentic-os` AND `exploration-cycle-plugin`,
+If the user wants improvement tracking across both `agent-agentic-os` AND `agent-exploration-cycle`,
 run the report twice — once per plugin — passing each plugin's project dir:
 
 ```bash

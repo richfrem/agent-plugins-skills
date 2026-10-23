@@ -107,11 +107,11 @@ The changelog at the bottom of this file tracks when patterns were added, promot
 - **Lifecycle**: `validated`
 - **Confidence**: High
 - **Frequency**: 5+ plugins
-- **First Seen In**: `agent-orchestration/stration/`, `exploration-cycle-plugin`
+- **First Seen In**: `agent-orchestration/stration/`, `agent-exploration-cycle`
 - **Last Validated**: 2026-04-04
 - **Description**: Sub-system plugins operate in total isolation. If a framework plugin (e.g., `agent-agentic-os`) is uninstalled or replaced by a native model provider feature, surrounding functional skills continue to operate via standard API surfaces without modification. Achieved by: (1) delegating cross-plugin capability via agent natural language, not direct code calls; (2) marking all framework integrations as OPTIONAL with graceful degradation paths; (3) never sharing mutable state with a framework's internals unless mediated by that framework's documented interface.
 - **When to Use**: Any plugin that may optionally benefit from an orchestration framework. Design the baseline path first, then layer in the framework enhancement.
-- **Example**: `exploration-workflow` uses `spec-kitty` Phase 5 planning drafts but wraps the entire phase with `⚠️ OPTIONAL — Only relevant when spec-kitty plugin is installed. Skip this phase if running exploration standalone.`
+- **Example**: `running-exploration-cycle` offers optional planning drafts at handoff and marks the step `⚠️ OPTIONAL — Only relevant when an engineering harness is present. Skip it if running exploration standalone.`
 
 ---
 

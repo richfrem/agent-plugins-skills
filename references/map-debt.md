@@ -1735,3 +1735,49 @@ links resolving. Routing F1, fresh locked environment installation and live full
 Super-RAG integration are not certified by this source-preservation change.
 Map update: migration plan Section13.10.3, dependency/individual/interactive audit
 receipts, and the master inventory distinguish source parity from those measures.
+
+## DEBT-20261023-EXPLORATION-CONSOLIDATION-GATE-ENFORCEMENT
+
+Status: OPEN
+
+The Discovery Plan HARD-GATE in agent-exploration-cycle is enforced by prose and by
+validate_phase_gate.py (which now rejects a plan without PLAN_STATUS: APPROVED or a
+SME Approval section). No deterministic pre-write hook exists: the former
+pre_write_guard.py was a never-wired placeholder that allowed every write and was
+removed with the unwired event_subscriber.py. Stale-session resume/archive is documented
+but not implemented. The spec packager's task-to-requirement alignment validator named
+by the retired vibe-spec-packager never existed; alignment is checked by hand.
+Map update: plugins/agent-exploration-cycle/references/map-debt.md carries the row-level
+entries; migration plan section 13.10.4 records the consolidation.
+
+## DEBT-20261023-EXPLORATION-CONSOLIDATION-CONTROL-PLANE-SEAM
+
+Status: OPEN
+
+exploration_session.py still puts plugins/agent-agentic-os/scripts on sys.path and
+imports ControlPlane (a cross-plugin path import), isolated in one adapter function.
+Replacing it needs the control plane to expose a CLI or a workflow-definition layer
+(GitHub issue 719: multiple workflow definitions per project type, with a visual
+designer). dispatch.py also overlaps the cli-agent skill's run_agent.py and keeps its
+own HMAC and approval gate. The control plane has one 15-state lifecycle and task types
+GENERAL and EVOLUTION only; exploration keeps its own SQLite state engine.
+Map update: exploration process is written declaratively in
+skills/running-exploration-cycle/references/process-definition.md so it can later load
+as a workflow definition.
+
+## DEBT-20261023-EXPLORATION-CONSOLIDATION-VERIFICATION-LIMITS
+
+Status: OPEN
+
+Verified: 94 tests, audit_skill source mode on all five skills (0 errors, 0 warnings),
+audit_plugin_structure (0 errors), link scan, and a verbatim parity check of all 31
+retired skills and agents. Not done: the independent peer audit of migration plan
+section 13.5 step 5, the audit-skill AI language review and installed-mode check, and a
+live routing test of the merged skills' trigger descriptions (nine vibe eval prompts
+flipped to positive when merged and need semantic review). The copy-manifest drift check
+cannot pass in a fresh worktree because agent-agentic-os copies are not materialized
+there; it reports no drift for this plugin. Follow-ups after merge: update the local
+untracked apm.yml entry to ./plugins/agent-exploration-cycle, run apm install, remove
+this plugin's .git/info/exclude lines and stale materialized copies in the main checkout,
+and retire the stale Codex plugin cache of the former plugin name.
+Map update: migration plan section 13.10.4 and the consolidation plan record the same list.

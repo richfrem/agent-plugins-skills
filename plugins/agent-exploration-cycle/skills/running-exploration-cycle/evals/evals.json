@@ -1,0 +1,222 @@
+[
+  {
+    "prompt": "Walk me through the full Phase A exploration cycle.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "How do I run the exploration workflow end to end?",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Run the exploration workflow on this problem.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "What are the phases of the exploration cycle and how do they connect?",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Build a stakeholder map for the new initiative.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Create a Mermaid diagram of the approval process.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Deploy the latest build to production.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Fix the failing unit test in the auth module.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "I have an idea I want to explore — let's start a discovery session.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Let's start a new exploration session for this feature.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "There's an active exploration session in progress, what phase are we in?",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Build me a React component for a data table.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Run the billing audit on my portfolio.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Let's kick off a new exploration session. I want to capture a brief for the problem I've been thinking about.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "I have a rough idea to explore — it's somewhere between a process improvement and a new feature. Can you help me think it through and write it up?",
+    "should_trigger": true
+  },
+  {
+    "prompt": "I need to capture a session brief for a research spike we're starting on our data pipeline.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Help me draft an exploration brief — I want to understand the problem before we build anything.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Generate a commit message for these changes.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Summarize last week's meeting notes.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "What time is it in New York?",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Start a discovery session for my new idea.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Let's plan this out before we build anything.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "I have an idea I want to explore — help me figure out what we're actually building.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Help me think through the scope before we start building.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Build a working demo of my scheduling app.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Generate user stories using our BRD.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Show me layout options for the dashboard.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Deploy the latest release to staging.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Evaluate and improve the exploration-session-brief skill.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Run an optimization loop on our exploration workflow to find what to improve.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "The exploration cycle feels slow — help me identify which skill to optimize first.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Iterate on the business-requirements-capture prompts to improve BRD quality.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Generate a BRD from our session captures.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Refactor the login module for clarity.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Create user stories from the BRD.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Let's explore this idea I have for a staff scheduling tool.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "I have an idea I want to explore — can we start a discovery session?",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Where did we leave off with the customer portal exploration?",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Let's start an exploration session for a new HR onboarding system.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Resume my exploration from yesterday.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Start a discovery planning session for my onboarding redesign.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "I need to explore whether we should build or buy this reporting tool.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Help me think through this business problem — I'm not sure if we need software.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Fix the bug in the authentication service on line 42.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Run the test suite and report the results.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Review my pull request and suggest improvements.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "How do I configure the GitHub Actions workflow?",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Generate a BRD from the session captures we already have.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "take my vibe app to production using an engineering harness",
+    "should_trigger": true
+  },
+  {
+    "prompt": "reengineer this prototype and prepare an engineering handoff",
+    "should_trigger": true
+  },
+  {
+    "prompt": "run the full vibe-to-engineering-handoff pipeline on localhost:3000",
+    "should_trigger": true
+  },
+  {
+    "prompt": "prepare this codebase for formal engineering via an execution harness",
+    "should_trigger": true
+  },
+  {
+    "prompt": "launch browser-harness to audit my frontend",
+    "should_trigger": false
+  },
+  {
+    "prompt": "extract domain models from the prototype",
+    "should_trigger": false
+  },
+  {
+    "prompt": "generate user stories from the BRD",
+    "should_trigger": false
+  }
+]

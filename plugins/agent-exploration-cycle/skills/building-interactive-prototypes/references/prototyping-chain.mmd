@@ -1,0 +1,21 @@
+%% DRAFT (Slice 0b) Phases 2 and 3 owned by S3.
+flowchart TD
+    Gate{"Approved Discovery Plan exists?<br/>marker required, DRAFT does not count"} -->|"no"| Stop(["Stop: back to S1 discovery"])
+    Gate -->|"yes"| Arch{"Output type"}
+    Arch -->|"software UI"| L["Phase 2 layout options A, B, C<br/>plain language"]
+    Arch -->|"process flow or document"| D["Phase 2 structure options<br/>document-structure.md"]
+    L --> Conf{{"SME confirms direction"}}
+    D --> Conf
+    Conf -->|"changes"| Arch
+    Conf -->|"confirmed"| Iso["Isolated workspace<br/>os-control-worktree, said as isolated workspace"]
+    Iso --> Dec["Decompose into 3 to 6 parts"]
+    Dec --> Build["Build one component"]
+    Build --> R1{"Plan alignment check"}
+    R1 -->|"fail"| Build
+    R1 -->|"pass"| R2{"Quality and validation check"}
+    R2 -->|"fail"| Build
+    R2 -->|"pass"| Next{"More components?"}
+    Next -->|"yes"| Build
+    Next -->|"no"| Asm["Assemble prototype<br/>index.html and README"]
+    Asm --> Walk["SME walkthrough<br/>raw walkthrough-notes.md"]
+    Walk --> Hand(["To S2 observation extraction,<br/>then business-rule audit"])

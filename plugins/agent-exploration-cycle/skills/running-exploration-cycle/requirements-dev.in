@@ -1,0 +1,2 @@
+# Test-only dependency (used by the scripts/test_*.py files).
+pytest

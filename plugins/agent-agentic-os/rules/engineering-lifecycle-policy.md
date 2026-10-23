@@ -30,7 +30,7 @@ globs: ["**/*"]
 All STANDARD-classified engineering tasks MUST progress through the 4-phase lifecycle below. This replaces legacy waterfall approaches and couples upstream discovery to deterministic execution.
 
 ```
-Phase 0: Intake & Socratic Gate (exploration-cycle-plugin + os-control-intake)
+Phase 0: Intake & Socratic Gate (agent-exploration-cycle + os-control-intake)
    │
    ├─ TRIVIAL classification (single-file/few-line, no architectural impact):
    │    Verified against the real state machine (see
@@ -80,7 +80,7 @@ TRIVIAL fast-track branch in Section 1). Only STANDARD-classified tasks proceed 
 rest of this phase and into Phase 1:
 
 1. **Read-Only Exploration Cycle:**
-   - Execute read-only codebase discovery via `exploration-cycle-plugin` (`technical_diagnostic_engine.py`).
+   - Execute read-only codebase discovery via `agent-exploration-cycle` (`technical_diagnostic_engine.py`).
    - Inspect coupling surfaces (touched files, SQLite schemas, cross-plugin symlinks), surface hidden assumptions, and evaluate candidate architectural forks.
    - Emit `exploration/DIAGNOSTIC_BRIEF.md`.
 2. **Interview Gate (`os-control-intake`):**

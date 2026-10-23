@@ -1,0 +1,22 @@
+%% DRAFT (Slice 0b) the six-block orchestrator loop and what checks each step.
+flowchart TD
+    SME(["Business expert<br/>plain language, one question at a time"]) <--> B3
+    B1["1 Bootstrap<br/>no state: create it, ask a short session name"] --> B2
+    B2["2 Read state<br/>active phase = first incomplete<br/>verify outcome files of completed phases"] -->|"missing outcome file"| Fix["Resolve with the SME before advancing"]
+    Fix --> B2
+    B2 --> B3["3 Orientation summary<br/>friendly status, wait for soft yes"]
+    B3 --> B4{"4 Phase routing"}
+    B4 -->|"Phase 1"| P1["Discovery Plan<br/>running-exploration-cycle"]
+    B4 -->|"Phase 2 and 3"| P23["Blueprint and prototype<br/>building-interactive-prototypes"]
+    B4 -->|"Phase 4"| P4["Handoff<br/>handing-off-to-engineering"]
+    P1 --> B5
+    P23 --> B5
+    P4 --> B5
+    B5{{"5 HARD-GATE<br/>summary, outcome path,<br/>clear yes from the SME"}} -->|"changes requested"| B4
+    B5 -->|"approved"| V["validate_phase_gate N"]
+    V -->|"fail"| B4
+    V -->|"pass"| B6["6 Write state<br/>mark complete, next phase,<br/>session log row"]
+    B6 -->|"phases remain"| B3
+    B6 -->|"all four done"| Done(["Status Complete<br/>point team at handoff-package.md"])
+    classDef gate fill:#ffebee,stroke:#c62828,stroke-width:2px
+    class B5,V gate

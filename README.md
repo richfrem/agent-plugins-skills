@@ -161,7 +161,7 @@ self-contained runtime copies into active client harnesses (`.claude/skills/`, `
 | [`agent-memory`](plugins/agent-memory/README.md) | Filesystem memory, RLM, vector retrieval, and Obsidian vault/wiki workflows |
 | [`agent-scaffolders`](plugins/agent-scaffolders/README.md) | Creating, auditing, packaging, and maintaining plugins and skills |
 | [`dev-utils`](plugins/dev-utils/README.md) | Repository utilities: GitHub issues and worktrees, context bundling, link checking, coding conventions, ADRs, symlinks, HuggingFace transfers |
-| [`exploration-cycle-plugin`](plugins/exploration-cycle-plugin/README.md) | Discovery, requirements, prototyping, and handoff into engineering work |
+| [`agent-exploration-cycle`](plugins/agent-exploration-cycle/README.md) | Discovery, requirements, prototyping, and handoff into engineering work |
 
 For individual skills, agents, supported surfaces, and version detail, use each plugin's README
 and manifest rather than treating this landing page as a volatile inventory.

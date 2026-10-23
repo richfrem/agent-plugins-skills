@@ -1,0 +1,65 @@
+%% DRAFT (Slice 0b) canonical end-to-end process for the exploration-cycle plugin.
+%% Skills: S1 running-exploration-cycle, S2 capturing-business-requirements,
+%% S3 building-interactive-prototypes, S4 handing-off-to-engineering, S5 reengineering-vibe-code
+flowchart TD
+    Start(["Idea, need, problem or question<br/>or re-entry from engineering"]) --> Router{"S1 entry router<br/>what is the starting point?"}
+
+    Router -->|"working prototype or code already exists"| VibePath["Path 2: S5 reengineering-vibe-code<br/>see vibe-reengineering.mmd"]
+    Router -->|"technical codebase discovery<br/>refactor, bug, subsystem"| TechPath["Path 3: S4 read-only diagnostic<br/>DIAGNOSTIC_BRIEF.md"]
+    Router -->|"nothing built yet"| P0
+
+    subgraph Path1["Path 1: pre-build discovery"]
+        direction TB
+        P0["Phase 0 Intake (S1)<br/>interview, classify, session type,<br/>dispatch strategy"] --> G0{{"Gate 0<br/>SME confirms<br/>session-brief.md"}}
+        G0 -->|"adjust"| P0
+        G0 -->|"confirmed"| P1
+
+        P1["Phase 1 Discovery Plan (S1)<br/>one question at a time,<br/>intervention check, plan written"] --> G1{{"HARD-GATE 1<br/>SME approves plan<br/>a DRAFT never counts"}}
+        G1 -->|"not approved"| P1
+        G1 -->|"approved"| Cap
+
+        Cap["Capture loop (S2)<br/>framing, BRD, user stories,<br/>workflow docs, issues"] --> GapCheck{{"check_gaps<br/>more than 3 gaps<br/>in any capture?"}}
+        GapCheck -->|"yes: refine brief"| P0
+        GapCheck -->|"no"| P2
+
+        P2["Phase 2 Visual Blueprinting (S3)<br/>layout options A, B, C<br/>or document structure"] --> G2{{"Gate 2<br/>SME confirms layout"}}
+        G2 -->|"changes"| P2
+        G2 -->|"confirmed or skipped for<br/>brownfield or analysis sessions"| ProtoQ{"Prototype<br/>needed?"}
+
+        ProtoQ -->|"yes: software sessions"| P3
+        ProtoQ -->|"no"| Narrow
+
+        P3["Phase 3 Prototype (S3)<br/>component by component,<br/>isolated workspace, SME walkthrough"] --> Notes["Observation capture (S2)<br/>walkthrough-notes to prototype-notes"]
+        Notes --> Audit["business-rule-audit-agent<br/>BRD vs prototype notes"]
+        Audit --> G3{{"Gate 3<br/>any CONTRADICTED or<br/>UNCERTAIN rule left?"}}
+        G3 -->|"yes: resolve with SME"| P3
+        G3 -->|"no"| Narrow
+
+        Narrow{{"Narrowing gate<br/>evidence for all 5<br/>readiness checks?"}} -->|"not ready: targeted spike"| P1
+        Narrow -->|"ready"| P4
+        P4["Phase 4 Handoff (S4)<br/>scribe fills missing captures,<br/>tier assessment, handoff package"] --> G4{{"Gate 4<br/>validate_phase_gate 4<br/>and SME approval"}}
+        G4 -->|"fix gaps"| P4
+    end
+
+    VibePath --> Junction
+    TechPath --> Junction
+    G4 -->|"approved"| Junction
+
+    Junction{"Handoff junction (S4)<br/>risk and rigor tier"}
+    Junction -->|"idea not viable"| Throw(["Fail fast<br/>capture learnings and close"])
+    Junction -->|"Tier 1 low risk"| T1(["Self-deploy<br/>lightweight brief"])
+    Junction -->|"Tier 2 moderate risk"| T2(["Security or ethics review<br/>then deploy"])
+    Junction -->|"Tier 3 high risk"| T3["Formal engineering cycle<br/>tier3-risk-summary.md first"]
+    Junction -->|"defer"| Defer(["Update roadmap and defer"])
+
+    T3 --> Eng["Engineering cycle (outside this plugin)<br/>user control plane: os-control-intake"]
+    Eng -->|"unknown unknown found"| ReEntry["Re-entry scoping (S4)<br/>quote the ambiguity verbatim,<br/>draft re-entry session brief"]
+    ReEntry --> Start
+    Eng --> Done(["Done"])
+
+    classDef gate fill:#ffebee,stroke:#c62828,stroke-width:2px
+    classDef phase fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    classDef out fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+    class G0,G1,G2,G3,G4,GapCheck,Narrow gate
+    class P0,P1,P2,P3,P4,Cap,Notes,Audit phase
+    class Throw,T1,T2,Defer,Done out
