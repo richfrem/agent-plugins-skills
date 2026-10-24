@@ -57,7 +57,7 @@ def _cmd(row, extra=None):
     """A complete command: unsigned edges carry --human-confirmed; hard edges carry --interactive (+ --key if signed)."""
     if extra is None:
         extra = HUMAN_FLAG if row["run_by"] != HARD else " --interactive"
-    return (f"python3 plugins/agent-agentic-os/scripts/agent_control.py coordinate-transition "
+    return (f"python3 plugins/agent-agentic-os/skills/running-control-plane/scripts/agent_control.py coordinate-transition "
             f"--task-id demo --to {row['to_state']}{extra}")
 
 

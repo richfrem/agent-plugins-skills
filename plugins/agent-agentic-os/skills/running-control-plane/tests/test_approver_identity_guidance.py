@@ -11,7 +11,7 @@ Purpose:
     contract (surfaced by transition-guidance) and as the first os-control-intake rule.
 
 Key Input Dependencies:
-    plugins/agent-agentic-os/scripts/control_plane/transition_templates.yaml — stages.INTERVIEW.approver_identity
+    plugins/agent-agentic-os/skills/running-control-plane/scripts/control_plane/transition_templates.yaml — stages.INTERVIEW.approver_identity
     references/modes/intake.md (running-control-plane) — Critical Operational Rule 1
     references/modes/simulator.md (running-control-plane) — simulation approver section
 
@@ -24,7 +24,7 @@ Functions:
     - test_guidance_describes_the_two_database_split
 
 Usage:
-    python -m pytest plugins/agent-agentic-os/tests/test_approver_identity_guidance.py
+    python -m pytest plugins/agent-agentic-os/skills/running-control-plane/tests/test_approver_identity_guidance.py
 """
 
 from pathlib import Path

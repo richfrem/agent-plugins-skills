@@ -9,7 +9,7 @@ Purpose:
     indistinguishable from a properly-gated one in CI/terminal logs.
 
 Key Input Dependencies:
-    - plugins/agent-agentic-os/scripts/pre-push-review-guard
+    - plugins/agent-agentic-os/skills/running-control-plane/scripts/pre-push-review-guard
     - sqlite3 CLI (must be on PATH)
 
 Key Functions:

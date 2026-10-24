@@ -48,7 +48,7 @@ def main() -> None:
     print("Repairing symlinks...")
     force_symlink(
         '../../../references/post-run-survey.md',
-        'plugins/exploration-cycle-plugin/skills/deferred/exploration-orchestrator/references/post-run-survey.md',
+        'plugins/agent-exploration-cycle/skills/deferred/exploration-orchestrator/references/post-run-survey.md',
     )
     force_symlink(
         '../../../references/acceptance-criteria.md',

@@ -16,9 +16,9 @@ Purpose:
     Real ssh-keygen keys and signatures; nothing mocked.
 
 Key Input Dependencies:
-    plugins/agent-agentic-os/scripts/control_plane/simulation_identity.py
-    plugins/agent-agentic-os/scripts/control_plane/approver_policy.py
-    plugins/agent-agentic-os/scripts/control_plane/pipeline_simulator.py
+    plugins/agent-agentic-os/skills/running-control-plane/scripts/control_plane/simulation_identity.py
+    plugins/agent-agentic-os/skills/running-control-plane/scripts/control_plane/approver_policy.py
+    plugins/agent-agentic-os/skills/running-control-plane/scripts/control_plane/pipeline_simulator.py
 
 Layer: Development / Testing
 
@@ -30,7 +30,7 @@ Functions:
     - test_dual_identity_status_reports_three_separate_readiness_items
 
 Usage:
-    python -m pytest plugins/agent-agentic-os/tests/test_dual_identity_onboarding.py
+    python -m pytest plugins/agent-agentic-os/skills/running-control-plane/tests/test_dual_identity_onboarding.py
 """
 
 import hashlib

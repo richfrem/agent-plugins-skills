@@ -6,7 +6,7 @@ Purpose:
     Lock in fixes to graph_runner.py and validate_manifest.py found during the 2026-10-18 review.
 
 Key Input Dependencies:
-    plugins/agent-orchestration/scripts/graph_runner.py, validate_manifest.py, and
+    plugins/agent-orchestration/skills/orchestrating-agent-work/scripts/graph_runner.py, validate_manifest.py, and
     references/graph-manifest-schema.json; a local git binary for temporary test repositories.
 
 Validates:

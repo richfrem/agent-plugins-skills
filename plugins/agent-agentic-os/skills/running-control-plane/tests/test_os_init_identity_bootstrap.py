@@ -164,7 +164,7 @@ def test_flags_opt_out_of_each_identity_step(repo):
 def test_printed_next_step_command_exists_in_the_repo(repo):
     res = _run_init(repo)
     assert f"python3 {SETUP}" in res.stdout
-    assert "plugins/agent-agentic-os/scripts/setup_ciba_identity.py" not in res.stdout
+    assert "plugins/agent-agentic-os/skills/setting-up-agentic-os/scripts/setup_ciba_identity.py" not in res.stdout
 
 
 @pytest.mark.skipif(sys.platform.startswith("win"), reason="needs a POSIX pseudo-terminal")

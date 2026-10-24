@@ -58,11 +58,11 @@ script without an SDK or API key dependency:
 
 ```bash
 # Auto-detects agy or claude:
-python3 plugins/agent-agentic-os/scripts/control_plane/run_transition_simulation.py \
+python3 plugins/agent-agentic-os/skills/running-control-plane/scripts/control_plane/run_transition_simulation.py \
   --behavior --from <FROM_STATE> --to <TO_STATE>
 
 # Or explicit backend:
-python3 plugins/agent-agentic-os/scripts/control_plane/run_transition_simulation.py \
+python3 plugins/agent-agentic-os/skills/running-control-plane/scripts/control_plane/run_transition_simulation.py \
   --behavior --from <FROM_STATE> --to <TO_STATE> --backend agy
 ```
 

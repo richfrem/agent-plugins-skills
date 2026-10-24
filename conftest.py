@@ -14,9 +14,9 @@ import json
 from pathlib import Path
 
 collect_ignore = [
-    "plugins/agent-agentic-os/scripts/smoke_test.py",
+    "plugins/agent-agentic-os/skills/running-control-plane/scripts/smoke_test.py",
     "plugins/agent-exploration-cycle/skills/running-exploration-cycle/scripts/smoke_test.py",
-    "plugins/agent-orchestration/scripts/test_swarm_run.py",
+    "plugins/agent-orchestration/skills/orchestrating-agent-work/tests/test_swarm_run_models.py",
 ]
 
 _ROOT = Path(__file__).resolve().parent

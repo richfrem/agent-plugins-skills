@@ -3,7 +3,7 @@
 generated data is well-formed and matches the live registry contract. Runs as
 part of the normal pytest suite. The actual Haiku-in-the-loop execution driven
 by this data is a separate, manually-invoked, opt-in step -- see
-plugins/agent-agentic-os/references/cheap-agent-transition-simulation.md.
+plugins/agent-agentic-os/skills/running-control-plane/references/cheap-agent-transition-simulation.md.
 """
 
 import sys

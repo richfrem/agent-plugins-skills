@@ -37,7 +37,7 @@ hardcoding.
 3. **Test fixtures that drive a data-shaped contract (a question sequence, a required
    field list, an edge's `human_questions`) should build their expected input from the
    same registry/loader the production code uses**, not a parallel hardcoded list.
-   See `plugins/agent-agentic-os/tests/interview_helpers.py`'s
+   See `plugins/agent-agentic-os/skills/running-control-plane/tests/interview_helpers.py`'s
    `sequential_answers_for_edge()` — it asks `TransitionRegistry.load_default()`
    what an edge actually requires and derives the answer sequence from that, so a
    future universal question addition (or removal) only requires updating the
@@ -66,7 +66,7 @@ real duplication anyway (e.g. `adapters.py` independently re-defining
 `GUIDANCE_COMPLIANCE_CONFIRM_ANSWER` and `STATE_*` instead of importing them). This is
 standard practice, not a judgment call: **every domain constant used by more than one
 file — production or test — lives in exactly one shared module,
-`plugins/agent-agentic-os/scripts/control_plane/constants.py`.**
+`plugins/agent-agentic-os/skills/running-control-plane/scripts/control_plane/constants.py`.**
 
 **Before writing any state, decision type, actor, status, task type, or other
 domain-meaningful string literal: check `constants.py` first.** If the constant you

@@ -17,10 +17,10 @@ Purpose:
     Real ssh-keygen keys, signatures, SQLite files and the real pre-push guard script throughout.
 
 Key Input Dependencies:
-    plugins/agent-agentic-os/scripts/control_plane/approver_policy.py
-    plugins/agent-agentic-os/scripts/control_plane/gate_evidence.py
-    plugins/agent-agentic-os/scripts/pre-push-review-guard
-    plugins/agent-agentic-os/tests/test_one_approver_per_pipeline.py (shared fixtures)
+    plugins/agent-agentic-os/skills/running-control-plane/scripts/control_plane/approver_policy.py
+    plugins/agent-agentic-os/skills/running-control-plane/scripts/control_plane/gate_evidence.py
+    plugins/agent-agentic-os/skills/running-control-plane/scripts/pre-push-review-guard
+    plugins/agent-agentic-os/skills/running-control-plane/tests/test_one_approver_per_pipeline.py (shared fixtures)
 
 Layer: Development / Testing
 
@@ -36,7 +36,7 @@ Functions:
     - test_path_swap_after_connection_open_is_refused (R1 end to end)
 
 Usage:
-    python -m pytest plugins/agent-agentic-os/tests/test_approver_isolation.py
+    python -m pytest plugins/agent-agentic-os/skills/running-control-plane/tests/test_approver_isolation.py
 """
 
 import io

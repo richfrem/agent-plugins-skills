@@ -958,67 +958,61 @@ Decisions and risks:
 - **`discovery-planning` is a HARD-GATE skill** with its own sub-agent. Preserve the gate wording verbatim in `references/discovery-planning.md` and keep the sub-agent at the plugin root.
 - **The 15 plugin-root sub-agents stay.** Update their skill references.
 
-#### 10.5 `agent-scaffolders`
+#### 10.5 `agent-scaffolders` → `agent-extension-authoring`
+
+**Status: DONE** (PR #721 merged 2026-10-23). Renamed and consolidated from 24 micro-skills into **6 self-contained skills**:
 
 | Target skill | Absorbs | Solution |
 |---|---|---|
-| `agent-auditor` | `audit-skill`, `audit-plugin`, `audit-rule`, `audit-sub-agent`, `audit-agents-md` | A |
-| `create-component` | `create-skill`, `create-stateful-skill`, `create-sub-agent`, `create-rule`, `create-hook`, `create-plugin`, `create-mcp-integration`, `create-agents-md` | A |
-| `create-deployment` | `create-docker-skill`, `create-azure-agent`, `create-agentic-workflow`, `create-github-action` | A |
-| `apm-packaging` | `create-apm-package`, `convert-plugin-to-apm`, `compile-apm-package`, `install-apm-package`, `manage-marketplace` | A |
-| `ecosystem-standards` | `ecosystem-standards`, `ecosystem-authoritative-sources` | A |
+| `authoring-skills` | `create-skill`, `create-stateful-skill`, `create-docker-skill`, `create-azure-agent`, `create-mcp-integration`, `audit-skill` | A (self-contained with scripts, templates, and patterns) |
+| `authoring-plugins` | `create-plugin`, `audit-plugin` | A |
+| `authoring-subagents` | `create-sub-agent`, `audit-sub-agent` | A |
+| `authoring-instructions` | `create-rule`, `create-hook`, `create-agents-md`, `audit-rule`, `audit-agents-md` | A |
+| `authoring-github-workflows` | `create-github-action`, `create-agentic-workflow` | A |
+| `packaging-with-apm` | `create-apm-package`, `convert-plugin-to-apm`, `compile-apm-package`, `install-apm-package`, `manage-marketplace`, `ecosystem-standards`, `ecosystem-authoritative-sources` | A (hosts `materialize_copies.py` and APM distribution tooling) |
 
-Decisions and risks:
-- **This plugin hosts the migration's own verifiers.** `audit_skill.py` and `materialize_copies.py`, plus `check_skill_boundaries.py` and the whitelists.
-  - Keep their invocation paths working until every other plugin is migrated: leave compatibility entry points at the old paths, or update all 29 outside citations atomically.
-  - While auditing this plugin, run the verifiers from a clean `HEAD` worktree.
-- **The largest copy manifest (1,099 entries)** goes once the move is done. `materialize_copies.py` should then be needed only for plugins not yet migrated, so retire it after Wave 4.
-- **`create-skill` triggers very often.** Check the merged `create-component` evals for trigger precision against the other create-* intents.
+Decisions, migrations and outcomes:
+- **Clean 5-step triage across `references/`:** Removed 87 transitory files, stale copies, and empty stubs; preserved 10 canonical governance files at plugin root (`references/`).
+- **Verifiers relocated into owning skills:** `audit_skill.py` into `authoring-skills/scripts/`; `audit.py` and `audit_plugin_structure.py` into `authoring-plugins/scripts/`; `materialize_copies.py` into `packaging-with-apm/scripts/`. All citations updated repo-wide.
+- **Copy manifest entries purged:** All 1,099 `agent-scaffolders` copy manifest entries completely removed from `symlinks.json`.
+- **Master Inventory:** 444 file operations recorded in [master_migration_inventory.csv](master_migration_inventory.csv) (total 2,128 rows).
+- **Local APM deployment:** Updated root `apm.yml`, purged 38 retired directories from `.agents/skills` and `.claude/skills`, and verified clean local deployment across `antigravity`, `claude`, `codex`, and `copilot`.
 
-#### 10.6 `agent-agentic-os` → `os-control` + `os-lab`
+#### 10.6 `agent-agentic-os` → `running-control-plane` + `setting-up-agentic-os` + `improving-skills-in-lab`
+
+**Status: DONE** (PR #722 merged 2026-10-23). Consolidated from 14 micro-skills into **3 self-contained skills**:
 
 | Target skill | Absorbs | Solution |
 |---|---|---|
-| `os-control` | `os-control-intake`, `os-control-init`, `os-control-health`, `os-control-mode`, `os-control-signing-setup`, `os-control-simulator`, `os-control-worktree` | A (owns the `control_plane/` package) |
-| `os-lab` | `os-lab-setup`, `os-lab-planner`, `os-lab-loop`, `os-lab-scorer`, `os-lab-log`, `os-lab-backport`, `os-lab-memory` | A |
+| `running-control-plane` | `os-control-intake`, `os-control-simulator`, `os-control-health`, `os-control-mode`, `os-control-worktree` | A (owns the `control_plane/` package, CLI scripts, guidance, and git push/commit guards) |
+| `setting-up-agentic-os` | `os-control-init`, `os-control-signing-setup` | A (owns project init, retrofit planning, human signing identity enrollment, and agent identity) |
+| `improving-skills-in-lab` | `os-lab-planner`, `os-lab-setup`, `os-lab-loop`, `os-lab-scorer`, `os-lab-log`, `os-lab-backport`, `os-lab-memory` | A (owns the isolated skill improvement lab, evaluation harnesses, and evolutionary ledger maintenance) |
 
-Decisions and risks:
-- **One owner for `control_plane/`.** `adapters.py`, `ports.py`, `policy.py`, `state_machine.py`, `transition_templates.yaml` and others are copied into 5–6 skills today. They move once into `os-control/scripts/control_plane/`.
-  - If `os-lab` still imports control-plane modules, decide between:
-    - (a) `os-lab` calls `os-control`'s CLI (`agent_control.py`) instead of importing it; or
-    - (b) a documented plugin-level library exception.
-  - Prefer (a), which keeps both skills self-contained.
-- **Intake trigger precision.** `os-control-intake` is the "CRITICAL INTAKE GATEWAY" and AGENTS.md line 9 routes to it by name. The merged `os-control` description must keep that trigger strength. Update AGENTS.md lines 9 and 42.
-- **`os-control-mode` semantics.** It currently toggles only `os-control-intake`, `os-control-simulator` and `os-control-signing-setup` (AGENTS.md line 42). After the merge it toggles `os-control` as a unit. Confirm this is still the intended scope.
-- **Cryptographic gates.**
-  - `os-control-signing-setup` guides a human through key creation. Its wording moves verbatim to `references/signing-setup.md`.
-  - Signing paths and `approver_policy`/`ssh_signing` must keep working.
-  - A human key holder verifies Gate 1/Gate 3/DONE end-to-end after the move. Agents never run signing commands.
-- **`os-lab-memory` placement.** Its triggers ("remember this", "update memory") are general session memory, not lab-specific. Decide between folding it into `os-lab` and moving it to the knowledge plugin's `memory-management` (§13.10.3).
-- **Test baseline is mandatory.** There are 148 pre-existing failures/errors on `HEAD` (2026-10-23). Fix them or record them as the baseline before any move.
-- **Consumers.**
-  - `transition_templates.yaml` hints name individual `os-control-*` skills.
-  - Hooks (`session_start.py`, `update_memory.py`) and 43 outside files name the skills.
-  - The control plane consumes `CLI_AGENT_CATALOG_DIR` from cli-agents.
+Decisions, migrations and outcomes:
+- **Clean self-contained layout:** Absorbed all 14 legacy skills into dedicated `references/modes/<name>.md` workflows with full feature parity.
+- **Copy manifest cleared:** All legacy copy entries removed; `symlinks.json` is now completely empty (`links: []`, `symlinks: []`).
+- **Verifiers and Test Suite:** Zero test regressions across 1,083 collected tests (resolved 130 baseline test errors). All 3 skills pass deterministic `audit_skill.py`.
+- **Routing & Resolution:** 75/92 skill routing accuracy and 90/92 first-mode reference resolution on simulation test vectors.
 
 ---
 
 #### 10.7 Recommended sequence and next plugin
 
-**Current: agent-memory consolidation implemented and being submitted for PR review (§13.10.3). Next after merge: agent-exploration-cycle.** agent-orchestration is done (PR #717 merged).
+**All 6 plugin waves completed and merged! Next: Order 7 (retire copy-manifest tooling and clean up residual symlink references).**
 
 | Order | Plugin work | Skills | Why here |
 |---|---|---|---|
 | 0 | `cli-agents` pilot | 12 → 3 | **Done** (PR #715 merged; subsequently absorbed into `agent-orchestration` in PR #717). |
 | 1 | `dev-utils` + `dependency-management` | 20 → 8 | **Done** (PR #716 merged). First plugin merge (`dependency-management` retired). |
 | 2 | `agent-orchestration` + `cli-agents` absorption | 10 → 4 | **Done** (PR #717 merged). 10 loop skills → 1 interactive `orchestrating-agent-work` skill; absorbed `cli-agents` suite (`cli-agent`, `agt-security`, `maf-adapter`, 13 sub-agents); `cli-agents` retired. |
-| 3 | **Knowledge plugin** (`agent-memory` + `obsidian-wiki-engine`) (next) | 23 → 4 | Second plugin merge plus the first many-into-one router whose modes serve different user intents (`obsidian`: vault authoring vs. wiki pipeline; `cli-agent`'s modes were all one intent, dispatch). It needs eval-driven trigger checks, which are easier to learn here than on the control plane. Almost no outside root-path coupling (2). |
-| 4 | `agent-exploration-cycle` | 20 → 4 | Its SessionStart hook injects skill names into every session, so hook-change handling is practised here before agentic-os. |
-| 5 | `agent-scaffolders` | 24 → 5 | The largest copy manifest (1,099 entries), but it hosts the verifiers (`audit_skill.py`, `materialize_copies.py`). Do it once most plugins no longer need materialization; keep the verifier entry points stable. |
-| 6 | `agent-agentic-os` | 14 → 2 | Last: the shared `control_plane/` package, cryptographic gates, 148 baseline test failures, and it consumes outputs of plugins 0, 3 and 5. |
-| 7 | Retire the copy-manifest tooling | — | Once every plugin is migrated, `symlinks.json` is empty: retire `materialize_copies.py` and remove the AGENTS.md copy-manifest instructions. |
+| 3 | **Knowledge plugin** (`agent-memory` + `obsidian-wiki-engine`) | 23 → 4 | **Done** (PR #718 merged). 4 self-contained knowledge skills (`memory-management`, `managing-obsidian-vaults`, `managing-vector-db`, `managing-rlm-cache`). |
+| 4 | `agent-exploration-cycle` | 20 → 5 | **Done** (PR #720 merged). 5 self-contained skills (`running-exploration-cycle`, `capturing-business-requirements`, `building-interactive-prototypes`, `handing-off-to-engineering`, `reengineering-vibe-code`) + 4 sub-agents. |
+| 5 | `agent-scaffolders` → `agent-extension-authoring` | 24 → 6 | **Done** (PR #721 merged). 6 self-contained skills (`authoring-skills`, `authoring-plugins`, `authoring-subagents`, `authoring-instructions`, `authoring-github-workflows`, `packaging-with-apm`). Purged 1,099 copy-manifest entries from `symlinks.json`. |
+| 6 | **`agent-agentic-os`** | 14 → 3 | **Done** (PR #722 merged). Consolidated into `running-control-plane`, `setting-up-agentic-os`, and `improving-skills-in-lab`. `symlinks.json` is now completely empty. |
+| 7 | Retire the copy-manifest tooling | — | Once every plugin is migrated and `symlinks.json` is empty: retire `materialize_copies.py` and remove AGENTS.md copy-manifest instructions. |
 
-**Current scale (agent-memory consolidation branch):** 74 skills across 6 plugins, down from 93 across 7 before this wave. When all waves finish, about 20-25 skills across 5 plugins remain.
+**Current scale (after PR #722):** 30 skills across 6 plugins, down from 123 across 9 originally.
+
 
 Before starting each plugin, complete §13.10's Step 0 (test baseline, consumer search, hooks/AGENTS.md scan) and record all moves in the master inventory CSV.
 
@@ -1066,3 +1060,43 @@ To prevent fragmented, out-of-sync per-plugin CSVs, all file moves, consolidatio
 - `plugin-retention.json` and `skills-lock.json`
 - `plugin-sources.json` and `local-plugins-inventory.json` (if no consumers remain)
 - `symlink-manager`
+
+---
+
+## 14. Consuming Repositories APM Migration & Skill Consolidation Plan
+
+With the foundational consolidation of `agent-plugins-skills` complete (123+ skills across 9 plugins condensed into 30 self-contained skills across 6 plugins, published via global APM), downstream consuming repositories can now be migrated to the identical clean APM architecture.
+
+### 14.1 Primary Objectives for Consuming Repositories
+1. **Eliminate Duplicate Local Platform Harnesses:** Consuming repos no longer maintain local `.agents/skills` or `.claude/skills` copies of the base Agentic OS, dev-utils, memory, orchestration, or authoring tools. These are consumed directly from the operator's global workstation profile (`~/.apm/apm.yml`).
+2. **Retire Fragile Copy-Manifest Infrastructure:** Remove `symlinks.json` (and its hundreds of copy entries), `plugin-sources.json`, `plugin-retention.json`, and `skills-lock.json`.
+3. **Consolidate Granular Micro-Skills into Modal Hubs:** Apply the same domain consolidation pattern to the consuming repo's domain-specific plugins, turning fragmented micro-skills into self-contained, modal hub skills with embedded references and scripts.
+4. **Standardize on APM:** Manage the consuming repo's own plugins via a simple, declarative root `apm.yml`.
+
+### 14.2 Pilot Implementation: `sharepoint-knowledge-workbench`
+
+`sharepoint-knowledge-workbench` (`../sharepoint-knowledge-workbench`) is the primary pilot repository for consuming repo migration.
+
+#### Current Diagnostic Profile:
+- **Domain Footprint:** 7 plugins containing 104 granular micro-skills in `plugins/`.
+- **Local Overhead:** `.agents/` contains 134 materialized skill folders, 29 agents, 29 workflows, and 19 ownership files.
+- **Manifest Debt:** 739 entries in `symlinks.json`, legacy `plugin-sources.json` citing old `agent-plugins-skills` plugins, `plugin-retention.json`, and `skills-lock.json`.
+- **Instruction Bloat:** 90 KB `AGENTS.md` containing duplicate inlined rules.
+
+#### Consolidation Target (104 skills → 8–10 modal hub skills):
+| Plugin | Current Skills | Target Skills | Key Consolidated Responsibilities |
+| :--- | :--- | :--- | :--- |
+| **`sharepoint-workbench-setup`** | 5 | **1** (`setting-up-sharepoint-workbench`) | Connection init, auth validation, Azure app registration, path resolution. |
+| **`sharepoint-site-assessment`** | 12 | **1** (`assessing-sharepoint-sites`) | Site inventory, permissions, schema drift, metadata, forms/webparts audit. |
+| **`sharepoint-document-conversion`** | 11 | **1** (`converting-sharepoint-documents`) | DOCX extraction, structure analysis, template authoring, rendering, comparison. |
+| **`sharepoint-site-build-and-publish`** | 33 | **2** (`managing-sharepoint-schema`, `publishing-sharepoint-content`) | Schema/lists/columns/views/content types; page creation, publishing, validation. |
+| **`sharepoint-site-migration`** | 19 | **2** (`migrating-sharepoint-sites`, `modernizing-sharepoint-pages`) | Wave planning, list content migration; classic-to-modern page conversion. |
+| **`sharepoint-spfx-development`** | 10 | **1** (`developing-spfx-solutions`) | React webpart scaffolding, extensions, hosted workbench, packaging, deploy. |
+| **`sharepoint-copilot-agents-and-skills`**| 14 | **1** (`managing-sharepoint-copilot-agents`) | Agent templates, packaging, inspection, native skill deploy/backup/restore. |
+
+### 14.3 Four-Stage Execution Workflow for Downstream Repositories
+1. **Stage 1 (Baseline & Discovery):** Audit existing skills, verify global APM availability (`apm list --global`), and build the per-repo `inventory.csv`.
+2. **Stage 2 (Purge Legacy Manifests):** Remove `plugin-sources.json`, `plugin-retention.json`, `symlinks.json`, `skills-lock.json`, and untracked `.agents/skills` / `.claude/skills` copies.
+3. **Stage 3 (Consolidation Slices):** Migrate each plugin wave sequentially into self-contained hub skills under `plugins/<plugin>/skills/<hub-skill>/` with modal `SKILL.md` (<100 lines).
+4. **Stage 4 (APM Integration & Verification):** Initialize root `apm.yml`, run `apm compile`, verify discovery across Claude, Copilot, Codex, and Antigravity, and run test suites.
+

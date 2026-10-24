@@ -22,9 +22,9 @@ before assuming this repo owns it.
 Current scale (read from `plugins/` — verify with `find plugins -name SKILL.md | wc -l` and
 `find plugins/*/agents -maxdepth 1 -name '*.md' | wc -l` before quoting a number elsewhere;
 `plugins/spec-kitty-plugin` was removed 2026-09-05, never part of this count):
-- **7 plugins**
-- **93 skills** (active SKILL.md definitions across plugins)
-- **44 agent definitions** (`agents/*.md` across plugins)
+- **6 plugins**
+- **30 skills** (active SKILL.md definitions across plugins)
+- **19 agent definitions** (`agents/*.md` across plugins)
 
 ## 2. Project Structure
 
@@ -53,11 +53,10 @@ Current scale (read from `plugins/` — verify with `find plugins -name SKILL.md
 ├── docs/                            # MAF research, ADR support docs, superpowers specs
 ├── context/                         # events.jsonl, experiment-log, memory (OS runtime state)
 ├── tasks/                           # backlog/ and done/ — task tracking artifacts
-├── plugin.yaml                      # Root manifest listing all skills_dirs
-├── plugin-sources.json              # Tracks which plugins are installed where
-├── symlinks.json                    # Manifest for symlink_manager.py (cross-platform symlinks)
-├── skills-lock.json                 # Installed skill lockfile (machine-local, gitignored)
-├── pyproject.toml                   # setuptools packaging; exposes plugin-add/-remove/-sync CLIs
+├── apm.yml                          # APM workspace project manifest and target configuration
+├── apm.lock.yaml                    # APM resolved and locked dependency tree
+├── symlinks.json                    # Historical manifest (now empty: links: [], symlinks: [])
+├── pyproject.toml                   # setuptools packaging
 ├── README.md                        # Ecosystem overview, version history, install guide
 └── CLAUDE.md                        # Behavioral guidelines + project-specific rules (this repo's law)
 ```

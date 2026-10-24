@@ -40,7 +40,7 @@
     "should_trigger": true
   },
   {
-    "prompt": "Validate all agent files in plugins/cli-agents/agents for frontmatter compliance.",
+    "prompt": "Validate all agent files in plugins/agent-orchestration/agents for frontmatter compliance.",
     "should_trigger": true
   },
   {

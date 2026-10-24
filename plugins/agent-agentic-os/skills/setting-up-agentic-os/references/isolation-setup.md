@@ -5,10 +5,10 @@ the signature verifies against `allowed_signers`. This page explains the setup, 
 important, what this does **not** protect against.
 
 ## What the human does (macOS, Windows, Linux)
-1. `python3 plugins/agent-agentic-os/scripts/setup_ciba_identity.py` creates a passphrase-protected SSH
+1. `python3 plugins/agent-agentic-os/skills/setting-up-agentic-os/scripts/setup_ciba_identity.py` creates a passphrase-protected SSH
    key (or a FIDO hardware key with `--type ecdsa-sk`), the `context/identity/` folder, and enrolls the key.
    Use `--check` for a read-only status and `--force` to add another key (old keys stay enrolled).
-2. `python3 plugins/agent-agentic-os/scripts/agent_control.py test-signing-mechanics` proves the passphrase
+2. `python3 plugins/agent-agentic-os/skills/running-control-plane/scripts/agent_control.py test-signing-mechanics` proves the passphrase
    prompt or hardware touch works, against a separate self-test file. It is never an approval.
 3. At Gate 1, the agent runs `coordinate-transition --to APPROVED`, which returns `HUMAN_PROOF_REQUIRED` and a
    request id. The human then runs `agent_control.py show-challenge --request-id N`, signs the printed text

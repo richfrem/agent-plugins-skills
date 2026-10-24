@@ -3,7 +3,7 @@
   "plugins/agent-orchestration",
   "plugins/agent-memory",
   "plugins/agent-extension-authoring",
-  "plugins/cli-agents",
+  "plugins/agent-orchestration",
   "plugins/dev-utils",
   "plugins/agent-exploration-cycle"
 ]

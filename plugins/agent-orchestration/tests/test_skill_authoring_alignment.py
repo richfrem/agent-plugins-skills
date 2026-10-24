@@ -63,7 +63,7 @@ def test_sync_requires_explicit_repository_in_installed_mode(tmp_path):
 def test_sync_explicit_repository_uses_supplied_master(tmp_path):
     """Real I/O verifies the selected target rather than the source checkout."""
     repo = tmp_path / "target"
-    master = repo / "plugins/cli-agents/skills/cli-agent/references"
+    master = repo / "plugins/agent-orchestration/skills/cli-agent/references"
     copy = repo / "plugins/consumer/references"
     master.mkdir(parents=True)
     copy.mkdir(parents=True)
