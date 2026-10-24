@@ -2,6 +2,20 @@
 
 Persistent tracking of architectural friction, structural anomalies, and unclosed loops across sessions.
 
+## DEBT-20261024-SKILLS-VS-SUBAGENTS-DECISION-FRAMEWORK (RESOLVED)
+
+- Logged date: 2026-10-24
+- Cycle/Session ID: feat/skills-vs-subagents-decision-framework
+- Artifact affected: `plugins/agent-extension-authoring/skills/authoring-skills/`, `plugins/agent-extension-authoring/skills/authoring-subagents/`
+- Friction observed: Lack of an explicit, authoritative decision framework comparing skills vs. subagents led to uncertainty regarding where multi-turn interactive interview flows (such as solution architecture or discovery) belong, as well as misconceptions around tool permissions vs. tool restrictions.
+- Why not fixed now: Fixed immediately in this change.
+- Recommended fix / fix applied: Codified Anthropic's official Claude Code architectural guidance (C-031/C-032 observations) into self-contained `skills-vs-agents-decision-framework.md` references in both skills: established the 5-question diagnostic decision tree, highlighted the 3 core Anthropic refinements (persona alone is not justification; interactive interviewers with `AskUserQuestion` cannot be subagents in Claude Code; `allowed-tools` only pre-approves while subagent `tools:` is the true sandbox; validated `skills:` preloading pattern), and updated audit criteria.
+- Evidence/repro: `audit_skill.py ... authoring-skills` passes in source and installed modes; `audit_skill.py ... authoring-subagents` passes in source and installed modes; `audit_sub_agent.py plugins --all` passes 19/19; 100 pytest tests pass.
+- Severity: M
+- Repeat: NO
+- Status: RESOLVED
+
+
 ## DEBT-20261024-PACKAGING-WITH-APM-LEGACY-CONVERSION-METHODOLOGY (RESOLVED)
 
 - Logged date: 2026-10-24
