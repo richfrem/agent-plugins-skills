@@ -2,6 +2,19 @@
 
 Persistent tracking of architectural friction, structural anomalies, and unclosed loops across sessions.
 
+## DEBT-20261024-PACKAGING-WITH-APM-LEGACY-CONVERSION-METHODOLOGY (RESOLVED)
+
+- Logged date: 2026-10-24
+- Cycle/Session ID: feat/packaging-with-apm-legacy-conversion-methodology
+- Artifact affected: `plugins/agent-extension-authoring/skills/packaging-with-apm/`, `plugins/agent-orchestration/skills/orchestrating-agent-work/`
+- Friction observed: `convert-plugin-to-apm` mode was originally scaffolded around a build-time staging overlay (`apm_build_pipeline.py`) and copy manifests (`symlinks.json`), which failed in real-world large-scale migrations due to maintainer edit hazards, Windows symlink text stubs, and LLM context exhaustion. Furthermore, the battle-tested methodology of consolidating 108 micro-skills in `sharepoint-knowledge-workbench` via an interactive 5-dimension intake interview, wave-by-wave mapping reviews, 100% pre-purge accounting, and DAG delegation to Luna 6 was not yet codified into a repeatable skill capability.
+- Why not fixed now: Fixed immediately in this change.
+- Recommended fix / fix applied: Authored `legacy-plugin-conversion-guide.md` and `delegated-dag-refactoring-playbook.md`, updated `convert-plugin-to-apm.md` and `install-apm-package.md`, codified the 5-dimension intake questionnaire, wave-by-wave mapping review protocol, APM metadata standards, and global vs. local APM scope rules.
+- Evidence/repro: `audit_skill.py ... packaging-with-apm` passes with 0 errors/warnings; `audit_sub_agent.py plugins --all` passes 19/19; `pytest plugins/.../packaging-with-apm/tests` passes 28/28.
+- Severity: M
+- Repeat: NO
+- Status: RESOLVED
+
 ## DEBT-20261009-AGENTS-MD-MODULAR-RESTRUCTURE (RESOLVED)
 
 - Logged date: 2026-10-09

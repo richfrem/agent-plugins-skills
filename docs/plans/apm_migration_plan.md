@@ -1073,30 +1073,114 @@ With the foundational consolidation of `agent-plugins-skills` complete (123+ ski
 3. **Consolidate Granular Micro-Skills into Modal Hubs:** Apply the same domain consolidation pattern to the consuming repo's domain-specific plugins, turning fragmented micro-skills into self-contained, modal hub skills with embedded references and scripts.
 4. **Standardize on APM:** Manage the consuming repo's own plugins via a simple, declarative root `apm.yml`.
 
-### 14.2 Pilot Implementation: `sharepoint-knowledge-workbench`
+### 14.2 Pilot Implementation 1: `sharepoint-knowledge-workbench` (COMPLETED)
 
-`sharepoint-knowledge-workbench` (`../sharepoint-knowledge-workbench`) is the primary pilot repository for consuming repo migration.
+`sharepoint-knowledge-workbench` (`../sharepoint-knowledge-workbench`) was the inaugural pilot repository for downstream consuming repo consolidation.
 
-#### Current Diagnostic Profile:
-- **Domain Footprint:** 7 plugins containing 104 granular micro-skills in `plugins/`.
-- **Local Overhead:** `.agents/` contains 134 materialized skill folders, 29 agents, 29 workflows, and 19 ownership files.
-- **Manifest Debt:** 739 entries in `symlinks.json`, legacy `plugin-sources.json` citing old `agent-plugins-skills` plugins, `plugin-retention.json`, and `skills-lock.json`.
-- **Instruction Bloat:** 90 KB `AGENTS.md` containing duplicate inlined rules.
+#### Results Achieved:
+- **Consolidation**: Consolidated **108 micro-skills** across **7 legacy plugins** into **1 unified plugin** (`@sharepoint/sharepoint-workbench` under `plugins/sharepoint-workbench/`), **11 domain skills**, and **9 specialized subagents**.
+- **Manifests & Symlinks Retired**: Completely removed `symlinks.json` (739 entries eliminated, 0 broken symlinks), `plugin-sources.json`, `plugin-retention.json`, and `skills-lock.json`. Created canonical `apm.yml` at repository and plugin roots.
+- **Verification & Audit Gates**:
+  - `audit_skill.py`: 11 / 11 passed (100% compliant)
+  - `audit_sub_agent.py`: 9 / 9 passed (100% compliant)
+  - `audit_plugin_structure.py`: 0 violations
+  - Pytest: 26 passed in 0.92s (`test_navigation_plan.py` + `test_sp_text_webpart_html.py`)
+- **Git & PR Status**: Committed cleanly to branch `feat/apm-migration-and-skill-consolidation` and created **Pull Request #35** ([bcgov/sharepoint-knowledge-workbench/pull/35](https://github.com/bcgov/sharepoint-knowledge-workbench/pull/35)).
 
-#### Consolidation Target (104 skills → 8–10 modal hub skills):
-| Plugin | Current Skills | Target Skills | Key Consolidated Responsibilities |
-| :--- | :--- | :--- | :--- |
-| **`sharepoint-workbench-setup`** | 5 | **1** (`setting-up-sharepoint-workbench`) | Connection init, auth validation, Azure app registration, path resolution. |
-| **`sharepoint-site-assessment`** | 12 | **1** (`assessing-sharepoint-sites`) | Site inventory, permissions, schema drift, metadata, forms/webparts audit. |
-| **`sharepoint-document-conversion`** | 11 | **1** (`converting-sharepoint-documents`) | DOCX extraction, structure analysis, template authoring, rendering, comparison. |
-| **`sharepoint-site-build-and-publish`** | 33 | **2** (`managing-sharepoint-schema`, `publishing-sharepoint-content`) | Schema/lists/columns/views/content types; page creation, publishing, validation. |
-| **`sharepoint-site-migration`** | 19 | **2** (`migrating-sharepoint-sites`, `modernizing-sharepoint-pages`) | Wave planning, list content migration; classic-to-modern page conversion. |
-| **`sharepoint-spfx-development`** | 10 | **1** (`developing-spfx-solutions`) | React webpart scaffolding, extensions, hosted workbench, packaging, deploy. |
-| **`sharepoint-copilot-agents-and-skills`**| 14 | **1** (`managing-sharepoint-copilot-agents`) | Agent templates, packaging, inspection, native skill deploy/backup/restore. |
+#### Final Consolidated Domain Architecture (11 Hubs in 1 Plugin):
+| Consolidated Hub Skill | Legacy Plugins Absorbed | Key Capabilities & Modes |
+| :--- | :--- | :--- |
+| **`setting-up-sharepoint-workbench`** | `sharepoint-workbench-setup` (5 skills) | Connection config, auth validation, App Registration, path resolution. |
+| **`assessing-sharepoint-sites`** | `sharepoint-site-assessment` (12 skills) | Site inventory, schema drift, calculated/choice columns, custom forms, assessment reports. |
+| **`converting-sharepoint-documents`** | `sharepoint-document-conversion` (11 skills) | DOCX extraction, structure analysis, package assembly, dual-target rendering, editorial review. |
+| **`managing-sharepoint-schema`** | `sharepoint-site-build-and-publish` (6 skills) | Site columns, content types, schema diffing, declarative scaffolding. |
+| **`managing-sharepoint-lists-and-libraries`** | `sharepoint-site-build-and-publish` (12 skills) | Lists, libraries, views, items, settings, calendar list reconciliation. |
+| **`managing-sharepoint-navigation`** | Ingested from `jag-csb-intranet` | Native SharePoint navigation sync, Excel/CSV structure extraction and planning. |
+| **`publishing-sharepoint-pages`** | `sharepoint-site-build-and-publish` + `jag-csb-intranet` | Modern page publishing, static ASPX asset upload, dynamic ASPX page migration, Markdown publishing. |
+| **`modernizing-sharepoint-pages`** | `sharepoint-site-migration` (10 skills) | Classic-to-modern page transformation, webpart modernization, page previews, design system check. |
+| **`migrating-sharepoint-sites`** | `sharepoint-site-migration` (10 skills) | Migration waves, list data migration, link extraction/rewriting/validation. |
+| **`developing-spfx-solutions`** | `sharepoint-spfx-development` (11 skills) | SPFx scaffolding, React/master-detail web parts, extensions, hosted workbench, packaging, deploy. |
+| **`managing-sharepoint-copilot-agents-and-skills`** | `sharepoint-copilot-agents-and-skills` (14 skills) | Copilot Studio agent templates, packaging, inspect knowledge, native skill deploy/verify/backup/restore. |
 
-### 14.3 Four-Stage Execution Workflow for Downstream Repositories
-1. **Stage 1 (Baseline & Discovery):** Audit existing skills, verify global APM availability (`apm list --global`), and build the per-repo `inventory.csv`.
-2. **Stage 2 (Purge Legacy Manifests):** Remove `plugin-sources.json`, `plugin-retention.json`, `symlinks.json`, `skills-lock.json`, and untracked `.agents/skills` / `.claude/skills` copies.
-3. **Stage 3 (Consolidation Slices):** Migrate each plugin wave sequentially into self-contained hub skills under `plugins/<plugin>/skills/<hub-skill>/` with modal `SKILL.md` (<100 lines).
-4. **Stage 4 (APM Integration & Verification):** Initialize root `apm.yml`, run `apm compile`, verify discovery across Claude, Copilot, Codex, and Antigravity, and run test suites.
+---
+
+### 14.3 Key Lessons Learned from Pilot 1 (`sharepoint-knowledge-workbench`)
+
+1. **Modal Dispatch Architecture (`references/modes/<mode>.md`)**:
+   Keeping `SKILL.md` under 100 lines and routing complex multi-phase procedures to dedicated mode files under `references/modes/` provides clean progressive disclosure. It keeps the model's active context small while preserving extensive operational depth.
+2. **Relative Link Paths in Modal Hubs**:
+   `audit_skill.py` evaluates relative Markdown links against the subdocument's immediate parent directory. In `references/modes/<mode>.md`, links pointing to skill-level references must use `../<file>.md` and links to scripts must use `../../scripts/<file>`.
+3. **Evals & Task Success JSON Schemas**:
+   `audit_skill.py` requires that `evals/evals.json` and `evals/task-success.json` are root JSON arrays `[...]` (not dictionaries wrapping array keys), and `expected_behavior` must be a list of strings.
+4. **Subagent Metadata Constraints**:
+   The frontmatter `color` attribute in `agents/*.md` must adhere to the validated schema palette (`cyan`, `blue`, `purple`, `green`, `yellow`, `red`, `magenta`). Non-standard colors like `teal` fail validation.
+5. **Deterministic Pre-Purge Accounting**:
+   Before deleting legacy plugin directories, write a deterministic comparison script comparing all files across source and destination. In the workbench pilot, this confirmed 760/760 files were accounted for, guaranteeing zero file loss before `git rm -rf`.
+6. **Consumer Refactor Matrix is Mandatory**:
+   When consolidating micro-skills, downstream consumer projects (like `jag-csb-intranet`) will break if they continue invoking retired skill names. Authoring `docs/plans/master_migration_inventory.csv` (142 tracked items) and a consumer refactoring plan (`csb_intranet_sp_migration_refactor_plan.md`) provides immediate cheat-sheet clarity.
+
+---
+
+### 14.4 Pilot Implementation 2: `jag-csb-intranet` Migration Plan (Tomorrow's Session)
+
+`jag-csb-intranet` (`../jag-csb-intranet`) is the second consuming repository, representing an active consumer project that runs SharePoint migration tasks and currently hosts custom in-repo scripts and micro-skills (`plugins/sp-migration`).
+
+#### Primary Objectives:
+1. **Consume Workbench via Local Project APM**:
+   Install `@sharepoint/sharepoint-workbench` locally via `apm.yml`, providing locked dependencies directly for project developers and agents.
+2. **Purge Fragile Legacy Infrastructure**:
+   Eliminate `symlinks.json` (25 KB copy manifest), `plugins/sp-migration/` (10 micro-skills), and obsolete `PLUGIN-INSTALL.md` (which used legacy `uvx plugin-add` commands).
+3. **Prevent Git Repo Pollution with Robust Gitignore**:
+   Ensure `.gitignore` properly excludes deployed client harness artifacts (`.agents/`, `.claude/skills/`, `.codex/`, `.github/agents/`, `apm_modules/`).
+4. **Refactor Migration Workflows to Consolidated Hub Skills**:
+   Execute the migration according to [`csb_intranet_sp_migration_refactor_plan.md`](../../sharepoint-knowledge-workbench/docs/plans/csb_intranet_sp_migration_refactor_plan.md):
+   - Replace `sp-dynamic-aspx-page-migration` ➔ `publishing-sharepoint-pages` (mode: `dynamic-aspx-page-publication`)
+   - Replace `sp-static-document-library-files` ➔ `publishing-sharepoint-pages` (mode: `static-aspx-file-publication`)
+   - Replace `sp-navigation-sync` ➔ `managing-sharepoint-navigation` (mode: `diff-navigation` / `sync-navigation`)
+   - Replace `sp-text-webpart-html` ➔ Inlined RTE sanitization in `publishing-sharepoint-pages`
+   - Replace `sp-document-library-upload` ➔ `managing-sharepoint-lists-and-libraries` (`library-upload-orchestration`)
+5. **Safeguard Proprietary State**:
+   Strictly preserve all local inventories (`inventory/*.xlsx`, `inventory/ledgers/`), tenant credentials (`config*.psd1`), and OS context (`context/`).
+
+#### Step-by-Step 4-Phase Execution Roadmap:
+
+```
+[Phase 1: Local APM & Gitignore] ──► [Phase 2: Purge Legacy Manifests]
+                                                   │
+[Phase 4: Verification & PR]    ◄── [Phase 3: Refactor Workflows]
+```
+
+- **Phase 1: Local APM Configuration & Git Hygiene**:
+  1. Create branch `feat/apm-migration-and-sp-workbench-adoption`.
+  2. Create `apm.yml` specifying dependency on `@sharepoint/sharepoint-workbench`:
+     ```yaml
+     name: '@jag/csb-intranet'
+     version: 1.0.0
+     dependencies:
+       '@sharepoint/sharepoint-workbench': '>=1.0.0'
+     ```
+  3. Run local APM installation:
+     ```bash
+     apm install /Users/richardfremmerlid/Projects/sharepoint-knowledge-workbench/plugins/sharepoint-workbench --target claude,copilot,codex,antigravity
+     ```
+  4. Update `.gitignore` to exclude deployed client harness copies:
+     ```gitignore
+     # APM Client Harnesses & Deployed Agents (ephemeral local copies)
+     .agents/
+     .claude/skills/
+     .codex/
+     .github/agents/
+     apm_modules/
+     ```
+- **Phase 2: Purge Legacy Manifests & In-Repo Skills**:
+  1. Remove `symlinks.json` (`git rm symlinks.json`).
+  2. Remove `plugins/sp-migration/` (`git rm -rf plugins/sp-migration`).
+  3. Replace `PLUGIN-INSTALL.md` with modern `INSTALL.md` describing `apm install`.
+- **Phase 3: Update `AGENTS.md` and Operator Prompt Routing**:
+  1. Update `AGENTS.md` to reference the 11 consolidated skills rather than legacy `sp-*` micro-skills.
+  2. Synchronize `.agent/rules/` with upstream `agent-plugins-skills`.
+- **Phase 4: Deterministic Verification & Pull Request**:
+  1. Validate skills via `audit_skill.py --mode installed`.
+  2. Run dry-run migration and navigation diff commands using local inventory.
+  3. Commit cleanly, push feature branch, and open Pull Request for merge.
 

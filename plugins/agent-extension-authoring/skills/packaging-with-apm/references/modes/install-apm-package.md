@@ -21,6 +21,11 @@ Installs APM packages, including this repository's plugins, globally or into a p
 2. **Never edit deployed files** in harness folders; change the source package and reinstall.
 3. **Commit `apm.yml` and `apm.lock.yaml` together** for project installs; use `apm install --frozen` in CI.
 4. **One installer per plugin**: do not install the same plugin with APM and the legacy `plugin-add` installer (duplicate skill names).
+5. **Scope Discipline (Global vs. Local)**:
+   - **Global (`--global`)**: Install only universal developer and agent OS infrastructure (`agent-plugins-skills`). Never install domain-specific plugins globally, or non-domain projects will suffer context window pollution and false-positive tool routing.
+   - **Project-Local**: Install domain-specific packages (e.g. `@sharepoint/sharepoint-workbench`) locally inside the specific consuming project via `apm.yml`.
+6. **APM CLI Absolute Path Invariant**: When installing local directory packages globally (`--global`), APM `0.33.0` rejects relative paths (e.g., `./plugins/...`). Always supply the full absolute filesystem path.
+7. **Consuming Project Git Hygiene**: Projects using local APM installs must exclude deployed harness folders in `.gitignore` (`.agents/`, `.claude/skills/`, `.codex/`, `.github/agents/`, `apm_modules/`).
 
 ## Quick start
 
@@ -59,5 +64,6 @@ In Claude Code the installed skills appear in the skills list; in Copilot CLI us
 
 ## References
 
+- [legacy-plugin-conversion-guide.md](../legacy-plugin-conversion-guide.md) — End-to-end migration guide covering scope discipline, git hygiene, and consumer refactoring.
 - [acceptance-criteria.md](../acceptance-criteria.md) — Acceptance gates and target verification criteria.
 - [fallback-tree.md](../fallback-tree.md) — Fallback resolution for installation failures and target collisions.
