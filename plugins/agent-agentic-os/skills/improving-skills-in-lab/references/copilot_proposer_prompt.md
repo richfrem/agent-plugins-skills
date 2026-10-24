@@ -6,7 +6,7 @@
 > a better prompt produces better mutations and faster convergence.
 >
 > **After the session:** if this prompt evolved significantly, contribute a refined copy
-> to `plugins/cli-agents/skills/cli-agent/references/skill-proposer-prompt.md`
+> to `plugins/agent-orchestration/skills/cli-agent/references/skill-proposer-prompt.md`
 > so future loops start from a stronger baseline.
 
 ---

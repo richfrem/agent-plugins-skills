@@ -90,7 +90,7 @@ def test_consolidate_and_search_flags_high_scoring_candidate_as_root_cause(mock_
     result = consolidate_and_search_dedup(
         title="control_plane.db is gitignored with no durable export",
         area_label="area:agentic-os",
-        file_paths=["plugins/agent-agentic-os/scripts/agent_control.py"]
+        file_paths=["plugins/agent-agentic-os/skills/running-control-plane/scripts/agent_control.py"]
     )
     assert result["has_existing_root_cause"] is True
     assert result["target_issue_number"] == 519

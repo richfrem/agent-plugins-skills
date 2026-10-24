@@ -166,7 +166,7 @@ Use the `generate_eval_instructions.py` script provided in this skill's scripts 
 
 ```bash
 python $APS_ROOT/plugins/agent-agentic-os/skills/improving-skills-in-lab/scripts/generate_eval_instructions.py \
-    --template $APS_ROOT/plugins/agent-agentic-os/assets/templates/eval-instructions.template.md \
+    --template $APS_ROOT/plugins/agent-agentic-os/skills/improving-skills-in-lab/assets/templates/eval-instructions.template.md \
     --out $LAB_PATH/eval-instructions.md \
     --skill-display-name "<Human-readable skill name>" \
     --skill-name "$SKILL_NAME" \

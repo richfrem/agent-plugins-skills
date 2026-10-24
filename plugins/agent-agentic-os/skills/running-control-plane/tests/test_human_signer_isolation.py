@@ -13,7 +13,7 @@ Purpose:
     and must never drop lines already present in an allowed_signers file.
 
 Key Input Dependencies:
-    plugins/agent-agentic-os/tests/helpers/human_signer.py — TestHuman under test
+    plugins/agent-agentic-os/skills/running-control-plane/tests/helpers/human_signer.py — TestHuman under test
     ssh-keygen (TestHuman generates a throwaway ed25519 key)
 
 Layer: Development / Testing
@@ -24,7 +24,7 @@ Functions:
     - test_ensure_identity_keeps_existing_signers
 
 Usage:
-    python -m pytest plugins/agent-agentic-os/tests/test_human_signer_isolation.py
+    python -m pytest plugins/agent-agentic-os/skills/running-control-plane/tests/test_human_signer_isolation.py
 """
 
 import hashlib

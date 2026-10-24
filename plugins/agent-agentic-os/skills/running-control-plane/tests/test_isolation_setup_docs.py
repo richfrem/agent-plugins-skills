@@ -10,7 +10,7 @@ Purpose:
     Real files only.
 
 Key Input Dependencies:
-    - plugins/agent-agentic-os/references/isolation-setup.md
+    - plugins/agent-agentic-os/skills/setting-up-agentic-os/references/isolation-setup.md
     - plugins/agent-agentic-os/skills/os-control-signing-setup/ (SKILL.md, references/ symlink)
     - control_plane/coordinator.py (the `setup_docs` path in the remediation error)
 

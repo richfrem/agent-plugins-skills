@@ -14,8 +14,8 @@ Purpose:
 
 Key Input Dependencies:
     - references/diagrams/control-plane-architecture.mermaid (repo root, relative path resolved below)
-    - plugins/agent-agentic-os/scripts/control_plane/ports.py
-    - plugins/agent-agentic-os/scripts/control_plane/adapters.py
+    - plugins/agent-agentic-os/skills/running-control-plane/scripts/control_plane/ports.py
+    - plugins/agent-agentic-os/skills/running-control-plane/scripts/control_plane/adapters.py
 
 Key Functions:
     - test_diagram_names_every_port_class()

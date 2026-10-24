@@ -11,8 +11,8 @@ Purpose:
       - without the flag nothing is created (the existing contract in test_os_init_identity_status.py).
 
 Key Input Dependencies:
-    plugins/agent-agentic-os/scripts/init_agentic_os.py (run as a real subprocess)
-    plugins/agent-agentic-os/scripts/control_plane/simulation_identity.py
+    plugins/agent-agentic-os/skills/setting-up-agentic-os/scripts/init_agentic_os.py (run as a real subprocess)
+    plugins/agent-agentic-os/skills/running-control-plane/scripts/control_plane/simulation_identity.py
 
 Layer: Development / Testing
 
@@ -22,7 +22,7 @@ Functions:
     - test_simulation_identity_rerun_reuses_the_key
 
 Usage:
-    python -m pytest plugins/agent-agentic-os/tests/test_os_init_dual_identity.py
+    python -m pytest plugins/agent-agentic-os/skills/running-control-plane/tests/test_os_init_dual_identity.py
 """
 
 import subprocess

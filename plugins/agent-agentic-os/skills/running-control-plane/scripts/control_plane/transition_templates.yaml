@@ -34,7 +34,7 @@ strategy_artifacts:
     artifact: handoffs/task_packet_<task-id>.md
     required: true
     validator: ["python3", "{validator_script}", "packet", "--packet-path", "{artifact}"]
-    validator_script: "plugins/agent-orchestration/scripts/agent_orchestrator.py"
+    validator_script: "plugins/agent-orchestration/skills/orchestrating-agent-work/scripts/agent_orchestrator.py"
   agent-swarm:
     artifact: docs/plans/work-tasks/<task-id>/<task-id>.job.md
     required: true

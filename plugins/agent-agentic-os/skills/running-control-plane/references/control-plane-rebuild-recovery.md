@@ -86,7 +86,7 @@ for real, orphan in pairs:
     conn.execute(f'DROP TABLE "{orphan}";')
 
 # Recreate both triggers — copy the exact CREATE TRIGGER statements from SCHEMA_SQL in
-# plugins/agent-agentic-os/scripts/control_plane/adapters.py.
+# plugins/agent-agentic-os/skills/running-control-plane/scripts/control_plane/adapters.py.
 conn.execute(""" CREATE TRIGGER IF NOT EXISTS enforce_valid_transition ... """)
 conn.execute(""" CREATE TRIGGER IF NOT EXISTS enforce_valid_initial_state ... """)
 
@@ -117,7 +117,7 @@ conn.close()
 ### 5. Set `schema_version` directly
 
 `_sync_valid_transitions()` does not touch `schema_version` — set it directly to the
-current value from `plugins/agent-agentic-os/scripts/control_plane/adapters.py`'s
+current value from `plugins/agent-agentic-os/skills/running-control-plane/scripts/control_plane/adapters.py`'s
 `CURRENT_SCHEMA_VERSION` constant:
 
 ```python

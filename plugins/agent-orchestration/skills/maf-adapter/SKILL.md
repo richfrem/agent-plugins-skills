@@ -47,10 +47,10 @@ python3 scripts/test_harness.py \
 
 ```bash
 # Validate plugin manifest
-python3 scripts/test_harness.py --validate --plugin plugins/cli-agents
+python3 scripts/test_harness.py --validate --plugin plugins/agent-orchestration
 
 # Audit skill compliance
-python3 plugins/agent-extension-authoring/skills/authoring-skills/scripts/audit_skill.py plugins/cli-agents/skills/maf-adapter --mode source
+python3 plugins/agent-extension-authoring/skills/authoring-skills/scripts/audit_skill.py plugins/agent-orchestration/skills/maf-adapter --mode source
 ```
 
 ## References

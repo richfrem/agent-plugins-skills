@@ -10,7 +10,7 @@ Purpose:
     3. Directs the user/agent to point to the running-control-plane health mode in print_next_steps()
 
 Key Input Dependencies:
-    - plugins/agent-agentic-os/scripts/init_agentic_os.py
+    - plugins/agent-agentic-os/skills/setting-up-agentic-os/scripts/init_agentic_os.py
 """
 
 import subprocess

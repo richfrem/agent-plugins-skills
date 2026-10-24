@@ -27,7 +27,7 @@ See `./requirements.txt` for the dependency lockfile.
 ## Phase 0: Read experiment log for numeric entries (full detail)
 
 ```bash
-python3 plugins/agent-agentic-os/scripts/experiment_log.py summary
+python3 plugins/agent-agentic-os/skills/improving-skills-in-lab/scripts/experiment_log.py summary
 ```
 
 Then read `context/experiment-log/index.md` and filter for rows where the `Result Type`

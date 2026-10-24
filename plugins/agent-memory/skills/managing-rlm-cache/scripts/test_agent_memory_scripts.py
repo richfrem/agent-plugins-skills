@@ -14,7 +14,7 @@ Key Input Dependencies:
     - cheapest_models.json      — Configuration specifying recommended engine models
 
 Usage:
-    python3 -m unittest plugins/agent-memory/scripts/test_agent_memory_scripts.py
+    python3 -m unittest plugins/agent-memory/skills/managing-rlm-cache/scripts/test_agent_memory_scripts.py
 """
 
 import json

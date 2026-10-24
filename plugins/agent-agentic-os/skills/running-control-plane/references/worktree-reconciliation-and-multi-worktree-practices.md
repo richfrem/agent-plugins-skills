@@ -12,10 +12,10 @@ into the new worktree, by design, regardless of what tooling or agent creates it
 
 **Mechanism now enforced in code, not by agent self-report:** the `APPROVED -> IN_WORKTREE`
 transition runs the `main_worktree_reconciliation` deterministic check
-(`plugins/agent-agentic-os/scripts/control_plane/policy.py`). It force-copies dirty
+(`plugins/agent-agentic-os/skills/running-control-plane/scripts/control_plane/policy.py`). It force-copies dirty
 (modified/untracked) source-checkout files into the registered worktree at transition time and
 hard-blocks the transition on any genuine content conflict — never silently overwrites either
-side. See `plugins/agent-agentic-os/scripts/agent_control.py::_reconcile_main_into_worktree`.
+side. See `plugins/agent-agentic-os/skills/running-control-plane/scripts/agent_control.py::_reconcile_main_into_worktree`.
 
 **Enforced in code (2026-09-13):** don't let dirty state accumulate on `main` in the first place.
 Commit interim work made during INTAKE/INTERVIEW/DRAFT_PLAN to a small branch and PR it before the
@@ -23,7 +23,7 @@ task reaches `APPROVED`, so `main` is already clean by the time a worktree is cr
 standard git-community pattern — worktrees are documented to only ever carry committed content,
 and the `main_worktree_reconciliation` check above is a safety net for what slips through, not a
 substitute for keeping `main` clean. The `AWAITING_APPROVAL -> APPROVED` transition now runs a
-`main_clean_before_approval` deterministic check (`plugins/agent-agentic-os/scripts/control_plane/policy.py`)
+`main_clean_before_approval` deterministic check (`plugins/agent-agentic-os/skills/running-control-plane/scripts/control_plane/policy.py`)
 that blocks the transition if the source checkout has any dirty (modified/untracked) paths, unless
 a human explicitly records a `main_dirty_before_approval_exception` receipt with a reason. This
 closes a real gap found live: an agent accumulated substantial work directly on a task's own branch

@@ -15,9 +15,9 @@ Purpose:
          being evaluated.
 
 Key Input Dependencies:
-    plugins/agent-agentic-os/scripts/control_plane/adapters.py (signed commit path)
-    plugins/agent-agentic-os/scripts/control_plane/coordinator.py (checklist display)
-    plugins/agent-agentic-os/scripts/control_plane/pipeline_simulator.py
+    plugins/agent-agentic-os/skills/running-control-plane/scripts/control_plane/adapters.py (signed commit path)
+    plugins/agent-agentic-os/skills/running-control-plane/scripts/control_plane/coordinator.py (checklist display)
+    plugins/agent-agentic-os/skills/running-control-plane/scripts/control_plane/pipeline_simulator.py
 
 Layer: Development / Testing
 
@@ -26,7 +26,7 @@ Functions:
     - test_checklist_does_not_tick_a_failing_check
 
 Usage:
-    python -m pytest plugins/agent-agentic-os/tests/test_signed_approval_human_receipt.py
+    python -m pytest plugins/agent-agentic-os/skills/running-control-plane/tests/test_signed_approval_human_receipt.py
 """
 
 import io

@@ -14,9 +14,9 @@ Purpose:
     the two negative end-to-end tests.
 
 Key Input Dependencies:
-    plugins/agent-agentic-os/scripts/control_plane/approver_policy.py — rules under test
-    plugins/agent-agentic-os/scripts/control_plane/pipeline_simulator.py — end-to-end pipelines
-    plugins/agent-agentic-os/tests/helpers/human_signer.py — stand-in human (operator + agent keys)
+    plugins/agent-agentic-os/skills/running-control-plane/scripts/control_plane/approver_policy.py — rules under test
+    plugins/agent-agentic-os/skills/running-control-plane/scripts/control_plane/pipeline_simulator.py — end-to-end pipelines
+    plugins/agent-agentic-os/skills/running-control-plane/tests/helpers/human_signer.py — stand-in human (operator + agent keys)
     ssh-keygen
 
 Layer: Development / Testing
@@ -42,7 +42,7 @@ Functions:
     - test_human_signature_refused_through_real_commit_in_simulation
 
 Usage:
-    python -m pytest plugins/agent-agentic-os/tests/test_one_approver_per_pipeline.py
+    python -m pytest plugins/agent-agentic-os/skills/running-control-plane/tests/test_one_approver_per_pipeline.py
 """
 
 import sqlite3

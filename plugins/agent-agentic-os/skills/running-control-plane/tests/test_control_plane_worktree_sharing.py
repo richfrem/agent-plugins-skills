@@ -11,7 +11,7 @@ Purpose:
     the main checkout from work done inside the worktree.
 
 Key Input Dependencies:
-    - plugins/agent-agentic-os/scripts/agent_control.py (copied into a throwaway repo)
+    - plugins/agent-agentic-os/skills/running-control-plane/scripts/agent_control.py (copied into a throwaway repo)
     - plugins/agent-agentic-os/scripts/control_plane/ (copied alongside — agent_control.py
       depends on it since issue-524's hexagonal decomposition, ports.py/adapters.py)
     - git CLI (init, worktree add)

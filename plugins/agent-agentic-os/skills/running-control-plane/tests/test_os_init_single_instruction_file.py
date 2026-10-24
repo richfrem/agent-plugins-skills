@@ -17,7 +17,7 @@ Purpose:
     Runs the real init_agentic_os.py as a subprocess against temp git repositories.
 
 Key Input Dependencies:
-    plugins/agent-agentic-os/scripts/init_agentic_os.py
+    plugins/agent-agentic-os/skills/setting-up-agentic-os/scripts/init_agentic_os.py
     plugins/agent-agentic-os/skills/os-control-init/scripts/ (installed-skill layout, for the hook sources)
 
 Layer: Development / Testing
@@ -31,7 +31,7 @@ Functions:
     - test_install_hooks_installs_current_guards_and_touches_no_instructions
 
 Usage:
-    python -m pytest plugins/agent-agentic-os/tests/test_os_init_single_instruction_file.py
+    python -m pytest plugins/agent-agentic-os/skills/running-control-plane/tests/test_os_init_single_instruction_file.py
 """
 
 import hashlib

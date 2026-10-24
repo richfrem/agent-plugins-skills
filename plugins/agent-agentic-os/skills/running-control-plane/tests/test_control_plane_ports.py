@@ -11,7 +11,7 @@ Purpose:
     so a future edit that accidentally reintroduces a banned import fails loudly.
 
 Key Input Dependencies:
-    - plugins/agent-agentic-os/scripts/control_plane/ports.py (module under test)
+    - plugins/agent-agentic-os/skills/running-control-plane/scripts/control_plane/ports.py (module under test)
 
 Key Functions:
     - test_ports_module_has_no_banned_infrastructure_imports()

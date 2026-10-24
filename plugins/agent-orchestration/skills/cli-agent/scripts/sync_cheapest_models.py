@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """sync_cheapest_models.py
 
-Treats plugins/cli-agents/references/cheapest_models.{json,md} as the master
+Treats plugins/agent-orchestration/skills/cli-agent/references/cheapest_models.{json,md} as the master
 copies and propagates them to every other copy found in the repo.
 
 Purpose:
@@ -9,10 +9,10 @@ Purpose:
     canonical master, so cheapest-model routing tables never silently drift.
 
 Key Input Dependencies:
-    - plugins/cli-agents/references/cheapest_models.json, cheapest_models.md (masters)
+    - plugins/agent-orchestration/skills/cli-agent/references/cheapest_models.json, cheapest_models.md (masters)
 
 Usage:
-    python3 plugins/cli-agents/scripts/sync_cheapest_models.py [--dry-run]
+    python3 plugins/agent-orchestration/skills/cli-agent/scripts/sync_cheapest_models.py [--dry-run]
 """
 
 import argparse
@@ -22,8 +22,8 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[5]
 MASTERS = {
-    "cheapest_models.json": REPO_ROOT / "plugins/cli-agents/skills/cli-agent/references/cheapest_models.json",
-    "cheapest_models.md": REPO_ROOT / "plugins/cli-agents/skills/cli-agent/references/cheapest_models.md",
+    "cheapest_models.json": REPO_ROOT / "plugins/agent-orchestration/skills/cli-agent/references/cheapest_models.json",
+    "cheapest_models.md": REPO_ROOT / "plugins/agent-orchestration/skills/cli-agent/references/cheapest_models.md",
 }
 
 
@@ -39,7 +39,7 @@ def find_copies(filename: str, master: Path, repository: Path | None = None) -> 
 def sync(dry_run: bool = False, repository: Path | None = None) -> None:
     """Copy the master cheapest_models.{json,md} over every other copy found in the repo."""
     repository = (repository or REPO_ROOT).resolve()
-    masters = {name: repository / "plugins/cli-agents/skills/cli-agent/references" / name for name in MASTERS}
+    masters = {name: repository / "plugins/agent-orchestration/skills/cli-agent/references" / name for name in MASTERS}
     total_updated = 0
     for filename, master in masters.items():
         if not master.exists():
@@ -68,8 +68,8 @@ def main() -> None:
     parser.add_argument("--repository", type=Path, help="Caller-supplied repository containing canonical CLI catalogs")
     args = parser.parse_args()
     repository = args.repository or REPO_ROOT
-    if not (repository / "plugins/cli-agents/skills/cli-agent/references").is_dir():
-        parser.error("--repository must contain plugins/cli-agents/skills/cli-agent/references")
+    if not (repository / "plugins/agent-orchestration/skills/cli-agent/references").is_dir():
+        parser.error("--repository must contain plugins/agent-orchestration/skills/cli-agent/references")
     sync(dry_run=args.dry_run, repository=repository)
 
 

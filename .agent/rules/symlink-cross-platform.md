@@ -19,6 +19,6 @@ Plugins no longer use symlinks to share files between skills (APM migration, `do
    ```bash
    python3 plugins/agent-extension-authoring/skills/packaging-with-apm/scripts/materialize_copies.py --check
    ```
-5. **The one remaining symlink** (`plugins/agent-agentic-os/tests/transition_simulation_cases.py`) is test-only and is not packaged.
+5. **The one remaining symlink** (`plugins/agent-agentic-os/skills/running-control-plane/tests/transition_simulation_cases.py`) is test-only and is not packaged.
 
 Full policy: [plugin-architecture-policy.md](plugin-architecture-policy.md) Section 5.
