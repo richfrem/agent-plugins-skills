@@ -75,6 +75,6 @@ Run the tests with `python3 -m pytest tests` (set `APM_BIN` to include the insta
 ## References
 
 - Modes: [create](references/modes/create-apm-package.md) • [convert](references/modes/convert-plugin-to-apm.md) • [compile](references/modes/compile-apm-package.md) • [install](references/modes/install-apm-package.md) • [marketplace](references/modes/manage-marketplace.md)
-- Detail: [apm-alignment-fixes.md](references/apm-alignment-fixes.md) • [agent-package-manager-overview.md](references/agent-package-manager-overview.md) • [marketplace.md](references/marketplace.md) • [marketplace-schema.md](references/marketplace-schema.md) • [marketplace-architecture.md](references/marketplace-architecture.md)
+- Detail: [legacy-plugin-conversion-guide.md](references/legacy-plugin-conversion-guide.md) • [apm-alignment-fixes.md](references/apm-alignment-fixes.md) • [agent-package-manager-overview.md](references/agent-package-manager-overview.md) • [marketplace.md](references/marketplace.md) • [marketplace-schema.md](references/marketplace-schema.md) • [marketplace-architecture.md](references/marketplace-architecture.md)
 - Gates: [acceptance-criteria.md](references/acceptance-criteria.md) • [fallback-tree.md](references/fallback-tree.md)
 - Example: [marketplace.json](examples/marketplace.json) • Diagram: [packaging-with-apm-flow.mmd](references/diagrams/packaging-with-apm-flow.mmd)

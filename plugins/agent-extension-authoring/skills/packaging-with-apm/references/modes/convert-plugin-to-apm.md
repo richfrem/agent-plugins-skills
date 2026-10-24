@@ -4,51 +4,87 @@
 
 # Convert Plugin to APM (`convert-plugin-to-apm`)
 
-Packages an existing agent plugin for [APM](https://github.com/microsoft/apm) without changing its source layout, verifies the install, and reports every misalignment with its standard fix. Behaviour below was verified with APM `0.33.0`.
+Packages or converts an existing agent plugin repository for [APM](https://github.com/microsoft/apm), verifies the install across agent harnesses, and reports every misalignment with its standard fix. Behaviour below was verified with APM `0.33.0`.
 
 ## Contents
 
 - [Critical Constraints](#critical-constraints)
-- [What APM Does With a Plugin](#what-apm-does-with-a-plugin)
-- [Quick start](#quick-start)
-- [Workflow](#workflow)
+- [Two Conversion Tracks](#two-conversion-tracks)
+- [Track A: Interactive Modal Consolidation (Authoritative)](#track-a-interactive-modal-consolidation-authoritative)
+- [Track B: Legacy Build Pipeline Overlay](#track-b-legacy-build-pipeline-overlay)
 - [Authoring Rules for APM](#authoring-rules-for-apm)
 - [Verification](#verification) · [References](#references)
 
 ## Critical Constraints
 
-1. **Never change the source plugin to package it.** Staging, manifests, fixtures and bundles go under `build/`. APM does not need an `apm.yml` inside the plugin.
-2. **Fix misalignments as reviewed source changes**, using the finding's standard fix (SF-1 to SF-11). Do not copy files in, repoint symlinks, or add new symlinks.
-3. **Pin APM** to the repository's version (`apm-cli==0.33.0`, `requirements-dev.in` in this skill) and pin installs to a ref (`#<tag>` or `#<commit-sha>`).
+1. **Conduct Interactive Discovery First**: For complex repositories, never restructure files autonomously. Run the 5-point intake interview to uncover repo-specific documentation dependencies, customer data locations, and target design aspirations.
+2. **Review Wave-by-Wave**: Review mapping plans one wave/plugin at a time with the operator before executing file operations.
+3. **Deterministic Pre-Purge Accounting**: Run an automated comparison script verifying 100% of files exist at target locations before deleting legacy folders.
+4. **Scope Discipline**: Domain-specific packages install project-locally; only universal agent OS infrastructure installs globally.
 
-## What APM Does With a Plugin
+## Two Conversion Tracks
 
-- **Reads the plugin as-is**: `apm install ./plugins/<plugin>` (or `owner/repo/plugins/<plugin>#<ref>`) installs skills, agents and hooks from the existing layout.
-- **Copies each skill folder whole.** Symlinks inside the package are turned into physical copies; a symlink pointing outside the package aborts the install. On a Windows checkout without symlink support, each symlink is a text stub and APM installs the stub as the file.
-- **Rewrites markdown links** that leave a skill to point into its package cache (`apm_modules/`, or `~/.apm/apm_modules/` for global installs), so links to sibling skills and plugin-root files resolve. Paths in code blocks, inline code or plain text are **not** rewritten, and links that leave the plugin break.
-- **Deploys per harness** (targets `claude,copilot,agy,codex`): skills to `.claude/skills/` and the shared `.agents/skills/`; agents to `.claude/agents/`, `.github/agents/`, `.codex/agents/`; hooks merged into each harness's hook settings with `${CLAUDE_PLUGIN_ROOT}/...` rewritten to a copied script. Global installs use the user-level folders (`~/.claude/skills/`, `~/.agents/skills/`, `~/.gemini/antigravity-cli/skills/`) and write nothing into repositories.
-- **Does not deploy** a plugin's `rules/` folder (instructions come only from `.apm/instructions/`). Global installs give agy no hooks or agents.
+| Track | When to Choose | Key Characteristics | Reference |
+| :--- | :--- | :--- | :--- |
+| **Track A: Interactive Modal Consolidation** *(Authoritative)* | Complex multi-skill plugins, repos with copy manifests (`symlinks.json`), broken Windows symlinks, or downstream consumers | Retires copy manifests, collapses micro-skills into modal hubs (< 100 lines), interactive wave-by-wave review, 100% pre-purge accounting | [legacy-plugin-conversion-guide.md](../legacy-plugin-conversion-guide.md) |
+| **Track B: Build Pipeline Overlay** | Simple, already-consolidated single plugins needing an APM package bundle without layout refactoring | Packages in staging under `build/`, tests install/uninstall, writes `.zip` bundle | Section below |
 
-## Quick start
+---
 
-Run the build pipeline on one plugin from the repository root:
+## Track A: Interactive Modal Consolidation (Authoritative)
 
+Follow this 5-stage interactive lifecycle when migrating real-world plugin repositories:
+
+### 1. Interactive Intake & Discovery (The 5 Dimensions)
+Interview the operator to uncover unique repository context:
+1. **Target Repo & Git Status**: Path, active branch, worktree clean status.
+2. **Current Footprint**: Plugins count, micro-skills count, copy manifests (`symlinks.json`).
+3. **Design Aspirations**: Single unified plugin (e.g. `@sharepoint/sharepoint-workbench`) vs multi-plugin; desired domain hubs.
+4. **Repository Pitfalls & Caveats**: Workflow dependencies on legacy skill names (e.g. Oracle Forms), required runtimes (PowerShell 7+, Python, Node), or platform symlink text stubs.
+5. **Downstream Consumers & Data Paths**: Projects that invoke these skills (e.g. `jag-csb-intranet`); proprietary paths to protect (`inventory/`, `config*.psd1`, `context/`).
+
+### 2. Wave-by-Wave Mapping & Interactive Review Gate
+Partition the migration into 4–8 logical waves. For each wave, formulate an explicit mapping table:
+
+```markdown
+| Legacy Micro-Skill | Consolidated Hub Skill | Target Mode | Absorbed Scripts / Assets | Caveats & Invariants |
+|:---|:---|:---|:---|:---|
+| `<old-skill>` | `<hub-skill>` | `<mode>` | `scripts/<script>.py` | Preserves parameter X |
+```
+Present the wave mapping to the human operator for review and approval before touching code.
+
+### 3. Delegated Execution & Self-Contained Co-location
+- Dispatch implementation tasks to a high-throughput worker (**Codex CLI** / Luna 6) with unconstrained workspace write access.
+- Author modal `SKILL.md` (< 100 lines) routing to `references/modes/<mode>.md`.
+- Co-locate scripts and assets directly in `skills/<hub-skill>/scripts/` as real Git-tracked files (Solution B).
+
+### 4. Multi-Layer Deterministic Gates & Pre-Purge Accounting
+- Run `audit_skill.py <path> --mode source` (verifies frontmatter, schemas, and relative links).
+- Run unit test suites with `pytest`.
+- Run automated pre-purge check verifying 100% of source files exist at target locations before executing `git rm -rf`.
+
+### 5. Downstream Consumer Refactor Matrix & Scope Discipline
+- Author a 1:1 transition matrix cheat sheet for consumer repositories.
+- Configure `.gitignore` in consumer projects to exclude deployed client harnesses (`.agents/`, `.claude/skills/`, `.codex/`, `.github/agents/`, `apm_modules/`).
+
+---
+
+## Track B: Legacy Build Pipeline Overlay
+
+For existing plugins undergoing overlay-based APM packaging without structural changes:
+
+### Quick Start
 ```bash
 python3 scripts/apm_build_pipeline.py --plugin plugins/<plugin-name> --apm <path-to-apm>
 ```
-
 Add `--pack` to build the installable bundle, or `--skip-deploy` to validate without APM.
 
-## Workflow
-
-1. **Run the pipeline.** Stages: inspect, normalize, validate, package, test deploy, and (with `--pack`) pack.
-   - Symlinks are read from the git index, so Windows checkouts are handled.
-   - `symlinks.json` entries with `strategy: "copy"` become per-skill physical copies in staging only. This is how one canonical script is shared by several skills without symlinks.
-2. **Read the report** (`build/staging/<plugin>.report.json`). Each finding has a `fix` id; apply it as described in [apm-alignment-fixes.md](../apm-alignment-fixes.md).
-3. **Re-run until validation and test deploy pass.** Test deploy installs into `build/test-deploy/<plugin>/`, checks every deployed skill against staging, then uninstalls.
-4. **Install from a materialized clone** (`apm install <clone>/plugins/<plugin>`); the raw git path lacks copy-manifest files. `--pack` builds a bundle for whole-plugin installs (no `--skill`).
-
-Related tools in `scripts/`: `convert_symlinks_to_manifest.py` (symlinks to copy entries, dry-run by default), `materialize_copies.py` (write copies after cloning; `--check` for drift), `decouple_agent_paths.py` (rewrite hardcoded `.agents/` references, dry-run by default).
+### Workflow
+1. **Run the pipeline**: Stages: inspect, normalize, validate, package, test deploy, and (with `--pack`) pack.
+   - Symlinks are read from the git index, handling Windows checkouts.
+   - Legacy `symlinks.json` entries with `strategy: "copy"` become per-skill physical copies in staging only.
+2. **Apply Findings**: Read `build/staging/<plugin>.report.json` and apply standard fixes (SF-1 to SF-11) from [apm-alignment-fixes.md](../apm-alignment-fixes.md).
+3. **Verify Clean Deployment**: Re-run until validation and test deploy pass cleanly.
 
 ## Authoring Rules for APM
 
@@ -57,7 +93,7 @@ Related tools in `scripts/`: `convert_symlinks_to_manifest.py` (symlinks to copy
 | Another skill or agent | Its name: "use the `managing-adrs` skill" |
 | A file in the same skill | A path relative to the skill folder (`references/`, `scripts/`) |
 | A document elsewhere in the plugin | A markdown link with a `../` path inside the plugin |
-| A script the skill runs | Keep it inside the skill (a copy-manifest entry if it is shared) |
+| A script the skill runs | Keep it inside the skill (`scripts/<script>.py`) |
 | A hook script | `${CLAUDE_PLUGIN_ROOT}/hooks/x.py` in `hooks/hooks.json` |
 | Another plugin's files | The other plugin's skill by name, never a path |
 
@@ -65,10 +101,19 @@ Never name an install folder (`.agents/`, `.claude/`, `~/.apm/`) in instructions
 
 ## Verification
 
-Run the pipeline with `--pack`. It passes when validation reports 0 errors, test deploy installs and uninstalls cleanly, and the bundle is written. Tests: `tests/test_apm_build_pipeline.py` in this skill (set `APM_BIN` to include the APM install and pack cases).
+- **Track A (Modal Consolidation)**:
+  ```bash
+  python3 plugins/agent-extension-authoring/skills/authoring-skills/scripts/audit_skill.py <skill-path> --mode source
+  pytest <skill-or-plugin-tests> -v
+  ```
+- **Track B (Overlay Pipeline)**:
+  ```bash
+  python3 scripts/apm_build_pipeline.py --plugin plugins/<name> --apm <path> --pack
+  ```
 
 ## References
 
+- [legacy-plugin-conversion-guide.md](../legacy-plugin-conversion-guide.md) — Authoritative interactive master playbook with 5-dimension intake questionnaire, wave mapping templates, and pre-purge accounting.
 - [apm-alignment-fixes.md](../apm-alignment-fixes.md) — Standard fix for every pipeline finding (SF-1 to SF-11), with applied examples.
 - [acceptance-criteria.md](../acceptance-criteria.md) — Acceptance criteria for the earlier overlay, hybrid and full conversion modes of `migrate_to_apm.py`.
 - [fallback-tree.md](../fallback-tree.md) — Fallback resolution for mapping errors and validation rejections.
