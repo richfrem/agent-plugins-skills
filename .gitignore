@@ -83,8 +83,8 @@ node_modules/
 
 # APM artifacts
 apm_modules/
-apm.yml
-apm.lock.yaml
+/apm.yml
+/apm.lock.yaml
 apm-*-test/
 
 # Agentic OS runtime state — never commit
@@ -140,5 +140,3 @@ plugins/agent-agentic-os/scripts/context/
 skills-lock.json
 plugin-retention.json
 
-# APM can leave a .apm/ staging folder inside a local package; never commit it (APM migration plan)
-plugins/*/.apm/

@@ -1184,3 +1184,48 @@ With the foundational consolidation of `agent-plugins-skills` complete (123+ ski
   2. Run dry-run migration and navigation diff commands using local inventory.
   3. Commit cleanly, push feature branch, and open Pull Request for merge.
 
+---
+
+## 13. Transition to Pure APM-Native Packages: The Single `.apm/` Primitives Architecture
+
+### 1. The Dual-Tree Anomaly & Its Resolution
+
+During the initial APM rollout, plugins were configured as `type: hybrid` with authored primitives located at root (`plugins/<plugin>/skills/`, `agents/`, `hooks/`). When `apm install` was executed against a local package, APM's legacy plugin adapter dynamically synthesized an internal staging cache under `plugins/<plugin>/.apm/`, duplicating every file byte-for-byte. 
+
+To eliminate confusion, redundant disk footprints, and the risk of editing build-cache artifacts instead of authored sources, all plugins transition to **Full APM-Native Layout** (`type: full`):
+
+```text
+plugins/<plugin>/
+├── apm.yml                  # Package manifest (type: full)
+├── README.md                # Human-facing package documentation
+├── .apm/                    # CANONICAL SOURCE TREE (Tracked in Git)
+│   ├── skills/              # Reusable agent skills
+│   │   └── <skill-name>/
+│   │       ├── SKILL.md     # Lean router (< 100 lines)
+│   │       ├── references/  # Detailed procedures, modes & references
+│   │       ├── scripts/     # Self-contained executables
+│   │       └── evals/       # Behavioral evaluation baselines
+│   ├── agents/              # Subagent definitions (*.md)
+│   ├── hooks/               # Lifecycle hook configs & scripts (hooks.json)
+│   ├── prompts/             # Reusable prompt workflows (*.prompt.md)
+│   └── instructions/        # Global instruction files (*.instructions.md)
+└── (NO root skills/, agents/, or hooks/ folders)
+```
+
+### 2. The Four Rules of the APM-Native Primitives Architecture
+
+1. **Source in `.apm/` Only**: Primitives (`skills`, `agents`, `hooks`, `prompts`, `instructions`) must be authored exclusively inside `.apm/`. Root duplicate folders are forbidden.
+2. **`.apm/` is Committed**: Line 144 of `.gitignore` (`plugins/*/.apm/`) is removed. The `.apm/` directory is tracked, version-controlled, and immutable across commits.
+3. **Audit Script Multi-Path Support**: Ecosystem audit tooling (`audit_skill.py`, `audit_sub_agent.py`, `audit_plugin_structure.py`) natively scans `.apm/skills/` and `.apm/agents/` as canonical source locations, while flagging any duplicate primitive roots outside `.apm/`.
+4. **Clean Staging-Free Installs**: With source files already resident in `.apm/`, the APM CLI deploys directly to target runtime harnesses (`~/.claude/skills/`, `~/.agents/skills/`, `~/.codex/`, `~/.copilot/`) without creating transient staging stubs or `.plugin-skill-sources.json` artifacts.
+
+### 3. Downstream Playbook for Consuming Repos (SharePoint Workbench & Beyond)
+
+When refactoring consuming repositories (e.g., `sharepoint-knowledge-workbench`):
+1. **Move Primitives**: Move `plugins/<pkg>/skills` and `plugins/<pkg>/agents` into `plugins/<pkg>/.apm/skills` and `plugins/<pkg>/.apm/agents`.
+2. **Update Manifest**: Ensure `apm.yml` sets `type: full`.
+3. **Purge Root Duplicates**: Delete any loose root `skills/` or `agents/` directories.
+4. **Git Tracking**: Ensure `.gitignore` does not ignore `plugins/*/.apm/` (only ignore deployed client directories like `.agents/`, `.claude/skills/`, `apm_modules/`).
+5. **Verify**: Run `audit_skill.py` and `audit_sub_agent.py` to confirm 100% compliance before creating PR.
+
+

@@ -1,0 +1,11 @@
+name: dev-utils
+version: 2.0.0
+description: 'Developer utilities: 8 self-contained skills. Manages GitHub issues
+  (log, promote, rank, refactor proposals, resolution audits) and resolves them in
+  isolated worktrees through PR closure; bundles code and docs for review; checks
+  links; enforces coding conventions; manages ADRs, symlinks, and HuggingFace dataset/model
+  transfers.'
+author: Richard Fremmerlid
+license: MIT
+repository: https://github.com/richfrem/agent-plugins-skills
+type: full

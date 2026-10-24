@@ -1,0 +1,10 @@
+name: agent-orchestration
+version: 3.0.0
+description: 'Composable agent loop and graph architectures — deterministic state
+  machines, DAG workflows, supervisor/worker loops, and parallel swarms, paired with
+  the multi-LLM task router suite (run_agent.py, 13 expert agent personas, AGT sandboxing,
+  and MAF validation). Framework-agnostic: works with any CLI agent.'
+author: Richard Fremmerlid
+license: MIT
+repository: https://github.com/richfrem/agent-plugins-skills
+type: full
