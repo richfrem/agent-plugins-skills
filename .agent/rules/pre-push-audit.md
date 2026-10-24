@@ -20,18 +20,18 @@ Run the following checks from the repository root:
 
 2. **Compliance Audit**:
    ```bash
-   python plugins/agent-scaffolders/scripts/audit.py --path plugins/<plugin-name>
+   python plugins/agent-extension-authoring/skills/authoring-plugins/scripts/audit.py --path plugins/<plugin-name>
    ```
 
 3. **Structural Audit**:
    Verify symlink and resource compliance:
    ```bash
-   python plugins/agent-scaffolders/scripts/audit_plugin_structure.py plugins/<plugin-name>
+   python plugins/agent-extension-authoring/skills/authoring-plugins/scripts/audit_plugin_structure.py plugins/<plugin-name>
    ```
 
 4. **Copy-Manifest Drift Check**:
    ```bash
-   python3 plugins/agent-scaffolders/skills/convert-plugin-to-apm/scripts/materialize_copies.py --check
+   python3 plugins/agent-extension-authoring/skills/packaging-with-apm/scripts/materialize_copies.py --check
    ```
 
 ## Resolution Action

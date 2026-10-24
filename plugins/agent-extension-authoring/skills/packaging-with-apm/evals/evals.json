@@ -1,0 +1,102 @@
+[
+  {
+    "prompt": "Create a new APM package from scratch for my agent skills.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Scaffold a fresh APM-native package using the .apm/ source structure.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Start a new agent package in the APM standard format.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Convert my existing plugin to use APM governance.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Install my APM package into .agents/ and .claude/ directories.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Convert my existing Claude plugin to use APM governance.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Add APM package management to my existing plugin without changing its layout.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Migrate my plugin to APM-native format.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Create a brand new APM package from scratch.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Install my APM package into the runtime directories.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Compile the APM package into a GEMINI.md context file for my Gemini project.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Generate the AGENTS.md for my Codex project from APM primitives.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Merge all skill fragments into a single top-level context document.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Install the APM package into the .agents/ runtime directory.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Create a new APM package from scratch.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Install the APM package into my project's runtime directories.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Deploy the APM skills into the .agents/ folder.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Materialize the APM package into .claude/ and .github/ using apm install.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Do a dry run of the APM install to preview what would be deployed.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Compile the APM package into a GEMINI.md top-level context file.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Create a new APM package from scratch.",
+    "should_trigger": false
+  },
+  {
+    "should_trigger": true,
+    "prompt": "I need help using the manage-marketplace skill"
+  },
+  {
+    "should_trigger": true,
+    "prompt": "Can you use the manage-marketplace skill for me?"
+  },
+  {
+    "should_trigger": false,
+    "prompt": "What time is it in New York?"
+  },
+  {
+    "should_trigger": false,
+    "prompt": "How do I boil an egg?"
+  }
+]

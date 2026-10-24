@@ -1,0 +1,62 @@
+[
+  {
+    "prompt": "Design and scaffold a Claude Code sub-agent for automated security auditing.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Create a new sub-agent file with YAML frontmatter, tools, permissions, and a system prompt.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Follow the create-sub-agent workflow to generate an agent .md file with escalation posture and lifecycle hooks.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Scaffold an advanced stateful skill with L4 state management patterns.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Create a simple skill using the create-skill scaffolder.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Add a Python package dependency to requirements.in.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Create a new skill called link-validator",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Scaffold a new agentic workflow from an existing skill",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Audit my new security-analyst agent to check if it conforms to sub-agent standards.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Check if this sub-agent markdown file has the right model, color, and trigger examples.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Validate all agent files in plugins/cli-agents/agents for frontmatter compliance.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Create a new sub-agent called test-writer.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Audit the entire plugin directory for marketplace compliance.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Audit this skill to see if it meets the 80 line budget.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Build a multi-turn wizard that interviews the user and writes a requirements document.",
+    "should_trigger": false
+  }
+]

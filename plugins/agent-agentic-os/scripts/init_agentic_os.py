@@ -451,9 +451,9 @@ def sync_rules(target: Path, dry_run: bool) -> None:
 def retrofit_existing_skills(target: Path, dry_run: bool, fix: bool = True) -> None:
     """Scan target project for custom skills and run audit_skill.py with auto-fix."""
     plugin_root = _get_plugin_root()
-    audit_script = plugin_root.parent / "agent-scaffolders" / "scripts" / "audit_skill.py"
+    audit_script = plugin_root.parent / "agent-extension-authoring" / "skills" / "authoring-skills" / "scripts" / "audit_skill.py"
     if not audit_script.exists():
-        audit_script = target / "plugins" / "agent-scaffolders" / "scripts" / "audit_skill.py"
+        audit_script = target / "plugins" / "agent-extension-authoring" / "skills" / "authoring-skills" / "scripts" / "audit_skill.py"
 
     skill_mds = list(target.glob("plugins/**/skills/*/SKILL.md")) + list(target.glob("skills/*/SKILL.md"))
     if not skill_mds:

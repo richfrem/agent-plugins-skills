@@ -51,17 +51,17 @@ Run standard deterministic verification scripts to validate compliance:
 
 ```bash
 # Audit individual or repository skills
-python3 plugins/agent-scaffolders/scripts/audit_skill.py <skill-path> --mode source
+python3 plugins/agent-extension-authoring/skills/authoring-skills/scripts/audit_skill.py <skill-path> --mode source
 
 # Audit sub-agent specifications
-python3 plugins/agent-scaffolders/scripts/audit_sub_agent.py plugins --all
+python3 plugins/agent-extension-authoring/skills/authoring-subagents/scripts/audit_sub_agent.py plugins --all
 
 # Audit rule policy invariants
-python3 plugins/agent-scaffolders/scripts/audit_rule.py plugins --all
+python3 plugins/agent-extension-authoring/skills/authoring-instructions/scripts/audit_rule.py plugins --all
 
 # Materialize copy-manifest files after cloning, and check them for drift before committing
-python3 plugins/agent-scaffolders/skills/convert-plugin-to-apm/scripts/materialize_copies.py
-python3 plugins/agent-scaffolders/skills/convert-plugin-to-apm/scripts/materialize_copies.py --check
+python3 plugins/agent-extension-authoring/skills/packaging-with-apm/scripts/materialize_copies.py
+python3 plugins/agent-extension-authoring/skills/packaging-with-apm/scripts/materialize_copies.py --check
 
 # Check installed APM packages and active client skills
 apm list

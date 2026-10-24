@@ -1,9 +1,0 @@
-[
-  "plugins/agent-agentic-os",
-  "plugins/agent-orchestration",
-  "plugins/agent-memory",
-  "plugins/agent-scaffolders",
-  "plugins/cli-agents",
-  "plugins/dev-utils",
-  "plugins/agent-exploration-cycle"
-]

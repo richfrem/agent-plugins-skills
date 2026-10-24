@@ -12,7 +12,7 @@ Skills share files without symlinks: each shared file has one canonical copy, an
 
 ### 1. Install APM
 
-The repository pins the APM version it is tested with (`apm-cli==0.33.0` in `plugins/agent-scaffolders/requirements-dev.in`).
+The repository pins the APM version it is tested with (`apm-cli==0.33.0` in `plugins/agent-extension-authoring/skills/packaging-with-apm/requirements-dev.in`).
 
 On Windows:
 
@@ -40,7 +40,7 @@ Clone the repository and check out the release tag or commit you want; that comm
 git clone https://github.com/richfrem/agent-plugins-skills.git
 cd agent-plugins-skills
 git checkout <tag-or-commit>
-python3 plugins/agent-scaffolders/skills/convert-plugin-to-apm/scripts/materialize_copies.py
+python3 plugins/agent-extension-authoring/skills/packaging-with-apm/scripts/materialize_copies.py
 ```
 
 `materialize_copies.py` writes every shared copy into the skill folders and keeps them out of git (local exclude file). Run it again after every `git checkout` or `git pull`; `--check` reports missing or out-of-date copies.
@@ -50,7 +50,7 @@ python3 plugins/agent-scaffolders/skills/convert-plugin-to-apm/scripts/materiali
 The consumer script checks the clone is materialized, backs up your global APM state, and installs:
 
 ```bash
-python3 plugins/agent-scaffolders/skills/install-apm-package/scripts/apm_consumer.py install --plugins <plugin-name> --checkout . --global
+python3 plugins/agent-extension-authoring/skills/packaging-with-apm/scripts/apm_consumer.py install --plugins <plugin-name> --checkout . --global
 ```
 
 For example, two plugins at once: `--plugins dev-utils,agent-memory`. Default targets are `claude,copilot,agy,codex` (`--targets` to change). The direct APM equivalent is:
@@ -75,7 +75,7 @@ Global (user-scope) support differs by harness (APM 0.33.0): `claude` supports e
 Keep context small by installing named skills from one plugin. `--skill` is repeatable, and the selection is saved in the manifest:
 
 ```bash
-python3 plugins/agent-scaffolders/skills/install-apm-package/scripts/apm_consumer.py install --plugins dev-utils --checkout . --global --skill managing-adrs --skill bundling-context
+python3 plugins/agent-extension-authoring/skills/packaging-with-apm/scripts/apm_consumer.py install --plugins dev-utils --checkout . --global --skill managing-adrs --skill bundling-context
 ```
 
 A later `--skill` adds to the selection. To drop a skill, remove it from the `skills:` list in `~/.apm/apm.yml` and run `apm install --global`. To go back to all skills, use `--skill '*'`. [COMPONENT_RETENTION_GUIDE.md](COMPONENT_RETENTION_GUIDE.md) lists the recommended selection per plugin.
@@ -94,7 +94,7 @@ APM records the dependency in the project's `apm.yml`, writes `apm.lock.yaml`, d
 
 ```bash
 apm install ./plugins/<plugin-name> --target claude --dry-run      # preview without writing files
-python3 plugins/agent-scaffolders/skills/convert-plugin-to-apm/scripts/materialize_copies.py --check
+python3 plugins/agent-extension-authoring/skills/packaging-with-apm/scripts/materialize_copies.py --check
 ```
 
 In Claude Code, installed skills appear in the skills list. In Copilot CLI, check with `/skills list`, or restart VS Code.
@@ -105,7 +105,7 @@ Move the clone to the new release, re-materialize, and reinstall:
 
 ```bash
 git fetch --tags && git checkout <new-tag-or-commit>
-python3 plugins/agent-scaffolders/skills/convert-plugin-to-apm/scripts/materialize_copies.py
+python3 plugins/agent-extension-authoring/skills/packaging-with-apm/scripts/materialize_copies.py
 apm install --global
 ```
 
@@ -116,8 +116,8 @@ apm install --global
 Every `apm_consumer.py install` backs up `~/.apm/apm.yml` and `apm.lock.yaml` first. To return to the previous state (uninstalls packages added since the backup, then restores and reinstalls):
 
 ```bash
-python3 plugins/agent-scaffolders/skills/install-apm-package/scripts/apm_consumer.py list-backups
-python3 plugins/agent-scaffolders/skills/install-apm-package/scripts/apm_consumer.py rollback [--backup <id>]
+python3 plugins/agent-extension-authoring/skills/packaging-with-apm/scripts/apm_consumer.py list-backups
+python3 plugins/agent-extension-authoring/skills/packaging-with-apm/scripts/apm_consumer.py rollback [--backup <id>]
 ```
 
 ### Uninstall
@@ -158,11 +158,11 @@ If invoking the script from an installed skill (`convert-plugin-to-apm`) or acro
 
 | Context | Command |
 | :--- | :--- |
-| **Monorepo Source (Default)** | `python3 plugins/agent-scaffolders/skills/convert-plugin-to-apm/scripts/materialize_copies.py` |
-| **Local Project `.agents` Harness** | `python3 .agents/skills/convert-plugin-to-apm/scripts/materialize_copies.py --path <repo-root>` |
-| **Local Project `.claude` Harness** | `python3 .claude/skills/convert-plugin-to-apm/scripts/materialize_copies.py --path <repo-root>` |
-| **Global Claude Harness** | `python3 ~/.claude/skills/convert-plugin-to-apm/scripts/materialize_copies.py --path <repo-root>` |
-| **Global Copilot / Codex / Agy** | `python3 ~/.agents/skills/convert-plugin-to-apm/scripts/materialize_copies.py --path <repo-root>` |
+| **Monorepo Source (Default)** | `python3 plugins/agent-extension-authoring/skills/packaging-with-apm/scripts/materialize_copies.py` |
+| **Local Project `.agents` Harness** | `python3 .agents/skills/packaging-with-apm/scripts/materialize_copies.py --path <repo-root>` |
+| **Local Project `.claude` Harness** | `python3 .claude/skills/packaging-with-apm/scripts/materialize_copies.py --path <repo-root>` |
+| **Global Claude Harness** | `python3 ~/.claude/skills/packaging-with-apm/scripts/materialize_copies.py --path <repo-root>` |
+| **Global Copilot / Codex / Agy** | `python3 ~/.agents/skills/packaging-with-apm/scripts/materialize_copies.py --path <repo-root>` |
 
 ### Packed bundles
 
@@ -205,7 +205,7 @@ copilot plugin install <plugin-name>@richfrem-agent-plugins-skills
 After cloning, and after editing any canonical shared file, write the copies into the skill folders:
 
 ```bash
-python3 plugins/agent-scaffolders/skills/convert-plugin-to-apm/scripts/materialize_copies.py
+python3 plugins/agent-extension-authoring/skills/packaging-with-apm/scripts/materialize_copies.py
 ```
 
 Edit the canonical file (at the plugin root), never a copy; `materialize_copies.py --check` reports copies that drifted. To share a new file with a skill, add a `symlinks.json` entry with `strategy: "copy"` and re-run the script. Never create symlinks.
@@ -219,7 +219,7 @@ apm install ./plugins/<plugin-name> --target claude,copilot,agy,codex
 To check that a plugin packages cleanly for APM (copies created, links valid, test install and uninstall in a throwaway fixture), run the build pipeline; add `--pack` to build the bundle. It writes only to `build/` and never changes the source tree:
 
 ```bash
-python3 plugins/agent-scaffolders/skills/convert-plugin-to-apm/scripts/apm_build_pipeline.py --plugin plugins/<plugin-name>
+python3 plugins/agent-extension-authoring/skills/packaging-with-apm/scripts/apm_build_pipeline.py --plugin plugins/<plugin-name>
 ```
 
-Each finding names its standard fix; see [APM alignment standard fixes](plugins/agent-scaffolders/skills/convert-plugin-to-apm/references/apm-alignment-fixes.md).
+Each finding names its standard fix; see [APM alignment standard fixes](plugins/agent-extension-authoring/skills/packaging-with-apm/references/apm-alignment-fixes.md).

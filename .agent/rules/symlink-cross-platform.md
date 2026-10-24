@@ -12,12 +12,12 @@ Plugins no longer use symlinks to share files between skills (APM migration, `do
 2. **Share a file between skills** by keeping one canonical copy at the plugin root and listing each skill path in `symlinks.json` with `strategy: "copy"`.
 3. **After cloning or changing a canonical file**, write the copies:
    ```bash
-   python3 plugins/agent-scaffolders/skills/convert-plugin-to-apm/scripts/materialize_copies.py
+   python3 plugins/agent-extension-authoring/skills/packaging-with-apm/scripts/materialize_copies.py
    ```
    The copies are listed in the local git exclude file and are never committed.
 4. **Before committing**, check for drift and edit the canonical file, never a copy:
    ```bash
-   python3 plugins/agent-scaffolders/skills/convert-plugin-to-apm/scripts/materialize_copies.py --check
+   python3 plugins/agent-extension-authoring/skills/packaging-with-apm/scripts/materialize_copies.py --check
    ```
 5. **The one remaining symlink** (`plugins/agent-agentic-os/tests/transition_simulation_cases.py`) is test-only and is not packaged.
 

@@ -248,6 +248,6 @@ attribution are documented in [the companion reference](./references/superpowers
 
 | Plugin | Role |
 |--------|------|
-| `agent-scaffolders` | Spec + Factory — what ecosystem artifacts are and how to create them |
+| `agent-extension-authoring` | Spec + Factory — what ecosystem artifacts are and how to create them |
 | **`agent-agentic-os`** | **Operations — eval-gated improvement loop, experiment log, memory** |
 | `agent-orchestration` | Execution patterns — loop substrate used by os-lab-loop |

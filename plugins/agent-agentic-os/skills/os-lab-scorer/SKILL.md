@@ -11,7 +11,7 @@ description: >
   DO NOT USE for the multi-iteration loop (os-lab-loop), building the lab repo
   (os-lab-setup), planning (os-lab-planner), reviewing a lab diff (os-lab-backport),
   run logs and charts (os-lab-log), or memory promotion (os-lab-memory).
-  NOT for scaffolding new skills: use create-skill (agent-scaffolders).
+  NOT for scaffolding new skills: use authoring-skills (agent-extension-authoring).
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 ---
 

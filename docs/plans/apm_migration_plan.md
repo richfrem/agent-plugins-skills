@@ -648,6 +648,25 @@ Following the validation and completion of the `cli-agents` pilot, the remaining
 | :--- | :--- | :--- | :--- |
 | **Wave 0 (Pilot)** | `cli-agents` | 12 skills → 3 skills (0 root scripts) | **Status: Done (PR #715 merged; subsequently absorbed into `agent-orchestration` in PR #717)**. Consolidated 8 micro-skills into unified `cli-agent`. Retained `agt-security` & `maf-adapter`. Standalone plugin directory retired. |
 | **Wave 1** | `dependency-management` | 1 skill (0 root scripts) | **Status: Done (PR #716 merged)**. Retired as standalone plugin; converted to rule in `plugins/dev-utils/rules/`. |
+
+### 8. Reference Directory Triage & Separation Protocol (Plugin-Level vs. Skill-Level)
+
+During plugin consolidation and APM migration, never bulk-delete or blindly copy the root `references/` directory. Every file must be evaluated using the mandatory **5-Step Triage Invariant**:
+
+#### 8.1 The 5-Step File-by-File Triage Invariant
+1. **Step 0: Analyze File**: Inspect file content, size, historical origin, and active references. Determine whether it is domain reference, executable artifact, or temporary note.
+2. **Step 1: If Transitory → Delete**: Identify and remove one-off prompts (e.g. `*.prompt.md`), scratchpad audit notes, obsolete text pointer stubs, and legacy criteria/fallback trees from retired individual skills whose requirements are already captured in consolidated skills.
+3. **Step 2: If Stale → Update**: Align old plugin names, retired skill references, outdated paths, and headers to match the current consolidated state and active mode taxonomy.
+4. **Step 3: Analyze Scope & Placement**: Determine strictly whether the file serves **Plugin-Level Governance** (package-wide) or is **Skill-Specific** (procedural).
+5. **Step 4: Move & De-duplicate**: Move skill-specific files directly into `skills/<skill>/references/` (or `examples/`). Immediately remove the duplicate copy from `plugins/<plugin>/references/` so `audit_skill.py` passes cleanly without canonical duplicate errors (`packaging.resource`).
+
+#### 8.2 Strict Architectural Separation: Plugin-Level vs. Skill-Level
+
+| Scope | Directory Path | Canonical Contents & Allowed Files |
+| :--- | :--- | :--- |
+| **Plugin Level** | `plugins/<plugin>/references/` | **Restricted strictly to whole-plugin governance, lifecycle, and architecture:**<br>• `program.md` (Plugin optimization program)<br>• `evolution-log.md` (Evolution history & versioning)<br>• `map-debt.md` (Plugin-level debt tracking)<br>• `self-evolution-profile.md` (Self-evolution constraints)<br>• `maturity-model.md` (Maturity scoring & dimensions)<br>• `security-checks.md` (Package-wide security audits)<br>• `analysis-framework.md` & `analysis-questions-by-type.md` (Multi-phase analysis)<br>• `diagrams/` (`plugin-architecture.mmd`, `analyze-plugin-flow.mmd`, `audit-plugin-l5-flow.mmd`)<br>• `research/` (Historical design findings) |
+| **Skill Level** | `plugins/<plugin>/skills/<skill>/references/` | **Everything required for the skill to be 100% self-contained when installed alone via APM:**<br>• Authoring and domain guides specific to the skill's capabilities<br>• Input/output schemas, prompt templates, and format specifications<br>• Pattern catalogs and decision matrices owned by the skill<br>• Skill-specific mode documentation (`references/modes/<mode>.md`)<br>• Skill-internal diagrams: `diagrams/skill-architecture.mmd` and `diagrams/skill-execution-flow.mmd`<br>• Real examples in `skills/<skill>/examples/` (never leave stubs at plugin root) |
+
 | **Wave 1** | `agent-orchestration` | 10 skills → 4 skills (0 root scripts) | **Status: Done (PR #717 merged)**. **Solution A**: Consolidated all 10 loop/graph micro-skills into unified interactive `orchestrating-agent-work` skill. Absorbed `cli-agents` suite (`cli-agent`, `agt-security`, `maf-adapter`, 13 sub-agents). Standalone `plugins/cli-agents` retired. |
 | **Wave 1** | `obsidian-wiki-engine` | 10 skills (14 root scripts) | **Solution A**: Consolidate Karpathy-style wiki distillation and querying into unified obsidian skills; co-locate vault CRUD and graph traversal tools. |
 | **Wave 2** | `agent-memory` | 13 skills (21 root scripts) | **Solution A**: Consolidate Vector DB tools (`vector-db-init`, `ingest`, `search`, `cleanup`, `audit`, `launch`) into cohesive `vector-db` skill; consolidate RLM tools into `rlm-engine` skill. |

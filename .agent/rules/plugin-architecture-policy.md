@@ -16,7 +16,7 @@ Plugins are installed with [APM](https://github.com/microsoft/apm) (see `docs/pl
    → build pipeline creates physical copies in build/staging/ and packs a bundle
    → APM installs the bundle; every installed skill is fully self-contained
    ```
-   This keeps both goals of the model: **one physical copy in source**, and **a physical copy in every skill that needs it** after install. Skill source folders hold no symlink objects. The build is `plugins/agent-scaffolders/skills/convert-plugin-to-apm/scripts/apm_build_pipeline.py --pack`.
+   This keeps both goals of the model: **one physical copy in source**, and **a physical copy in every skill that needs it** after install. Skill source folders hold no symlink objects. The build is `plugins/agent-extension-authoring/skills/packaging-with-apm/scripts/apm_build_pipeline.py --pack`.
 
 2. **Self-Contained Installed Skills**:
    An installed skill must be fully portable and independent. It must **NEVER** depend at runtime on:
@@ -78,21 +78,20 @@ A plugin's `rules/` folder is **not** deployed by APM. Rules are copied into a p
 
 ---
 
-## 5. Sharing Files Between Skills: Copy Manifest, Links, No New Symlinks
+## 5. Self-Contained Skills & Resource Sharing
 
-**NEVER create new symlinks** (`ln -s` or otherwise).
-**NEVER commit a duplicate copy of a canonical file** into a skill folder.
+**NEVER create new symlinks** (`ln -s` or otherwise). Raw filesystem symlinks are strictly prohibited.
 
-1. **Scripts, assets and other files a skill uses directly** are shared through the **copy manifest**: one canonical file at the plugin root, plus one `symlinks.json` entry per skill that needs a copy:
-   ```json
-   { "src": "plugins/<plugin>/scripts/tool.py", "dst": "plugins/<plugin>/skills/<skill>/scripts/tool.py", "strategy": "copy", "description": "..." }
-   ```
-   The build pipeline creates each `dst` as a physical copy in `build/staging/` only. Plugins that use copy entries are distributed as the packed bundle (`build/dist/<plugin>-<version>.zip`); installing the raw git path or `./plugins/<plugin>` would not contain the copies.
-2. **Documents a skill only reads** may instead be cited with a markdown link to the canonical file anywhere in the same plugin (e.g. `[Guide](../../references/guide.md)`). APM rewrites markdown links that leave the skill to point into its package cache, so they resolve for every harness, project and global. This avoids a copy entirely.
-3. **Paths in code are not rewritten.** Paths in code blocks, inline code or plain text that climb out of the skill folder (e.g. `python3 ../../scripts/tool.py`) break after install. A script the skill runs must be present in the skill (as a copy-manifest entry if shared).
-4. **One owning skill** is the alternative when a skill genuinely depends on another skill's behaviour: keep the script in the owning skill and have other skills use that skill by name.
-5. **Materialize after cloning**: the copies are not in git. Run `materialize_copies.py` (convert-plugin-to-apm skill) after cloning and after changing a canonical file; it writes every copy into the working tree and lists them in the local git exclude file. Tests and local runs then see the same files an installed skill has. Edit the canonical file, never a copy; `materialize_copies.py --check` reports drifted copies.
-6. **Verify before committing**: run `materialize_copies.py --check` and the build pipeline on the changed plugin. The pipeline reports missing copy sources, broken links and unrewritten paths, each with its standard fix.
+1. **Self-Contained Skills (End State)**:
+   Every skill must be fully self-contained. Scripts, references, assets, tests, and evals live directly within the skill directory (`plugins/<plugin>/skills/<skill>/`). There are no shared plugin-root `scripts/`, `references/`, `assets/`, or `tests/`.
+2. **One Owning Skill & Cross-Skill Delegation**:
+   When a skill needs functionality implemented in another skill, the code lives in the single owning skill. Cross-skill interaction happens through skill invocation by name (prompt loop), never through cross-skill relative imports or relative script execution paths.
+3. **No Climbing Paths in Code**:
+   Paths in code blocks, inline code, or execution commands that climb out of the skill directory (e.g. `../../scripts/tool.py`) are prohibited. Scripts run only within their own skill boundary or call standard CLI tools on PATH.
+4. **Transition Manifest (Legacy Plugins)**:
+   Plugins actively migrating to the self-contained standard may transitionally utilize the copy manifest (`symlinks.json`, `strategy: "copy"`). Fully consolidated plugins have 0 manifest entries and zero plugin-root shared files.
+5. **Verify Before Committing**:
+   Run `audit_skill.py --mode source` on every skill and `audit_plugin_structure.py` on the plugin root. For plugins still using the transitional copy manifest, run `materialize_copies.py --check`.
 
 ---
 

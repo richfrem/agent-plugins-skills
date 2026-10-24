@@ -1,0 +1,10 @@
+# Dev-only requirements for the packaging-with-apm skill (NOT shipped to consumers; the
+# runtime dependencies stay in requirements.in). Compile with:
+#   pip-compile requirements-dev.in
+# Constrained by the runtime lockfile so dev tooling never moves a runtime pin.
+-c requirements.txt
+
+# Microsoft APM (Agent Package Manager) CLI, used by the APM migration pipeline
+# (docs/plans/apm_migration_plan.md). Exact pin: the plan's Phase 0 verifies this
+# version's CLI surface, so upgrades are deliberate and re-verified.
+apm-cli==0.33.0

@@ -1,0 +1,23 @@
+name: agent-extension-authoring
+version: 3.0.0
+description: "Ecosystem authoring primitives — creates and audits agent skills (including Docker and MCP integrations), plugins, sub-agents, instructions, rules, hooks, GitHub workflows (Actions & gh-aw), and APM packages."
+author: Richard Fremmerlid
+kind: backend
+platforms:
+  - linux
+  - macos
+  - windows
+provides_tools:
+  - scaffold
+  - scaffold_github_action
+  - scaffold_azure_agent
+  - scaffold_agentic_workflow
+  - scaffold_github_agent
+  - audit
+skills:
+  - authoring-github-workflows
+  - authoring-instructions
+  - authoring-plugins
+  - authoring-skills
+  - authoring-subagents
+  - packaging-with-apm

@@ -1,1 +1,0 @@
-examples/plugin-commands.md

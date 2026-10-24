@@ -50,7 +50,7 @@ python3 scripts/test_harness.py \
 python3 scripts/test_harness.py --validate --plugin plugins/cli-agents
 
 # Audit skill compliance
-python3 plugins/agent-scaffolders/scripts/audit_skill.py plugins/cli-agents/skills/maf-adapter --mode source
+python3 plugins/agent-extension-authoring/skills/authoring-skills/scripts/audit_skill.py plugins/cli-agents/skills/maf-adapter --mode source
 ```
 
 ## References

@@ -37,15 +37,15 @@ Before **explicitly pushing** changes to GitHub (i.e., only when the user has is
      ```
    - **Compliance Audit**:
      ```bash
-     python3 plugins/agent-scaffolders/scripts/audit.py --path plugins/<plugin-name>
+     python3 plugins/agent-extension-authoring/skills/authoring-plugins/scripts/audit.py --path plugins/<plugin-name>
      ```
    - **Structural Audit**:
      ```bash
-     python3 plugins/agent-scaffolders/scripts/audit_plugin_structure.py plugins/<plugin-name>
+     python3 plugins/agent-extension-authoring/skills/authoring-plugins/scripts/audit_plugin_structure.py plugins/<plugin-name>
      ```
    - **Copy-Manifest Drift Check**:
      ```bash
-     python3 plugins/agent-scaffolders/skills/convert-plugin-to-apm/scripts/materialize_copies.py --check
+     python3 plugins/agent-extension-authoring/skills/packaging-with-apm/scripts/materialize_copies.py --check
      ```
    *Resolution Action:* If errors, missing references, or drifted copies are reported, resolve them before committing or pushing (edit the canonical file, never a copy). Never push with drifted copies or failing convention audits.
 

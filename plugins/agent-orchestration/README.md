@@ -99,14 +99,14 @@ agent-orchestration/
 
 ```bash
 # Plugin structure audit
-python3 plugins/agent-scaffolders/skills/audit-plugin/scripts/audit_plugin_structure.py plugins/agent-orchestration
+python3 plugins/agent-extension-authoring/skills/authoring-plugins/scripts/audit_plugin_structure.py plugins/agent-orchestration
 
 # Skill audits
-python3 plugins/agent-scaffolders/scripts/audit_skill.py plugins/agent-orchestration/skills/orchestrating-agent-work --mode source
-python3 plugins/agent-scaffolders/scripts/audit_skill.py plugins/agent-orchestration/skills/cli-agent --mode source
+python3 plugins/agent-extension-authoring/skills/authoring-skills/scripts/audit_skill.py plugins/agent-orchestration/skills/orchestrating-agent-work --mode source
+python3 plugins/agent-extension-authoring/skills/authoring-skills/scripts/audit_skill.py plugins/agent-orchestration/skills/cli-agent --mode source
 
 # Sub-agent audits
-python3 plugins/agent-scaffolders/scripts/audit_sub_agent.py plugins/agent-orchestration --all
+python3 plugins/agent-extension-authoring/skills/authoring-subagents/scripts/audit_sub_agent.py plugins/agent-orchestration --all
 
 # Unit tests
 python3 -m pytest plugins/agent-orchestration/skills/cli-agent/scripts -v

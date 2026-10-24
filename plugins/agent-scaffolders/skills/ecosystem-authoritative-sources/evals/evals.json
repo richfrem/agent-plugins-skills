@@ -1,8 +1,0 @@
-[
-  {"prompt": "What are the specifications and best practices for creating an Agent Skill?", "should_trigger": true},
-  {"prompt": "Explain the plugin architecture structure and the rules for plugin.json manifests.", "should_trigger": true},
-  {"prompt": "What are the authoritative sources and standards for Sub-agent setup and installation in this ecosystem?", "should_trigger": true},
-  {"prompt": "Audit this SKILL.md file for compliance with ecosystem standards.", "should_trigger": false},
-  {"prompt": "Validate the directory structure of this new plugin against the spec.", "should_trigger": false},
-  {"prompt": "Write a Python script to parse JSON files.", "should_trigger": false}
-]

@@ -48,7 +48,7 @@ python3 scripts/agt_ops.py rotate-key
 python3 scripts/agt_ops.py verify-sandbox
 
 # Audit skill compliance
-python3 plugins/agent-scaffolders/scripts/audit_skill.py plugins/cli-agents/skills/agt-security --mode source
+python3 plugins/agent-extension-authoring/skills/authoring-skills/scripts/audit_skill.py plugins/cli-agents/skills/agt-security --mode source
 ```
 
 ## References

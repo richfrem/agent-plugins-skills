@@ -1,0 +1,19 @@
+stateDiagram-v2
+    [*] --> SelectMode
+    
+    state SelectMode {
+        [*] --> Route
+        Route --> Create : Mode 'create'
+        Route --> Convert : Mode 'convert'
+        Route --> Compile : Mode 'compile'
+        Route --> Install : Mode 'install'
+        Route --> Marketplace : Mode 'marketplace'
+    }
+    
+    Create --> Validate : apm.yml generated
+    Convert --> Validate : plugin converted
+    Compile --> Validate : apm compile --validate
+    Install --> Validate : targets materialized
+    Marketplace --> Validate : sources audited
+    
+    Validate --> [*] : Success

@@ -1,0 +1,68 @@
+[
+  {
+    "prompt": "Create a new plugin called my-code-reviewer from scratch.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Scaffold a complete Claude Code plugin directory structure with plugin.json.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Build a new plugin for legacy Oracle analysis with skills and commands.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Add a new skill to my existing agent-scaffolders plugin.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Create a slash command for reviewing pull requests.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Scaffold an agentic GitHub workflow from my existing skill.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Create a new skill called link-validator",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Add an MCP server integration to my plugin",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Audit my plugin \u2014 validate its structure and check plugin.json for compliance.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "I just created a new plugin. Check if my plugin is correct and verify all components.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Review plugin components after I modified the skill frontmatter \u2014 make sure this is right.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Analyze this plugin and mine its design patterns and architectural decisions.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Run an L5 red team audit on this plugin against the 39-point maturity matrix.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Audit path references in my plugin skills and report any broken file links.",
+    "should_trigger": false
+  },
+  {
+    "prompt": "Run self-audit to regression test the agent-scaffolders plugin against itself using the gold-standard fixture.",
+    "should_trigger": false,
+    "note": "discriminator: self-audit, not audit-plugin \u2014 target is agent-scaffolders itself"
+  },
+  {
+    "prompt": "Test the plugin analyzer by running it against its own test fixtures.",
+    "should_trigger": false,
+    "note": "discriminator: self-audit vocabulary \u2014 internal regression, not external compliance check"
+  }
+]

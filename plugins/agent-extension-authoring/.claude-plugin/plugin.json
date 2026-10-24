@@ -1,0 +1,30 @@
+{
+    "name": "agent-extension-authoring",
+    "version": "3.0.0",
+    "description": "Ecosystem authoring primitives — creates and audits agent skills, plugins, sub-agents, instructions, rules, hooks, GitHub workflows, and APM packages.",
+    "author": {
+        "name": "Richard Fremmerlid"
+    },
+    "repository": "https://github.com/richfrem/agent-plugins-skills",
+    "license": "MIT",
+    "keywords": [
+        "authoring",
+        "scaffolder",
+        "plugin-authoring",
+        "skill-authoring",
+        "subagent-authoring",
+        "instructions-authoring",
+        "workflow-authoring",
+        "apm-packaging",
+        "audit"
+    ],
+    "capabilities": [
+        "skill-authoring",
+        "plugin-authoring",
+        "subagent-authoring",
+        "instructions-authoring",
+        "workflow-authoring",
+        "apm-packaging",
+        "compliance-auditing"
+    ]
+}

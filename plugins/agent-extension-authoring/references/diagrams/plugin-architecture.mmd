@@ -1,0 +1,24 @@
+graph TD
+    A[agent-extension-authoring] --> B[.claude-plugin/]
+    B --> C[plugin.json]
+    
+    A --> D[skills/]
+    D --> S1[authoring-skills/]
+    D --> S2[authoring-plugins/]
+    D --> S3[authoring-subagents/]
+    D --> S4[authoring-instructions/]
+    D --> S5[authoring-github-workflows/]
+    D --> S6[packaging-with-apm/]
+    
+    A --> E[agents/]
+    A --> F[hooks/]
+    F --> F1[hooks.json]
+    A --> G[.mcp.json]
+    A --> H[rules/]
+    A --> I[references/]
+    A --> J[README.md]
+    A --> K[plugin.yaml]
+    
+    style A fill:#f9f,stroke:#333,stroke-width:2px
+    style B fill:#bbf,stroke:#333
+    style D fill:#dfd,stroke:#333
