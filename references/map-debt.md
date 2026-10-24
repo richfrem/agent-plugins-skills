@@ -1799,3 +1799,19 @@ All 24 retired skills preserved as verbatim mode references under `references/mo
 Removed all plugin-root shared scripts, references, assets, and tests in accordance with the self-contained skills policy.
 All 6 skills pass deterministic `audit_skill.py --mode source` with 0 errors and 0 warnings.
 `audit_plugin_structure.py` and `audit.py` pass cleanly on `plugins/agent-extension-authoring`.
+
+## DEBT-20261023-AGENTIC-OS-CONSOLIDATION
+
+Status: RESOLVED
+
+Consolidated `plugins/agent-agentic-os` from 14 skills down to 3 cohesive, self-contained skills:
+1. `running-control-plane` (absorbs os-control-intake, os-control-simulator, os-control-health, os-control-mode, os-control-worktree)
+2. `setting-up-agentic-os` (absorbs os-control-init, os-control-signing-setup)
+3. `improving-skills-in-lab` (absorbs os-lab-planner, os-lab-setup, os-lab-loop, os-lab-scorer, os-lab-log, os-lab-backport, os-lab-memory)
+
+All 14 legacy skills preserved as mode references under `references/modes/<name>.md`.
+Zero new test regressions vs baseline (1,083 collected tests; 130 baseline failures resolved, 0 new failures).
+Zero audit errors across all 3 skills via `audit_skill.py` and `audit.py`.
+Stage 1 skill routing achieved 75/92 and stage 2 mode reference resolution reached 90/92 across evaluation vectors.
+Updated root documentation (AGENTS.md, README.md, START_HERE.md, COMPONENT_RETENTION_GUIDE.md, architecture.md) and manifests.
+

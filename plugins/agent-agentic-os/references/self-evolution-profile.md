@@ -3,13 +3,13 @@
 ## Allowed Edit Directories
 
 - plugins/agent-agentic-os/skills/
-- plugins/agent-agentic-os/scripts/
+- plugins/agent-agentic-os/hooks/
 - plugins/agent-agentic-os/references/
 
 ## Explicit Confirmation Required
 
 - plugin.json
-- CLAUDE.md
+- AGENTS.md
 - .agent/rules/
 - docs/
 

@@ -6,7 +6,7 @@ Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-s
 
 This is the authoritative instruction file for agents working in this repository. Preserve the project-specific rules below while applying behavioral guidelines and platform-specific conventions.
 
-For local planning, backlog status, and current task handoffs, consult `docs/plans/start-here.md` (a local-only, gitignored planning file; if absent on fresh clones, start directly with `os-control-intake`).
+For local planning, backlog status, and current task handoffs, consult `docs/plans/start-here.md` (a local-only, gitignored planning file; if absent on fresh clones, start directly with the `running-control-plane` skill (intake mode)).
 
 ---
 
@@ -39,9 +39,9 @@ For local planning, backlog status, and current task handoffs, consult `docs/pla
    `plugins/` is source; only what is installed in your active runtime environment can run. Depending on whether installed locally or globally (via APM or legacy):
    - Local project harnesses: `.claude/skills/<name>` (Claude) or `.agents/skills/<name>` (Copilot, Codex, Antigravity)
    - Global workstation profile: `~/.claude/skills/<name>` (Claude) or `~/.agents/skills/<name>` (Copilot, Codex, Antigravity)
-   A skill present in `plugins/` may be disabled or uninstalled to save context. Before recommending, routing to, or writing a handoff to any skill or agent, verify it is installed in your active runtime harness or global profile; never route through an uninstalled one. If the right target is not installed, say so and ask. `os-control-mode` toggles only the control-plane family (`os-control-intake`, `os-control-simulator`, `os-control-signing-setup`); it says nothing about other skills.
+   A skill present in `plugins/` may be disabled or uninstalled to save context. Before recommending, routing to, or writing a handoff to any skill or agent, verify it is installed in your active runtime harness or global profile; never route through an uninstalled one. If the right target is not installed, say so and ask. The `mode` workflow of `running-control-plane` (`control_plane_mode.py enable | disable | status`) switches commit and push gating on or off for one clone, through `context/control-plane-mode` and the two git guards; it does not install or remove any skill, and it says nothing about other skills.
    Install or update packages with `apm install <pkg> [--global] --target claude,copilot,codex,antigravity`. Never edit installed skill copies by hand.
-   Before working with the Agentic OS, read the [Agentic OS Skill Map](plugins/agent-agentic-os/references/agentic-os-skill-map.md) (what every skill does and how the clusters relate) and [Two Improvement Paths](plugins/agent-agentic-os/references/two-improvement-paths.md) (control plane vs improvement lab).
+   Before working with the Agentic OS, read the [Agentic OS Skill Map](plugins/agent-agentic-os/skills/running-control-plane/references/agentic-os-skill-map.md) (the three skills, their modes and how they relate) and [Two Improvement Paths](plugins/agent-agentic-os/skills/improving-skills-in-lab/references/two-improvement-paths.md) (control plane vs improvement lab).
 
 ---
 

@@ -31,7 +31,7 @@ Current scale (read from `plugins/` — verify with `find plugins -name SKILL.md
 ```
 [Project Root]/
 ├── plugins/                        # CANONICAL SOURCE — authoritative for all skills/agents
-│   ├── agent-agentic-os/           # Control plane + skill improvement lab (14 skills)
+│   ├── agent-agentic-os/           # Control plane, setup + skill improvement lab (3 skills)
 │   ├── agent-orchestration/        # Execution topologies & multi-LLM CLI routing (4 skills, 13 agents)
 │   ├── agent-memory/               # Memory, RLM, vector retrieval and Obsidian wiki (4 skills)
 │   ├── agent-extension-authoring/  # Plugin/skill/subagent/instruction authoring & APM packaging (6 skills)
@@ -79,9 +79,9 @@ push, `gate_evidence.py` checks every proof-bearing history transition against i
 exact signed challenge, human trust anchor and single-key continuity. Missing historical signatures
 fail closed, including pre-rollout tasks; they cannot be recreated from unsigned receipts.
 
-`os-control-init --with-simulation-identity` creates or reuses only the simulation key and reports human,
+The `init` mode of `setting-up-agentic-os` creates or reuses only the simulation key and reports human,
 simulation and isolation readiness separately. Human key setup remains a human operation through
-`os-control-signing-setup`. Simulation tools route explicitly per invocation, without a sticky environment
+the `signing-setup` mode. Simulation tools route explicitly per invocation, without a sticky environment
 switch that could silently divert real intake. Source code and references remain plugin-owned;
 installed skill copies are deployment outputs.
 
@@ -120,18 +120,14 @@ Skills **run from active installed runtime locations** (local project harnesses 
 - `symlinks.json` & `materialize_copies.py` — Development copy-manifest and synchronization tool keeping skill spoke copies in sync with canonical plugin root resources without drift or git symlinks.
 
 ### 4.2. Plugin: agent-agentic-os
-The self-improvement kernel. Core loop: `os-lab-planner → os-lab-loop → os-lab-scorer →
-os-lab-backport → os-lab-log`. Owns memory management (`os-lab-memory`), lab
-planning (`os-lab-planner`, front door agent `os-lab-agent`), setup (`os-control-init`, `os-control-setup-agent` agent),
-and Layer 2 Wiki & Map Debt governance (`distill_playbook`, `audit_map_debt`, `pre-commit-evolution-guard`,
-and `turn_evolution_guard`). Three control-plane edges are cryptographic human gates: Gate 1 (`AWAITING_APPROVAL -> APPROVED`), Gate 3 (`WORKTREE_REVIEW` or `MULTI_AGENT_CODE_REVIEW` `-> VERIFY_EXIT`) and closure (any edge into `DONE`). Each declares `requires_cryptographic_proof`: the coordinator halts with `HUMAN_PROOF_REQUIRED` and a pending, content-bound `transition_request` (Gate 3 binds the commit SHA, tracked-diff hash and untracked-files hash; closure also binds the retrospective digest); the human signs it out of band with `ssh-keygen -Y sign` (OpenSSH prompts for the private-key passphrase) via `show-challenge` and `approve-transition`; the signature is verified outside the database write lock and the request is consumed exactly once in the commit transaction. No prompt, typed word, flag, receipt or actor string can authorize these edges, and there is no skip or force-close path. `os-control-signing-setup` creates the key; residual risk (a same-account agent with direct DB or coordinator access) is documented in `plugins/agent-agentic-os/references/isolation-setup.md`.
+Three self-contained skills, each a router with modes. `running-control-plane` (modes `intake`, `mode`, `health`, `simulator`, `worktree`) owns the `control_plane/` package, `agent_control.py` and the git guards. `setting-up-agentic-os` (modes `init`, `signing-setup`) bootstraps a project and guides the human signing key, and creates the agent's own simulation identity; it uses the control-plane package from its sibling skill. `improving-skills-in-lab` (modes `plan`, `setup`, `loop`, `score`, `log`, `backport`, `memory`) runs the improvement loop: `plan → setup → loop → score → backport → log`. Layer 2 Wiki & Map Debt governance (`distill_playbook`, `audit_map_debt`, `pre-commit-evolution-guard`, and `turn_evolution_guard`) stays with the control plane and the plugin hooks. Three control-plane edges are cryptographic human gates: Gate 1 (`AWAITING_APPROVAL -> APPROVED`), Gate 3 (`WORKTREE_REVIEW` or `MULTI_AGENT_CODE_REVIEW` `-> VERIFY_EXIT`) and closure (any edge into `DONE`). Each declares `requires_cryptographic_proof`: the coordinator halts with `HUMAN_PROOF_REQUIRED` and a pending, content-bound `transition_request` (Gate 3 binds the commit SHA, tracked-diff hash and untracked-files hash; closure also binds the retrospective digest); the human signs it out of band with `ssh-keygen -Y sign` (OpenSSH prompts for the private-key passphrase) via `show-challenge` and `approve-transition`; the signature is verified outside the database write lock and the request is consumed exactly once in the commit transaction. No prompt, typed word, flag, receipt or actor string can authorize these edges, and there is no skip or force-close path. the `signing-setup` mode of `setting-up-agentic-os` creates the key; residual risk (a same-account agent with direct DB or coordinator access) is documented in `plugins/agent-agentic-os/skills/setting-up-agentic-os/references/isolation-setup.md`.
 
 #### Human gates: SSH-signed `transition_request` (CIBA/RAR lineage)
 **Why it matters:** the pipeline's guarantees (plan reviewed, code accepted, task closed) hold only if the human decision cannot be forged by the agent that benefits from it. Soft mechanisms (prompts, typed words, skip/force-close flags, `actor='human'` strings, SQLite triggers trusting an actor column) all failed that test, so Gate 1, Gate 3 and closure require a cryptographic proof instead.
 
 **Model:** a `transition_request` (task, edge, occupancy, nonce, 15-minute expiry, content snapshot) is the RAR-style structured authorization; the human's own SSH key is the CIBA-style out-of-band authenticator. The human signs the printed challenge with `ssh-keygen -Y sign`; the coordinator verifies it against `allowed_signers` (namespace `control-plane@agentic-os.local`) before `BEGIN IMMEDIATE`, then re-checks and consumes the request once inside the commit transaction. An external identity provider (real CIBA push) remains a possible future replacement for the local signer.
 
-**Setup:** per machine, by the human, via `setup_ciba_identity.py` (skill `os-control-signing-setup`). `allowed_signers*` and `context/identity/challenges/` are machine-local trust anchors and never committed; `os-control-init` and `os-control-health` report readiness read-only. **Residual risk:** an agent running as the same account with direct database or coordinator access can still tamper; see `plugins/agent-agentic-os/references/isolation-setup.md`.
+**Setup:** per machine, by the human, via `setup_ciba_identity.py` (the `signing-setup` mode of `setting-up-agentic-os`). `allowed_signers*` and `context/identity/challenges/` are machine-local trust anchors and never committed; the `init` and `health` modes report readiness read-only. **Residual risk:** an agent running as the same account with direct database or coordinator access can still tamper; see `plugins/agent-agentic-os/skills/setting-up-agentic-os/references/isolation-setup.md`.
 
 ### 4.3. Plugin: agent-orchestration (4 skills, 13 agents)
 Unified execution topologies (DAGs, supervisor/worker loops, parallel swarms via `orchestrating-agent-work`) and multi-backend task routing (`run_agent.py` to Claude, Copilot, Gemini, Agy, Codex, and direct local llama-server via `cli-agent`, plus `agt-security` sandboxing and `maf-adapter` framework validation). Includes 13 expert agent personas (architect-review, security-auditor, tdd-contract-reviewer, red-team-reviewer, etc.) which form the Phase 1 adversarial review trio per `engineering-lifecycle-policy.md` §3.
