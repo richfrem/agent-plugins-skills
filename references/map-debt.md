@@ -2,6 +2,20 @@
 
 Persistent tracking of architectural friction, structural anomalies, and unclosed loops across sessions.
 
+## DEBT-20261024-APM-NATIVE-PRIMITIVES-LAYOUT (RESOLVED)
+
+- Logged date: 2026-10-24
+- Cycle/Session ID: feat/apm-native-primitives-layout
+- Artifact affected: `plugins/*/.apm/`, `plugins/*/apm.yml`, `plugins/agent-extension-authoring/.apm/skills/authoring-*`, `docs/plans/apm_migration_plan.md`
+- Friction observed: Dual-tree anomaly where plugins contained root `skills/`, `agents/`, and `hooks/` alongside an auto-generated `.apm/` staging cache, causing confusion over canonical source paths, maintainer edit hazards on ephemeral caches, and gitignore complexities.
+- Why not fixed now: Fixed immediately in this change.
+- Recommended fix / fix applied: Refactored `authoring-plugins`, `authoring-skills`, `authoring-subagents`, and `packaging-with-apm` to establish Pure APM-Native as the primary architecture; updated `audit_skill.py`, `audit_sub_agent.py`, `audit_plugin_structure.py`, `update_ecosystem_index.py`, and `pyproject.toml`; moved all primitives across all 6 repository plugins into `.apm/` (`.apm/skills/`, `.apm/agents/`, `.apm/hooks/`); updated `${CLAUDE_PLUGIN_ROOT}/.apm/hooks/` paths in `hooks.json`; removed root duplicate folders; removed legacy `plugin.yaml` manifests and `skills-lock.json`; retained `.claude-plugin/plugin.json` for Claude Code compatibility; updated `apm_migration_plan.md` with Pure APM-native architecture and downstream SharePoint Workbench roadmap; tracked `.apm/` and `plugins/*/apm.yml` in Git.
+- Evidence/repro: All 30 skills pass `audit_skill.py --all`; all 19 sub-agents pass `audit_sub_agent.py`; all 6 plugins pass `audit_plugin_structure.py`; all 23 rules pass `audit_rule.py`; 102 unit tests in `agent-extension-authoring` pass.
+- Severity: M
+- Repeat: NO
+- Status: RESOLVED
+
+
 ## DEBT-20261024-SKILLS-VS-SUBAGENTS-DECISION-FRAMEWORK (RESOLVED)
 
 - Logged date: 2026-10-24

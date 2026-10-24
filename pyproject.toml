@@ -14,3 +14,4 @@ dependencies = []
 testpaths = ["plugins"]
 python_files = ["test_*.py"]
 addopts = "-v --import-mode=importlib"
+norecursedirs = [".git", ".tox", ".env", "venv", ".venv", "dist", "build", "node_modules", ".worktrees"]

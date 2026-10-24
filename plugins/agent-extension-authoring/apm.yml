@@ -1,0 +1,7 @@
+name: agent-extension-authoring
+version: 3.0.0
+description: Ecosystem authoring primitives — creates and audits agent skills, plugins,
+  sub-agents, instructions, rules, hooks, GitHub workflows, and APM packages.
+author: Richard Fremmerlid
+license: MIT
+repository: https://github.com/richfrem/agent-plugins-skills

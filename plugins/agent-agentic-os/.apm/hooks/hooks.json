@@ -1,0 +1,41 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/.apm/hooks/session_start.py || python ${CLAUDE_PLUGIN_ROOT}/.apm/hooks/session_start.py"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/.apm/hooks/update_memory.py || python ${CLAUDE_PLUGIN_ROOT}/.apm/hooks/update_memory.py"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/.apm/hooks/scripts/turn_evolution_guard.py || echo '[turn_evolution_guard hook execution error]' >&2"
+          },
+          {
+            "type": "command",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/.apm/hooks/scripts/post_run_metrics.py || python ${CLAUDE_PLUGIN_ROOT}/.apm/hooks/scripts/post_run_metrics.py"
+          }
+        ]
+      }
+    ]
+  }
+}

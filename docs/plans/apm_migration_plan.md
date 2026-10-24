@@ -1184,3 +1184,64 @@ With the foundational consolidation of `agent-plugins-skills` complete (123+ ski
   2. Run dry-run migration and navigation diff commands using local inventory.
   3. Commit cleanly, push feature branch, and open Pull Request for merge.
 
+---
+
+## 15. Transition to Pure APM-Native Packages: The Single `.apm/` Primitives Architecture
+
+### 1. The Dual-Tree Anomaly & Its Resolution
+
+During the initial APM rollout, plugins were configured with authored primitives located at the plugin root (`plugins/<plugin>/skills/`, `agents/`, `hooks/`). When `apm install` was executed against a local package, APM's legacy plugin adapter dynamically synthesized an internal staging cache under `plugins/<plugin>/.apm/`, duplicating every file byte-for-byte.
+
+To eliminate confusion, redundant disk footprints, and the risk of editing build-cache artifacts instead of authored sources, all plugins transition to **Pure APM-Native Layout**:
+
+```text
+plugins/<plugin>/
+├── apm.yml                  # Canonical package manifest (type omitted for standard APM layout)
+├── README.md                # Human-facing package documentation
+├── .claude-plugin/          # Native Claude Code plugin manifest (retained for Claude compatibility)
+│   └── plugin.json
+├── .apm/                    # CANONICAL SOURCE TREE (Tracked in Git)
+│   ├── skills/              # Reusable agent skills
+│   │   └── <skill-name>/
+│   │       ├── SKILL.md     # Lean router (< 100 lines)
+│   │       ├── references/  # Detailed procedures, modes & references
+│   │       ├── scripts/     # Self-contained executables
+│   │       └── evals/       # Behavioral evaluation baselines
+│   ├── agents/              # Subagent definitions (*.md)
+│   ├── hooks/               # Lifecycle hook configs & scripts (hooks.json)
+│   ├── prompts/             # Reusable prompt workflows (*.prompt.md)
+│   └── instructions/        # Global instruction files (*.instructions.md)
+└── (NO root skills/, agents/, hooks/, or legacy plugin.yaml files)
+```
+
+### 2. The Four Rules of the Pure APM-Native Primitives Architecture
+
+1. **Source in `.apm/` Only**: Primitives (`skills`, `agents`, `hooks`, `prompts`, `instructions`) must be authored exclusively inside `.apm/`. Root duplicate folders (`skills/`, `agents/`, `hooks/`) are forbidden.
+2. **`.apm/` is Committed**: The `.gitignore` entry for `plugins/*/.apm/` is permanently removed. The `.apm/` directory is tracked, version-controlled, and immutable across commits.
+3. **Audit Script Multi-Path Support**: Ecosystem audit tooling (`audit_skill.py`, `audit_sub_agent.py`, `audit_plugin_structure.py`) natively scans `.apm/skills/` and `.apm/agents/` as canonical source locations, while flagging any duplicate primitive roots outside `.apm/` as policy violations.
+4. **Clean Staging-Free Installs**: With source files already resident in `.apm/`, the APM CLI deploys directly to target runtime harnesses (`~/.claude/skills/`, `~/.agents/skills/`, `~/.codex/`, `~/.copilot/`) without creating transient staging stubs or `.plugin-skill-sources.json` artifacts.
+5. **Retain `.claude-plugin/plugin.json`, Retire `plugin.yaml`**: Legacy `plugin.yaml` manifests and `skills-lock.json` are permanently deleted. `.claude-plugin/plugin.json` is retained to ensure backwards compatibility with Claude Code plugin discovery. In `apm.yml`, omit the `type:` field (since APM 0.33.0 uses the standard folder structure without needing a `type:` flag).
+
+### 3. Downstream Playbook for Consuming Repos (`sharepoint-knowledge-workbench`)
+
+Following the execution roadmap in `docs/plans/start-here.md`, the `sharepoint-knowledge-workbench` repository will execute this exact Pure APM transition:
+
+1. **Delete Legacy Manifests & Caches**:
+   - Delete all legacy `plugin.yaml` files across `plugins/`.
+   - Delete `symlinks.json`, `plugin-sources.json`, `plugin-retention.json`, and `skills-lock.json`.
+   - Purge local client harnesses: `rm -rf .agents/ .claude/ .codex/ apm_modules/`.
+2. **Move Primitives into `.apm/`**:
+   - In `plugins/sharepoint-workbench/`, move `skills/` and `agents/` directly into `.apm/skills/` and `.apm/agents/`.
+   - Delete the empty root `skills/` and `agents/` directories.
+3. **Configure `apm.yml` & Retain `.claude-plugin`**:
+   - Ensure `plugins/sharepoint-workbench/apm.yml` omits `type:` (or uses standard APM schema).
+   - Retain `.claude-plugin/plugin.json` for Claude Code compatibility.
+4. **Update `.gitignore`**:
+   - Remove any ignores on `plugins/*/.apm/` so the primitives are tracked.
+   - Ignore only deployed runtime artifacts (`.agents/`, `.claude/skills/`, `.codex/`, `.github/agents/`, `apm_modules/`).
+5. **Verify with Updated Authoring Tooling**:
+   - Run `audit_skill.py --mode source` and `audit_sub_agent.py plugins --all`.
+   - Run `apm install --global --force` to deploy to local developer harnesses.
+
+
+

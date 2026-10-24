@@ -1,0 +1,9 @@
+name: agent-agentic-os
+version: 2.0.0
+description: 'Governed control plane and learning layer above Claude Code: a gated
+  task pipeline with signed human approval gates and a gating switch (running-control-plane),
+  project setup and signing-identity guidance (setting-up-agentic-os), and eval-gated
+  skill improvement in an isolated lab (improving-skills-in-lab).'
+author: Richard Fremmerlid
+license: MIT
+repository: https://github.com/richfrem/agent-plugins-skills

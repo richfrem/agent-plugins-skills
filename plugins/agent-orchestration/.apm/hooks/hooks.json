@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/.apm/hooks/closure_guard.py || python ${CLAUDE_PLUGIN_ROOT}/.apm/hooks/closure_guard.py",
+            "description": "Prevents premature session exit without completing the closure sequence (Seal, Persist, Retrospective). Checks for an active loop state file and blocks exit if closure phases are incomplete."
+          }
+        ]
+      }
+    ]
+  }
+}
