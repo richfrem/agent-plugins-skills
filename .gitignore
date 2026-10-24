@@ -51,6 +51,8 @@ context/os-state.json
 context/plugin-config.json
 context/agent-capability-profile.json
 context/bundles/
+context/control-plane-backup/
+context/control-plane-mode*
 
 # Added by Spec Kitty CLI (auto-managed)
 .claude/
