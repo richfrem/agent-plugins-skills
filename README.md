@@ -1,6 +1,6 @@
 # Agentic OS Control Plane
 
-<!-- ECOSYSTEM_STATS_START -->**Current Scale:** 6 Plugins · 41 Skills · 21 Sub-Agents<!-- ECOSYSTEM_STATS_END -->
+<!-- ECOSYSTEM_STATS_START -->**Current Scale:** 6 Plugins · 30 Skills · 19 Sub-Agents<!-- ECOSYSTEM_STATS_END -->
 
 **A governed execution harness for AI coding agents.** This repository lets Claude Code, Codex,
 GitHub Copilot, Agy, and compatible tools use their native planning, coding, orchestration, and
@@ -11,12 +11,7 @@ and continuous improvement.
 It is not just a skills catalog. It is a portable system for making agent-driven engineering work
 more reliable without attempting to replace the model's reasoning.
 
-The control plane is native to this repository and has no hard runtime dependency on
-[`obra/superpowers`](https://github.com/obra/superpowers). It adopts compatible ideas from
-Superpowers—intent-first brainstorming, right-sized plans, TDD, review, and worktree discipline—
-and may use those workflows only as an optional fallback where the host runtime lacks an
-equivalent capability. See the [Agentic OS boundary and attribution reference](plugins/agent-agentic-os/references/superpowers-boundary-and-attribution.md)
-for the maintained distinction and thanks to the Superpowers maintainers and contributors.
+The control plane is native to this repository and depends on no external workflow package. Several of its practices were shaped by [`obra/superpowers`](https://github.com/obra/superpowers); see the [acknowledgments](plugins/agent-agentic-os/references/acknowledgments.md).
 
 ## What the control plane does
 
@@ -45,8 +40,8 @@ Intake → Interview → Draft plan → Plan review / optional independent revie
 ```
 
 Tasks can return to interview, planning, review, implementation, escalation, or reset when evidence
-calls for it. See the canonical [happy-path diagram](docs/diagrams/control-plane-pipeline-happy-path.mermaid)
-and [complete state machine](docs/diagrams/control-plane-pipeline.mermaid).
+calls for it. See the canonical [happy-path diagram](plugins/agent-agentic-os/skills/running-control-plane/references/diagrams/control-plane-pipeline-happy-path.mermaid)
+and [complete state machine](plugins/agent-agentic-os/skills/running-control-plane/references/diagrams/control-plane-pipeline.mermaid).
 
 ## Production and simulation approvals
 
@@ -62,8 +57,7 @@ simulation results cannot authorize a production push. The push guard verifies c
 gate evidence against the production human trust anchor, not merely a stored `DONE` state.
 Legacy tasks without captured signature evidence fail closed; do not fabricate historical evidence.
 
-The `os-control-init` skill guides both identities: use `--with-simulation-identity` to create/reuse the
-simulation identity additively, and invoke `os-control-signing-setup` for the human-controlled key setup.
+The `setting-up-agentic-os` skill guides both identities: its `init` mode creates or reuses the agent's simulation identity additively (on by default; `--no-simulation-identity` skips it), and its `signing-setup` mode guides the human-controlled key setup.
 Human enrollment is never overwritten. Simulations specify their database on each invocation;
 there is no sticky `.env` approval-mode switch. This is two approval contexts, not a requirement
 to spawn two agent processes.
@@ -71,7 +65,7 @@ to spawn two agent processes.
 Separate databases alone do not isolate a hostile agent running as your OS user. Protect human
 keys, trust anchors, and approval tooling using a separate account/container or trusted broker.
 Account existence is not proof that the agent runtime is isolated; onboarding reports that limit.
-See [isolation setup](plugins/agent-agentic-os/references/isolation-setup.md).
+See [isolation setup](plugins/agent-agentic-os/skills/setting-up-agentic-os/references/isolation-setup.md).
 
 ## Governance around native capability
 
@@ -97,9 +91,9 @@ apm install @richfrem/agent-agentic-os
 apm install -g --target claude,copilot,codex,antigravity @richfrem/agent-agentic-os
 ```
 
-Then ask your agent to set up Agentic OS for the repository, or use `os-control-init`, followed by
-`os-control-health`. Start a governed task through `os-control-intake` when the work needs a
-plan-to-completion lifecycle. Approving a plan, accepting the code and closing a task each require a signature from a human-held SSH key (`ssh-keygen -Y sign`); the `os-control-signing-setup` skill walks you through creating and testing it. [Installation and onboarding](INSTALL.md) has platform-specific and
+Then ask your agent to set up Agentic OS for the repository, or use the `init` mode of `setting-up-agentic-os`, followed by
+the `health` mode of `running-control-plane`. Start a governed task through the `intake` mode of `running-control-plane` when the work needs a
+plan-to-completion lifecycle. Approving a plan, accepting the code and closing a task each require a signature from a human-held SSH key (`ssh-keygen -Y sign`); the `signing-setup` mode of `setting-up-agentic-os` walks you through creating and testing it. [Installation and onboarding](INSTALL.md) has platform-specific and
 local-development instructions.
 
 ### Human approval gates: SSH signing (do this once per machine)
@@ -109,7 +103,7 @@ gates, so an agent can never approve its own work. Only an out-of-band OpenSSH s
 key advances them. This follows the CIBA/RAR idea (approve one exact, structured request out of band),
 done locally with SSH instead of an identity provider.
 
-1. Run `python3 plugins/agent-agentic-os/scripts/setup_ciba_identity.py` in your own terminal (the `os-control-signing-setup` skill explains each prompt); `--check` reports readiness.
+1. Run `python3 plugins/agent-agentic-os/skills/setting-up-agentic-os/scripts/setup_ciba_identity.py` in your own terminal (the `signing-setup` mode explains each prompt); `--check` reports readiness.
 2. Your private key stays in `~/.ssh`; `allowed_signers` and `context/identity/` are per-machine and never committed.
 3. When the agent stops with `HUMAN_PROOF_REQUIRED`, run its `coordinate-transition ... --interactive --key <your key>` command (with `SSH_AUTH_SOCK` unset) and enter your passphrase.
 
@@ -156,7 +150,7 @@ self-contained runtime copies into active client harnesses (`.claude/skills/`, `
 
 | Plugin | Use it for |
 | --- | --- |
-| [`agent-agentic-os`](plugins/agent-agentic-os/README.md) | Governed task lifecycle, health checks, evaluation, continuous improvement, and repository evolution |
+| [`agent-agentic-os`](plugins/agent-agentic-os/README.md) | Three skills: `running-control-plane` (governed task lifecycle, health checks, simulation, gating switch), `setting-up-agentic-os` (project setup and signing identities), `improving-skills-in-lab` (eval-gated skill improvement) |
 | [`agent-orchestration`](plugins/agent-orchestration/README.md) | Unified agent execution topologies (DAGs, supervisor/worker loops, parallel swarms) and multi-backend CLI routing (run_agent.py, 13 expert personas, AGT sandboxing, MAF validation) |
 | [`agent-memory`](plugins/agent-memory/README.md) | Filesystem memory, RLM, vector retrieval, and Obsidian vault/wiki workflows |
 | [`agent-extension-authoring`](plugins/agent-extension-authoring/README.md) | Creating, auditing, packaging, and maintaining plugins and skills |
@@ -180,7 +174,7 @@ and manifest rather than treating this landing page as a volatile inventory.
   permission to quietly work around it.
 
 Read the full [architecture overview](architecture.md), the
-[control-plane module diagram](docs/diagrams/control-plane-architecture.mermaid), and the
+[control-plane module diagram](plugins/agent-agentic-os/skills/running-control-plane/references/diagrams/control-plane-architecture.mermaid), and the
 [ADRs](docs/ADRs/) for the detailed contracts.
 
 ## What this is not
@@ -199,7 +193,7 @@ plugins/                  canonical plugin sources
   <plugin>/scripts/       canonical shared Python helpers
   <plugin>/agents/        sub-agent definitions
 .agents/                  installer output; generated runtime copies, not source of truth
-docs/diagrams/            control-plane and architecture diagrams
+plugins/agent-agentic-os/skills/running-control-plane/references/diagrams/   control-plane and architecture diagrams
 docs/ADRs/                binding architectural decisions
 context/                  local control-plane state and memory in a consuming repository
 temp/                     local scratch output
@@ -211,6 +205,6 @@ temp/                     local scratch output
 - [Contributor/session bootstrap](START_HERE.md)
 - [Repository architecture](architecture.md)
 - [Agentic OS control-plane plugin](plugins/agent-agentic-os/README.md)
-- [Control-plane happy path](docs/diagrams/control-plane-pipeline-happy-path.mermaid)
-- [Complete transition graph](docs/diagrams/control-plane-pipeline.mermaid)
+- [Control-plane happy path](plugins/agent-agentic-os/skills/running-control-plane/references/diagrams/control-plane-pipeline-happy-path.mermaid)
+- [Complete transition graph](plugins/agent-agentic-os/skills/running-control-plane/references/diagrams/control-plane-pipeline.mermaid)
 - [Architectural decision records](docs/ADRs/)

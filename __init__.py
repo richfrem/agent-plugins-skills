@@ -22,16 +22,10 @@ _HERE = Path(__file__).resolve().parent
 _PLUGINS_DIR = _HERE / "plugins"
 
 _SKILL_DIRS = [
-    # agent-agentic-os (15 skills on disk; the subset registered here)
-    ("agent-agentic-os",         "os-control-intake"),
-    ("agent-agentic-os",         "os-lab-planner"),
-    ("agent-agentic-os",         "os-lab-backport"),
-    ("agent-agentic-os",         "os-lab-setup"),
-    ("agent-agentic-os",         "os-lab-scorer"),
-    ("agent-agentic-os",         "os-lab-log"),
-    ("agent-agentic-os",         "os-lab-loop"),
-    ("agent-agentic-os",         "os-control-init"),
-    ("agent-agentic-os",         "os-lab-memory"),
+    # agent-agentic-os (3 skills)
+    ("agent-agentic-os",         "running-control-plane"),
+    ("agent-agentic-os",         "setting-up-agentic-os"),
+    ("agent-agentic-os",         "improving-skills-in-lab"),
 
     # agent-orchestration/ (6 skills)
     ("agent-orchestration/",              "agent-swarm"),

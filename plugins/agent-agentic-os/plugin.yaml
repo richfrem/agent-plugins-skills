@@ -1,6 +1,6 @@
 name: agent-agentic-os
-version: 1.12.0
-description: "Opinionated learning layer above Claude Code — structured memory hierarchy, continuous improvement loop, multi-agent event bus coordination, and eval-gated skill improvement."
+version: 2.0.0
+description: "Governed control plane and learning layer above Claude Code: a gated task pipeline with signed human approval gates and a gating switch (running-control-plane), project setup and signing-identity guidance (setting-up-agentic-os), and eval-gated skill improvement in an isolated lab (improving-skills-in-lab)."
 author: Richard Fremmerlid
 kind: standalone
 platforms:
@@ -16,20 +16,6 @@ provides_tools:
   - setup_ciba_identity
   - test_signing_mechanics
 skills:
-  - os-control-intake
-  - os-lab-planner
-  - os-control-mode
-  - os-lab-backport
-  - os-lab-setup
-  - os-lab-scorer
-  - os-lab-log
-  - os-lab-loop
-  - os-control-init
-  - os-lab-memory
-  - os-control-signing-setup
-  - os-control-simulator
-  - os-control-worktree
-  - os-control-health
-agents:
-  - os-control-setup-agent
-  - os-lab-agent
+  - running-control-plane
+  - setting-up-agentic-os
+  - improving-skills-in-lab

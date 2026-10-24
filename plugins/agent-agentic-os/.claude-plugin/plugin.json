@@ -1,7 +1,7 @@
 {
     "name": "agent-agentic-os",
-    "version": "1.10.0",
-    "description": "An opinionated learning layer and harnessing discipline above what Claude Code ships natively. Provides a structured memory hierarchy, a continuous improvement loop for model instructions, multi-agent event bus coordination, and an eval-gated skill improvement system. Designed for developers running long-horizon workflows who need a cohesive feedback control system rather than isolated orchestration primitives.",
+    "version": "2.0.0",
+    "description": "Governed control plane and learning layer above Claude Code: a gated task pipeline with signed human approval gates and a gating switch (running-control-plane), project setup and signing-identity guidance (setting-up-agentic-os), and eval-gated skill improvement in an isolated lab (improving-skills-in-lab).",
     "author": {
         "name": "Richard Fremmerlid"
     },

@@ -1,0 +1,617 @@
+[
+  {
+    "prompt": "backport the lab results from the link-checker test run",
+    "should_trigger": true,
+    "note": "from os-lab-backport"
+  },
+  {
+    "prompt": "review what the lab agent changed in the lab repo",
+    "should_trigger": true,
+    "note": "from os-lab-backport"
+  },
+  {
+    "prompt": "apply the skill improvements from the lab run to master",
+    "should_trigger": true,
+    "note": "from os-lab-backport"
+  },
+  {
+    "prompt": "the lab run is done, check which files were updated",
+    "should_trigger": true,
+    "note": "from os-lab-backport"
+  },
+  {
+    "prompt": "run the improvement loop on this skill for 10 iterations",
+    "should_trigger": true,
+    "note": "flipped: negative for os-lab-backport, now a mode of improving-skills-in-lab [from os-lab-backport]"
+  },
+  {
+    "prompt": "fix this bug in the link checker script",
+    "should_trigger": false,
+    "note": "from os-lab-backport"
+  },
+  {
+    "prompt": "deploy the plugin to my local environment",
+    "should_trigger": false,
+    "note": "from os-lab-backport"
+  },
+  {
+    "prompt": "set up a lab repo for this skill",
+    "should_trigger": true,
+    "note": "flipped: negative for os-lab-backport, now a mode of improving-skills-in-lab [from os-lab-backport]"
+  },
+  {
+    "prompt": "log this run and show me the improvement chart",
+    "should_trigger": true,
+    "note": "flipped: negative for os-lab-backport, now a mode of improving-skills-in-lab [from os-lab-backport]"
+  },
+  {
+    "prompt": "Append the latest loop run results to the experiment log",
+    "should_trigger": true,
+    "note": "from os-lab-log"
+  },
+  {
+    "prompt": "Log the results from today's scorer test run before temp is cleared",
+    "should_trigger": true,
+    "note": "from os-lab-log"
+  },
+  {
+    "prompt": "Query the experiment log for all T2-D failures",
+    "should_trigger": true,
+    "note": "from os-lab-log"
+  },
+  {
+    "prompt": "Show me a summary of all experiment runs: how many passed vs failed",
+    "should_trigger": true,
+    "note": "from os-lab-log"
+  },
+  {
+    "prompt": "Search the experiment log for hallucination failures",
+    "should_trigger": true,
+    "note": "from os-lab-log"
+  },
+  {
+    "prompt": "Show me the improvement chart. Are the eval scores trending up?",
+    "should_trigger": true,
+    "note": "from os-lab-log"
+  },
+  {
+    "prompt": "Generate the progress report for os-lab-memory, cycle by cycle",
+    "should_trigger": true,
+    "note": "from os-lab-log"
+  },
+  {
+    "prompt": "Are we actually getting better? Graph the eval scores across all the skills we've tested.",
+    "should_trigger": true,
+    "note": "from os-lab-log"
+  },
+  {
+    "prompt": "The ledger is empty and no cycles have run. Can you still show me the chart?",
+    "should_trigger": true,
+    "note": "from os-lab-log"
+  },
+  {
+    "prompt": "Graph our autonomous completion rate trend",
+    "should_trigger": true,
+    "note": "from os-lab-log"
+  },
+  {
+    "prompt": "Run the improvement loop on the os-lab-scorer skill",
+    "should_trigger": true,
+    "note": "flipped: negative for os-lab-log, now a mode of improving-skills-in-lab [from os-lab-log]"
+  },
+  {
+    "prompt": "Score this one change to the skill: KEEP or DISCARD?",
+    "should_trigger": true,
+    "note": "flipped: negative for os-lab-log, now a mode of improving-skills-in-lab [from os-lab-log]"
+  },
+  {
+    "prompt": "Review the lab diff and backport the approved changes to the master plugin",
+    "should_trigger": true,
+    "note": "flipped: negative for os-lab-log, now a mode of improving-skills-in-lab [from os-lab-log]"
+  },
+  {
+    "prompt": "Build the isolated lab repo and commit the baseline",
+    "should_trigger": true,
+    "note": "flipped: negative for os-lab-log, now a mode of improving-skills-in-lab [from os-lab-log]"
+  },
+  {
+    "prompt": "Plan what to improve in this skill and write the delegation prompt",
+    "should_trigger": true,
+    "note": "flipped: negative for os-lab-log, now a mode of improving-skills-in-lab [from os-lab-log]"
+  },
+  {
+    "prompt": "Close the session: write the session log and promote memory",
+    "should_trigger": true,
+    "note": "flipped: negative for os-lab-log, now a mode of improving-skills-in-lab [from os-lab-log]"
+  },
+  {
+    "prompt": "Show me the test registry. What hypotheses have been confirmed?",
+    "should_trigger": true,
+    "note": "flipped: negative for os-lab-log, now a mode of improving-skills-in-lab [from os-lab-log]"
+  },
+  {
+    "prompt": "run the autoresearch loop on this skill for 10 iterations",
+    "should_trigger": true,
+    "note": "from os-lab-loop"
+  },
+  {
+    "prompt": "run the improvement loop on the target skill until the score reaches 0.95",
+    "should_trigger": true,
+    "note": "from os-lab-loop"
+  },
+  {
+    "prompt": "continuous improvement loop where every cycle evals against baseline with KEEP or DISCARD",
+    "should_trigger": true,
+    "note": "from os-lab-loop"
+  },
+  {
+    "prompt": "close the improvement cycle with surveys, ledger update and memory promotion",
+    "should_trigger": true,
+    "note": "from os-lab-loop"
+  },
+  {
+    "prompt": "coordinate two Claude sessions to audit skills in parallel without blocking each other",
+    "should_trigger": true,
+    "note": "from os-lab-loop"
+  },
+  {
+    "prompt": "set up a shared event bus so multiple agents can coordinate without polling files",
+    "should_trigger": true,
+    "note": "from os-lab-loop"
+  },
+  {
+    "prompt": "run 3 skill audits concurrently using fan-out to inner agents",
+    "should_trigger": true,
+    "note": "from os-lab-loop"
+  },
+  {
+    "prompt": "orchestrator assigns tasks to inner agents using claim_task on the kernel bus",
+    "should_trigger": true,
+    "note": "from os-lab-loop"
+  },
+  {
+    "prompt": "PEER_AGENT runs eval independently then emits verdict back to ORCHESTRATOR",
+    "should_trigger": true,
+    "note": "from os-lab-loop"
+  },
+  {
+    "prompt": "run a triple-loop: outer supervisor sets goals, inner agent executes and signals completion",
+    "should_trigger": true,
+    "note": "from os-lab-loop"
+  },
+  {
+    "prompt": "how do I bake sourdough bread with a long fermentation schedule",
+    "should_trigger": false,
+    "note": "from os-lab-loop"
+  },
+  {
+    "prompt": "generate a monthly budget spreadsheet in Excel",
+    "should_trigger": false,
+    "note": "from os-lab-loop"
+  },
+  {
+    "prompt": "write unit tests for a React component using Jest",
+    "should_trigger": false,
+    "note": "from os-lab-loop"
+  },
+  {
+    "prompt": "run the learning loop to reflect on what we did this session",
+    "should_trigger": false,
+    "note": "from os-lab-loop"
+  },
+  {
+    "prompt": "evaluate this skill and give me one KEEP or DISCARD verdict",
+    "should_trigger": true,
+    "note": "flipped: negative for os-lab-loop, now a mode of improving-skills-in-lab [from os-lab-loop]"
+  },
+  {
+    "prompt": "fix this skill's routing with one RED-GREEN-REFACTOR pass",
+    "should_trigger": true,
+    "note": "flipped: negative for os-lab-loop, now a mode of improving-skills-in-lab [from os-lab-loop]"
+  },
+  {
+    "prompt": "build an isolated lab repository and commit a baseline",
+    "should_trigger": true,
+    "note": "flipped: negative for os-lab-loop, now a mode of improving-skills-in-lab [from os-lab-loop]"
+  },
+  {
+    "prompt": "write a plan and delegation prompt for improving this agent",
+    "should_trigger": true,
+    "note": "flipped: negative for os-lab-loop, now a mode of improving-skills-in-lab [from os-lab-loop]"
+  },
+  {
+    "prompt": "review the lab diff and backport approved changes to the master plugin",
+    "should_trigger": true,
+    "note": "flipped: negative for os-lab-loop, now a mode of improving-skills-in-lab [from os-lab-loop]"
+  },
+  {
+    "prompt": "show a progress chart and summary of past runs",
+    "should_trigger": true,
+    "note": "flipped: negative for os-lab-loop, now a mode of improving-skills-in-lab [from os-lab-loop]"
+  },
+  {
+    "prompt": "write a memory log of what we learned today",
+    "should_trigger": true,
+    "note": "flipped: negative for os-lab-loop, now a mode of improving-skills-in-lab [from os-lab-loop]"
+  },
+  {
+    "prompt": "I want to improve one of our agents, help me decide what to do",
+    "should_trigger": true,
+    "note": "flipped: negative for os-lab-loop, now a mode of improving-skills-in-lab [from os-lab-loop]"
+  },
+  {
+    "prompt": "check the agent health status and report any stale locks",
+    "should_trigger": false,
+    "note": "from os-lab-loop"
+  },
+  {
+    "prompt": "That's it for today, see you tomorrow.",
+    "should_trigger": true,
+    "note": "from os-lab-memory"
+  },
+  {
+    "prompt": "Can you summarize the session log and save any new architectural rules?",
+    "should_trigger": true,
+    "note": "from os-lab-memory"
+  },
+  {
+    "prompt": "We figured out the authentication bug. Please save that we must use the new JWT token header format.",
+    "should_trigger": true,
+    "note": "from os-lab-memory"
+  },
+  {
+    "prompt": "We're done for the day, make sure you don't forget the new database schema.",
+    "should_trigger": true,
+    "note": "from os-lab-memory"
+  },
+  {
+    "prompt": "I'm logging off.",
+    "should_trigger": true,
+    "note": "from os-lab-memory"
+  },
+  {
+    "prompt": "Please run the task memory lifecycle so we can close out today's work.",
+    "should_trigger": true,
+    "note": "from os-lab-memory"
+  },
+  {
+    "prompt": "Summarize what we learned about the user API and save it to our long term memory.",
+    "should_trigger": true,
+    "note": "from os-lab-memory"
+  },
+  {
+    "prompt": "Good work on the frontend. Save our new color palette choices to the memory bank.",
+    "should_trigger": true,
+    "note": "from os-lab-memory"
+  },
+  {
+    "prompt": "Run the test suite on the auth module.",
+    "should_trigger": false,
+    "note": "from os-lab-memory"
+  },
+  {
+    "prompt": "What time is it in Tokyo?",
+    "should_trigger": false,
+    "note": "from os-lab-memory"
+  },
+  {
+    "prompt": "Can you write a python script to sort this array?",
+    "should_trigger": false,
+    "note": "from os-lab-memory"
+  },
+  {
+    "prompt": "Tell me what we did yesterday.",
+    "should_trigger": false,
+    "note": "from os-lab-memory"
+  },
+  {
+    "prompt": "Wait, don't save that yet, we're not done.",
+    "should_trigger": true,
+    "note": "from os-lab-memory"
+  },
+  {
+    "prompt": "Save the session but delete the memory.md file.",
+    "should_trigger": true,
+    "note": "from os-lab-memory"
+  },
+  {
+    "prompt": "Review the session and list what could be improved next time.",
+    "should_trigger": false,
+    "note": "from os-lab-memory"
+  },
+  {
+    "prompt": "Write the session notes to the pull request description.",
+    "should_trigger": false,
+    "note": "from os-lab-memory"
+  },
+  {
+    "prompt": "Review the os-lab-loop skill and create a plan to improve it",
+    "should_trigger": true,
+    "note": "from os-lab-planner"
+  },
+  {
+    "prompt": "I want to apply the browser harness self-healing patterns to agent-exploration-cycle - write a task plan and delegation prompt",
+    "should_trigger": true,
+    "note": "from os-lab-planner"
+  },
+  {
+    "prompt": "Create an evolution plan for the running-exploration-cycle skill - it is missing Gotchas and a handoff block",
+    "should_trigger": true,
+    "note": "from os-lab-planner"
+  },
+  {
+    "prompt": "Write a delegation prompt to improve my skill",
+    "should_trigger": true,
+    "note": "from os-lab-planner"
+  },
+  {
+    "prompt": "Audit what already exists for plugin health monitoring before we decide whether to update a skill or create a new one",
+    "should_trigger": true,
+    "note": "from os-lab-planner"
+  },
+  {
+    "prompt": "There is no skill for auditing cross-plugin dependencies - check whether an existing skill can be extended and plan it",
+    "should_trigger": true,
+    "note": "from os-lab-planner"
+  },
+  {
+    "prompt": "I found a new browser automation pattern I want to generalize and apply to my agents",
+    "should_trigger": true,
+    "note": "pattern abstraction category [from os-lab-planner]"
+  },
+  {
+    "prompt": "I read a paper on meta-learning and want to apply those techniques to my improvement loops - brainstorm options and write the plan",
+    "should_trigger": true,
+    "note": "research application category [from os-lab-planner]"
+  },
+  {
+    "prompt": "Brainstorm three approaches to improving routing accuracy for the os-lab-scorer skill and recommend one",
+    "should_trigger": true,
+    "note": "from os-lab-planner"
+  },
+  {
+    "prompt": "Run the improvement loop on os-lab-scorer for 50 iterations",
+    "should_trigger": true,
+    "note": "flipped: negative for os-lab-planner, now a mode of improving-skills-in-lab [from os-lab-planner]"
+  },
+  {
+    "prompt": "Set up an isolated lab repo for the running-exploration-cycle skill and commit the baseline",
+    "should_trigger": true,
+    "note": "flipped: negative for os-lab-planner, now a mode of improving-skills-in-lab [from os-lab-planner]"
+  },
+  {
+    "prompt": "Score this SKILL.md change against the locked evals and tell me KEEP or DISCARD",
+    "should_trigger": true,
+    "note": "flipped: negative for os-lab-planner, now a mode of improving-skills-in-lab [from os-lab-planner]"
+  },
+  {
+    "prompt": "Review the lab diff and backport the approved changes to the source skill",
+    "should_trigger": true,
+    "note": "flipped: negative for os-lab-planner, now a mode of improving-skills-in-lab [from os-lab-planner]"
+  },
+  {
+    "prompt": "Show me the run log and charts from last night's experiment",
+    "should_trigger": true,
+    "note": "flipped: negative for os-lab-planner, now a mode of improving-skills-in-lab [from os-lab-planner]"
+  },
+  {
+    "prompt": "Promote today's learnings into memory and close the session",
+    "should_trigger": true,
+    "note": "flipped: negative for os-lab-planner, now a mode of improving-skills-in-lab [from os-lab-planner]"
+  },
+  {
+    "prompt": "Show me the current eval score for os-lab-scorer",
+    "should_trigger": true,
+    "note": "flipped: negative for os-lab-planner, now a mode of improving-skills-in-lab [from os-lab-planner]"
+  },
+  {
+    "prompt": "List all the agents we currently have in the agentic-os plugin",
+    "should_trigger": false,
+    "note": "from os-lab-planner"
+  },
+  {
+    "prompt": "Fix the bug in dispatch.py where the tier flag is ignored",
+    "should_trigger": false,
+    "note": "from os-lab-planner"
+  },
+  {
+    "prompt": "improve things",
+    "should_trigger": true,
+    "note": "flipped: negative for os-lab-planner, now a mode of improving-skills-in-lab [from os-lab-planner]"
+  },
+  {
+    "prompt": "evaluate this skill",
+    "should_trigger": true,
+    "note": "from os-lab-scorer"
+  },
+  {
+    "prompt": "run tests on the new skill",
+    "should_trigger": true,
+    "note": "from os-lab-scorer"
+  },
+  {
+    "prompt": "check if this change breaks anything",
+    "should_trigger": true,
+    "note": "from os-lab-scorer"
+  },
+  {
+    "prompt": "measure the performance gain from this edit",
+    "should_trigger": true,
+    "note": "from os-lab-scorer"
+  },
+  {
+    "prompt": "another agent proposed a SKILL.md change, give me a KEEP or DISCARD verdict",
+    "should_trigger": true,
+    "note": "from os-lab-scorer"
+  },
+  {
+    "prompt": "score this change against the baseline in results.tsv",
+    "should_trigger": true,
+    "note": "from os-lab-scorer"
+  },
+  {
+    "prompt": "The skill routing accuracy is low and I need to improve the skill triggers",
+    "should_trigger": true,
+    "note": "from os-lab-scorer"
+  },
+  {
+    "prompt": "Fix skill description, the skill is not triggering when it should",
+    "should_trigger": true,
+    "note": "from os-lab-scorer"
+  },
+  {
+    "prompt": "Improve skill routing precision using the RED-GREEN-REFACTOR cycle",
+    "should_trigger": true,
+    "note": "from os-lab-scorer"
+  },
+  {
+    "prompt": "what is the weather?",
+    "should_trigger": false,
+    "note": "from os-lab-scorer"
+  },
+  {
+    "prompt": "deploy to production",
+    "should_trigger": false,
+    "note": "from os-lab-scorer"
+  },
+  {
+    "prompt": "check if we have a skill for session memory",
+    "should_trigger": false,
+    "note": "from os-lab-scorer"
+  },
+  {
+    "prompt": "Scaffold a new skill from scratch with discovery interview",
+    "should_trigger": false,
+    "note": "from os-lab-scorer"
+  },
+  {
+    "prompt": "coordinate two agents to run concurrent eval loops across 3 skills",
+    "should_trigger": true,
+    "note": "flipped: negative for os-lab-scorer, now a mode of improving-skills-in-lab [from os-lab-scorer]"
+  },
+  {
+    "prompt": "build an isolated lab repository and commit a baseline for this skill",
+    "should_trigger": true,
+    "note": "flipped: negative for os-lab-scorer, now a mode of improving-skills-in-lab [from os-lab-scorer]"
+  },
+  {
+    "prompt": "show me the eval scores and a progress chart from the last cycle",
+    "should_trigger": true,
+    "note": "flipped: negative for os-lab-scorer, now a mode of improving-skills-in-lab [from os-lab-scorer]"
+  },
+  {
+    "prompt": "I want to improve one of our agents, help me figure out what to do",
+    "should_trigger": true,
+    "note": "flipped: negative for os-lab-scorer, now a mode of improving-skills-in-lab [from os-lab-scorer]"
+  },
+  {
+    "prompt": "Set up an eval lab for the link-checker skill",
+    "should_trigger": true,
+    "note": "from os-lab-setup"
+  },
+  {
+    "prompt": "Bootstrap the eval repo for running an autoresearch improvement loop",
+    "should_trigger": true,
+    "note": "from os-lab-setup"
+  },
+  {
+    "prompt": "Prepare the test repo for skill evaluation",
+    "should_trigger": true,
+    "note": "from os-lab-setup"
+  },
+  {
+    "prompt": "Create an isolated eval environment for this skill",
+    "should_trigger": true,
+    "note": "from os-lab-setup"
+  },
+  {
+    "prompt": "Set up the lab space for this skill so I can run an overnight loop",
+    "should_trigger": true,
+    "note": "from os-lab-setup"
+  },
+  {
+    "prompt": "I have a lab repo that needs to be configured for eval",
+    "should_trigger": true,
+    "note": "from os-lab-setup"
+  },
+  {
+    "prompt": "Initialize a new skill optimization lab repo",
+    "should_trigger": true,
+    "note": "from os-lab-setup"
+  },
+  {
+    "prompt": "Run the improvement loop on this skill",
+    "should_trigger": true,
+    "note": "flipped: negative for os-lab-setup, now a mode of improving-skills-in-lab [from os-lab-setup]"
+  },
+  {
+    "prompt": "Backport the lab results to master",
+    "should_trigger": true,
+    "note": "flipped: negative for os-lab-setup, now a mode of improving-skills-in-lab [from os-lab-setup]"
+  },
+  {
+    "prompt": "Create a new skill from scratch",
+    "should_trigger": false,
+    "note": "from os-lab-setup"
+  },
+  {
+    "prompt": "Optimize this skill using the improvement loop",
+    "should_trigger": true,
+    "note": "flipped: negative for os-lab-setup, now a mode of improving-skills-in-lab [from os-lab-setup]"
+  },
+  {
+    "prompt": "Install dependencies for my project",
+    "should_trigger": false,
+    "note": "from os-lab-setup"
+  },
+  {
+    "prompt": "Score this one skill change: KEEP or DISCARD?",
+    "should_trigger": true,
+    "note": "flipped: negative for os-lab-setup, now a mode of improving-skills-in-lab [from os-lab-setup]"
+  },
+  {
+    "prompt": "Plan which skill to improve and write the delegation prompt",
+    "should_trigger": true,
+    "note": "flipped: negative for os-lab-setup, now a mode of improving-skills-in-lab [from os-lab-setup]"
+  },
+  {
+    "prompt": "I want to evolve one of my agents — where do I start?",
+    "should_trigger": true,
+    "note": "from plugin-level evals"
+  },
+  {
+    "prompt": "Help me apply a new pattern I found to my skill ecosystem",
+    "should_trigger": true,
+    "note": "from plugin-level evals"
+  },
+  {
+    "prompt": "Set up an improvement lab for my running-exploration-cycle skill",
+    "should_trigger": true,
+    "note": "from plugin-level evals"
+  },
+  {
+    "prompt": "I need a new capability that doesn't exist yet in my plugins",
+    "should_trigger": true,
+    "note": "from plugin-level evals"
+  },
+  {
+    "prompt": "Run multiple skill improvement loops in parallel",
+    "should_trigger": true,
+    "note": "from plugin-level evals"
+  },
+  {
+    "prompt": "What is the Agentic OS plugin?",
+    "should_trigger": false,
+    "note": "from plugin-level evals"
+  },
+  {
+    "prompt": "Fix the syntax error in my Python script",
+    "should_trigger": false,
+    "note": "from plugin-level evals"
+  },
+  {
+    "prompt": "Review my pull request for the auth service",
+    "should_trigger": false,
+    "note": "from plugin-level evals"
+  }
+]

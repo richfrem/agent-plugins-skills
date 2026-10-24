@@ -1,6 +1,6 @@
 # Repository Skill & Rule Configuration Guide
 
-This guide lists which skills and rules to enable (`true`) or leave out (`false`) to keep agent context small, centred on `os-control-init` workflows and core repository governance.
+This guide lists which skills and rules to enable (`true`) or leave out (`false`) to keep agent context small, centred on the `running-control-plane` init workflow and core repository governance.
 
 Skills are installed with APM from a materialized clone ([INSTALL.md](INSTALL.md), Option 1). The selection is APM's `--skill` list, saved in the global manifest `~/.apm/apm.yml` (or a project's `apm.yml`). Rules are not installed by APM: setup copies the enabled rules into a project's `.agent/rules/`, and `AGENTS.md` lists them there.
 
@@ -12,36 +12,25 @@ Entries marked **not yet classified** are skills or rules that exist in the repo
 
 ## 1. Quick Summary of Configuration Goals
 
-- **Focus**: Maintain core repo governance, issue tracking, scaffolding, and the `os-control-init` bootstrap suite.
+- **Focus**: Maintain core repo governance, issue tracking, scaffolding, and the `running-control-plane` bootstrap.
 - **De-bloat**: Leave out unused high-token agent patterns, RLM/vector stores, Obsidian wiki notes, and heavy prototyping pipelines until explicitly needed.
 
 ---
 
 ## 2. Skills Configuration (APM `--skill` selection)
 
-### A. `agent-agentic-os` (OS Kernel & Bootstrap)
+### A. `agent-agentic-os` (control plane and skill lab)
 
 | Skill | Status | Rationale |
 |---|---|---|
-| `os-control-health` | **`true`** | Verification gate required by `os-control-init` Phase 5 to confirm DB, memory, and substrate health. |
-| `os-control-init` | **`true`** | Core skill to bootstrap and retrofit Agentic OS, 3-Layer memory, and repo structure. |
-| `os-control-intake` | `false` | Control-plane interview state machine; disable if doing direct/manual tasking. |
-| `os-control-mode` | `false` | Control-plane database mode switcher. |
-| `os-control-signing-setup` | **`true`** | Guides SSH cryptographic human approval gate enrollment and verification. |
-| `os-control-simulator` | `false` | Control-plane transition dry-run simulator. |
-| `os-control-worktree` | `false` | Worktree orchestration engine; turn on if using automated isolated task worktrees. |
-| `os-lab-backport` | `false` | Skill improvement lab: isolated lab setup, improvement loop, KEEP/DISCARD scorer, backport review, run log and charts. |
-| `os-lab-log` | `false` | Skill improvement lab: isolated lab setup, improvement loop, KEEP/DISCARD scorer, backport review, run log and charts. |
-| `os-lab-loop` | `false` | Skill improvement lab: isolated lab setup, improvement loop, KEEP/DISCARD scorer, backport review, run log and charts. |
-| `os-lab-memory` | **`true`** | Manages memory tiers (`MEMORY.md`, `context/memory.md`, session logs). |
-| `os-lab-planner` | `false` | Architectural synthesis subagent; disable if doing manual architecture review. |
-| `os-lab-scorer` | `false` | Skill improvement lab: isolated lab setup, improvement loop, KEEP/DISCARD scorer, backport review, run log and charts. |
-| `os-lab-setup` | `false` | Skill improvement lab: isolated lab setup, improvement loop, KEEP/DISCARD scorer, backport review, run log and charts. |
+| `running-control-plane` | **`true`** | Intake gateway, health check, transition simulator, worktree selection and the gating switch. Turn gating off per clone with `control_plane_mode.py disable` instead of uninstalling. |
+| `setting-up-agentic-os` | **`true`** | Project init and retrofit, the agent's own simulation identity, and the human signing-key setup. Needs `running-control-plane` installed beside it. |
+| `improving-skills-in-lab` | `false` | Opt-in: skill improvement lab (planning, isolated lab setup, improvement loop, KEEP/DISCARD scorer, log and charts, backport) and its session-memory mode. The evolution cycle in `running-control-plane` runs the lab's `evaluate.py`, so install both where evolution cycles are used. |
 
 Install the enabled skills:
 
 ```bash
-python3 plugins/agent-extension-authoring/skills/packaging-with-apm/scripts/apm_consumer.py install --checkout . --global --plugins agent-agentic-os --skill os-control-health --skill os-control-init --skill os-control-signing-setup --skill os-lab-memory
+python3 plugins/agent-extension-authoring/skills/packaging-with-apm/scripts/apm_consumer.py install --checkout . --global --plugins agent-agentic-os --skill running-control-plane --skill setting-up-agentic-os
 ```
 
 ---

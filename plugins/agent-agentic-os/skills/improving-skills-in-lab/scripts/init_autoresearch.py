@@ -1,0 +1,219 @@
+#!/usr/bin/env python
+"""
+init_autoresearch.py -- Scaffold the Karpathy autoresearch loop for any target
+================================================================================
+
+Purpose:
+    Idempotent scaffold for the autoresearch structure inside an experiment directory.
+    The mutation target is NOT assumed to be a SKILL.md — it can be any file:
+    a skill definition, a Python script, a config file, a math model, etc.
+
+    Reads all three templates from this skill's assets directory and
+    renders/copies them into the experiment directory:
+
+        <experiment-dir>/references/program.md   (from program.md.template, vars rendered)
+        <experiment-dir>/evals/evals.json        (from evals.json.template, vars rendered)
+        <experiment-dir>/evals/results.tsv       (from results.tsv.template — header only)
+
+    Safe to re-run: never overwrites existing files.
+    .lock.hashes is NOT created here — evaluate.py writes it at --baseline time.
+
+Templates live at:
+    assets/templates/autoresearch/
+        program.md.template      (uses {{EXPERIMENT_NAME}}, {{EXPERIMENT_PATH}},
+                                   {{MUTATION_TARGET}}, {{PLUGIN_ROOT}})
+        evals.json.template      (uses {{EXPERIMENT_NAME}})
+        results.tsv.template     (schema header — no vars)
+
+Usage:
+    python scripts/init_autoresearch.py \\
+        --experiment-dir <path/to/experiment-or-skill> \\
+        [--mutation-target SKILL.md] \\
+        [--plugin-root .agents/plugins/autoresearch-improvement]
+
+    # For a skill:
+    python scripts/init_autoresearch.py \\
+        --experiment-dir plugins/agent-agentic-os/skills/my-skill
+
+    # For a Python script:
+    python scripts/init_autoresearch.py \\
+        --experiment-dir experiments/my-tuning-run \\
+        --mutation-target optimizer.py
+
+Workflow after scaffolding:
+    1. Edit references/program.md  -- fill in Notes section
+    2. Edit evals/evals.json       -- replace REPLACE placeholders with real inputs/outputs
+    3. evaluate.py --baseline      -- establish baseline, write .lock.hashes
+    4. Agent loop                  -- reads program.md, mutates target, runs evaluate.py
+
+Key Input Dependencies:
+    - assets/templates/autoresearch/*.template
+
+Key Functions:
+    - _load_template() / _render() -- load and variable-render one template.
+    - _resolve_display_paths() -- human-readable relative paths for the summary.
+    - _write_or_skip() -- writes a file only if it doesn't already exist.
+    - _deploy_templates() -- renders/copies all three templates into the experiment dir.
+    - _print_summary_and_next_steps() -- prints created/skipped files and next steps.
+    - scaffold() -- top-level idempotent scaffold entry point.
+    - main() -- CLI entry point.
+"""
+
+import argparse
+import sys
+from pathlib import Path
+
+HERE = Path(__file__).parent.resolve()
+PLUGIN_ROOT = HERE.parent
+
+# Templates live at assets/templates/autoresearch/ relative to the script's
+# parent directory (the skill root). Using HERE.parent makes this agnostic
+# to whether the skill is installed standalone (e.g. in your client's skills folder)
+# or inside the full plugin tree (plugins/agent-agentic-os/skills/improving-skills-in-lab/).
+TEMPLATES_DIR = PLUGIN_ROOT / "assets" / "templates" / "autoresearch"
+
+
+def _load_template(name: str) -> str:
+    """Read a template file, abort with a clear message if missing."""
+    path = TEMPLATES_DIR / name
+    if not path.exists():
+        print(f"ERROR: template not found: {path}", file=sys.stderr)
+        print(f"       Expected templates dir: {TEMPLATES_DIR}", file=sys.stderr)
+        sys.exit(2)
+    return path.read_text(encoding="utf-8")
+
+
+def _render(template: str, vars: dict[str, str]) -> str:
+    """Replace all {{KEY}} placeholders in the template."""
+    result = template
+    for key, value in vars.items():
+        result = result.replace(f"{{{{{key}}}}}", value)
+    return result
+
+
+def _resolve_display_paths(experiment_dir: Path, plugin_root: Path) -> tuple[str, str]:
+    """Resolve experiment_dir and plugin_root to cwd-relative display strings, falling back to absolute."""
+    try:
+        experiment_path_display = str(experiment_dir.relative_to(Path.cwd()))
+    except ValueError:
+        experiment_path_display = str(experiment_dir)
+
+    try:
+        plugin_root_display = str(plugin_root.relative_to(Path.cwd()))
+    except ValueError:
+        plugin_root_display = str(plugin_root)
+
+    return experiment_path_display, plugin_root_display
+
+
+def _write_or_skip(dest: Path, content: str, experiment_dir: Path, created: list, skipped: list) -> None:
+    """Write dest with content unless it already exists, tracking the result in created/skipped."""
+    if dest.exists():
+        skipped.append(str(dest.relative_to(experiment_dir)))
+    else:
+        dest.write_text(content, encoding="utf-8")
+        created.append(str(dest.relative_to(experiment_dir)))
+
+
+def _deploy_templates(experiment_dir: Path, template_vars: dict) -> tuple[list[str], list[str]]:
+    """Render and write program.md, copilot_proposer_prompt.md, evals.json, results.tsv; skip existing files."""
+    references_dir = experiment_dir / "references"
+    evals_dir = experiment_dir / "evals"
+    program_md = references_dir / "program.md"
+    copilot_prompt_md = references_dir / "copilot_proposer_prompt.md"
+    evals_json = evals_dir / "evals.json"
+    results_tsv = evals_dir / "results.tsv"
+
+    references_dir.mkdir(parents=True, exist_ok=True)
+    evals_dir.mkdir(parents=True, exist_ok=True)
+
+    created: list[str] = []
+    skipped: list[str] = []
+
+    _write_or_skip(program_md, _render(_load_template("program.md.template"), template_vars), experiment_dir, created, skipped)
+    _write_or_skip(copilot_prompt_md, _render(_load_template("copilot_proposer_prompt.md.template"), template_vars), experiment_dir, created, skipped)
+    _write_or_skip(evals_json, _render(_load_template("evals.json.template"), template_vars), experiment_dir, created, skipped)
+    _write_or_skip(results_tsv, _load_template("results.tsv.template"), experiment_dir, created, skipped)  # no vars in header
+
+    return created, skipped
+
+
+def _print_summary_and_next_steps(plugin_root: Path, created: list, skipped: list,
+                                   experiment_path_display: str, mutation_target: str) -> None:
+    """Print CREATED/EXISTS summary, then next-step instructions if anything was created."""
+    for f in created:
+        print(f"[init-autoresearch] CREATED:  {f}")
+    for f in skipped:
+        print(f"[init-autoresearch] EXISTS (skipped): {f}")
+
+    if created:
+        try:
+            evaluate_py = (plugin_root / "scripts" / "evaluate.py").relative_to(Path.cwd())
+        except ValueError:
+            evaluate_py = plugin_root / "scripts" / "evaluate.py"
+
+        print()
+        print("Next steps:")
+        print(f"  1. Edit references/program.md  -- fill in Notes section (goal, target score)")
+        print(f"  2. Edit evals/evals.json        -- replace REPLACE placeholders with real test cases")
+        print(f"  3. Establish baseline:")
+        print(f"       python {evaluate_py} \\")
+        print(f"           --skill {experiment_path_display}/{mutation_target} \\")
+        print(f"           --baseline --desc 'initial baseline'")
+    else:
+        print("[init-autoresearch] All files already exist. Nothing to do.")
+
+
+def scaffold(experiment_dir: Path, mutation_target: str, plugin_root: Path) -> None:
+    """Deploy all three autoresearch templates into the experiment directory."""
+    experiment_name = experiment_dir.name
+    experiment_path_display, plugin_root_display = _resolve_display_paths(experiment_dir, plugin_root)
+
+    template_vars = {
+        "EXPERIMENT_NAME": experiment_name,
+        "EXPERIMENT_PATH": experiment_path_display,
+        "MUTATION_TARGET": mutation_target,
+        "PLUGIN_ROOT": plugin_root_display,
+    }
+
+    created, skipped = _deploy_templates(experiment_dir, template_vars)
+    _print_summary_and_next_steps(plugin_root, created, skipped, experiment_path_display, mutation_target)
+
+
+def main() -> None:
+    """CLI entrypoint: parse args and scaffold the autoresearch loop into the experiment dir."""
+    parser = argparse.ArgumentParser(
+        description="Scaffold the Karpathy autoresearch loop for any mutation target."
+    )
+    parser.add_argument(
+        "--experiment-dir", required=True,
+        help="Root directory for this experiment (e.g. a skill dir, or any project folder)"
+    )
+    parser.add_argument(
+        "--mutation-target", default="SKILL.md",
+        help="Filename of the file the loop will mutate (default: SKILL.md). "
+             "Can be any file: a .py script, a config, a .md definition, etc."
+    )
+    parser.add_argument(
+        "--plugin-root", default=None,
+        help="Path to the plugin owning evaluate.py / eval_runner.py. "
+             "Defaults to the parent of this script's directory."
+    )
+    args = parser.parse_args()
+
+    experiment_dir = Path(args.experiment_dir).resolve()
+    if not experiment_dir.exists():
+        print(f"ERROR: experiment directory not found: {experiment_dir}", file=sys.stderr)
+        sys.exit(2)
+
+    mutation_target_path = experiment_dir / args.mutation_target
+    if not mutation_target_path.exists():
+        print(f"WARNING: mutation target not found: {mutation_target_path}", file=sys.stderr)
+        print(f"         Scaffolding anyway — create {args.mutation_target} before running the loop.")
+
+    plugin_root = Path(args.plugin_root).resolve() if args.plugin_root else PLUGIN_ROOT
+    scaffold(experiment_dir, args.mutation_target, plugin_root)
+
+
+if __name__ == "__main__":
+    main()

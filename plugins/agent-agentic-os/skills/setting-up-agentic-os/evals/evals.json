@@ -1,0 +1,217 @@
+[
+  {
+    "prompt": "Can you initialize the Agentic OS structure in my project?",
+    "should_trigger": true,
+    "note": "from os-control-init"
+  },
+  {
+    "prompt": "Where do I put CLAUDE.md and what goes in the context folder?",
+    "should_trigger": true,
+    "note": "from os-control-init"
+  },
+  {
+    "prompt": "I want Claude to remember things between sessions. How do I set that up?",
+    "should_trigger": true,
+    "note": "from os-control-init"
+  },
+  {
+    "prompt": "How do I get Claude to use skills in this project?",
+    "should_trigger": true,
+    "note": "from os-control-init"
+  },
+  {
+    "prompt": "I want to set up an agent harness for my legacy system documentation project",
+    "should_trigger": true,
+    "note": "from os-control-init"
+  },
+  {
+    "prompt": "I want Claude to run scheduled tasks every night. How do I set up the loop?",
+    "should_trigger": true,
+    "note": "from os-control-init"
+  },
+  {
+    "prompt": "What is Claude?",
+    "should_trigger": false,
+    "note": "from os-control-init"
+  },
+  {
+    "prompt": "Create a new skill for me that converts markdown to Word",
+    "should_trigger": false,
+    "note": "from os-control-init"
+  },
+  {
+    "prompt": "What did we decide last session? Check context/memory.md",
+    "should_trigger": false,
+    "note": "from os-control-init"
+  },
+  {
+    "prompt": "I already have a CLAUDE.md but want to add the context folder structure and sub-agents",
+    "should_trigger": true,
+    "note": "from os-control-init"
+  },
+  {
+    "prompt": "set up my approval signing key and allowed_signers",
+    "should_trigger": true,
+    "note": "flipped: negative for os-control-init, signing is a mode of setting-up-agentic-os"
+  },
+  {
+    "prompt": "test that my ssh signing key works before I approve",
+    "should_trigger": true,
+    "note": "flipped: negative for os-control-init, signing is a mode of setting-up-agentic-os"
+  },
+  {
+    "prompt": "set up my approval key for the control plane",
+    "should_trigger": true,
+    "note": "from os-control-signing-setup"
+  },
+  {
+    "prompt": "create the ssh key I need to approve gate 1",
+    "should_trigger": true,
+    "note": "from os-control-signing-setup"
+  },
+  {
+    "prompt": "I got HUMAN_PROOF_REQUIRED, how do I set up my signing identity?",
+    "should_trigger": true,
+    "note": "from os-control-signing-setup"
+  },
+  {
+    "prompt": "test my signing key works before I approve",
+    "should_trigger": true,
+    "note": "from os-control-signing-setup"
+  },
+  {
+    "prompt": "add a second key to allowed_signers",
+    "should_trigger": true,
+    "note": "from os-control-signing-setup"
+  },
+  {
+    "prompt": "approve the task and move it to APPROVED",
+    "should_trigger": false,
+    "note": "from os-control-signing-setup"
+  },
+  {
+    "prompt": "run a health check on the OS",
+    "should_trigger": false,
+    "note": "from os-control-signing-setup"
+  },
+  {
+    "prompt": "log this friction to map debt",
+    "should_trigger": false,
+    "note": "from os-control-signing-setup"
+  },
+  {
+    "prompt": "generate an ssh key for my github account",
+    "should_trigger": true,
+    "note": "flipped: negative for os-control-signing-setup, signing is a mode of setting-up-agentic-os"
+  },
+  {
+    "prompt": "set up my approval signing key",
+    "should_trigger": true,
+    "note": "flipped: negative for os-control-health, now a mode of running-control-plane [moved to setup]"
+  },
+  {
+    "prompt": "is my signing identity ready? run the status check",
+    "should_trigger": true,
+    "note": "from os-control-health [moved to setup]"
+  },
+  {
+    "prompt": "check os metrics",
+    "should_trigger": false,
+    "note": "control-plane request, not setup"
+  },
+  {
+    "prompt": "run a system monitor check on the OS",
+    "should_trigger": false,
+    "note": "control-plane request, not setup"
+  },
+  {
+    "prompt": "is the event bus healthy? any stuck agents?",
+    "should_trigger": false,
+    "note": "control-plane request, not setup"
+  },
+  {
+    "prompt": "I have an idea for a new plugin subsystem, let's start the intake and spec interview.",
+    "should_trigger": false,
+    "note": "control-plane request, not setup"
+  },
+  {
+    "prompt": "Compile a 4-pillar specification contract for the new control plane feature.",
+    "should_trigger": false,
+    "note": "control-plane request, not setup"
+  },
+  {
+    "prompt": "Can we run a Socratic developer interview to clarify requirements before writing code?",
+    "should_trigger": false,
+    "note": "control-plane request, not setup"
+  },
+  {
+    "prompt": "The user said no plan review is needed for this task; continue the os-control-intake pipeline to approval and handle the review-skip decision for the task.",
+    "should_trigger": false,
+    "note": "control-plane request, not setup"
+  },
+  {
+    "prompt": "disable the control plane",
+    "should_trigger": false,
+    "note": "control-plane request, not setup"
+  },
+  {
+    "prompt": "enable the control plane",
+    "should_trigger": false,
+    "note": "control-plane request, not setup"
+  },
+  {
+    "prompt": "can you turn off os-control-intake, this is just a quick fix",
+    "should_trigger": false,
+    "note": "control-plane request, not setup"
+  },
+  {
+    "prompt": "turn os-control-intake back on, I'm starting a big feature",
+    "should_trigger": false,
+    "note": "control-plane request, not setup"
+  },
+  {
+    "prompt": "stop gating my commits and pushes for now",
+    "should_trigger": false,
+    "note": "control-plane request, not setup"
+  },
+  {
+    "prompt": "turn off the push guard",
+    "should_trigger": false,
+    "note": "control-plane request, not setup"
+  },
+  {
+    "prompt": "is the control plane on?",
+    "should_trigger": false,
+    "note": "control-plane request, not setup"
+  },
+  {
+    "prompt": "control plane status",
+    "should_trigger": false,
+    "note": "control-plane request, not setup"
+  },
+  {
+    "prompt": "I want the full pipeline for this one, switch the control plane on",
+    "should_trigger": false,
+    "note": "control-plane request, not setup"
+  },
+  {
+    "prompt": "run os-control-intake for this new feature",
+    "should_trigger": false,
+    "note": "control-plane request, not setup"
+  },
+  {
+    "prompt": "Simulate the INTAKE -> INTERVIEW transition to make sure it's followable and checks pass.",
+    "should_trigger": false,
+    "note": "control-plane request, not setup"
+  },
+  {
+    "prompt": "Did I break the transition guidance or edge rules for VERIFY_EXIT -> RETROSPECTIVE?",
+    "should_trigger": false,
+    "note": "control-plane request, not setup"
+  },
+  {
+    "prompt": "Use the confirmed native worktree capability and report activation guidance.",
+    "should_trigger": false,
+    "note": "control-plane request, not setup"
+  }
+]
