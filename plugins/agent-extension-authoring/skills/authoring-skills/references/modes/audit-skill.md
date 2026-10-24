@@ -56,6 +56,7 @@ AI findings do not change deterministic passed status; record ran/not_requested/
 
 ## References
 
+- [Decision framework](../skills-vs-agents-decision-framework.md): 5-question tree, tool sandboxing vs. pre-approval, and audit checkpoints.
 - [Authoring guide](../skill-authoring-guide.md): profiles, navigation and reports.
 - [Anthropic guidance](../anthropic-skill-authoring-best-practices.md): external source.
 - [Fallback](../skill-authoring-fallback.md): scan, resource and review failures.

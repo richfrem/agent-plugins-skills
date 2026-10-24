@@ -36,7 +36,7 @@ Templates are in [assets/templates/skill-layout.md](../../assets/templates/skill
 
 ## Workflow
 
-1. Choose the variant and observable task-success contract before extensive authoring.
+1. Verify capability structure via [skills-vs-agents-decision-framework.md](../skills-vs-agents-decision-framework.md). If the task requires tool sandboxing or context isolation, author a subagent via `authoring-subagents`; interactive workflows and operator steering belong in skills in the main thread. Choose the variant and observable task-success contract before extensive authoring.
 2. Generate; review the JSON receipt (`status: generated`, `links: []`; an executable script is written inside the skill).
 3. Nothing to register or link; the skill is self-contained.
 4. Replace generic steps with necessary task knowledge, constraints, default commands,
@@ -54,6 +54,7 @@ Review [authoring acceptance criteria](../authoring-acceptance.md) before publis
 
 ## References
 
+- [Decision framework](../skills-vs-agents-decision-framework.md): 5-question tree, tool sandboxing vs. pre-approval, and Anthropic refinements.
 - [Authoring contract](../skill-authoring-contract.json): normative layout/rules.
 - [Authoring guide](../skill-authoring-guide.md): structure and severity profiles.
 - [Platform primitives](../platform-primitives.md): host-specific discovery boundaries.

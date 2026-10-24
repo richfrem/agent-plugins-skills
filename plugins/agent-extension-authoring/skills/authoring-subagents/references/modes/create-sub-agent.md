@@ -36,27 +36,29 @@ python3 scripts/validate_agent.py /path/to/plugin/agents/<agent-name>.md
 
 ## Workflow
 
-1. **Pre-Design Gate**: Verify the task requires an autonomous persona, isolated context, or tool sandboxing.
+1. **Pre-Design Gate**: Run the 5-question diagnostic interview in [skills-vs-agents-decision-framework.md](../skills-vs-agents-decision-framework.md). Verify the task genuinely requires context isolation, sandboxed tool restrictions, or an independent/adversarial review stance. If the capability requires interactive back-and-forth (`AskUserQuestion`) or is a procedural workflow, author it as a skill instead.
 2. **Contract & Frontmatter**: Specify `name` (3–50 chars), `model` (optional, default `inherit`; model names and tiers are owned by the `cli-agent` skill), `color`,
-   tool allowances (`tools`), and description with 2–4 `<example>` few-shot blocks.
+   tool allowances (`tools`), and description with 2–4 `<example>` few-shot blocks. Optional: preload shared skills via `skills:`.
 3. **System Prompt Formulation**: Author in second person ("You are..."). Structure with core responsibilities,
    process steps, quality standards, expected output format, and edge-case handling.
-4. **Scaffold & Refine**: Run `scaffold.py`, then customize the prompt using [system-prompt-design.md](../system-prompt-design.md).
+4. **Scaffold & Refine**: Run `scaffold_subagent.py`, then customize the prompt using [system-prompt-design.md](../system-prompt-design.md).
 5. **Evaluate**: Test at least three positive and negative triggering prompts against intended models.
 6. **Publish**: Verify with `validate_agent.py` and register platform visibility per [agent-discovery-and-publication.md](../agent-discovery-and-publication.md).
 
 ## Verification
 
 ```bash
-# Validate schema, frontmatter fields, tool bounds, and system prompt structure
-python3 scripts/validate_agent.py /path/to/plugin/agents/<agent-name>.md
+python3 scripts/validate_agent.py plugins/<plugin>/agents/<agent-name>.md
+python3 scripts/audit_sub_agent.py plugins/<plugin>/agents/<agent-name>.md --strict
 ```
 
 Ensure validation reports zero errors before publishing. Review [acceptance criteria](../acceptance-criteria.md).
 
 ## References
 
-- [System prompt design](../system-prompt-design.md): persona patterns, responsibilities, and structure.
-- [Discovery and publication](../agent-discovery-and-publication.md): multi-agent platform visibility.
-- [Acceptance criteria](../acceptance-criteria.md): structural gates, frontmatter, and triggering rules.
-- [Fallback protocol](../fallback-tree.md): resolution for invalid schemas and naming collisions.
+- [skills-vs-agents-decision-framework.md](../skills-vs-agents-decision-framework.md) — The 5-question diagnostic decision tree, tool sandboxing vs. pre-approval, and Anthropic refinements.
+- [system-prompt-design.md](../system-prompt-design.md) — System prompt structure, second-person persona formulation, and boundary enforcement.
+- [agent-discovery-and-publication.md](../agent-discovery-and-publication.md) — Trigger configuration, platform visibility, and manifest registration.
+- [sub-agents-spec.md](../sub-agents-spec.md) — Complete sub-agent schema specification.
+- [acceptance-criteria.md](../acceptance-criteria.md) — Structural gates, frontmatter, and triggering rules.
+- [fallback-tree.md](../fallback-tree.md) — Resolution for invalid schemas and naming collisions.

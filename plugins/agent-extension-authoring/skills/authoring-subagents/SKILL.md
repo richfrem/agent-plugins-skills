@@ -17,8 +17,8 @@ Scaffolds sub-agent files and audits them against the authoring contract. Sub-ag
 
 ## Constraints
 
-1. **Only three reasons justify a sub-agent**: an isolated execution context, a sandboxed tool set, or an adversarial persona. Anything interactive, multi-turn or procedural is a skill.
-2. **No pointer wrappers**: an agent that only delegates to a skill must not exist.
+1. **Three reasons justify a sub-agent**: context isolation, sandboxed tool restrictions, or independent/adversarial review; persona alone is never sufficient justification ([skills-vs-agents-decision-framework.md](references/skills-vs-agents-decision-framework.md)). Interactive facilitators and procedures belong in skills in the main thread.
+2. **No pointer wrappers**: an agent that merely says "please run skill X" must not exist; however, a subagent that controls its own prompt and tool bounds may preload skills via `skills:`.
 3. **Explicit tool bounds** and denial rules; the definition is self-contained and never depends on a source checkout.
 4. **Model choices are not made here**: the `model` field defaults to `inherit`; model names and tiers belong to the `cli-agent` skill.
 5. Plugin agents are flat files at `plugins/<plugin>/agents/<name>.md`; project agents live in `.claude/agents/<name>.md`.
@@ -57,6 +57,6 @@ Tests: `python3 -m pytest tests`. Check the mode's section in [acceptance-criter
 ## References
 
 - Modes: [create-sub-agent.md](references/modes/create-sub-agent.md) • [audit-sub-agent.md](references/modes/audit-sub-agent.md)
-- Detail: [system-prompt-design.md](references/system-prompt-design.md) • [agent-discovery-and-publication.md](references/agent-discovery-and-publication.md) • [agent-creation-prompt.md](references/agent-creation-prompt.md) • [complete-agent-examples.md](references/complete-agent-examples.md) • [sub-agents-spec.md](references/sub-agents-spec.md)
+- Detail: [skills-vs-agents-decision-framework.md](references/skills-vs-agents-decision-framework.md) • [system-prompt-design.md](references/system-prompt-design.md) • [agent-discovery-and-publication.md](references/agent-discovery-and-publication.md) • [agent-creation-prompt.md](references/agent-creation-prompt.md) • [complete-agent-examples.md](references/complete-agent-examples.md) • [sub-agents-spec.md](references/sub-agents-spec.md)
 - Gates: [acceptance-criteria.md](references/acceptance-criteria.md) • [fallback-tree.md](references/fallback-tree.md)
 - Template: [agent.md.jinja](assets/templates/agent.md.jinja)

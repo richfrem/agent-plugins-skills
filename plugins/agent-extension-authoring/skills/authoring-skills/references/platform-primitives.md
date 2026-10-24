@@ -9,13 +9,12 @@ Across modern AI developer tooling (Claude Code, Antigravity, Cursor, Codex, Gem
    - Names and descriptions guide discovery. evals.json measures routing; it is not a runtime discovery registry.
 
 2. **Default to Skills**:
-   - Prefer skills for reusable procedural capabilities, including instructions without executable code.
-   - Use the `authoring-subagents` skill only when context isolation (`context: fork`), a sandboxed tool set or an adversarial persona is required; multi-turn conversational wizards are skills, not sub-agents.
+   - Prefer skills for reusable procedural capabilities, including instructions without executable code. Follow [skills-vs-agents-decision-framework.md](skills-vs-agents-decision-framework.md) for the 5-question decision tree.
+   - Use `authoring-subagents` only when context isolation, a sandboxed tool set, or an adversarial persona is required; multi-turn conversational wizards, solution architecture interviews, and interactive testing belong in skills in the main thread.
    - Use `create-stateful-skill` only when cross-session state or continuous counters are required.
 
-## Hub-and-Spoke Script Architecture (ADR-002/003)
+## Self-Contained APM Architecture
 
-- All helper scripts must live at the plugin root: `plugins/<plugin>/scripts/<helper>.py`.
-- Skills reference shared scripts via file-level symlinks in `skills/<name>/scripts/<helper>.py`.
-- Never create raw, duplicate python files within skill directories.
-- Register all symlinks in `symlinks.json` and manage via `symlink_manager.py`.
+- All helper scripts, references, and assets live directly inside the owning skill: `plugins/<plugin>/skills/<skill>/scripts/`.
+- Zero symlinks and zero copy manifests (`symlinks.json` retired). All resources are real, Git-tracked physical files.
+- Modal dispatch architecture: `SKILL.md` is under 100 lines and routes to modular mode documents under `references/modes/<mode>.md`.

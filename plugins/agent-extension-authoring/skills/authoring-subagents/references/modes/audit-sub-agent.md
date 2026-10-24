@@ -18,7 +18,8 @@ Performs deterministic structural and schema audits of sub-agent definitions aga
 
 Audits are read-only; mutations are forbidden. Validate frontmatter fields (`name`, `model`, `color`, `tools`).
 Verify that descriptions contain 2–4 `<example>` trigger blocks and define clear trigger bounds.
-Reject pointer-wrapper stubs delegating directly to skills; agents must be genuine autonomous personas.
+Reject pointer-wrapper stubs delegating directly to skills; agents must have distinct system prompts and tool bounds.
+Verify that subagents do not attempt to be interactive user interviewers (in Claude Code `AskUserQuestion` is disabled in subagents; interactive work belongs in skills).
 Verify system prompt addresses the agent in second person ("You are...") and establishes concrete responsibilities.
 
 ## Quick start
@@ -39,7 +40,7 @@ Exit 0: clean pass; 1: structural or metadata errors; 2: invalid input or missin
 
 1. **Target Discovery**: Locate agent specification under `plugins/<plugin>/agents/` or `.claude/agents/`.
 2. **Execute Audit**: Run `audit_sub_agent.py` in source mode to check schema conformance.
-3. **Review Findings**: Inspect output for missing frontmatter (`model`, `color`), generic names, or wrapper stubs.
+3. **Review Findings**: Inspect output for missing frontmatter (`model`, `color`), generic names, wrapper stubs, or misallocated interactive workflows.
 4. **Author Corrections**: Apply targeted edits to resolve errors while preserving persona intent.
 5. **Re-Verify**: Re-run the audit until zero errors and zero warnings remain before committing.
 
@@ -54,5 +55,6 @@ Review [acceptance criteria](../acceptance-criteria.md) before publishing.
 
 ## References
 
-- [Acceptance criteria](../acceptance-criteria.md): structural gates and frontmatter contracts.
-- [Fallback protocol](../fallback-tree.md): procedural fallback for invalid schemas.
+- [skills-vs-agents-decision-framework.md](../skills-vs-agents-decision-framework.md): The 5-question diagnostic decision tree, tool sandboxing vs. pre-approval, and audit checkpoints.
+- [acceptance-criteria.md](../acceptance-criteria.md): Structural gates and frontmatter contracts.
+- [fallback-tree.md](../fallback-tree.md): Procedural fallback for invalid schemas.
