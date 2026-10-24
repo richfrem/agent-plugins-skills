@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/session_start.py\" || true"
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/.apm/hooks/session_start.py\" || true"
           }
         ]
       }
@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/session_end.py\" || true"
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/.apm/hooks/session_end.py\" || true"
           }
         ]
       }

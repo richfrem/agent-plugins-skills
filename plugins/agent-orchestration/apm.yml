@@ -7,4 +7,3 @@ description: 'Composable agent loop and graph architectures — deterministic st
 author: Richard Fremmerlid
 license: MIT
 repository: https://github.com/richfrem/agent-plugins-skills
-type: full

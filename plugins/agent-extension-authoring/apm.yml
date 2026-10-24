@@ -5,4 +5,3 @@ description: Ecosystem authoring primitives — creates and audits agent skills,
 author: Richard Fremmerlid
 license: MIT
 repository: https://github.com/richfrem/agent-plugins-skills
-type: full
