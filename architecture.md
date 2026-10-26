@@ -55,7 +55,6 @@ Current scale (read from `plugins/` — verify with `find plugins -name SKILL.md
 ├── tasks/                           # backlog/ and done/ — task tracking artifacts
 ├── apm.yml                          # APM workspace project manifest and target configuration
 ├── apm.lock.yaml                    # APM resolved and locked dependency tree
-├── symlinks.json                    # Historical manifest (now empty: links: [], symlinks: [])
 ├── pyproject.toml                   # setuptools packaging
 ├── README.md                        # Ecosystem overview, version history, install guide
 └── CLAUDE.md                        # Behavioral guidelines + project-specific rules (this repo's law)
@@ -95,7 +94,7 @@ not a claim that database segregation alone resolves it.
 ```
 [plugins/<plugin>/skills/*, agents/*, scripts/*]   (authored here, canonical source of truth)
               │
-              │  apm_build_pipeline.py / symlinks.json (strategy: "copy")
+              │  apm_build_pipeline.py
               ▼
 [build/staging/ or dereferenced APM package]       (standalone packages, zero symlinks)
               │
@@ -116,7 +115,7 @@ Skills **run from active installed runtime locations** (local project harnesses 
 
 ### 4.1. Package Management (APM)
 - `apm install` — Universal cross-client package installation (targeting Claude Code, GitHub Copilot, Codex, and Antigravity).
-- `symlinks.json` & `materialize_copies.py` — Development copy-manifest and synchronization tool keeping skill spoke copies in sync with canonical plugin root resources without drift or git symlinks.
+- `scripts/install_plugins.py` — Interactive picker that installs one or more plugins globally with `apm install`.
 
 ### 4.2. Plugin: agent-agentic-os
 Three self-contained skills, each a router with modes. `running-control-plane` (modes `intake`, `mode`, `health`, `simulator`, `worktree`) owns the `control_plane/` package, `agent_control.py` and the git guards. `setting-up-agentic-os` (modes `init`, `signing-setup`) bootstraps a project and guides the human signing key, and creates the agent's own simulation identity; it uses the control-plane package from its sibling skill. `improving-skills-in-lab` (modes `plan`, `setup`, `loop`, `score`, `log`, `backport`, `memory`) runs the improvement loop: `plan → setup → loop → score → backport → log`. Layer 2 Wiki & Map Debt governance (`distill_playbook`, `audit_map_debt`, `pre-commit-evolution-guard`, and `turn_evolution_guard`) stays with the control plane and the plugin hooks. Three control-plane edges are cryptographic human gates: Gate 1 (`AWAITING_APPROVAL -> APPROVED`), Gate 3 (`WORKTREE_REVIEW` or `MULTI_AGENT_CODE_REVIEW` `-> VERIFY_EXIT`) and closure (any edge into `DONE`). Each declares `requires_cryptographic_proof`: the coordinator halts with `HUMAN_PROOF_REQUIRED` and a pending, content-bound `transition_request` (Gate 3 binds the commit SHA, tracked-diff hash and untracked-files hash; closure also binds the retrospective digest); the human signs it out of band with `ssh-keygen -Y sign` (OpenSSH prompts for the private-key passphrase) via `show-challenge` and `approve-transition`; the signature is verified outside the database write lock and the request is consumed exactly once in the commit transaction. No prompt, typed word, flag, receipt or actor string can authorize these edges, and there is no skip or force-close path. the `signing-setup` mode of `setting-up-agentic-os` creates the key; residual risk (a same-account agent with direct DB or coordinator access) is documented in `plugins/agent-agentic-os/skills/setting-up-agentic-os/references/isolation-setup.md`.
@@ -172,7 +171,7 @@ sanctioned way to create symlinks in this repo) and `managing-huggingface-assets
 |---|---|
 | 001 | No cross-plugin script execution — delegate via agent skill at runtime, never import another plugin's script directly |
 | 002 | Within-plugin multi-skill script sharing goes through hub-and-spoke: shared scripts live in the plugin root `scripts/`, individual skills get copies from the copy manifest |
-| 003 | Resource sharing uses hub-and-spoke mirrored layout + copy manifest (`symlinks.json`, strategy: "copy") — zero git symlinks, fully dereferenced for APM |
+| 003 | Resource sharing uses hub-and-spoke layout, since superseded by APM packages with skills in `.apm/skills/` (no copy manifest, zero git symlinks) |
 | 004 | Installed artifacts (`.agents/`, `.claude/`) must be self-contained — no runtime cross-plugin paths |
 | 005 | Plugins must maintain separation of concerns and loose coupling |
 | 006 | Universal Agent Package Manager (APM) replaces legacy `bootstrap.py` / `uvx` / `npx` installers |
@@ -201,13 +200,10 @@ Every file in `.agent/rules/` has a matching master under some `plugins/*/rules/
 - New plugins/skills should be scaffolded via `authoring-plugins` / `authoring-skills`, then validated with
   `authoring-plugins`, then installed and verified with `apm install` — not hand-rolled.
 
-## 7. Resource Sharing & Copy Manifest
+## 7. Resource Sharing
 
-`symlinks.json` tracks every shared resource across plugins using `strategy: "copy"`.
-Files are authored at plugin roots and copied into individual skill spokes:
-- After cloning, run `python3 plugins/agent-extension-authoring/skills/packaging-with-apm/scripts/materialize_copies.py` to populate working copies (which are git-excluded).
-- The packaging pipeline (`apm_build_pipeline.py`) dereferences all copies into physical standalone files at staging/pack time.
-- No new git symlinks are created. Installed skills are 100% self-contained and run on any operating system without filesystem symlink support or admin rights.
+Each plugin is an APM package: skills, agents and hooks live under `.apm/`, and `apm install` deploys them directly. There is no copy manifest and no post-clone build step.
+- No git symlinks are created. Installed skills are 100% self-contained and run on any operating system without filesystem symlink support or admin rights.
 
 ## 8. Runtime State & Memory
 

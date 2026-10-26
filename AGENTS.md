@@ -28,7 +28,7 @@ For local planning, backlog status, and current task handoffs, consult `docs/pla
 3. **Cryptographic Human Gates (CIBA/RAR Lineage)**:
    Three pipeline transitions are cryptographic: spec approval (`Gate 1`), worktree exit review (`Gate 3`), and task closure (`DONE`). Only an out-of-band OpenSSH signature from a human-held key can advance them. Agents must never run signing commands, manipulate keys, or synthesize approval proofs.
 4. **Hub-First Architecture & Loose Coupling**:
-   Shared resources reside at plugin roots (`plugins/<plugin>/scripts/`, etc.) as canonical authorities and are listed for each skill spoke in the copy manifest (`symlinks.json`, `strategy: "copy"`); never create symlinks. After cloning, run `materialize_copies.py` (convert-plugin-to-apm skill) to write the copies. Installed skills must be self-contained ([plugin-architecture-policy](.agent/rules/plugin-architecture-policy.md) Section 5).
+   Shared resources reside at plugin roots (`plugins/<plugin>/scripts/`, etc.) as canonical authorities; never create symlinks. There is no copy manifest or build step: skills live in each plugin's `.apm/skills/` and APM installs them directly. Installed skills must be self-contained ([plugin-architecture-policy](.agent/rules/plugin-architecture-policy.md) Section 5).
 5. **Verifier Sovereignty & Proposal Mode**:
    Implementation agents cannot modify acceptance tests, evaluation baselines, or verification scripts. Pre-execution verifier hashes are locked. In Stage 1 (`PLAN`), workspace files are strictly read-only.
 6. **Config-Driven Constants Over Hardcoding**:
@@ -59,12 +59,9 @@ python3 plugins/agent-extension-authoring/skills/authoring-subagents/scripts/aud
 # Audit rule policy invariants
 python3 plugins/agent-extension-authoring/skills/authoring-instructions/scripts/audit_rule.py plugins --all
 
-# Materialize copy-manifest files after cloning, and check them for drift before committing
-python3 plugins/agent-extension-authoring/skills/packaging-with-apm/scripts/materialize_copies.py
-python3 plugins/agent-extension-authoring/skills/packaging-with-apm/scripts/materialize_copies.py --check
-
-# Check installed APM packages and active client skills
-apm list
+# Install plugins globally (interactive picker), then check what is installed
+python scripts/install_plugins.py
+apm deps list --global
 ```
 
 ---
