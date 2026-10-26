@@ -1,0 +1,18 @@
+name: agent-plugins-skills
+version: 1.0.0
+description: 'Agent plugins and skills: agentic OS, exploration cycle, extension authoring, memory, orchestration and dev utilities.'
+author: 'richfrem'
+targets:
+  - claude
+  - copilot
+  - codex
+  - antigravity
+dependencies:
+  apm:
+    - ./plugins/agent-agentic-os
+    - ./plugins/agent-exploration-cycle
+    - ./plugins/agent-extension-authoring
+    - ./plugins/agent-memory
+    - ./plugins/agent-orchestration
+    - ./plugins/dev-utils
+  mcp: []

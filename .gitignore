@@ -83,7 +83,6 @@ node_modules/
 
 # APM artifacts
 apm_modules/
-/apm.yml
 /apm.lock.yaml
 apm-*-test/
 
