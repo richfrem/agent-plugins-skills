@@ -58,7 +58,32 @@ macOS / Linux:
 apm install "$PWD/plugins/<plugin-name>" --global --target claude,copilot,agy,codex
 ```
 
-Pass several absolute paths in one command to install several plugins at once. `--parallel-downloads 0` avoids an "Access denied" error on Windows when APM renames its staging folder.
+Pass several absolute paths in one command to install several plugins at once. Windows (PowerShell), two plugins:
+
+```powershell
+apm install "$PWD\plugins\agent-memory" "$PWD\plugins\dev-utils" --global --target claude,copilot,agy,codex --parallel-downloads 0
+```
+
+All plugins in one command (Windows, PowerShell). It passes every folder under `plugins/` that has an `apm.yml`:
+
+```powershell
+$plugins = Get-ChildItem plugins -Directory | Where-Object { Test-Path "$($_.FullName)\apm.yml" } | ForEach-Object { $_.FullName }
+apm install @plugins --global --target claude,copilot,agy,codex --parallel-downloads 0
+```
+
+macOS / Linux, all plugins in one command:
+
+```bash
+apm install $(for d in "$PWD"/plugins/*/; do [ -f "$d/apm.yml" ] && echo "${d%/}"; done) --global --target claude,copilot,agy,codex
+```
+
+`--parallel-downloads 0` avoids an "Access denied" error on Windows when APM renames its staging folder.
+
+To pick plugins from a checkbox menu instead, run the picker from the clone (Python 3, no extra packages). It prints the `apm install` command for your selection and asks before running it:
+
+```bash
+python scripts/install_plugins.py
+```
 
 The global installation keeps the package cache separate from the agent folders and writes nothing into your other repositories; every repository uses the same user-level copies:
 
