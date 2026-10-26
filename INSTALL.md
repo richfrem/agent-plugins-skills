@@ -58,6 +58,24 @@ git checkout <tag-or-commit>
 
 Global installs need the **absolute path** to each plugin folder; a relative path such as `./plugins/<plugin-name>` is rejected. Plugins are the folders under `plugins/` (for example `agent-agentic-os`, `agent-memory`, `dev-utils`).
 
+**All six plugins, one command.** The root `apm.yml` lists every plugin under `plugins/`. From the repo root, pass the repo folder (absolute path):
+
+Windows (PowerShell):
+
+```powershell
+apm install --global "$PWD" --target claude,copilot,codex,agy --parallel-downloads 0
+```
+
+macOS / Linux:
+
+```bash
+apm install --global "$PWD" --target claude,copilot,codex,agy
+```
+
+The global command above was tested on Windows. To change which plugins it installs, edit the root `apm.yml`.
+
+**One or a few plugins** (in isolation):
+
 Windows (PowerShell), one plugin:
 
 ```powershell

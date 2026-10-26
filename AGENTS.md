@@ -59,8 +59,8 @@ python3 plugins/agent-extension-authoring/skills/authoring-subagents/scripts/aud
 # Audit rule policy invariants
 python3 plugins/agent-extension-authoring/skills/authoring-instructions/scripts/audit_rule.py plugins --all
 
-# Install plugins globally (interactive picker), then check what is installed
-python scripts/install_plugins.py
+# Install all plugins globally from the root apm.yml, then check what is installed
+apm install --global "$PWD" --target claude,copilot,codex,agy --parallel-downloads 0
 apm deps list --global
 ```
 

@@ -2,7 +2,7 @@
 
 This guide lists which skills and rules to enable (`true`) or leave out (`false`) to keep agent context small, centred on the `running-control-plane` init workflow and core repository governance.
 
-Skills are installed with APM from a local clone ([INSTALL.md](INSTALL.md), or `python scripts/install_plugins.py` for a picker). The selection is APM's `--skill` list, saved in the global manifest `~/.apm/apm.yml` (or a project's `apm.yml`). Rules are not installed by APM: setup copies the enabled rules into a project's `.agent/rules/`, and `AGENTS.md` lists them there.
+Skills are installed with APM from a local clone ([INSTALL.md](INSTALL.md)). The selection is APM's `--skill` list, saved in the global manifest `~/.apm/apm.yml` (or a project's `apm.yml`). Rules are not installed by APM: setup copies the enabled rules into a project's `.agent/rules/`, and `AGENTS.md` lists them there.
 
 `--skill` selects skills only: APM still installs all of a plugin's agents (and hooks, for harnesses that support them).
 
