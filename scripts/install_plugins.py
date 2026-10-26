@@ -15,6 +15,7 @@ import argparse
 import os
 import re
 import shlex
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -154,7 +155,10 @@ def main():
     if input("\nRun it now? [y/N] ").strip().lower() != "y":
         print("Not run. Copy the command above to run it yourself.")
         return
-    sys.exit(subprocess.run(command).returncode)
+    apm_path = shutil.which("apm")
+    if not apm_path:
+        sys.exit("apm was not found on PATH. Install APM first (see INSTALL.md section 1).")
+    sys.exit(subprocess.run([apm_path, *command[1:]]).returncode)
 
 
 if __name__ == "__main__":
