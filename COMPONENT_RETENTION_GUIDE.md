@@ -30,7 +30,7 @@ Entries marked **not yet classified** are skills or rules that exist in the repo
 Install the enabled skills:
 
 ```bash
-python3 plugins/agent-extension-authoring/skills/packaging-with-apm/scripts/apm_consumer.py install --checkout . --global --plugins agent-agentic-os --skill running-control-plane --skill setting-up-agentic-os
+python3 plugins/agent-extension-authoring/.apm/skills/packaging-with-apm/scripts/apm_consumer.py install --checkout . --global --plugins agent-agentic-os --skill running-control-plane --skill setting-up-agentic-os
 ```
 
 ---
@@ -83,7 +83,7 @@ No skills enabled: do not install this plugin.
 Install the enabled skills:
 
 ```bash
-python3 plugins/agent-extension-authoring/skills/packaging-with-apm/scripts/apm_consumer.py install --checkout . --global --plugins agent-extension-authoring --skill authoring-skills --skill authoring-plugins --skill authoring-subagents --skill authoring-instructions --skill authoring-github-workflows --skill packaging-with-apm
+python3 plugins/agent-extension-authoring/.apm/skills/packaging-with-apm/scripts/apm_consumer.py install --checkout . --global --plugins agent-extension-authoring --skill authoring-skills --skill authoring-plugins --skill authoring-subagents --skill authoring-instructions --skill authoring-github-workflows --skill packaging-with-apm
 ```
 
 ---
@@ -99,7 +99,7 @@ python3 plugins/agent-extension-authoring/skills/packaging-with-apm/scripts/apm_
 Install the enabled skills:
 
 ```bash
-python3 plugins/agent-extension-authoring/skills/packaging-with-apm/scripts/apm_consumer.py install --checkout . --global --plugins cli-agents --skill cli-agent
+python3 plugins/agent-extension-authoring/.apm/skills/packaging-with-apm/scripts/apm_consumer.py install --checkout . --global --plugins cli-agents --skill cli-agent
 ```
 
 ---
@@ -141,7 +141,7 @@ No skills enabled: do not install this plugin.
 Install the enabled skills:
 
 ```bash
-python3 plugins/agent-extension-authoring/skills/packaging-with-apm/scripts/apm_consumer.py install --checkout . --global --plugins dev-utils --skill context-bundler --skill github-issue-agent --skill github-issue-backlog-agent --skill github-issue-pr-lifecycle-agent --skill github-issue-prioritizer --skill github-issue-worktree-agent --skill symlink-manager
+python3 plugins/agent-extension-authoring/.apm/skills/packaging-with-apm/scripts/apm_consumer.py install --checkout . --global --plugins dev-utils --skill context-bundler --skill github-issue-agent --skill github-issue-backlog-agent --skill github-issue-pr-lifecycle-agent --skill github-issue-prioritizer --skill github-issue-worktree-agent --skill symlink-manager
 ```
 
 ---
@@ -211,5 +211,5 @@ Rules stay outside APM. Setup copies each enabled rule from its plugin's `rules/
    apm install --global
    ```
 2. **Leave a plugin out entirely**: `apm uninstall <path-to-clone>/plugins/<plugin> --global`.
-3. **Undo the last change**: `python3 plugins/agent-extension-authoring/skills/packaging-with-apm/scripts/apm_consumer.py rollback` (every `apm_consumer.py install` takes a backup first).
+3. **Undo the last change**: `python3 plugins/agent-extension-authoring/.apm/skills/packaging-with-apm/scripts/apm_consumer.py rollback` (every `apm_consumer.py install` takes a backup first).
 4. **Change a rule**: copy it into, or delete it from, the project's `.agent/rules/` and update the rules list in `AGENTS.md`.
