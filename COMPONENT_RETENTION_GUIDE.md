@@ -2,7 +2,7 @@
 
 This guide lists which skills and rules to enable (`true`) or leave out (`false`) to keep agent context small, centred on the `running-control-plane` init workflow and core repository governance.
 
-Skills are installed with APM from a materialized clone ([INSTALL.md](INSTALL.md), Option 1). The selection is APM's `--skill` list, saved in the global manifest `~/.apm/apm.yml` (or a project's `apm.yml`). Rules are not installed by APM: setup copies the enabled rules into a project's `.agent/rules/`, and `AGENTS.md` lists them there.
+Skills are installed with APM from a local clone ([INSTALL.md](INSTALL.md), or `python scripts/install_plugins.py` for a picker). The selection is APM's `--skill` list, saved in the global manifest `~/.apm/apm.yml` (or a project's `apm.yml`). Rules are not installed by APM: setup copies the enabled rules into a project's `.agent/rules/`, and `AGENTS.md` lists them there.
 
 `--skill` selects skills only: APM still installs all of a plugin's agents (and hooks, for harnesses that support them).
 
@@ -54,18 +54,16 @@ plugin is absorbed into agent-memory; standalone wiki installs select
 
 | Skill | Status | Rationale |
 |---|---|---|
-| `agent-swarm` | `false` | Parallel multi-agent worker runner. |
-| `co-pilot-loop` | `false` | QA Director + Worker companion loop. |
-| `dual-loop` | `false` | Strategy packet worker delegation. |
-| `graph-execution` | `false` | Deterministic DAG runner with join barriers. |
-| `graph-planner` | `false` | Multi-agent DAG planner. |
-| `learning-loop` | `false` | Autonomous research loop. |
-| `orchestrator` | `false` | Autonomous pattern router. |
-| `red-team-review` | `false` | Multi-agent red-team review loop. |
-| `select-loop-strategy` | `false` | DAG vs. swarm strategy classifier. |
-| `triple-loop-learning` | `false` | Autoresearch mutation benchmark loop. |
+| `orchestrating-agent-work` | `false` | Picks an execution strategy (DAG or loop), plans the artifact and supervises execution. |
+| `cli-agent` | **`true`** | Dispatches tasks to Claude, Codex, Copilot, Agy and local llama CLIs; also covers local LLM setup, model catalog maintenance and project capability setup. |
+| `agt-security` | not yet classified |  |
+| `maf-adapter` | `false` | Microsoft Agent Framework adapter. |
 
-No skills enabled: do not install this plugin.
+Install the enabled skills:
+
+```bash
+python3 plugins/agent-extension-authoring/.apm/skills/packaging-with-apm/scripts/apm_consumer.py install --checkout . --global --plugins agent-orchestration --skill cli-agent
+```
 
 ---
 
@@ -88,65 +86,28 @@ python3 plugins/agent-extension-authoring/.apm/skills/packaging-with-apm/scripts
 
 ---
 
-### E. `cli-agents` (External CLI Bridges)
+### E. `dev-utils` (Core Developer Utilities)
 
 | Skill | Status | Rationale |
 |---|---|---|
-| `agt-security` | not yet classified |  |
-| `cli-agent` | **`true`** | Dispatches tasks to Claude, Codex, Copilot, Agy and local llama CLIs; also covers local LLM setup, model catalog maintenance and project capability setup. |
-| `maf-adapter` | `false` | Microsoft Agent Framework adapter. |
+| `managing-adrs` | `false` | Architecture decision record scaffolding (optional). |
+| `enforcing-coding-conventions` | not yet classified |  |
+| `checking-links` | `false` | Markdown URL link integrity checker. |
+| `bundling-context` | **`true`** | Bundles documentation/code for LLM context. |
+| `managing-github-issues` | **`true`** | Logs, ranks and audits GitHub issues for bugs and friction events. |
+| `resolving-github-issues` | **`true`** | Issue worktrees and the issue-to-PR flow. |
+| `managing-huggingface-assets` | `false` | HuggingFace upload/download primitives. |
+| `managing-symlinks` | **`true`** | Audits and repairs symlinks across Windows/Linux. |
 
 Install the enabled skills:
 
 ```bash
-python3 plugins/agent-extension-authoring/.apm/skills/packaging-with-apm/scripts/apm_consumer.py install --checkout . --global --plugins cli-agents --skill cli-agent
+python3 plugins/agent-extension-authoring/.apm/skills/packaging-with-apm/scripts/apm_consumer.py install --checkout . --global --plugins dev-utils --skill bundling-context --skill managing-github-issues --skill resolving-github-issues --skill managing-symlinks
 ```
 
 ---
 
-### F. `dependency-management` (Dependency Workflow)
-
-| Skill | Status | Rationale |
-|---|---|---|
-| `dependency-management` | not yet classified |  |
-
-No skills enabled: do not install this plugin.
-
----
-
-### G. `dev-utils` (Core Developer Utilities)
-
-| Skill | Status | Rationale |
-|---|---|---|
-| `adr-management` | `false` | Architecture decision record scaffolding (optional). |
-| `coding-conventions-agent` | not yet classified |  |
-| `context-bundler` | **`true`** | Bundles documentation/code for LLM context. |
-| `convert-mermaid` | `false` | Headless Mermaid to PNG renderer. |
-| `github-issue-agent` | **`true`** | Logs GitHub issues for bugs and friction events. |
-| `github-issue-backlog-agent` | **`true`** | Backlog triage. |
-| `github-issue-pr-lifecycle-agent` | **`true`** | PR lifecycle automation. |
-| `github-issue-prioritizer` | **`true`** | Ranks issue priorities. |
-| `github-issue-refactor-proposer` | `false` | Automated friction cluster synthesizer. |
-| `github-issue-resolution-reviewer` | not yet classified |  |
-| `github-issue-worktree-agent` | **`true`** | Worktree issue association. |
-| `hf-download` | `false` | HuggingFace upload/download primitives. |
-| `hf-init` | `false` | HuggingFace upload/download primitives. |
-| `hf-upload` | `false` | HuggingFace upload/download primitives. |
-| `humanize` | `false` | AI-to-human text rewriter. |
-| `link-checker-agent` | `false` | Markdown URL link integrity checker. |
-| `optimize-context` | not yet classified |  |
-| `symlink-manager` | **`true`** | **Critical**: Audits and restores repository symlinks across Windows/Linux. |
-| `todo-check` | not yet classified |  |
-
-Install the enabled skills:
-
-```bash
-python3 plugins/agent-extension-authoring/.apm/skills/packaging-with-apm/scripts/apm_consumer.py install --checkout . --global --plugins dev-utils --skill context-bundler --skill github-issue-agent --skill github-issue-backlog-agent --skill github-issue-pr-lifecycle-agent --skill github-issue-prioritizer --skill github-issue-worktree-agent --skill symlink-manager
-```
-
----
-
-### H. `agent-exploration-cycle` (Business Discovery & Prototyping)
+### F. `agent-exploration-cycle` (Business Discovery & Prototyping)
 
 | Skill | Status | Rationale |
 |---|---|---|
@@ -159,17 +120,6 @@ python3 plugins/agent-extension-authoring/.apm/skills/packaging-with-apm/scripts
 No skills enabled: do not install this plugin.
 
 ---
-
-### J. `plugin-manager` (Decommissioned)
-
-> Legacy `uvx` / `plugin-add` installer has been fully retired and removed following the APM migration (plan Section 9). Replaced entirely by Microsoft APM CLI (`apm install`).
-
-| Skill | Status | Rationale |
-|---|---|---|
-| `plugin-installer` | **retired** | Replaced by `apm install`. |
-| `plugin-remover` | **retired** | Replaced by `apm uninstall`. |
-| `plugin-syncer` | **retired** | Replaced by `apm install` / `apm update`. |
-
 ---
 
 ## 3. Rules Configuration (`.agent/rules/`)
@@ -196,7 +146,7 @@ Rules stay outside APM. Setup copies each enabled rule from its plugin's `rules/
 | `skill-deletion-guard.md` | not yet classified |  |
 | `spec-driven-development-policy.md` | not yet classified |  |
 | `state-transition-guidance-compliance.md` | `false` | Specialized state machine transition rule. |
-| `symlink-cross-platform.md` | **`true`** | Enforces file-level symlink rules across Windows and POSIX. |
+| `symlink-cross-platform.md` | `false` | Superseded: symlinks are no longer used (APM copies files). |
 | `test-driven-development.md` | `false` | Detailed TDD red-green-refactor loop guidance. |
 | `test-driven-wave-deployment.md` | not yet classified |  |
 | `worktree-lifecycle-management.md` | `false` | Worktree vocabulary rule (needed if automated worktrees enabled). |

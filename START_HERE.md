@@ -12,7 +12,7 @@ re-read its git/worktree rules before any commit or branch step.
 If `context/control_plane.db` does not exist yet, set up the substrate once:
 
 - Install per [INSTALL.md — Local Development](INSTALL.md#local-development-contributors--testing).
-- Initialize with `python3 plugins/agent-agentic-os/skills/setting-up-agentic-os/scripts/init_agentic_os.py --target .`
+- Initialize with `python3 plugins/agent-agentic-os/.apm/skills/setting-up-agentic-os/scripts/init_agentic_os.py --target .`
   (use `--retrofit` on an existing setup; review any `.bak` files before deleting them).
 - Confirm with the checklist in `setup-healthcheck-validation.md` (in the `setting-up-agentic-os` skill), then the `health` mode of `running-control-plane`.
 
