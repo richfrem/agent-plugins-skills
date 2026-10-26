@@ -155,6 +155,19 @@ To switch a project from a local install (`.agents/`, `.claude/`) to a user-leve
 > **Antigravity (`agy`) Hook Scope**:
 > Global installs deploy skills into `~/.gemini/antigravity-cli/skills/`, but lifecycle hooks (`SessionStart`, `PostToolUse`, `Stop`) are **only supported in project installs** (`.agents/hooks.json`). If your workflow depends on Antigravity runtime hooks, keep the project-local install (`apm install ... --target agy`).
 
+### Troubleshooting on Windows
+
+**`Failed to resolve transitive dep ... [WinError 3] The system cannot find the path specified`**, with paths under `%LOCALAPPDATA%\apm\cache\git\checkouts_v1\...`
+- Cause: this happens when APM installs from a GitHub reference instead of a local folder. Its git cache folder plus the plugin's deep skill paths go over Windows' 260-character path limit. In one failing log the source paths were 256 to 315 characters.
+- Fix: install from a clone at a short path (for example `C:\src\agent-plugins-skills`) using the absolute-path command in section 3. If you must install from GitHub, enable long paths first: run as administrator `New-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem -Name LongPathsEnabled -Value 1 -PropertyType DWORD -Force`, run `git config --global core.longpaths true`, then restart your terminal. Long paths are not guaranteed to fix it; a short clone path is the reliable option.
+- A failed install is safe to retry: APM restores `apm.yml` and commits nothing.
+
+**`Access denied` on `.apm-resolution-staging`:** add `--parallel-downloads 0`. If an earlier install was interrupted, delete `%USERPROFILE%\.apm\apm_modules\.apm-resolution-staging` and `%USERPROFILE%\.apm\.apm-lifecycle.lock` and run it again.
+
+**`N files skipped -- local files exist, not managed by APM`:** a skill folder already exists that APM did not create. Add `--force` to overwrite it.
+
+**Relative path rejected on `--global`:** use the absolute path (section 3).
+
 ### Packed bundles
 
 `apm_build_pipeline.py --pack` (see [Local Development](#local-development-contributors--testing)) produces `build/dist/<plugin>-<version>.zip`, which installs with `apm install <bundle>.zip --global --target ...` without a clone. A bundle installs the whole plugin: `--skill` is not supported for bundles.
