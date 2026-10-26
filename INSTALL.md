@@ -6,6 +6,18 @@ Plugins are installed with [APM](https://github.com/microsoft/apm) (Agent Packag
 
 Each plugin keeps its skills and agents in `plugins/<plugin>/.apm/`, with a `plugins/<plugin>/apm.yml`. Everything APM installs is committed to git, so there is no build or copy step: clone the repository and run `apm install`. This works the same on Windows, macOS and Linux.
 
+## Dependencies and install order
+
+The six plugins here are **level 1** packages: none of their `apm.yml` files declares dependencies, so nothing needs installing first.
+
+- **Needed by:** `sharepoint-workbench` (level 2) and the `sp-migration` plugin in CSB-Intranet (level 3). Install these plugins before them.
+- **Scope:** install them **globally** (Option 1, section 3). A global install is recorded in `~/.apm/apm.yml`, not in this repo, and the repo has no root `apm.yml`.
+- **One scope only:** if a plugin is installed globally, don't also list it in a project's `apm.yml`, or it is installed twice. Check what is already global first:
+
+```bash
+apm deps list --global
+```
+
 ---
 
 ## Option 1: APM Package (Recommended)
@@ -78,12 +90,6 @@ apm install $(for d in "$PWD"/plugins/*/; do [ -f "$d/apm.yml" ] && echo "${d%/}
 ```
 
 `--parallel-downloads 0` avoids an "Access denied" error on Windows when APM renames its staging folder.
-
-To pick plugins from a checkbox menu instead, run the picker from the clone (Python 3, no extra packages). It prints the `apm install` command for your selection and asks before running it:
-
-```bash
-python scripts/install_plugins.py
-```
 
 The global installation keeps the package cache separate from the agent folders and writes nothing into your other repositories; every repository uses the same user-level copies:
 
