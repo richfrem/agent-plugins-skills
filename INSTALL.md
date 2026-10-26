@@ -79,6 +79,12 @@ apm install $(for d in "$PWD"/plugins/*/; do [ -f "$d/apm.yml" ] && echo "${d%/}
 
 `--parallel-downloads 0` avoids an "Access denied" error on Windows when APM renames its staging folder.
 
+To pick plugins from a checkbox menu instead, run the picker from the clone (Python 3, no extra packages). It prints the `apm install` command for your selection and asks before running it:
+
+```bash
+python scripts/install_plugins.py
+```
+
 The global installation keeps the package cache separate from the agent folders and writes nothing into your other repositories; every repository uses the same user-level copies:
 
 ```text
