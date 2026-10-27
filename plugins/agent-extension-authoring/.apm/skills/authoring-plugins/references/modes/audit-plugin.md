@@ -1,5 +1,3 @@
-> Retired skill `audit-plugin`, kept as the **audit-plugin** mode of `authoring-plugins`.
-
 # Audit Plugin (`audit-plugin`)
 
 Performs comprehensive validation of an APM-native plugin against structure standards, naming conventions, and component requirements.

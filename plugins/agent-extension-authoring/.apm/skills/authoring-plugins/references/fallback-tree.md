@@ -1,7 +1,5 @@
 # Fallback Tree: authoring-plugins
 
-Merged verbatim from the retired skills; one section per mode.
-
 ## Mode: create-plugin
 
 ## 1. Scaffold Script Execution Failure

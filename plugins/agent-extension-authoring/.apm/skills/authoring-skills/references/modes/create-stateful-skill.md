@@ -1,7 +1,3 @@
-> Retired skill `create-stateful-skill`, kept as the **create-stateful-skill** mode of `authoring-skills`. Body unchanged apart from link targets, retired-skill names (now the new skills) and the corrected commands. Frontmatter removed.
->
-> Original description: Scaffolds an advanced stateful agent skill with filesystem-native state schemas, lifecycle state machines, and skill chaining. NOT for simple stateless skills (use `create-skill`), NOT for isolated conversational wizards / persona swarms (use `authoring-subagents`), and NOT for GitHub Actions workflows (use `authoring-github-workflows`).
-
 # Create Stateful Skill (`create-stateful-skill`)
 
 Scaffolds advanced stateful skills with filesystem-native state schemas, lifecycle state machines, and deterministic skill chaining in the main conversation context.

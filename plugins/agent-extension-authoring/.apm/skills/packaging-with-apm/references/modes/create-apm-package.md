@@ -1,7 +1,3 @@
-> Retired skill `create-apm-package`, kept as the **create-apm-package** mode of `packaging-with-apm`. Body unchanged apart from link targets, moved script/test paths and the compile verification command (`apm compile --validate`). Frontmatter removed.
->
-> Original description: Activate when the user wants to create a new APM-native package from scratch for reusable agent skills, agents, commands, hooks, MCP configuration, prompts, or governance-managed agent assets. Do not use this for existing plugin migration; use convert-plugin-to-apm instead.
-
 # Create APM Package (`create-apm-package`)
 
 Scaffolds a greenfield APM-native package with source primitives isolated under `.apm/` and standard governance documentation.

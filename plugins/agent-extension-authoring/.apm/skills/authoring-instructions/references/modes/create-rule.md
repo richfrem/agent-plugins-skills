@@ -1,7 +1,3 @@
-> Retired skill `create-rule`, kept as the **create-rule** mode of `authoring-instructions`. Body unchanged apart from link targets and corrected commands. Frontmatter removed.
->
-> Original description: Scaffolds a lean, invariant-driven agent rule following universal best practices. Enforces hard constraints, zero incident post-mortems, zero dates, zero usernames, high information density, and strict separation between rules (constraints) and skills (procedures).
-
 # Create Rule
 
 Scaffolds lean, invariant-driven agent rules (`plugins/<plugin>/rules/<name>.md`) adhering to repository standards.

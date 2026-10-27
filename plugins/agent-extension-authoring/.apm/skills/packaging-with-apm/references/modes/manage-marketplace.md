@@ -1,7 +1,3 @@
-> Retired skill `manage-marketplace`, kept as the **manage-marketplace** mode of `packaging-with-apm`. Body unchanged apart from link targets, moved script/test paths and the compile verification command (`apm compile --validate`). Frontmatter removed.
->
-> Original description: This skill should be used when the user wants to "create a marketplace", "setup a marketplace catalog", "scaffold marketplace.json", "initialize a plugin registry", or "configure a Gemini CLI extension".
-
 # Marketplace Manager (`manage-marketplace`)
 
 Guidelines for authoring, validating, and distributing plugin marketplace catalogs.

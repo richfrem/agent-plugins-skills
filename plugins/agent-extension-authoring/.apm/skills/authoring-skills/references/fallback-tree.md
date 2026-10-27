@@ -1,7 +1,5 @@
 # Fallback Tree: authoring-skills
 
-Merged verbatim from the retired skills; one section per mode.
-
 ## Contents
 
 - [Mode: create-skill](#mode-create-skill)

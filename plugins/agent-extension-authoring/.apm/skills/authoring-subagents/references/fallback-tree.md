@@ -1,7 +1,5 @@
 # Fallback Tree: authoring-subagents
 
-Merged from the retired skills; one section per mode.
-
 ## Mode: create-sub-agent
 
 ## 1. Scaffold Script Execution Failure

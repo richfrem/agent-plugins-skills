@@ -1,7 +1,6 @@
 # Agent Extension Authoring (`agent-extension-authoring`)
 
-The interactive creation, auditing, and packaging suite for the agent ecosystem.
-Consolidates 24 legacy scaffolding skills into 6 cohesive authoring assets.
+The interactive creation, auditing, and APM packaging suite for the agent ecosystem.
 
 Every skill in this plugin is completely self-contained inside `.apm/skills/` with its own scripts, references, assets, tests, and evals.
 

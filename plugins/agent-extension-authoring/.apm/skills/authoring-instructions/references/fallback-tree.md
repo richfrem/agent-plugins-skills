@@ -1,7 +1,5 @@
 # Fallback Tree: authoring-instructions
 
-Merged verbatim from the retired skills; one section per mode.
-
 ## Mode: create-hook
 
 ## 1. Scaffold Script Execution Failure

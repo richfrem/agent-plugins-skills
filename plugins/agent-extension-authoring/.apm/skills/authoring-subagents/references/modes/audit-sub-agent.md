@@ -1,7 +1,3 @@
-> Retired skill `audit-sub-agent`, kept as the **audit-sub-agent** mode of `authoring-subagents`. Body unchanged apart from link targets, the scaffolder command and the model-field wording. Frontmatter removed.
->
-> Original description: Audits sub-agent markdown specifications for metadata, system prompt structure, tool sandboxing, and packaging compliance. Use when validating new or updated sub-agents in agents/.
-
 # Audit Sub-Agent
 
 Performs deterministic structural and schema audits of sub-agent definitions against authoring standards.

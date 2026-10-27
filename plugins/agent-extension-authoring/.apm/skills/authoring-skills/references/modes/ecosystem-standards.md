@@ -1,7 +1,3 @@
-> Retired skill `ecosystem-standards`, kept as the **ecosystem-standards** mode of `authoring-skills`. Body unchanged apart from link targets, retired-skill names (now the new skills) and the corrected commands. Frontmatter removed.
->
-> Original description: Provides active execution protocols to rigorously audit how code, directory structures, and agent actions comply with the authoritative ecosystem specs. Trigger when validating new skills, plugins, or workflows.
-
 # Ecosystem Standards Review Protocol (`ecosystem-standards`)
 
 Active audit execution protocol validating skills, plugins, and workflows against ecosystem specifications.

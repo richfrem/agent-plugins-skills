@@ -1,7 +1,3 @@
-> Retired skill `create-sub-agent`, kept as the **create-sub-agent** mode of `authoring-subagents`. Body unchanged apart from link targets, the scaffolder command and the model-field wording. Frontmatter removed.
->
-> Original description: Scaffolds a new autonomous sub-agent with its own prompt, system instructions, and tool permissions. Enforces modern architectural guidance: sub-agents are reserved for isolated execution contexts, strict tool sandboxing, or adversarial personas. NOT for simple procedural skills (use `authoring-skills`) and NEVER for pointer-wrapper stubs that merely delegate to a skill.
-
 # Create Sub-Agent
 
 Scaffolds a specialized autonomous sub-agent with focused system prompt, permissions, and tool bounds.

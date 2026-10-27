@@ -1,7 +1,3 @@
-> Retired skill `create-skill`, kept as the **create-skill** mode of `authoring-skills`. Body unchanged apart from link targets, retired-skill names (now the new skills) and the corrected commands. Frontmatter removed.
->
-> Original description: Creates a new skill in an existing plugin, with concise instructions, direct references and task evaluations. Use when scaffolding or authoring a skill; supports instructional and executable variants.
-
 # Create a Skill
 
 Generate a concise entry point, then supply task-specific instructions and evaluations.

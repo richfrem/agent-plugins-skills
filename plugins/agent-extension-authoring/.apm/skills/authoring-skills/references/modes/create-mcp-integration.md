@@ -1,7 +1,3 @@
-> Retired skill `create-mcp-integration`, kept as the **create-mcp-integration** mode of `authoring-skills`. Body unchanged apart from link targets, retired-skill names (now the new skills) and the corrected commands. Frontmatter removed.
->
-> Original description: Adds an MCP server integration configuration to an existing plugin. NOT for scaffolding a brand-new plugin (use `authoring-plugins`) and NOT for Azure hosted agents (use `create-azure-agent`).
-
 # Create MCP Integration (create-mcp-integration)
 
 Configures Model Context Protocol (MCP) server integrations within a plugin or workspace `.mcp.json`.

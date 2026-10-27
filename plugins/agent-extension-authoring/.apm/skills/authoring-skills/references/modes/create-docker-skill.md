@@ -1,7 +1,3 @@
-> Retired skill `create-docker-skill`, kept as the **create-docker-skill** mode of `authoring-skills`. Body unchanged apart from link targets, retired-skill names (now the new skills) and the corrected commands. Frontmatter removed.
->
-> Original description: Scaffolds an agent skill with a Docker runtime environment. NOT for normal local skills (use `create-skill`) and NOT for Azure hosted agents (use `create-azure-agent`).
-
 # Create Docker Skill (create-docker-skill)
 
 Scaffolds a compliant agent skill that executes workloads within containerized runtimes (Docker, Nextflow, HPC).

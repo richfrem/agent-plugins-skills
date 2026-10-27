@@ -1,5 +1,3 @@
-> Retired skill `create-plugin`, kept as the **create-plugin** mode of `authoring-plugins`.
-
 # Create Plugin (`create-plugin`)
 
 Scaffolds a complete APM-native agent plugin with `apm.yml`, `.claude-plugin/plugin.json`, `.apm/skills/`, and `README.md`.

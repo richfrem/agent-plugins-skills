@@ -1,7 +1,3 @@
-> Retired skill `convert-plugin-to-apm`, kept as the **convert-plugin-to-apm** mode of `packaging-with-apm`. Body unchanged apart from link targets, moved script/test paths and the compile verification command (`apm compile --validate`). Frontmatter removed.
->
-> Original description: Activate when the user wants to convert an existing Claude/Copilot/agent plugin to APM, add APM package management to a plugin without changing its layout, migrate a plugin to APM-native format, or check that a plugin packages and installs cleanly with APM.
-
 # Convert Plugin to APM (`convert-plugin-to-apm`)
 
 Packages or converts an existing agent plugin repository for [APM](https://github.com/microsoft/apm), verifies the install across agent harnesses, and reports every misalignment with its standard fix. Behaviour below was verified with APM `0.33.0`.

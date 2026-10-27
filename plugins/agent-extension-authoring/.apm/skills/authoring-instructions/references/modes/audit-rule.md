@@ -1,7 +1,3 @@
-> Retired skill `audit-rule`, kept as the **audit-rule** mode of `authoring-instructions`. Body unchanged apart from link targets and corrected commands. Frontmatter removed.
->
-> Original description: Audits agent rule markdown files for line budget compliance, fluff sanitization, and invariant structure. Use when checking or validating rules in rules/.
-
 # Audit Rule
 
 Performs deterministic structural audits of agent rule policies against authoring standards.

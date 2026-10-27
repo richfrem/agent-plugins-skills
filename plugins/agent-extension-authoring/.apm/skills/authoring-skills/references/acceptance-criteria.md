@@ -1,7 +1,5 @@
 # Acceptance Criteria: authoring-skills
 
-Merged verbatim from the retired skills; one section per mode.
-
 ## Mode: create-skill
 
 **Purpose**: Verify the system generates Microsoft-compliant Skill architectures.

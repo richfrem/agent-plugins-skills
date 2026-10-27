@@ -1,7 +1,3 @@
-> Retired skill `create-azure-agent`, kept as the **create-azure-agent** mode of `authoring-skills`. Body unchanged apart from link targets, retired-skill names (now the new skills) and the corrected commands. Frontmatter removed.
->
-> Original description: Deploys a skill as an Azure AI Foundry hosted agent. NOT for Docker runtime skills (use `create-docker-skill`) and NOT for MCP server integrations (use `create-mcp-integration`).
-
 # Create Azure Agent (`create-azure-agent`)
 
 Generates Azure AI Foundry deployment wrappers, Bicep infrastructure templates, and Azure AI Projects SDK orchestration scripts for existing skills.

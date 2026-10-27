@@ -1,5 +1,3 @@
-> Retired skill `create-hook`, kept as the **create-hook** mode of `authoring-instructions`.
-
 # Create Hook (create-hook)
 
 Scaffolds event-driven lifecycle hooks (e.g. `PreToolUse`, `PostToolUse`, `Stop`, `PermissionRequest`, `SessionStart`) in `plugins/<plugin>/.apm/hooks/hooks.json` and writes a harness-neutral Python handler stub.

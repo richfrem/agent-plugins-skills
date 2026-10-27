@@ -1,7 +1,5 @@
 # Acceptance Criteria: authoring-plugins
 
-Merged from the retired skills; one section per mode.
-
 ## Mode: create-plugin
 
 **Purpose**: Verify the system generates compliant APM-native and `.claude-plugin` architectures.
