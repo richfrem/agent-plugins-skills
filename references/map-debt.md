@@ -2,6 +2,20 @@
 
 Persistent tracking of architectural friction, structural anomalies, and unclosed loops across sessions.
 
+## DEBT-20261027-WINDOWS-HOOK-PORTABILITY (RESOLVED)
+
+- Logged date: 2026-10-27
+- Cycle/Session ID: fix/windows-hook-portability
+- Artifact affected: `plugins/agent-agentic-os/.apm/hooks/hooks.json`, `plugins/agent-orchestration/.apm/hooks/hooks.json`, `plugins/agent-orchestration/.apm/hooks/closure_guard.py`
+- Friction observed: After an APM install on Windows, every Stop, SessionStart and PostToolUse hook from these two plugins errored. The `${CLAUDE_PLUGIN_ROOT}` path in each hook command was unquoted, so bash consumed the backslashes of the substituted Windows path (`C:\Users\...` became `UsersRICHFREM...`) and the script was reported missing. `python3` is also absent on this machine, and `turn_evolution_guard` had no `|| python` fallback. Separately, `closure_guard.py` imported `fcntl` unconditionally, which does not exist on Windows, so the Stop hook crashed on import.
+- Why not fixed now: Fixed immediately in this change.
+- Recommended fix / fix applied: Quoted every `${CLAUDE_PLUGIN_ROOT}` path in both `hooks.json` files (as `agent-exploration-cycle` already did), added the missing `|| python` fallback to `turn_evolution_guard`, and made the `fcntl` import optional in `closure_guard.py`. The file lock is skipped where `fcntl` is unavailable; the atomic `os.replace` still protects the state-file write, matching the Windows handling in `inject_summary.py`.
+- Evidence/repro: Both `hooks.json` files parse; `closure_guard.py` compiles and exits 0 on Windows Python (empty stdin, no loop state); after a project reinstall, the generated `.claude/settings.json` commands are quoted and the installed `closure_guard.py` carries the guard. Global `~/.claude` hooks update only on a `--global` reinstall.
+- Severity: M
+- Repeat: NO
+- Status: RESOLVED
+
+
 ## DEBT-20261027-AUTHORING-SKILLS-APM-ALIGNMENT (RESOLVED)
 
 - Logged date: 2026-10-27

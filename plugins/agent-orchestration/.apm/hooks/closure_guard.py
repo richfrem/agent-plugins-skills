@@ -27,7 +27,11 @@ import sys
 import json
 import re
 import os
-import fcntl
+
+try:
+    import fcntl
+except ImportError:  # Windows has no fcntl; the atomic os.replace below still protects the write
+    fcntl = None
 
 try:
     import yaml
@@ -136,7 +140,8 @@ def _increment_iteration_locked() -> tuple:
     Prevents TOCTOU races when multiple hook invocations fire concurrently.
     """
     with open(LOOP_STATE_FILE, "r+") as f:
-        fcntl.flock(f, fcntl.LOCK_EX)
+        if fcntl:
+            fcntl.flock(f, fcntl.LOCK_EX)
         content = f.read()
         fm = parse_frontmatter(content)  # re-parse under lock for freshness
         iteration_str = fm.get("iteration", "0")
