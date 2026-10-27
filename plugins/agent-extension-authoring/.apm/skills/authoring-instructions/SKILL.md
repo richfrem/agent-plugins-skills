@@ -2,7 +2,7 @@
 name: authoring-instructions
 plugin: agent-extension-authoring
 description: >-
-  Creates and audits the instruction files agents read: agent rules (rules/*.md), the root AGENTS.md with its thin CLAUDE.md bridge, and event-driven hooks (hooks.json plus handler scripts). Use when the user wants to write, check, trim or migrate a rule, AGENTS.md or CLAUDE.md, or to add or lint a lifecycle hook such as PreToolUse or SessionStart. Not for skills (use authoring-skills), whole plugins (use authoring-plugins) or GitHub workflows (use authoring-github-workflows).
+  Creates and audits the instruction files agents read: agent rules (rules/*.md), the root AGENTS.md with its thin CLAUDE.md bridge, and event-driven hooks (.apm/hooks/hooks.json plus handler scripts). Use when the user wants to write, check, trim or migrate a rule, AGENTS.md or CLAUDE.md, or to add or lint a lifecycle hook such as PreToolUse or SessionStart. Not for skills (use authoring-skills), whole plugins (use authoring-plugins) or GitHub workflows (use authoring-github-workflows).
 argument-hint: "[rule|agents-md|hook] [create|audit] [path]"
 allowed-tools: Bash, Read, Write
 ---
@@ -21,8 +21,8 @@ Writes lean, invariant-driven instruction files and audits them deterministicall
 2. **Timeless and portable**: no calendar dates, commit SHAs, usernames or absolute machine paths in a rule or root file.
 3. **Never overwrite** an existing `AGENTS.md` or `CLAUDE.md`; propose a diff. `CLAUDE.md` stays a bridge of 5 lines or fewer.
 4. **Audits are read-only.** They report findings; changes are reviewed edits.
-5. **Hooks** use `python3 ... || python ...` commands anchored on `${CLAUDE_PLUGIN_ROOT}`, exit silently when the repository is not initialised, and stay fast.
-6. APM does not deploy a plugin's `rules/` folder (instructions deploy from `.apm/instructions/`), so rules need no link or registration step.
+5. **APM-native hooks (SF-11)**: hooks live in `plugins/<plugin>/.apm/hooks/hooks.json` and use `python3 ... || python ...` commands anchored on `${CLAUDE_PLUGIN_ROOT}/.apm/hooks/<name>.py`. Hook scripts run under every target harness (`claude`, `copilot`, `codex`): use `Path(__file__).resolve()` for sibling files, store runtime state in harness-neutral paths (`context/`), never `.claude/` or `.agents/`, exit silently when the repository is not initialised, and stay fast.
+6. **Rules & APM (SF-9)**: APM does not deploy a plugin's `rules/` folder (instructions deploy from `.apm/instructions/`), so rules need no copy manifest or symlink registration step; setup copies needed rules into `.agent/rules/`.
 
 ## Modes
 
@@ -46,7 +46,7 @@ python3 scripts/scaffold_hook.py --event PreToolUse --name check-command --plugi
 
 1. Pick the mode and read its reference before running anything.
 2. Create modes: draft from the canonical structure or template, then run the matching audit.
-3. Hook mode: scaffold, implement the handler, then run `scripts/validate_hook_schema.py` and `scripts/hook_linter.py`; exercise it with `scripts/test_hook.py`.
+3. Hook mode: scaffold, implement the handler under `.apm/hooks/`, then run `scripts/validate_hook_schema.py` and `scripts/hook_linter.py`; exercise it with `scripts/test_hook.py`.
 4. On any failure follow that mode's section in [fallback-tree.md](references/fallback-tree.md).
 
 ## Verification
@@ -54,7 +54,7 @@ python3 scripts/scaffold_hook.py --event PreToolUse --name check-command --plugi
 ```bash
 python3 scripts/audit_rule.py <rule.md> --strict
 python3 scripts/audit_agents_md.py . --all --strict
-python3 scripts/validate_hook_schema.py plugins/<plugin>/hooks/hooks.json
+python3 scripts/validate_hook_schema.py plugins/<plugin>/.apm/hooks/hooks.json
 ```
 
 Tests: `python3 -m pytest tests`. Check the mode's section in [acceptance-criteria.md](references/acceptance-criteria.md).

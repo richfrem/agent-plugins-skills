@@ -2,6 +2,20 @@
 
 Persistent tracking of architectural friction, structural anomalies, and unclosed loops across sessions.
 
+## DEBT-20261027-AUTHORING-SKILLS-APM-ALIGNMENT (RESOLVED)
+
+- Logged date: 2026-10-27
+- Cycle/Session ID: feat/align-authoring-skills-with-apm
+- Artifact affected: `plugins/agent-extension-authoring/.apm/skills/*`, `plugins/agent-extension-authoring/rules/plugin-architecture-policy.md`, `.agent/rules/plugin-architecture-policy.md`, `plugins/agent-extension-authoring/README.md`
+- Friction observed: Following the repository's migration to pure APM-native plugin packaging (`.apm/skills/`, `.apm/agents/`, `.apm/hooks/`, `apm.yml`, self-contained skills with zero symlinks or copy manifests), several authoring skills, scaffolder/audit scripts, and `plugin-architecture-policy.md` still referenced legacy root directories (`plugins/<plugin>/skills/`, `hooks/hooks.json`), retired files (`plugin.yaml`, `__init__.py`, `symlinks.json`), or missed `.apm/` primitive discovery (`apm_build_pipeline.py` reported 0 skills on `.apm/skills/`, `audit_skill.py` reported `.apm` as the plugin name and failed when passed `plugins` directly, `scaffold_plugin.py` and `scaffold_hook.py` wrote to root `skills/` and `hooks/`, and `hook_linter.py` emitted false-positive Bash warnings on Python hooks). Additionally, `README.md` and mode reference files carried legacy consolidation history preambles.
+- Why not fixed now: Fixed immediately in this change.
+- Recommended fix / fix applied: Rewrote `plugin-architecture-policy.md` (and synced `.agent/rules/plugin-architecture-policy.md`) to codify the pure APM-native architecture within the strict `<= 80`-line rule budget; updated `scaffold_plugin.py`, `README.md.jinja`, `audit_plugin_structure.py`, `audit.py`, `scaffold_hook.py`, `hook_linter.py`, `audit_skill.py`, `check_skill_boundaries.py`, `audit_sub_agent.py`, and `apm_build_pipeline.py` to support `.apm/` primitive roots and `SF-1`..`SF-12` invariants; updated `SKILL.md`, mode docs, and guides across all 6 authoring skills; and stripped historical consolidation preambles from `README.md` and 32 mode/gate reference files.
+- Evidence/repro: `audit_rule.py --strict` passes on `plugin-architecture-policy.md`; `audit_skill.py plugins --all --mode source` passes all 30 skills; `audit_plugin_structure.py` and `audit.py` pass on `agent-extension-authoring`; `apm_build_pipeline.py --plugin plugins/agent-extension-authoring` passes (6 skills, 0 errors); `pytest plugins/agent-extension-authoring/.apm/skills/*/tests` passes 104 tests (4 skipped).
+- Severity: M
+- Repeat: NO
+- Status: RESOLVED
+
+
 ## DEBT-20261024-APM-NATIVE-PRIMITIVES-LAYOUT (RESOLVED)
 
 - Logged date: 2026-10-24

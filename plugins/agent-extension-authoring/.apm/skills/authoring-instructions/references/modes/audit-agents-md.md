@@ -1,7 +1,3 @@
-> Retired skill `audit-agents-md`, kept as the **audit-agents-md** mode of `authoring-instructions`. Body unchanged apart from link targets and corrected commands. Frontmatter removed.
->
-> Original description: Audits root instruction files (AGENTS.md, CLAUDE.md) for size budgets, timelessness, progressive disclosure, and inline invariants. Use when reviewing, auditing, or trimming root instruction files.
-
 # Audit AGENTS.md / CLAUDE.md
 
 Deterministic and judgment audit for repository root instruction files to prevent context bloat, enforce timeless invariants, and ensure progressive disclosure.

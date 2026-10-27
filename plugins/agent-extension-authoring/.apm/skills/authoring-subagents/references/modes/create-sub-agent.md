@@ -1,7 +1,3 @@
-> Retired skill `create-sub-agent`, kept as the **create-sub-agent** mode of `authoring-subagents`. Body unchanged apart from link targets, the scaffolder command and the model-field wording. Frontmatter removed.
->
-> Original description: Scaffolds a new autonomous sub-agent with its own prompt, system instructions, and tool permissions. Enforces modern architectural guidance: sub-agents are reserved for isolated execution contexts, strict tool sandboxing, or adversarial personas. NOT for simple procedural skills (use `authoring-skills`) and NEVER for pointer-wrapper stubs that merely delegate to a skill.
-
 # Create Sub-Agent
 
 Scaffolds a specialized autonomous sub-agent with focused system prompt, permissions, and tool bounds.
@@ -48,8 +44,8 @@ python3 scripts/validate_agent.py /path/to/plugin/.apm/agents/<agent-name>.md
 ## Verification
 
 ```bash
-python3 scripts/validate_agent.py plugins/<plugin>/agents/<agent-name>.md
-python3 scripts/audit_sub_agent.py plugins/<plugin>/agents/<agent-name>.md --strict
+python3 scripts/validate_agent.py plugins/<plugin>/.apm/agents/<agent-name>.md
+python3 scripts/audit_sub_agent.py plugins/<plugin>/.apm/agents/<agent-name>.md --strict
 ```
 
 Ensure validation reports zero errors before publishing. Review [acceptance criteria](../acceptance-criteria.md).

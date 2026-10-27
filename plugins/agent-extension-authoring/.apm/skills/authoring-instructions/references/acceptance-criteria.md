@@ -1,7 +1,5 @@
 # Acceptance Criteria: authoring-instructions
 
-Merged verbatim from the retired skills; one section per mode.
-
 ## Mode: create-hook
 
 **Purpose**: Verify the system generates compliant `hooks/hooks.json` lifecycle interceptors.

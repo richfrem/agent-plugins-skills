@@ -1,7 +1,3 @@
-> Retired skill `install-apm-package`, kept as the **install-apm-package** mode of `packaging-with-apm`. Body unchanged apart from link targets, moved script/test paths and the compile verification command (`apm compile --validate`). Frontmatter removed.
->
-> Original description: Activate when the user wants to install, deploy, update, roll back, test, or materialize an APM package into runtime directories (.agents/, .claude/, .github/, .codex/ and others), globally or into one project, or do a dry run of an APM install. Use after creating or converting an APM package.
-
 # Install APM Package (`install-apm-package`)
 
 Installs APM packages, including this repository's plugins, globally or into a project, pinned to a ref, with backup and rollback of the global state. Behaviour below was verified with APM `0.33.0`.

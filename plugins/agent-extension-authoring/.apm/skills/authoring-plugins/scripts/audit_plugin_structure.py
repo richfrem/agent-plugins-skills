@@ -6,19 +6,20 @@ audit_plugin_structure.py
 Purpose:
     Validates plugin architecture, manifests, and component organization under APM:
     - Verifies apm.yml package manifest and .claude-plugin/plugin.json schema.
+    - Enforces single primitive root under .apm/ (no duplicate root skills/, agents/, hooks/, etc.).
+    - Validates lsp.json / .lsp.json format per SF-10.
     - Prohibits raw filesystem symlinks in skills (APM packages require self-contained files).
-    - Validates hub-and-spoke materialized copies against the copy-manifest (symlinks.json).
-    - Flags drifted copies and unregistered duplicate files.
+    - Validates transitional copy-manifest entries (symlinks.json) if present and flags unregistered duplicates.
     - Prevents nested SKILL.md files.
 
 Layer: Investigate / Codify / Audit
 
 Usage Examples:
-    python3 plugins/agent-extension-authoring/skills/authoring-plugins/scripts/audit_plugin_structure.py plugins/agent-extension-authoring
-    python3 plugins/agent-extension-authoring/skills/authoring-plugins/scripts/audit_plugin_structure.py .
+    python3 plugins/agent-extension-authoring/.apm/skills/authoring-plugins/scripts/audit_plugin_structure.py plugins/agent-extension-authoring
+    python3 plugins/agent-extension-authoring/.apm/skills/authoring-plugins/scripts/audit_plugin_structure.py .
 
 Consumed by:
-    Static auditor workflows, audit-plugin skill, and pre-flight validation gates.
+    Static auditor workflows, authoring-plugins skill, and pre-flight validation gates.
 """
 
 import json
@@ -29,6 +30,7 @@ from pathlib import Path
 
 SKIP_DIRS = {"evals", ".claude-plugin", "tests", "__pycache__"}
 RESOURCE_DIRS = {"scripts", "references", "assets"}
+PRIMITIVE_DIRS = ("skills", "agents", "hooks", "prompts", "instructions")
 
 
 def find_repo_root(start: Path) -> Path:
@@ -60,13 +62,54 @@ def load_copy_manifest(repo_root: Path) -> dict[str, str]:
         return {}
 
 
+def _check_lsp_json(plugin_root: Path, findings: list[dict]) -> None:
+    """Check lsp.json / .lsp.json against SF-10 (flat map of serverName -> {command, ...})."""
+    for lsp_name in ("lsp.json", ".lsp.json"):
+        lsp_path = plugin_root / lsp_name
+        if not lsp_path.is_file():
+            continue
+        try:
+            data = json.loads(lsp_path.read_text(encoding="utf-8"))
+            if not isinstance(data, dict) or not data:
+                findings.append({
+                    "type": "invalid_lsp_json",
+                    "file": lsp_name,
+                    "severity": "warning",
+                    "message": f"{lsp_name} is empty or not an object; remove placeholder or declare flat server entries (SF-10).",
+                })
+            elif "languageServers" in data:
+                findings.append({
+                    "type": "invalid_lsp_json",
+                    "file": lsp_name,
+                    "severity": "error",
+                    "message": f"{lsp_name} wraps servers in 'languageServers'; Claude Code requires a flat map {{serverName: {{command, ...}}}} (SF-10).",
+                })
+            else:
+                for srv_name, srv_cfg in data.items():
+                    if not isinstance(srv_cfg, dict) or not srv_cfg.get("command"):
+                        findings.append({
+                            "type": "invalid_lsp_json",
+                            "file": lsp_name,
+                            "severity": "error",
+                            "message": f"{lsp_name} server '{srv_name}' must be an object with a non-empty 'command' (SF-10).",
+                        })
+        except Exception as e:
+            findings.append({
+                "type": "invalid_lsp_json",
+                "file": lsp_name,
+                "severity": "error",
+                "message": f"Invalid JSON in {lsp_name}: {e}",
+            })
+
+
 def audit_plugin(plugin_root: Path) -> list[dict]:
     """
     Audit a plugin directory for:
     - apm.yml package manifest
     - .claude-plugin/plugin.json schema conformance
-    - Hub-and-spoke copy-manifest synchronization
-    - Absence of raw symlinks and nested SKILL.md files
+    - .apm/ primitive root unification (no duplicate root skills/agents/hooks)
+    - lsp.json conformance (SF-10)
+    - Absence of raw symlinks, unregistered duplicates, and nested SKILL.md files
     """
     findings = []
     repo_root = find_repo_root(plugin_root)
@@ -94,7 +137,7 @@ def audit_plugin(plugin_root: Path) -> list[dict]:
                     "severity": "error",
                     "message": "author must be an object with a 'name' field, e.g. {'name': '...', 'email': '...'}.",
                 })
-            for forbidden in ("skills", "agents", "hooks"):
+            for forbidden in ("skills", "agents", "hooks", "commands"):
                 if forbidden in pj:
                     findings.append({
                         "type": "forbidden_manifest_key",
@@ -110,15 +153,24 @@ def audit_plugin(plugin_root: Path) -> list[dict]:
                 "message": f"Invalid JSON in .claude-plugin/plugin.json: {e}",
             })
 
-    # 2. Skills Directory Audit
+    _check_lsp_json(plugin_root, findings)
+
+    # 2. Primitive Root Unification Audit
+    has_apm_dir = (plugin_root / ".apm").is_dir()
+    for prim in PRIMITIVE_DIRS:
+        apm_prim = plugin_root / ".apm" / prim
+        root_prim = plugin_root / prim
+        if root_prim.exists() and (apm_prim.exists() or has_apm_dir):
+            findings.append({
+                "type": "duplicate_primitive_root",
+                "rule": "duplicate-primitive-root",
+                "file": str(root_prim),
+                "severity": "error",
+                "message": f"Duplicate '{prim}/' directory found outside '.apm/'. In APM-native packages, primitives belong exclusively in '.apm/{prim}/'.",
+            })
+
     apm_skills = plugin_root / ".apm" / "skills"
     root_skills = plugin_root / "skills"
-    if apm_skills.exists() and root_skills.exists():
-        findings.append({
-            "rule": "duplicate-primitive-root",
-            "file": str(root_skills),
-            "message": "Duplicate 'skills/' directory found outside '.apm/'. In APM-native packages, primitives belong exclusively in '.apm/skills/'.",
-        })
     skills_dir = apm_skills if apm_skills.exists() else root_skills
     if not skills_dir.exists():
         return findings
@@ -155,7 +207,7 @@ def _scan_dir(
     findings: list,
     depth: int = 0,
 ) -> None:
-    """Recursively scan a resource directory and enforce APM copy-manifest invariants."""
+    """Recursively scan a resource directory and enforce self-contained APM skill invariants."""
     for entry in sorted(directory.iterdir()):
         if entry.name.startswith(".") or entry.name in SKIP_DIRS:
             continue
@@ -183,8 +235,8 @@ def _scan_dir(
                 "file": str(entry.relative_to(plugin_root)),
                 "severity": "error",
                 "message": (
-                    "Raw filesystem symlinks are prohibited under APM. "
-                    "Register the resource in symlinks.json (copy-manifest) and run materialize_copies.py."
+                    "Raw filesystem symlinks are prohibited under APM (SF-2). "
+                    "Replace with a real self-contained file inside the skill directory."
                 ),
             })
         elif entry.is_file():
@@ -214,7 +266,7 @@ def _scan_dir(
                         "severity": "error",
                         "message": (
                             f"Materialized copy has drifted from canonical source ({src_rel}). "
-                            "Edit the canonical source and run materialize_copies.py to update."
+                            "Consolidate into a self-contained skill file or sync via materialize_copies.py."
                         ),
                     })
             else:
@@ -229,8 +281,8 @@ def _scan_dir(
                             "file": str(entry.relative_to(plugin_root)),
                             "severity": "error",
                             "message": (
-                                f"File exists at plugin root ({resource_type}/{rel_skill_res}) but is not registered in symlinks.json. "
-                                "Register it with strategy 'copy' to ensure centralized ownership."
+                                f"File also exists at plugin root ({resource_type}/{rel_skill_res}). "
+                                "Remove the plugin-root duplicate so the skill in .apm/skills/ is the single self-contained owner."
                             ),
                         })
                 except ValueError:
@@ -246,16 +298,19 @@ def suggest_fix(finding: dict, plugin_root: Path) -> None:
 
     if ftype == "drifted_copy":
         print(f"\n  # Fix drifted copy: {rel}")
-        print("  python3 plugins/agent-extension-authoring/skills/packaging-with-apm/scripts/materialize_copies.py")
+        print("  Consolidate into a single owning skill under .apm/skills/ or run materialize_copies.py if mid-migration.")
     elif ftype == "raw_symlink_prohibited":
         print(f"\n  # Fix raw symlink: {rel}")
-        print("  Add an entry to symlinks.json with strategy 'copy' and run materialize_copies.py")
+        print("  Replace the symlink with a real file inside .apm/skills/<skill>/ (SF-2).")
     elif ftype == "unregistered_duplicate":
-        print(f"\n  # Fix unregistered duplicate: {rel}")
-        print("  Add an entry to symlinks.json with strategy 'copy' and run materialize_copies.py")
+        print(f"\n  # Fix duplicate plugin-root file: {rel}")
+        print("  Remove the plugin-root copy and keep the file solely inside .apm/skills/<skill>/.")
+    elif ftype == "duplicate_primitive_root":
+        print(f"\n  # Fix duplicate primitive directory: {rel}")
+        print("  Move all primitives into .apm/ and remove the root duplicate directory.")
     elif ftype == "missing_apm_manifest":
         print(f"\n  # Fix missing apm.yml in {plugin_root.name}:")
-        print("  Create apm.yml specifying package name, version, description, and targets.")
+        print("  Create apm.yml specifying package name, version, description, author, and license.")
 
 
 def main() -> None:
@@ -270,8 +325,8 @@ def main() -> None:
         sys.exit(1)
 
     findings = audit_plugin(plugin_root)
-    errors = [f for f in findings if f["severity"] == "error"]
-    warnings = [f for f in findings if f["severity"] == "warning"]
+    errors = [f for f in findings if f.get("severity") == "error"]
+    warnings = [f for f in findings if f.get("severity") == "warning"]
 
     if not findings:
         print(f"OK  {plugin_root.name}: no violations found")
@@ -283,7 +338,7 @@ def main() -> None:
     if errors:
         print(f"\nERRORS ({len(errors)}):")
         for f in errors:
-            print(f"  [{f['type']:25}] {f.get('file', '')} - {f['message']}")
+            print(f"  [{f.get('type', 'error'):25}] {f.get('file', '')} - {f['message']}")
         print(f"\nSuggested fixes:")
         for f in errors:
             suggest_fix(f, plugin_root)
@@ -291,7 +346,7 @@ def main() -> None:
     if warnings:
         print(f"\nWARNINGS ({len(warnings)}):")
         for f in warnings:
-            print(f"  [{f['type']:25}] {f.get('file', '')} - {f['message']}")
+            print(f"  [{f.get('type', 'warning'):25}] {f.get('file', '')} - {f['message']}")
 
     print(f"\nSummary: {len(errors)} errors, {len(warnings)} warnings")
     sys.exit(1 if errors else 0)

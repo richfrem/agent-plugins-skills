@@ -1,27 +1,25 @@
 # Acceptance Criteria: authoring-plugins
 
-Merged verbatim from the retired skills; one section per mode.
-
 ## Mode: create-plugin
 
-**Purpose**: Verify the system generates compliant root `.claude-plugin` architectures.
+**Purpose**: Verify the system generates compliant APM-native and `.claude-plugin` architectures.
 
 ## 1. Directory Structure
-- **[PASSED]**: Generates `skills/`, `agents/`, `commands/`, and nested `hooks/scripts/` folders.
-- **[FAILED]**: Fails to create the base directories or puts scripts in root.
+- **[PASSED]**: Generates `.apm/skills/`, `.claude-plugin/plugin.json`, `apm.yml`, `README.md`, and (when `--with-hooks` is set) `.apm/hooks/hooks.json`.
+- **[FAILED]**: Fails to create `.apm/skills/` or puts shared scripts at the plugin root.
 
 ## 2. Configuration Files
-- **[PASSED]**: Generates an `.mcp.json` and a `.claude-plugin/plugin.json` manifest.
-- **[FAILED]**: Names the file `mcp.json` (missing dot) or fails to generate the manifest.
+- **[PASSED]**: Generates `apm.yml`, `.claude-plugin/plugin.json` (with an `author` object and no `skills`/`agents`/`hooks` arrays), and (when `--with-mcp` is set) `.mcp.json`.
+- **[FAILED]**: Names the file `mcp.json` (missing dot) or fails to generate valid manifests.
 
 ## Mode: audit-plugin
 
 **Purpose**: Verify the system auditor accurately detects specification failures.
 
-## 1. File Detection
-- **[PASSED]**: Auditor throws an error if `../../../.claude-plugin/plugin.json` or `.claude-plugin/` directory is missing.
-- **[FAILED]**: Auditor silently passes a plugin that stores its `hooks.json` in the root directory instead of `hooks/hooks.json`.
+## 1. File & Primitive Detection
+- **[PASSED]**: Auditor flags missing `.claude-plugin/plugin.json`, duplicate primitive directories outside `.apm/`, and invalid `lsp.json` structures.
+- **[FAILED]**: Auditor silently passes a plugin that stores its `hooks.json` in the root directory instead of `.apm/hooks/hooks.json` (or `hooks/hooks.json`).
 
-## 2. Script Restriction  
-- **[PASSED]**: Auditor strictly rejects any `.sh` or `.ps1` files residing in `skills/*/scripts/`.
-- **[FAILED]**: Auditor allows a bash script to exist inside a skill's dedicated execution directory.
+## 2. Self-Contained Skill Enforcement
+- **[PASSED]**: Auditor strictly rejects raw filesystem symlinks (`SF-2`), nested `SKILL.md` files, and duplicate plugin-root files inside `.apm/skills/*/`.
+- **[FAILED]**: Auditor allows raw symlinks or nested `SKILL.md` files inside a skill's resource directories.

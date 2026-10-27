@@ -119,7 +119,7 @@ def _check_root_structure(plugin_path: str, errors: list, warnings: list) -> Non
     if os.path.isfile(os.path.join(plugin_path, "mcp.json")):
         errors.append("Found `mcp.json` at root. The officially supported standard is `.mcp.json`.")
     if os.path.isfile(os.path.join(plugin_path, "hooks.json")):
-        errors.append("Found `hooks.json` at root. The officially supported standard requires `hooks/hooks.json`.")
+        errors.append("Found `hooks.json` at root. The officially supported standard requires `.apm/hooks/hooks.json` (or `hooks/hooks.json`).")
 
     readme_path = os.path.join(plugin_path, "README.md")
     if not os.path.isfile(readme_path):

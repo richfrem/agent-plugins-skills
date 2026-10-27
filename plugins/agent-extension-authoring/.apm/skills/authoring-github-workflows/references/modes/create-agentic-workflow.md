@@ -1,7 +1,3 @@
-> Retired skill `create-agentic-workflow`, kept as the **create-agentic-workflow** mode of `authoring-github-workflows`. Body unchanged apart from link targets and the corrected commands. Frontmatter removed.
->
-> Original description: Scaffolds a Copilot GitHub agent, an agent that runs in GitHub Actions, a GitHub workflow agent, or a GitHub Agentic Workflow (gh-aw) from an existing skill. Supports three target configurations: Target A (Custom Copilot agent), Target B (GitHub Agentic Workflow), and Target C (CI/CD Smart Failure agent).
-
 # Create Agentic Workflow (`create-agentic-workflow`)
 
 Scaffolds GitHub-native agent configurations from skills, targeting Custom Copilot Agents (Target A), GitHub Agentic Workflows (Target B), or CI/CD Smart Failure agents (Target C).
@@ -25,7 +21,7 @@ Scaffolds GitHub-native agent configurations from skills, targeting Custom Copil
 Scaffold a GitHub Agentic Workflow from an existing skill:
 
 ```bash
-python3 scripts/scaffold_github_agent.py --skill-dir plugins/<plugin>/skills/<skill-name> --target B   # --name defaults to the skill folder name
+python3 scripts/scaffold_github_agent.py --skill-dir plugins/<plugin>/.apm/skills/<skill-name> --target B   # --name defaults to the skill folder name
 ```
 
 ## Workflow

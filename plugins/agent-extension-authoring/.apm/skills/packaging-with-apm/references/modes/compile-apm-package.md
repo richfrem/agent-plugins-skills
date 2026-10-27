@@ -1,7 +1,3 @@
-> Retired skill `compile-apm-package`, kept as the **compile-apm-package** mode of `packaging-with-apm`. Body unchanged apart from link targets, moved script/test paths and the compile verification command (`apm compile --validate`). Frontmatter removed.
->
-> Original description: Activate when the user wants to compile an APM package into top-level context documents such as AGENTS.md, CLAUDE.md, or GEMINI.md, especially for Codex, Gemini, OpenCode, or agents-protocol style hosts. Do not use when the user only needs per-skill installation; use install-apm-package instead.
-
 # Compile APM Package (`compile-apm-package`)
 
 Compiles APM package primitives into top-level unified context documents (`AGENTS.md`, `CLAUDE.md`, `GEMINI.md`) for single-file context hosts.

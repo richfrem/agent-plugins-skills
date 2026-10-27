@@ -9,7 +9,7 @@ allowed-tools: Bash, Read, Write, Glob, Grep
 
 # Authoring Plugins (`authoring-plugins`)
 
-Creates a plugin skeleton and audits a plugin as a whole; component audits are delegated to the sibling skills by name.
+Creates an APM-native plugin skeleton and audits a plugin as a whole; component audits are delegated to the sibling skills by name.
 
 ## Contents
 
@@ -17,10 +17,10 @@ Creates a plugin skeleton and audits a plugin as a whole; component audits are d
 
 ## Constraints
 
-1. **Self-contained skills**: scripts, references and assets live inside the skill that uses them; no plugin-root shared files, no symlinks.
-2. **Clean manifest**: `.claude-plugin/plugin.json` has an author object and never lists `skills`, `agents` or `hooks` (they are auto-discovered).
-3. **`apm.yml` is optional**: APM installs a plugin as it is; packaging belongs to `packaging-with-apm`.
-4. **Portable**: no `/Users/` or `/home/` paths; use relative paths or `${CLAUDE_PLUGIN_ROOT}`.
+1. **Pure APM-native layout**: primitives live inside `.apm/` (`.apm/skills/`, `.apm/agents/`, `.apm/hooks/`, `.apm/prompts/`, `.apm/instructions/`); never maintain duplicate root `skills/`, `agents/` or `hooks/` folders alongside `.apm/`.
+2. **Self-contained skills**: scripts, references and assets live inside the skill that uses them (`.apm/skills/<skill>/`); no plugin-root shared files, no copy manifests (`symlinks.json`), no symlinks.
+3. **Dual manifests**: `apm.yml` at the plugin root defines APM package metadata; `.claude-plugin/plugin.json` has an `author` object (`{"name": "...", "email": "..."}`) and never lists `skills`, `agents`, `hooks` or `commands` (auto-discovered).
+4. **Portable**: no `/Users/` or `/home/` paths; use skill-relative paths or `${CLAUDE_PLUGIN_ROOT}`.
 5. **No cross-plugin imports**; refer to other plugins' skills by name.
 6. Audits are read-only.
 
@@ -44,7 +44,7 @@ python3 scripts/audit.py --path plugins/<plugin-name>
 ## Workflow
 
 1. Pick the mode and read its reference.
-2. Create: scaffold, then add components with `authoring-skills`, `authoring-subagents` and `authoring-instructions`.
+2. Create: scaffold (`apm.yml`, `.claude-plugin/plugin.json`, `.apm/skills/`, `README.md`), then add components with `authoring-skills`, `authoring-subagents` and `authoring-instructions`.
 3. Audit: run both scripts, then delegate skills, sub-agents, rules and hooks to those skills by name.
 4. On failure follow [fallback-tree.md](references/fallback-tree.md).
 

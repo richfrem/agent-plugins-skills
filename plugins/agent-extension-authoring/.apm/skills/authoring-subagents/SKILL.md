@@ -21,7 +21,7 @@ Scaffolds sub-agent files and audits them against the authoring contract. Sub-ag
 2. **No pointer wrappers**: an agent that merely says "please run skill X" must not exist; however, a subagent that controls its own prompt and tool bounds may preload skills via `skills:`.
 3. **Explicit tool bounds** and denial rules; the definition is self-contained and never depends on a source checkout.
 4. **Model choices are not made here**: the `model` field defaults to `inherit`; model names and tiers belong to the `cli-agent` skill.
-5. Plugin agents are flat files at `plugins/<plugin>/agents/<name>.md`; project agents live in `.claude/agents/<name>.md`.
+5. Plugin agents are flat files at `plugins/<plugin>/.apm/agents/<name>.md` (and never symlinks or copies of a `SKILL.md`, **SF-12**); project agents live in `.claude/agents/<name>.md`.
 6. Audits are read-only.
 
 ## Modes
@@ -34,8 +34,8 @@ Scaffolds sub-agent files and audits them against the authoring contract. Sub-ag
 ## Quick start
 
 ```bash
-python3 scripts/scaffold_subagent.py --name <agent-name> --path plugins/<plugin>/agents --desc "<use-case>"
-python3 scripts/validate_agent.py plugins/<plugin>/agents/<agent-name>.md
+python3 scripts/scaffold_subagent.py --name <agent-name> --path plugins/<plugin>/.apm/agents --desc "<use-case>"
+python3 scripts/validate_agent.py plugins/<plugin>/.apm/agents/<agent-name>.md
 python3 scripts/audit_sub_agent.py plugins/<plugin> --all --json
 ```
 
@@ -49,7 +49,7 @@ python3 scripts/audit_sub_agent.py plugins/<plugin> --all --json
 ## Verification
 
 ```bash
-python3 scripts/audit_sub_agent.py plugins/<plugin>/agents/<agent-name>.md --strict
+python3 scripts/audit_sub_agent.py plugins/<plugin>/.apm/agents/<agent-name>.md --strict
 ```
 
 Tests: `python3 -m pytest tests`. Check the mode's section in [acceptance-criteria.md](references/acceptance-criteria.md).

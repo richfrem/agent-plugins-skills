@@ -1,14 +1,14 @@
 # Plugin Creation & Scaffolding Guide
 
-Comprehensive reference guide for authoring, configuring, and packaging new Claude Code and Hermes-compatible plugins.
+Comprehensive reference guide for authoring, configuring, and packaging APM-native and Claude Code-compatible plugins.
 
 ## Contents
 
 - [Overview & Workflow](#overview--workflow)
-- [Plugin Manifest Specification](#plugin-manifest-specification)
-- [Hermes Compatibility (`plugin.yaml`)](#hermes-compatibility-pluginyaml)
-- [Hermes Wiring (`__init__.py`)](#hermes-wiring-__init__py)
-- [Hub-and-Spoke Shared Script Pattern](#hub-and-spoke-shared-script-pattern)
+- [APM Package Manifest (`apm.yml`)](#apm-package-manifest-apmyml)
+- [Claude Code Manifest (`.claude-plugin/plugin.json`)](#claude-code-manifest-claude-pluginpluginjson)
+- [APM-Native Directory Layout (`.apm/`)](#apm-native-directory-layout-apm)
+- [Self-Contained Skill Architecture](#self-contained-skill-architecture)
 - [Marketplace Integration](#marketplace-integration)
 - [Plugin Architecture Invariants](#plugin-architecture-invariants)
 
@@ -16,15 +16,37 @@ Comprehensive reference guide for authoring, configuring, and packaging new Clau
 
 ## Overview & Workflow
 
-1. **Phase 1: Discovery & Scoping**: Determine plugin purpose, tools needed, and component taxonomy (skills, commands, agents, hooks, MCP servers).
-2. **Phase 2: Directory Scaffolding**: Create root directory, `.claude-plugin/plugin.json`, `README.md`, and component folders.
-3. **Phase 3: Multi-Platform Manifests**: Generate `.claude-plugin/plugin.json`, `plugin.yaml`, and `__init__.py`.
-4. **Phase 4: Component Implementation**: Scaffold individual skills via `create-skill` and hooks via `create-hook`.
-5. **Phase 5: Validation**: Verify using `audit-plugin` and `claude plugin validate .`.
+1. **Phase 1: Discovery & Scoping**: Determine plugin purpose, tools needed, and component taxonomy (skills, agents, hooks, MCP servers).
+2. **Phase 2: Directory Scaffolding**: Run `scripts/scaffold_plugin.py` to create `apm.yml`, `.claude-plugin/plugin.json`, `.apm/skills/`, and `README.md`.
+3. **Phase 3: Component Implementation**: Scaffold individual skills under `.apm/skills/` via `authoring-skills`, sub-agents under `.apm/agents/` via `authoring-subagents`, and hooks under `.apm/hooks/` via `authoring-instructions`.
+4. **Phase 4: Validation**: Verify using `scripts/audit_plugin_structure.py`, `scripts/audit.py`, and the `packaging-with-apm` skill (`apm_build_pipeline.py`).
 
 ---
 
-## Plugin Manifest Specification
+## APM Package Manifest (`apm.yml`)
+
+Every plugin root (`plugins/<plugin>/apm.yml`) declares its APM package metadata:
+
+```yaml
+name: <plugin-name>
+version: 0.1.0
+description: "<description>"
+author: Richard Fremmerlid
+license: MIT
+repository: https://github.com/richfrem/agent-plugins-skills
+```
+
+To expose the plugin from the root workspace meta-package, add a path dependency entry to the repository root `apm.yml` under `dependencies.apm`:
+
+```yaml
+dependencies:
+  apm:
+    - ./plugins/<plugin-name>
+```
+
+---
+
+## Claude Code Manifest (`.claude-plugin/plugin.json`)
 
 Every plugin's `.claude-plugin/plugin.json` must adhere to the minimal metadata schema:
 
@@ -49,65 +71,49 @@ Every plugin's `.claude-plugin/plugin.json` must adhere to the minimal metadata 
 - Never include `skills`, `agents`, `hooks`, or `commands` arrays (these are auto-discovered).
 - `author` must always be an object with `name` and optional `email`, never a string.
 - No duplicate top-level keys.
+- Legacy manifests (`plugin.yaml`, `__init__.py`, `symlinks.json`, `gemini-extension.json`, `.agents/ownership/`) are retired and prohibited.
 
 ---
 
-## Hermes Compatibility (`plugin.yaml`)
+## APM-Native Directory Layout (`.apm/`)
 
-Scaffold `plugin.yaml` at the plugin root for hermes-agent compatibility:
+All deployable primitives reside inside `.apm/`:
 
-```yaml
-name: <plugin-name>
-version: <version>
-description: "<description>"
-author: <author>
-kind: backend  # or standalone (no Python scripts)
-platforms:
-  - linux
-  - macos
-  - windows
-provides_tools:          # list script basenames (no .py) that expose callable tools
-  - script_name
-skills:                  # list skill directory names under skills/
-  - skill-name
+```text
+plugins/<plugin-name>/
+├── .apm/
+│   ├── skills/
+│   │   └── <skill-name>/
+│   │       ├── SKILL.md
+│   │       ├── scripts/
+│   │       ├── references/
+│   │       ├── assets/
+│   │       ├── evals/
+│   │       └── tests/
+│   ├── agents/
+│   │   └── <agent-name>.md
+│   └── hooks/
+│       ├── hooks.json
+│       └── <hook-script>.py
+├── .claude-plugin/
+│   └── plugin.json
+├── apm.yml
+├── README.md
+└── rules/
+    └── <rule-name>.md
 ```
 
-- `kind: standalone`: Plugin contains prompts/skills but no callable Python tools.
-- `kind: backend`: Plugin has Python scripts in `scripts/` invoked by agents.
+- **Rules (`rules/`)**: Source governance rules are **not** deployed by APM (**SF-9**). Setup copies needed rules into `.agent/rules/`, and `AGENTS.md` lists them there.
+- **No Duplicate Primitive Directories**: Never create root `skills/`, `agents/`, or `hooks/` alongside `.apm/`.
 
 ---
 
-## Hermes Wiring (`__init__.py`)
+## Self-Contained Skill Architecture
 
-If the plugin provides callable Python scripts in `scripts/`, scaffold `__init__.py` at the plugin root:
-
-```python
-from __future__ import annotations
-from pathlib import Path
-
-_HERE = Path(__file__).resolve().parent
-
-def register(ctx) -> None:
-    # Register skills
-    for skill_dir in (_HERE / "skills").iterdir():
-        if skill_dir.is_dir() and (skill_dir / "SKILL.md").exists():
-            ctx.register_skill(name=skill_dir.name, path=skill_dir)
-```
-
----
-
-## Hub-and-Spoke Shared Script Pattern
-
-When a script or reference is shared across multiple skills in the same plugin:
-- Canonical file lives at the plugin root (`plugins/<plugin>/scripts/` or `plugins/<plugin>/references/`).
-- Consuming skills contain only file-level symlinks pointing to the hub.
-- Symlinks are created and registered via `symlink_manager.py create`.
-
-```bash
-python plugins/dev-utils/skills/managing-symlinks/scripts/symlink_manager.py create \
-  --src plugins/<plugin>/scripts/<canonical>.py \
-  --dst plugins/<plugin>/skills/<skill>/scripts/<name>.py
-```
+Every skill in `.apm/skills/<skill-name>/` is 100% self-contained:
+- Scripts, references, assets, evals, and tests live directly inside `.apm/skills/<skill-name>/` as real files.
+- Do **not** place shared `scripts/`, `references/`, or `assets/` at the plugin root, and do **not** create symlinks or `symlinks.json` copy manifests.
+- When one skill needs functionality from another skill, delegate by skill name in natural language rather than importing or calling across skill directories (**SF-8**).
 
 ---
 
@@ -115,12 +121,12 @@ python plugins/dev-utils/skills/managing-symlinks/scripts/symlink_manager.py cre
 
 - When distributed via `marketplace.json`, set `"strict": true` explicitly.
 - Ensure the plugin path exists in the repository before adding to the catalog.
-- Verify using `python3 ${CLAUDE_PLUGIN_ROOT}/skills/packaging-with-apm/scripts/audit_marketplace_sources.py .`.
+- Verify using the `packaging-with-apm` skill (`audit_marketplace_sources.py`).
 
 ---
 
 ## Plugin Architecture Invariants
 
 - **No Cross-Plugin Imports**: Never import Python code from another plugin.
-- **File-Level Symlinks Only**: No directory symlinks or duplicated code copies.
-- **Self-Contained Skills**: Installed skills must run independently of source checkouts.
+- **Zero Symlinks**: Raw filesystem symlinks are prohibited (**SF-2**).
+- **Self-Contained Skills**: Installed skills must run independently of source checkouts across all APM target harnesses (`claude`, `copilot`, `codex`, `antigravity`).

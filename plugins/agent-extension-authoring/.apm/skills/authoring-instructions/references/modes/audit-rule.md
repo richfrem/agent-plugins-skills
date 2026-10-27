@@ -1,7 +1,3 @@
-> Retired skill `audit-rule`, kept as the **audit-rule** mode of `authoring-instructions`. Body unchanged apart from link targets and corrected commands. Frontmatter removed.
->
-> Original description: Audits agent rule markdown files for line budget compliance, fluff sanitization, and invariant structure. Use when checking or validating rules in rules/.
-
 # Audit Rule
 
 Performs deterministic structural audits of agent rule policies against authoring standards.
@@ -42,7 +38,7 @@ Exit 0: clean pass; 1: compliance errors or date/path violations; 2: invalid inp
 2. **Execute Audit**: Run `audit_rule.py` to evaluate line count, fluff sanitization, and headings.
 3. **Evaluate Findings**: Check for calendar dates, absolute paths, missing "Iron Law", or line bloat.
 4. **Refactor Invariants**: Strip historical incident post-mortems and consolidate into MUST/NEVER bounds.
-5. **Re-Audit**: Confirm clean exit code 0 before registering symlinks or committing.
+5. **Re-Audit**: Confirm clean exit code 0 before committing.
 
 ## Verification
 

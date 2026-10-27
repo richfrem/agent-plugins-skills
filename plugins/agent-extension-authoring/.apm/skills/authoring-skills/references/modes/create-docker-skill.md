@@ -1,7 +1,3 @@
-> Retired skill `create-docker-skill`, kept as the **create-docker-skill** mode of `authoring-skills`. Body unchanged apart from link targets, retired-skill names (now the new skills) and the corrected commands. Frontmatter removed.
->
-> Original description: Scaffolds an agent skill with a Docker runtime environment. NOT for normal local skills (use `create-skill`) and NOT for Azure hosted agents (use `create-azure-agent`).
-
 # Create Docker Skill (create-docker-skill)
 
 Scaffolds a compliant agent skill that executes workloads within containerized runtimes (Docker, Nextflow, HPC).
@@ -22,10 +18,10 @@ Scaffolds a compliant agent skill that executes workloads within containerized r
 ## Quick start
 
 ```bash
-python3 plugins/agent-extension-authoring/skills/authoring-skills/scripts/scaffold.py \
+python3 scripts/scaffold.py \
   --type skill \
   --name <skill-name> \
-  --path plugins/<plugin>/skills/<skill-name> \
+  --path plugins/<plugin>/.apm/skills \
   --desc "Containerized workload execution"
 ```
 
@@ -40,7 +36,7 @@ python3 plugins/agent-extension-authoring/skills/authoring-skills/scripts/scaffo
 
 ```bash
 # Validate generated skill compliance
-python3 plugins/agent-extension-authoring/skills/authoring-skills/scripts/audit_skill.py plugins/<plugin>/skills/<skill-name> --mode source
+python3 scripts/audit_skill.py plugins/<plugin>/.apm/skills/<skill-name> --mode source
 
 # Verify container runtime pre-flight logic
 docker info >/dev/null 2>&1 || echo "Docker daemon unreachable"

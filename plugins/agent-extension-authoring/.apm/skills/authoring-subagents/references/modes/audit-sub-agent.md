@@ -1,7 +1,3 @@
-> Retired skill `audit-sub-agent`, kept as the **audit-sub-agent** mode of `authoring-subagents`. Body unchanged apart from link targets, the scaffolder command and the model-field wording. Frontmatter removed.
->
-> Original description: Audits sub-agent markdown specifications for metadata, system prompt structure, tool sandboxing, and packaging compliance. Use when validating new or updated sub-agents in agents/.
-
 # Audit Sub-Agent
 
 Performs deterministic structural and schema audits of sub-agent definitions against authoring standards.
@@ -28,7 +24,7 @@ Run from this skill root with caller-supplied target:
 
 ```bash
 # Audit a single sub-agent definition
-python3 scripts/audit_sub_agent.py /path/to/agents/<agent-name>.md --json
+python3 scripts/audit_sub_agent.py plugins/<plugin>/.apm/agents/<agent-name>.md --json
 
 # Scan all sub-agents in a plugin or repository
 python3 scripts/audit_sub_agent.py /path/to/repository --all --json
@@ -48,7 +44,7 @@ Exit 0: clean pass; 1: structural or metadata errors; 2: invalid input or missin
 
 ```bash
 # Strict verification failing on any warning
-python3 scripts/audit_sub_agent.py /path/to/agents/<agent-name>.md --strict
+python3 scripts/audit_sub_agent.py plugins/<plugin>/.apm/agents/<agent-name>.md --strict
 ```
 
 Review [acceptance criteria](../acceptance-criteria.md) before publishing.

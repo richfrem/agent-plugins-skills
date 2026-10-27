@@ -1,7 +1,3 @@
-> Retired skill `create-mcp-integration`, kept as the **create-mcp-integration** mode of `authoring-skills`. Body unchanged apart from link targets, retired-skill names (now the new skills) and the corrected commands. Frontmatter removed.
->
-> Original description: Adds an MCP server integration configuration to an existing plugin. NOT for scaffolding a brand-new plugin (use `authoring-plugins`) and NOT for Azure hosted agents (use `create-azure-agent`).
-
 # Create MCP Integration (create-mcp-integration)
 
 Configures Model Context Protocol (MCP) server integrations within a plugin or workspace `.mcp.json`.
@@ -22,7 +18,7 @@ Configures Model Context Protocol (MCP) server integrations within a plugin or w
 ## Quick start
 
 ```bash
-python3 plugins/agent-extension-authoring/skills/authoring-skills/scripts/scaffold.py \
+python3 scripts/scaffold.py \
   --type mcp \
   --name postgres-mcp \
   --path plugins/<plugin>
@@ -42,7 +38,7 @@ python3 plugins/agent-extension-authoring/skills/authoring-skills/scripts/scaffo
 python3 -c "import json; json.load(open('.mcp.json'))"
 
 # Audit skill compliance
-python3 plugins/agent-extension-authoring/skills/authoring-skills/scripts/audit_skill.py plugins/agent-extension-authoring/skills/create-mcp-integration --mode source
+python3 scripts/audit_skill.py . --mode source
 ```
 
 ## References

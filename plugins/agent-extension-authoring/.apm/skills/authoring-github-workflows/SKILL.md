@@ -36,7 +36,7 @@ Generates `.github/workflows/*.yml` CI/CD workflows and GitHub-native agent conf
 
 ```bash
 python3 scripts/scaffold_github_action.py --category test --platform python --name "CI"
-python3 scripts/scaffold_github_agent.py --skill-dir plugins/<plugin>/skills/<skill> --target B
+python3 scripts/scaffold_github_agent.py --skill-dir plugins/<plugin>/.apm/skills/<skill> --target B
 ```
 
 ## Workflow

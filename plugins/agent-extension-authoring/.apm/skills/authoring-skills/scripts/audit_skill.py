@@ -64,10 +64,13 @@ class SkillAuditResult:
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize a versioned result while retaining legacy fields."""
+        plugin_name = None
+        if self.skill_dir.parent.name == "skills":
+            parent2 = self.skill_dir.parent.parent
+            plugin_name = parent2.parent.name if parent2.name == ".apm" else parent2.name
         return {"schema_version": 2, "contract_version": self.contract["version"],
                 "skill_name": self.skill_name, "skill_dir": str(self.skill_dir),
-                "canonical_path": str(self.skill_dir), "plugin": self.skill_dir.parent.parent.name
-                if self.skill_dir.parent.name == "skills" else None,
+                "canonical_path": str(self.skill_dir), "plugin": plugin_name,
                 "representation": self.mode, "profile": self.profile, "aliases": self.aliases,
                 "content_hash": self.content_hash, "passed": self.passed,
                 "errors": self.errors, "warnings": self.warnings, "findings": self.findings,
@@ -379,12 +382,13 @@ def audit_skill(skill_path: Path | str, plugin_root: Optional[Path | str] = None
                 res.add("packaging.pending-link", "Broken or pending managed resource link", resource)
             elif resource.is_file():
                 # Plugin architecture policy Section 5: skill-owned real files are allowed; a committed
-                # copy of a plugin-root canonical file is not (share it via the copy manifest instead).
-                canonical = skill.parent.parent / category / resource.relative_to(folder)
+                # copy of a plugin-root canonical file is not (share it via the copy manifest or remove the plugin-root duplicate).
+                plugin_dir = skill.parent.parent.parent if skill.parent.parent.name == ".apm" else skill.parent.parent
+                canonical = plugin_dir / category / resource.relative_to(folder)
                 if (mode == "source" and not resource.is_symlink() and canonical.is_file()
                         and canonical.read_bytes() == resource.read_bytes()
                         and str(resource.resolve()) not in _copy_manifest_destinations(skill)):
-                    res.add("packaging.resource", f"Source resource '{resource.name}' duplicates canonical {category}/{resource.relative_to(folder)}; list it in the copy manifest (symlinks.json, strategy \"copy\") instead", resource)
+                    res.add("packaging.resource", f"Source resource '{resource.name}' duplicates canonical {category}/{resource.relative_to(folder)}; list it in the copy manifest (symlinks.json, strategy \"copy\") or remove the plugin-root duplicate", resource)
                 elif mode == "installed" and resource.is_symlink():
                     res.add("packaging.resource", "Installed resources must be materialized hard copies", resource)
     # Folder structure template checks
@@ -431,9 +435,15 @@ def load_installed_ownership(root: Path) -> Dict[Path, Path]:
 
 def discover(root: Path) -> tuple:
     """Classify canonical locations and noncanonical entry points explicitly."""
+    extra_plugins_glob = (
+        set(root.glob("*/skills/*/SKILL.md")) | set(root.glob("*/.apm/skills/*/SKILL.md"))
+        if root.name == "plugins"
+        else set()
+    )
     canonical = sorted(
         set(root.glob("plugins/*/skills/*/SKILL.md"))
         | set(root.glob("plugins/*/.apm/skills/*/SKILL.md"))
+        | extra_plugins_glob
         | set(root.glob("skills/*/SKILL.md"))
         | set(root.glob(".apm/skills/*/SKILL.md"))
     )

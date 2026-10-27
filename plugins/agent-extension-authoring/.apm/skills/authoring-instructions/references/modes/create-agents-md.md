@@ -1,7 +1,3 @@
-> Retired skill `create-agents-md`, kept as the **create-agents-md** mode of `authoring-instructions`. Body unchanged apart from link targets and corrected commands. Frontmatter removed.
->
-> Original description: Scaffolds a lean, progressive-disclosure AGENTS.md root instruction file and a thin CLAUDE.md bridge. Use when setting up, migrating, or standardizing root instruction files across a repository.
-
 # Create AGENTS.md / CLAUDE.md
 
 Scaffolds a lean, progressive-disclosure repository root instruction file (`AGENTS.md`) and establishes a thin `CLAUDE.md` bridge conforming to `references/agents-md-contract.md`.

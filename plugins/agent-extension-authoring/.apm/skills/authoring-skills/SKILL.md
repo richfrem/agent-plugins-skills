@@ -39,8 +39,8 @@ Scaffolds skills from templates, audits them against `references/skill-authoring
 ## Quick start
 
 ```bash
-python3 scripts/scaffold.py --type skill --name <name> --path plugins/<plugin>/skills --desc "<what it does. Use when ...>" [--variant executable]
-python3 scripts/audit_skill.py plugins/<plugin>/skills/<name> --mode source
+python3 scripts/scaffold.py --type skill --name <name> --path plugins/<plugin>/.apm/skills --desc "<what it does. Use when ...>" [--variant executable]
+python3 scripts/audit_skill.py plugins/<plugin>/.apm/skills/<name> --mode source
 python3 scripts/audit_skill.py plugins/<plugin> --all --mode source --json
 ```
 
@@ -54,7 +54,7 @@ python3 scripts/audit_skill.py plugins/<plugin> --all --mode source --json
 ## Verification
 
 ```bash
-python3 scripts/audit_skill.py plugins/<plugin>/skills/<name> --mode installed
+python3 scripts/audit_skill.py plugins/<plugin>/.apm/skills/<name> --mode installed
 ```
 
 Tests: `python3 -m pytest tests`. Check the mode's section in [acceptance-criteria.md](references/acceptance-criteria.md).

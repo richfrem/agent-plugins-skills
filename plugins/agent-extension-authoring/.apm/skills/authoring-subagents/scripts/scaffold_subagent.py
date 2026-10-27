@@ -10,7 +10,7 @@ Purpose:
 Layer: Meta-Execution
 
 Usage:
-    python scaffold_subagent.py --name <agent-name> --path plugins/<plugin>/agents --desc "<use-case>"
+    python scaffold_subagent.py --name <agent-name> --path plugins/<plugin>/.apm/agents --desc "<use-case>"
 
 Key Input Dependencies:
     - ../assets/templates/agent.md.jinja (str.format placeholders {name} and {description})

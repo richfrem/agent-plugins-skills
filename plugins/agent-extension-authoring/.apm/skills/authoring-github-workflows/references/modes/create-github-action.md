@@ -1,7 +1,3 @@
-> Retired skill `create-github-action`, kept as the **create-github-action** mode of `authoring-github-workflows`. Body unchanged apart from link targets and the corrected commands. Frontmatter removed.
->
-> Original description: Scaffolds a deterministic GitHub Actions CI/CD workflow YAML. NOT for scaffolding interactive agentic workflows (use `create-agentic-workflow`) and NOT for local event-driven hooks (use `authoring-instructions`).
-
 # Create GitHub Action (create-github-action)
 
 Scaffolds deterministic GitHub Actions CI/CD workflow configurations (`.github/workflows/<name>.yml`) without runtime AI orchestration.
@@ -40,7 +36,7 @@ python3 scripts/scaffold_github_action.py --category test --platform python --na
 python3 -c "import yaml; yaml.safe_load(open('.github/workflows/<name>.yml'))"
 
 # Audit skill compliance
-python3 plugins/agent-extension-authoring/skills/authoring-skills/scripts/audit_skill.py plugins/agent-extension-authoring/skills/authoring-github-workflows --mode source
+python3 ../authoring-skills/scripts/audit_skill.py . --mode source
 ```
 
 ## References

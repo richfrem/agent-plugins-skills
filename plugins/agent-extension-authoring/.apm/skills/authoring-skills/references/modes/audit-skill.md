@@ -1,7 +1,3 @@
-> Retired skill `audit-skill`, kept as the **audit-skill** mode of `authoring-skills`. Body unchanged apart from link targets, retired-skill names (now the new skills) and the corrected commands. Frontmatter removed.
->
-> Original description: Audits and aligns individual skills or a repository skill inventory against authoring standards. Provides deterministic structural checks and optional AI review of language efficiency. Use authoring-plugins for whole-plugin structure.
-
 # Audit Skills
 
 Check observed structural compliance, then review instruction quality when requested.

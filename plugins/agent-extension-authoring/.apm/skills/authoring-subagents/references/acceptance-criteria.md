@@ -1,7 +1,5 @@
 # Acceptance Criteria: authoring-subagents
 
-Merged from the retired skills; one section per mode.
-
 ## Mode: create-sub-agent
 
 **Purpose**: Verify the system generates valid multi-agent routing configurations.
