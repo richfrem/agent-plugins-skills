@@ -4,8 +4,9 @@ scaffold_plugin.py
 =====================================
 
 Purpose:
-    Creates a new plugin directory: .claude-plugin/plugin.json, skills/, README.md and (optionally)
-    hooks/hooks.json and .mcp.json. Skills are self-contained; the plugin root holds no shared
+    Creates a new APM-native plugin directory: apm.yml, .claude-plugin/plugin.json,
+    .apm/skills/, README.md and (optionally) .apm/hooks/hooks.json and .mcp.json.
+    Skills are self-contained inside .apm/skills/; the plugin root holds no shared
     scripts, references or tests.
 
 Layer: Meta-Execution
@@ -28,19 +29,27 @@ TEMPLATE = Path(__file__).resolve().parent.parent / "assets" / "templates" / "RE
 
 
 def scaffold(name: str, parent: Path, description: str, author_name: str, author_email: str, with_hooks: bool, with_mcp: bool) -> Path:
-    """Write the plugin tree and return its root."""
+    """Write the APM-native plugin tree and return its root."""
     root = parent / name
     (root / ".claude-plugin").mkdir(parents=True)
-    (root / "skills").mkdir()
+    (root / ".apm" / "skills").mkdir(parents=True)
     author = {"name": author_name}
     if author_email:
         author["email"] = author_email
     manifest = {"name": name, "version": "0.1.0", "description": description, "author": author, "license": "MIT", "keywords": [name]}
     (root / ".claude-plugin" / "plugin.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    apm_yml = (
+        f"name: {name}\n"
+        f"version: 0.1.0\n"
+        f"description: {json.dumps(description)}\n"
+        f"author: {author_name}\n"
+        f"license: MIT\n"
+    )
+    (root / "apm.yml").write_text(apm_yml, encoding="utf-8")
     (root / "README.md").write_text(TEMPLATE.read_text(encoding="utf-8").format(name=name, description=description), encoding="utf-8")
     if with_hooks:
-        (root / "hooks").mkdir()
-        (root / "hooks" / "hooks.json").write_text(json.dumps({"hooks": {}}, indent=2) + "\n", encoding="utf-8")
+        (root / ".apm" / "hooks").mkdir(parents=True, exist_ok=True)
+        (root / ".apm" / "hooks" / "hooks.json").write_text(json.dumps({"hooks": {}}, indent=2) + "\n", encoding="utf-8")
     if with_mcp:
         (root / ".mcp.json").write_text(json.dumps({"mcpServers": {}}, indent=2) + "\n", encoding="utf-8")
     return root
@@ -48,13 +57,13 @@ def scaffold(name: str, parent: Path, description: str, author_name: str, author
 
 def main() -> int:
     """CLI entry point; non-zero on invalid names or an existing directory."""
-    parser = argparse.ArgumentParser(description="Scaffold a plugin directory.")
+    parser = argparse.ArgumentParser(description="Scaffold an APM-native plugin directory.")
     parser.add_argument("--name", required=True, help="1-64 lowercase letters, digits or hyphens")
     parser.add_argument("--path", default="plugins", help="Parent directory (default: plugins)")
     parser.add_argument("--description", default="Define the purpose of this plugin here.")
     parser.add_argument("--author-name", default="Your Name")
     parser.add_argument("--author-email", default="")
-    parser.add_argument("--with-hooks", action="store_true", help="Also create hooks/hooks.json")
+    parser.add_argument("--with-hooks", action="store_true", help="Also create .apm/hooks/hooks.json")
     parser.add_argument("--with-mcp", action="store_true", help="Also create .mcp.json")
     args = parser.parse_args()
     if not re.fullmatch(r"[a-z0-9-]{1,64}", args.name):

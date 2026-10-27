@@ -15,6 +15,6 @@ Across modern AI developer tooling (Claude Code, Antigravity, Cursor, Codex, Gem
 
 ## Self-Contained APM Architecture
 
-- All helper scripts, references, and assets live directly inside the owning skill: `plugins/<plugin>/skills/<skill>/scripts/`.
+- All helper scripts, references, and assets live directly inside the owning skill: `plugins/<plugin>/.apm/skills/<skill>/scripts/`.
 - Zero symlinks and zero copy manifests (`symlinks.json` retired). All resources are real, Git-tracked physical files.
 - Modal dispatch architecture: `SKILL.md` is under 100 lines and routes to modular mode documents under `references/modes/<mode>.md`.

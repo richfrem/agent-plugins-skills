@@ -22,7 +22,7 @@ Configures Model Context Protocol (MCP) server integrations within a plugin or w
 ## Quick start
 
 ```bash
-python3 plugins/agent-extension-authoring/skills/authoring-skills/scripts/scaffold.py \
+python3 scripts/scaffold.py \
   --type mcp \
   --name postgres-mcp \
   --path plugins/<plugin>
@@ -42,7 +42,7 @@ python3 plugins/agent-extension-authoring/skills/authoring-skills/scripts/scaffo
 python3 -c "import json; json.load(open('.mcp.json'))"
 
 # Audit skill compliance
-python3 plugins/agent-extension-authoring/skills/authoring-skills/scripts/audit_skill.py plugins/agent-extension-authoring/skills/create-mcp-integration --mode source
+python3 scripts/audit_skill.py . --mode source
 ```
 
 ## References

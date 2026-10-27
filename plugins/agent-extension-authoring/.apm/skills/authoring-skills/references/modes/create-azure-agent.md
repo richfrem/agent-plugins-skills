@@ -25,7 +25,7 @@ Generates Azure AI Foundry deployment wrappers, Bicep infrastructure templates, 
 Scaffold Azure AI Foundry deployment templates for a target skill:
 
 ```bash
-python3 scripts/scaffold_azure_agent.py --skill-dir plugins/<plugin>/skills/<skill-name>
+python3 scripts/scaffold_azure_agent.py --skill-dir plugins/<plugin>/.apm/skills/<skill-name>
 ```
 
 ## Workflow

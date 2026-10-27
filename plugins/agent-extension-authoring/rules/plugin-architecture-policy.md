@@ -1,116 +1,59 @@
 ---
-description: Universal rules for plugin file sharing, the copy manifest, cross-plugin resource bounds, Python script organization, and install-location-independent references under APM.
-globs: ["plugins/**/SKILL.md", "plugins/**/scripts/**/*.py", "plugins/**/*.md"]
+description: Universal rules for APM-native plugin packaging, self-contained skills, cross-plugin boundaries, Python script organization, and install-location-independent references.
+globs: ["plugins/**/.apm/**", "plugins/**/SKILL.md", "plugins/**/scripts/**/*.py", "plugins/**/*.md"]
 ---
 
 # Plugin Architecture & Coupling Policy
 
-Plugins are installed with [APM](https://github.com/microsoft/apm) (see `docs/plans/apm_migration_plan.md`). Behaviour cited here was verified with APM `0.33.0`.
+Plugins are packaged and installed with [APM](https://github.com/microsoft/apm) (`0.33.0+`). Every plugin under `plugins/<plugin>/` uses the pure APM-native layout: primitives live inside `.apm/` (`.apm/skills/`, `.apm/agents/`, `.apm/hooks/`, `.apm/prompts/`, `.apm/instructions/`) and every skill is 100% self-contained in source and after install.
 
-## 1. Hub-and-Spoke Resource Model & Build-Time Copies
+## 1. The Iron Law
 
-1. **Authoring Model vs. Runtime Model**:
-   ```text
-   one canonical editable source file
-   → copy manifest (symlinks.json, strategy "copy") lists the skill paths that need it
-   → build pipeline creates physical copies in build/staging/ and packs a bundle
-   → APM installs the bundle; every installed skill is fully self-contained
-   ```
-   This keeps both goals of the model: **one physical copy in source**, and **a physical copy in every skill that needs it** after install. Skill source folders hold no symlink objects. The build is `plugins/agent-extension-authoring/skills/packaging-with-apm/scripts/apm_build_pipeline.py --pack`.
+Every skill in `plugins/<plugin>/.apm/skills/<skill>/` MUST be completely self-contained. All scripts, references, assets, tests, and evals live directly inside the owning skill directory as real files. Raw filesystem symlinks, transitional copy manifests (`symlinks.json`), and shared plugin-root `scripts/` hubs are forbidden.
 
-2. **Self-Contained Installed Skills**:
-   An installed skill must be fully portable and independent. It must **NEVER** depend at runtime on:
-   - The source repository, the source plugin directory, or the repository root
-   - Another installed plugin
-   - A sibling Python distribution or external runtime package
-   - A particular install location (project or global, any harness)
+## 2. Invariants & Forbidden Actions
 
-3. **Canonical Ownership**:
-   Every shared resource has exactly one editable canonical source owner in the repository. Build-time copies are deployed artifacts, not editable authorities. Do not create competing canonical source copies.
+1. **Pure APM-Native Plugin Layout**:
+   - `plugins/<plugin>/apm.yml`: Primary package manifest specifying `name`, `version`, `description`, `author`, `license`, and `targets` (`claude,copilot,codex,antigravity`).
+   - `plugins/<plugin>/.claude-plugin/plugin.json`: Claude Code manifest with `author` as an object `{"name": "...", "email": "..."}` and no primitive path arrays (`skills`, `agents`, `hooks`, `commands`).
+   - `plugins/<plugin>/.apm/`: Single primitive root (`skills/`, `agents/`, `hooks/`, `prompts/`, `instructions/`). Never maintain duplicate root `skills/`, `agents/`, or `hooks/` folders alongside `.apm/`.
+   - **Zero Legacy Plumbing**: `plugin.yaml`, `symlinks.json`, `plugin-sources.json`, `plugin-retention.json`, `skills-lock.json`, `gemini-extension.json`, and `.agents/ownership/` are retired and forbidden.
+   - `lsp.json` (when present) must be a flat `{serverName: {command, ...}}` map (**SF-10**), never empty `{}` or wrapped in `{"languageServers": ...}`.
 
----
+2. **Self-Contained Skills & Cross-Skill Delegation**:
+   - **Zero Symlinks & Zero Climbing Paths**: Never create symlinks (`ln -s`) or reference parent paths in code blocks or inline code (`../../scripts/tool.py`, **SF-8**). Scripts run from their own skill boundary (`scripts/<tool>.py`).
+   - **Pluggable Independence**: An installed skill must never depend at runtime on the source repository, another plugin, an external sibling Python package, or a specific harness install path.
+   - **Cross-Skill & Cross-Plugin Delegation**: When capability lives in another skill or plugin, delegate by skill or agent name in natural language rather than cross-skill Python imports or relative script paths.
+   - **Sub-Agent Mirrors Forbidden**: Files in `.apm/agents/<name>.md` must be standalone agent definitions and never symlinks or verbatim copies of a skill's `SKILL.md` (**SF-12**).
 
-## 2. Separation of Concerns & Loose Coupling
-
-1. **Pluggable Independence**: A skill installed with APM (alone, with `--skill`, or as part of its plugin) MUST function completely in isolation. It cannot crash or halt because another plugin is uninstalled or missing.
-2. **Agent Delegation over Code Interfaces**: If a plugin requires coordination with another plugin, it must do so via natural-language agent instructions (e.g., *"Please invoke the `<plugin>-agent` to..."*) rather than hardcoded Python imports, hidden filesystem state manipulations, or rigid cross-plugin bindings.
-3. **Cross-Plugin Wire Contracts**: Sharing schemas, references, assets, or executable contract helpers is permitted only through the copy manifest within a plugin, or by delegation across plugins. Cross-plugin Python runtime imports, cross-plugin links and cross-plugin symlinks are strictly forbidden. APM aborts an install on a symlink that leaves the package, and leaves links that leave the plugin unresolved.
-
----
-
-## 3. Plugin-Level Resource & Python Organization
-
-1. **One Canonical Plugin-Level `scripts/` Directory**:
-   Canonical Python code shared by skills belongs at the plugin root under `plugins/<plugin>/scripts/`, listed in the copy manifest for each skill that runs it.
-2. **Logical Subfolders Approved**:
-   Related Python scripts may be logically grouped into cohesive subfolders beneath `scripts/`.
-   Approved examples:
-   - `scripts/contracts/` (plugin-owned contracts and validation)
-   - `scripts/pandoc_fixes/` (cohesive implementation modules)
-   - `scripts/validation/` (input/output validation scripts)
-   - `scripts/media/` (media conversion and handling)
-3. **No Redundant Package-Name Directory**:
-   Do **NOT** add a redundant package-name directory inside `scripts/` (e.g. `scripts/<plugin_name>/...`). The enclosing plugin directory already establishes the domain context.
-4. **No Top-Level Sibling Runtime Packages**:
-   Top-level external runtime packages (e.g. `contracts/python/` or `runtime/python/`) must not exist as required external dependencies. All shared code must belong to an owning plugin.
-5. **Hook Scripts**: Hook commands in `hooks/hooks.json` reference scripts as `${CLAUDE_PLUGIN_ROOT}/<path>`. APM copies the folder a hook script lives in into each harness, so keep hook scripts in a small dedicated `hooks/` folder. Hook scripts run under every target harness: use `Path(__file__)` for their own files and a harness-neutral project path (e.g. `context/`) for state, never `.claude/` or `.agents/`.
-6. **Plugin Package Manifests**:
-   - `apm.yml`: The primary package manifest at `plugins/<plugin>/apm.yml` specifying package name (`@richfrem/<plugin>`), version, description, and client targets (`claude,copilot,codex,antigravity`).
-   - `.claude-plugin/plugin.json`: Secondary compatibility manifest with minimal metadata schema; `author` must be an object `{"name": "...", "email": "..."}`.
-   - **Zero Legacy Plumbing**: `.claude-plugin/marketplace.json`, `gemini-extension.json`, and `.agents/ownership/` are retired legacy constructs and must not be created in new or updated plugins.
-
----
-
-## 4. Resource Placement by Purpose
-
-Resource placement is determined strictly by **purpose**, not file extension:
-
-| Directory | Purpose |
-|---|---|
-| `references/` | Schemas, contracts, and documentation the agent reads |
-| `scripts/` | Executable Python, validation, transformation, and helper scripts |
-| `assets/` | Templates and static resources copied, embedded, transformed, or emitted |
-| `hooks/` | Agent runtime hook scripts and `hooks.json` |
-| `tests/fixtures/` | Plugin test evidence and test fixtures |
-| `evals/fixtures/` | Skill evaluation evidence and test cases |
-
-A plugin's `rules/` folder is **not** deployed by APM. Rules are copied into a project's `.agent/rules/` by setup when required, and `AGENTS.md` lists them there.
-
----
-
-## 5. Self-Contained Skills & Resource Sharing
-
-**NEVER create new symlinks** (`ln -s` or otherwise). Raw filesystem symlinks are strictly prohibited.
-
-1. **Self-Contained Skills (End State)**:
-   Every skill must be fully self-contained. Scripts, references, assets, tests, and evals live directly within the skill directory (`plugins/<plugin>/skills/<skill>/`). There are no shared plugin-root `scripts/`, `references/`, `assets/`, or `tests/`.
-2. **One Owning Skill & Cross-Skill Delegation**:
-   When a skill needs functionality implemented in another skill, the code lives in the single owning skill. Cross-skill interaction happens through skill invocation by name (prompt loop), never through cross-skill relative imports or relative script execution paths.
-3. **No Climbing Paths in Code**:
-   Paths in code blocks, inline code, or execution commands that climb out of the skill directory (e.g. `../../scripts/tool.py`) are prohibited. Scripts run only within their own skill boundary or call standard CLI tools on PATH.
-4. **Transition Manifest (Legacy Plugins)**:
-   Plugins actively migrating to the self-contained standard may transitionally utilize the copy manifest (`symlinks.json`, `strategy: "copy"`). Fully consolidated plugins have 0 manifest entries and zero plugin-root shared files.
-5. **Verify Before Committing**:
-   Run `audit_skill.py --mode source` on every skill and `audit_plugin_structure.py` on the plugin root. For plugins still using the transitional copy manifest, run `materialize_copies.py --check`.
-
----
-
-## 6. Install-Location-Independent References
-
-Installed skills run from different folders per harness and per install scope. Never name an install folder in instructions.
-
-1. **Where APM installs** (targets `claude,copilot,agy,codex`):
-   | Primitive | Project install | Global install |
-   |---|---|---|
-   | Skills | `.claude/skills/`, `.agents/skills/` (copilot, codex, agy) | `~/.claude/skills/`, `~/.agents/skills/`, `~/.gemini/antigravity-cli/skills/` |
-   | Agents | `.claude/agents/`, `.github/agents/`, `.codex/agents/` | `~/.claude/agents/`, `~/.copilot/agents/`, `~/.codex/agents/` |
-   | Hooks | merged into each harness's hook settings | same, at user level (not agy) |
-   | Package cache | `apm_modules/` | `~/.apm/` |
-2. **How to refer to things**:
-   | Reference to | Write it as |
+3. **Resource Placement by Purpose**:
+   | Directory | Purpose |
    |---|---|
-   | Another skill or agent | Its name: "use the `managing-adrs` skill" |
-   | A file in the same skill | A path relative to the skill folder (`scripts/tool.py`, `references/guide.md`) |
-   | A document elsewhere in the plugin | A markdown link (Section 5.2) |
-   | Another plugin's capability | Its skill or agent by name |
-3. **Never use** absolute paths, repository-root paths, or install-folder paths (`.agents/`, `.claude/`, `~/.apm/`, `apm_modules/`) in `SKILL.md`, references, agents or hook commands.
+   | `.apm/skills/<skill>/references/` | Schemas, contracts, and documentation the agent reads on demand |
+   | `.apm/skills/<skill>/scripts/` | Executable Python, validation, transformation, and helper scripts (cohesive subfolders allowed; no redundant `scripts/<plugin_name>/`) |
+   | `.apm/skills/<skill>/assets/` | Templates and static resources copied, embedded, or rendered |
+   | `.apm/skills/<skill>/tests/` & `evals/` | Unit test suites, fixtures, and evaluation scenarios |
+   | `.apm/hooks/` | `hooks.json` and harness-neutral hook scripts referenced via `${CLAUDE_PLUGIN_ROOT}/.apm/hooks/<script>.py` |
+   | `rules/` | Source governance rules (**not** deployed by APM per **SF-9**; copied to `.agent/rules/` during project setup and indexed in `AGENTS.md`) |
+
+4. **Harness-Neutral Hooks (**SF-11**)**:
+   Hook scripts execute under every target harness (`claude`, `copilot`, `codex`). They must locate sibling files via `Path(__file__).resolve()` and store project runtime state in harness-neutral directories (`context/`), never `.claude/` or `.agents/`.
+
+## 3. Install-Location-Independent References
+
+Installed primitives run from different directories per harness and scope (project `.claude/` / `.agents/` vs. global `~/.claude/` / `~/.agents/` / `~/.gemini/antigravity-cli/`).
+
+| Reference Target | Required Authoring Form |
+|---|---|
+| Another skill or sub-agent | By name: *"use the `managing-adrs` skill"* |
+| A file in the same skill | Skill-relative path: `scripts/tool.py`, `references/guide.md` |
+| A sibling file in the same plugin | Relative Markdown link (`[text](../other-skill/SKILL.md)`) so APM rewrites or resolves it |
+| Forbidden in `SKILL.md`, references, agents, or hooks | Machine paths, repo-root paths, or harness install paths (`.agents/`, `.claude/`, `~/.apm/`, `apm_modules/`) |
+
+## 4. Evaluation Checklist
+
+- [ ] Does `plugins/<plugin>/apm.yml` exist alongside a valid `.claude-plugin/plugin.json` (object `author`, no primitive arrays)?
+- [ ] Do all skills, agents, and hooks reside exclusively under `plugins/<plugin>/.apm/` with zero root duplicates and zero symlinks?
+- [ ] Are all script invocations inside `SKILL.md` and `references/` skill-relative (`scripts/...`) with zero `../` climbing paths in code blocks?
+- [ ] Do hook commands use `${CLAUDE_PLUGIN_ROOT}/.apm/hooks/<script>.py` and avoid hardcoded `.claude/` or `.agents/` state paths?
+- [ ] Do `audit_skill.py --mode source`, `audit_plugin_structure.py`, and `audit_rule.py --strict` pass with zero errors or warnings?

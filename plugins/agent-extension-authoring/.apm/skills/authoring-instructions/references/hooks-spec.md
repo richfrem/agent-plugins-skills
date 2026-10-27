@@ -27,7 +27,7 @@ Hooks fire based on lifecycle events. The available events are:
 15. **SessionEnd**: When the session terminates.
 
 ## Configuration & Structure
-Hooks are configured in `hooks.json` files or inline within `plugin.json`, `././SKILL.md`, or agent frontmatter.
+Hooks are configured in `.apm/hooks/hooks.json` files or inline within `SKILL.md` or agent frontmatter. Note: APM deploys hooks globally and per-project for `claude`, `copilot`, and `codex`; for Antigravity (`agy`), hooks are supported at project scope (`.gemini/settings.json`).
 
 The general nested structure in JSON:
 1. Selection of a Hook Event (e.g. `"PreToolUse"`).
@@ -73,10 +73,11 @@ When returning Exit 0 with a JSON object, hooks can return:
 }
 ```
 
-## Environment Variables
+## Environment Variables & Harness-Neutral Paths (SF-11)
 - `$CLAUDE_PROJECT_DIR`: Points to the current project's root.
-- `plugins`: Points to the root directory of the plugin executing the hook. (Extremely important for referencing internal plugin scripts).
+- `${CLAUDE_PLUGIN_ROOT}`: Points to the root directory of the plugin executing the hook (`${CLAUDE_PLUGIN_ROOT}/.apm/hooks/<script>.py`).
 - `$CLAUDE_ENV_FILE`: Specific to `SessionStart` hooks to persist environment variables across future Bash commands in the session.
+- **Harness-Neutral Hook Scripts (SF-11)**: Hook scripts execute across multiple harnesses (`claude`, `copilot`, `codex`). Always use `Path(__file__).resolve()` to locate sibling files inside `.apm/hooks/` and store project state under `context/`, never `.claude/` or `.agents/`.
 
 ## Async Execution
 Command hooks (`type: "command"`) can run in the background by setting `"async": true`. They cannot block or control Claude's behavior because the main process moves on immediately. Output can be delivered on the next turn via `systemMessage` or `additionalContext`.

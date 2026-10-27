@@ -12,7 +12,7 @@ from audit_plugin_structure import audit_plugin
 
 
 class TestAuditPluginStructure(unittest.TestCase):
-    """Ensures nested SKILL.md files cannot become discoverable skills."""
+    """Ensures nested SKILL.md files and duplicate primitive roots are flagged."""
 
     def test_nested_skill_file_is_an_error(self):
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -49,6 +49,8 @@ class TestAuditPluginStructure(unittest.TestCase):
             findings = audit_plugin(plugin_root)
         dups = [f for f in findings if f.get("rule") == "duplicate-primitive-root"]
         self.assertEqual(len(dups), 1)
+        self.assertEqual(dups[0]["severity"], "error")
+        self.assertEqual(dups[0]["type"], "duplicate_primitive_root")
 
 
 if __name__ == "__main__":

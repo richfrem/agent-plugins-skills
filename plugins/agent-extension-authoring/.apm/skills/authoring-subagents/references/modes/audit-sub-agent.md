@@ -28,7 +28,7 @@ Run from this skill root with caller-supplied target:
 
 ```bash
 # Audit a single sub-agent definition
-python3 scripts/audit_sub_agent.py /path/to/agents/<agent-name>.md --json
+python3 scripts/audit_sub_agent.py plugins/<plugin>/.apm/agents/<agent-name>.md --json
 
 # Scan all sub-agents in a plugin or repository
 python3 scripts/audit_sub_agent.py /path/to/repository --all --json
@@ -48,7 +48,7 @@ Exit 0: clean pass; 1: structural or metadata errors; 2: invalid input or missin
 
 ```bash
 # Strict verification failing on any warning
-python3 scripts/audit_sub_agent.py /path/to/agents/<agent-name>.md --strict
+python3 scripts/audit_sub_agent.py plugins/<plugin>/.apm/agents/<agent-name>.md --strict
 ```
 
 Review [acceptance criteria](../acceptance-criteria.md) before publishing.

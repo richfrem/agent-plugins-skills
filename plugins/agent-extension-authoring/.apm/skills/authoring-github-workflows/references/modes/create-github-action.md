@@ -40,7 +40,7 @@ python3 scripts/scaffold_github_action.py --category test --platform python --na
 python3 -c "import yaml; yaml.safe_load(open('.github/workflows/<name>.yml'))"
 
 # Audit skill compliance
-python3 plugins/agent-extension-authoring/skills/authoring-skills/scripts/audit_skill.py plugins/agent-extension-authoring/skills/authoring-github-workflows --mode source
+python3 ../authoring-skills/scripts/audit_skill.py . --mode source
 ```
 
 ## References

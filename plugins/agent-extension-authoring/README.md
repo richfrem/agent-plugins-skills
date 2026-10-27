@@ -3,7 +3,7 @@
 The interactive creation, auditing, and packaging suite for the agent ecosystem.
 Consolidates 24 legacy scaffolding skills into 6 cohesive authoring assets.
 
-Every skill in this plugin is completely self-contained with its own scripts, references, assets, tests, and evals.
+Every skill in this plugin is completely self-contained inside `.apm/skills/` with its own scripts, references, assets, tests, and evals.
 
 ---
 
@@ -24,25 +24,26 @@ Every skill in this plugin is completely self-contained with its own scripts, re
 
 ```
 agent-extension-authoring/
+├── .apm/
+│   └── skills/
+│       ├── authoring-github-workflows/
+│       ├── authoring-instructions/
+│       ├── authoring-plugins/
+│       ├── authoring-skills/
+│       ├── authoring-subagents/
+│       └── packaging-with-apm/
 ├── .claude-plugin/
 │   └── plugin.json
-├── plugin.yaml
+├── apm.yml
 ├── README.md
-├── rules/
-│   └── plugin-architecture-policy.md
-└── skills/
-    ├── authoring-github-workflows/
-    ├── authoring-instructions/
-    ├── authoring-plugins/
-    ├── authoring-skills/
-    ├── authoring-subagents/
-    └── packaging-with-apm/
+└── rules/
+    └── plugin-architecture-policy.md
 ```
 
 ---
 
 ## Architecture & Constraints
 
-- **Self-Contained Skills**: Each skill owns its dependencies, tests, references, and scripts directly inside the skill directory. No shared plugin-root scripts or symlinks.
+- **Self-Contained Skills**: Each skill owns its dependencies, tests, references, and scripts directly inside `.apm/skills/<skill>/`. No shared plugin-root scripts or symlinks.
 - **Portability**: No machine-specific paths; scripts run in source and installed APM layouts.
 - **Verification**: Run deterministic audits (`audit_skill.py`, `audit_plugin_structure.py`, `audit.py`) before pushing changes.

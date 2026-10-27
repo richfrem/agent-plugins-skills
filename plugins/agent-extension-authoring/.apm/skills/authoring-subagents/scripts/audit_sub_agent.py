@@ -38,6 +38,7 @@ RULES = {
     "prompt.address": {"severity": "warning", "message": "System prompt should use second person (You are...)"},
     "prompt.structure": {"severity": "warning", "message": "System prompt should define clear responsibilities or process steps"},
     "packaging.wrapper": {"severity": "error", "message": "Pointer-wrapper stub merely delegating to a skill is forbidden"},
+    "packaging.alias": {"severity": "error", "message": "Sub-agent symlink or mirror of SKILL.md is forbidden under APM (SF-12)"},
     "packaging.location": {"severity": "warning", "message": "Sub-agent should be a flat markdown file under an agents/ directory"},
 }
 
@@ -98,7 +99,10 @@ class AgentAuditResult:
             self.warnings.append(message)
 
     def to_dict(self) -> Dict[str, Any]:
-        plugin_name = self.file_path.parent.parent.name if self.file_path.parent.name == "agents" else None
+        plugin_name = None
+        if self.file_path.parent.name == "agents":
+            parent2 = self.file_path.parent.parent
+            plugin_name = parent2.parent.name if parent2.name == ".apm" else parent2.name
         return {
             "schema_version": 2,
             "agent_name": self.agent_name,
@@ -125,14 +129,12 @@ def audit_agent(path: Path) -> AgentAuditResult:
 
     resolved_path = path.resolve()
     name = path.stem
-    result = AgentAuditResult(agent_name=name, file_path=resolved_path)
+    result = AgentAuditResult(agent_name=name, file_path=path.absolute())
 
     if is_symlink and (symlink_target and "skills/" in symlink_target and symlink_target.endswith(".md")):
-        # Recognized SKILL_ALIAS per destructive-action-guard Part 2 Step 4
         result.metrics["is_alias"] = True
         result.metrics["alias_target"] = symlink_target
-        if not resolved_path.is_file():
-            result.add("packaging.alias", f"Broken SKILL_ALIAS symlink pointing to non-existent target: {symlink_target}", 1)
+        result.add("packaging.alias", f"SF-12 (agent_mirrors_skill): agent file is a symlink to {symlink_target}; write a standalone agent definition in .apm/agents/", 1)
         return result
 
     if not resolved_path.is_file():

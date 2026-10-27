@@ -3,18 +3,19 @@
 This document codifies the "Discovery-First Publication" pattern for agentic ecosystems. It explains how to bridge the gap between **Source of Truth** (in `plugins/`) and **Discovery Harness** (in `.github/agents/` or `.claude/agents/`).
 
 ## The Problem
-Agents stored in `plugins/<name>/agents/` are authoritative for the codebase but are **not automatically visible** to agent hosts (like GitHub Copilot or Claude Code) until they are materialized into specific runtime directories.
+Agents stored in `plugins/<name>/.apm/agents/` are authoritative for the codebase but are **not automatically visible** to agent hosts (like GitHub Copilot or Claude Code) until they are materialized into specific runtime directories.
 
 ## The Pattern: Materialization vs. Committal
 
 ### 1. The Source (The Authoritative File)
 Always author your agents in the plugin source tree:
-`plugins/<plugin-name>/agents/<agent-name>.md`
+`plugins/<plugin-name>/.apm/agents/<agent-name>.md`
 
 ### 2. The Materialized Harness (The Local Face)
-When you run `apm install` or `uvx plugin-add`, the agent is copied or symlinked into:
+When you run `apm install`, the agent is installed into:
 - `.github/agents/` (for GitHub/Copilot discovery)
 - `.claude/agents/` (for Claude Code discovery)
+- `.codex/agents/` (for Codex discovery)
 
 ### 3. The Discovery Exception (The Publication)
 By default, these runtime directories should be in `.gitignore`. However, if you want a repository to **host its own agents publicly** on GitHub, you must implement the **Discovery Exception**:

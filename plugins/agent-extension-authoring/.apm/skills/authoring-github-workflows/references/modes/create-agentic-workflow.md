@@ -25,7 +25,7 @@ Scaffolds GitHub-native agent configurations from skills, targeting Custom Copil
 Scaffold a GitHub Agentic Workflow from an existing skill:
 
 ```bash
-python3 scripts/scaffold_github_agent.py --skill-dir plugins/<plugin>/skills/<skill-name> --target B   # --name defaults to the skill folder name
+python3 scripts/scaffold_github_agent.py --skill-dir plugins/<plugin>/.apm/skills/<skill-name> --target B   # --name defaults to the skill folder name
 ```
 
 ## Workflow

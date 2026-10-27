@@ -25,14 +25,14 @@ Scaffolds advanced stateful skills with filesystem-native state schemas, lifecyc
 Scaffold a new stateful skill directory using the generator helper:
 
 ```bash
-python3 scripts/scaffold.py --name <skill-name> --type stateful
+python3 scripts/scaffold.py --name <skill-name> --type stateful --path plugins/<plugin>/.apm/skills
 ```
 
 ## Workflow
 
 1. **Pre-Scaffold Qualification**: Verify that the skill requires persistent state schemas or lifecycle transitions across turns.
 2. **Select L4 Patterns**: Consult `pattern-decision-matrix.md` to select artifact lifecycle, state propagation, or escalation models.
-3. **Design State Schema**: Formulate JSON/YAML schemas for `.agent/state/` or structured frontmatter.
+3. **Design State Schema**: Formulate JSON/YAML schemas for `context/` or structured frontmatter.
 4. **Scaffold Directory**: Generate `SKILL.md`, `evals/evals.json`, and reference files.
 5. **Chain Next Steps**: Configure standard next-step blocks linking downstream capabilities.
 
@@ -41,7 +41,7 @@ python3 scripts/scaffold.py --name <skill-name> --type stateful
 Audit the newly created skill for contract compliance and schema validity:
 
 ```bash
-python3 scripts/audit_skill.py plugins/<plugin>/skills/<skill-name> --mode source
+python3 scripts/audit_skill.py plugins/<plugin>/.apm/skills/<skill-name> --mode source
 ```
 
 ## References

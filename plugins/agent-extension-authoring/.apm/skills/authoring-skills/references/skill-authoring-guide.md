@@ -23,9 +23,9 @@ topic rather than arbitrary chunks; do not hide required constraints in referenc
 
 Instructional skills need SKILL.md and realistic evaluations, not a Python placeholder.
 Executable skills additionally declare commands, dependencies, outputs and validation.
-Use plugin-root scripts/references/assets as canonical sources and managed file-level
-spokes. Installation materializes portable copies; resolve all paths from the skill root.
-Generator receipts propose links and distinguish generated from pending_links status.
+Every skill in `.apm/skills/<name>/` is self-contained: scripts, references, assets, tests,
+and evals live directly inside the skill directory as real files (zero symlinks, zero copy
+manifests, zero plugin-root shared scripts). Resolve all paths relative to the skill root.
 
 ## Audit rules and reports
 

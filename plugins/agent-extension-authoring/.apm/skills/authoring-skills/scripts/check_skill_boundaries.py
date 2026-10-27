@@ -95,6 +95,9 @@ def get_skill_root(source_file_path: str) -> Path | None:
     Extract the skill root directory from a source file path.
 
     Examples:
+      plugins/<plugin-name>/.apm/skills/<skill-name>/SKILL.md
+       plugins/<plugin-name>/.apm/skills/<skill-name>/
+
       plugins/<plugin-name>/skills/<skill-name>/SKILL.md
        plugins/<plugin-name>/skills/<skill-name>/
 
@@ -106,9 +109,9 @@ def get_skill_root(source_file_path: str) -> Path | None:
     # Find "skills" in the path
     if "skills" in parts:
         idx = list(parts).index("skills")
-        # The skill root is skills/<skill-name>/
+        # The skill root is skills/<skill-name>/ (or .apm/skills/<skill-name>/)
         if idx + 1 < len(parts):
-            return Path(*parts[:idx+2])  # e.g., plugins/<plugin-name>/skills/<skill-name>
+            return Path(*parts[:idx+2])  # e.g., plugins/<plugin-name>/.apm/skills/<skill-name>
 
     return None
 

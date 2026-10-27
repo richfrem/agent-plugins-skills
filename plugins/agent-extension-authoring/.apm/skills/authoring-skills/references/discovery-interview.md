@@ -28,19 +28,19 @@ When creating a new skill, capture and validate the following inputs before writ
 
 Present the proposed layout:
 ```
-plugins/<plugin>/skills/<skill-slug>/
+plugins/<plugin>/.apm/skills/<skill-slug>/
   SKILL.md                       (lean router <= 80 lines)
   evals/
     evals.json                   (root JSON array with should_trigger)
   references/
-    acceptance-criteria.md       (symlink)
-    fallback-tree.md             (symlink)
+    acceptance-criteria.md       (self-contained file)
+    fallback-tree.md             (self-contained file)
 ```
 Reuse the user's recorded authorization and requirements; ask only for genuine gaps.
 If a directory already exists, generation fails without overwriting it. Propose a
 bounded update instead. Choose instructional or executable output explicitly;
-executable generation returns proposed plugin-root script links. Delegate link
-registration/restoration to managing-symlinks before final audit.
+executable generation writes `scripts/<skill-slug>.py` directly inside the self-contained
+skill directory (no plugin-root scripts, symlinks, or copy manifests).
 
 Keep the first action and critical constraints early. Long references need early
 contents and direct entry-point links. Create at least three task-success scenarios

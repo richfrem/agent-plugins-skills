@@ -48,8 +48,8 @@ python3 scripts/validate_agent.py /path/to/plugin/.apm/agents/<agent-name>.md
 ## Verification
 
 ```bash
-python3 scripts/validate_agent.py plugins/<plugin>/agents/<agent-name>.md
-python3 scripts/audit_sub_agent.py plugins/<plugin>/agents/<agent-name>.md --strict
+python3 scripts/validate_agent.py plugins/<plugin>/.apm/agents/<agent-name>.md
+python3 scripts/audit_sub_agent.py plugins/<plugin>/.apm/agents/<agent-name>.md --strict
 ```
 
 Ensure validation reports zero errors before publishing. Review [acceptance criteria](../acceptance-criteria.md).

@@ -89,8 +89,14 @@ DEFAULT_TARGETS = ["claude", "copilot", "agy", "codex"]
 # CLI target names that a package apm.yml spells differently (APM 0.33.0).
 MANIFEST_TARGET_NAMES = {"agents": "agent-skills", "agy": "antigravity"}
 COPY_IGNORE = {"__pycache__", ".DS_Store"}
-DEPLOYED_DIRS = ("skills", "agents", "commands")
+DEPLOYED_DIRS = ("skills", "agents", "commands", ".apm/skills", ".apm/agents", ".apm/commands")
 SKIP_LINK_PREFIXES = ("http://", "https://", "mailto:", "#", "file://")
+
+
+def _prim_dir(root: Path, sub: str) -> Path:
+    """Return <root>/.apm/<sub> if it exists, else <root>/<sub>."""
+    apm_sub = root / ".apm" / sub
+    return apm_sub if apm_sub.is_dir() else (root / sub)
 
 
 # ---------------------------------------------------------------------------
@@ -184,11 +190,11 @@ def copy_manifest_entries(repo_root: Path, plugin_rel: str) -> list[dict]:
 def inspect_plugin(repo_root: Path, plugin_dir: Path) -> dict:
     """Discover skills, agents, commands, hooks, rules and git symlinks for one plugin."""
     plugin_rel = plugin_dir.relative_to(repo_root).as_posix()
-    skills_dir = plugin_dir / "skills"
+    skills_dir = _prim_dir(plugin_dir, "skills")
     skills = sorted(p.parent.name for p in skills_dir.glob("*/SKILL.md")) if skills_dir.is_dir() else []
 
     def names(sub: str, pattern: str) -> list[str]:
-        folder = plugin_dir / sub
+        folder = _prim_dir(plugin_dir, sub) if sub in ("agents", "commands", "hooks") else (plugin_dir / sub)
         return sorted(p.name for p in folder.glob(pattern)) if folder.is_dir() else []
 
     return {
@@ -358,7 +364,8 @@ def _parse_frontmatter(text: str) -> dict:
 def _check_skill_frontmatter(staged_dir: Path) -> list[dict]:
     """Return findings for SKILL.md files with missing or mismatched frontmatter."""
     findings = []
-    for skill_md in sorted(staged_dir.glob("skills/*/SKILL.md")):
+    skills_dir = _prim_dir(staged_dir, "skills")
+    for skill_md in sorted(skills_dir.glob("*/SKILL.md")):
         meta = _parse_frontmatter(skill_md.read_text(encoding="utf-8", errors="replace"))
         rel = skill_md.relative_to(staged_dir).as_posix()
         if meta.get("name") != skill_md.parent.name:
@@ -415,7 +422,8 @@ def _check_unrewritten_paths(staged_dir: Path) -> list[dict]:
     findings = []
     link_spans = re.compile(r"\]\([^)]*\)")
     path_token = re.compile(r"(?:\.\./)+[\w./-]+")
-    for skill_dir in sorted(p for p in (staged_dir / "skills").glob("*") if p.is_dir()):
+    skills_dir = _prim_dir(staged_dir, "skills")
+    for skill_dir in sorted(p for p in skills_dir.glob("*") if p.is_dir()):
         root = skill_dir.resolve()
         for md in sorted(skill_dir.rglob("*.md")):
             if md.is_symlink() or not md.is_file():
@@ -452,8 +460,8 @@ def _check_plugin_config(staged_dir: Path) -> list[dict]:
 
 # Hook scripts run under every target harness, so they must not hardcode one harness's folder.
 def _check_hook_scripts(staged_dir: Path) -> list[dict]:
-    """Return warnings for hook scripts (from hooks/hooks.json) that name .claude/ or .agents/."""
-    hooks_json = staged_dir / "hooks" / "hooks.json"
+    """Return warnings for hook scripts (from .apm/hooks/hooks.json or hooks/hooks.json) that name .claude/ or .agents/."""
+    hooks_json = _prim_dir(staged_dir, "hooks") / "hooks.json"
     if not hooks_json.is_file():
         return []
     commands = re.findall(r"\$\{CLAUDE_PLUGIN_ROOT\}/([\w./-]+\.py)", hooks_json.read_text(encoding="utf-8"))
@@ -574,12 +582,13 @@ def _deployed_skill_dirs(fixture: Path, skill: str) -> list[Path]:
 def _check_deployed_skills(fixture: Path, staged_dir: Path, skills: list[str]) -> list[dict]:
     """Return findings for missing skills or deployed files that differ from staging."""
     findings = []
+    skills_dir = _prim_dir(staged_dir, "skills")
     for skill in skills:
         deployed = _deployed_skill_dirs(fixture, skill)
         if not deployed:
             findings.append(_finding("error", "skill_not_deployed", skill, ""))
             continue
-        staged_skill = staged_dir / "skills" / skill
+        staged_skill = skills_dir / skill
         for copy in deployed:
             for f in copy.rglob("*"):
                 src = staged_skill / f.relative_to(copy)

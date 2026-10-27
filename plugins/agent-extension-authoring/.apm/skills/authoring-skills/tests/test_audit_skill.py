@@ -139,6 +139,17 @@ class TestAuditSkill(unittest.TestCase):
         self.assertTrue(any("helper.py" in e and "copy manifest" in e for e in result.errors))
         self.assertFalse(any("own.py" in e for e in result.errors))
 
+    def test_apm_skill_plugin_name_and_duplicate_detection(self):
+        """Assert .apm/skills/<skill> resolves plugin name to sample-plugin (not .apm) and checks plugin_root duplicates."""
+        apm_skill_dir = self.plugin_root / ".apm" / "skills" / "apm-skill"
+        apm_skill_dir.mkdir(parents=True)
+        (apm_skill_dir / "SKILL.md").write_text(
+            "---\nname: apm-skill\ndescription: Processes APM data.\n---\n",
+            encoding="utf-8",
+        )
+        result = audit_skill(apm_skill_dir, plugin_root=self.plugin_root)
+        self.assertEqual(result.to_dict()["plugin"], "sample-plugin")
+
     def test_fix_mode_refuses_inference_without_mutation(self):
         """Assert the same legacy fixture remains unchanged under disabled repair."""
         skill_dir = self.skills_dir / "fixable-skill"
