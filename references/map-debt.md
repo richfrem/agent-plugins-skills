@@ -1870,3 +1870,13 @@ Zero audit errors across all 3 skills via `audit_skill.py` and `audit.py`.
 Stage 1 skill routing achieved 75/92 and stage 2 mode reference resolution reached 90/92 across evaluation vectors.
 Updated root documentation (AGENTS.md, README.md, START_HERE.md, COMPONENT_RETENTION_GUIDE.md, architecture.md) and manifests.
 
+
+## DEBT-20261027-GHAS-REPORTING-KNOWLEDGE
+
+- Status: RESOLVED
+- Artifact affected: `managing-github-issues` skill and its GHAS reporting reference.
+- Gap: GHAS reporting lessons from the Crow/Raven reviews were outside the installed skill boundary.
+- Resolution: Retained a self-contained guide and added explicit GHAS discovery, routing and verification guidance.
+- Verification: Source/installed-mode skill audits, plugin compliance, structure and local-link checks pass.
+- Audit limit: The broader conventions audit still reports seven pre-existing Python files outside this documentation change; see DEBT-20260927-COMPLETION-AUDIT-LIMITS. Its exit code is zero despite those findings.
+- Delivery: User explicitly requested a feature branch, commit with `--no-verify`, push and PR; hooks are skipped for this delivery without changing repository gate configuration.
