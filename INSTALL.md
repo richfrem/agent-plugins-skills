@@ -4,14 +4,14 @@ This document defines how to install, update, select and remove the plugins and 
 
 Plugins are installed with [APM](https://github.com/microsoft/apm) (Agent Package Manager). APM copies each plugin's skills and agents into the agent harness folders, keeps a manifest and lockfile, and handles updates and uninstall. Background and status: [APM migration plan](docs/plans/apm_migration_plan.md).
 
-Each plugin keeps its skills and agents in `plugins/<plugin>/.apm/`, with a `plugins/<plugin>/apm.yml`. Everything APM installs is committed to git, so there is no build or copy step: clone the repository and run `apm install`. This works the same on Windows, macOS and Linux.
+Each plugin keeps its skills and agents in `plugins/<plugin>/.apm/`, with a `plugins/<plugin>/apm.yml`. Everything APM installs is committed to git, so there is no build or copy step: install directly from GitHub or clone the repository and run `apm install`. This works the same on Windows, macOS and Linux.
 
 ## Dependencies and install order
 
 The six plugins here are **level 1** packages: none of their `apm.yml` files declares dependencies, so nothing needs installing first.
 
 - **Needed by:** `sharepoint-workbench` (level 2) and the `sp-migration` plugin in CSB-Intranet (level 3). Install these plugins before them.
-- **Scope:** install them **globally** (Option 1, section 3). A global install is recorded in `~/.apm/apm.yml`, not in this repo, and the repo has no root `apm.yml`.
+- **Scope:** install them **globally** (Option 1, section 3). A global install is recorded in `~/.apm/apm.yml`, not in this repo, while the repo's root `apm.yml` is the collection manifest for all six plugins.
 - **One scope only:** if a plugin is installed globally, don't also list it in a project's `apm.yml`, or it is installed twice. Check what is already global first:
 
 ```bash
@@ -44,7 +44,44 @@ Verify:
 apm --version
 ```
 
-### 2. Get a pinned clone
+### 2. Install directly from GitHub or get a pinned clone
+
+A clone is optional. Install all six plugins from the repository's root collection manifest:
+
+```bash
+apm install https://github.com/richfrem/agent-plugins-skills --global --target claude,copilot,codex,agy
+```
+
+Run from a consuming project's root and omit `--global` for a project-local installation:
+
+```bash
+apm install https://github.com/richfrem/agent-plugins-skills --target codex,copilot
+```
+
+Select one plugin with APM's `owner/repo/subdirectory` shorthand:
+
+```bash
+apm install richfrem/agent-plugins-skills/plugins/dev-utils --global --target claude,copilot,codex,agy
+```
+
+For plugin subdirectories, use the shorthand above: APM 0.33.0 interprets an HTTPS URL with
+extra path segments as a repository URL rather than a plugin path.
+
+These unpinned commands select the default branch when initially resolved. For reproducible installs,
+append an existing tag or commit SHA after the full package path (replace the placeholder):
+
+```bash
+apm install "https://github.com/richfrem/agent-plugins-skills#<tag-or-commit>" --global --target claude,copilot,codex,agy
+apm install "richfrem/agent-plugins-skills/plugins/dev-utils#<tag-or-commit>" --global --target codex,copilot
+```
+
+Use a comma-separated `--target` list; repeating the flag keeps only its last value. Other targets
+include `gemini`, `cursor`, `opencode` and `windsurf`; see `apm install --help` for supported targets.
+On Windows, add `--parallel-downloads 0`. If GitHub cache paths exceed Windows' path limit,
+use a short local clone as described in [Troubleshooting on Windows](#troubleshooting-on-windows).
+Do not install the same plugins from both GitHub and a local clone in the same scope.
+
+#### Clone-based alternative
 
 Clone the repository and check out the release tag or commit you want; that commit is the pinned version of everything you install from this clone.
 
