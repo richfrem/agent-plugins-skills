@@ -7,8 +7,9 @@ self-contained: the source repository and its local reports are not required.
 Use for requests to report on GitHub Advanced Security (GHAS), CodeQL alerts,
 Dependabot alerts, secret scanning, or repository security posture. Reporting is
 read-only against GitHub; write the requested local report without changing
-settings, dismissing alerts, uploading SARIF, or filing issues. Publishing
-validated findings is a separately authorized `log` operation.
+settings, dismissing alerts, uploading SARIF, or filing issues. Submitting a private vulnerability report, creating a draft advisory, uploading SARIF, and
+publishing a public issue/advisory are separate external writes. Prepare the complete payload first
+and execute only the submission the user authorized. The issue `log` mode does not create advisories.
 
 ## Contents
 
@@ -18,6 +19,8 @@ validated findings is a separately authorized `log` operation.
 - [Map scanner coverage](#map-scanner-coverage)
 - [Ground claims in code](#ground-claims-in-code)
 - [Report structure](#report-structure)
+- [Submit privately through GitHub](#submit-privately-through-github)
+- [Submit through gh api](#submit-through-gh-api)
 - [Prompt template](#prompt-template)
 - [Pitfalls and worked lessons](#pitfalls-and-worked-lessons)
 - [Official references](#official-references)
@@ -146,6 +149,135 @@ reliability defects and configuration hardening from exploitable vulnerabilities
 a race or atomicity bug may still be security-relevant when its impact proves it.
 Avoid declaring the repository safe solely because alert counts are zero.
 
+## Submit privately through GitHub
+
+A local GHAS posture report and a vulnerability submission are different deliverables. A user may
+legitimately authorize both. Preparing a vulnerability report is not public disclosure. Follow the
+repository's security policy; do not post sensitive details in a public issue merely because the
+private submission is unavailable. Keep a reusable guide generic: target findings belong in the
+private report, not in this skill package.
+
+### Select the correct workflow
+
+| Purpose and role | GitHub interface | REST endpoint for the same operation |
+|---|---|---|
+| Reporter sends a vulnerability to maintainers; private reporting must be enabled | Security and quality → Advisories → Report a vulnerability; typically `https://github.com/OWNER/REPO/security/advisories/new` | `POST /repos/OWNER/REPO/security-advisories/reports` |
+| Repository administrator/security manager creates a private draft advisory | Security and quality → Advisories → New draft security advisory | `POST /repos/OWNER/REPO/security-advisories` |
+| Publish an accepted advisory or create a public issue | Separate publication workflow | Not part of either private-creation command below |
+
+The same URL area can present different forms according to role; read the heading and visibility
+notice. A private report normally enters triage; a maintainer advisory begins as a draft. Repository
+write access alone does not establish permission to create a maintainer-owned advisory. Check the
+current API permission requirements; fine-grained tokens need Repository security advisories write
+permission for these POST endpoints. If API permission is unavailable but the signed-in browser
+allows private reporting, use the browser rather than requesting credentials in chat.
+
+### Fill the vulnerability-report form
+
+Prepare these fields in the report before opening or automating the form. Include enough content
+for maintainers to reproduce and fix the defect without access to the reporter's local issue files.
+
+| Form field | What to include | API mapping |
+|---|---|---|
+| Title | A concise mechanism and affected component; avoid unsupported severity claims | `summary` (the short API title) |
+| Summary | The failure, prerequisites, affected users, bounded impact and evidence status | A `## Summary` section inside `description` |
+| Details | Pinned revision, file/line links, sourced invariant, entry-to-sink trace, defenses assessed and remediation | `## Details` inside `description` |
+| Proof of concept | Complete safe reproduction, synthetic inputs, commands, expected/observed outcome, cleanup and execution limits | `## Proof of concept` inside `description` |
+| Impact | Demonstrated authority/data/effects, affected parties, conditions, and what was not established | `## Impact` inside `description` |
+| Ecosystem | The actual ecosystem; use Other for unsupported/custom distribution, not an invented npm/PyPI registration | `vulnerabilities[].package.ecosystem`; Other maps to `other` |
+| Package name | Actual package/workflow/component identity, appropriate to that ecosystem | `vulnerabilities[].package.name` |
+| Affected versions | Only verified releases/ranges; record the exact commit and live configuration date in Details | `vulnerabilities[].vulnerable_version_range` |
+| Patched versions | Only verified fixed versions; leave unknown/unset if no fix is established | `vulnerabilities[].patched_versions` (omit or null when unknown) |
+| Severity | Evidence-based categorical severity, or an independently calculated CVSS vector; unknown when unassessed | `severity` OR `cvss_vector_string`, never both |
+| Weaknesses/CWE | Supported mechanism-specific CWE IDs, where the form offers them | `cwe_ids` |
+| Vulnerable functions | Exact functions when applicable; do not invent them for a configuration-only defect | `vulnerabilities[].vulnerable_functions` |
+| CVE/credits, if shown in a maintainer form | Existing identifiers and agreed attribution only; do not imply a CVE was issued | Maintainer-advisory fields such as `cve_id` and `credits`; check that endpoint's schema |
+
+The web form's Summary text area is **not** the API `summary`: that API field is the short title.
+Combine the four narrative text areas into one Markdown `description`. A maintainer form with one
+Description area can use the same sections. Repeat affected-product rows only for independently
+substantiated products; group a compound chain clearly and avoid counting the same root cause twice.
+
+For non-versioned repository automation, explain the audited commit and configuration observation in
+Details. Do not turn one tested revision into an unsupported all-versions range or call a release
+patched before verifying the fix. Omit optional product metadata when it cannot be supported and
+explain the limitation; resolve required GUI validation honestly rather than inventing a package.
+
+Review the filled form, including private visibility, target, counts and attachment contents, before
+clicking its submission button. Record the returned advisory/report URL and state. Creating a private
+report or draft is not publishing it; later publication is a separately authorized action.
+
+## Submit through gh api
+
+The GitHub CLI can call the REST API; there is no need to turn a private vulnerability into `gh issue create`.
+The following is an example template, **not** a command to run during a read-only GHAS review.
+Replace every example value and complete the narrative before using it. Store payloads under ignored
+`temp/`, never credentials or private findings in this public skill folder.
+
+Save `temp/security-report.json` as valid JSON. The deliberately synthetic example has no patch claim:
+
+```json
+{
+  "summary": "Authorization check is omitted on the example export path",
+  "description": "## Summary\nDescribe verified behavior and prerequisites.\n\n## Details\nInclude revision, source trace, defenses, fix and acceptance criteria.\n\n## Proof of concept\nInclude complete synthetic reproduction and actual observations.\n\n## Impact\nSeparate demonstrated impact from unverified consequences.",
+  "severity": "high",
+  "vulnerabilities": [
+    {
+      "package": {"ecosystem": "other", "name": "example-component"},
+      "vulnerable_version_range": "= 1.2.3"
+    }
+  ],
+  "cwe_ids": ["CWE-862"]
+}
+```
+
+Before an external write:
+
+1. Check private reporting and the actor's visible permissions without retrieving secret values:
+   `gh api repos/OWNER/REPO/private-vulnerability-reporting` and
+   `gh api repos/OWNER/REPO --jq '.permissions'`.
+2. Deduplicate against accessible private reports/advisories and relevant issues; inaccessible private
+   history is an explicit limit. Do not disclose details in public just to search for duplicates.
+3. Parse the JSON locally, inspect the exact payload, run `redaction_gate.py`'s `scan_for_secrets`
+   on the title/description/attachments, and verify versions, counts, CWE and severity. The issue body
+   taxonomy applies to public issue mode, not to advisory endpoint fields.
+4. Confirm the user's authorization covers the chosen private POST and target repository. No POST
+   endpoint below has a server-side dry-run: local payload validation is the preview. Do not try a
+   live POST as a test or assume `gh api --dry-run` exists.
+
+**Reporter submission**, only after that review and authorization:
+
+```bash
+gh api --method POST "repos/OWNER/REPO/security-advisories/reports" \
+  -H "Accept: application/vnd.github+json" \
+  -H "X-GitHub-Api-Version: 2026-03-10" \
+  --input temp/security-report.json \
+  --jq '{ghsa_id,html_url,state,summary}'
+```
+
+**Maintainer private draft**, only for an authorized administrator/security manager using a reviewed
+payload accepted by the advisory-creation endpoint:
+
+```bash
+gh api --method POST "repos/OWNER/REPO/security-advisories" \
+  -H "Accept: application/vnd.github+json" \
+  -H "X-GitHub-Api-Version: 2026-03-10" \
+  --input temp/security-report.json \
+  --jq '{ghsa_id,html_url,state,summary}'
+```
+
+Use authenticated `gh` configuration; do not put a token in the payload, terminal output or report.
+`--input` preserves real JSON newlines and avoids shell-interpolated Markdown. `gh api` handles a
+single chosen POST here; it does not publish the resulting advisory. Do not add a subsequent update
+that changes its state to published without separate authorization.
+
+A successful creation returns HTTP 201 and a GHSA/URL. Verify the returned state (`triage` for a
+report or `draft` for a maintainer draft) rather than claiming it was published. If needed, read back
+`gh api repos/OWNER/REPO/security-advisories/GHSA-ID --jq '{ghsa_id,html_url,state,summary}'` when your
+identity can access it. Record access limits if read-back is denied. On 403/404 check role, feature
+availability and token permissions; on 422 inspect field validation. After a timeout/ambiguous result,
+check for an existing submission before retrying to avoid duplicates. Do not retry by creating a public issue.
+
 ## Prompt template
 
 ```text
@@ -182,3 +314,8 @@ this report. Mark predictions and inaccessible data explicitly.
 - [Dependabot alerts REST API](https://docs.github.com/en/rest/dependabot/alerts)
 - [Secret scanning REST API](https://docs.github.com/en/rest/secret-scanning/secret-scanning)
 - [REST API pagination](https://docs.github.com/en/rest/using-the-rest-api/using-pagination-in-the-rest-api)
+
+Submission references (checked 2026-10-28):
+- [Private reporter and maintainer advisory REST endpoints](https://docs.github.com/en/rest/security-advisories/repository-advisories)
+- [Creating a maintainer draft](https://docs.github.com/en/code-security/how-tos/report-and-fix-vulnerabilities/fix-reported-vulnerabilities/create-repository-advisory)
+- [Advisory field and version guidance](https://docs.github.com/en/code-security/tutorials/fix-reported-vulnerabilities/write-security-advisories)
