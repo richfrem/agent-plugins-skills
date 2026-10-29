@@ -186,7 +186,7 @@ for maintainers to reproduce and fix the defect without access to the reporter's
 | Impact | Demonstrated authority/data/effects, affected parties, conditions, and what was not established | `## Impact` inside `description` |
 | Ecosystem | The actual ecosystem; use Other for unsupported/custom distribution, not an invented npm/PyPI registration | `vulnerabilities[].package.ecosystem`; Other maps to `other` |
 | Package name | Actual package/workflow/component identity, appropriate to that ecosystem | `vulnerabilities[].package.name` |
-| Affected versions | Only verified releases/ranges; record the exact commit and live configuration date in Details | `vulnerabilities[].vulnerable_version_range` |
+| Affected versions | Supply a verified exact version/range in the product row; a commit in Details alone does not satisfy publication metadata | `vulnerabilities[].vulnerable_version_range` |
 | Patched versions | Only verified fixed versions; leave unknown/unset if no fix is established | `vulnerabilities[].patched_versions` (omit or null when unknown) |
 | Severity | Evidence-based categorical severity, or an independently calculated CVSS vector; unknown when unassessed | `severity` OR `cvss_vector_string`, never both |
 | Weaknesses/CWE | Supported mechanism-specific CWE IDs, where the form offers them | `cwe_ids` |
@@ -200,8 +200,22 @@ substantiated products; group a compound chain clearly and avoid counting the sa
 
 For non-versioned repository automation, explain the audited commit and configuration observation in
 Details. Do not turn one tested revision into an unsupported all-versions range or call a release
-patched before verifying the fix. Omit optional product metadata when it cannot be supported and
-explain the limitation; resolve required GUI validation honestly rather than inventing a package.
+patched before verifying the fix. Private intake can accept an incomplete affected-product row and
+then show **Required information missing: list affected version(s)**. Record that as accepted for triage
+but **not publication-ready**; do not call the metadata complete just because the POST returned 201.
+
+A **No known CVE** notice is normal before an identifier is assigned; it does not invalidate a
+private report. Maintain CVE assignment separately from required affected-version metadata and
+optional patched-version suggestions. Maintainers can request a CVE through GitHub when appropriate;
+never invent an identifier or request/publicize one without the authorized maintainer workflow.
+
+Before submission, verify `vulnerabilities[].vulnerable_version_range` for every affected product.
+When exactly one release is established, use an exact value such as `= 1.2.3`, with the tag-to-commit
+mapping recorded in Details. Do not invent `<= 1.2.3` or `< next-version` from one tested release.
+Resolve annotated tags to their target commit; package metadata by itself does not prove the release
+contains the audited code. For a genuinely non-versioned target, explain that limitation and coordinate
+with maintainers instead of falsely claiming publication readiness. Unknown patched versions remain
+unset; a patched-version suggestion is different from an affected-version requirement.
 
 Review the filled form, including private visibility, target, counts and attachment contents, before
 clicking its submission button. Record the returned advisory/report URL and state. Creating a private
@@ -238,7 +252,8 @@ Before an external write:
    `gh api repos/OWNER/REPO --jq '.permissions'`.
 2. Deduplicate against accessible private reports/advisories and relevant issues; inaccessible private
    history is an explicit limit. Do not disclose details in public just to search for duplicates.
-3. Parse the JSON locally, inspect the exact payload, run `redaction_gate.py`'s `scan_for_secrets`
+3. Check each affected-product row has a supported `vulnerable_version_range`; distinguish
+   submission acceptance from publication readiness. Parse the JSON locally, inspect the exact payload, run `redaction_gate.py`'s `scan_for_secrets`
    on the title/description/attachments, and verify versions, counts, CWE and severity. The issue body
    taxonomy applies to public issue mode, not to advisory endpoint fields.
 4. Confirm the user's authorization covers the chosen private POST and target repository. No POST
@@ -277,6 +292,47 @@ report or `draft` for a maintainer draft) rather than claiming it was published.
 identity can access it. Record access limits if read-back is denied. On 403/404 check role, feature
 availability and token permissions; on 422 inspect field validation. After a timeout/ambiguous result,
 check for an existing submission before retrying to avoid duplicates. Do not retry by creating a public issue.
+
+### Correct affected-version metadata after private submission
+
+Read the current advisory first so updating the product list preserves every existing product:
+
+```bash
+gh api "repos/OWNER/REPO/security-advisories/GHSA-ID" \
+  --jq '{ghsa_id,state,vulnerabilities}'
+```
+
+Prepare `temp/advisory-version-update.json` containing the **complete existing** `vulnerabilities`
+array with the verified range added. Updating an array can replace its entire value. Preserve actual
+package names, ecosystems, existing patched-version data and vulnerable functions; do not copy these
+synthetic example values onto a real advisory:
+
+```json
+{
+  "vulnerabilities": [
+    {
+      "package": {"ecosystem": "other", "name": "example-component"},
+      "vulnerable_version_range": "= 1.2.3"
+    }
+  ]
+}
+```
+
+After reviewing the diff/redaction and obtaining authorization for that metadata correction:
+
+```bash
+gh api --method PATCH "repos/OWNER/REPO/security-advisories/GHSA-ID" \
+  -H "Accept: application/vnd.github+json" \
+  -H "X-GitHub-Api-Version: 2026-03-10" \
+  --input temp/advisory-version-update.json \
+  --jq '{ghsa_id,html_url,state,vulnerabilities}'
+```
+
+Advisory collaborators may have update rights; role/token restrictions still apply. In the GUI, edit
+the advisory's affected-products row and save the verified affected version. If the reporter cannot
+edit it, provide the exact proposed range and evidence to maintainers rather than creating a duplicate.
+Do not change the advisory state or publish it to fix metadata. Read back the range and verify the
+required-information warning is resolved where visible; other missing fields may still block publication.
 
 ## Prompt template
 
