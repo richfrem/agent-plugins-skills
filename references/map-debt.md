@@ -2,6 +2,19 @@
 
 Persistent tracking of architectural friction, structural anomalies, and unclosed loops across sessions.
 
+## DEBT-20261029-CODEX-STOP-METRICS-JSON (RESOLVED)
+
+- Logged date: 2026-10-29
+- Cycle/Session ID: fix/codex-stop-hook-json
+- Artifact affected: `plugins/agent-agentic-os/.apm/hooks/scripts/post_run_metrics.py`
+- Friction observed: Codex reported invalid Stop-hook JSON twice per turn. The metrics hook exited 0 with a plain-text summary; the write-error fallback also printed diagnostics to stdout. Global APM registrations include two command variants for the hook, explaining repeated messages; registration deduplication is a separate installer concern.
+- Why not fixed now: Source output protocol fixed in this change; deployment waits for PR review and merge.
+- Recommended fix / fix applied: Encode the existing summary in the shared Stop-hook `systemMessage` JSON field and route fallback diagnostics to stderr. Preserve event recording, no-context silence, and guard behavior. Repair canonical source and reinstall with APM; never patch deployed copies.
+- Evidence/repro: New subprocess regression tests initially produced 3 failures and 1 pass. After the fix, the four protocol cases plus existing evolution-guard tests passed (15 total). Plugin compliance, structure, hook configuration, hook lint and copy-drift checks passed with existing warnings. New test file has no conventions findings; modified hook retains an existing complexity warning. The workspace audit reports the same seven unrelated files on main and the feature worktree. A broader 1,066-test run was interrupted after failures/errors; the first failure was independently reproduced on unchanged main (`test_actionable_rollback.py`, missing direct-strategy plan artifact). No full-suite pass is claimed.
+- Severity: M
+- Repeat: YES
+- Status: RESOLVED
+
 ## DEBT-20261027-WINDOWS-HOOK-PORTABILITY (RESOLVED)
 
 - Logged date: 2026-10-27
