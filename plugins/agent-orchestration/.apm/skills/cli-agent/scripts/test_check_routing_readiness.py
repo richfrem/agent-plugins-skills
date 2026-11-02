@@ -30,8 +30,10 @@ class TestCheckRoutingReadiness(unittest.TestCase):
         self.assertIn("claude", res)
         self.assertIn("codex", res)
         self.assertIn("agy", res)
+        self.assertIn("cursor", res)
         self.assertIn("copilot", res)
         self.assertIn("subscription", res["claude"])
+        self.assertIn("status_detail", res["cursor"])
 
     @patch("check_routing_readiness.probe_http_gateway")
     @patch("check_routing_readiness.check_cli_binaries")
@@ -41,13 +43,32 @@ class TestCheckRoutingReadiness(unittest.TestCase):
             "claude": {"installed": True, "path": "/path/claude", "subscription": "Claude Pro"},
             "codex": {"installed": True, "path": "/path/codex", "subscription": "ChatGPT Plus"},
             "agy": {"installed": True, "path": "/path/agy", "subscription": "Gemini Pro"},
+            "cursor": {"installed": True, "path": "/path/agent", "subscription": "Cursor", "authenticated": False, "status_detail": "STANDBY"},
             "copilot": {"installed": False, "path": None, "subscription": "Copilot"}
         }
 
         res = crr.evaluate_routing_readiness(port=4000)
         self.assertEqual(res["posture"], "LOCAL_PROXY_ACTIVE")
         self.assertEqual(len(res["active_cloud_subscriptions"]), 3)
+        self.assertNotIn("Cursor Pro (agent)", res["active_cloud_subscriptions"])
         self.assertIn("Apple Silicon (M1/M2/M3) Optimized", res["hardware_profile"])
+
+    @patch("check_routing_readiness.probe_http_gateway")
+    @patch("check_routing_readiness.check_cli_binaries")
+    def test_evaluate_routing_readiness_authenticated_cursor(self, mock_binaries, mock_gateway):
+        mock_gateway.return_value = {"port": 4000, "status": "DOWN", "details": "No daemon"}
+        mock_binaries.return_value = {
+            "claude": {"installed": True, "path": "/path/claude", "subscription": "Claude Pro"},
+            "codex": {"installed": False, "path": None, "subscription": "ChatGPT Plus"},
+            "agy": {"installed": False, "path": None, "subscription": "Gemini Pro"},
+            "cursor": {"installed": True, "path": "/path/agent", "subscription": "Cursor", "authenticated": True, "status_detail": "AUTHENTICATED"},
+            "copilot": {"installed": False, "path": None, "subscription": "Copilot"}
+        }
+
+        res = crr.evaluate_routing_readiness(port=4000)
+        self.assertEqual(res["posture"], "MULTI_CLI_READY")
+        self.assertIn("Cursor Pro (agent)", res["active_cloud_subscriptions"])
+        self.assertEqual(len(res["active_cloud_subscriptions"]), 2)
 
 
 if __name__ == "__main__":

@@ -19,6 +19,7 @@ import os
 import sys
 import json
 import shutil
+import subprocess
 import urllib.request
 import urllib.error
 import argparse
@@ -73,16 +74,37 @@ def check_env_redirects() -> dict:
 
 def check_cli_binaries() -> dict:
     """Audit installed CLI tools and availability on PATH."""
+    cursor_path = shutil.which("agent") or shutil.which("cursor-agent")
+    cursor_status = "NOT INSTALLED"
+    cursor_authenticated = False
+    if cursor_path:
+        try:
+            proc = subprocess.run([cursor_path, "status"], capture_output=True, text=True, timeout=2.0)
+            status_out = proc.stdout.strip()
+            if "Not logged in" in status_out:
+                cursor_status = "STANDBY (Not logged in)"
+            elif status_out:
+                cursor_status = f"AUTHENTICATED ({status_out.splitlines()[0]})"
+                cursor_authenticated = True
+            else:
+                cursor_status = "INSTALLED (Status unknown)"
+        except Exception as e:
+            cursor_status = f"INSTALLED (Probe error: {e})"
+
     tools = {
-        "claude": {"path": shutil.which("claude"), "subscription": "Claude Pro ($20/mo)"},
-        "codex": {"path": shutil.which("codex"), "subscription": "ChatGPT Plus ($20/mo)"},
-        "agy": {"path": shutil.which("agy"), "subscription": "Gemini Pro / Google One"},
-        "copilot": {"path": shutil.which("copilot"), "subscription": "GitHub Copilot (Work Strictly)"}
+        "claude": {"path": shutil.which("claude"), "subscription": "Claude Pro ($20/mo)", "installed": bool(shutil.which("claude"))},
+        "codex": {"path": shutil.which("codex"), "subscription": "ChatGPT Plus ($20/mo)", "installed": bool(shutil.which("codex"))},
+        "agy": {"path": shutil.which("agy"), "subscription": "Gemini Pro / Google One", "installed": bool(shutil.which("agy"))},
+        "cursor": {
+            "path": cursor_path,
+            "subscription": "Cursor Free / Pro ($0-$30/mo)",
+            "installed": bool(cursor_path),
+            "status_detail": cursor_status,
+            "authenticated": cursor_authenticated
+        },
+        "copilot": {"path": shutil.which("copilot"), "subscription": "GitHub Copilot (Work Strictly)", "installed": bool(shutil.which("copilot"))}
     }
     
-    for name, info in tools.items():
-        info["installed"] = bool(info["path"])
-        
     return tools
 
 
@@ -100,6 +122,8 @@ def evaluate_routing_readiness(port: int = 4000) -> dict:
         active_cloud_subs.append("Gemini Pro (agy)")
     if binaries["codex"]["installed"]:
         active_cloud_subs.append("ChatGPT Plus (codex)")
+    if binaries.get("cursor", {}).get("authenticated"):
+        active_cloud_subs.append("Cursor Pro (agent)")
         
     # Boundary audit
     copilot_status = "INSTALLED (Strictly Work Only)" if binaries["copilot"]["installed"] else "NOT INSTALLED"
@@ -157,6 +181,19 @@ def main():
         status = "INSTALLED" if info["installed"] else "MISSING"
         path = info["path"] or "N/A"
         print(f"   • {name:<8} [{status:<9}] - {info['subscription']} -> {path}")
+    cursor_info = result["cli_binaries"].get("cursor", {})
+    if cursor_info.get("installed"):
+        if cursor_info.get("authenticated"):
+            c_status = "INSTALLED"
+            c_note = f"({cursor_info.get('status_detail', 'Authenticated')})"
+        else:
+            c_status = "STANDBY"
+            c_note = "(Not logged in / Unconfigured)"
+    else:
+        c_status = "MISSING"
+        c_note = ""
+    c_path = cursor_info.get("path") or "N/A"
+    print(f"   • {'agent':<8} [{c_status:<9}] - {cursor_info.get('subscription', 'Cursor')} -> {c_path} {c_note}")
     print("-----------------------------------------------------------------")
     print("3. Corporate Boundary Governance:")
     print(f"   • copilot  : {result['copilot_work_boundary']}")
