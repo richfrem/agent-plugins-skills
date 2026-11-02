@@ -1907,3 +1907,12 @@ Updated root documentation (AGENTS.md, README.md, START_HERE.md, COMPONENT_RETEN
 - Verification: Source/installed-mode skill audits, plugin compliance, structure and local-link checks pass.
 - Audit limit: The broader conventions audit still reports seven pre-existing Python files outside this documentation change; see DEBT-20260927-COMPLETION-AUDIT-LIMITS. Its exit code is zero despite those findings.
 - Delivery: User explicitly requested a feature branch, commit with `--no-verify`, push and PR; hooks are skipped for this delivery without changing repository gate configuration.
+
+
+## DEBT-20261102-CLI-AGENT-AUTONOMOUS-ROUTING-REFERENCE
+
+- Status: RESOLVED
+- Artifact affected: `cli-agent` skill and its routing references.
+- Gap: `cli-agent` previously lacked an explicit taxonomy distinguishing synchronous terminal coding CLIs from autonomous cloud agent VMs (Grok Bot, Claude Duet, OpenAI Dots/Operator, Gemini Agent), as well as multi-subscription pooling / local proxy fallback contracts.
+- Resolution: Added `references/autonomous-agent-platforms.md` defining execution boundaries and asynchronous Git/webhook handoffs; added `references/provider-fallback-routing.md` defining local proxy gateway failovers; refreshed `references/cheapest_models.md` with explicit work vs personal subscription boundaries.
+- Verification: `authoring-skills/scripts/audit_skill.py` passes with 0 warnings, 0 errors; all unit tests pass (4/4 in 0.10s).
