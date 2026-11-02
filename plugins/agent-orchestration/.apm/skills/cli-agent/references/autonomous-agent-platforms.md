@@ -43,10 +43,25 @@ This reference documents external commercial autonomous agent platforms (Grok Bo
 
 ---
 
-## 3. Subscription & Context Constraints
+## 3. Subscription Models & Subscription Pooling
 
-* **Employer / Work vs. Personal Boundaries**:
-  * Tools tied to enterprise seats (such as GitHub Copilot) must remain strictly within enterprise/work project boundaries.
-  * Personal and sovereign open-source engineering should leverage independent subscriptions (Claude Pro, ChatGPT Plus, Gemini Pro) or local offline models (`llama-server`).
-* **Cost-Benefit Gating**:
-  * Never invoke expensive frontier reasoning models (e.g. GPT-6 Astra, Claude Opus) for tasks solvable by standard subscription pools or specialized agent platforms.
+* **Cursor Premium ($30/mo)**: Specifically includes **Grok Bot** access alongside Cursor IDE, cloud agents & automations, code hosting/reviews, and the headless `cursor-agent` CLI with 4x usage pool compared to Plus. This represents a consolidated cost-efficient option over standalone subscriptions.
+* **Personal Subscription Stack**:
+  - Claude Pro ($20/mo): Claude Code CLI and architectural review.
+  - ChatGPT Plus ($20/mo): Operator / Dots GUI computer-use and OpenAI models.
+  - Gemini Pro (AGY / Google One): 2M context deep research and multimodal vision.
+* **Enterprise Copilot Constraint**: GitHub Copilot is restricted exclusively to work repositories; never used for personal/sovereign research.
+
+---
+
+## 4. Regional Availability & Geo-Fencing Constraints
+
+* **Claude Duet (Anthropic)**: Currently restricted to US-based enterprise beta workspaces. Invocations outside US regions fail or require US enterprise tenancy.
+* **Dots / Operator (OpenAI)**: Rolling preview restricted primarily to US ChatGPT Plus/Pro accounts. Users outside the US may encounter waitlist or geo-blocking walls.
+* **Grok Bot (xAI)**: Accessible globally through Cursor Premium ($30/mo) or X Premium+ subscriptions, though phone calling relies on supported carrier routing.
+* **Gemini Agent / Project Astra (Google)**: Broadest global availability across Google AI Studio and Google One AI Premium tiers.
+
+---
+
+## 5. Architectural Rule: Asynchronous Handoff Invariant
+Never attempt to pipe remote VM agents via standard stdio subshell wrappers. Always use asynchronous handoff briefs, git worktrees, or webhooks.
