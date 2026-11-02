@@ -1942,3 +1942,12 @@ Updated root documentation (AGENTS.md, README.md, START_HERE.md, COMPONENT_RETEN
 - Gap: `cli-agent` previously lacked an explicit taxonomy distinguishing synchronous terminal coding CLIs from autonomous cloud agent VMs (Grok Bot, Claude Duet, OpenAI Dots/Operator, Gemini Agent), as well as multi-subscription pooling / local proxy fallback contracts.
 - Resolution: Added `references/autonomous-agent-platforms.md` defining execution boundaries and asynchronous Git/webhook handoffs; added `references/provider-fallback-routing.md` defining local proxy gateway failovers; refreshed `references/cheapest_models.md` with explicit work vs personal subscription boundaries.
 - Verification: `authoring-skills/scripts/audit_skill.py` passes with 0 warnings, 0 errors; all unit tests pass (4/4 in 0.10s).
+
+
+## DEBT-20261102-CLI-AGENT-CURSOR-DISPATCH-REFERENCE
+
+- Status: RESOLVED
+- Artifact affected: `cli-agent` skill (`references/cursor-cli-dispatch.md`, `scripts/check_routing_readiness.py`, `scripts/test_check_routing_readiness.py`, `SKILL.md`).
+- Gap: The Cursor Agent CLI (`agent` / `cursor-agent`) was installed on the host macOS M1 environment without an active subscription/account, causing readiness probes to either omit or mischaracterize the standby binary, and leaving automated dispatchers without documentation on Cursor CLI invocation patterns, model parameters (`grok-2`), or cloud background workers (`agent worker`).
+- Resolution: Added `references/cursor-cli-dispatch.md` detailing non-interactive invocation (`-p`, `--output-format json`), Grok/Composer models, `agent worker` cloud loop execution, and fail-closed unauthenticated behavior. Updated `check_routing_readiness.py` to non-destructively probe `agent status` and classify unauthenticated installations as `STANDBY (Not logged in)` without falsely inflating active compute subscription pools. Added regression tests in `test_check_routing_readiness.py`.
+- Verification: 5/5 unit tests pass in `test_check_routing_readiness.py`; `authoring-skills/scripts/audit_skill.py` passes.

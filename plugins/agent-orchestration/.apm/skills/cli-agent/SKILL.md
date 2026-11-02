@@ -34,6 +34,7 @@ python3 scripts/run_agent.py <personas>/security-auditor.md <input> <output> "Re
 | **Codex** | `--cli codex` | OpenAI Codex CLI (GPT-5 / o-series) | [codex-cli-dispatch.md](references/codex-cli-dispatch.md) |
 | **Copilot** | `--cli copilot` | GitHub Copilot CLI | [copilot-cli-dispatch.md](references/copilot-cli-dispatch.md) |
 | **Antigravity** | `--cli agy` | Google Antigravity / Gemini CLI | [agy-cli-dispatch.md](references/agy-cli-dispatch.md) |
+| **Cursor** | `--cli agent` | Cursor Agent CLI (Grok / Claude / GPT) | [cursor-cli-dispatch.md](references/cursor-cli-dispatch.md) |
 | **Local LLM** | `--cli llama` | Local Gemma 4 12B at localhost:8089 | [local-llm-dispatch.md](references/local-llm-dispatch.md) |
 
 ## Workflow
@@ -47,7 +48,7 @@ For gated reviews, record the result through control-plane `record-critic-review
 
 ## Setup & Maintenance
 
-- **Subscription Pooling & Routing**: Probe readiness: `python3 scripts/check_routing_readiness.py` (see [setup guide](references/setup-subscription-pooling.md)). Pools Claude Pro, ChatGPT Plus, and Gemini Pro on macOS M1 while bypassing heavy local models.
+- **Subscription Pooling & Routing**: Probe readiness: `python3 scripts/check_routing_readiness.py` (see [setup guide](references/setup-subscription-pooling.md)). Pools Claude Pro, ChatGPT Plus, and Gemini Pro on macOS M1 while auditing Cursor CLI (`agent`) standby readiness and bypassing heavy local models.
 - **Project Setup & Catalogs**: Follow [project setup](references/project-setup.md), [capability baseline](references/project-capability-baseline.md), [workflow](references/project-configuration-workflow.md), [profile contract](references/capability-profile-contract.md), and [catalog maintenance](references/model-catalog-maintenance.md). Update catalog: `python3 scripts/sync_cheapest_models.py --repository . --dry-run` (refresh neither authorizes model calls nor starts reviews).
 - **Local LLM & Specs**: Start llama-server: `python3 scripts/run_server.py` (see [deep reference](references/local-llm-setup-deep-reference.md), [latency findings](references/routing_latency_findings.md), [proxy diagram](references/routing-proxy.mmd), and [debrief](references/local_llm_debrief.md)). Inspect [Claude spec](references/claude-directory-spec.md), [Claude settings](references/claude-settings-schema.md), [Antigravity spec](references/antigravity-directory-spec.md), [Gemini commands](references/gemini-cli-commands.md), [Codex fixture](references/p0-codex-observation-fixture.json), and [map debt](references/map-debt.md).
 
@@ -61,6 +62,6 @@ Without `--isolated`, add to the prompt: "You are operating as an isolated sub-a
 
 - [Project Setup](references/project-setup.md) • [Capability Baseline](references/project-capability-baseline.md) • [Workflow](references/project-configuration-workflow.md) • [Profile Contract](references/capability-profile-contract.md) • [Acceptance Criteria](references/acceptance-criteria.md)
 - [Backend Capabilities](references/backend-capabilities.md) • [Execution Contract](references/execution-contract.md) • [Fallback Tree](references/fallback-tree.md) • [Cheapest Models Reference](references/cheapest_models.md) • [Model Catalog Maintenance](references/model-catalog-maintenance.md)
-- [Autonomous Agent Platforms](references/autonomous-agent-platforms.md) • [Provider Fallback Routing](references/provider-fallback-routing.md) • [Subscription Pooling & Readiness Probe](references/setup-subscription-pooling.md)
+- [Cursor CLI Dispatch](references/cursor-cli-dispatch.md) • [Autonomous Agent Platforms](references/autonomous-agent-platforms.md) • [Provider Fallback Routing](references/provider-fallback-routing.md) • [Subscription Pooling & Readiness Probe](references/setup-subscription-pooling.md)
 - [Local LLM Setup Reference](references/local-llm-setup-deep-reference.md) • [Local LLM Debrief](references/local_llm_debrief.md) • [Routing Latency Findings](references/routing_latency_findings.md) • [Routing Proxy Diagram](references/routing-proxy.mmd) • [Map Debt](references/map-debt.md)
 - [Claude Directory Spec](references/claude-directory-spec.md) • [Claude Settings Schema](references/claude-settings-schema.md) • [Antigravity Directory Spec](references/antigravity-directory-spec.md) • [Gemini CLI Commands](references/gemini-cli-commands.md) • [Codex Fixture](references/p0-codex-observation-fixture.json)
