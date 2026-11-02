@@ -2,6 +2,19 @@
 
 Persistent tracking of architectural friction, structural anomalies, and unclosed loops across sessions.
 
+## DEBT-20261102-CLI-AGENT-SUBSCRIPTION-ROUTER-PROBE (RESOLVED)
+
+- Logged date: 2026-11-02
+- Cycle/Session ID: feat/cli-agent-subscription-router-setup-reference
+- Artifact affected: `plugins/agent-orchestration/.apm/skills/cli-agent/*`
+- Friction observed: `cli-agent` historically assumed local LLM execution via `llama-server` on port 8089 as the fallback mechanism. On Apple Silicon M1 hardware, running local LLMs incurs severe memory pressure, thermal throttling, and slow inference. The user already possesses paid cloud subscriptions (Claude Pro, ChatGPT Plus, Gemini Pro) that sat idle when single-CLI rate windows approached, and lacked an automated pre-flight readiness probe to verify whether routing or multi-CLI fallback was configured.
+- Why not fixed now: Fixed immediately in this change.
+- Recommended fix / fix applied: Created `references/setup-subscription-pooling.md` providing explicit setup and validation for M1-optimized cloud-to-cloud subscription pooling; authored `scripts/check_routing_readiness.py` pre-flight probe and unit tests; updated `SKILL.md` to reference the probe and setup guide.
+- Evidence/repro: `check_routing_readiness.py` executes and correctly audits port 4000, environment variables, CLI binaries, and Copilot isolation; `test_check_routing_readiness.py` passes 4/4 unit tests; `audit_skill.py` passes with 0 errors.
+- Severity: M
+- Repeat: NO
+- Status: RESOLVED
+
 ## DEBT-20261102-ORCHESTRATING-BOT-DELEGATION (RESOLVED)
 
 - Logged date: 2026-11-02

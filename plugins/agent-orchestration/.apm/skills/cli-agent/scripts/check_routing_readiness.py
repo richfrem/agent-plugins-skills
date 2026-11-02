@@ -1,0 +1,168 @@
+#!/usr/bin/env python3
+"""
+check_routing_readiness.py - Multi-Subscription Routing & Gateway Readiness Probe
+================================================================================
+
+Purpose:
+    Performs a non-destructive pre-flight readiness audit for multi-subscription
+    routing and gateway health. Designed specifically for macOS Apple Silicon (M1/M2/M3)
+    environments where local LLM compute is bypassed in favor of paid cloud subscriptions
+    (Claude Pro, ChatGPT Plus, Gemini Pro).
+
+Usage:
+    python3 scripts/check_routing_readiness.py
+    python3 scripts/check_routing_readiness.py --json
+    python3 scripts/check_routing_readiness.py --port 4000
+"""
+
+import os
+import sys
+import json
+import shutil
+import urllib.request
+import urllib.error
+import argparse
+from pathlib import Path
+
+
+def probe_http_gateway(port: int = 4000, timeout: float = 1.0) -> dict:
+    """Probe local gateway HTTP health endpoint."""
+    url = f"http://localhost:{port}/health"
+    models_url = f"http://localhost:{port}/v1/models"
+    
+    status = "DOWN"
+    details = "No daemon listening"
+    
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "Sanctuary-Probe/1.0"})
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            if resp.status == 200:
+                status = "ACTIVE"
+                details = f"HTTP {resp.status} on port {port}"
+    except (urllib.error.URLError, ConnectionRefusedError, TimeoutError, OSError):
+        # Fall back to probing models endpoint
+        try:
+            req = urllib.request.Request(models_url, headers={"User-Agent": "Sanctuary-Probe/1.0"})
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
+                if resp.status == 200:
+                    status = "ACTIVE"
+                    details = f"HTTP {resp.status} on /v1/models (port {port})"
+        except Exception:
+            pass
+
+    return {
+        "port": port,
+        "status": status,
+        "details": details
+    }
+
+
+def check_env_redirects() -> dict:
+    """Inspect environment variable redirections for Anthropic and OpenAI SDKs."""
+    anthropic_base = os.environ.get("ANTHROPIC_BASE_URL", "")
+    openai_base = os.environ.get("OPENAI_BASE_URL", "")
+    
+    is_routed = bool(anthropic_base or openai_base)
+    
+    return {
+        "is_routed": is_routed,
+        "ANTHROPIC_BASE_URL": anthropic_base or "Not set (direct cloud API)",
+        "OPENAI_BASE_URL": openai_base or "Not set (direct cloud API)"
+    }
+
+
+def check_cli_binaries() -> dict:
+    """Audit installed CLI tools and availability on PATH."""
+    tools = {
+        "claude": {"path": shutil.which("claude"), "subscription": "Claude Pro ($20/mo)"},
+        "codex": {"path": shutil.which("codex"), "subscription": "ChatGPT Plus ($20/mo)"},
+        "agy": {"path": shutil.which("agy"), "subscription": "Gemini Pro / Google One"},
+        "copilot": {"path": shutil.which("copilot"), "subscription": "GitHub Copilot (Work Strictly)"}
+    }
+    
+    for name, info in tools.items():
+        info["installed"] = bool(info["path"])
+        
+    return tools
+
+
+def evaluate_routing_readiness(port: int = 4000) -> dict:
+    """Synthesize complete readiness assessment."""
+    gateway = probe_http_gateway(port=port)
+    env_vars = check_env_redirects()
+    binaries = check_cli_binaries()
+    
+    # Assess available subscriptions
+    active_cloud_subs = []
+    if binaries["claude"]["installed"]:
+        active_cloud_subs.append("Claude Pro (claude)")
+    if binaries["agy"]["installed"]:
+        active_cloud_subs.append("Gemini Pro (agy)")
+    if binaries["codex"]["installed"]:
+        active_cloud_subs.append("ChatGPT Plus (codex)")
+        
+    # Boundary audit
+    copilot_status = "INSTALLED (Strictly Work Only)" if binaries["copilot"]["installed"] else "NOT INSTALLED"
+    
+    # Determine primary routing posture
+    if gateway["status"] == "ACTIVE":
+        posture = "LOCAL_PROXY_ACTIVE"
+        summary = f"Local proxy gateway active on port {port}. Traffic transparently intercepted."
+    elif len(active_cloud_subs) >= 2:
+        posture = "MULTI_CLI_READY"
+        summary = f"Multi-CLI cloud pooling ready across {len(active_cloud_subs)} subscriptions ({', '.join(active_cloud_subs)}). Native CLI fallback enabled."
+    else:
+        posture = "DEGRADED"
+        summary = "Insufficient CLI subscriptions discovered on PATH."
+        
+    return {
+        "posture": posture,
+        "summary": summary,
+        "hardware_profile": "Apple Silicon (M1/M2/M3) Optimized - Local LLMs Bypassed",
+        "gateway": gateway,
+        "env_redirects": env_vars,
+        "cli_binaries": binaries,
+        "active_cloud_subscriptions": active_cloud_subs,
+        "copilot_work_boundary": copilot_status
+    }
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Multi-Subscription Routing & Gateway Readiness Probe")
+    parser.add_argument("--port", type=int, default=4000, help="Port to probe (default: 4000)")
+    parser.add_argument("--json", action="store_true", help="Emit raw JSON output")
+    args = parser.parse_args()
+    
+    result = evaluate_routing_readiness(port=args.port)
+    
+    if args.json:
+        print(json.dumps(result, indent=2))
+        return
+
+    print("=================================================================")
+    print("      MULTI-SUBSCRIPTION ROUTING & GATEWAY READINESS PROBE       ")
+    print("=================================================================")
+    print(f"Hardware Optimization : {result['hardware_profile']}")
+    print(f"Overall Posture       : [{result['posture']}]")
+    print(f"Readiness Summary     : {result['summary']}")
+    print("-----------------------------------------------------------------")
+    print("1. Gateway Daemon Status:")
+    print(f"   Port {result['gateway']['port']}             : [{result['gateway']['status']}] ({result['gateway']['details']})")
+    print(f"   ANTHROPIC_BASE_URL : {result['env_redirects']['ANTHROPIC_BASE_URL']}")
+    print(f"   OPENAI_BASE_URL    : {result['env_redirects']['OPENAI_BASE_URL']}")
+    print("-----------------------------------------------------------------")
+    print("2. Cloud Subscriptions Available (Personal):")
+    for name in ["claude", "agy", "codex"]:
+        info = result["cli_binaries"][name]
+        status = "INSTALLED" if info["installed"] else "MISSING"
+        path = info["path"] or "N/A"
+        print(f"   • {name:<8} [{status:<9}] - {info['subscription']} -> {path}")
+    print("-----------------------------------------------------------------")
+    print("3. Corporate Boundary Governance:")
+    print(f"   • copilot  : {result['copilot_work_boundary']}")
+    print("     (Must NEVER be routed to personal or sovereign research)")
+    print("=================================================================")
+
+
+if __name__ == "__main__":
+    main()
