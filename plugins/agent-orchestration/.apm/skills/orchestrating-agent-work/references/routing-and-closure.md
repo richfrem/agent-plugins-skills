@@ -27,6 +27,7 @@ python3 scripts/agent_orchestrator.py packet --wp 001 --spec-dir handoffs
 | Bounded code implementation, bug fix | Supervisor / Worker | [strategy-dual-loop.md](strategy-dual-loop.md) |
 | Bulk migration, 10+ independent partitioned jobs | Parallel Swarm | [strategy-agent-swarm.md](strategy-agent-swarm.md) |
 | Structural dependencies, parallel fan-out joined at barriers | Graph | [graph-planning.md](graph-planning.md), then [graph-execution.md](graph-execution.md) |
+| GUI computer-use, telephony, external SaaS/commerce, deep research | Asynchronous Bot Handoff | [bot-delegation-patterns.md](bot-delegation-patterns.md) |
 | Ambiguous routing, topology comparison | Decision Tree | strategy selection ([strategy-selection.md](strategy-selection.md)) |
 
 ## Workflow

@@ -53,6 +53,7 @@ python3 scripts/select_strategy.py --out docs/plans/work-tasks/my-task/
 | **Dual-Loop** | `agent_orchestrator.py packet` | [strategy-dual-loop.md](strategy-dual-loop.md) | `handoffs/task_packet_*.md` | Bounded bug fixes, localized feature coding |
 | **Swarm** | `swarm_run.py --dry-run` | [strategy-agent-swarm.md](strategy-agent-swarm.md) | `*.job.md` | Batch conversions, mass refactors across files |
 | **Adversarial** | [strategy-red-team-review.md](strategy-red-team-review.md) | cli-agent persona dispatch | Review brief | Security audits, architecture stress-testing |
+| **Async Bot Handoff** | [bot-delegation-patterns.md](bot-delegation-patterns.md) | Asynchronous Cloud/Web VM | Task brief / PR / Webhook | GUI computer-use, telephony, SaaS triage, multimodal research |
 
 ## Verification
 

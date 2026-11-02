@@ -2,6 +2,19 @@
 
 Persistent tracking of architectural friction, structural anomalies, and unclosed loops across sessions.
 
+## DEBT-20261102-ORCHESTRATING-BOT-DELEGATION (RESOLVED)
+
+- Logged date: 2026-11-02
+- Cycle/Session ID: feat/orchestrating-agent-work-bot-capabilities
+- Artifact affected: `plugins/agent-orchestration/.apm/skills/orchestrating-agent-work/*`
+- Friction observed: `orchestrating-agent-work` assumed all execution targets were local, synchronous CLI processes running in subshells/worktrees. Autonomous commercial agent platforms (Grok Bot, Claude Duet, OpenAI Dots, Gemini Agent) lack local stdio REPLs, operate asynchronously (via PRs, webhooks, or browser VMs), and feature geo-availability constraints (US-only previews for Duet and Dots).
+- Why not fixed now: Fixed immediately in this change.
+- Recommended fix / fix applied: Added `references/bot-delegation-patterns.md` covering synchronous CLI vs asynchronous remote bot patterns, documented Cursor Premium ($30/mo) bundling of Grok Bot, noted regional availability boundaries, and updated `routing-and-closure.md` and `strategy-selection.md` tables with asynchronous bot routing signals.
+- Evidence/repro: `authoring-skills/scripts/audit_skill.py` passes on `orchestrating-agent-work` (PASS, 0 errors); `test_capability_profile.py` passes (0 exit code).
+- Severity: L
+- Repeat: NO
+- Status: RESOLVED
+
 ## DEBT-20261029-CODEX-STOP-METRICS-JSON (RESOLVED)
 
 - Logged date: 2026-10-29
