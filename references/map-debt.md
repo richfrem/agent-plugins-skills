@@ -2,6 +2,19 @@
 
 Persistent tracking of architectural friction, structural anomalies, and unclosed loops across sessions.
 
+## DEBT-20261102-CLI-AGENT-APPLE-SILICON-MLX-LOCAL-INFERENCE (RESOLVED)
+
+- Logged date: 2026-11-02
+- Cycle/Session ID: feat/cli-agent-mlx-apple-silicon-reference
+- Artifact affected: `plugins/agent-orchestration/.apm/skills/cli-agent/*`
+- Friction observed: `cli-agent` local LLM references assumed `llama-server` on port 8089 or heavy CUDA compilation. On Apple Silicon M-series (M1/M2/M3/M4) Macs with unified memory (e.g. 16GB RAM), local MLX (`mlx-lm`) provides superior memory efficiency (~4.43 GB RAM for 4-bit 7B models) with zero swap overhead, native Metal acceleration, and an OpenAI-compatible server on port 8080 (`curl -s http://127.0.0.1:8080/v1/models`). However, these steps and benchmarks were not documented in `cli-agent` references.
+- Why not fixed now: Fixed immediately in this change.
+- Recommended fix / fix applied: Added `references/local-mlx-apple-silicon.md` documenting zero-swap Apple Silicon MLX inference, `mlx_lm.server --port 8080`, `curl http://127.0.0.1:8080/v1/models` health checks, and France capital benchmark tests; updated `local-llm-dispatch.md`, `local-llm-setup-deep-reference.md`, and `SKILL.md`.
+- Evidence/repro: Measured on Apple Silicon M1 (16GB RAM): 14.3 tok/sec generation, 83.7 tok/sec prompt speed, 4.431 GB peak RAM. Pytest passes 143 tests in `cli-agent`.
+- Severity: L
+- Repeat: NO
+- Status: RESOLVED
+
 ## DEBT-20261102-CLI-AGENT-SUBSCRIPTION-ROUTER-PROBE (RESOLVED)
 
 - Logged date: 2026-11-02

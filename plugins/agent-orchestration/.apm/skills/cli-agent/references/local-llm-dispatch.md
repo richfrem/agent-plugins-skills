@@ -1,10 +1,12 @@
-# Local LLM (Llama) CLI Dispatch
+# Local LLM CLI Dispatch
 
-Dispatches bounded tasks directly to the local Gemma 4 12B model running on `llama-server` at `http://localhost:8089` — no routing proxy, no cloud API, 2–5s typical response.
+Dispatches bounded tasks directly to local inference runners — either `llama-server` at `http://localhost:8089` or native Apple Silicon MLX (`mlx-lm`) at `http://127.0.0.1:8080/v1` — with no routing proxy, no cloud API, and 2–5s typical response.
+
+> **Apple Silicon Reference**: For native Apple Silicon Metal acceleration using MLX (`mlx-community/Qwen2.5-Coder-7B-Instruct-4bit`, 4.43 GB RAM footprint), see [local-mlx-apple-silicon.md](local-mlx-apple-silicon.md).
 
 ## Constraints & Requirements
 
-- **Prerequisites**: `llama-server` must be active on port 8089 (`curl -s http://localhost:8089/health`).
+- **Prerequisites**: Server must be active (`curl -s http://localhost:8089/health` for llama-server, or `curl -s http://127.0.0.1:8080/v1/models` for MLX).
 - **Latency Threshold**: Mode B validation requires sub-5s latency for typical bounded prompts.
 - **Token Budget**: Keep prompts lean (<2,000 tokens) and instructions specific; default `max_tokens=120`.
 - **Sub-Agent Isolation**: Because `--cli llama` dispatches HTTP requests directly without CLI-level sandboxing, you must append the verbatim isolation instruction to the prompt:
