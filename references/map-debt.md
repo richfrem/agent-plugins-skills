@@ -2,6 +2,19 @@
 
 Persistent tracking of architectural friction, structural anomalies, and unclosed loops across sessions.
 
+## DEBT-20261103-HF-UPLOAD-NO-CLI (RESOLVED)
+
+- Logged date: 2026-11-03
+- Cycle/Session ID: feat/hf-upload-cli
+- Artifact affected: `plugins/dev-utils/.apm/skills/managing-huggingface-assets/scripts/hf_upload.py`, `SKILL.md`, `references/upload.md`
+- Friction observed: `SKILL.md` and `references/upload.md` documented `hf_upload.py --file <path> --remote-path <repo path>` (and `--folder`), but the script had no command line, only importable functions. Run as documented it exited 0 with no output and uploaded nothing, so an agent could believe a soul-trace or README upload had succeeded. Found by a Project Sanctuary session that had to call `upload_file()` from Python instead.
+- Why not fixed now: Fixed immediately in this change.
+- Recommended fix / fix applied: Added `main()` with `--file`/`--folder` (mutually exclusive, required), `--remote-path` (default: file name or repo root; leading `/` stripped, `..` rejected), `--commit-message` and an offline `--dry-run`; exit 0 on success, 1 on failure with the error on stderr. Documented the options in `references/upload.md`. Added `plugins/dev-utils/tests/test_hf_upload_cli.py`.
+- Evidence/repro: Before: `python3 hf_upload.py --file x.md --remote-path x.md` exits 0 silently (reproduced from origin/main). After: 8 pytest tests pass; `audit_skill.py --mode source` reports PASS for the skill.
+- Severity: M
+- Repeat: NO
+- Status: RESOLVED
+
 ## DEBT-20261102-CLI-AGENT-APPLE-SILICON-MLX-LOCAL-INFERENCE (RESOLVED)
 
 - Logged date: 2026-11-02
