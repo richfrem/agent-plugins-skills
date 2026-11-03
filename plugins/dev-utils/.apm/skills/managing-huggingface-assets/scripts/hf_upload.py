@@ -16,8 +16,20 @@ Key Functions:
     - _build_dataset_readme(): Generate dataset README.md from config
     - upload_file(): Upload single file to HuggingFace
     - upload_folder(): Upload entire folder/dataset to HuggingFace
+    - upload_soul_snapshot(): Upload a sealed learning snapshot under lineage/
+    - upload_semantic_cache(): Upload a semantic cache file
     - append_to_jsonl(): Append rows to HuggingFace dataset via JSONL
+    - ensure_dataset_structure(), ensure_dataset_card(): Dataset scaffolding
+    - _clean_remote_path(): Normalise and validate a remote path from the CLI
+    - _build_parser(): Argument parser for the command line
+    - main(): Command-line entry point (--file/--folder, --remote-path, --dry-run)
+
+Usage:
+    python3 hf_upload.py --file lineage/sealed_trace.md --remote-path lineage/sealed_trace.md
+    python3 hf_upload.py --folder ./data --remote-path data/
+    python3 hf_upload.py --file README.md --dry-run      # validate only, no upload
 """
+import argparse
 import os
 import sys
 import json
@@ -279,3 +291,69 @@ async def ensure_dataset_card(config: HFConfig = None) -> bool:
     except Exception as e:
         logger.error(f"Dataset card failed: {e}")
         return False
+
+
+# ---------------------------------------------------------------------------
+# Command-line interface
+# ---------------------------------------------------------------------------
+def _clean_remote_path(raw: str) -> str:
+    """Normalise a repo-relative path: strip leading slashes, reject parent-directory segments."""
+    cleaned = raw.strip().lstrip("/")
+    if ".." in Path(cleaned).parts:
+        raise ValueError(f"remote path must not contain '..': {raw!r}")
+    return cleaned
+
+
+def _build_parser() -> argparse.ArgumentParser:
+    """Build the argument parser for the upload command line."""
+    parser = argparse.ArgumentParser(
+        description="Upload a file or folder to the configured HuggingFace dataset repository."
+    )
+    target = parser.add_mutually_exclusive_group(required=True)
+    target.add_argument("--file", type=Path, help="Local file to upload")
+    target.add_argument("--folder", type=Path, help="Local folder to upload")
+    parser.add_argument("--remote-path", type=str, default=None,
+                        help="Path in the dataset repo (default: file name, or repo root for --folder)")
+    parser.add_argument("--commit-message", type=str, default=None, help="Commit message for the upload")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="Validate the local path and remote path and print the plan; upload nothing")
+    return parser
+
+
+def main(argv: Optional[List[str]] = None) -> int:
+    """CLI entry point. Returns 0 on success, 1 on failure (usage errors exit 2 via argparse)."""
+    args = _build_parser().parse_args(argv)
+    local: Path = args.file or args.folder
+    try:
+        if args.file and not args.file.is_file():
+            raise ValueError(f"not a file: {args.file}")
+        if args.folder and not args.folder.is_dir():
+            raise ValueError(f"not a directory: {args.folder}")
+        default_remote = args.file.name if args.file else ""
+        remote = _clean_remote_path(args.remote_path if args.remote_path is not None else default_remote)
+    except ValueError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 1
+
+    if args.dry_run:
+        try:
+            repo = get_hf_config().dataset_repo_id
+        except ValueError:
+            repo = "(not resolved: HuggingFace environment variables missing)"
+        kind = "file" if args.file else "folder"
+        print(f"[dry-run] would upload {kind} {local} -> {repo}:{remote or '/'}")
+        return 0
+
+    if args.file:
+        result = asyncio.run(upload_file(args.file, remote, commit_msg=args.commit_message))
+    else:
+        result = asyncio.run(upload_folder(args.folder, remote, commit_msg=args.commit_message))
+    if not result.success:
+        print(f"Error occurred during upload: {result.error}", file=sys.stderr)
+        return 1
+    print(f"Success! Uploaded {local} to {result.repo_url} at {result.remote_path}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
