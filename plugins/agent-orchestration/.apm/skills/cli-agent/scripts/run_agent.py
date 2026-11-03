@@ -84,6 +84,7 @@ def _load_default_models() -> dict[str, str | None]:
         "claude": "claude-haiku-4-5",
         "agy": "gemini-3.8-flash-low",
         "codex": "gpt-5.6-luna",
+        "cursor": "grok-2",
         "llama": "gemma-4-12b",
     }
     try:
@@ -100,6 +101,44 @@ def _load_default_models() -> dict[str, str | None]:
     return defaults
 
 _DEFAULT_MODELS = _load_default_models()
+
+RATE_LIMIT_KEYWORDS = (
+    "rate limit",
+    "rate_limit",
+    "ratelimit",
+    "429",
+    "too many requests",
+    "resourceexhausted",
+    "resource_exhausted",
+    "quota exceeded",
+    "exceeded your current quota",
+    "insufficient_quota",
+    "usage limit",
+    "credit balance is too low",
+    "hit the message limit",
+    "resets in",
+    "at capacity",
+    "please try a different model",
+    "overloaded",
+    "not logged in",
+)
+
+
+def _is_rate_limit_or_capacity_error(error_text: str, returncode: int = 1) -> bool:
+    """Return True if the failure appears to be a rate limit, quota exhaustion, or capacity error."""
+    lower = error_text.lower()
+    return any(kw in lower for kw in RATE_LIMIT_KEYWORDS)
+
+
+class BackendExecutionError(Exception):
+    """Raised when a CLI backend fails during execution."""
+
+    def __init__(self, cli: str, returncode: int, output: str):
+        self.cli = cli
+        self.returncode = returncode
+        self.output = output
+        self.is_rate_limit = _is_rate_limit_or_capacity_error(output, returncode)
+        super().__init__(f"Backend '{cli}' failed with code {returncode}")
 
 
 _LLAMA_MAX_TOKENS_DEFAULT = 120  # bounded output for agent subtasks
@@ -224,6 +263,18 @@ def _build_cmd_codex(model: str) -> list[str]:
     return ["codex", "exec", "--model", model, "-"]
 
 
+def _build_cmd_cursor(model: str | None, prompt: str, isolated: bool = False) -> list[str]:
+    """Cursor CLI (agent). --mode plan is used when isolated=True."""
+    cmd = ["agent", "-p", prompt, "--output-format", "text"]
+    if model:
+        cmd += ["--model", model]
+    if isolated:
+        cmd += ["--mode", "plan"]
+    else:
+        cmd += ["--trust"]
+    return cmd
+
+
 def _call_llama_direct(
     prompt: str, model: str, output_file: str,
     max_tokens: int = _LLAMA_MAX_TOKENS_DEFAULT,
@@ -263,8 +314,8 @@ def _catalog_key_for_cli(cli: str) -> str:
 
 def _resolve_catalog_model(cli: str, tier: str, preferred_model: str | None = None) -> str:
     """Resolve a catalog-backed model, failing closed when the contract is invalid."""
-    if cli == "llama":
-        return _DEFAULT_MODELS[cli] or ""
+    if cli in ("llama", "cursor"):
+        return _DEFAULT_MODELS.get(cli) or ""
     script_dir = os.path.dirname(os.path.realpath(__file__))
     catalog_path = os.path.join(
         script_dir, "..", "references", f"{_catalog_key_for_cli(cli)}-models.json"
@@ -344,6 +395,8 @@ def _build_cli_cmd(
         return _build_cmd_agy(model, prompt_tmp, isolated, effort, print_timeout)
     if cli == "codex":
         return _build_cmd_codex(model)
+    if cli == "cursor":
+        return _build_cmd_cursor(model, prompt, isolated)
     return _build_cmd_claude(model, prompt, isolated, effort)  # claude
 
 
@@ -359,23 +412,33 @@ def _execute_cli_command(cmd: list, cli: str, output_file: str, prompt_tmp: str)
     print(f"[run_agent] executable={executable} version={version_text or 'unavailable'}")
     print(f"[run_agent] python={sys.executable} version={sys.version.split()[0]}")
     if cli in _STREAMING_CLIS:
+        captured_lines: list[str] = []
         with open(output_file, "w") as out_f:
             proc = subprocess.Popen(cmd, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
             for line in (proc.stdout or []):
                 sys.stdout.write(line)
                 sys.stdout.flush()
                 out_f.write(line)
+                captured_lines.append(line)
             proc.wait()
         if proc.returncode != 0:
-            print(f"Error: {cli} exited with code {proc.returncode}")
-            sys.exit(proc.returncode)
+            full_out = "".join(captured_lines)
+            raise BackendExecutionError(cli, proc.returncode, full_out)
     elif cli == "codex":
         # Codex reads prompt from stdin; prompt_tmp is piped as stdin
         with open(output_file, "w") as out_f, open(prompt_tmp, "r") as stdin_f:
-            subprocess.run(cmd, stdin=stdin_f, stdout=out_f, stderr=subprocess.STDOUT, check=True)
+            proc = subprocess.run(cmd, stdin=stdin_f, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+            out_f.write(proc.stdout)
+            sys.stdout.write(proc.stdout)
+            if proc.returncode != 0:
+                raise BackendExecutionError(cli, proc.returncode, proc.stdout)
     else:
         with open(output_file, "w") as out_f:
-            subprocess.run(cmd, stdin=subprocess.DEVNULL, stdout=out_f, stderr=subprocess.STDOUT, check=True)
+            proc = subprocess.run(cmd, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+            out_f.write(proc.stdout)
+            sys.stdout.write(proc.stdout)
+            if proc.returncode != 0:
+                raise BackendExecutionError(cli, proc.returncode, proc.stdout)
 
 
 def run_agent(
@@ -383,7 +446,7 @@ def run_agent(
     input_file: str,
     output_file: str,
     instruction: str,
-    cli: str = "copilot",
+    cli: str = "claude",
     model: str | None = None,
     isolated: bool = False,
     max_tokens: int = _LLAMA_MAX_TOKENS_DEFAULT,
@@ -393,9 +456,28 @@ def run_agent(
     effort: str | None = None,
     print_timeout: str | None = None,
     executable: str | None = None,
+    fallback_chain: list[str] | str | None = None,
+    allow_copilot: bool = False,
 ) -> None:
-    """Assemble the prompt and dispatch it to the selected backend, writing output_file."""
-    cli, model = _resolve_cli_and_model(cli, model, tier, profile_path)
+    """Assemble the prompt and dispatch it across primary and fallback backends."""
+    # Parse fallback chain
+    if isinstance(fallback_chain, str):
+        chain_backends = [c.strip().lower() for c in fallback_chain.split(",") if c.strip()]
+    elif isinstance(fallback_chain, (list, tuple)):
+        chain_backends = [c.strip().lower() for c in fallback_chain if c.strip()]
+    else:
+        chain_backends = []
+
+    primary_cli = cli.lower()
+    full_chain = [primary_cli] + [c for c in chain_backends if c != primary_cli]
+
+    # Boundary check: strictly enforce --allow-copilot for GitHub Copilot
+    for candidate in full_chain:
+        if candidate == "copilot" and not allow_copilot:
+            raise ValueError(
+                "Governance Guard: GitHub Copilot is provisioned strictly for enterprise/work repositories. "
+                "To explicitly authorize Copilot in the dispatch or fallback chain, pass --allow-copilot."
+            )
 
     persona = read_file_or_empty(resolve_path(persona_file))
     resolved_input = resolve_path(input_file)
@@ -406,33 +488,75 @@ def run_agent(
 
     os.makedirs(os.path.dirname(os.path.abspath(output_file)), exist_ok=True)
 
-    # llama: direct HTTP to llama-server, no subprocess or temp file needed
-    if cli == "llama":
-        _call_llama_direct(prompt, model, output_file, max_tokens=max_tokens)
-        print(f"[run_agent] llama complete → {output_file}")
-        return
+    errors: list[tuple[str, Exception]] = []
 
-    prompt_tmp: str = ""
-    try:
-        prompt_tmp = _maybe_write_prompt_tmp(cli, prompt)
+    for idx, target_cli in enumerate(full_chain):
+        is_fallback = idx > 0
+        current_model = model if not is_fallback else None
+        target_cli, resolved_model = _resolve_cli_and_model(target_cli, current_model, tier, profile_path)
 
-        cmd = _build_cli_cmd(cli, model, prompt, prompt_tmp, isolated, effort, print_timeout)
-        if executable:
-            cmd[0] = executable
-        print(f"[run_agent] backend={cli} model={model} effort={effort or 'provider-default'}")
-        _execute_cli_command(cmd, cli, output_file, prompt_tmp)
+        if is_fallback:
+            print(f"[run_agent] Executing fallback #{idx} via backend={target_cli} model={resolved_model}...")
 
-        print(f"[run_agent] {cli} complete → {output_file}")
+        # llama: direct HTTP to llama-server, no subprocess or temp file needed
+        if target_cli == "llama":
+            try:
+                _call_llama_direct(prompt, resolved_model, output_file, max_tokens=max_tokens)
+                print(f"[run_agent] {target_cli} complete → {output_file}")
+                return
+            except Exception as err:
+                errors.append((target_cli, err))
+                is_rate = _is_rate_limit_or_capacity_error(str(err))
+                if is_rate and idx < len(full_chain) - 1:
+                    print(f"[run_agent] Quota/capacity limit on {target_cli}. Failing over to '{full_chain[idx + 1]}'...")
+                    continue
+                print(f"Error executing {target_cli}: {err}")
+                sys.exit(1)
 
-    except subprocess.CalledProcessError as e:
-        print(f"Error executing {cli}: backend exited with code {e.returncode}")
-        sys.exit(1)
-    except (OSError, RuntimeError, subprocess.TimeoutExpired) as error:
-        print(f"Error executing {cli}: {error}")
-        sys.exit(1)
-    finally:
-        if prompt_tmp and os.path.exists(prompt_tmp):
-            os.remove(prompt_tmp)
+        prompt_tmp: str = ""
+        try:
+            prompt_tmp = _maybe_write_prompt_tmp(target_cli, prompt)
+            cmd = _build_cli_cmd(target_cli, resolved_model, prompt, prompt_tmp, isolated, effort, print_timeout)
+            if executable and not is_fallback:
+                cmd[0] = executable
+            print(f"[run_agent] backend={target_cli} model={resolved_model} effort={effort or 'provider-default'}")
+            _execute_cli_command(cmd, target_cli, output_file, prompt_tmp)
+            print(f"[run_agent] {target_cli} complete → {output_file}")
+            return  # Success
+
+        except BackendExecutionError as err:
+            errors.append((target_cli, err))
+            if err.is_rate_limit and idx < len(full_chain) - 1:
+                next_backend = full_chain[idx + 1]
+                print(f"[run_agent] Quota/capacity limit on {target_cli} (exit {err.returncode}). Failing over to '{next_backend}'...")
+                if os.path.exists(output_file):
+                    try:
+                        os.remove(output_file)
+                    except OSError:
+                        pass
+                continue
+            elif not err.is_rate_limit:
+                print(f"Error executing {target_cli}: task error (not a quota/rate-limit issue). Halting without fallback.")
+                sys.exit(err.returncode)
+            else:
+                print(f"Error executing {target_cli}: rate limit encountered and fallback chain exhausted.")
+                sys.exit(err.returncode)
+        except (OSError, RuntimeError, subprocess.TimeoutExpired, FileNotFoundError) as error:
+            errors.append((target_cli, error))
+            if idx < len(full_chain) - 1:
+                print(f"[run_agent] System error on {target_cli} ({error}). Failing over to '{full_chain[idx + 1]}'...")
+                continue
+            print(f"Error executing {target_cli}: {error}")
+            sys.exit(1)
+        finally:
+            if prompt_tmp and os.path.exists(prompt_tmp):
+                try:
+                    os.remove(prompt_tmp)
+                except OSError:
+                    pass
+
+    print(f"[run_agent] All {len(full_chain)} backends in fallback chain failed: {[e[0] for e in errors]}")
+    sys.exit(1)
 
 
 # ── CLI entry point ───────────────────────────────────────────────────────────
@@ -510,6 +634,17 @@ if __name__ == "__main__":
             "--require-input", action="store_true",
             help="Fail before dispatch when input_file is missing or empty.",
         )
+        parser.add_argument(
+            "--fallback-chain",
+            default=None,
+            help="Comma-separated fallback backends to attempt on rate-limit/capacity failure (e.g. 'agy,codex').",
+        )
+        parser.add_argument(
+            "--allow-copilot",
+            action="store_true",
+            default=False,
+            help="Explicit user authorization required to use GitHub Copilot in dispatch or fallback chain (enterprise/work boundary guard).",
+        )
         args = parser.parse_args()
         # Keep the public capability tier and agy reasoning effort aligned when
         # callers select an explicit model but omit --effort. This prevents an
@@ -518,4 +653,5 @@ if __name__ == "__main__":
             args.effort = args.tier
         run_agent(args.persona_file, args.input_file, args.output_file, args.instruction,
                   args.cli, args.model, args.isolated, args.max_tokens, args.require_input,
-                  args.tier, args.profile, args.effort, args.print_timeout, args.executable)
+                  args.tier, args.profile, args.effort, args.print_timeout, args.executable,
+                  fallback_chain=args.fallback_chain, allow_copilot=args.allow_copilot)
