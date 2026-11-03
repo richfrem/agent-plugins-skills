@@ -70,6 +70,39 @@ class TestCheckRoutingReadiness(unittest.TestCase):
         self.assertIn("Cursor Pro (agent)", res["active_cloud_subscriptions"])
         self.assertEqual(len(res["active_cloud_subscriptions"]), 2)
 
+    @patch("check_routing_readiness.check_cli_binaries")
+    def test_validate_fallback_chain_valid_chain(self, mock_binaries):
+        mock_binaries.return_value = {
+            "claude": {"installed": True, "path": "/path/claude"},
+            "agy": {"installed": True, "path": "/path/agy"},
+            "codex": {"installed": True, "path": "/path/codex"},
+        }
+        res = crr.validate_fallback_chain("claude,agy,codex")
+        self.assertTrue(res["is_valid"])
+        self.assertEqual(res["posture"], "VALID")
+        self.assertEqual(res["ready_count"], 3)
+
+    @patch("check_routing_readiness.check_cli_binaries")
+    def test_validate_fallback_chain_blocks_copilot_without_authorization(self, mock_binaries):
+        mock_binaries.return_value = {
+            "claude": {"installed": True, "path": "/path/claude"},
+            "copilot": {"installed": True, "path": "/path/copilot"},
+        }
+        res = crr.validate_fallback_chain("claude,copilot", allow_copilot=False)
+        self.assertFalse(res["is_valid"])
+        self.assertEqual(res["backend_statuses"]["copilot"]["status"], "BLOCKED")
+        self.assertIn("corporate boundary", res["warnings"][0])
+
+    @patch("check_routing_readiness.check_cli_binaries")
+    def test_validate_fallback_chain_permits_copilot_with_authorization(self, mock_binaries):
+        mock_binaries.return_value = {
+            "claude": {"installed": True, "path": "/path/claude"},
+            "copilot": {"installed": True, "path": "/path/copilot"},
+        }
+        res = crr.validate_fallback_chain("claude,copilot", allow_copilot=True)
+        self.assertTrue(res["is_valid"])
+        self.assertEqual(res["backend_statuses"]["copilot"]["status"], "READY")
+
 
 if __name__ == "__main__":
     unittest.main()

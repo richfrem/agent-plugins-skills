@@ -70,46 +70,54 @@ A local lightweight gateway listening on `localhost:4000` intercepts standard An
   - Forwards primary requests to Anthropic Claude Pro using the user's authentic credentials.
   - If a `429 Too Many Requests` or rate-limit response is received, the proxy automatically translates the payload to Gemini Pro or Codex without aborting the task.
 
-### Strategy B: Native Multi-CLI Fallback Chain (Zero Daemon)
+### Strategy B: Native Multi-CLI Fallback Chain (Zero Daemon, Recommended)
 For CLI-level task dispatching in `run_agent.py`, invoke with a declared fallback chain:
 ```bash
-python scripts/run_agent.py <PERSONA> <INPUT> <OUTPUT> "<TASK>" \
+python3 scripts/run_agent.py <PERSONA> <INPUT> <OUTPUT> "<TASK>" \
     --cli claude --fallback-chain agy,codex
 ```
-If `claude` exits with a rate limit or failure, `run_agent.py` automatically retries the identical prompt through `agy` (Gemini Pro), then `codex` (ChatGPT Plus).
+
+#### Operational Mechanics:
+1. **Zero Daemon Overhead**: Operates entirely in the foreground without running background proxies on port 4000, preserving M1 RAM and thermals.
+2. **Quota & Rate-Limit Detection**: Automatically detects recognized provider availability and quota limits (`429 Too Many Requests`, `ResourceExhausted`, `Selected model is at capacity`, `usage limit reached`, `resets in`, `Not logged in`).
+3. **Safe State Recovery**: When a rate-limit is detected on a primary provider, partial output is unlinked to avoid corrupted outputs, and the next provider in the chain is executed with identical prompts.
+4. **Task Error Containment**: Syntax, logic, or assertions errors halt execution immediately. Providers are **never** replayed on broken code, protecting quota across all subscriptions.
+5. **Corporate Boundary Enforcement**: GitHub Copilot is blocked by default in `--cli` and `--fallback-chain`. To explicitly authorize Copilot for enterprise/work tasks, pass `--allow-copilot`.
 
 ---
 
-## 4. Pre-Flight Readiness Validation
+## 4. Pre-Flight Readiness & Fallback Chain Validation
 
-Before initiating long-running or token-intensive tasks, execute the pre-flight readiness probe:
+Before initiating long-running or token-intensive tasks, validate readiness:
 
+### Standard Readiness Probe:
 ```bash
 python3 scripts/check_routing_readiness.py
+```
+
+### Fallback Chain Dedicated Validation:
+Test whether your declared fallback sequence is fully installed, authorized, and physically operational:
+```bash
+python3 scripts/check_routing_readiness.py --validate-chain claude,agy,codex
+```
+For enterprise work testing Copilot in the chain:
+```bash
+python3 scripts/check_routing_readiness.py --validate-chain claude,copilot --allow-copilot
 ```
 
 ### Sample Output:
 ```
 =================================================================
-      MULTI-SUBSCRIPTION ROUTING & GATEWAY READINESS PROBE       
+             FALLBACK CHAIN READINESS VALIDATION                
 =================================================================
-Hardware Optimization : Apple Silicon (M1/M2/M3) Optimized - Local LLMs Bypassed
-Overall Posture       : [LOCAL_PROXY_ACTIVE]
-Readiness Summary     : Local proxy gateway active on port 4000. Traffic transparently intercepted.
+Target Fallback Chain : claude -> agy -> codex
+Overall Chain Posture : [VALID]
+Ready Providers       : 3 of 3
 -----------------------------------------------------------------
-1. Gateway Daemon Status:
-   Port 4000          : [ACTIVE] (HTTP 200 on /v1/models (port 4000))
-   ANTHROPIC_BASE_URL : http://localhost:4000
-   OPENAI_BASE_URL    : http://localhost:4000/v1
------------------------------------------------------------------
-2. Cloud Subscriptions Available (Personal):
-   • claude   [INSTALLED] - Claude Pro ($20/mo) -> /Users/.../.local/bin/claude
-   • agy      [INSTALLED] - Gemini Pro / Google One -> /opt/homebrew/bin/agy
-   • codex    [INSTALLED] - ChatGPT Plus ($20/mo) -> /opt/homebrew/bin/codex
------------------------------------------------------------------
-3. Corporate Boundary Governance:
-   • copilot  : INSTALLED (Strictly Work Only)
-     (Must NEVER be routed to personal or sovereign research)
+Provider Statuses:
+   • claude   [READY   ] -> /Users/richardfremmerlid/.local/bin/claude
+   • agy      [READY   ] -> /opt/homebrew/bin/agy
+   • codex    [READY   ] -> /opt/homebrew/bin/codex
 =================================================================
 ```
 

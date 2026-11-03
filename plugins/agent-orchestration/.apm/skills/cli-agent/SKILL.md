@@ -17,13 +17,14 @@ Unified multi-LLM task router and execution engine for external CLI agents and l
 
 - **Authorization & Isolation**: Analysis uses `--isolated` to suppress hazardous flags; non-isolated execution requires explicit user authorization. With `--isolated`, `run_agent.py` wraps input in `---SOURCE---` … `---END SOURCE---` and appends the isolation instruction. Without `--isolated` (including `--cli llama`), add that instruction to the prompt yourself:
   > "You are operating as an isolated sub-agent. Do NOT use tools. Do NOT access filesystem. Only use the provided input."
-- **Fail-Closed & Single Backend**: Use one backend per task; halt immediately on failure without silent fallback. See [fallback-tree.md](references/fallback-tree.md) and [execution-contract.md](references/execution-contract.md).
+- **Fail-Closed & Fallback Routing**: Use one backend per task unless an explicit fallback chain is supplied via `--fallback-chain <chain>` (which triggers failover exclusively on recognized rate-limit/capacity exhaustion). Halt immediately on task or code errors without silent fallback. GitHub Copilot requires explicit `--allow-copilot` authorization. See [fallback-tree.md](references/fallback-tree.md), [execution-contract.md](references/execution-contract.md), and [setup-subscription-pooling.md](references/setup-subscription-pooling.md).
 - **Reproducibility & Scope**: Reuse the caller's runtime/model/effort choice; do not start an unrequested review. Record executable versions, tokens, and outputs.
 
 ## Quick Start
 
 ```bash
-python3 scripts/run_agent.py <personas>/security-auditor.md <input> <output> "Review supplied source." --cli claude --isolated --require-input
+# Direct dispatch with automatic multi-subscription fallback
+python3 scripts/run_agent.py <personas>/security-auditor.md <input> <output> "Review supplied source." --cli claude --fallback-chain agy,codex --isolated --require-input
 ```
 
 ## Supported Backends & Dispatch
@@ -48,7 +49,7 @@ For gated reviews, record the result through control-plane `record-critic-review
 
 ## Setup & Maintenance
 
-- **Subscription Pooling & Routing**: Probe readiness: `python3 scripts/check_routing_readiness.py` (see [setup guide](references/setup-subscription-pooling.md)). Pools Claude Pro, ChatGPT Plus, and Gemini Pro on macOS M1 while auditing Cursor CLI (`agent`) standby readiness and bypassing heavy local models.
+- **Subscription Pooling & Fallback Routing**: Probe readiness: `python3 scripts/check_routing_readiness.py`. Validate fallback chain: `python3 scripts/check_routing_readiness.py --validate-chain claude,agy,codex` (see [setup guide](references/setup-subscription-pooling.md)). Pools Claude Pro, Gemini Pro, and ChatGPT Plus on macOS M1 via zero-daemon CLI fallback chains with `--allow-copilot` guards.
 - **Project Setup & Catalogs**: Follow [project setup](references/project-setup.md), [capability baseline](references/project-capability-baseline.md), [workflow](references/project-configuration-workflow.md), [profile contract](references/capability-profile-contract.md), and [catalog maintenance](references/model-catalog-maintenance.md). Update catalog: `python3 scripts/sync_cheapest_models.py --repository . --dry-run` (refresh neither authorizes model calls nor starts reviews).
 - **Local LLM & Specs**: Start llama-server: `python3 scripts/run_server.py` (see [deep reference](references/local-llm-setup-deep-reference.md), [latency findings](references/routing_latency_findings.md), [proxy diagram](references/routing-proxy.mmd), and [debrief](references/local_llm_debrief.md)). Inspect [Claude spec](references/claude-directory-spec.md), [Claude settings](references/claude-settings-schema.md), [Antigravity spec](references/antigravity-directory-spec.md), [Gemini commands](references/gemini-cli-commands.md), [Codex fixture](references/p0-codex-observation-fixture.json), and [map debt](references/map-debt.md).
 

@@ -23,5 +23,10 @@
     "model": "gpt-6-luna",
     "cost": "Paid (Per-token)",
     "description": "Fast and affordable model for easier tasks; current cost-sensitive OpenAI model."
+  },
+  "cursor": {
+    "model": "grok-2",
+    "cost": "Paid (Cursor Pro / Free pool)",
+    "description": "Cursor Agent CLI; defaults to grok-2 or composer."
   }
 }

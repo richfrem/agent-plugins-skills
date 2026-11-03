@@ -108,11 +108,74 @@ def check_cli_binaries() -> dict:
     return tools
 
 
+def validate_fallback_chain(chain_str: str, allow_copilot: bool = False) -> dict:
+    """Validate that every backend in a fallback chain is installed, authorized, and ready."""
+    backends = [b.strip().lower() for b in chain_str.split(",") if b.strip()]
+    binaries = check_cli_binaries()
+
+    results = {}
+    is_valid = True
+    warnings = []
+
+    for b in backends:
+        if b == "copilot" and not allow_copilot:
+            results[b] = {
+                "status": "BLOCKED",
+                "installed": binaries.get("copilot", {}).get("installed", False),
+                "reason": "Requires explicit --allow-copilot authorization (work boundary guard)",
+            }
+            is_valid = False
+            warnings.append("Backend 'copilot' blocked by corporate boundary governance (requires --allow-copilot).")
+            continue
+
+        info = binaries.get(b)
+        if not info:
+            results[b] = {"status": "UNKNOWN", "installed": False, "reason": "Unrecognized CLI backend"}
+            is_valid = False
+            warnings.append(f"Backend '{b}' is not a recognized CLI backend.")
+            continue
+
+        if not info.get("installed"):
+            results[b] = {"status": "MISSING", "installed": False, "reason": "Executable not found on PATH"}
+            is_valid = False
+            warnings.append(f"Backend '{b}' executable is missing from PATH.")
+            continue
+
+        if b == "cursor" and not info.get("authenticated", False):
+            results[b] = {
+                "status": "STANDBY",
+                "installed": True,
+                "path": info.get("path"),
+                "reason": "Unauthenticated (Not logged in; requires 'agent login' or CURSOR_API_KEY)",
+            }
+            warnings.append("Cursor CLI is installed in STANDBY; will fail-closed if reached in fallback.")
+        else:
+            results[b] = {
+                "status": "READY",
+                "installed": True,
+                "path": info.get("path"),
+                "subscription": info.get("subscription"),
+            }
+
+    ready_count = len([b for b, r in results.items() if r.get("status") == "READY"])
+    chain_posture = "VALID" if (is_valid and ready_count >= 2) else ("DEGRADED" if ready_count >= 1 else "INVALID")
+
+    return {
+        "chain": backends,
+        "posture": chain_posture,
+        "is_valid": is_valid and (ready_count >= 2),
+        "ready_count": ready_count,
+        "backend_statuses": results,
+        "warnings": warnings,
+    }
+
+
 def evaluate_routing_readiness(port: int = 4000) -> dict:
     """Synthesize complete readiness assessment."""
     gateway = probe_http_gateway(port=port)
     env_vars = check_env_redirects()
     binaries = check_cli_binaries()
+    default_chain = validate_fallback_chain("claude,agy,codex", allow_copilot=False)
     
     # Assess available subscriptions
     active_cloud_subs = []
@@ -147,15 +210,43 @@ def evaluate_routing_readiness(port: int = 4000) -> dict:
         "env_redirects": env_vars,
         "cli_binaries": binaries,
         "active_cloud_subscriptions": active_cloud_subs,
-        "copilot_work_boundary": copilot_status
+        "copilot_work_boundary": copilot_status,
+        "default_fallback_chain": default_chain
     }
 
 
 def main():
     parser = argparse.ArgumentParser(description="Multi-Subscription Routing & Gateway Readiness Probe")
     parser.add_argument("--port", type=int, default=4000, help="Port to probe (default: 4000)")
+    parser.add_argument("--validate-chain", default=None, help="Validate a specific comma-separated fallback chain (e.g. 'claude,agy,codex')")
+    parser.add_argument("--allow-copilot", action="store_true", default=False, help="Authorize Copilot validation in fallback chain")
     parser.add_argument("--json", action="store_true", help="Emit raw JSON output")
     args = parser.parse_args()
+
+    if args.validate_chain:
+        chain_eval = validate_fallback_chain(args.validate_chain, allow_copilot=args.allow_copilot)
+        if args.json:
+            print(json.dumps(chain_eval, indent=2))
+            return
+        print("=================================================================")
+        print("             FALLBACK CHAIN READINESS VALIDATION                ")
+        print("=================================================================")
+        print(f"Target Fallback Chain : {' -> '.join(chain_eval['chain'])}")
+        print(f"Overall Chain Posture : [{chain_eval['posture']}]")
+        print(f"Ready Providers       : {chain_eval['ready_count']} of {len(chain_eval['chain'])}")
+        print("-----------------------------------------------------------------")
+        print("Provider Statuses:")
+        for b, st in chain_eval["backend_statuses"].items():
+            stat = st.get("status", "UNKNOWN")
+            path = st.get("path") or st.get("reason", "N/A")
+            print(f"   • {b:<8} [{stat:<8}] -> {path}")
+        if chain_eval["warnings"]:
+            print("-----------------------------------------------------------------")
+            print("Warnings / Constraints:")
+            for w in chain_eval["warnings"]:
+                print(f"   ⚠️  {w}")
+        print("=================================================================")
+        return
     
     result = evaluate_routing_readiness(port=args.port)
     
@@ -198,6 +289,13 @@ def main():
     print("3. Corporate Boundary Governance:")
     print(f"   • copilot  : {result['copilot_work_boundary']}")
     print("     (Must NEVER be routed to personal or sovereign research)")
+    print("-----------------------------------------------------------------")
+    print("4. Multi-Subscription Fallback Chain Readiness:")
+    fc = result["default_fallback_chain"]
+    print(f"   Default Chain: [{' -> '.join(fc['chain'])}]")
+    print(f"   Posture      : [{fc['posture']}] ({fc['ready_count']} providers ready)")
+    print("   Invocation   : python3 scripts/run_agent.py <PERSONA> <IN> <OUT> \"<TASK>\" \\")
+    print("                  --cli claude --fallback-chain agy,codex")
     print("=================================================================")
 
 
