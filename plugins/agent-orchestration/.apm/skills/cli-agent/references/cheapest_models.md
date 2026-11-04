@@ -8,7 +8,7 @@ Update here only — do not hardcode model names or cost claims in SKILL.md or a
 | `llama` | `gemma-4-12b` | **Free** (self-hosted) | Local `llama-server` on port 8089. Air-gapped zero-cost option. |
 | `copilot` | `gpt-6-luna` | Included / AI Credits | Fast and affordable; **strictly restricted to work-related repositories**. |
 | `agy` | `gemini-3.8-flash` | Paid (Per-token / Pro quotas) | Antigravity CLI — fast, large context; select Low effort for cost-sensitive tasks. |
-| `claude` | `claude-haiku-4-5` | Paid (Per-token / Pro tier) | $1/MTok input, $5/MTok output; efficient subtask delegator. |
+| `claude` | `claude-haiku-5-5` | Paid (Per-token / Pro tier) | $0.10/MTok input, $0.50/MTok output (up to 100K prompt tokens); efficient subtask delegator. |
 | `codex` | `gpt-6-luna` | Paid (Per-token / Plus tier) | Fast, cost-sensitive OpenAI model for mechanical edits. |
 | `cursor` | `cursor-agent` | Included (Cursor Pro) | Headless non-interactive CLI reading root AGENTS.md. |
 

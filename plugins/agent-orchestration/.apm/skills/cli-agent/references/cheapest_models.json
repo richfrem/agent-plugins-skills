@@ -15,9 +15,9 @@
     "description": "Gemini 3.8 Flash; select Low effort separately for cost-sensitive dispatch."
   },
   "claude": {
-    "model": "claude-haiku-4-5",
+    "model": "claude-haiku-5-5",
     "cost": "Paid (Per-token)",
-    "description": "Cheapest Anthropic model ($1/$5 per MTok input/output)"
+    "description": "Cheapest Anthropic model ($0.10/$0.50 per MTok input/output up to 100K prompt tokens)"
   },
   "codex": {
     "model": "gpt-6-luna",

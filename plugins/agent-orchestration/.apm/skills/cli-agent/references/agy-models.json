@@ -1,21 +1,251 @@
 {
   "_meta": {
-    "source": "https://ai.google.dev/gemini-api/docs/models and https://ai.google.dev/gemini-api/docs/pricing (verified 2026-09-09)",
+    "source": "https://ai.google.dev/gemini-api/docs/models and https://ai.google.dev/gemini-api/docs/pricing (verified 2026-09-09); refreshed 2026-11-04 from https://aistudio.google.com/docs/pricing and the installed `agy models` list",
     "billing_model": "Google AI subscription / per-token via Antigravity",
-    "updated": "2026-09-13",
+    "updated": "2026-11-04",
     "notes": [
       "agy is the sole Gemini CLI since the standalone gemini binary retired June 18 2026.",
       "The current agy model picker exposes Gemini 3.8 Flash, Gemini 3.7 Flash, Gemini 3.6 Flash, Gemini 3.1 Pro, Claude Sonnet 4.6 Thinking, Claude Opus 4.6 Thinking, and GPT-OSS 120B; effort is a separate Low/Medium/High control.",
       "Flash is designed for speed, coding, tool use, and agentic workflows. Pro is for deep reasoning.",
       "Flash is positioned for speed and agentic workflows; relative speed is not recorded without a measured benchmark.",
-      "Flash with high thinking levels can inflate tokens via Thought Preservation \u2014 use Low for CLI dispatch.",
+      "Flash with high thinking levels can inflate tokens via Thought Preservation — use Low for CLI dispatch.",
       "Gemini 3.1 Flash-Lite not available in agy as of 2026-06-28.",
       "Gemini 3.1 Pro real Google API model ID: gemini-3.1-pro-preview. agy CLI uses display name 'Gemini 3.1 Pro (Low/High)'.",
-      "Gemini 3.1 Pro has a long context tier: >200K tokens input triggers higher pricing ($4.00 vs $2.00/1M)."
+      "Gemini 3.1 Pro has a long context tier: >200K tokens input triggers higher pricing ($4.00 vs $2.00/1M).",
+      "Added 2026-11-04: Gemini 4 Argon (low/medium/high; $2.00/$0.10/$10.00 through 2026-11-30, then $4.00/$0.20/$20.00) and the hosted Claude Opus 5.5 / Sonnet 5.5 entries exposed by `agy models` (low/medium/high effort). Hosted Claude entries consume agy quota proportionally to token cost; their API prices are not asserted here (see claude-models.json for direct API prices). Gemini 3.6 Flash pricing filled from the same page; Gemini 3.7 Flash is not on the pricing page and stays null.",
+      "Capability tiers list the models in the live `agy models` picker on 2026-11-04 (Gemini 4 Argon, Gemini 3.8 Flash, Claude Opus/Sonnet 5.5, GPT-OSS 120B). Gemini 3.7/3.6 Flash, Gemini 3.1 Pro and the 4.6 hosted Claude entries are absent from that picker but are NOT marked withdrawn (an omitted picker entry does not prove withdrawal); they stay in `models` and cost_tiers."
     ],
     "schema_version": 2
   },
   "models": [
+    {
+      "display_name": "Gemini 4 Argon (Low)",
+      "cli_id": "gemini-4-argon-low",
+      "google_api_id": "gemini-3.1-pro-preview",
+      "status": "available",
+      "pricing_usd_per_1m": {
+        "input": 2.0,
+        "output": 10.0,
+        "cached_input": 0.1,
+        "pricing_note": "Through 2026-11-30; from 2026-12-01 the price becomes $4.00 input / $20.00 output / $0.20 cached input."
+      },
+      "long_context_pricing_usd_per_1m": {
+        "input": 4.0,
+        "output": 18.0,
+        "threshold_note": "Long context tier kicks in >200K input tokens"
+      },
+      "speed_relative": null,
+      "recommendation": "Available picker model; compare against Flash for cost-sensitive dispatch",
+      "notes": "Listed by `agy models`; context window not verified (page mentions long-decode generation up to 1M tokens).",
+      "max_output_k": null,
+      "tool_support": {
+        "prompt": true,
+        "tools": "runtime_dependent"
+      },
+      "context_window_k": null
+    },
+    {
+      "display_name": "Gemini 4 Argon (Medium)",
+      "cli_id": "gemini-4-argon-medium",
+      "google_api_id": "gemini-3.1-pro-preview",
+      "status": "available",
+      "pricing_usd_per_1m": {
+        "input": 2.0,
+        "output": 10.0,
+        "cached_input": 0.1,
+        "pricing_note": "Through 2026-11-30; from 2026-12-01 the price becomes $4.00 input / $20.00 output / $0.20 cached input."
+      },
+      "long_context_pricing_usd_per_1m": {
+        "input": 4.0,
+        "output": 18.0,
+        "threshold_note": "Long context tier kicks in >200K input tokens"
+      },
+      "speed_relative": null,
+      "recommendation": "Available picker model; compare against Flash for cost-sensitive dispatch",
+      "notes": "Listed by `agy models`; context window not verified (page mentions long-decode generation up to 1M tokens).",
+      "max_output_k": null,
+      "tool_support": {
+        "prompt": true,
+        "tools": "runtime_dependent"
+      },
+      "context_window_k": null
+    },
+    {
+      "display_name": "Gemini 4 Argon (High)",
+      "cli_id": "gemini-4-argon-high",
+      "google_api_id": "gemini-3.1-pro-preview",
+      "status": "available",
+      "pricing_usd_per_1m": {
+        "input": 2.0,
+        "output": 10.0,
+        "cached_input": 0.1,
+        "pricing_note": "Through 2026-11-30; from 2026-12-01 the price becomes $4.00 input / $20.00 output / $0.20 cached input."
+      },
+      "long_context_pricing_usd_per_1m": {
+        "input": 4.0,
+        "output": 18.0,
+        "threshold_note": "Long context tier kicks in >200K input tokens"
+      },
+      "speed_relative": null,
+      "recommendation": "Available picker model; compare against Flash for cost-sensitive dispatch",
+      "notes": "Listed by `agy models`; context window not verified (page mentions long-decode generation up to 1M tokens).",
+      "max_output_k": null,
+      "tool_support": {
+        "prompt": true,
+        "tools": "runtime_dependent"
+      },
+      "context_window_k": null
+    },
+    {
+      "display_name": "Claude Opus 5.5 (Low)",
+      "cli_id": "claude-opus-5-5-low",
+      "google_api_id": "gemini-3.1-pro-preview",
+      "status": "available",
+      "pricing_usd_per_1m": {
+        "input": null,
+        "output": null,
+        "cached_input": null
+      },
+      "long_context_pricing_usd_per_1m": {
+        "input": 4.0,
+        "output": 18.0,
+        "threshold_note": "Long context tier kicks in >200K input tokens"
+      },
+      "speed_relative": null,
+      "recommendation": "Premium hosted option; verify quota cost before cost-sensitive dispatch",
+      "notes": "Hosted Claude model exposed by `agy models`; consumes agy quota proportionally to token cost. Direct API prices are in claude-models.json and are not asserted for the hosted route.",
+      "max_output_k": null,
+      "tool_support": {
+        "prompt": true,
+        "tools": "runtime_dependent"
+      },
+      "context_window_k": null
+    },
+    {
+      "display_name": "Claude Opus 5.5 (Medium)",
+      "cli_id": "claude-opus-5-5-medium",
+      "google_api_id": "gemini-3.1-pro-preview",
+      "status": "available",
+      "pricing_usd_per_1m": {
+        "input": null,
+        "output": null,
+        "cached_input": null
+      },
+      "long_context_pricing_usd_per_1m": {
+        "input": 4.0,
+        "output": 18.0,
+        "threshold_note": "Long context tier kicks in >200K input tokens"
+      },
+      "speed_relative": null,
+      "recommendation": "Premium hosted option; verify quota cost before cost-sensitive dispatch",
+      "notes": "Hosted Claude model exposed by `agy models`; consumes agy quota proportionally to token cost. Direct API prices are in claude-models.json and are not asserted for the hosted route.",
+      "max_output_k": null,
+      "tool_support": {
+        "prompt": true,
+        "tools": "runtime_dependent"
+      },
+      "context_window_k": null
+    },
+    {
+      "display_name": "Claude Opus 5.5 (High)",
+      "cli_id": "claude-opus-5-5-high",
+      "google_api_id": "gemini-3.1-pro-preview",
+      "status": "available",
+      "pricing_usd_per_1m": {
+        "input": null,
+        "output": null,
+        "cached_input": null
+      },
+      "long_context_pricing_usd_per_1m": {
+        "input": 4.0,
+        "output": 18.0,
+        "threshold_note": "Long context tier kicks in >200K input tokens"
+      },
+      "speed_relative": null,
+      "recommendation": "Premium hosted option; verify quota cost before cost-sensitive dispatch",
+      "notes": "Hosted Claude model exposed by `agy models`; consumes agy quota proportionally to token cost. Direct API prices are in claude-models.json and are not asserted for the hosted route.",
+      "max_output_k": null,
+      "tool_support": {
+        "prompt": true,
+        "tools": "runtime_dependent"
+      },
+      "context_window_k": null
+    },
+    {
+      "display_name": "Claude Sonnet 5.5 (Low)",
+      "cli_id": "claude-sonnet-5-5-low",
+      "google_api_id": "gemini-3.1-pro-preview",
+      "status": "available",
+      "pricing_usd_per_1m": {
+        "input": null,
+        "output": null,
+        "cached_input": null
+      },
+      "long_context_pricing_usd_per_1m": {
+        "input": 4.0,
+        "output": 18.0,
+        "threshold_note": "Long context tier kicks in >200K input tokens"
+      },
+      "speed_relative": null,
+      "recommendation": "Premium hosted option; verify quota cost before cost-sensitive dispatch",
+      "notes": "Hosted Claude model exposed by `agy models`; consumes agy quota proportionally to token cost. Direct API prices are in claude-models.json and are not asserted for the hosted route.",
+      "max_output_k": null,
+      "tool_support": {
+        "prompt": true,
+        "tools": "runtime_dependent"
+      },
+      "context_window_k": null
+    },
+    {
+      "display_name": "Claude Sonnet 5.5 (Medium)",
+      "cli_id": "claude-sonnet-5-5-medium",
+      "google_api_id": "gemini-3.1-pro-preview",
+      "status": "available",
+      "pricing_usd_per_1m": {
+        "input": null,
+        "output": null,
+        "cached_input": null
+      },
+      "long_context_pricing_usd_per_1m": {
+        "input": 4.0,
+        "output": 18.0,
+        "threshold_note": "Long context tier kicks in >200K input tokens"
+      },
+      "speed_relative": null,
+      "recommendation": "Premium hosted option; verify quota cost before cost-sensitive dispatch",
+      "notes": "Hosted Claude model exposed by `agy models`; consumes agy quota proportionally to token cost. Direct API prices are in claude-models.json and are not asserted for the hosted route.",
+      "max_output_k": null,
+      "tool_support": {
+        "prompt": true,
+        "tools": "runtime_dependent"
+      },
+      "context_window_k": null
+    },
+    {
+      "display_name": "Claude Sonnet 5.5 (High)",
+      "cli_id": "claude-sonnet-5-5-high",
+      "google_api_id": "gemini-3.1-pro-preview",
+      "status": "available",
+      "pricing_usd_per_1m": {
+        "input": null,
+        "output": null,
+        "cached_input": null
+      },
+      "long_context_pricing_usd_per_1m": {
+        "input": 4.0,
+        "output": 18.0,
+        "threshold_note": "Long context tier kicks in >200K input tokens"
+      },
+      "speed_relative": null,
+      "recommendation": "Premium hosted option; verify quota cost before cost-sensitive dispatch",
+      "notes": "Hosted Claude model exposed by `agy models`; consumes agy quota proportionally to token cost. Direct API prices are in claude-models.json and are not asserted for the hosted route.",
+      "max_output_k": null,
+      "tool_support": {
+        "prompt": true,
+        "tools": "runtime_dependent"
+      },
+      "context_window_k": null
+    },
     {
       "display_name": "Gemini 3.7 Flash",
       "cli_id": "gemini-3.7-flash",
@@ -40,9 +270,10 @@
       "cli_id": "gemini-3.6-flash",
       "status": "available",
       "pricing_usd_per_1m": {
-        "input": null,
-        "output": null,
-        "cached_input": null
+        "input": 0.75,
+        "output": 3.75,
+        "cached_input": 0.075,
+        "pricing_note": "Introductory paid-tier pricing through 2026-12-31; standard pricing becomes $1.50/$7.50 on 2027-01-01."
       },
       "speed_relative": null,
       "recommendation": "Available picker model; verify pricing before cost-sensitive dispatch",
@@ -66,7 +297,7 @@
         "pricing_note": "Introductory paid-tier pricing through 2026-12-31; standard pricing becomes $1.50/$7.50 on 2027-01-01."
       },
       "speed_relative": null,
-      "recommendation": "Default \u2014 cheapest per token, optimized for agentic/coding/tool-use tasks",
+      "recommendation": "Default — cheapest per token, optimized for agentic/coding/tool-use tasks",
       "notes": "Low thinking avoids Thought Preservation token inflation. Best choice for CLI dispatch loops.",
       "max_output_k": 64,
       "tool_support": {
@@ -87,7 +318,7 @@
         "pricing_note": "Introductory paid-tier pricing through 2026-12-31; standard pricing becomes $1.50/$7.50 on 2027-01-01."
       },
       "speed_relative": null,
-      "recommendation": "Standard dispatch \u2014 good balance of reasoning and cost",
+      "recommendation": "Standard dispatch — good balance of reasoning and cost",
       "notes": "Legacy cheapest_models.json default. Thought Preservation active but manageable. Monitor token spend on long loops.",
       "max_output_k": 64,
       "tool_support": {
@@ -108,8 +339,8 @@
         "pricing_note": "Introductory paid-tier pricing through 2026-12-31; standard pricing becomes $1.50/$7.50 on 2027-01-01."
       },
       "speed_relative": null,
-      "recommendation": "Single-shot deep tasks only \u2014 not for loops",
-      "notes": "Maximum Thought Preservation \u2014 token inflation risk. Avoid in high-frequency CLI dispatch.",
+      "recommendation": "Single-shot deep tasks only — not for loops",
+      "notes": "Maximum Thought Preservation — token inflation risk. Avoid in high-frequency CLI dispatch.",
       "max_output_k": 64,
       "tool_support": {
         "prompt": true,
@@ -243,12 +474,17 @@
       "gemini-3.8-flash"
     ],
     "moderate": [
-      "gemini-3.1-pro"
+      "gemini-3.1-pro",
+      "gemini-4-argon-low",
+      "gemini-4-argon-medium"
     ],
     "expensive": [
-      "gemini-3.1-pro-high"
+      "gemini-3.1-pro-high",
+      "gemini-4-argon-high"
     ],
     "premium": [
+      "claude-sonnet-5-5-medium",
+      "claude-opus-5-5-medium",
       "claude-sonnet-4.6-thinking",
       "claude-opus-4.6-thinking",
       "gpt-oss-120b"
@@ -257,9 +493,9 @@
   "strategy": {
     "heartbeat": "gemini-3.8-flash",
     "default": "gemini-3.8-flash",
-    "reasoning": "gemini-3.1-pro",
-    "architecture": "gemini-3.1-pro-high",
-    "anthropic_quality": "claude-sonnet-4.6-thinking"
+    "reasoning": "gemini-4-argon-medium",
+    "architecture": "gemini-4-argon-high",
+    "anthropic_quality": "claude-sonnet-5-5-medium"
   },
   "runtime": {
     "runtime_id": "agy",
@@ -277,8 +513,17 @@
     ]
   },
   "capability_tiers": {
-    "low": ["gemini-3.8-flash", "gemini-3.7-flash", "gemini-3.6-flash"],
-    "medium": ["gemini-3.1-pro", "gpt-oss-120b"],
-    "high": ["claude-sonnet-4.6-thinking", "claude-opus-4.6-thinking"]
+    "low": [
+      "gemini-3.8-flash"
+    ],
+    "medium": [
+      "gemini-4-argon-medium",
+      "gpt-oss-120b"
+    ],
+    "high": [
+      "claude-sonnet-5-5-high",
+      "claude-opus-5-5-high",
+      "gemini-4-argon-high"
+    ]
   }
 }

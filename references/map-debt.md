@@ -2,6 +2,15 @@
 
 Persistent tracking of architectural friction, structural anomalies, and unclosed loops across sessions.
 
+## DEBT-20261104-MODEL-CATALOG-REFRESH (RESOLVED; two items OPEN)
+
+- Gap: the `cli-agent` model catalogs (verified 2026-09-09) lacked the models actually in use (`claude-sonnet-5-5`, `claude-haiku-5-5`, `claude-opus-5-5`, `gpt-6-luna` and the GPT-6.1 family, `gemini-4-argon`); `codex-models.json` lacked `gpt-6-luna` although `cheapest_models.json` named it; `select_model` raised `TypeError` on a null-priced model in a tier (already failing for the agy low tier); tier tests pinned a stale picker snapshot.
+- Resolution: refreshed claude/codex/agy catalogs from the official pricing pages plus the live `agy models` picker and the Codex CLI model cache; `select_model` now sorts unknown prices last (2 tests added); snapshot tests updated with dated evidence; cheapest Claude pick moved to `claude-haiku-5-5`.
+- Verification: `test_model_catalog_contract.py` 17/17 pass (includes a check that the Sonnet 5.5 catalog rates price a real Claude Code session within 1%: reported $29.55, computed $29.49; the older `claude-sonnet-5` rates as a stand-in overestimate by 52%). Full `cli-agent/scripts` suite: 146 pass, 1 pre-existing failure (below).
+- OPEN 1: `sync_cheapest_models.py` expects `plugins/agent-orchestration/skills/cli-agent/references` but the repo layout is `.../.apm/skills/...`, so it errors; only the canonical cli-agent copy of `cheapest_models.*` was updated by hand and other plugins' copies are unsynchronised.
+- OPEN 2: `test_run_agent_runtime.py::test_failure_does_not_echo_source_prompt` fails on `main` before this change: a failed dispatch prints argv including the isolated source text. Redact the prompt argument in `run_agent.py`'s error path.
+- Not asserted: context/output limits for the 5.5 Claude models, hosted agy Claude prices, Gemini 3.7 Flash price (absent from the pricing page).
+
 ## DEBT-20261103-HF-UPLOAD-NO-CLI (RESOLVED)
 
 - Logged date: 2026-11-03
