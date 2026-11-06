@@ -341,5 +341,28 @@ class P02AndRepairDetail(unittest.TestCase):
         if p02: p02.validate_observation_dict(o)
 
 
+class BriefCarriesTheContract(unittest.TestCase):
+    def test_worker_brief_lists_scope_acceptance_and_failure_conditions(self):
+        repo, tools, w = make_repo()
+        put(repo, contract("b1")); wl.start(repo / "c.json", repo)
+        r = wl.dispatch("b1", "u1", "o", "claude", os.environ["PATH"], "CREATE:hello.py", repo, repo, executable=str(w))
+        brief = (attempts_dir(repo, "b1") / r["attempt_id"] / "input.md").read_text()
+        for needle in ("Assignment contract", "hello.py", "A1: script prints hello", "error marker", "criteria win"):
+            self.assertIn(needle, brief)
+        self.assertNotIn("argv", brief)                                                                      # check commands/internals are not dumped
+
+
+class Candidates(unittest.TestCase):
+    def test_ok_attempt_with_unmet_criteria_then_repaired_becomes_a_lesson_candidate(self):
+        repo, tools, w = make_repo()
+        p = put(repo, contract("c1"))
+        r = wl.run_item(p, repo, "claude", "FAIL_FIRST CREATE:hello.py", executable=str(w), worker_path=os.environ["PATH"])
+        self.assertTrue(r["ok"]); self.assertEqual(r["lesson_candidates"][0]["failed_attempt"], "u1-a001"); self.assertEqual(r["lesson_candidates"][0]["repaired_by"], "u1-a002")
+        repo2, _, w2 = make_repo()
+        p2 = put(repo2, contract("c2"))
+        r2 = wl.run_item(p2, repo2, "claude", "CREATE:hello.py", executable=str(w2), worker_path=os.environ["PATH"])
+        self.assertEqual(r2["lesson_candidates"], [])                                                       # nothing to learn from a clean first pass
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -178,6 +178,18 @@ def _attribute_claude(bas, res, projects_dir=None):
     return out
 
 
+def _contract_section(c, max_chars=1800):
+    """What the worker is held to: scope paths, acceptance criteria and failure conditions from the CONTRACT (text only, bounded).
+    Without this the worker sees only the instruction, and a narrow instruction silently contradicts a wider acceptance set."""
+    lines = ["## Assignment contract (the delivery is assessed against this after you finish)",
+             "Scope - files/dirs this work may touch: " + ", ".join(c["scope"]["paths"])]
+    lines += ["Acceptance criteria (ALL required ones must hold):"] + [f"- {a['id']}: {a.get('text') or a['check'].get('kind')}" for a in c["acceptance"] if a.get("required", True)]
+    lines += ["Must not happen:"] + [f"- {f.get('text') or f['id']}" for f in c["failure_conditions"]]
+    lines.append("If this brief's instruction is narrower than the criteria above, the criteria win within the stated scope.")
+    out = "\n".join(lines)
+    return out if len(out) <= max_chars else out[: max_chars - 4] + "..."
+
+
 def dispatch(wid, unit, owner, cli, worker_path, instruction, cwd, root=".", executable=None, model=None, timeout=600, extra=(), lessons_supplied=None):
     """One guarded execution attempt. ORDER matters: claim -> admit+reserve (locked) -> artifacts -> preflights -> executor -> record -> release.
     A refused duplicate or a budget refusal creates/changes NO attempt files."""
@@ -207,7 +219,7 @@ def dispatch(wid, unit, owner, cli, worker_path, instruction, cwd, root=".", exe
             adir = d / "attempts" / attempt_id
             adir.mkdir(parents=True, exist_ok=False)                  # immutable identity: never reused
             lesson_text, ids = lesson_mod.brief_section(lessons_supplied or [])
-            brief = instruction + ("\n\n" + lesson_text if lesson_text else "")
+            brief = instruction + "\n\n" + _contract_section(contract) + ("\n\n" + lesson_text if lesson_text else "")
             (adir / "input.md").write_text(brief)
             result = adir / "result.json"
             _append(d / "attempts.jsonl", {"kind": "attempt", "attempt_id": attempt_id, "unit": unit, "work_id": wid, "state": "reserved", "owner": owner,
@@ -290,7 +302,9 @@ def evaluate(wid, root=".", manual=None, scores=None):
     (d / "evaluations").mkdir(exist_ok=True)
     (d / "evaluations" / f"{eval_id}.json").write_text(json.dumps(out, indent=1))        # history is kept; findings.json is only the latest
     (d / "findings.json").write_text(json.dumps(out, indent=1))
-    _append(d / "attempts.jsonl", {"kind": "evaluation", "eval_id": eval_id, "work_id": wid, "model_tokens": 0, "calls_model": False, "t": time.time()})
+    last_att = [r["attempt_id"] for r in _ledger(root, wid) if r.get("kind") == "attempt" and r.get("state") == "finished"]
+    _append(d / "attempts.jsonl", {"kind": "evaluation", "eval_id": eval_id, "work_id": wid, "model_tokens": 0, "calls_model": False, "t": time.time(),
+                                   "after_attempt": last_att[-1] if last_att else None, "complete": out["complete"], "incomplete": out["incomplete"]})
     if out["complete"]:
         fin = [r for r in _ledger(root, wid) if r.get("kind") == "attempt" and r.get("state") == "finished" and r.get("status") == "ok"]
         (d / "accepted.json").write_text(json.dumps({"eval_id": eval_id, "accepted_attempt_id": fin[-1]["attempt_id"] if fin else None,
@@ -354,13 +368,22 @@ def run_item(contract_path, root, cli, instruction, cwd=None, worker_path=None, 
 
 
 def _candidates(root, wid):
-    """Suggestions for the agent to turn into lessons: a failed/refused/timed-out attempt later followed by a finished ok attempt. NOT recorded."""
-    recs = [r for r in _ledger(root, wid) if r.get("kind") == "attempt" and r.get("state") in ("finished", "refused_preflight")]
+    """Suggestions for the agent to turn into lessons (NOT recorded): (a) an attempt that failed, timed out or was refused and was later
+    followed by an ok attempt, and (b) an attempt that finished 'ok' but whose evaluation left criteria unmet before a later evaluation accepted."""
+    recs = _ledger(root, wid)
+    atts = [r for r in recs if r.get("kind") == "attempt" and r.get("state") in ("finished", "refused_preflight")]
     out = []
-    for i, r in enumerate(recs):
+    for i, r in enumerate(atts):
         bad = r.get("state") == "refused_preflight" or r.get("status") in ("failed", "timeout")
-        if bad and any(x.get("status") == "ok" for x in recs[i + 1:]):
-            out.append({"failed_attempt": r["attempt_id"], "failure": r.get("reason") or r.get("status"), "repaired_by": next(x["attempt_id"] for x in recs[i + 1:] if x.get("status") == "ok")})
+        later_ok = next((x["attempt_id"] for x in atts[i + 1:] if x.get("status") == "ok"), None)
+        if bad and later_ok:
+            out.append({"failed_attempt": r["attempt_id"], "failure": r.get("reason") or r.get("status"), "repaired_by": later_ok})
+    evs = [r for r in recs if r.get("kind") == "evaluation"]
+    for i, e in enumerate(evs):
+        if not e.get("complete") and e.get("after_attempt"):
+            acc = next((x for x in evs[i + 1:] if x.get("complete")), None)
+            if acc:
+                out.append({"failed_attempt": e["after_attempt"], "failure": "criteria unmet: " + ",".join(e.get("incomplete", [])), "repaired_by": acc.get("after_attempt")})
     return out
 
 
