@@ -1,6 +1,6 @@
 # Agentic OS Control Plane
 
-<!-- ECOSYSTEM_STATS_START -->**Current Scale:** 6 Plugins · 30 Skills · 19 Sub-Agents<!-- ECOSYSTEM_STATS_END -->
+<!-- ECOSYSTEM_STATS_START -->**Current Scale:** 6 Plugins · 31 Skills · 19 Sub-Agents<!-- ECOSYSTEM_STATS_END -->
 
 **A governed execution harness for AI coding agents.** This repository lets Claude Code, Codex,
 GitHub Copilot, Agy, and compatible tools use their native planning, coding, orchestration, and
@@ -151,7 +151,7 @@ self-contained runtime copies into active client harnesses (`.claude/skills/`, `
 | Plugin | Use it for |
 | --- | --- |
 | [`agent-agentic-os`](plugins/agent-agentic-os/README.md) | Three skills: `running-control-plane` (governed task lifecycle, health checks, simulation, gating switch), `setting-up-agentic-os` (project setup and signing identities), `improving-skills-in-lab` (eval-gated skill improvement) |
-| [`agent-orchestration`](plugins/agent-orchestration/README.md) | Unified agent execution topologies (DAGs, supervisor/worker loops, parallel swarms) and multi-backend CLI routing (run_agent.py, 13 expert personas, AGT sandboxing, MAF validation) |
+| [`agent-orchestration`](plugins/agent-orchestration/README.md) | Unified agent execution topologies (DAGs, supervisor/worker loops, parallel swarms) and multi-backend CLI routing with enforced launch controls (run_agent.py), a shared outcome evaluator and a repository-independent learning loop (work contract, lessons, measured cost), 13 expert personas, AGT sandboxing, MAF validation |
 | [`agent-memory`](plugins/agent-memory/README.md) | Filesystem memory, RLM, vector retrieval, and Obsidian vault/wiki workflows |
 | [`agent-extension-authoring`](plugins/agent-extension-authoring/README.md) | Creating, auditing, packaging, and maintaining plugins and skills |
 | [`dev-utils`](plugins/dev-utils/README.md) | Repository utilities: GitHub issues and worktrees, context bundling, link checking, coding conventions, ADRs, symlinks, HuggingFace transfers |

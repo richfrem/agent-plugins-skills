@@ -32,7 +32,7 @@ Current scale (read from `plugins/` — verify with `find plugins -name SKILL.md
 [Project Root]/
 ├── plugins/                        # CANONICAL SOURCE — authoritative for all skills/agents
 │   ├── agent-agentic-os/           # Control plane, setup + skill improvement lab (3 skills)
-│   ├── agent-orchestration/        # Execution topologies & multi-LLM CLI routing (4 skills, 13 agents)
+│   ├── agent-orchestration/        # Execution topologies, multi-LLM CLI routing, outcome evaluation (5 skills, 13 agents)
 │   ├── agent-memory/               # Memory, RLM, vector retrieval and Obsidian wiki (4 skills)
 │   ├── agent-extension-authoring/  # Plugin/skill/subagent/instruction authoring & APM packaging (6 skills)
 │   ├── dev-utils/                  # GitHub issues + worktrees, context bundling, links, conventions, ADRs, symlinks, HuggingFace (8 skills)
@@ -127,8 +127,8 @@ Three self-contained skills, each a router with modes. `running-control-plane` (
 
 **Setup:** per machine, by the human, via `setup_ciba_identity.py` (the `signing-setup` mode of `setting-up-agentic-os`). `allowed_signers*` and `context/identity/challenges/` are machine-local trust anchors and never committed; the `init` and `health` modes report readiness read-only. **Residual risk:** an agent running as the same account with direct database or coordinator access can still tamper; see `plugins/agent-agentic-os/skills/setting-up-agentic-os/references/isolation-setup.md`.
 
-### 4.3. Plugin: agent-orchestration (4 skills, 13 agents)
-Unified execution topologies (DAGs, supervisor/worker loops, parallel swarms via `orchestrating-agent-work`) and multi-backend task routing (`run_agent.py` to Claude, Copilot, Gemini, Agy, Codex, and direct local llama-server via `cli-agent`, plus `agt-security` sandboxing and `maf-adapter` framework validation). Includes 13 expert agent personas (architect-review, security-auditor, tdd-contract-reviewer, red-team-reviewer, etc.) which form the Phase 1 adversarial review trio per `engineering-lifecycle-policy.md` §3.
+### 4.3. Plugin: agent-orchestration (5 skills, 13 agents)
+Unified execution topologies (DAGs, supervisor/worker loops, parallel swarms via `orchestrating-agent-work`) and multi-backend task routing (`run_agent.py` to Claude, Copilot, Gemini, Agy, Codex, and direct local llama-server via `cli-agent`, plus `agt-security` sandboxing and `maf-adapter` framework validation). **Learning loop (three shared responsibilities):** `orchestrating-agent-work` owns the outcome loop (contract, lesson retrieval, redispatch, integration within authorization); `cli-agent` enforces launch boundaries in `run_agent.py` (ownership claim, cwd boundary, timeout, clean-context policy, executable check) and returns a structured result; `evaluating-agent-outcomes` returns criterion-level findings, validity limits, measured cost (unknown stays unknown), intervention classes and lessons on an explicit repo-local store. Consumers such as Sanctuary add policy through thin adapters; reusable logic has one implementation. Includes 13 expert agent personas (architect-review, security-auditor, tdd-contract-reviewer, red-team-reviewer, etc.) which form the Phase 1 adversarial review trio per `engineering-lifecycle-policy.md` §3.
 
 ### 4.4. Plugin: agent-memory (4 skills)
 Agent Memory & Knowledge combines filesystem memory, RLM summary ledgers, ChromaDB

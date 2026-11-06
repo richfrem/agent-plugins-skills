@@ -1,0 +1,8 @@
+[
+  {"prompt": "A worker says it finished; check the delivery against the acceptance criteria and tell me what is incomplete.", "should_trigger": true},
+  {"prompt": "Did this benchmark's malformed answers make the result unobservable? Cap what we may claim.", "should_trigger": true},
+  {"prompt": "Record a lesson from this failed dispatch and retrieve relevant lessons before the next task.", "should_trigger": true},
+  {"prompt": "Classify the human corrections in this session and report cost with missing data kept unknown.", "should_trigger": true},
+  {"prompt": "Create a DAG manifest for these four jobs.", "should_trigger": false},
+  {"prompt": "Dispatch this review to the Codex CLI.", "should_trigger": false}
+]

@@ -21,7 +21,7 @@ Interactive front door: analyze the task, conduct diagnostic interview, select G
 
 ## Dependencies
 
-Requires Python 3.8+ (standard library only).
+Python 3.8+ (standard library only); sibling skills `cli-agent` and `evaluating-agent-outcomes` for the learning loop.
 
 ## Constraints
 
@@ -31,7 +31,7 @@ Requires Python 3.8+ (standard library only).
 - **Loop Isolation**: Inner execution loops are strictly forbidden from running `git` write commands (commits and merges stay with caller).
 - **Confinement & Redirection**: Workspace mutations run in an isolated worktree; background CLI calls redirect stdin (`< /dev/null`).
 - **Outcome Completion**: A worker returning is not completion; done means the assigned outcome. Review ready deliveries while independent work continues; honor a standing authorization instead of re-asking.
-- **Preflight Before Dispatch**: Claim the execution unit (`dispatch_guard.py claim`), verify executables in the worker's own environment (`exec-check`) and, before any large batch of model calls, the call context (`context-check`); report progress with `reconcile` ([dispatch-preflight.md](references/dispatch-preflight.md)).
+- **Learning Loop**: Work contract -> retrieve lessons -> guarded dispatch via `cli-agent` -> `evaluating-agent-outcomes` findings -> repair or accept -> record lessons ([learning-loop.md](references/learning-loop.md), `scripts/work_loop.py`). Launch checks live in `cli-agent` (`dispatch_guard.py`).
 - **Human Gate Integrity**: Graph runs with `--approval none` require an explicit human-approved manifest SHA; never self-sign manifests you wrote.
 
 ## Quick Start
@@ -78,5 +78,5 @@ Consult matching section in [acceptance-criteria.md](references/acceptance-crite
 
 - Steps: [routing-and-closure.md](references/routing-and-closure.md) • [strategy-selection.md](references/strategy-selection.md) • [graph-planning.md](references/graph-planning.md) • [graph-execution.md](references/graph-execution.md) • [delegated-dag-refactoring-playbook.md](references/delegated-dag-refactoring-playbook.md)
 - Strategies: [strategy-dual-loop.md](references/strategy-dual-loop.md) • [strategy-agent-swarm.md](references/strategy-agent-swarm.md) • [strategy-red-team-review.md](references/strategy-red-team-review.md) • [bot-delegation-patterns.md](references/bot-delegation-patterns.md)
-- Contracts: [topology-rules.md](references/topology-rules.md) • [graph-manifest-schema.json](references/graph-manifest-schema.json) • [PATTERN_GUIDE.md](references/PATTERN_GUIDE.md) • [patterns.json](references/patterns.json) • [cli-agent-executor.md](references/cli-agent-executor.md) • [dispatch-preflight.md](references/dispatch-preflight.md) • [cheapest_models.md](references/cheapest_models.md) • [post_run_survey.md](references/post_run_survey.md)
+- Contracts: [topology-rules.md](references/topology-rules.md) • [graph-manifest-schema.json](references/graph-manifest-schema.json) • [PATTERN_GUIDE.md](references/PATTERN_GUIDE.md) • [patterns.json](references/patterns.json) • [cli-agent-executor.md](references/cli-agent-executor.md) • [learning-loop.md](references/learning-loop.md) • [dispatch-preflight.md](references/dispatch-preflight.md) • [cheapest_models.md](references/cheapest_models.md) • [post_run_survey.md](references/post_run_survey.md)
 - Architecture: [orchestrating_agent_work_architecture.mmd](references/diagrams/orchestrating_agent_work_architecture.mmd) • [acceptance-criteria.md](references/acceptance-criteria.md) • [fallback-tree.md](references/fallback-tree.md)
