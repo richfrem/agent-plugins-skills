@@ -283,5 +283,32 @@ class ReviewFindings(unittest.TestCase):
         self.assertTrue(True)
 
 
+class UsageAttribution(unittest.TestCase):
+    """Claude usage attributed from the worker's own transcripts (existing supported source); mocked transcripts here."""
+    def _project(self, cwd, rows):
+        pd = Path(tempfile.mkdtemp()); d = pd / wl._enc_project(cwd); d.mkdir()
+        for sid, ts, u in rows:
+            with open(d / f"{sid}.jsonl", "a") as f:
+                f.write(json.dumps({"timestamp": ts, "message": {"usage": u}}) + "\n")
+        return pd
+
+    def test_unknown_claude_usage_is_filled_from_transcripts_and_concurrency_blocks_it(self):
+        cwd = tempfile.mkdtemp(); t0 = time.time()
+        iso = lambda t: time.strftime("%Y-%m-%dT%H:%M:%S.000Z", time.gmtime(t))
+        u = {"input_tokens": 5, "output_tokens": 100, "cache_creation_input_tokens": 1000, "cache_read_input_tokens": 9999}
+        bas = [{"backend": "claude", "status": "ok", "started": t0, "ended": t0 + 4, "usage": {"total_tokens": None}}]
+        res = {"cwd": cwd}
+        got = wl._attribute_claude(bas, res, self._project(cwd, [("s1", iso(t0 + 2), u)]))[0]["usage"]
+        self.assertEqual((got["total_tokens"], got["cache_read"]), (1105, 9999))                            # cache reads reported, not budgeted
+        conc = wl._attribute_claude(bas, res, self._project(cwd, [("s1", iso(t0 + 2), u), ("s2", iso(t0 + 3), u)]))[0]["usage"]
+        self.assertIsNone(conc["total_tokens"]); self.assertIn("concurrent", conc["source"])               # shared window: stays unknown
+        none = wl._attribute_claude(bas, res, Path(tempfile.mkdtemp()))[0]["usage"]
+        self.assertIsNone(none["total_tokens"])                                                            # no transcript dir: unknown
+        keep = [{"backend": "claude", "started": t0, "ended": t0 + 4, "usage": {"total_tokens": 7}}]
+        self.assertEqual(wl._attribute_claude(keep, res, self._project(cwd, [("s1", iso(t0 + 2), u)]))[0]["usage"]["total_tokens"], 7)   # vendor-reported wins
+        other = [{"backend": "agy", "started": t0, "ended": t0 + 4, "usage": {"total_tokens": None}}]
+        self.assertIsNone(wl._attribute_claude(other, res, self._project(cwd, [("s1", iso(t0 + 2), u)]))[0]["usage"]["total_tokens"])  # only claude
+
+
 if __name__ == "__main__":
     unittest.main()
