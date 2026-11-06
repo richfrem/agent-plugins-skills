@@ -99,3 +99,37 @@ def test_timeout_kills_streaming_backend(tmp_path):
     r = subprocess.run([sys.executable, str(SCRIPT), "/dev/null", str(src), str(tmp_path / "o"), "i", "--cli", "agy", "--model", "m",
                         "--timeout", "1", "--result-json", str(tmp_path / "res.json"), "--isolated"], env=env, capture_output=True, text=True, timeout=20)
     assert r.returncode != 0
+
+
+def test_crash_before_launch_records_failed_not_ok(tmp_path):
+    src = tmp_path / "s"; src.write_text("")
+    r = subprocess.run([sys.executable, str(SCRIPT), "/dev/null", str(src), str(tmp_path / "o"), "i", "--cli", "claude", "--require-input",
+                        "--result-json", str(tmp_path / "res.json")], capture_output=True, text=True)
+    assert r.returncode != 0 and json.loads((tmp_path / "res.json").read_text())["status"] == "failed"
+
+
+def test_nonpositive_timeout_rejected(tmp_path):
+    fake(tmp_path)
+    r, _ = run(tmp_path, "--timeout", "0", "--isolated")
+    assert r.returncode != 0
+
+
+def test_clean_context_refused_with_non_claude_fallback(tmp_path):
+    fake(tmp_path)
+    r, _ = run(tmp_path, "--clean-context", "--fallback-chain", "codex")
+    assert r.returncode == 2
+
+
+def test_claim_released_on_sigterm(tmp_path):
+    import signal, time
+    fake(tmp_path, name="agy", body="import time; time.sleep(30)")
+    src = tmp_path / "s"; src.write_text("x"); claims = tmp_path / "claims"
+    env = {**os.environ, "PATH": str(tmp_path) + os.pathsep + os.environ["PATH"]}
+    p = subprocess.Popen([sys.executable, str(SCRIPT), "/dev/null", str(src), str(tmp_path / "o"), "i", "--cli", "agy", "--model", "m", "--isolated",
+                          "--claim-dir", str(claims), "--unit", "u", "--owner", "me", "--result-json", str(tmp_path / "res.json")], env=env,
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    for _ in range(50):
+        if list(claims.glob("*.owner")): break
+        time.sleep(0.1)
+    p.send_signal(signal.SIGTERM); p.wait(timeout=20)
+    assert not list(claims.glob("*.owner")) and (tmp_path / "res.json").exists()

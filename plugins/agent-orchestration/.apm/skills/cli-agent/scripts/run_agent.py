@@ -625,6 +625,8 @@ def run_agent(*args, cwd: str | None = None, allowed_root: str | None = None, cl
     result_json (structured return of status, checks, limitations, usage). A failed launch check exits 2 BEFORE launch.
     """
     started = _time.time()
+    if timeout is not None and timeout <= 0:
+        raise ValueError("timeout must be > 0 seconds")
     checks: list[dict] = []
     enforced = []
     limitations = ["clean-context flags are requested, not probed: run dispatch_guard.py context-check on a stream-json probe to verify"
@@ -633,6 +635,12 @@ def run_agent(*args, cwd: str | None = None, allowed_root: str | None = None, cl
     claimed = False
     _OPTS.cwd, _OPTS.timeout, _OPTS.clean_context, _OPTS.seen = cwd, timeout, clean_context, {}
     own_tmp = None
+    _prev = {}
+    if _threading.current_thread() is _threading.main_thread():
+        def _term(signum, frame):
+            raise SystemExit(128 + signum)
+        for _s in (_signal.SIGTERM, _signal.SIGHUP):
+            _prev[_s] = _signal.signal(_s, _term)
     try:
         if cwd is not None and allowed_root is not None:
             r = _guard.check_cwd(cwd, allowed_root)
@@ -651,8 +659,10 @@ def run_agent(*args, cwd: str | None = None, allowed_root: str | None = None, cl
             claimed = True
         if clean_context:
             tgt = (args[4] if len(args) > 4 else kwargs.get("cli", "claude")).lower()
-            if tgt != "claude":
-                raise _LaunchRefused(f"clean_context is only supported for claude, not {tgt}")
+            fb = kwargs.get("fallback_chain") or (args[13] if len(args) > 13 else None) or []
+            fb = [x.strip().lower() for x in (fb.split(",") if isinstance(fb, str) else fb) if x.strip()]
+            if tgt != "claude" or any(x != "claude" for x in fb):
+                raise _LaunchRefused(f"clean_context is only supported for claude with no non-claude fallback (got {tgt}, fallback {fb})")
             if cwd is not None:
                 raise _LaunchRefused("clean_context chooses a neutral cwd itself; do not pass cwd")
             own_tmp = _tempfile.mkdtemp(prefix="clean-ctx-")
@@ -667,6 +677,9 @@ def run_agent(*args, cwd: str | None = None, allowed_root: str | None = None, cl
         exit_code = e.code if isinstance(e.code, int) else 1
         status = "ok" if exit_code == 0 else "failed"
         error = None if exit_code == 0 else f"backend exited {exit_code}"
+    except BaseException as e:      # noqa: BLE001 - record then re-raise: a crash must never leave status "ok"
+        status, exit_code, error = "failed", 1, f"{type(e).__name__}: {e}"
+        raise
     finally:
         if claimed:
             _guard.release(claim_dir, unit, owner)
@@ -683,7 +696,12 @@ def run_agent(*args, cwd: str | None = None, allowed_root: str | None = None, cl
             os.makedirs(os.path.dirname(os.path.abspath(result_json)), exist_ok=True)
             with open(result_json, "w") as f:
                 _json.dump(res, f, indent=1)
+        for _s, _h in _prev.items():
+            _signal.signal(_s, _h)
         _OPTS.cwd = _OPTS.timeout = None; _OPTS.clean_context = False
+    if own_tmp:
+        import shutil as _sh
+        _sh.rmtree(own_tmp, ignore_errors=True)
     if status in ("refused", "failed"):
         sys.exit(exit_code)
 

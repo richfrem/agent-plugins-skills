@@ -29,8 +29,16 @@ def validate_contract(c):
     b = c.get("budget")
     if not isinstance(b, dict) or "max_attempts" not in b:
         p.append("budget.max_attempts is required (budget.max_tokens optional)")
-    if not isinstance(c.get("authorization"), dict):
+    au = c.get("authorization")
+    if not isinstance(au, dict):
         p.append("authorization is required (e.g. {\"may_merge\": false})")
+    elif "may_merge" in au and not isinstance(au["may_merge"], bool):
+        p.append("authorization.may_merge must be a boolean")
+    if acc and not any(a.get("required", True) is True for a in acc if isinstance(a, dict)):
+        p.append("at least one acceptance criterion must be required")
+    for f in c.get("failure_conditions") or []:
+        if not isinstance(f, dict) or not f.get("id") or not isinstance(f.get("check"), dict) or f["check"].get("kind") not in CHECK_KINDS:
+            p.append(f"failure condition {f.get('id') if isinstance(f, dict) else f}: needs id and an evaluable check (kind in {CHECK_KINDS})")
     return p
 
 
@@ -40,29 +48,29 @@ def _inside(root, path):
 
 
 def run_check(check, root, evidence_manual=None, cid=None):
-    """-> (result, detail) with result in pass|fail|unverified. Never raises on a failing check."""
+    """-> (result, detail) with result in pass|fail|unverified|error (error = could not be evaluated). Never raises on a failing check."""
     kind = check["kind"]
     try:
         if kind == "command":
             cwd = check.get("cwd", ".")
             if not _inside(root, cwd):
-                return "fail", f"cwd {cwd} escapes root"
+                return "error", f"cwd {cwd} escapes root"
             r = subprocess.run(check["argv"], cwd=Path(root) / cwd, capture_output=True, text=True, timeout=check.get("timeout", 120))
             ok = r.returncode == check.get("expect_exit", 0) and all(s in r.stdout for s in check.get("expect_stdout_contains", []))
             return ("pass" if ok else "fail"), f"exit {r.returncode}"
         if kind == "file_exists":
             if not _inside(root, check["path"]):
-                return "fail", "path escapes root"
+                return "error", "path escapes root"
             return ("pass" if (Path(root) / check["path"]).exists() else "fail"), check["path"]
         if kind == "file_contains":
             if not _inside(root, check["path"]):
-                return "fail", "path escapes root"
+                return "error", "path escapes root"
             f = Path(root) / check["path"]
             return ("pass" if f.is_file() and check["contains"] in f.read_text(errors="replace") else "fail"), check["path"]
         ref = (evidence_manual or {}).get(cid)
         return ("pass", f"manual confirmation: {ref}") if ref else ("unverified", "manual criterion with no recorded confirmation")
     except (OSError, subprocess.TimeoutExpired, KeyError) as e:
-        return "fail", f"{type(e).__name__}: {e}"
+        return "error", f"{type(e).__name__}: {e}"
 
 
 def validate_scores(rubric, scores):
@@ -91,12 +99,13 @@ def assess(contract, root=".", evidence=None, attempts_used=0):
         criteria.append({"id": a["id"], "required": req, "result": res, "detail": detail, "evidence_ref": evidence.get("refs", {}).get(a["id"])})
         if req and res != "pass":
             incomplete.append(a["id"])
-    hits = []
+    hits, unevaluated = [], []
     for f in contract["failure_conditions"]:
-        if "check" in f:
-            res, detail = run_check(f["check"], root, evidence.get("manual_confirmations"), f["id"])
-            if res == "pass":      # a passing failure-condition check means the failure occurred
-                hits.append({"id": f["id"], "detail": detail})
+        res, detail = run_check(f["check"], root, evidence.get("manual_confirmations"), f["id"])
+        if res == "pass":      # a passing failure-condition check means the failure occurred
+            hits.append({"id": f["id"], "detail": detail})
+        elif res in ("unverified", "error"):
+            unevaluated.append({"id": f["id"], "detail": detail})   # could not be evaluated: fail closed
     usage = evidence.get("usage") or {}
     tokens = usage.get("total_tokens")             # None = unknown, never zero
     budget = contract["budget"]
@@ -108,13 +117,13 @@ def assess(contract, root=".", evidence=None, attempts_used=0):
         limitations.append("usage unknown: cost is not zero, it is unmeasured")
     out = {"v": 1, "work_id": contract["id"], "criteria": criteria, "failure_hits": hits, "incomplete": incomplete,
            "blockers": blockers, "limitations": limitations, "usage": {"total_tokens": tokens, "source": usage.get("source", "not supplied")},
-           "complete": not incomplete and not hits}
+           "unevaluated_failure_conditions": unevaluated, "complete": not incomplete and not hits and not unevaluated}
     if contract.get("rubric"):
         probs, norm = validate_scores(contract["rubric"], evidence.get("scores"))
         out["scores"] = {"rubric_id": contract["rubric"].get("id"), "normalized": None if probs else norm, "raw": evidence.get("scores"), "problems": probs,
                          "note": "scores do not alter completeness or authorization"}
     auth = contract["authorization"]
-    out["integration_allowed"] = bool(out["complete"] and not blockers and auth.get("may_merge", False))
+    out["integration_allowed"] = out["complete"] and not blockers and auth.get("may_merge") is True
     if blockers:
         out["recommended"] = "blocked"
     elif out["complete"]:
@@ -123,7 +132,7 @@ def assess(contract, root=".", evidence=None, attempts_used=0):
         out["recommended"] = "escalate"
     else:
         out["recommended"] = "repair"
-    out["repair_instructions"] = [f"criterion {i} not met" for i in incomplete] + [f"failure condition {h['id']} occurred" for h in hits]
+    out["repair_instructions"] = [f"criterion {i} not met" for i in incomplete] + [f"failure condition {h['id']} occurred" for h in hits] + [f"failure condition {u['id']} could not be evaluated" for u in unevaluated]
     return out
 
 

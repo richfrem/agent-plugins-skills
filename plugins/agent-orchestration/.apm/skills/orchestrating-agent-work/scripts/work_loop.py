@@ -27,8 +27,17 @@ def _import(skill, module):
     return __import__(module)
 
 
+_SAFE = __import__("re").compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
+
+
+def _safe(name, what):
+    if not _SAFE.match(name or "") or ".." in name:
+        raise ValueError(f"unsafe {what} {name!r}: use letters, digits, '.', '_', '-'")
+    return name
+
+
 def _dir(root, wid):
-    d = Path(root).resolve() / ".agent-work" / wid
+    d = Path(root).resolve() / ".agent-work" / _safe(wid, "work id")
     d.mkdir(parents=True, exist_ok=True)
     return d
 
@@ -67,11 +76,13 @@ def start(contract_path, root=".", store=None):
 def dispatch(wid, unit, owner, cli, worker_path, instruction, cwd, root=".", executable=None, timeout=600, extra=()):
     """Guarded launch through cli-agent: preflight in the worker's PATH, then run_agent with claim/cwd/result controls."""
     guard = _import("cli-agent", "dispatch_guard")
+    _safe(unit, "unit")
     exe = executable or cli
     pre = guard.exec_check([exe] if executable is None else [executable], path=worker_path if executable is None else os.environ["PATH"])
     trace(root, wid, "exec_check", ok=pre["ok"], detail=pre["results"][0]["detail"], unit=unit)
     d = _dir(root, wid)
     result = d / f"result-{unit}.json"
+    result.unlink(missing_ok=True)       # never trust a result from an earlier attempt
     if not pre["ok"]:
         result.write_text(json.dumps({"schema": 1, "status": "refused", "error": "executable unavailable in worker environment", "checks": [{"name": "exec_check", **pre["results"][0]}], "usage": {"total_tokens": None, "source": "not run"}}))
         trace(root, wid, "dispatch_refused", unit=unit, reason="executable unavailable")
@@ -85,7 +96,9 @@ def dispatch(wid, unit, owner, cli, worker_path, instruction, cwd, root=".", exe
         cmd += ["--executable", executable]
     env = dict(os.environ, PATH=worker_path)
     p = subprocess.run(cmd, env=env, capture_output=True, text=True)
-    res = json.loads(result.read_text()) if result.exists() else {"status": "failed", "usage": {"total_tokens": None}}
+    res = json.loads(result.read_text()) if result.exists() else {"status": "failed", "error": "no result written", "usage": {"total_tokens": None}}
+    if p.returncode != 0 and res.get("status") == "ok":
+        res["status"] = "failed"
     trace(root, wid, "dispatch", unit=unit, status=res["status"], exit=p.returncode, usage=res.get("usage"))
     return {"ok": res["status"] == "ok", "result": str(result), "status": res["status"]}
 

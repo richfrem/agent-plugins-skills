@@ -74,6 +74,16 @@ class E2E(unittest.TestCase):
         r = wl.dispatch("t3", "u9", "orch", "claude", str(tools), "CREATE:hello.py", repo, repo, executable=str(worker))
         self.assertEqual(r["status"], "refused"); self.assertFalse((repo / "hello.py").exists())
 
+    def test_path_traversal_ids_rejected_and_stale_result_not_trusted(self):
+        repo = Path(tempfile.mkdtemp()); tools = Path(tempfile.mkdtemp()); worker = make_worker(tools)
+        bad = contract("../../escape", "a.py", "x"); (repo / "b.json").write_text(json.dumps(bad))
+        with self.assertRaises(ValueError): wl.start(repo / "b.json", repo)
+        c = repo / "c.json"; c.write_text(json.dumps(contract("t4", "a.py", "x"))); wl.start(c, repo)
+        with self.assertRaises(ValueError): wl.dispatch("t4", "../u", "o", "claude", str(tools), "CREATE:a.py", repo, repo, executable=str(worker))
+        (repo / ".agent-work/t4/result-u1.json").write_text(json.dumps({"status": "ok", "usage": {"total_tokens": 1}}))
+        r = wl.dispatch("t4", "u1", "o", "claude", str(tools), "CREATE:a.py", repo, repo, executable=str(tools / "missing-binary"))
+        self.assertNotEqual(r["status"], "ok")
+
 
 if __name__ == "__main__":
     unittest.main()

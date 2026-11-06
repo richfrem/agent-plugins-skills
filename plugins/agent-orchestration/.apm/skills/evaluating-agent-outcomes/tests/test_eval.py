@@ -58,7 +58,7 @@ class Assess(unittest.TestCase):
         self.assertTrue(oe.validate_contract({"id": "x", "type": "t", "goal": "g"}))
     def test_command_cwd_cannot_escape_root(self):
         c1 = contract(self.r, acceptance=[{"id": "A", "check": {"kind": "command", "argv": ["true"], "cwd": ".."}}])
-        self.assertEqual(oe.assess(c1, self.r)["criteria"][0]["result"], "fail")
+        f = oe.assess(c1, self.r); self.assertEqual(f["criteria"][0]["result"], "error"); self.assertFalse(f["complete"])
 
 
 class Store(unittest.TestCase):
@@ -107,3 +107,19 @@ class Lessons(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ReviewFixes(unittest.TestCase):
+    def setUp(self):
+        self.r = Path(tempfile.mkdtemp()); (self.r / "hello.py").write_text("print('hello')")
+    def test_unevaluable_failure_condition_blocks_completion(self):
+        c1 = contract(self.r, failure_conditions=[{"id": "f", "check": {"kind": "command", "argv": ["true"], "cwd": "../.."}}])
+        f = oe.assess(c1, self.r); self.assertFalse(f["complete"]); self.assertEqual(f["unevaluated_failure_conditions"][0]["id"], "f")
+    def test_may_merge_must_be_bool(self):
+        self.assertTrue(oe.validate_contract(contract(self.r, authorization={"may_merge": "false"})))
+        f = oe.assess(contract(self.r, authorization={"may_merge": True}), self.r); self.assertTrue(f["integration_allowed"])
+    def test_all_optional_acceptance_rejected(self):
+        acc = [{"id": "A", "required": False, "check": {"kind": "file_exists", "path": "nope"}}]
+        self.assertTrue(oe.validate_contract(contract(self.r, acceptance=acc)))
+    def test_failure_condition_without_check_rejected(self):
+        self.assertTrue(oe.validate_contract(contract(self.r, failure_conditions=[{"id": "f", "text": "t"}])))
