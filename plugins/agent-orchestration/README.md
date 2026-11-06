@@ -115,3 +115,7 @@ python3 plugins/agent-extension-authoring/skills/authoring-subagents/scripts/aud
 # Unit tests
 python3 -m pytest plugins/agent-orchestration/skills/cli-agent/scripts -v
 ```
+
+## Consumers
+
+Project Sanctuary consumes `orchestrating-agent-work`, `cli-agent` and `evaluating-agent-outcomes` through thin adapters (`evaluating-agent-work/scripts/eval_gate.py`, `sanctuary_adapter.py`). Interface changes need a compatibility shim or same-change caller updates, an `evolution-log.md` entry, and a global `apm update --global` with installed-file verification. `dispatch_guard.py` now lives in `cli-agent/scripts/` (a shim remains in `orchestrating-agent-work/scripts/`).
