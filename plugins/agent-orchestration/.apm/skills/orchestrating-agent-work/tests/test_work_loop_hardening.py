@@ -310,5 +310,36 @@ class UsageAttribution(unittest.TestCase):
         self.assertIsNone(wl._attribute_claude(other, res, self._project(cwd, [("s1", iso(t0 + 2), u)]))[0]["usage"]["total_tokens"])  # only claude
 
 
+class P02AndRepairDetail(unittest.TestCase):
+    def test_repair_instructions_carry_criterion_text_and_failure_detail(self):
+        repo, tools, w = make_repo()
+        c = contract("p1"); c["acceptance"][0]["check"]["argv"] = [sys.executable, "-c", "import sys; print('boom: bar missing'); sys.exit(3)"]
+        c["acceptance"][0]["check"].pop("expect_stdout_contains", None)
+        f = oe.assess(c, repo)
+        self.assertIn("script prints hello", f["repair_instructions"][0]); self.assertIn("boom: bar missing", f["repair_instructions"][0])
+        self.assertLess(len(f["repair_instructions"][0]), 900)                                              # bounded
+
+    def test_attempt_measurements_conform_to_the_control_plane_p02_schema_and_settle_idempotently(self):
+        p02 = acct.find_p02()
+        if p02 is None:
+            self.skipTest("running-control-plane (agent-agentic-os) measurement module not installed; optional")
+        repo, tools, w = make_repo()
+        put(repo, contract("p2")); wl.start(repo / "c.json", repo)
+        r = wl.dispatch("p2", "u1", "o", "claude", os.environ["PATH"], "TOKENS_ONCE CREATE:hello.py", repo, repo, executable=str(w))
+        obs = json.loads((attempts_dir(repo, "p2") / r["attempt_id"] / "measurement.json").read_text())
+        self.assertEqual(len(obs), 1)
+        parsed = [p02.validate_observation_dict(o) for o in obs]                                            # production-strict validation incl. digest
+        self.assertEqual(parsed[0].correlation.invocation_id, r["attempt_id"]); self.assertEqual(parsed[0].usage.provenance, "reported")
+        again = p02.settle_observations(parsed + parsed)                                                    # duplicate delivery of the same observation is idempotent
+        self.assertNotEqual(again.status, "ambiguous_conflict")
+        self.assertNotIn("TOKENS_ONCE", json.dumps(obs)); self.assertNotIn("worker failed", json.dumps(obs))       # privacy: no prompt/output text
+
+    def test_unavailable_usage_maps_to_unavailable_with_reason_not_zero(self):
+        p02 = acct.find_p02()
+        o = acct.to_measurement_observation("w", "a1", 0, {"backend": "agy", "status": "ok", "started": 1.0, "ended": 3.0, "usage": {"total_tokens": None, "source": "not reported by backend"}}, "run", "m", None, p02 or False)
+        self.assertEqual(o["usage"]["provenance"], "unavailable"); self.assertIsNone(o["usage"]["input_tokens"]); self.assertTrue(o["usage"]["unavailable_reason"])
+        if p02: p02.validate_observation_dict(o)
+
+
 if __name__ == "__main__":
     unittest.main()

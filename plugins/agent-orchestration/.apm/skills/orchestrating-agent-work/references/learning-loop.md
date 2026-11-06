@@ -16,7 +16,8 @@ Supported entry point for ONE work item: `python3 scripts/work_loop.py run CONTR
 5. **Repair** - `run_item` returns unmet criteria to the next attempt as a "Repair required" section; it stops on acceptance, a blocker, escalation
    at the attempt cap, a preflight refusal, a duplicate, or budget exhaustion.
 6. **Usage** - backends that report no tokens keep usage unknown, except `claude`: its unknown usage is attributed from Claude's own project transcripts (existing `usage_measure.claude_tokens_between`, exact worker cwd, attempt window; skipped when another session was active or no transcript exists). Budgeted total = input + output + cache-write; cache reads are recorded but excluded.
-7. **Evidence** - attempts, results, outputs, refusals and evaluations are append-only/immutable; `lesson_candidates` lists failed-then-repaired attempts.
+7. **Measurement export** - each finished attempt also gets `measurement.json`: one control-plane P02 observation per backend attempt (see [agentic-os-reuse-map.md](agentic-os-reuse-map.md)).
+8. **Evidence** - attempts, results, outputs, refusals and evaluations are append-only/immutable; `lesson_candidates` lists failed-then-repaired attempts.
 
 ## What stays agent-supervised
 Writing lessons (`lessons.py add` from the candidates), confirming `manual` criteria, deciding whether a lesson helped (`observe_lessons` needs cited

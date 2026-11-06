@@ -59,7 +59,10 @@ def run_check(check, root, evidence_manual=None, cid=None):
                 return "error", f"cwd {cwd} escapes root"
             r = subprocess.run(check["argv"], cwd=Path(root) / cwd, capture_output=True, text=True, timeout=check.get("timeout", 120))
             ok = r.returncode == check.get("expect_exit", 0) and all(s in r.stdout for s in check.get("expect_stdout_contains", []))
-            return ("pass" if ok else "fail"), f"exit {r.returncode}"
+            if ok:
+                return "pass", f"exit {r.returncode}"
+            tail = ((r.stdout or "") + (r.stderr or "")).strip()[-600:]       # bounded evidence so a repair attempt knows WHY it failed
+            return "fail", f"exit {r.returncode}" + (f"; output tail: {tail}" if tail else "")
         if kind == "file_exists":
             if not _inside(root, check["path"]):
                 return "error", "path escapes root"
@@ -127,7 +130,9 @@ def assess(contract, root=".", evidence=None, attempts_used=0):
         out["recommended"] = "escalate"
     else:
         out["recommended"] = "repair"
-    out["repair_instructions"] = [f"criterion {i} not met" for i in incomplete] + [f"failure condition {h['id']} occurred" for h in hits] + [f"failure condition {u['id']} could not be evaluated" for u in unevaluated]
+    texts = {a["id"]: a for a in contract["acceptance"]}
+    detail = {c["id"]: c["detail"] for c in criteria}
+    out["repair_instructions"] = [f"criterion {i} not met: {texts[i].get('text', '')} -- {detail.get(i, '')}".strip() for i in incomplete] + [f"failure condition {h['id']} occurred" for h in hits] + [f"failure condition {u['id']} could not be evaluated" for u in unevaluated]
     return out
 
 

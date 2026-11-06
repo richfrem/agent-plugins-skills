@@ -174,3 +174,85 @@ def admit(budget, summary):
     if committed >= mt or committed + need > mt:
         return {"ok": False, "reserve_tokens": None, "reason": f"token budget exhausted (committed {committed} + reserve {need} > {mt})"}
     return {"ok": True, "reserve_tokens": res, "reason": "within budget"}
+
+
+# ---------------------------------------------------------------- P02 measurement observations (agent-agentic-os control plane schema)
+import os as _os, time as _time, importlib.util as _ilu
+from pathlib import Path as _Path
+
+P02_KIND, P02_VERSION = "p0_measurement_observation", "1.0-draft"
+
+
+def uuid7():
+    """RFC 9562 UUIDv7 (the P02 schema requires it for event ids)."""
+    ms = int(_time.time() * 1000)
+    b = bytearray(ms.to_bytes(6, "big") + _os.urandom(10))
+    b[6] = (b[6] & 0x0F) | 0x70
+    b[8] = (b[8] & 0x3F) | 0x80
+    h = bytes(b).hex()
+    return f"{h[:8]}-{h[8:12]}-{h[12:16]}-{h[16:20]}-{h[20:]}"
+
+
+def find_p02(extra_roots=()):
+    """Locate the control plane's measurement module (agent-agentic-os / running-control-plane) if it is installed; optional."""
+    rel = _Path("running-control-plane/scripts/control_plane/measurement.py")
+    here = _Path(__file__).resolve()
+    cands = [_Path(r) / rel for r in extra_roots] + [here.parents[2] / rel, _Path.home() / ".claude/skills" / rel, _Path.home() / ".agents/skills" / rel]
+    for c in cands:
+        if c.is_file():
+            spec = _ilu.spec_from_file_location("_p02_measurement", c)
+            mod = _ilu.module_from_spec(spec)
+            import sys as _sys
+            _sys.modules["_p02_measurement"] = mod            # dataclasses need the module registered
+            spec.loader.exec_module(mod)
+            return mod
+    return None
+
+
+def to_measurement_observation(work_id, attempt_id, backend_index, backend_attempt, run_id, requested_model=None, runtime_version=None, p02=None):
+    """Map ONE backend attempt of the attempt ledger to the control plane's closed P02 observation schema so both systems share one
+    measurement vocabulary (null vs zero, provenance, no prompt/output text). Mapping notes:
+      * input_tokens = all input-side tokens incl. cache reads/writes (P02: cached_tokens is a SUBSET of input), cached_tokens = cache reads;
+      * the budgeted total used by accounting.admit (input + output + cache-write) is NOT a P02 field and stays in the ledger;
+      * a vendor-reported total without a split cannot be represented (P02 has no total slot) -> provenance 'reported', tokens null, reason stated;
+      * digest: computed with the control plane's own canonicalizer when installed, else a draft fixture with null digest + reason."""
+    u = backend_attempt.get("usage") or {}
+    ts = lambda t: _time.strftime("%Y-%m-%dT%H:%M:%SZ", _time.gmtime(t))
+    ended = backend_attempt.get("ended") or _time.time()
+    dur = max(0, int(((backend_attempt.get("ended") or ended) - (backend_attempt.get("started") or ended)) * 1000))
+    src = (u.get("source") or "")
+    if u.get("tokens_out") is not None and "transcript" in src:
+        tin = (u.get("tokens_in") or 0) + (u.get("cache_write") or 0) + (u.get("cache_read") or 0)
+        usage = {"provenance": "measured", "input_tokens": tin, "output_tokens": u["tokens_out"], "cached_tokens": u.get("cache_read") or 0,
+                 "reasoning_tokens": None, "unavailable_reason": "reasoning tokens are not reported separately by the source", "scope": "final"}
+    elif u.get("tokens_in") is not None and u.get("tokens_out") is not None:
+        usage = {"provenance": "reported", "input_tokens": u["tokens_in"], "output_tokens": u["tokens_out"], "cached_tokens": None, "reasoning_tokens": None,
+                 "unavailable_reason": "cached and reasoning tokens not reported", "scope": "final"}
+    elif isinstance(u.get("total_tokens"), int):
+        usage = {"provenance": "reported", "input_tokens": None, "output_tokens": None, "cached_tokens": None, "reasoning_tokens": None,
+                 "unavailable_reason": f"only a combined total ({u['total_tokens']}) was reported; P02 has no total-only field", "scope": "final"}
+    else:
+        usage = {"provenance": "unavailable", "input_tokens": None, "output_tokens": None, "cached_tokens": None, "reasoning_tokens": None,
+                 "unavailable_reason": u.get("source") or "backend reported no usage and no transcript attribution was possible", "scope": "final"}
+    obs = {"artifact_kind": P02_KIND, "schema_version": P02_VERSION,
+           "capture": {"method": "orchestrator-attempt-ledger", "captured_at_utc": ts(_time.time()), "source_runtime": backend_attempt.get("backend") or "unknown",
+                       **({"source_runtime_version": runtime_version} if runtime_version else {"source_runtime_version": None, "source_runtime_version_unavailable_reason": "executor result carried no version"}),
+                       "sanitization": "ids, counts, timings and model names only; no prompt, output or environment text"},
+           "producer": {"namespace": "orchestrating-agent-work.work_loop", "version": "1", "install_fingerprint": None,
+                        "install_fingerprint_unavailable_reason": "not computed by the loop"},
+           "correlation": {"task_id": work_id, "task_generation_id": work_id, "run_id": run_id, "invocation_id": attempt_id, "attempt_id": f"{attempt_id}.b{backend_index}"},
+           "event": {"event_id": uuid7(), "occurred_at_utc": ts(ended), "coverage_state": "observed", "canonical_digest": None,
+                     "canonical_digest_unavailable_reason": "digest not computed (control plane measurement module not installed)"},
+           "execution": {"exit_code": 0 if backend_attempt.get("status") == "ok" else (backend_attempt.get("exit") if isinstance(backend_attempt.get("exit"), int) else 1),
+                         "duration_ms": dur, "duration_provenance": "measured", "requested_model": requested_model or backend_attempt.get("backend") or "unknown",
+                         "observed_model": None, "observed_model_unavailable_reason": "CLI text mode does not report the model actually used"},
+           "usage": usage}
+    p02 = find_p02() if p02 is None else p02
+    if p02:
+        base_event = {k: v for k, v in obs["event"].items() if k not in ("canonical_digest", "canonical_digest_unavailable_reason")}
+        try:
+            digest = p02.compute_canonical_digest({**obs, "event": base_event})       # the control plane's own canonicalizer (it drops canonical_digest)
+            obs["event"] = {**base_event, "canonical_digest": digest}
+        except Exception:  # noqa: BLE001 - keep the draft-fixture form (null digest + reason)
+            pass
+    return obs

@@ -133,7 +133,7 @@ def start(contract_path, root=".", store=None):
     trace(root, wid, "lessons_retrieved", lesson_ids=[l["id"] for l in found])
     d = _dir(root, wid)
     (d / "contract.json").write_text(json.dumps(c, indent=1))
-    plan = {"work_id": wid, "lessons": found, "budget": c["budget"], "authorization": c["authorization"], "isolation": c.get("isolation")}
+    plan = {"work_id": wid, "run_id": f"run-{int(time.time())}-{uuid.uuid4().hex[:6]}", "lessons": found, "budget": c["budget"], "authorization": c["authorization"], "isolation": c.get("isolation")}
     (d / "plan.json").write_text(json.dumps(plan, indent=1))
     trace(root, wid, "plan_recorded", budget=c["budget"])
     return {"ok": True, "plan": plan}
@@ -166,7 +166,7 @@ def _attribute_claude(bas, res, projects_dir=None):
         d = pd / _enc_project(res["cwd"])
         if not d.is_dir():
             out.append({**ba, "usage": {**u, "source": "no claude transcript directory for the worker cwd; unknown"}}); continue
-        m = um.claude_tokens_between(d, iso(ba["started"] - 1), iso(ba["ended"] + 1))
+        m = um.claude_tokens_between(d, iso(ba["started"]), iso(ba["ended"]))      # exact window: padding made back-to-back attempts look concurrent
         total = m["input_tokens"] + m["output_tokens"] + m["cache_creation_input_tokens"]
         if m["concurrent"] or total == 0:
             why = "concurrent sessions in the window; not attributed" if m["concurrent"] else "no transcript usage in the attempt window"
@@ -252,6 +252,11 @@ def dispatch(wid, unit, owner, cli, worker_path, instruction, cwd, root=".", exe
                 return {"ok": False, "status": "refused", "attempt_id": attempt_id, "result": str(result), "reason": res.get("error")}
             bas = res.get("attempts") or [{"backend": cli, "status": res.get("status"), "usage": res.get("usage") or {"total_tokens": None}}]
             bas = _attribute_claude(bas, res)
+            acct_mod = _import("evaluating-agent-outcomes", "accounting")
+            run_id = json.loads((d / "plan.json").read_text()).get("run_id", "run-unknown")
+            p02 = acct_mod.find_p02()
+            obs = [acct_mod.to_measurement_observation(wid, attempt_id, i, ba, run_id, model or ba.get("backend"), res.get("version"), p02) for i, ba in enumerate(bas)]
+            (adir / "measurement.json").write_text(json.dumps(obs, indent=1))            # P02 observations (control-plane schema), one per backend attempt
             _append(d / "attempts.jsonl", {"kind": "attempt", "attempt_id": attempt_id, "unit": unit, "work_id": wid, "state": "finished", "status": res.get("status"),
                                            "backend_attempts": bas, "cleanup_confirmed": res.get("cleanup_confirmed"), "lessons_supplied": ids, "t": time.time()})
             trace(root, wid, "dispatch", unit=unit, attempt_id=attempt_id, status=res.get("status"), exit=p.returncode, backend_attempts=len(bas))
