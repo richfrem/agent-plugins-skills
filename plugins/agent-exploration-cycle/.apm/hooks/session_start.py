@@ -74,9 +74,10 @@ def _build_output_data(session_context: str) -> dict:
         return {"additionalContext": session_context}
     if is_cursor:
         return {"additional_context": session_context}
-    # Fallback for general or unknown runners (like terminal or custom runners)
+    # Codex and Claude accept the nested SessionStart contract. Unknown runners
+    # use that portable shape too; mixing top-level additionalContext is invalid
+    # in Codex 0.167.0. Explicit Copilot/Cursor adapters above retain their formats.
     return {
-        "additionalContext": session_context,
         "hookSpecificOutput": {
             "hookEventName": "SessionStart",
             "additionalContext": session_context
