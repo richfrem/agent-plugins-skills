@@ -45,6 +45,12 @@ For local planning, backlog status, and current task handoffs, consult `docs/pla
 
 ---
 
+## Known Consumers & Compatibility Duty
+
+Project Sanctuary (`richfrem/Project_Sanctuary`) consumes `orchestrating-agent-work`, `cli-agent` and `evaluating-agent-outcomes` through thin adapters, and its agents are responsible for keeping skills correct in both repositories (their Protocol 133). When you move, rename or change the interface of a capability in these skills, keep a compatibility shim or update every caller in the same change, grep this repository for the old name and path (root `README.md`, `architecture.md`, plugin READMEs, other skills' `references/`), add an `evolution-log.md` entry, and expect consumers to need an `apm update --global` plus verification of installed copies. Generic behavior belongs here; project policy stays in the consumer.
+
+---
+
 ## Quick Start & Verification Tooling
 
 Run standard deterministic verification scripts to validate compliance:
