@@ -9,6 +9,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import scoring  # noqa: E402
+import accounting  # noqa: E402
 
 CHECK_KINDS = ("command", "file_exists", "file_contains", "manual")
 
@@ -29,9 +30,7 @@ def validate_contract(c):
             p.append(f"acceptance {a.get('id')}: needs id and check.kind in {CHECK_KINDS}")
     if not c.get("failure_conditions"):
         p.append("failure_conditions are required (state at least one)")
-    b = c.get("budget")
-    if not isinstance(b, dict) or "max_attempts" not in b:
-        p.append("budget.max_attempts is required (budget.max_tokens optional)")
+    p.extend(accounting.validate_budget(c.get("budget")))
     au = c.get("authorization")
     if not isinstance(au, dict):
         p.append("authorization is required (e.g. {\"may_merge\": false})")
@@ -124,7 +123,7 @@ def assess(contract, root=".", evidence=None, attempts_used=0):
         out["recommended"] = "blocked"
     elif out["complete"]:
         out["recommended"] = "accept"
-    elif attempts_used + 1 >= budget["max_attempts"]:
+    elif attempts_used >= budget["max_attempts"]:      # no execution attempt left to repair with
         out["recommended"] = "escalate"
     else:
         out["recommended"] = "repair"

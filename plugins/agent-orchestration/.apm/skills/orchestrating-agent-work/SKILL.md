@@ -31,7 +31,7 @@ Python 3.8+ (standard library only); sibling skills `cli-agent` and `evaluating-
 - **Loop Isolation**: Inner execution loops are strictly forbidden from running `git` write commands (commits and merges stay with caller).
 - **Confinement & Redirection**: Workspace mutations run in an isolated worktree; background CLI calls redirect stdin (`< /dev/null`).
 - **Outcome Completion**: A worker returning is not completion; done means the assigned outcome. Review ready deliveries while independent work continues; honor a standing authorization instead of re-asking.
-- **Learning Loop**: Work contract -> retrieve lessons -> guarded dispatch via `cli-agent` -> `evaluating-agent-outcomes` findings -> repair or accept -> record lessons ([learning-loop.md](references/learning-loop.md), `scripts/work_loop.py`). Launch checks live in `cli-agent` (`dispatch_guard.py`).
+- **Learning Loop**: `scripts/work_loop.py run` validates the contract and budget, retrieves lessons, dispatches each attempt through `cli-agent` (claim first, atomic admission, immutable attempt ids), assesses with `evaluating-agent-outcomes`, and repairs within the attempt/token budget. Lessons, manual criteria and integration stay agent-supervised ([learning-loop.md](references/learning-loop.md)).
 - **Human Gate Integrity**: Graph runs with `--approval none` require an explicit human-approved manifest SHA; never self-sign manifests you wrote.
 
 ## Quick Start

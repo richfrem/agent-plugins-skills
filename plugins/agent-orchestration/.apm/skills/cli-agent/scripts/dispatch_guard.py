@@ -5,28 +5,62 @@
   exec-check        verify executables inside the worker's actual environment (PATH of the worker, not of the orchestrator)
   context-check     verify what context an LLM CLI call will carry, from its own stream-json init event (not self-report)
   cwd-check         working directory resolves inside the allowed root (worktree boundary)
+  probe-context     ONE configuration-level clean-context probe (stream-json); readiness  checks a probe exists for this exact config
   reconcile         progress from unique planned units: completed / malformed / duplicate / missing / unexpected
 """
-import argparse, hashlib, json, os, shutil, subprocess, sys
+import argparse, hashlib, json, os, shutil, signal, subprocess, sys, time, uuid
 from pathlib import Path
 
 
+def _read_claim(f):
+    """Claim file content -> dict. Legacy files held a bare owner string; they have no token."""
+    try:
+        raw = f.read_text().strip()
+    except FileNotFoundError:
+        return None
+    try:
+        d = json.loads(raw)
+        if isinstance(d, dict):
+            return d
+    except ValueError:
+        pass
+    return {"owner": raw, "token": None, "legacy": True}
+
+
 def claim(claim_dir, unit, owner):
+    """Atomically claim a unit. The claim carries a unique token (generation); only the holder of that token may release it.
+    Protection boundary: this stops a second CLAIMANT using the same claim directory. It cannot stop an unrelated process from
+    writing the same files, and a hard-killed holder leaves a stale claim (no automatic expiry)."""
     d = Path(claim_dir); d.mkdir(parents=True, exist_ok=True)
     f = _cf(d, unit)
-    tmp = d / (f.name + "." + str(os.getpid()) + ".tmp")
-    tmp.write_text(owner)                       # owner is written before the claim becomes visible
+    token = uuid.uuid4().hex
+    tmp = d / (f.name + "." + token[:8] + ".tmp")
+    tmp.write_text(json.dumps({"owner": owner, "token": token, "pid": os.getpid(), "unit": unit}))   # complete before visible
     try:
-        os.link(tmp, f)                          # atomic: fails if the claim exists
-    except FileExistsError:
         try:
-            who = f.read_text().strip()
-        except FileNotFoundError:
-            who = "unknown (released concurrently)"
-        return {"ok": False, "unit": unit, "owner": who, "why": "already owned; do not launch a duplicate"}
+            os.link(tmp, f)                      # atomic and complete-before-visible: fails if the claim exists
+        except FileExistsError:
+            cur = _read_claim(f) or {}
+            return {"ok": False, "unit": unit, "owner": cur.get("owner", "unknown (released concurrently)"),
+                    "why": "already owned; do not launch a duplicate"}
+        except OSError:                          # filesystem without hard links: exclusive create (a reader may briefly see an empty file)
+            try:
+                fd = os.open(f, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+            except FileExistsError:
+                cur = _read_claim(f) or {}
+                return {"ok": False, "unit": unit, "owner": cur.get("owner", "unknown (released concurrently)"),
+                        "why": "already owned; do not launch a duplicate"}
+            with os.fdopen(fd, "w") as h:
+                h.write(tmp.read_text())
     finally:
         tmp.unlink()
-    return {"ok": True, "unit": unit, "owner": owner}
+    return {"ok": True, "unit": unit, "owner": owner, "token": token}
+
+
+def verify_claim(claim_dir, unit, token):
+    """True only if the claim exists and carries exactly this token (used by an executor handed a pre-acquired claim)."""
+    cur = _read_claim(_cf(claim_dir, unit))
+    return bool(cur and token and cur.get("token") == token)
 
 
 def check_cwd(cwd, allowed_root):
@@ -43,12 +77,17 @@ def _cf(d, unit):
     return Path(d) / (hashlib.sha256(unit.encode()).hexdigest()[:16] + ".owner")
 
 
-def release(claim_dir, unit, owner):
+def release(claim_dir, unit, owner=None, token=None):
+    """Release only the claim this invocation acquired. With a token the token must match; without one (legacy callers) the owner must."""
     f = _cf(claim_dir, unit)
-    if not f.exists():
+    cur = _read_claim(f)
+    if cur is None:
         return {"ok": True, "released": False}
-    if f.read_text().strip() != owner:
-        return {"ok": False, "why": f"owned by {f.read_text().strip()}, not {owner}"}
+    if token is not None:
+        if cur.get("token") != token:
+            return {"ok": False, "why": "claim token mismatch: not the holder"}
+    elif cur.get("owner") != owner:
+        return {"ok": False, "why": f"owned by {cur.get('owner')}, not {owner}"}
     f.unlink()
     return {"ok": True, "released": True}
 
@@ -119,6 +158,126 @@ def context_check(stream_file, **kw):
     return {"ok": not pr, "problems": pr, "unobserved": ["server-side system prompt", "model-side defaults"]}
 
 
+# ---------------------------------------------------------------- process-group ownership and cleanup
+def _group_alive(pgid):
+    try:
+        os.killpg(pgid, 0)
+        return True
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+
+
+def terminate_group(proc, grace=2.0, confirm_timeout=5.0):
+    """Stop a worker we launched with start_new_session=True and ALL its descendants that stayed in that session/group.
+
+    Only the group whose id equals proc.pid (the group this invocation created) is ever signalled; anything else is refused.
+    Escalates SIGTERM -> SIGKILL and returns once the group is confirmed gone (or reports confirmed=False). Descendants that
+    deliberately create their own session (setsid) leave the group and cannot be reached; that is a documented limit.
+    On non-POSIX platforms the tree is stopped with taskkill /T (not exercised by the test-suite)."""
+    if os.name != "posix":
+        try:
+            subprocess.run(["taskkill", "/F", "/T", "/PID", str(proc.pid)], capture_output=True, timeout=10)
+        except Exception:  # noqa: BLE001
+            proc.kill()
+        try:
+            proc.wait(timeout=confirm_timeout)
+        except Exception:  # noqa: BLE001
+            pass
+        return {"confirmed": proc.poll() is not None, "method": "taskkill /T", "platform": os.name}
+    try:
+        pgid = os.getpgid(proc.pid)
+    except ProcessLookupError:
+        pgid = proc.pid
+    if pgid != proc.pid:
+        return {"confirmed": False, "method": "refused", "detail": "worker is not the leader of its own group; not signalling"}
+    for sig, wait in ((signal.SIGTERM, grace), (signal.SIGKILL, confirm_timeout)):
+        try:
+            os.killpg(pgid, sig)
+        except ProcessLookupError:
+            break
+        deadline = time.monotonic() + wait
+        while time.monotonic() < deadline:
+            try:
+                proc.poll()                      # reap the leader so it does not look alive
+            except Exception:  # noqa: BLE001
+                pass
+            if not _group_alive(pgid):
+                break
+            time.sleep(0.05)
+        if not _group_alive(pgid):
+            break
+    try:
+        proc.wait(timeout=1)
+    except Exception:  # noqa: BLE001
+        pass
+    return {"confirmed": not _group_alive(pgid), "method": "killpg SIGTERM->SIGKILL", "pgid": pgid}
+
+
+# ---------------------------------------------------------------- experimental context readiness (configuration-level)
+CLEAN_FLAGS = ["--setting-sources", "project", "--disable-slash-commands", "--tools", ""]   # single source for run_agent and the probe
+
+
+def config_fingerprint(cfg):
+    """Stable id of everything that determines the call context: backend, model, resolved executable AND its version, flags,
+    cwd policy and the env variable NAMES passed through. Any change yields a different fingerprint, so old readiness is void."""
+    sp = cfg.get("search_path")          # the WORKER's PATH: the executable that will really run is the one found there
+    exe = shutil.which(cfg["executable"], path=sp) if cfg.get("executable") and os.sep not in cfg["executable"] else cfg.get("executable")
+    version = None
+    if exe:
+        try:
+            p = subprocess.run([exe, "--version"], capture_output=True, text=True, timeout=15, stdin=subprocess.DEVNULL,
+                               env=dict(os.environ, PATH=sp) if sp else None)
+            version = p.stdout.strip() if p.returncode == 0 else f"exit {p.returncode}"
+        except Exception as e:  # noqa: BLE001
+            version = f"unavailable: {type(e).__name__}"
+    basis = {"cli": cfg.get("cli"), "model": cfg.get("model"), "executable": os.path.realpath(exe) if exe else None, "version": version,
+             "flags": list(cfg.get("flags", [])), "cwd_policy": cfg.get("cwd_policy", "neutral-temp"),
+             "env_names": sorted(cfg.get("env_names", []))}
+    return hashlib.sha256(json.dumps(basis, sort_keys=True).encode()).hexdigest(), basis
+
+
+def probe_claude_context(cfg, readiness_dir, timeout=120):
+    """ONE configuration-level probe: a single cheap stream-json call from a neutral cwd with the clean flags, judged by the CLI's own
+    init/hook events via context_check (never by model self-report). Writes <readiness_dir>/<fingerprint16>.json."""
+    import tempfile
+    fp, basis = config_fingerprint(cfg)
+    exe = basis["executable"] or cfg.get("executable") or "claude"
+    work = tempfile.mkdtemp(prefix="ctx-probe-")
+    cmd = [exe, "--model", cfg["model"], "-p", "Reply with exactly: OK", "--output-format", "stream-json", "--verbose", *cfg.get("flags", CLEAN_FLAGS)]
+    try:
+        p = subprocess.run(cmd, cwd=work, capture_output=True, text=True, timeout=timeout, stdin=subprocess.DEVNULL)
+        stream = Path(work) / "stream.jsonl"
+        stream.write_text(p.stdout)
+        res = context_check(stream, expect_cwd=work, expect_model=cfg["model"])
+        rc = p.returncode
+    except Exception as e:  # noqa: BLE001
+        res, rc = {"ok": False, "problems": [f"probe failed: {type(e).__name__}: {e}"], "unobserved": []}, None
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+    rec = {"v": 1, "fingerprint": fp, "basis": basis, "ok": bool(res["ok"]), "problems": res["problems"], "unobserved": res.get("unobserved", []),
+           "probe_exit": rc, "probed_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+           "scope": "configuration-level: valid only for this exact fingerprint; one probe covers all trials that use it"}
+    d = Path(readiness_dir); d.mkdir(parents=True, exist_ok=True)
+    (d / (fp[:16] + ".json")).write_text(json.dumps(rec, indent=1))
+    return rec
+
+
+def readiness_status(cfg, readiness_dir):
+    """Is there a successful probe for EXACTLY this configuration? Fingerprint mismatch (new model, flag, executable, version...) => not ready."""
+    fp, _ = config_fingerprint(cfg)
+    f = Path(readiness_dir) / (fp[:16] + ".json")
+    if not f.is_file():
+        return {"ready": False, "fingerprint": fp, "reason": "no successful context probe for this configuration"}
+    rec = json.loads(f.read_text())
+    if rec.get("fingerprint") != fp:
+        return {"ready": False, "fingerprint": fp, "reason": "probe record does not match the current configuration"}
+    if not rec.get("ok"):
+        return {"ready": False, "fingerprint": fp, "reason": "probe found problems: " + "; ".join(rec.get("problems", []))}
+    return {"ready": True, "fingerprint": fp, "unobserved": rec.get("unobserved", []), "probed_at": rec.get("probed_at")}
+
+
 def _valid(r):
     return r.get("valid", True) is True
 
@@ -155,19 +314,23 @@ def main(argv=None):
     e = sub.add_parser("exec-check"); e.add_argument("names", nargs="+"); e.add_argument("--path", required=True, help="the WORKER's PATH"); e.add_argument("--no-version", action="store_true")
     c = sub.add_parser("context-check"); c.add_argument("stream_file"); c.add_argument("--cwd"); c.add_argument("--model")
     w = sub.add_parser("cwd-check"); w.add_argument("cwd"); w.add_argument("--allowed-root", required=True)
+    pc = sub.add_parser("probe-context"); pc.add_argument("--model", required=True); pc.add_argument("--executable", default="claude"); pc.add_argument("--readiness-dir", required=True)
+    rs = sub.add_parser("readiness"); rs.add_argument("--model", required=True); rs.add_argument("--executable", default="claude"); rs.add_argument("--readiness-dir", required=True)
     r = sub.add_parser("reconcile"); r.add_argument("planned", help="JSON list or file of ids"); r.add_argument("records", help="JSONL file"); r.add_argument("--key", default="id")
     a = ap.parse_args(argv)
     if a.cmd == "claim": out = claim(a.dir, a.unit, a.owner)
     elif a.cmd == "release": out = release(a.dir, a.unit, a.owner)
     elif a.cmd == "exec-check": out = exec_check(a.names, a.path, not a.no_version)
     elif a.cmd == "cwd-check": out = check_cwd(a.cwd, a.allowed_root)
+    elif a.cmd == "probe-context": out = probe_claude_context({"cli": "claude", "model": a.model, "executable": a.executable, "flags": CLEAN_FLAGS}, a.readiness_dir)
+    elif a.cmd == "readiness": out = readiness_status({"cli": "claude", "model": a.model, "executable": a.executable, "flags": CLEAN_FLAGS}, a.readiness_dir)
     elif a.cmd == "context-check": out = context_check(a.stream_file, expect_cwd=a.cwd, expect_model=a.model)
     else:
         pl = json.loads(Path(a.planned).read_text()) if Path(a.planned).exists() else json.loads(a.planned)
         rows = [json.loads(l) for l in Path(a.records).read_text().splitlines() if l.strip()]
         out = reconcile(pl, rows, a.key)
     print(json.dumps(out, indent=1))
-    return 0 if out.get("ok", out.get("all_valid", True)) else 1
+    return 0 if out.get("ok", out.get("ready", out.get("all_valid", True))) else 1
 
 
 if __name__ == "__main__":

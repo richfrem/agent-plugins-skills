@@ -279,7 +279,10 @@ def _call_llama_direct(
     prompt: str, model: str, output_file: str,
     max_tokens: int = _LLAMA_MAX_TOKENS_DEFAULT,
 ) -> None:
-    """POST directly to llama-server :8089/v1/chat/completions (non-streaming, no proxy)."""
+    """POST directly to llama-server :8089/v1/chat/completions (non-streaming, no proxy).
+
+    The request has a bounded timeout (min(300 s, --timeout)). A timeout abandons THIS request only: the shared inference server is
+    never signalled, stopped or restarted by run_agent. Usage is read from the response's own `usage` field when present."""
     payload = json.dumps({
         "model": model,
         "messages": [{"role": "user", "content": prompt}],
@@ -290,14 +293,28 @@ def _call_llama_direct(
         _LLAMA_SERVER_URL, data=payload,
         headers={"Content-Type": "application/json"},
     )
+    started = _time.time()
+    _OPTS.seen["final_timeout"] = False
+    limit = min(300, _OPTS.timeout) if _OPTS.timeout else 300
     try:
-        with urllib.request.urlopen(req, timeout=300) as resp:
+        with urllib.request.urlopen(req, timeout=limit) as resp:
             data = json.loads(resp.read())
-    except urllib.error.URLError as e:
+    except (TimeoutError, OSError) as e:      # URLError and socket timeouts are OSError subclasses
+        timeout = isinstance(e, TimeoutError) or "timed out" in str(e)
+        _record_attempt(backend="llama", status="timeout" if timeout else "failed", started=started, ended=_time.time(),
+                        usage={"total_tokens": None, "source": "request did not complete"}, note="HTTP request abandoned; server untouched")
+        if timeout:
+            _OPTS.seen["final_timeout"] = True
         print(f"Error: cannot reach llama-server at {_LLAMA_SERVER_URL}: {e}")
         print("  Start it with: ./run_server.sh")
         sys.exit(1)
     text = data["choices"][0]["message"]["content"]
+    u = data.get("usage") or {}
+    total = u.get("total_tokens") if isinstance(u.get("total_tokens"), int) else None
+    usage = {"total_tokens": total, "tokens_in": u.get("prompt_tokens"), "tokens_out": u.get("completion_tokens"), "source": "llama-server response usage"} if total is not None \
+        else {"total_tokens": None, "source": "response carried no usage"}
+    _OPTS.seen["usage"] = usage
+    _record_attempt(backend="llama", status="ok", started=started, ended=_time.time(), usage=usage)
     with open(output_file, "w") as f:
         f.write(text)
     sys.stdout.write(text)
@@ -440,8 +457,16 @@ def _kill_group(proc) -> None:
         proc.kill()
 
 
+def _record_attempt(**rec) -> None:
+    """One entry per backend attempt (fallbacks included) so a caller can account every launch; usage stays null when unknown."""
+    rec.setdefault("usage", {"total_tokens": None, "source": "not reported by backend"})
+    _OPTS.seen.setdefault("attempts", []).append(rec)
+
+
 def _execute_cli_command(cmd: list, cli: str, output_file: str, prompt_tmp: str) -> None:
-    """Run the CLI command, streaming or piping stdin as appropriate for the backend."""
+    """Run the CLI command. EVERY subprocess path launches the worker as the leader of its own session/process group, so a timeout,
+    cancellation or error stops the worker and its descendants (dispatch_guard.terminate_group) before ownership is released or a
+    fallback starts. Partial output is preserved. Streaming CLIs are read line by line; others are collected with communicate()."""
     executable = shutil.which(cmd[0])
     if not executable:
         raise FileNotFoundError(f"Selected executable is unavailable: {cmd[0]}")
@@ -452,47 +477,59 @@ def _execute_cli_command(cmd: list, cli: str, output_file: str, prompt_tmp: str)
     print(f"[run_agent] executable={executable} version={version_text or 'unavailable'}")
     _OPTS.seen.update({"executable": executable, "version": version_text, "cli": cli})
     kw = {"cwd": _OPTS.cwd} if _OPTS.cwd else {}
-    if _OPTS.timeout:
-        kw["start_new_session"] = True
+    kw["start_new_session"] = True            # the worker owns a fresh session/group (POSIX); non-POSIX falls back to taskkill /T
     print(f"[run_agent] python={sys.executable} version={sys.version.split()[0]}")
-    if cli in _STREAMING_CLIS:
-        captured_lines: list[str] = []
+    started = _time.time()
+    _OPTS.seen["final_timeout"] = False          # reflects only the most recent attempt (a later non-timeout failure must not report "timeout")
+    stdin_f = open(prompt_tmp, "r") if cli == "codex" else None      # codex reads the prompt from stdin
+    proc = None
+    timed_out = {"v": False}
+    cleanup: dict = {}
+    captured: list[str] = []
+    try:
+        proc = subprocess.Popen(cmd, stdin=stdin_f or subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, **kw)
+
+        def _on_timeout():
+            timed_out["v"] = True
+            cleanup.update(_guard.terminate_group(proc))
+
+        timer = None
+        if _OPTS.timeout:
+            timer = _threading.Timer(_OPTS.timeout, _on_timeout); timer.daemon = True; timer.start()
         with open(output_file, "w") as out_f:
-            proc = subprocess.Popen(cmd, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, **kw)
-            timer = None
-            if _OPTS.timeout:
-                timer = _threading.Timer(_OPTS.timeout, _kill_group, (proc,)); timer.start()
-            for line in (proc.stdout or []):
-                sys.stdout.write(line)
-                sys.stdout.flush()
-                out_f.write(line)
-                captured_lines.append(line)
-            proc.wait()
-            if timer:
-                timer.cancel()
-        _OPTS.seen["usage"] = _parse_usage(cli, "".join(captured_lines))
-        if _OPTS.timeout and proc.returncode == -_signal.SIGKILL:
+            if cli in _STREAMING_CLIS:
+                for line in (proc.stdout or []):
+                    sys.stdout.write(line); sys.stdout.flush(); out_f.write(line); captured.append(line)
+                proc.wait()
+            else:
+                out, _ = proc.communicate()
+                captured.append(out or "")
+                out_f.write(out or ""); sys.stdout.write(out or "")
+        if timer:
+            timer.cancel()
+            if timed_out["v"]:
+                timer.join(30)                 # the watcher is still confirming cleanup; wait for its verdict before deciding anything
+        text = "".join(captured)
+        usage = _parse_usage(cli, text)
+        _OPTS.seen["usage"] = usage
+        if timed_out["v"]:
+            _OPTS.seen["final_timeout"] = True
+            if not cleanup.get("confirmed", False):
+                _OPTS.seen["cleanup_unconfirmed"] = True
+            _record_attempt(backend=cli, status="timeout", exit=proc.returncode, started=started, ended=_time.time(), usage=usage,
+                            cleanup=cleanup, partial_output=bool(text))
             raise subprocess.TimeoutExpired(cmd, _OPTS.timeout)
+        _record_attempt(backend=cli, status="ok" if proc.returncode == 0 else "failed", exit=proc.returncode, started=started,
+                        ended=_time.time(), usage=usage)
         if proc.returncode != 0:
-            full_out = "".join(captured_lines)
-            raise BackendExecutionError(cli, proc.returncode, full_out)
-    elif cli == "codex":
-        # Codex reads prompt from stdin; prompt_tmp is piped as stdin
-        with open(output_file, "w") as out_f, open(prompt_tmp, "r") as stdin_f:
-            proc = subprocess.run(cmd, stdin=stdin_f, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, timeout=_OPTS.timeout, **kw)
-            _OPTS.seen["usage"] = _parse_usage(cli, proc.stdout)
-            out_f.write(proc.stdout)
-            sys.stdout.write(proc.stdout)
-            if proc.returncode != 0:
-                raise BackendExecutionError(cli, proc.returncode, proc.stdout)
-    else:
-        with open(output_file, "w") as out_f:
-            proc = subprocess.run(cmd, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, timeout=_OPTS.timeout, **kw)
-            _OPTS.seen["usage"] = _parse_usage(cli, proc.stdout)
-            out_f.write(proc.stdout)
-            sys.stdout.write(proc.stdout)
-            if proc.returncode != 0:
-                raise BackendExecutionError(cli, proc.returncode, proc.stdout)
+            raise BackendExecutionError(cli, proc.returncode, text)
+    finally:
+        if stdin_f:
+            stdin_f.close()
+        if proc is not None and proc.poll() is None:              # cancellation (SIGTERM/Ctrl-C/exception): never leave the group behind
+            res = _guard.terminate_group(proc)
+            if not res.get("confirmed", False):
+                _OPTS.seen["cleanup_unconfirmed"] = True
 
 
 def _run_agent_core(
@@ -597,6 +634,9 @@ def _run_agent_core(
                 sys.exit(err.returncode)
         except (OSError, RuntimeError, subprocess.TimeoutExpired, FileNotFoundError) as error:
             errors.append((target_cli, error))
+            if _OPTS.seen.get("cleanup_unconfirmed"):
+                print(f"Error executing {target_cli}: worker cleanup not confirmed; refusing to start a fallback or release ownership early.")
+                sys.exit(1)
             if idx < len(full_chain) - 1:
                 print(f"[run_agent] System error on {target_cli} ({error}). Failing over to '{full_chain[idx + 1]}'...")
                 continue
@@ -615,7 +655,7 @@ def _run_agent_core(
 
 
 def run_agent(*args, cwd: str | None = None, allowed_root: str | None = None, claim_dir: str | None = None,
-              unit: str | None = None, owner: str | None = None, timeout: float | None = None,
+              unit: str | None = None, owner: str | None = None, claim_token: str | None = None, timeout: float | None = None,
               clean_context: bool = False, result_json: str | None = None, **kwargs) -> None:
     """Supported dispatch entry point. Positional/keyword parameters are those of `_run_agent_core` (unchanged).
 
@@ -632,7 +672,7 @@ def run_agent(*args, cwd: str | None = None, allowed_root: str | None = None, cl
     limitations = ["clean-context flags are requested, not probed: run dispatch_guard.py context-check on a stream-json probe to verify"
                    if clean_context else None]
     status, exit_code, error = "ok", 0, None
-    claimed = False
+    claimed, own_token, claim_mode = False, None, None
     _OPTS.cwd, _OPTS.timeout, _OPTS.clean_context, _OPTS.seen = cwd, timeout, clean_context, {}
     own_tmp = None
     _prev = {}
@@ -652,14 +692,23 @@ def run_agent(*args, cwd: str | None = None, allowed_root: str | None = None, cl
         if claim_dir:
             if not (unit and owner):
                 raise _LaunchRefused("claim_dir requires unit and owner")
-            r = _guard.claim(claim_dir, unit, owner)
-            checks.append({"name": "unit_claim", "ok": r["ok"], "detail": r.get("why") or r["owner"]}); enforced.append("unit_claim")
-            if not r["ok"]:
-                raise _LaunchRefused(f"unit {unit} already owned by {r['owner']}")
-            claimed = True
+            if claim_token:
+                # The caller (e.g. work_loop) acquired the claim BEFORE creating any artifacts. Verify, never re-acquire or release it:
+                # exactly one party holds the claim, so loop and executor cannot conflict.
+                ok = _guard.verify_claim(claim_dir, unit, claim_token)
+                checks.append({"name": "unit_claim", "ok": ok, "detail": "pre-acquired claim verified by token" if ok else "claim token not held"}); enforced.append("unit_claim")
+                claim_mode = "caller-held (verified)"
+                if not ok:
+                    raise _LaunchRefused(f"unit {unit}: supplied claim token is not the active claim")
+            else:
+                r = _guard.claim(claim_dir, unit, owner)
+                checks.append({"name": "unit_claim", "ok": r["ok"], "detail": r.get("why") or r["owner"]}); enforced.append("unit_claim")
+                if not r["ok"]:
+                    raise _LaunchRefused(f"unit {unit} already owned by {r['owner']}")
+                claimed, own_token, claim_mode = True, r["token"], "executor-acquired"
         if clean_context:
             tgt = (args[4] if len(args) > 4 else kwargs.get("cli", "claude")).lower()
-            fb = kwargs.get("fallback_chain") or (args[13] if len(args) > 13 else None) or []
+            fb = kwargs.get("fallback_chain") or (args[14] if len(args) > 14 else None) or []
             fb = [x.strip().lower() for x in (fb.split(",") if isinstance(fb, str) else fb) if x.strip()]
             if tgt != "claude" or any(x != "claude" for x in fb):
                 raise _LaunchRefused(f"clean_context is only supported for claude with no non-claude fallback (got {tgt}, fallback {fb})")
@@ -675,14 +724,14 @@ def run_agent(*args, cwd: str | None = None, allowed_root: str | None = None, cl
         print(f"[run_agent] launch refused: {e}")
     except SystemExit as e:
         exit_code = e.code if isinstance(e.code, int) else 1
-        status = "ok" if exit_code == 0 else "failed"
-        error = None if exit_code == 0 else f"backend exited {exit_code}"
+        status = "ok" if exit_code == 0 else ("timeout" if _OPTS.seen.get("final_timeout") else "failed")
+        error = None if exit_code == 0 else (f"backend timed out after {timeout}s" if status == "timeout" else f"backend exited {exit_code}")
     except BaseException as e:      # noqa: BLE001 - record then re-raise: a crash must never leave status "ok"
         status, exit_code, error = "failed", 1, f"{type(e).__name__}: {e}"
         raise
     finally:
         if claimed:
-            _guard.release(claim_dir, unit, owner)
+            _guard.release(claim_dir, unit, token=own_token)      # only the claim THIS invocation acquired
         ended = _time.time()
         if result_json:
             seen = _OPTS.seen
@@ -692,7 +741,8 @@ def run_agent(*args, cwd: str | None = None, allowed_root: str | None = None, cl
                    "output_file": (args[2] if len(args) > 2 else kwargs.get("output_file")),
                    "checks": checks, "enforced_by_code": enforced,
                    "instructed_only": ["no git writes by the worker", "stay inside the assigned scope", "report limitations honestly"],
-                   "limitations": [x for x in limitations if x], "usage": seen.get("usage", {"total_tokens": None, "source": "not run"})}
+                   "limitations": [x for x in limitations if x], "usage": seen.get("usage", {"total_tokens": None, "source": "not run"}),
+                   "attempts": seen.get("attempts", []), "claim_mode": claim_mode, "cleanup_confirmed": not seen.get("cleanup_unconfirmed", False)}
             os.makedirs(os.path.dirname(os.path.abspath(result_json)), exist_ok=True)
             with open(result_json, "w") as f:
                 _json.dump(res, f, indent=1)
@@ -702,7 +752,7 @@ def run_agent(*args, cwd: str | None = None, allowed_root: str | None = None, cl
     if own_tmp:
         import shutil as _sh
         _sh.rmtree(own_tmp, ignore_errors=True)
-    if status in ("refused", "failed"):
+    if status in ("refused", "failed", "timeout"):
         sys.exit(exit_code)
 
 
@@ -800,6 +850,7 @@ if __name__ == "__main__":
         parser.add_argument("--allowed-root", help="Refuse to launch unless --cwd resolves inside this root.")
         parser.add_argument("--claim-dir", help="Directory for unit ownership claims; a second claim of --unit is refused before launch.")
         parser.add_argument("--unit"); parser.add_argument("--owner")
+        parser.add_argument("--claim-token", help="Token of a claim the CALLER already acquired for --unit; the executor verifies it and never releases it.")
         parser.add_argument("--timeout", type=float, help="Seconds; kills the backend process group on the streaming path.")
         parser.add_argument("--clean-context", action="store_true", help="claude only: neutral cwd, project-only settings, no slash commands or tools.")
         parser.add_argument("--result-json", help="Write the structured execution result (status, checks, limitations, usage).")
@@ -813,5 +864,5 @@ if __name__ == "__main__":
                   args.cli, args.model, args.isolated, args.max_tokens, args.require_input,
                   args.tier, args.profile, args.effort, args.print_timeout, args.executable,
                   fallback_chain=args.fallback_chain, allow_copilot=args.allow_copilot,
-                  cwd=args.cwd, allowed_root=args.allowed_root, claim_dir=args.claim_dir, unit=args.unit, owner=args.owner,
+                  cwd=args.cwd, allowed_root=args.allowed_root, claim_dir=args.claim_dir, unit=args.unit, owner=args.owner, claim_token=args.claim_token,
                   timeout=args.timeout, clean_context=args.clean_context, result_json=args.result_json)

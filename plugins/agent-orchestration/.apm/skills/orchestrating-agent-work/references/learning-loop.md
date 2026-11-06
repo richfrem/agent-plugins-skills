@@ -1,25 +1,46 @@
 # Learning loop (repository-independent)
 
-`scripts/work_loop.py` sequences one work item; it needs no Sanctuary schema.
+Supported entry point for ONE work item: `python3 scripts/work_loop.py run CONTRACT --cli claude --model M --instruction-file TASK.md [--executable PATH]`
+(or `work_loop.run_item(...)`). It is a sequential loop on top of `cli-agent/run_agent.py`; it is not a scheduler. `graph_runner.py` (DAG manifests) and
+`swarm_run.py` (bulk jobs) do not call `cli-agent`; use them for those shapes and pass the `run_agent.py` flags yourself if you need the same launch controls.
 
-1. **Contract** — goal, scope, observable acceptance and failure conditions, budget, authorization (`evaluating-agent-outcomes/references/work-contract.md`). `work_loop.py start` rejects an unusable contract.
-2. **Retrieve** — `start` retrieves up to 3 relevant lessons BEFORE any dispatch (recorded in the trace).
-3. **Delegate** — `work_loop.dispatch` goes through `cli-agent/scripts/run_agent.py` with ownership claim, cwd boundary, timeout and a structured result file.
-4. **Evaluate** — `work_loop.evaluate` calls `outcome_eval.assess`. Worker exit is not completion.
-5. **Repair** — `recommended=repair` returns the incomplete criteria to a worker; `escalate` at the attempt cap; `blocked` on budget.
-6. **Integrate** — only when `complete` AND the caller's authorization allows (`integration_allowed`). Scores do not matter.
-7. **Record** — `lessons.py add` (specific, evidenced), `eval_cli.py repair record` for recurring classes. No mission per lesson.
-8. **Apply and measure** — `lessons.py use` records helped / no_effect / harmful on later work; `repair applied` counts opportunities.
+## What the code does (enforced)
+1. **Contract** - `start` validates goal, scope, acceptance, failure conditions, authorization and the budget (semantics below).
+2. **Lessons** - up to 3 relevant lessons are retrieved before any dispatch and saved in `plan.json`.
+3. **Per attempt (`dispatch`)** - in this order: acquire the unit claim (unique token) -> admit and reserve under a file lock (attempt + token budget) ->
+   allocate an immutable attempt id and `attempts/<attempt-id>/` -> write `input.md` (task + bounded lessons block + repair notes) -> context readiness
+   (when the contract requires isolation) -> executable preflight in the worker environment -> run `run_agent.py` with the pre-acquired claim token ->
+   record every backend attempt and its usage -> release the claim (only with the holder's token). A refused duplicate or budget refusal changes no attempt files.
+4. **Assess** - `evaluate` checks the criteria against the repository state, writes `evaluations/<id>.json` (history kept) and `findings.json`, and
+   writes `accepted.json` naming the accepted attempt when all required criteria pass.
+5. **Repair** - `run_item` returns unmet criteria to the next attempt as a "Repair required" section; it stops on acceptance, a blocker, escalation
+   at the attempt cap, a preflight refusal, a duplicate, or budget exhaustion.
+6. **Evidence** - attempts, results, outputs, refusals and evaluations are append-only/immutable; `lesson_candidates` lists failed-then-repaired attempts.
 
-Independent review and integration of ready deliveries proceed while other workers run.
+## What stays agent-supervised
+Writing lessons (`lessons.py add` from the candidates), confirming `manual` criteria, deciding whether a lesson helped (`observe_lessons` needs cited
+attempt ids; supplying a lesson never marks it helped), reviews, integration, any use of authorization, and anything outside the loop's repository state.
 
-## Ownership
+## Budget semantics (per WORK ITEM, across all units, backends and fallback attempts)
+`max_attempts` (required positive integer): execution attempts; preflight refusals and evaluation calls do not count. `max_tokens` (optional positive
+integer): ceiling over measured/charged tokens. `per_attempt_token_reserve` (optional, needs `max_tokens`): charged for any attempt whose usage is unknown or
+still running. With a token ceiling and unknown usage but no reserve, further launches are REFUSED (never assume zero). Backends cannot enforce a hard
+token ceiling; limits are admission control plus the output/turn/time limits the backend supports (`--timeout`, `--max-tokens` for llama).
+
+## Ownership boundary
+Claims stop a second claimant of the same unit and give the holder a token. They do not stop an unrelated process from writing the same files, and a
+hard-killed holder leaves a stale claim (no expiry). On timeout/cancellation the executor stops the worker's whole process group and confirms cleanup
+before the claim is released or a fallback starts; descendants that start their own session are out of reach.
+
+## Experimental readiness
+A contract with `"isolation": {"required": true}` makes the loop refuse any launch until `dispatch_guard.py probe-context` has succeeded for the EXACT
+configuration (backend, model, executable path and version, clean flags, cwd policy). One probe covers all trials with that configuration; any change voids
+it. Ordinary repository work (no `isolation`) keeps its repository context. Unobserved context is reported, never assumed.
+
+## Ownership of capabilities
 | Capability | Owner |
 |---|---|
-| Outcome loop, sequencing, redispatch, trace | `orchestrating-agent-work` |
-| Launch checks (claim, cwd, executable, timeout, clean context), structured result, usage capture | `cli-agent` (`run_agent.py`, `dispatch_guard.py`) |
-| Findings, validity, costs, interventions, lessons | `evaluating-agent-outcomes` |
+| Outcome loop, attempt ledger, admission, lesson briefs | `orchestrating-agent-work` |
+| Launch controls (claim token, cwd, executable, process-group timeout, clean context, readiness probe), structured result with per-backend attempts | `cli-agent` |
+| Findings, attempt/usage arithmetic, budget validation, claim-specific validity, scoring, lessons | `evaluating-agent-outcomes` |
 | Mission lifecycle, hypotheses, verdicts, governance | the consuming repository (e.g. Sanctuary) |
-
-## Enforced by code vs instructed
-Enforced in `run_agent.py` when the flags are passed: duplicate-unit refusal, cwd boundary, executable resolved on the worker PATH and version-probed, timeout (process-group kill on the streaming path), clean-context flags for claude, structured result JSON. NOT enforced (instructions the agent must follow): no git writes by workers, staying in scope, reviewing while workers run, honoring a standing authorization. A direct or manual `run_agent.py` call without the flags, or a direct CLI invocation, bypasses all of it. Clean context is requested, not probed: verify with `dispatch_guard.py context-check` on a stream-json probe. Ordinary repository work needs repository context; use `--clean-context` only for clean experimental conditions.
