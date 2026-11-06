@@ -7,6 +7,9 @@ Contract schema: references/work-contract.md.  CLI:  outcome_eval.py assess CONT
 import argparse, json, subprocess, sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import scoring  # noqa: E402
+
 CHECK_KINDS = ("command", "file_exists", "file_contains", "manual")
 
 
@@ -74,17 +77,10 @@ def run_check(check, root, evidence_manual=None, cid=None):
 
 
 def validate_scores(rubric, scores):
-    problems, total = [], 0.0
-    for name, spec in rubric.get("dimensions", {}).items():
-        v = (scores or {}).get(name)
-        if v is None:
-            problems.append(f"rubric dimension '{name}' not scored")
-        elif not 0 <= v <= spec["max"]:
-            problems.append(f"{name}={v} outside 0..{spec['max']}")
-        else:
-            total += spec.get("weight", 1) * v / spec["max"]
-    wsum = sum(s.get("weight", 1) for s in rubric.get("dimensions", {}).values()) or 1
-    return problems, round(total / wsum, 4)
+    """Delegates to scoring.py (the single scoring implementation). -> (problems, weighted normalized value)."""
+    prof = scoring.load_profile(dict(rubric))
+    problems = scoring.validate_ratings(prof, scores or {})
+    return problems, (None if problems else scoring.score(prof, scores)["weighted_normalized"])
 
 
 def assess(contract, root=".", evidence=None, attempts_used=0):

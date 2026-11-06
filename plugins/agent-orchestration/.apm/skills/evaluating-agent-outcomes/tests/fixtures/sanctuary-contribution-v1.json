@@ -1,0 +1,17 @@
+{
+  "id": "sanctuary-contribution-v1",
+  "description": "Project Sanctuary's five anchored contribution dimensions, each 0-3 (see evaluation-rubric.md). Headline fitness = raw sum / 15. Scores recorded before MISSION-055 keep exactly these meanings.",
+  "fitness": "raw_fraction",
+  "dimensions": {
+    "useful_outcome": {"max": 3, "weight": 1},
+    "learning_depth": {"max": 3, "weight": 1},
+    "verification_rigor": {"max": 3, "weight": 1},
+    "token_economy": {"max": 3, "weight": 1},
+    "anti_asch_integrity": {"max": 3, "weight": 1}
+  },
+  "bloat": {
+    "min_weight": 3.0,
+    "low_dimensions": {"token_economy": 1, "useful_outcome": 1},
+    "message": "CRITICAL: Expensive model '{model}' (weight {weight}x) produced bloated/low-value output without advancing core objectives."
+  }
+}

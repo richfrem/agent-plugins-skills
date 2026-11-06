@@ -23,7 +23,8 @@ The evaluator supplies **findings**; the orchestrator decides. Scores and passin
 - **Findings only**: `complete` is true only when every required criterion passes and no failure condition fired. A numeric score cannot change it.
 - **Unknown is not zero**: missing usage, interventions or telemetry are reported as unknown with coverage.
 - **Bounded storage**: records go to an explicit store inside a declared root (default `<root>/.agent-work/records.jsonl`); never to a global ledger.
-- **One implementation**: reusable logic lives in `scripts/eval_core.py`; adapters import it (Sanctuary does).
+- **One implementation**: reusable logic lives in `scripts/` (`eval_core.py` gates and records, `scoring.py`, `accounting.py`, `usage_measure.py`, `outcome_eval.py`, `lessons.py`); consumers supply profiles, policy and storage and import it (Sanctuary does). Do not re-implement scoring or accounting in a consumer.
+- **Scope**: this skill evaluates ordinary work. Project policy (research verdicts, governance, budgets, dashboards) belongs to the consuming repository's own skill.
 
 ## Quick Start
 
@@ -32,6 +33,7 @@ python3 scripts/outcome_eval.py validate contract.json
 python3 scripts/outcome_eval.py assess contract.json --root . [--evidence evidence.json]   # exit 0 only if complete
 python3 scripts/lessons.py --root . find "restricted PATH worker launch"                   # before dispatch
 python3 scripts/lessons.py --root . add --trigger ... --failure ... --evidence ... --action ... --verification ... --limits ...
+python3 scripts/outcome_eval.py assess contract.json   # optional rubric scores via scoring.py (assets/rubrics/pr-review.json)
 python3 scripts/eval_cli.py --root . validity benchmark.json   # fixtures | pilot | validity | intervention | repair | invest | summary
 ```
 
@@ -52,4 +54,5 @@ Small by default: acceptance, evidence, resource use, blockers. A rubric is opti
 ## References
 
 - [work-contract.md](references/work-contract.md) — contract, findings and record formats, storage rules.
+- [scoring-and-accounting.md](references/scoring-and-accounting.md) — Profile-driven scoring, cost tiers, usage ledger folding, usage measurement; what consumers keep.
 - [gates.md](references/gates.md) — fixtures, output-contract pilot, benchmark validity cap, interventions, repair recurrence, investment accounting.

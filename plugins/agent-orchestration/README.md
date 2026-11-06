@@ -9,7 +9,7 @@ A framework-agnostic execution and routing suite for AI agents. Combines structu
 | Skill | Role | Description |
 |---|---|---|
 | `orchestrating-agent-work` | Master Orchestrator | Interactive intake and execution planner for DAGs, supervisor/worker loops, and parallel swarms. Analyzes incoming tasks, determines topology, plans artifacts, and coordinates execution. |
-| `evaluating-agent-outcomes` | Shared Evaluator | Repository-independent findings for a work contract: criterion-level acceptance, validity gates, measured cost with unknowns, human-intervention classes, repair recurrence, and specific lessons on an explicit repo-local store. Never grants authority. |
+| `evaluating-agent-outcomes` | Shared Evaluator | Repository-independent findings for a work contract: criterion-level acceptance, validity gates, measured cost with unknowns, human-intervention classes, repair recurrence, profile-driven scoring (`scoring.py`), cost tiers and usage-ledger arithmetic (`accounting.py`), zero-token usage measurement (`usage_measure.py`), and specific lessons on an explicit repo-local store. Never grants authority. |
 | `cli-agent` | Multi-LLM Router | Dispatches bounded tasks to six backends (`--cli claude\|codex\|copilot\|agy\|gemini\|llama`) via `run_agent.py`. Manages local llama-server setup, canonical model catalogs, project capability setup, and KV cache optimization. |
 | `agt-security` | Governance & Sandboxing | Microsoft Agent Governance Toolkit (AGT) sandbox validation, boundary verification, and HMAC key rotation. |
 | `maf-adapter` | Framework Adapter | Microsoft Agent Framework (MAF) manifest validation, adapter bindings, and local simulation harness. |
