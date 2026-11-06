@@ -145,6 +145,39 @@ def _next_attempt_id(recs, unit):
     return f"{unit}-a{n:03d}"
 
 
+def _enc_project(path):
+    return re.sub(r"[^A-Za-z0-9]", "-", str(Path(path).resolve()))
+
+
+def _attribute_claude(bas, res, projects_dir=None):
+    """Fill UNKNOWN usage of a claude backend attempt from Claude's own transcripts (existing supported source:
+    usage_measure.claude_tokens_between) - no new tracker and no prompt sent. Attributed only when the worker's exact cwd has a transcript
+    directory with activity in the attempt window and NO other session was active there; otherwise usage stays unknown.
+    total_tokens = input + output + cache-write tokens (cache READS are reported but excluded from the budgeted total)."""
+    um = _import("evaluating-agent-outcomes", "usage_measure")
+    from datetime import datetime, timezone
+    iso = lambda t: datetime.fromtimestamp(t, timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    pd = Path(projects_dir) if projects_dir else Path.home() / ".claude" / "projects"
+    out = []
+    for ba in bas:
+        u = ba.get("usage") or {}
+        if ba.get("backend") != "claude" or u.get("total_tokens") is not None or not res.get("cwd") or not ba.get("started") or not ba.get("ended"):
+            out.append(ba); continue
+        d = pd / _enc_project(res["cwd"])
+        if not d.is_dir():
+            out.append({**ba, "usage": {**u, "source": "no claude transcript directory for the worker cwd; unknown"}}); continue
+        m = um.claude_tokens_between(d, iso(ba["started"] - 1), iso(ba["ended"] + 1))
+        total = m["input_tokens"] + m["output_tokens"] + m["cache_creation_input_tokens"]
+        if m["concurrent"] or total == 0:
+            why = "concurrent sessions in the window; not attributed" if m["concurrent"] else "no transcript usage in the attempt window"
+            out.append({**ba, "usage": {"total_tokens": None, "source": "claude transcripts: " + why, "window_components": m}}); continue
+        out.append({**ba, "usage": {"total_tokens": total, "tokens_in": m["input_tokens"], "tokens_out": m["output_tokens"],
+                                    "cache_write": m["cache_creation_input_tokens"], "cache_read": m["cache_read_input_tokens"],
+                                    "source": "claude project transcript (exact worker cwd, attempt window)",
+                                    "counts": "input+output+cache_write; cache reads excluded"}})
+    return out
+
+
 def dispatch(wid, unit, owner, cli, worker_path, instruction, cwd, root=".", executable=None, model=None, timeout=600, extra=(), lessons_supplied=None):
     """One guarded execution attempt. ORDER matters: claim -> admit+reserve (locked) -> artifacts -> preflights -> executor -> record -> release.
     A refused duplicate or a budget refusal creates/changes NO attempt files."""
@@ -218,6 +251,7 @@ def dispatch(wid, unit, owner, cli, worker_path, instruction, cwd, root=".", exe
                 trace(root, wid, "dispatch_refused", unit=unit, attempt_id=attempt_id, reason=res.get("error"))
                 return {"ok": False, "status": "refused", "attempt_id": attempt_id, "result": str(result), "reason": res.get("error")}
             bas = res.get("attempts") or [{"backend": cli, "status": res.get("status"), "usage": res.get("usage") or {"total_tokens": None}}]
+            bas = _attribute_claude(bas, res)
             _append(d / "attempts.jsonl", {"kind": "attempt", "attempt_id": attempt_id, "unit": unit, "work_id": wid, "state": "finished", "status": res.get("status"),
                                            "backend_attempts": bas, "cleanup_confirmed": res.get("cleanup_confirmed"), "lessons_supplied": ids, "t": time.time()})
             trace(root, wid, "dispatch", unit=unit, attempt_id=attempt_id, status=res.get("status"), exit=p.returncode, backend_attempts=len(bas))
