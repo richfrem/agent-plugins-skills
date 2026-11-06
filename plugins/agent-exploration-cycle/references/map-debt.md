@@ -9,3 +9,7 @@
 | 2026-10-23 | CONSOL-2026-10 | running-exploration-cycle/scripts/dispatch.py | Overlaps the `cli-agent` skill's `run_agent.py` (backend dispatch); keeps its own HMAC and approval gate | Gate logic is tested and security-sensitive; merging is a design decision | Decide whether dispatch.py delegates to cli-agent or keeps the gate and calls it | Low | NO | OPEN |
 | 2026-10-23 | CONSOL-2026-10 | running-exploration-cycle (session hygiene) | Stale-session resume/archive (rename `exploration/` to `exploration-archive-YYYYMMDD-HHMMSS/`) is documented but not implemented | Not requested during consolidation | Implement in `session_start.py` with a test | Low | NO | OPEN |
 | 2026-10-23 | CONSOL-2026-10 | running-exploration-cycle/references/domain-patterns.md | Two planned pattern files (requirements-capture, prototype-build) were never written | No confirmed failures recorded | Write them when a failure is confirmed twice | Low | NO | OPEN |
+
+## DEBT-20261106-CODEX-SESSION-OUTPUT (RESOLVED)
+
+Codex 0.167.0 rejected each exploration SessionStart fallback because it mixed top-level `additionalContext` with the nested protocol. Both configured invocations exited 0 with empty stderr, so the shell fallback could not help. The existing `_build_output_data` adapter now emits only the nested SessionStart shape for Codex/unknown runners; explicit Copilot and Cursor output remains unchanged. Verified with deterministic format assertions and installed-hook execution. Contract: https://learn.chatgpt.com/docs/hooks#sessionstart.
