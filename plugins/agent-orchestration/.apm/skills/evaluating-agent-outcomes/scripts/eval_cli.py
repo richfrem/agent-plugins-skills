@@ -20,7 +20,7 @@ def main(argv=None):
     f = sub.add_parser("fixtures"); f.add_argument("file"); f.add_argument("--cwd", default=".")
     p = sub.add_parser("pilot"); p.add_argument("file"); p.add_argument("--pattern", required=True); p.add_argument("--min-adherence", type=float, default=0.8)
     p.add_argument("--confirmatory-ids")
-    v = sub.add_parser("validity"); v.add_argument("file"); v.add_argument("--min-adherence", type=float, default=0.8)
+    v = sub.add_parser("validity"); v.add_argument("file", help='JSON {"planned","valid","arms", optional "claim":{"type",...}}'); v.add_argument("--min-adherence", type=float, default=0.8)
     i = sub.add_parser("intervention"); i.add_argument("--category", required=True, choices=c.INTERVENTION_CATEGORIES)
     i.add_argument("--reason", required=True); i.add_argument("--observed-event", required=True); i.add_argument("--mission")
     r = sub.add_parser("repair"); r.add_argument("action", choices=["record", "applied", "report"])
@@ -35,7 +35,9 @@ def main(argv=None):
     elif a.cmd == "fixtures": out = c.run_fixtures(_j(a.file), a.cwd)
     elif a.cmd == "pilot": out = c.pilot_adherence(_j(a.file), a.pattern, a.min_adherence, _j(a.confirmatory_ids) if a.confirmatory_ids else ())
     elif a.cmd == "validity":
-        d = _j(a.file); out = c.validity(d["planned"], d["valid"], d.get("arms", {}), a.min_adherence)
+        d = _j(a.file)
+        out = c.assess_claim(d["planned"], d["valid"], d.get("arms", {}), d["claim"], a.min_adherence) if d.get("claim") is not None \
+            else c.validity(d["planned"], d["valid"], d.get("arms", {}), a.min_adherence)
     elif a.cmd == "intervention": out = c.record_intervention(a.category, a.reason, a.observed_event, a.mission, **kw)
     elif a.cmd == "repair":
         if a.action == "record": out = c.record_repair(a.category, a.evidence, a.repair, a.verification, a.owner, a.cause, repair_cost_tokens=a.cost_tokens, **kw)
@@ -44,7 +46,7 @@ def main(argv=None):
     elif a.cmd == "invest": out = c.investment(_j(a.file))
     else: out = {"interventions": c.intervention_summary(**kw), "repairs": c.repair_report(**kw)}
     print(json.dumps(out, indent=1, sort_keys=True))
-    bad = (a.cmd == "fixtures" and not out["passed"]) or (a.cmd == "pilot" and not out["ready"]) or (a.cmd == "validity" and out["max_claim"] != "BEHAVIORAL_CLAIM_ALLOWED")
+    bad = (a.cmd == "fixtures" and not out["passed"]) or (a.cmd == "pilot" and not out["ready"]) or (a.cmd == "validity" and out["max_claim"] not in ("BEHAVIORAL_CLAIM_ALLOWED", "CLAIM_SUPPORTED"))
     return 1 if bad else 0
 
 

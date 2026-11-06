@@ -121,6 +121,84 @@ def validity(planned, valid, arms, min_adherence=0.8, ceiling=0.98):
     return {"adherence": round(adherence, 4), "problems": problems, "max_claim": claim, "notes": notes}
 
 
+# ------------------------------------------------------------------ claim-specific validity
+CLAIM_TYPES = {
+    "relative_reduction": "treatment rate is a fraction lower than baseline; undefined when the baseline rate is 0",
+    "absolute_difference": "treatment minus baseline rate; defined for any rates, including zeros",
+    "gain": "improvement toward a target; undefined when the baseline already sits at the ceiling (no headroom)",
+    "descriptive_rate": "report a single arm's rate; a zero rate is an informative result",
+    "adherence": "share of answers that met the output contract; needs no behavioral arms",
+}
+
+
+def assess_claim(planned, valid, arms, claim, min_adherence=0.8, ceiling=0.98):
+    """Metric-specific validity. The evaluation contract names the claim type and the arms it compares:
+        claim = {"type": one of CLAIM_TYPES, "baseline": arm-name, "treatment": arm-name}   (descriptive_rate: {"type", "arm"})
+    A claim that is undefined for the data (e.g. a relative reduction from a zero baseline) is reported as UNDEFINED_CLAIM and its
+    value is withheld, but descriptive rates and the adherence figure are ALWAYS returned so valid descriptive results are never
+    suppressed. Malformed/missing answers stay in `planned` (fixed denominator) and low adherence still caps behavioral claims at
+    MECHANICS_ONLY, so malformed output can never create apparent behavioral corroboration. Historical records are not rescored."""
+    if claim.get("type") not in CLAIM_TYPES:
+        raise ValueError(f"claim.type must be one of {sorted(CLAIM_TYPES)}")
+    if isinstance(planned, bool) or isinstance(valid, bool) or not isinstance(planned, int) or planned <= 0 or not isinstance(valid, int) or not 0 <= valid <= planned:
+        raise ValueError("need integer planned > 0 and 0 <= valid <= planned (booleans rejected)")
+    if not 0.5 <= min_adherence <= 1.0:
+        raise ValueError("min_adherence must be within [0.5, 1.0]")
+    for name, a in arms.items():
+        if not isinstance(a, dict) or "k" not in a or "n" not in a:
+            raise ValueError(f"arm {name}: needs integer keys 'k' and 'n'")
+        if not 0 <= a["k"] <= a["n"] or a["n"] <= 0:
+            raise ValueError(f"arm {name}: need 0 <= k <= n and n > 0")
+        if a["n"] > planned:
+            raise ValueError(f"arm {name}: n={a['n']} exceeds planned={planned}; arms must be drawn from the fixed planned denominator")
+    adherence = valid / planned
+    descriptive = {n: {"k": a["k"], "n": a["n"], "rate": round(a["k"] / a["n"], 4)} for n, a in arms.items()}
+    problems, notes, value = [], [], None
+    t = claim["type"]
+    if t != "adherence" and adherence < min_adherence:
+        problems.append("ADHERENCE_LIMITED")
+        notes.append(f"only {valid}/{planned} answers met the output contract ({adherence:.2f}); the behavior is unobservable for the rest")
+
+    def arm(key):
+        nm = claim.get(key)
+        if nm not in arms:
+            raise ValueError(f"claim needs arm '{nm}' ({key}) present in arms")
+        return arms[nm]
+    if t == "relative_reduction":
+        b, tr = arm("baseline"), arm("treatment")
+        if b["k"] == 0:
+            problems.append("UNDEFINED_CLAIM")
+            notes.append("relative reduction is undefined from a zero baseline; report the absolute difference instead (an informative zero)")
+        else:
+            value = round(1 - (tr["k"] / tr["n"]) / (b["k"] / b["n"]), 4)
+    elif t == "absolute_difference":
+        b, tr = arm("baseline"), arm("treatment")
+        value = round(tr["k"] / tr["n"] - b["k"] / b["n"], 4)
+    elif t == "gain":
+        b, tr = arm("baseline"), arm("treatment")
+        if b["k"] / b["n"] >= ceiling:
+            problems.append("UNDEFINED_CLAIM")
+            notes.append("baseline at the ceiling: no headroom, a gain cannot be measured")
+        else:
+            value = round(tr["k"] / tr["n"] - b["k"] / b["n"], 4)
+    elif t == "descriptive_rate":
+        a = arm("arm")
+        value = round(a["k"] / a["n"], 4)
+        if a["k"] == 0:
+            notes.append("zero events observed: an informative descriptive result")
+    elif t == "adherence":
+        value = round(adherence, 4)
+        if adherence < min_adherence:
+            problems.append("ADHERENCE_BELOW_THRESHOLD")
+            notes.append(f"adherence {adherence:.2f} is below the declared threshold {min_adherence}; the figure is reported but not 'supported'")
+    problems = sorted(set(problems))
+    supported = not problems
+    max_claim = "CLAIM_SUPPORTED" if supported else ("MECHANICS_ONLY" if "ADHERENCE_LIMITED" in problems else
+                                                    "ADHERENCE_BELOW_THRESHOLD" if "ADHERENCE_BELOW_THRESHOLD" in problems else "UNDEFINED_CLAIM")
+    return {"claim_type": t, "supported": supported, "max_claim": max_claim, "value": value if supported else None, "adherence": round(adherence, 4),
+            "descriptive": descriptive, "problems": problems, "notes": notes}
+
+
 # ------------------------------------------------------------------ interventions / repairs
 def record_intervention(category, reason, observed_event, mission=None, root=".", store=None, compat_event_type=False):
     """Interventions come from observable events (a user message), never from model self-report."""

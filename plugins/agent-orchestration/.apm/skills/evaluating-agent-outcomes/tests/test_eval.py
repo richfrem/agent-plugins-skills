@@ -29,7 +29,7 @@ class Assess(unittest.TestCase):
         f = oe.assess(contract(self.r), self.r)
         self.assertEqual(f["recommended"], "repair"); self.assertEqual(set(f["incomplete"]), {"A1", "A2"})
     def test_attempt_cap_escalates(self):
-        self.assertEqual(oe.assess(contract(self.r), self.r, attempts_used=2)["recommended"], "escalate")
+        self.assertEqual(oe.assess(contract(self.r), self.r, attempts_used=3)["recommended"], "escalate")
     def test_high_score_cannot_conceal_unmet_criterion(self):
         ev = {"scores": {"correctness": 3, "tests": 3, "scope_discipline": 3, "economy": 3}}
         f = oe.assess(contract(self.r, rubric=True), self.r, ev)

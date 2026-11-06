@@ -119,3 +119,6 @@ python3 -m pytest plugins/agent-orchestration/skills/cli-agent/scripts -v
 ## Consumers
 
 Project Sanctuary consumes `orchestrating-agent-work`, `cli-agent` and `evaluating-agent-outcomes` through thin adapters (`evaluating-agent-work/scripts/eval_gate.py`, `sanctuary_adapter.py`). Interface changes need a compatibility shim or same-change caller updates, an `evolution-log.md` entry, and a global `apm update --global` with installed-file verification. `dispatch_guard.py` now lives in `cli-agent/scripts/` (a shim remains in `orchestrating-agent-work/scripts/`).
+
+## Execution and accounting model (summary)
+`orchestrating-agent-work/scripts/work_loop.py run` is the supported single-item loop: claim-first dispatch, atomic per-work-item budget admission, immutable attempt ids and artifacts, bounded lesson briefs, repair within budget. `cli-agent` enforces launch boundaries (process-group timeout with confirmed cleanup, claim tokens, readiness probes) and returns per-backend attempts with usage-or-null. `evaluating-agent-outcomes` owns the arithmetic (attempt ledger folding, budget validation/admission, claim-specific validity). See `orchestrating-agent-work/references/learning-loop.md` for what is enforced and what stays agent-supervised.

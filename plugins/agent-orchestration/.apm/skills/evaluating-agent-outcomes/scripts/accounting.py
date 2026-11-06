@@ -83,3 +83,94 @@ def check_turns(profiles, name, planned_turns):
     return {"profile": name, "description": prof["description"], "planned_turns": planned_turns, "soft_turn_limit": limit,
             "status": "APPROVED" if ok else "WARNING",
             "warning": "" if ok else f"Planned turns ({planned_turns}) exceeds soft limit ({limit}) for {name}."}
+
+
+# ---------------------------------------------------------------- work-item budgets and attempt accounting (MISSION-055 hardening)
+BUDGET_KEYS = {"max_attempts", "max_tokens", "per_attempt_token_reserve"}
+
+
+def _posint(v):
+    return isinstance(v, int) and not isinstance(v, bool) and v > 0
+
+
+def validate_budget(b):
+    """Semantics (all limits apply PER WORK ITEM, summed over every execution unit, backend and fallback attempt of that item):
+      max_attempts              required positive integer - maximum EXECUTION attempts (preflight refusals and evaluation calls do not count)
+      max_tokens                optional positive integer - ceiling on tokens measured/charged across all attempts of the item
+      per_attempt_token_reserve optional positive integer <= max_tokens - tokens charged for an attempt whose usage is unknown or
+                                not yet known (running). It is an ADMISSION control, not a backend-enforced cap.
+    Negative, zero, float, boolean, string or unknown keys are rejected. Returns a list of problems."""
+    if not isinstance(b, dict):
+        return ["budget must be an object"]
+    p = [f"unsupported budget key '{k}'" for k in sorted(set(b) - BUDGET_KEYS)]
+    if "max_attempts" not in b:
+        p.append("budget.max_attempts is required")
+    for k in ("max_attempts", "max_tokens", "per_attempt_token_reserve"):
+        if k in b and not _posint(b[k]):
+            p.append(f"budget.{k} must be a positive integer (not boolean/float/string): got {b[k]!r}")
+    if _posint(b.get("per_attempt_token_reserve")) and _posint(b.get("max_tokens")) and b["per_attempt_token_reserve"] > b["max_tokens"]:
+        p.append("budget.per_attempt_token_reserve exceeds budget.max_tokens")
+    if "per_attempt_token_reserve" in b and "max_tokens" not in b:
+        p.append("budget.per_attempt_token_reserve is meaningless without budget.max_tokens")
+    return p
+
+
+def summarize_attempts(records):
+    """Fold an append-only attempt ledger. Records: {kind:'attempt', attempt_id, unit, state: reserved|finished|refused_preflight,
+    backend_attempts:[{backend,status,usage:{total_tokens}}], reserve_tokens} and {kind:'evaluation', eval_id, model_tokens}.
+    The LAST record per attempt_id wins, so the same attempt is never counted twice. Unknown usage stays unknown; known totals are
+    reported as lower bounds when anything is unknown."""
+    latest, evals = {}, {}
+    for r in records:
+        if r.get("kind") == "attempt" and r.get("attempt_id"):
+            latest[r["attempt_id"]] = r
+        elif r.get("kind") == "evaluation" and r.get("eval_id"):
+            evals[r["eval_id"]] = r
+    exec_attempts = [r for r in latest.values() if r.get("state") in ("reserved", "finished")]
+    refused = [r for r in latest.values() if r.get("state") == "refused_preflight"]
+    known, unknown, backend_n, running, reserve_running = 0, 0, 0, 0, 0
+    for r in exec_attempts:
+        if r["state"] == "reserved":
+            running += 1
+            reserve_running += r.get("reserve_tokens") or 0
+            continue
+        seen = set()
+        for i, ba in enumerate(r.get("backend_attempts") or [{"usage": {"total_tokens": None}}]):
+            key = (r["attempt_id"], i)
+            if key in seen:
+                continue
+            seen.add(key); backend_n += 1
+            t = (ba.get("usage") or {}).get("total_tokens")
+            if isinstance(t, int) and not isinstance(t, bool) and t >= 0:
+                known += t
+            else:
+                unknown += 1
+    eval_known = sum(e["model_tokens"] for e in evals.values() if isinstance(e.get("model_tokens"), int))
+    return {"execution_attempts": len(exec_attempts), "running_or_unfinished": running, "preflight_refusals": len(refused),
+            "evaluation_calls": len(evals), "evaluation_tokens_known": eval_known,
+            "backend_attempts": backend_n, "execution_tokens_known": known, "backend_attempts_with_unknown_usage": unknown,
+            "execution_tokens_is_lower_bound": unknown > 0 or running > 0, "reserved_for_running": reserve_running}
+
+
+def admit(budget, summary):
+    """May ONE more execution attempt launch? Pure decision over the validated budget and summarize_attempts() output.
+    Policy for incomplete measurements: with a token ceiling, an attempt whose usage is unknown (or still running) is charged
+    budget.per_attempt_token_reserve; if no reserve is declared, further launches are refused rather than assuming zero."""
+    bad = validate_budget(budget)
+    if bad:
+        return {"ok": False, "reason": "invalid budget: " + "; ".join(bad), "reserve_tokens": None}
+    if summary["execution_attempts"] >= budget["max_attempts"]:
+        return {"ok": False, "reason": f"attempt budget exhausted ({summary['execution_attempts']}/{budget['max_attempts']})", "reserve_tokens": None}
+    mt, res = budget.get("max_tokens"), budget.get("per_attempt_token_reserve")
+    if mt is None:
+        return {"ok": True, "reason": "no token ceiling declared", "reserve_tokens": None}
+    unknown_or_running = summary["backend_attempts_with_unknown_usage"] + summary["running_or_unfinished"]
+    if unknown_or_running and res is None:
+        return {"ok": False, "reserve_tokens": None, "reason": "token ceiling declared but usage of earlier/running attempts is unknown and no "
+                "budget.per_attempt_token_reserve was declared; refusing rather than assuming zero cost"}
+    committed = summary["execution_tokens_known"] + (res or 0) * summary["backend_attempts_with_unknown_usage"] + \
+        (summary["reserved_for_running"] if summary["running_or_unfinished"] else 0)
+    need = res or 0
+    if committed >= mt or committed + need > mt:
+        return {"ok": False, "reserve_tokens": None, "reason": f"token budget exhausted (committed {committed} + reserve {need} > {mt})"}
+    return {"ok": True, "reserve_tokens": res, "reason": "within budget"}

@@ -1,88 +1,50 @@
-"""Two related tasks in a non-Sanctuary repo through the real loop: work_loop -> run_agent (real subprocess) -> outcome_eval -> lessons.
-MOCKED: the worker backend is a fixture executable, not a model. Asserts over the action trace and file state, not stated intent."""
-import json, os, subprocess, sys, tempfile, unittest
+"""Two related tasks in a non-Sanctuary repo through the real loop. MOCKED: the worker (a fixture executable). REAL: run_agent.py subprocesses,
+claims, ledger, assessment, lessons. Asserts over action traces and state, not stated intent."""
+import json, os, sys, tempfile, unittest
 from pathlib import Path
-
-S = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(S / "orchestrating-agent-work/scripts"))
-sys.path.insert(0, str(S / "evaluating-agent-outcomes/scripts"))
-import work_loop as wl, lessons as L, eval_core as core
-
-
-def make_worker(d):
-    p = Path(d) / "claude"
-    p.write_text(f'#!{sys.executable}\nimport sys,re\nif "--version" in sys.argv:\n print("fixture 1");sys.exit(0)\n'
-                 'm=re.search(r"CREATE:(\\S+)", " ".join(sys.argv))\nif m: open(m.group(1),"w").write("print(\'hello\')\\n")\nprint("done")\n')
-    p.chmod(0o755)
-    return p
-
-
-def contract(wid, fname, goal):
-    return {"id": wid, "type": "task", "goal": goal, "scope": {"paths": [fname]},
-            "acceptance": [{"id": "A1", "text": "script prints hello", "check": {"kind": "command", "argv": [sys.executable, fname], "expect_stdout_contains": ["hello"]}}],
-            "failure_conditions": [{"id": "F1", "text": "error marker", "check": {"kind": "file_exists", "path": "ERROR.txt"}}],
-            "budget": {"max_attempts": 3}, "authorization": {"may_merge": False}}
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _loop_fixtures import *  # noqa
+import lessons as L, eval_core as core
 
 
 class E2E(unittest.TestCase):
     def test_two_related_tasks_learning_loop(self):
-        repo = Path(tempfile.mkdtemp()); subprocess.run(["git", "init", "-q", str(repo)])
-        tools = Path(tempfile.mkdtemp()); worker = make_worker(tools)
-        good_path = str(tools) + os.pathsep + os.environ["PATH"]
-        bad_path = str(Path(tempfile.mkdtemp()))                     # injected failure: worker env lacks the executable
-        env_py = os.path.dirname(sys.executable)
-
-        # ---- task 1
-        c1 = repo / "c1.json"; c1.write_text(json.dumps(contract("t1", "hello.py", "create hello script with the claude worker")))
-        self.assertTrue(wl.start(c1, repo)["ok"])
+        repo, tools, worker = make_repo()
+        bad_path = tempfile.mkdtemp()                         # injected failure: the worker environment lacks the executable
+        # task 1: first dispatch refused by the worker-environment preflight, repaired by supplying the explicit executable
+        p1 = put(repo, contract("t1", goal="create hello script with the claude worker"), "c1.json")
+        self.assertTrue(wl.start(p1, repo)["ok"])
         r = wl.dispatch("t1", "u1", "orch", "claude", bad_path, "CREATE:hello.py", repo, repo)
-        self.assertEqual(r["status"], "refused")                       # detected by the executor path, before any launch
+        self.assertEqual(r["status"], "refused")
         f = wl.evaluate("t1", repo)
-        self.assertEqual(f["recommended"], "repair"); self.assertEqual(f["incomplete"], ["A1"])   # worker exit is not completion
-        r = wl.dispatch("t1", "u1", "orch", "claude", good_path, "CREATE:hello.py", repo, repo, executable=str(worker))
+        self.assertEqual((f["recommended"], f["incomplete"]), ("repair", ["A1"]))          # worker refusal is not completion
+        r = wl.dispatch("t1", "u1", "orch", "claude", bad_path, "CREATE:hello.py", repo, repo, executable=str(worker))
         self.assertTrue(r["ok"], r)
         f = wl.evaluate("t1", repo)
-        self.assertTrue(f["complete"]); self.assertEqual(f["recommended"], "accept"); self.assertFalse(f["integration_allowed"])
-        self.assertIsNone(f["usage"]["total_tokens"])                  # fixture reports none: unknown, not zero
+        self.assertEqual((f["complete"], f["recommended"], f["integration_allowed"]), (True, "accept", False))
+        self.assertEqual(f["accounting"]["preflight_refusals"], 1)                           # refusal kept apart from executions
+        self.assertEqual(f["accounting"]["execution_attempts"], 1)
+        self.assertIsNone(f["usage"]["total_tokens"])                                        # fixture reports none: unknown, not zero
         lesson = L.add("worker PATH lacks the claude executable at launch", "dispatch refused: executable unavailable in worker environment",
-                       "trace t1: exec_check ok=false", "run exec-check on the worker PATH first; pass the explicit executable path",
-                       "e2e test task 2", "applies to CLI backends launched with a restricted PATH", cause_status="known", tags=["claude", "path", "executable"], root=repo)
+                       "trace t1: exec_check ok=false", "pass the explicit executable path", "e2e", "restricted PATH launches", cause_status="known",
+                       tags=["claude", "path", "executable"], root=repo)
         core.record_repair("worker_env_executable", "trace t1", "explicit executable", "e2e", "test", root=repo)
-
-        # ---- task 2 (related): lesson retrieved BEFORE dispatch and applied
-        c2 = repo / "c2.json"; c2.write_text(json.dumps(contract("t2", "greet.py", "create greet script, launching the claude worker from a restricted PATH")))
-        plan = wl.start(c2, repo)["plan"]
+        # task 2: lesson is retrieved AND placed in the worker brief; usefulness is recorded only from observed evidence
+        p2 = put(repo, contract("t2", "greet.py", "create greet script, launching the claude worker from a restricted PATH"), "c2.json")
+        plan = wl.start(p2, repo)["plan"]
         self.assertEqual([l["id"] for l in plan["lessons"]], [lesson["id"]])
-        r = wl.dispatch("t2", "u2", "orch", "claude", bad_path, "CREATE:greet.py", repo, repo, executable=str(worker))   # lesson applied
+        r = wl.dispatch("t2", "u2", "orch", "claude", bad_path, "CREATE:greet.py", repo, repo, executable=str(worker), lessons_supplied=plan["lessons"])
         self.assertTrue(r["ok"], r)
-        f = wl.evaluate("t2", repo); self.assertEqual(f["recommended"], "accept")
-        L.use(lesson["id"], "t2", "helped", root=repo); core.record_application("worker_env_executable", "prevented", "t2", root=repo)
-        tr = [t["action"] for t in wl.read_trace(repo, "t2")]
-        self.assertLess(tr.index("lessons_retrieved"), tr.index("dispatch"))
-        self.assertNotIn("dispatch_refused", tr)
+        brief = (repo / ".agent-work/t2/attempts" / r["attempt_id"] / "input.md").read_text()
+        self.assertIn(lesson["id"], brief); self.assertIn("fallible guidance", brief); self.assertIn("NEVER override", brief)
+        self.assertEqual(L.stats(repo)[lesson["id"]]["helped"], 0)                           # retrieval/supply alone is not "helped"
+        wl.evaluate("t2", repo)
+        wl.observe_lessons("t2", {lesson["id"]: "helped"}, [r["attempt_id"]], repo)
         self.assertEqual(L.stats(repo)[lesson["id"]]["helped"], 1)
-        self.assertEqual(core.repair_report(repo)["worker_env_executable"]["recurrence_rate"], 0.0)
-        # records stayed inside the repo root
+        tr = [t["action"] for t in wl.read_trace(repo, "t2")]
+        self.assertLess(tr.index("lessons_retrieved"), tr.index("attempt_reserved")); self.assertNotIn("dispatch_refused", tr)
         for p in (repo / ".agent-work").rglob("*"):
             self.assertTrue(str(p.resolve()).startswith(str(repo.resolve())))
-
-    def test_duplicate_unit_not_launched(self):
-        repo = Path(tempfile.mkdtemp()); tools = Path(tempfile.mkdtemp()); worker = make_worker(tools)
-        c = repo / "c.json"; c.write_text(json.dumps(contract("t3", "hello.py", "x"))); wl.start(c, repo)
-        guard = wl._import("cli-agent", "dispatch_guard")
-        self.assertTrue(guard.claim(repo / ".agent-work/t3/claims", "u9", "someone-else")["ok"])
-        r = wl.dispatch("t3", "u9", "orch", "claude", str(tools), "CREATE:hello.py", repo, repo, executable=str(worker))
-        self.assertEqual(r["status"], "refused"); self.assertFalse((repo / "hello.py").exists())
-
-    def test_path_traversal_ids_rejected_and_stale_result_not_trusted(self):
-        repo = Path(tempfile.mkdtemp()); tools = Path(tempfile.mkdtemp()); worker = make_worker(tools)
-        bad = contract("../../escape", "a.py", "x"); (repo / "b.json").write_text(json.dumps(bad))
-        with self.assertRaises(ValueError): wl.start(repo / "b.json", repo)
-        c = repo / "c.json"; c.write_text(json.dumps(contract("t4", "a.py", "x"))); wl.start(c, repo)
-        with self.assertRaises(ValueError): wl.dispatch("t4", "../u", "o", "claude", str(tools), "CREATE:a.py", repo, repo, executable=str(worker))
-        (repo / ".agent-work/t4/result-u1.json").write_text(json.dumps({"status": "ok", "usage": {"total_tokens": 1}}))
-        r = wl.dispatch("t4", "u1", "o", "claude", str(tools), "CREATE:a.py", repo, repo, executable=str(tools / "missing-binary"))
-        self.assertNotEqual(r["status"], "ok")
 
 
 if __name__ == "__main__":

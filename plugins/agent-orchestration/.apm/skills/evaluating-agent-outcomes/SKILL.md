@@ -34,7 +34,7 @@ python3 scripts/outcome_eval.py assess contract.json --root . [--evidence eviden
 python3 scripts/lessons.py --root . find "restricted PATH worker launch"                   # before dispatch
 python3 scripts/lessons.py --root . add --trigger ... --failure ... --evidence ... --action ... --verification ... --limits ...
 python3 scripts/outcome_eval.py assess contract.json   # optional rubric scores via scoring.py (assets/rubrics/pr-review.json)
-python3 scripts/eval_cli.py --root . validity benchmark.json   # fixtures | pilot | validity | intervention | repair | invest | summary
+python3 scripts/eval_cli.py --root . validity benchmark.json   # include a "claim" object for claim-specific validity   # fixtures | pilot | validity | intervention | repair | invest | summary
 ```
 
 ## Workflow
