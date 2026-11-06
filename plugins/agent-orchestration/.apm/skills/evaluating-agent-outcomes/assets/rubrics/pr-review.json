@@ -1,0 +1,1 @@
+{"id": "pr-review-v1", "dimensions": {"correctness": {"max": 3, "weight": 3}, "tests": {"max": 3, "weight": 2}, "scope_discipline": {"max": 3, "weight": 1}, "economy": {"max": 3, "weight": 1}}}

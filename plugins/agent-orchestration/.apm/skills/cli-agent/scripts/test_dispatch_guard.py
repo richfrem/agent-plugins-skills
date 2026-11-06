@@ -62,6 +62,17 @@ class Edges(unittest.TestCase):
         d = tempfile.mkdtemp(); g.claim(d, "a/b", "x"); self.assertTrue(g.claim(d, "a_b", "y")["ok"])
 
 
+class Cwd(unittest.TestCase):
+    def test_inside_and_escape(self):
+        root = Path(tempfile.mkdtemp()); (root / "wt").mkdir()
+        self.assertTrue(g.check_cwd(root / "wt", root)["ok"])
+        self.assertFalse(g.check_cwd(root.parent, root)["ok"])
+        self.assertFalse(g.check_cwd(root / "nope", root)["ok"])
+    def test_symlink_escape(self):
+        root = Path(tempfile.mkdtemp()); out = Path(tempfile.mkdtemp()); (root / "l").symlink_to(out)
+        self.assertFalse(g.check_cwd(root / "l", root)["ok"])
+
+
 class Reconcile(unittest.TestCase):
     def test_unique_units_not_log_rows(self):
         rows = [{"id": "a"}, {"id": "a"}, {"id": "b", "valid": False}, {"id": "z"}]

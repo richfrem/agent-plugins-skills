@@ -1,6 +1,6 @@
 # Dispatch preflight and completion discipline
 
-Observed in a four-worker batch (Sanctuary MISSION-052). Each rule says where it is enforced; scripts are in `scripts/dispatch_guard.py`.
+Observed in a four-worker batch (Sanctuary MISSION-052). Each rule says where it is enforced; the guards live in `cli-agent/scripts/dispatch_guard.py` and run inside `run_agent.py` when its flags are passed.
 
 | Failure | Rule | Enforced by |
 |---|---|---|

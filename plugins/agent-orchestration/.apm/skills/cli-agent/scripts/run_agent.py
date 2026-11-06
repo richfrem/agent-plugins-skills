@@ -397,7 +397,47 @@ def _build_cli_cmd(
         return _build_cmd_codex(model)
     if cli == "cursor":
         return _build_cmd_cursor(model, prompt, isolated)
-    return _build_cmd_claude(model, prompt, isolated, effort)  # claude
+    cmd = _build_cmd_claude(model, prompt, isolated or _OPTS.clean_context, effort)  # claude
+    if _OPTS.clean_context:
+        cmd += ["--setting-sources", "project", "--disable-slash-commands", "--tools", ""]
+    return cmd
+
+
+
+# ── Launch controls (enforced here; see references/execution-contract.md "Enforced vs instructed") ──
+import dispatch_guard as _guard  # sibling module in this directory
+import time as _time
+import signal as _signal
+import tempfile as _tempfile
+import json as _json
+import re as _re
+import threading as _threading
+
+
+class _ExecOpts:
+    """Per-invocation controls. Defaults reproduce the historical behavior exactly."""
+    cwd: str | None = None
+    timeout: float | None = None
+    clean_context: bool = False
+    seen: dict = {}
+
+
+_OPTS = _ExecOpts()
+
+
+def _parse_usage(cli: str, text: str) -> dict:
+    """Vendor-reported usage when the CLI prints it; otherwise unknown (never zero)."""
+    m = _re.search(r"tokens used\s*[:\n]?\s*([\d,]+)", text or "", _re.I)
+    if m:
+        return {"total_tokens": int(m.group(1).replace(",", "")), "source": f"{cli} stdout"}
+    return {"total_tokens": None, "source": "not reported by backend"}
+
+
+def _kill_group(proc) -> None:
+    try:
+        os.killpg(os.getpgid(proc.pid), _signal.SIGKILL)
+    except (ProcessLookupError, PermissionError, OSError):
+        proc.kill()
 
 
 def _execute_cli_command(cmd: list, cli: str, output_file: str, prompt_tmp: str) -> None:
@@ -410,38 +450,52 @@ def _execute_cli_command(cmd: list, cli: str, output_file: str, prompt_tmp: str)
     version = subprocess.run([executable, "--version"], capture_output=True, text=True, timeout=10)
     version_text = version.stdout.strip() if version.returncode == 0 else f"unavailable (--version exit {version.returncode})"
     print(f"[run_agent] executable={executable} version={version_text or 'unavailable'}")
+    _OPTS.seen.update({"executable": executable, "version": version_text, "cli": cli})
+    kw = {"cwd": _OPTS.cwd} if _OPTS.cwd else {}
+    if _OPTS.timeout:
+        kw["start_new_session"] = True
     print(f"[run_agent] python={sys.executable} version={sys.version.split()[0]}")
     if cli in _STREAMING_CLIS:
         captured_lines: list[str] = []
         with open(output_file, "w") as out_f:
-            proc = subprocess.Popen(cmd, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+            proc = subprocess.Popen(cmd, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, **kw)
+            timer = None
+            if _OPTS.timeout:
+                timer = _threading.Timer(_OPTS.timeout, _kill_group, (proc,)); timer.start()
             for line in (proc.stdout or []):
                 sys.stdout.write(line)
                 sys.stdout.flush()
                 out_f.write(line)
                 captured_lines.append(line)
             proc.wait()
+            if timer:
+                timer.cancel()
+        _OPTS.seen["usage"] = _parse_usage(cli, "".join(captured_lines))
+        if _OPTS.timeout and proc.returncode == -_signal.SIGKILL:
+            raise subprocess.TimeoutExpired(cmd, _OPTS.timeout)
         if proc.returncode != 0:
             full_out = "".join(captured_lines)
             raise BackendExecutionError(cli, proc.returncode, full_out)
     elif cli == "codex":
         # Codex reads prompt from stdin; prompt_tmp is piped as stdin
         with open(output_file, "w") as out_f, open(prompt_tmp, "r") as stdin_f:
-            proc = subprocess.run(cmd, stdin=stdin_f, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+            proc = subprocess.run(cmd, stdin=stdin_f, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, timeout=_OPTS.timeout, **kw)
+            _OPTS.seen["usage"] = _parse_usage(cli, proc.stdout)
             out_f.write(proc.stdout)
             sys.stdout.write(proc.stdout)
             if proc.returncode != 0:
                 raise BackendExecutionError(cli, proc.returncode, proc.stdout)
     else:
         with open(output_file, "w") as out_f:
-            proc = subprocess.run(cmd, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+            proc = subprocess.run(cmd, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, timeout=_OPTS.timeout, **kw)
+            _OPTS.seen["usage"] = _parse_usage(cli, proc.stdout)
             out_f.write(proc.stdout)
             sys.stdout.write(proc.stdout)
             if proc.returncode != 0:
                 raise BackendExecutionError(cli, proc.returncode, proc.stdout)
 
 
-def run_agent(
+def _run_agent_core(
     persona_file: str,
     input_file: str,
     output_file: str,
@@ -559,6 +613,85 @@ def run_agent(
     sys.exit(1)
 
 
+
+def run_agent(*args, cwd: str | None = None, allowed_root: str | None = None, claim_dir: str | None = None,
+              unit: str | None = None, owner: str | None = None, timeout: float | None = None,
+              clean_context: bool = False, result_json: str | None = None, **kwargs) -> None:
+    """Supported dispatch entry point. Positional/keyword parameters are those of `_run_agent_core` (unchanged).
+
+    Added, all optional (omitting them keeps the historical behavior): cwd + allowed_root (worktree boundary),
+    claim_dir + unit + owner (duplicate-launch prevention), timeout (seconds, process-group kill on streaming path),
+    clean_context (claude only: neutral cwd, project-only settings, no slash commands/tools; NOT probed here),
+    result_json (structured return of status, checks, limitations, usage). A failed launch check exits 2 BEFORE launch.
+    """
+    started = _time.time()
+    checks: list[dict] = []
+    enforced = []
+    limitations = ["clean-context flags are requested, not probed: run dispatch_guard.py context-check on a stream-json probe to verify"
+                   if clean_context else None]
+    status, exit_code, error = "ok", 0, None
+    claimed = False
+    _OPTS.cwd, _OPTS.timeout, _OPTS.clean_context, _OPTS.seen = cwd, timeout, clean_context, {}
+    own_tmp = None
+    try:
+        if cwd is not None and allowed_root is not None:
+            r = _guard.check_cwd(cwd, allowed_root)
+            checks.append({"name": "cwd_boundary", **r}); enforced.append("cwd_boundary")
+            if not r["ok"]:
+                raise _LaunchRefused(r["detail"])
+        elif cwd is not None:
+            limitations.append("cwd given without allowed_root: boundary not enforced")
+        if claim_dir:
+            if not (unit and owner):
+                raise _LaunchRefused("claim_dir requires unit and owner")
+            r = _guard.claim(claim_dir, unit, owner)
+            checks.append({"name": "unit_claim", "ok": r["ok"], "detail": r.get("why") or r["owner"]}); enforced.append("unit_claim")
+            if not r["ok"]:
+                raise _LaunchRefused(f"unit {unit} already owned by {r['owner']}")
+            claimed = True
+        if clean_context:
+            tgt = (args[4] if len(args) > 4 else kwargs.get("cli", "claude")).lower()
+            if tgt != "claude":
+                raise _LaunchRefused(f"clean_context is only supported for claude, not {tgt}")
+            if cwd is not None:
+                raise _LaunchRefused("clean_context chooses a neutral cwd itself; do not pass cwd")
+            own_tmp = _tempfile.mkdtemp(prefix="clean-ctx-")
+            _OPTS.cwd = own_tmp
+            checks.append({"name": "clean_context_cwd", "ok": True, "detail": own_tmp}); enforced.append("clean_context_cwd")
+        _run_agent_core(*args, **kwargs)
+        _OPTS.seen.setdefault("usage", {"total_tokens": None, "source": "backend not run through a subprocess"})
+    except _LaunchRefused as e:
+        status, exit_code, error = "refused", 2, str(e)
+        print(f"[run_agent] launch refused: {e}")
+    except SystemExit as e:
+        exit_code = e.code if isinstance(e.code, int) else 1
+        status = "ok" if exit_code == 0 else "failed"
+        error = None if exit_code == 0 else f"backend exited {exit_code}"
+    finally:
+        if claimed:
+            _guard.release(claim_dir, unit, owner)
+        ended = _time.time()
+        if result_json:
+            seen = _OPTS.seen
+            res = {"schema": 1, "status": status, "exit_code": exit_code, "error": error, "unit": unit, "owner": owner,
+                   "backend": seen.get("cli"), "executable": seen.get("executable"), "version": seen.get("version"),
+                   "cwd": _OPTS.cwd, "started": started, "ended": ended, "duration_s": round(ended - started, 3),
+                   "output_file": (args[2] if len(args) > 2 else kwargs.get("output_file")),
+                   "checks": checks, "enforced_by_code": enforced,
+                   "instructed_only": ["no git writes by the worker", "stay inside the assigned scope", "report limitations honestly"],
+                   "limitations": [x for x in limitations if x], "usage": seen.get("usage", {"total_tokens": None, "source": "not run"})}
+            os.makedirs(os.path.dirname(os.path.abspath(result_json)), exist_ok=True)
+            with open(result_json, "w") as f:
+                _json.dump(res, f, indent=1)
+        _OPTS.cwd = _OPTS.timeout = None; _OPTS.clean_context = False
+    if status in ("refused", "failed"):
+        sys.exit(exit_code)
+
+
+class _LaunchRefused(Exception):
+    pass
+
+
 # ── CLI entry point ───────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
@@ -645,6 +778,13 @@ if __name__ == "__main__":
             default=False,
             help="Explicit user authorization required to use GitHub Copilot in dispatch or fallback chain (enterprise/work boundary guard).",
         )
+        parser.add_argument("--cwd", help="Run the backend in this directory (a worktree).")
+        parser.add_argument("--allowed-root", help="Refuse to launch unless --cwd resolves inside this root.")
+        parser.add_argument("--claim-dir", help="Directory for unit ownership claims; a second claim of --unit is refused before launch.")
+        parser.add_argument("--unit"); parser.add_argument("--owner")
+        parser.add_argument("--timeout", type=float, help="Seconds; kills the backend process group on the streaming path.")
+        parser.add_argument("--clean-context", action="store_true", help="claude only: neutral cwd, project-only settings, no slash commands or tools.")
+        parser.add_argument("--result-json", help="Write the structured execution result (status, checks, limitations, usage).")
         args = parser.parse_args()
         # Keep the public capability tier and agy reasoning effort aligned when
         # callers select an explicit model but omit --effort. This prevents an
@@ -654,4 +794,6 @@ if __name__ == "__main__":
         run_agent(args.persona_file, args.input_file, args.output_file, args.instruction,
                   args.cli, args.model, args.isolated, args.max_tokens, args.require_input,
                   args.tier, args.profile, args.effort, args.print_timeout, args.executable,
-                  fallback_chain=args.fallback_chain, allow_copilot=args.allow_copilot)
+                  fallback_chain=args.fallback_chain, allow_copilot=args.allow_copilot,
+                  cwd=args.cwd, allowed_root=args.allowed_root, claim_dir=args.claim_dir, unit=args.unit, owner=args.owner,
+                  timeout=args.timeout, clean_context=args.clean_context, result_json=args.result_json)

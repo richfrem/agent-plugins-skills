@@ -88,3 +88,9 @@ An explicit `--model` always wins. Invalid, partial, stale, or unavailable
 profile entries fall back to the current catalog and must not silently claim
 that a provider is available. Follow `references/capability-profile-contract.md`;
 never put credentials, tokens, prompts, or raw provider output in the profile.
+
+## Enforced vs instructed (launch controls)
+
+Enforced by `run_agent.py` when the flag is given: `--allowed-root` with `--cwd` (refuse before launch if the resolved cwd escapes), `--claim-dir --unit --owner` (second claim of a unit is refused before launch; the claim is released after the run), `--timeout` (kills the backend process group on the streaming path), `--clean-context` (claude only: neutral cwd, `--setting-sources project`, `--disable-slash-commands`, no tools; requested, not probed: verify with `dispatch_guard.py context-check`), `--result-json` (status, exit code, executable and version, checks, limitations, usage or `null`). A refused launch exits 2 and writes a result.
+
+Instructed only: no git writes by workers, scope discipline, review independence. Direct CLI use bypasses every control. Usage is vendor-reported when the backend prints it; otherwise it is unknown, never zero.
