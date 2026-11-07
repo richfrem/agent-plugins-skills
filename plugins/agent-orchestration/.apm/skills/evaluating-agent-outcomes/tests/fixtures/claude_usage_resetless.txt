@@ -1,0 +1,6 @@
+You are currently using your subscription to power your Claude Code usage
+
+Current session: 0% used
+Current week (all models): 65% used · resets Nov 9 at 9pm (America/Vancouver)
+
+What's contributing to your usage?

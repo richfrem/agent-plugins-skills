@@ -73,6 +73,18 @@ class UsageMeasure(unittest.TestCase):
         rows = um.parse_agy_usage(json.loads((FIX / "agy_usage.json").read_text()))
         self.assertTrue(rows and all(0 <= x["remaining_pct"] <= 100 for x in rows))
 
+    def test_resetless_session_is_parsed_as_displayed_not_unparsed(self):
+        # Observed 2026-11-07: "Current session: 0% used" has no "· resets" suffix. The displayed value
+        # is parsed; the missing reset stays None, and absent text stays None (never imputed as zero).
+        r = um.parse_claude_usage((FIX / "claude_usage_resetless.txt").read_text())
+        self.assertEqual(r["session_pct_used"], 0)
+        self.assertIsNone(r["session_resets"])
+        self.assertEqual(r["week_pct_used"], 65)
+        self.assertEqual(r["week_resets"], "Nov 9 at 9pm (America/Vancouver)")
+        empty = um.parse_claude_usage("Current week (all models): 65% used")
+        self.assertIsNone(empty["session_pct_used"])
+        self.assertEqual(empty["week_pct_used"], 65)
+
     def test_secrets_rejected_and_unknown_price_is_none_not_zero(self):
         with self.assertRaises(ValueError): um.assert_no_secrets({"k": "sk-" + "a" * 20})
         self.assertIsNone(um.cost_usd("absent", 1000, 1000, prices={}))
