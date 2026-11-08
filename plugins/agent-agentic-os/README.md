@@ -102,6 +102,8 @@ interactive flows inside their skills. Invoke a skill by name or describe the go
 | `Stop` | `turn_evolution_guard.py` | Enforces map-debt and wiki updates at turn end |
 | `Stop` | `post_run_metrics.py` | Captures session errors and friction events to `context/events.jsonl` |
 
+Hook interpreter: hooks run `$APM_HOOK_PYTHON` when it is set, otherwise the first of `python3` or `python` on PATH. Each hook runs once, and a failing script is not re-run under a second interpreter. To pin an interpreter (for example a venv that has the dependencies installed), set `APM_HOOK_PYTHON` in the agent's settings `env` block, not in a shell profile.
+
 ## References
 
 | Document | Contents |
