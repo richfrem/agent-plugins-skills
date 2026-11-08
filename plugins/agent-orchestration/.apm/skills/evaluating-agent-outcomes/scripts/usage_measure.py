@@ -34,12 +34,17 @@ def parse_claude_usage(text: str) -> Dict[str, Any]:
     """Parse headless `claude -p /usage` text into session (5-hour) and weekly percent used."""
     out: Dict[str, Any] = {"session_pct_used": None, "session_resets": None,
                            "week_pct_used": None, "week_resets": None}
-    m = re.search(r"Current session:\s*(\d+)%\s*used\s*[·\-]\s*resets\s*(.+)", text)
+    # The reset suffix is optional: the CLI omits "· resets ..." for some windows (observed for
+    # "Current session: 0% used"). The displayed percentage is kept as displayed; an absent
+    # reset is recorded as None, never as a zero or an imputed value.
+    m = re.search(r"Current session:\s*(\d+)%\s*used(?:\s*[·\-]\s*resets\s*(.+))?", text)
     if m:
-        out["session_pct_used"], out["session_resets"] = int(m.group(1)), m.group(2).strip()
-    m = re.search(r"Current week \(all models\):\s*(\d+)%\s*used\s*[·\-]\s*resets\s*(.+)", text)
+        out["session_pct_used"] = int(m.group(1))
+        out["session_resets"] = m.group(2).strip() if m.group(2) else None
+    m = re.search(r"Current week \(all models\):\s*(\d+)%\s*used(?:\s*[·\-]\s*resets\s*(.+))?", text)
     if m:
-        out["week_pct_used"], out["week_resets"] = int(m.group(1)), m.group(2).strip()
+        out["week_pct_used"] = int(m.group(1))
+        out["week_resets"] = m.group(2).strip() if m.group(2) else None
     return out
 
 
