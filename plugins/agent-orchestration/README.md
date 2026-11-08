@@ -101,6 +101,8 @@ agent-orchestration/
 
 ## Testing & Verification
 
+Hook interpreter (`closure_guard.py` Stop hook, needs PyYAML): hooks run `$APM_HOOK_PYTHON` when it is set, otherwise the first of `python3` or `python` on PATH. Each hook runs once, and a failing script is not re-run under a second interpreter. To pin an interpreter (for example a venv that has the dependencies installed), set `APM_HOOK_PYTHON` in the agent's settings `env` block, not in a shell profile.
+
 ```bash
 # Plugin structure audit
 python3 plugins/agent-extension-authoring/skills/authoring-plugins/scripts/audit_plugin_structure.py plugins/agent-orchestration
