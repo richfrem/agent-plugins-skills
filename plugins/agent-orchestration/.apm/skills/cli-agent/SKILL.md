@@ -24,6 +24,14 @@ Unified multi-LLM task router and execution engine for external CLI agents and l
 ## Quick Start
 
 ```bash
+# Zero-token JEV latent task routing (<0.3ms, 0 tokens)
+python3 scripts/jev_router.py --format cli-flags "Format markdown table in README.md"
+# Output: --runtime openrouter --model meta-llama/llama-3.2-3b-instruct
+
+# OpenRouter micro-tier call under the $10/month cap (falls back to the local server)
+python3 scripts/openrouter_client.py --model meta-llama/llama-3.2-3b-instruct "Format this JSON: {...}"
+python3 scripts/openrouter_client.py --spend
+
 # Direct dispatch with automatic multi-subscription fallback
 python3 scripts/run_agent.py <personas>/security-auditor.md <input> <output> "Review supplied source." --cli claude --fallback-chain agy,codex --isolated --require-input
 ```
@@ -38,7 +46,7 @@ python3 scripts/run_agent.py <personas>/security-auditor.md <input> <output> "Re
 | **Antigravity** | `--cli agy` | Google Antigravity / Gemini CLI | [agy-cli-dispatch.md](references/agy-cli-dispatch.md) |
 | **Cursor** | `--cli agent` | Cursor Agent CLI (Grok / Claude / GPT) | [cursor-cli-dispatch.md](references/cursor-cli-dispatch.md) |
 | **Local LLM** | `--cli llama` | Local Gemma 4 12B at localhost:8089 or MLX at localhost:8080 | [local-llm-dispatch.md](references/local-llm-dispatch.md) & [local-mlx-apple-silicon.md](references/local-mlx-apple-silicon.md) |
-| **OpenRouter** | `--cli openrouter` | Cloud Micro-Tier (Llama-3.2 1B/3B, Qwen3 Coder Flash) | [openrouter-micro-tier-dispatch.md](references/openrouter-micro-tier-dispatch.md) |
+| **OpenRouter** | `scripts/openrouter_client.py` (not a `run_agent.py --cli` value) | Cloud Micro-Tier (Llama-3.2 1B/3B, Qwen3 Coder MoE), $10/month cap, local-server fallback | [openrouter-micro-tier-dispatch.md](references/openrouter-micro-tier-dispatch.md) |
 
 ## Workflow
 
@@ -65,6 +73,6 @@ Without `--isolated`, add to the prompt: "You are operating as an isolated sub-a
 
 - [Project Setup](references/project-setup.md) • [Capability Baseline](references/project-capability-baseline.md) • [Workflow](references/project-configuration-workflow.md) • [Profile Contract](references/capability-profile-contract.md) • [Acceptance Criteria](references/acceptance-criteria.md)
 - [Backend Capabilities](references/backend-capabilities.md) • [Execution Contract](references/execution-contract.md) • [Fallback Tree](references/fallback-tree.md) • [Cheapest Models Reference](references/cheapest_models.md) • [Model Catalog Maintenance](references/model-catalog-maintenance.md)
-- [Cursor CLI Dispatch](references/cursor-cli-dispatch.md) • [Autonomous Agent Platforms](references/autonomous-agent-platforms.md) • [Provider Fallback Routing](references/provider-fallback-routing.md) • [Subscription Pooling & Readiness Probe](references/setup-subscription-pooling.md) • [OpenRouter Micro-Tier Dispatch](references/openrouter-micro-tier-dispatch.md) • [OpenRouter Models Catalog](references/openrouter-models.json)
+- [Cursor CLI Dispatch](references/cursor-cli-dispatch.md) • [Autonomous Agent Platforms](references/autonomous-agent-platforms.md) • [Provider Fallback Routing](references/provider-fallback-routing.md) • [Subscription Pooling & Readiness Probe](references/setup-subscription-pooling.md) • [OpenRouter Micro-Tier Dispatch](references/openrouter-micro-tier-dispatch.md) • [OpenRouter Models Catalog](references/openrouter-models.json) • [Zero-Token JEV Router](references/jev-router.md)
 - [Local LLM Setup Reference](references/local-llm-setup-deep-reference.md) • [Local Apple Silicon MLX Reference](references/local-mlx-apple-silicon.md) • [Local LLM Debrief](references/local_llm_debrief.md) • [Routing Latency Findings](references/routing_latency_findings.md) • [Routing Proxy Diagram](references/routing-proxy.mmd) • [Map Debt](references/map-debt.md)
 - [Claude Directory Spec](references/claude-directory-spec.md) • [Claude Settings Schema](references/claude-settings-schema.md) • [Antigravity Directory Spec](references/antigravity-directory-spec.md) • [Gemini CLI Commands](references/gemini-cli-commands.md) • [Codex Fixture](references/p0-codex-observation-fixture.json)
