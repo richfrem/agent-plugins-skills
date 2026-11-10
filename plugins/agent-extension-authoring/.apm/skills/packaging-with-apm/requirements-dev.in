@@ -8,3 +8,8 @@
 # (docs/plans/apm_migration_plan.md). Exact pin: the plan's Phase 0 verifies this
 # version's CLI surface, so upgrades are deliberate and re-verified.
 apm-cli==0.33.0
+
+# Security Overrides (transitive; Dependabot): raise floors, never pin.
+anyio>=4.14.2
+certifi>=2026.10.18
+urllib3>=2.8.0
