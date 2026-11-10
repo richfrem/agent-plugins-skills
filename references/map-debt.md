@@ -9,8 +9,8 @@ Persistent tracking of architectural friction, structural anomalies, and unclose
 - Artifact affected: `plugins/agent-orchestration/.apm/skills/cli-agent/*`
 - Friction observed: `cli-agent` lacked reference and model catalog entries for the ultra-low-cost OpenRouter cloud micro-tier (0.5B-3B models like Llama-3.2-1B/3B and Qwen3 Coder Flash, priced at $0.027-$0.20/MTok). Bounded mechanical tasks (JSON formatting, linting, basic triage) were forced either onto heavy local models (consuming finite Mac SSD/RAM) or expensive frontier subscription quotas (Claude, Codex, Gemini).
 - Why not fixed now: Fixed immediately in this change.
-- Recommended fix / fix applied: Added `openrouter` entry to `cheapest_models.json` and `cheapest_models.md`. Added `references/openrouter-micro-tier-dispatch.md` documenting verified micro-models, per-token pricing, $10 hard budget caps, and python integration patterns. Updated `SKILL.md` table and references.
-- Evidence/repro: Verified live OpenRouter API response with `meta-llama/llama-3.2-1b-instruct`: 0.50s latency, $0.000005 cost per invocation. Skill passes `audit_skill.py`.
+- Recommended fix / fix applied: Added `openrouter`, `openrouter-coder`, and `openrouter-reasoning` entries to `cheapest_models.json` and `cheapest_models.md`. Added `references/openrouter-models.json` full schema-v2 catalog and `references/openrouter-micro-tier-dispatch.md` documenting verified micro-models, per-token pricing, $10 hard budget caps, and python integration patterns. Updated `SKILL.md` table and references.
+- Evidence/repro: Verified live OpenRouter API response across Llama-3.2-1B ($0.000002), Llama-3.2-3B ($0.000004), and Qwen3-Coder-Flash ($0.000016). Validated catalog passes `validate_catalog()`. Skill passes `audit_skill.py`.
 - Severity: M
 - Repeat: NO
 - Status: RESOLVED
