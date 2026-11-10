@@ -1,12 +1,13 @@
 {
   "_meta": {
-    "source": "https://openrouter.ai/models (verified 2026-11-10)",
+    "source": "https://openrouter.ai/models (live API probed 2026-11-10)",
     "billing_model": "Per-token prepaid API credits via OpenRouter",
     "updated": "2026-11-10",
     "notes": [
+      "CRITICAL INVARIANT: Never rely on static training data or cut-off assumptions for OpenRouter model selection or pricing. Always query the live endpoint https://openrouter.ai/api/v1/models to verify active model availability and current input/output per-token rates.",
       "OpenRouter hosts ultra-low-cost micro-models for mechanical chores, JSON formatting, linting, and basic triage.",
       "Strict $10 hard monthly cap enforced at API key level and Sanctuary local ledger.",
-      "Barred from frontier models to prevent quota leakage."
+      "Barred from third-party auto-routers and frontier models to prevent quota leakage."
     ],
     "schema_version": 2
   },
@@ -20,7 +21,7 @@
         "output": 0.201
       },
       "recommendation": "Ultra-cheap mechanical formatting, JSON cleanup, regex, and basic triage",
-      "context_window_k": 128,
+      "context_window_k": 60,
       "max_output_k": 8,
       "tool_support": {
         "prompt": true,
@@ -28,15 +29,15 @@
       }
     },
     {
-      "display_name": "Llama 3.2 3B Instruct",
-      "cli_id": "meta-llama/llama-3.2-3b-instruct",
+      "display_name": "Llama 3.1 8B Instruct",
+      "cli_id": "meta-llama/llama-3.1-8b-instruct",
       "status": "available",
       "pricing_usd_per_1m": {
-        "input": 0.05,
-        "output": 0.33
+        "input": 0.02,
+        "output": 0.04
       },
-      "recommendation": "Small general reasoning, test boilerplate, and docstring repairs",
-      "context_window_k": 128,
+      "recommendation": "High-efficiency general reasoning with 5x cheaper output ($0.04/M) than 1B",
+      "context_window_k": 131,
       "max_output_k": 8,
       "tool_support": {
         "prompt": true,
@@ -44,16 +45,15 @@
       }
     },
     {
-      "display_name": "Qwen3 Coder Flash",
-      "cli_id": "qwen/qwen3-coder-flash",
+      "display_name": "Qwen3 Coder 30B (MoE 3B active)",
+      "cli_id": "qwen/qwen3-coder-30b-a3b-instruct",
       "status": "available",
       "pricing_usd_per_1m": {
-        "input": 0.195,
-        "output": 0.975,
-        "cached_input": 0.039
+        "input": 0.15,
+        "output": 0.6
       },
-      "recommendation": "Fast coding chores, AST refactoring, and syntax repairs",
-      "context_window_k": 128,
+      "recommendation": "High-capability MoE coding specialist (40% cheaper output than flash)",
+      "context_window_k": 262,
       "max_output_k": 16,
       "tool_support": {
         "prompt": true,
@@ -61,15 +61,15 @@
       }
     },
     {
-      "display_name": "Qwen 2.5 Coder 32B Instruct",
-      "cli_id": "qwen/qwen-2.5-coder-32b-instruct",
+      "display_name": "Qwen3 Coder Next",
+      "cli_id": "qwen/qwen3-coder-next",
       "status": "available",
       "pricing_usd_per_1m": {
-        "input": 0.66,
-        "output": 1.00
+        "input": 0.12,
+        "output": 0.8
       },
-      "recommendation": "Heavy-duty coding fallback if local MLX is unavailable",
-      "context_window_k": 128,
+      "recommendation": "Fast dense coding chores and syntax repair",
+      "context_window_k": 262,
       "max_output_k": 16,
       "tool_support": {
         "prompt": true,
@@ -77,16 +77,32 @@
       }
     },
     {
-      "display_name": "OpenRouter Free Auto-Router",
-      "cli_id": "openrouter/free",
+      "display_name": "Qwen 3.7 Flash (1M Context)",
+      "cli_id": "qwen/qwen3.7-flash",
+      "status": "available",
+      "pricing_usd_per_1m": {
+        "input": 0.03,
+        "output": 0.13
+      },
+      "recommendation": "Ultra-low-cost long context ingestion (up to 1M tokens) at $0.03/M input",
+      "context_window_k": 1000,
+      "max_output_k": 16,
+      "tool_support": {
+        "prompt": true,
+        "tools": true
+      }
+    },
+    {
+      "display_name": "Cohere North Mini Code (Free)",
+      "cli_id": "cohere/north-mini-code:free",
       "status": "available",
       "pricing_usd_per_1m": {
         "input": 0.0,
         "output": 0.0
       },
-      "recommendation": "Zero-cost rotating open-weights fallback",
-      "context_window_k": 32,
-      "max_output_k": 4,
+      "recommendation": "Zero-cost code editing fallback",
+      "context_window_k": 256,
+      "max_output_k": 8,
       "tool_support": {
         "prompt": true,
         "tools": true
@@ -95,9 +111,10 @@
   ],
   "strategy": {
     "heartbeat": "meta-llama/llama-3.2-1b-instruct",
-    "default": "meta-llama/llama-3.2-1b-instruct",
-    "coder": "qwen/qwen3-coder-flash",
-    "reasoning": "meta-llama/llama-3.2-3b-instruct"
+    "default": "meta-llama/llama-3.1-8b-instruct",
+    "coder": "qwen/qwen3-coder-30b-a3b-instruct",
+    "reasoning": "meta-llama/llama-3.1-8b-instruct",
+    "long_context": "qwen/qwen3.7-flash"
   },
   "runtime": {
     "runtime_id": "openrouter",
@@ -117,14 +134,15 @@
   "capability_tiers": {
     "low": [
       "meta-llama/llama-3.2-1b-instruct",
-      "openrouter/free"
+      "meta-llama/llama-3.1-8b-instruct",
+      "cohere/north-mini-code:free"
     ],
     "medium": [
-      "meta-llama/llama-3.2-3b-instruct",
-      "qwen/qwen3-coder-flash"
+      "qwen/qwen3.7-flash",
+      "qwen/qwen3-coder-next"
     ],
     "high": [
-      "qwen/qwen-2.5-coder-32b-instruct"
+      "qwen/qwen3-coder-30b-a3b-instruct"
     ]
   }
 }
