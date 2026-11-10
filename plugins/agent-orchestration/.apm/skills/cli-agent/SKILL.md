@@ -31,6 +31,7 @@ python3 scripts/jev_router.py --format cli-flags "Format markdown table in READM
 # OpenRouter micro-tier call under the $10/month cap (falls back to the local server)
 python3 scripts/openrouter_client.py --model meta-llama/llama-3.2-3b-instruct "Format this JSON: {...}"
 python3 scripts/openrouter_client.py --spend
+python3 scripts/smoke_test_openrouter.py   # live end-to-end check (router -> client -> verify), skips without key
 
 # Direct dispatch with automatic multi-subscription fallback
 python3 scripts/run_agent.py <personas>/security-auditor.md <input> <output> "Review supplied source." --cli claude --fallback-chain agy,codex --isolated --require-input

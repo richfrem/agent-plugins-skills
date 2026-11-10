@@ -59,6 +59,15 @@ print(res.status, res.cost_usd, res.content)
 
 Tests: `pytest scripts/test_openrouter_client.py` (no network; fallbacks are mocked).
 
+### End-to-End Smoke Test (live, ~$0.00001)
+
+```bash
+python3 scripts/smoke_test_openrouter.py            # uses references/openrouter-smoke-task.json
+python3 scripts/smoke_test_openrouter.py --task my_task.json
+```
+
+Routes one test-matrix-shaped task through `jev_router.py`, calls the pinned cheap model through the client with local fallback disabled, and checks four things: routing matches the spec, the live call returned OK without fallback, the output equals `expected_output`, and the spend ledger incremented. Skips cleanly when no `OPENROUTER_API_KEY` is available.
+
 ## Verification & Smoke Test
 
 ```bash

@@ -1,0 +1,9 @@
+{
+  "id": "SMOKE-001",
+  "category": "MECHANICAL",
+  "description": "Sort the keys of this JSON object alphabetically and output only the JSON: {\"zebra\": 1, \"apple\": 2, \"mango\": 3}",
+  "expected_tier": "TIER_1_MICRO",
+  "recommended_model": "meta-llama/llama-3.2-3b-instruct",
+  "expected_complexity": "MECHANICAL_CHORE",
+  "expected_output": {"apple": 2, "mango": 3, "zebra": 1}
+}
