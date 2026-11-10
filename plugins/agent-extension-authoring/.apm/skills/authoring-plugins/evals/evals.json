@@ -20,6 +20,10 @@
     "should_trigger": false
   },
   {
+    "prompt": "Create a Microsoft 365 Copilot Cowork app-package ZIP from existing skills.",
+    "should_trigger": false
+  },
+  {
     "prompt": "Scaffold an agentic GitHub workflow from my existing skill.",
     "should_trigger": false
   },

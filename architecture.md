@@ -34,7 +34,7 @@ Current scale (read from `plugins/` — verify with `find plugins -name SKILL.md
 │   ├── agent-agentic-os/           # Control plane, setup + skill improvement lab (3 skills)
 │   ├── agent-orchestration/        # Execution topologies & multi-LLM CLI routing (4 skills, 13 agents)
 │   ├── agent-memory/               # Memory, RLM, vector retrieval and Obsidian wiki (4 skills)
-│   ├── agent-extension-authoring/  # Plugin/skill/subagent/instruction authoring & APM packaging (6 skills)
+│   ├── agent-extension-authoring/  # Plugin/skill/subagent/instruction authoring & APM and Cowork packaging (7 skills)
 │   ├── dev-utils/                  # GitHub issues + worktrees, context bundling, links, conventions, ADRs, symlinks, HuggingFace (8 skills)
 │   ├── agent-exploration-cycle/   # Business discovery workflow + SQLite state engine (5 skills)
 │   └── <plugin>/
@@ -143,9 +143,11 @@ dedicated memory agents and command wrappers are retired. Skill-specific documen
 and diagrams live under references/, with executable templates in assets/. No copy
 manifest is needed by this plugin.
 
-### 4.5. Plugin: agent-extension-authoring (6 skills)
+### 4.5. Plugin: agent-extension-authoring (7 skills)
 Tooling for creating and auditing ecosystem components: `authoring-skills`, `authoring-plugins`,
-`authoring-subagents`, `authoring-instructions`, `authoring-github-workflows`, and `packaging-with-apm`.
+`authoring-subagents`, `authoring-instructions`, `authoring-github-workflows`, `packaging-with-apm`,
+and `packaging-copilot-cowork-plugins` (Microsoft 365 Copilot Cowork app-package creation,
+conversion, validation, local ZIP build, and approved sharing; distinct from APM packaging).
 plus APM package conversion and marketplace management. Retired analyzer,
 mining, standalone command, path-repair, deep-audit, and self-audit wrappers are no longer catalogued.
 

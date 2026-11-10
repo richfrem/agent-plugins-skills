@@ -16,6 +16,7 @@ Every skill in this plugin is completely self-contained inside `.apm/skills/` wi
 | `authoring-instructions` | Scaffolds and audits governance instructions | AGENTS.md, CLAUDE.md, rules, lifecycle hooks (PreToolUse, PostToolUse) |
 | `authoring-github-workflows` | Scaffolds GitHub workflows and Copilot agents | GitHub Agentic Workflows (gh-aw), CI/CD actions, Copilot custom agents |
 | `packaging-with-apm` | Packages, builds, and distributes via APM | APM manifest compilation, package distribution, migration, rollback |
+| `packaging-copilot-cowork-plugins` | Packages skills as Microsoft 365 Copilot Cowork app packages | WIQD lifecycle, Claude-plugin conversion, local app-package ZIP builder, safe tenant sharing |
 
 ---
 
@@ -30,6 +31,7 @@ agent-extension-authoring/
 │       ├── authoring-plugins/
 │       ├── authoring-skills/
 │       ├── authoring-subagents/
+│       ├── packaging-copilot-cowork-plugins/
 │       └── packaging-with-apm/
 ├── .claude-plugin/
 │   └── plugin.json

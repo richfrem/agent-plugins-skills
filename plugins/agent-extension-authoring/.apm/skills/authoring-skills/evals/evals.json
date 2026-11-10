@@ -60,6 +60,14 @@
     "should_trigger": false
   },
   {
+    "prompt": "Create a portable Agent Skill that will be included in a Copilot Cowork plugin.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Package my already-authored skills into a Cowork M365 app-package ZIP.",
+    "should_trigger": false
+  },
+  {
     "prompt": "Scaffold a new agentic workflow from an existing skill",
     "should_trigger": false
   },

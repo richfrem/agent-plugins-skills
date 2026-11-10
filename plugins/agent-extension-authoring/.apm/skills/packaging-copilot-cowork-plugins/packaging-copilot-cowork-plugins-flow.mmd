@@ -1,0 +1,16 @@
+flowchart TD
+    A[Identify source project] --> B{Source type}
+    B -->|New or WIQD project| C[Create and compose with WIQD]
+    B -->|Existing Claude or Open Plugin| D{Need publishable ZIP now?}
+    D -->|Yes| E[Use current Microsoft conversion route]
+    D -->|No| F[WIQD import; validate, show, list only]
+    C --> G[Static validation]
+    E --> G
+    F --> H[Report import lifecycle limitation]
+    G --> I[Approve tenant and environment]
+    I --> J[Provision and package]
+    J --> K[Deep-validate final ZIP]
+    K --> L{Explicit share approval?}
+    L -->|No| M[Deliver validated local artifact]
+    L -->|Yes| N[Share to approved scope]
+    
