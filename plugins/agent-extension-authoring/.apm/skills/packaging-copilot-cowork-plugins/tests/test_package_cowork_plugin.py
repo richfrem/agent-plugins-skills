@@ -54,6 +54,21 @@ from cowork_package_constants import (
 
 PACKAGER_SCRIPT = SCRIPTS_DIRECTORY / "package_cowork_plugin.py"
 TEST_SKILL_DIRECTORY_NAME = "sample-skill"
+# Complete, valid manifest metadata so fixtures pass the packager's content checks.
+VALID_METADATA = {
+    "manifestVersion": "1.29",
+    "version": "1.0.0",
+    "id": "4ce38947-448c-5880-9294-581db8c72e74",
+    "developer": {
+        "name": "Example Org",
+        "websiteUrl": "https://example.org",
+        "privacyUrl": "https://example.org/privacy",
+        "termsOfUseUrl": "https://example.org/terms",
+    },
+    "name": {"short": "Sample", "full": "Sample Plugin"},
+    "description": {"short": "A sample plugin.", "full": "A sample plugin used in tests."},
+    "accentColor": "#336699",
+}
 
 
 # Write the minimal PNG header fields checked by the local packager.
@@ -96,6 +111,7 @@ def create_package(
             }
         ],
     }
+    manifest.update(VALID_METADATA)
     (package_root / MANIFEST_FILE_NAME).write_text(
         json.dumps(manifest),
         encoding="utf-8",

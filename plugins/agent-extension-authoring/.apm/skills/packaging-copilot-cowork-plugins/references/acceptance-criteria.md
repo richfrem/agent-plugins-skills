@@ -42,3 +42,17 @@
 - It rejects a skill with more than 20 companion files, any over 5 MB, or over 10 MB total.
 - Focused tests cover successful packaging, path traversal, icon validation, and
   overwrite behavior.
+
+## Scaffold, bundle and content checks
+
+- `scaffold_cowork_package.py` takes explicit developer, privacy and terms values and never
+  invents URLs; it refuses an existing output folder and produces a manifest, both icons and
+  skill folders the packager accepts.
+- `bundle_skill_companions.py` never modifies the source skill, leaves skills within the limit
+  unchanged, rewrites every link when bundling, filters unsupported file types and excluded
+  files with plain-text replacements, and fails with an actionable message if a skill still
+  exceeds the limit.
+- The packager fails on incomplete or out-of-range manifest metadata, mismatched or missing
+  `SKILL.md` frontmatter, broken or folder-targeting relative links, and unsupported file types,
+  and warns on missing heading anchors.
+- Tests cover each behavior above in addition to the original packaging cases.

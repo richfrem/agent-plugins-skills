@@ -31,5 +31,22 @@
       "Explains that local structure and ZIP-integrity checks do not replace Microsoft's deep App Validation Library check.",
       "Reports the output path and requires the user to deep-validate the ZIP before upload."
     ]
+  },
+  {
+    "query": "Package this APM plugin for Cowork. One skill has 67 companion files and another has a .mmd diagram. WIQD is not installed.",
+    "expected_behavior": [
+      "Uses the scaffold script and then the packager, asking the user for developer, privacy and terms URLs instead of inventing them",
+      "Bundles the over-limit skill under 20 companion files without editing the source skill",
+      "Filters the .mmd file and reports it, with its links turned into plain text",
+      "States that the manifest is generated and that Microsoft deep validation was not run",
+      "Does not claim anything was published or shared"
+    ]
+  },
+  {
+    "query": "Cowork rejected my package with 'File extension .xyz is not supported'. What now?",
+    "expected_behavior": [
+      "Treats the supported-types list as unconfirmed and adjusts it with --drop-extensions or --allow-extensions rather than editing the ZIP",
+      "Rebuilds with a higher app version and asks for the exact error text if it recurs"
+    ]
   }
 ]

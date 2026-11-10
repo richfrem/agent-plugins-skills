@@ -9,6 +9,11 @@
 - [Convert an existing plugin](#convert-an-existing-plugin)
 - [Validate and package](#validate-and-package)
 - [Package locally without WIQD](#package-locally-without-wiqd)
+- [Scaffold from an APM plugin](#scaffold-from-an-apm-plugin)
+- [Skills over the 20-file limit](#skills-over-the-20-file-limit)
+- [Supported file types](#supported-file-types)
+- [Content checks](#content-checks)
+- [What runs in Cowork and Chat](#what-runs-in-cowork-and-chat)
 - [Share and deploy](#share-and-deploy)
 - [Authoritative references](#authoritative-references)
 
@@ -153,8 +158,9 @@ rerun validation before delivering the artifact.
 
 Use the local packager only when the user explicitly needs a manually assembled ZIP or
 WIQD is unavailable. It packages an existing `appPackage/` directory; it does not
-scaffold a manifest, generate icons, provision an environment, or run Microsoft's App
-Validation Library. WIQD and deep validation remain the preferred route.
+provision an environment or run Microsoft's App Validation Library. Create that directory
+from an APM plugin with `scaffold_cowork_package.py` (next section). WIQD and deep
+validation remain the preferred route.
 
 ```console
 python scripts/package_cowork_plugin.py --plugin-path <project-or-appPackage-path> --output-path <output.zip>
@@ -168,6 +174,64 @@ rejects symbolic links, hidden paths, and likely credential files, verifies ZIP
 integrity, and refuses to replace an existing ZIP unless `--overwrite` is supplied.
 Review package contents for secrets and run the platform's deep validation before
 uploading.
+
+## Scaffold from an APM plugin
+
+`scripts/scaffold_cowork_package.py` creates an `appPackage/` directory from a plugin that
+has `.apm/skills/<skill>/` and optionally `.claude-plugin/plugin.json`:
+
+```console
+python scripts/scaffold_cowork_package.py --apm-plugin <plugin> --output <dir>/appPackage \
+  --developer-name "<name>" --website-url <https-url> --privacy-url <https-url> --terms-url <https-url> \
+  [--skills a,b] [--name-short ..] [--name-full ..] [--description-short ..] [--accent-color #RRGGBB] \
+  [--app-version 1.2.3] [--exclude-files scripts/server.py] [--drop-scripts-if-needed] \
+  [--allow-extensions .ext] [--drop-extensions .ext]
+```
+
+It copies each skill's `SKILL.md`, `references/`, `assets/` and `scripts/` (not `evals/` or
+`tests/`), generates both icons, and writes `manifest.json`. Privacy and terms URLs are
+required arguments and are never invented; confirm them with the owner. The app id is a stable
+GUID derived from the plugin name unless `--app-id` is given, so rebuilds update the same app.
+The manifest is generated, not WIQD-authored, so run Microsoft's deep validation before upload.
+Raise `--app-version` for every republish so the catalog treats it as an update.
+
+## Skills over the 20-file limit
+
+Cowork allows 20 companion files per skill. When a skill has more, the scaffold (or
+`scripts/bundle_skill_companions.py`, which does one skill) bundles Markdown under
+`references/<folder>/` and `assets/<folder>/` into `<folder>.md`, one section per source
+guide with acceptance criteria last, and rewrites every link. If that is not enough it merges
+loose guides under references into one `other.md` bundle. Next options are `--exclude-files`
+for named files and `--drop-scripts-if-needed`. The source skill is never modified. A "Cowork
+build" section listing what was bundled or left out is appended to the copied `SKILL.md`.
+
+## Supported file types
+
+Publish validation rejects file types it does not support ("File extension '.mmd' is not
+supported ... in Microsoft 365 Copilot"). The tools use Microsoft Support's list of file formats
+Microsoft 365 Copilot works with as an allowlist (see `SUPPORTED_COMPANION_EXTENSIONS` in
+`cowork_package_constants.py`). That list is not confirmed to be the validator's exact list.
+The scaffold and bundler filter other types and turn links to them into plain text; the packager
+refuses them. Use `--allow-extensions` to keep a type Microsoft confirms and `--drop-extensions`
+to remove one the validator rejects.
+
+## Content checks
+
+Before zipping, the packager checks that `manifest.json` has a GUID id, a version like 1.2.3,
+name and description within their limits (30/100 and 80/4000 characters), https developer URLs
+and an accent color; that each `SKILL.md` has frontmatter whose name matches its folder and a
+description of at most 1024 characters; and that relative Markdown links in packaged files
+point to existing files (a link to a folder is an error). Missing heading anchors are warnings.
+`--skip-content-checks` turns this off and is not recommended.
+
+## What runs in Cowork and Chat
+
+Observed in tests, not guaranteed by Microsoft: a packaged skill's Python script ran with a real
+interpreter in Cowork (exit code 0, correct output), and a generator script from a packaged skill
+ran in Microsoft 365 Copilot Chat and returned its HTML file. A server script is not reachable
+from outside the environment, and the environment can reset between tasks, so write results to
+the task output folder. Prefer scripts that write files, and test by asking the agent to list the
+skill folder and run the script, forbidding simulated output.
 
 ## Share and deploy
 

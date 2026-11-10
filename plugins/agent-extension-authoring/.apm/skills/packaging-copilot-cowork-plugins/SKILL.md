@@ -27,9 +27,11 @@ MCP connectors.
 
 - Package the plugin as an M365 App Package `.zip`; do not treat each skill as a
   separate app package.
-- Keep each skill portable and self-contained. Packaged `scripts/` travel with the skill
-  but Cowork is not guaranteed to execute them; expose runtime functionality that must
-  reliably run through a remote MCP connector.
+- Keep each skill portable and self-contained. In tests, Cowork and Microsoft 365 Copilot
+  Chat ran a packaged Python script and returned its output file; Microsoft does not
+  guarantee this. Prefer scripts that write files (a local server is unreachable) and put
+  must-run functionality behind a remote MCP connector.
+- Publish rejects some file types (e.g. `.mmd`) and allows 20 companion files per skill; use the scripts.
 - WIQD is preview software. Check its current official documentation and exact
   installed version, then pin the tested version in repository or CI setup. Do not
   guess a version or assume command compatibility.
@@ -41,12 +43,18 @@ MCP connectors.
 
 ## Quick start
 
-Identify whether the source is a new WIQD project, an existing WIQD project, or an
-existing Claude/Open Plugin project. Read
-[the package lifecycle](references/cowork-package-lifecycle.md) for the applicable
-creation, conversion, validation, or sharing route. To zip an existing `appPackage/`
-locally, run `python scripts/package_cowork_plugin.py --plugin-path <path> --output-path
-<output.zip>` (details in the lifecycle reference).
+Identify whether the source is a WIQD project or a Claude/Open Plugin project, and read
+[the package lifecycle](references/cowork-package-lifecycle.md) for the route. Without
+WIQD, build locally from an APM plugin in two steps:
+
+```bash
+python scripts/scaffold_cowork_package.py --apm-plugin <plugin> --output <dir>/appPackage \
+  --developer-name <name> --website-url <url> --privacy-url <url> --terms-url <url>
+python scripts/package_cowork_plugin.py --plugin-path <dir>/appPackage --output-path <output.zip>
+```
+
+The scaffold bundles over-limit skills and filters unsupported file types; the packager
+checks the manifest, `SKILL.md` frontmatter, links and file types.
 
 ## Workflow
 
@@ -60,6 +68,7 @@ locally, run `python scripts/package_cowork_plugin.py --plugin-path <path> --out
    executables into the app package.
 3. Validate the built ZIP and inspect its contents before delivery. Report the exact
    artifact path, validation result, tool version, and any unperformed tenant actions.
+4. If publish validation rejects something the checks missed, fix the tools here and rebuild.
 
 ## Verification
 
