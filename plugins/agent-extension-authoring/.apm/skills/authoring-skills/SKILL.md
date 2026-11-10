@@ -2,7 +2,7 @@
 name: authoring-skills
 plugin: agent-extension-authoring
 description: >-
-  Creates, audits and improves agent skills (SKILL.md folders). Use when the user wants to scaffold a new skill (instructional, executable, or stateful), audit or align an existing skill or skill inventory against authoring standards, add a Docker runtime environment or Azure AI Foundry deployment to a skill, set up an MCP server integration (.mcp.json, stdio, sse, or http), or explore the Agent Skills specification and 64-pattern catalog. Not for whole plugins (use authoring-plugins), sub-agents (use authoring-subagents), rules, AGENTS.md or hooks (use authoring-instructions), GitHub workflows (use authoring-github-workflows) or APM packaging (use packaging-with-apm).
+  Creates, audits and improves agent skills (SKILL.md folders). Use when the user wants to scaffold a new skill (instructional, executable, or stateful), audit or align an existing skill or skill inventory against authoring standards, add a Docker runtime environment or Azure AI Foundry deployment to a skill, set up an MCP server integration (.mcp.json, stdio, sse, or http), or explore the Agent Skills specification and 64-pattern catalog. Not for whole plugins (use authoring-plugins), sub-agents (use authoring-subagents), rules, AGENTS.md or hooks (use authoring-instructions), GitHub workflows (use authoring-github-workflows), APM packaging (use packaging-with-apm), or Microsoft 365 Copilot Cowork app-package creation and distribution (use packaging-copilot-cowork-plugins).
 argument-hint: "[create|stateful|audit|docker|azure|mcp|standards] [skill-name or path]"
 allowed-tools: Bash, Read, Write, Glob, Grep
 ---
@@ -68,3 +68,4 @@ Tests: `python3 -m pytest tests`. Check the mode's section in [acceptance-criter
 - Patterns referenced by modes: [client-side-compute-sandbox-constraint.md](references/patterns/client-side-compute-sandbox-constraint.md) • [cyclical-state-propagation-contract.md](references/patterns/cyclical-state-propagation-contract.md) • [persistent-plugin-configuration.md](references/patterns/persistent-plugin-configuration.md)
 - Templates: [skill-layout.md](assets/templates/skill-layout.md)
 - Gates: [acceptance-criteria.md](references/acceptance-criteria.md) • [fallback-tree.md](references/fallback-tree.md)
+- Cowork: [cowork-skill-packaging.md](references/cowork-skill-packaging.md) — author a portable skill for a Microsoft 365 Copilot Cowork package; use `packaging-copilot-cowork-plugins` for the M365 app-package ZIP and distribution lifecycle.

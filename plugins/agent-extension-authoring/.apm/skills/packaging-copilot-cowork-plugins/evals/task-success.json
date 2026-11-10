@@ -1,0 +1,35 @@
+[
+  {
+    "query": "Create a Cowork plugin with two existing skills and no connector.",
+    "expected_behavior": [
+      "Uses the Microsoft 365 app package model, with the plugin as the ZIP package and the skills as registered folders.",
+      "Uses WIQD create/add-skill operations and validates the package without rewriting the existing skill content unnecessarily.",
+      "Does not authenticate, provision, share, or publish without explicit approval."
+    ]
+  },
+  {
+    "query": "Make this existing Claude plugin into a publishable Cowork ZIP today.",
+    "expected_behavior": [
+      "Explains that current WIQD imports do not support packaging or provisioning for imported projects.",
+      "Routes to the current Microsoft 365 Agents Toolkit CLI conversion instructions, confirms required privacy and terms URLs, and inspects conversion output and connector placeholders.",
+      "Does not claim unsupported commands, agents, hooks, or executables were converted."
+    ]
+  },
+  {
+    "query": "Validate and share my Cowork plugin with my organization.",
+    "expected_behavior": [
+      "Checks the exact WIQD version and current command/environment syntax because WIQD is preview software.",
+      "Separates local validation and packaging from tenant-side provisioning and sharing, requiring explicit approval of tenant and scope before external actions.",
+      "Checks that the final ZIP contains only intended manifest, icons, skills, and connector declarations and no secrets or local environment files.",
+      "Reports whether deep validation covered the final ZIP and whether any share or deployment action actually completed."
+    ]
+  },
+  {
+    "query": "Build a local ZIP from this existing Cowork appPackage directory.",
+    "expected_behavior": [
+      "Uses the self-contained local packager with explicit plugin and output paths, and does not replace an existing ZIP unless the user opts in.",
+      "Explains that local structure and ZIP-integrity checks do not replace Microsoft's deep App Validation Library check.",
+      "Reports the output path and requires the user to deep-validate the ZIP before upload."
+    ]
+  }
+]

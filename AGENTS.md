@@ -62,6 +62,9 @@ python3 plugins/agent-extension-authoring/skills/authoring-skills/scripts/audit_
 # Audit sub-agent specifications
 python3 plugins/agent-extension-authoring/skills/authoring-subagents/scripts/audit_sub_agent.py plugins --all
 
+# Package a skill plugin as a Microsoft 365 Copilot Cowork app-package ZIP (local, no tenant actions)
+python3 plugins/agent-extension-authoring/.apm/skills/packaging-copilot-cowork-plugins/scripts/package_cowork_plugin.py --plugin-path <project-or-appPackage> --output-path <output.zip>
+
 # Audit rule policy invariants
 python3 plugins/agent-extension-authoring/skills/authoring-instructions/scripts/audit_rule.py plugins --all
 

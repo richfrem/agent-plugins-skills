@@ -1,0 +1,38 @@
+[
+  {
+    "query": "Create a Microsoft 365 Cowork plugin package containing these two Agent Skills.",
+    "should_trigger": true
+  },
+  {
+    "query": "Use WIQD to validate, provision, and package my Cowork plugin.",
+    "should_trigger": true
+  },
+  {
+    "query": "Convert this Claude plugin into a Cowork uploadable app package.",
+    "should_trigger": true
+  },
+  {
+    "query": "Add a remote MCP connector to my Microsoft 365 Cowork plugin and share it with selected users.",
+    "should_trigger": true
+  },
+  {
+    "query": "Create an APM package and install it into my Copilot skills directory.",
+    "should_trigger": false
+  },
+  {
+    "query": "Scaffold a new APM-native plugin with an apm.yml and .apm/skills folder.",
+    "should_trigger": false
+  },
+  {
+    "query": "Write a new portable Agent Skill, but don't package it for Cowork.",
+    "should_trigger": false
+  },
+  {
+    "query": "Run the WIQD plugin package lifecycle and share the ZIP tenant-wide.",
+    "should_trigger": true
+  },
+  {
+    "query": "Package my existing Cowork appPackage directory into a ZIP with a local Python command.",
+    "should_trigger": true
+  }
+]

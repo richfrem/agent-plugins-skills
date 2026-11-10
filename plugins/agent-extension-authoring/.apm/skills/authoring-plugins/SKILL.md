@@ -2,7 +2,7 @@
 name: authoring-plugins
 plugin: agent-extension-authoring
 description: >-
-  Scaffolds and audits whole agent plugins. Use when the user wants to create a new plugin directory (manifest, README, skills folder) or to audit or validate an existing plugin: its structure, .claude-plugin/plugin.json, components, portability and compliance. Also use after a plugin's components change. Not for a single skill (use authoring-skills), a single sub-agent (use authoring-subagents), rules, AGENTS.md or hooks (use authoring-instructions), or APM packaging (use packaging-with-apm).
+  Scaffolds and audits whole agent plugins. Use when the user wants to create a new plugin directory (manifest, README, skills folder) or to audit or validate an existing plugin: its structure, .claude-plugin/plugin.json, components, portability and compliance. Also use after a plugin's components change. Not for a single skill (use authoring-skills), a single sub-agent (use authoring-subagents), rules, AGENTS.md or hooks (use authoring-instructions), APM packaging (use packaging-with-apm), or Microsoft 365 Copilot Cowork app-package creation and distribution (use packaging-copilot-cowork-plugins).
 argument-hint: "[create|audit] [plugin-name or path]"
 allowed-tools: Bash, Read, Write, Glob, Grep
 ---
@@ -47,6 +47,11 @@ python3 scripts/audit.py --path plugins/<plugin-name>
 2. Create: scaffold (`apm.yml`, `.claude-plugin/plugin.json`, `.apm/skills/`, `README.md`), then add components with `authoring-skills`, `authoring-subagents` and `authoring-instructions`.
 3. Audit: run both scripts, then delegate skills, sub-agents, rules and hooks to those skills by name.
 4. On failure follow [fallback-tree.md](references/fallback-tree.md).
+
+For a Cowork deliverable, this skill creates only the APM-native source plugin.
+Use `authoring-skills` for the individual Agent Skill and
+`packaging-copilot-cowork-plugins` for the Microsoft 365 app-package ZIP and distribution
+lifecycle; the M365 manifest is not `apm.yml` or `plugin.json`.
 
 ## Verification
 
