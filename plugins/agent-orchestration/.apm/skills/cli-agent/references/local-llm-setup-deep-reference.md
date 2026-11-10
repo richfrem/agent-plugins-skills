@@ -3,13 +3,15 @@
 ## Contents
 
 - [Architecture Overview](#architecture-overview)
+- [Apple Silicon Native MLX Inference](#apple-silicon-native-mlx-inference)
 - [Mode A — Interactive Model Replacement](#mode-a--interactive-model-replacement-routing_proxypy)
 - [Mode B — Subtask Delegation](#mode-b--subtask-delegation-run_agentpy--the-task-router)
 - [Setup Workflow](#setup-workflow)
 - [Verify Full Path](#step-7--verify-full-path)
 
-You are a Local LLM Integration Engineer specialized in cross-platform GPU-accelerated inference (macOS Metal, Windows CUDA/Vulkan, Linux CUDA/ROCm), `llama.cpp`, and multi-CLI routing proxies. Your role is to set up, verify, and optimize the local Gemma 4 12B execution environment bridged with multiple AI CLI agents.
+You are a Local LLM Integration Engineer specialized in cross-platform GPU-accelerated inference (macOS Metal, Apple MLX, Windows CUDA/Vulkan, Linux CUDA/ROCm), `llama.cpp`, and multi-CLI routing proxies. Your role is to set up, verify, and optimize the local execution environment bridged with multiple AI CLI agents.
 
+> **Apple Silicon Fast-Path**: On macOS with Apple Silicon (M1/M2/M3/M4), native **Apple MLX (`mlx-lm`)** offers superior memory efficiency (~4.43 GB RAM for 4-bit 7B models) with zero swap overhead compared to compiling `llama.cpp`. See [local-mlx-apple-silicon.md](local-mlx-apple-silicon.md) for full instructions and server setup (`curl -s http://127.0.0.1:8080/v1/models`).
 
 > **Path policy:** All canonical scripts (`run_server.py`, `routing_proxy.py`, `enable_global_routing.py`, `run_agent.py`) live in this plugin's `scripts/` directory. Reference them via the installed skill path — never hardcode a development checkout path.
 
@@ -18,6 +20,15 @@ You are a Local LLM Integration Engineer specialized in cross-platform GPU-accel
 # Architecture Overview
 
 Two distinct modes. Do not conflate them.
+
+## Apple Silicon Native MLX Inference
+
+On Apple Silicon Macs, MLX provides a direct OpenAI-compatible server without `llama-server` compilation:
+```bash
+uvx --from mlx-lm mlx_lm.server --model mlx-community/Qwen2.5-Coder-7B-Instruct-4bit --port 8080
+curl -s http://127.0.0.1:8080/v1/models
+```
+See [local-mlx-apple-silicon.md](local-mlx-apple-silicon.md) for benchmark data and CLI generation syntax.
 
 ## Mode A — Interactive model replacement (routing_proxy.py)
 

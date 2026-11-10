@@ -32,11 +32,14 @@ from run_agent import (
     _build_cmd_claude,
     _build_cmd_codex,
     _build_cmd_copilot,
+    _build_cmd_cursor,
     _build_cmd_gemini,
     _call_llama_direct,
+    _is_rate_limit_or_capacity_error,
     _load_default_models,
     _resolve_catalog_model,
     _resolve_cli_and_model,
+    BackendExecutionError,
     build_prompt,
     run_agent,
 )
@@ -133,7 +136,7 @@ class TestBuildPrompt(unittest.TestCase):
 
 class TestDefaultModels(unittest.TestCase):
 
-    ALL_BACKENDS = ("copilot", "gemini", "claude", "agy", "codex", "llama")
+    ALL_BACKENDS = ("copilot", "gemini", "claude", "agy", "codex", "cursor", "llama")
 
     def test_all_six_backends_present(self):
         """Verify _DEFAULT_MODELS has an entry for every supported backend."""
@@ -385,10 +388,10 @@ class TestConstants(unittest.TestCase):
 class TestLoadDefaultModels(unittest.TestCase):
 
     def test_returns_all_six_backends_when_json_absent(self):
-        """Verify all six backend keys are present in the fallback defaults."""
+        """Verify all backend keys are present in the fallback defaults."""
         with patch("os.path.exists", return_value=False):
             result = _load_default_models()
-        self.assertEqual(set(result.keys()), {"copilot", "gemini", "claude", "agy", "codex", "llama"})
+        self.assertEqual(set(result.keys()), {"copilot", "gemini", "claude", "agy", "codex", "cursor", "llama"})
 
     def test_returns_hardcoded_llama_model_when_json_absent(self):
         """Verify the hardcoded llama default model is used when the JSON file is absent."""
@@ -418,7 +421,7 @@ class TestLoadDefaultModels(unittest.TestCase):
              patch("builtins.open", mock_open(read_data="not valid json{{{")):
             result = _load_default_models()
         self.assertEqual(result["llama"], "gemma-4-12b")
-        self.assertEqual(set(result.keys()), {"copilot", "gemini", "claude", "agy", "codex", "llama"})
+        self.assertEqual(set(result.keys()), {"copilot", "gemini", "claude", "agy", "codex", "cursor", "llama"})
 
 
 class TestCapabilityTierResolution(unittest.TestCase):
@@ -575,6 +578,99 @@ class TestCapabilityTierResolution(unittest.TestCase):
 
             assert cli == "copilot"
             assert model == _resolve_catalog_model("copilot", "medium")
+
+
+# ── Cursor & Fallback Chain Tests ─────────────────────────────────────────────
+
+class TestCursorCommandBuilder(unittest.TestCase):
+
+    def test_cursor_basic_print_mode(self):
+        cmd = _build_cmd_cursor("grok-2", "Analyze code", isolated=False)
+        self.assertEqual(cmd[0], "agent")
+        self.assertIn("-p", cmd)
+        self.assertIn("Analyze code", cmd)
+        self.assertIn("--trust", cmd)
+        self.assertIn("grok-2", cmd)
+
+    def test_cursor_isolated_uses_plan_mode(self):
+        cmd = _build_cmd_cursor(None, "Plan migration", isolated=True)
+        self.assertEqual(cmd[0], "agent")
+        self.assertIn("--mode", cmd)
+        self.assertIn("plan", cmd)
+        self.assertNotIn("--trust", cmd)
+
+
+class TestRateLimitDetection(unittest.TestCase):
+
+    def test_detects_various_rate_limit_patterns(self):
+        self.assertTrue(_is_rate_limit_or_capacity_error("HTTP 429 Too Many Requests"))
+        self.assertTrue(_is_rate_limit_or_capacity_error("ResourceExhausted: Quota exceeded"))
+        self.assertTrue(_is_rate_limit_or_capacity_error("ERROR: Selected model is at capacity. Please try a different model."))
+        self.assertTrue(_is_rate_limit_or_capacity_error("You've reached your usage limit. Resets at 3:00 PM"))
+        self.assertTrue(_is_rate_limit_or_capacity_error("Your credit balance is too low"))
+        self.assertTrue(_is_rate_limit_or_capacity_error("Not logged in"))
+
+    def test_ignores_syntax_and_normal_errors(self):
+        self.assertFalse(_is_rate_limit_or_capacity_error("TypeError: int object is not callable"))
+        self.assertFalse(_is_rate_limit_or_capacity_error("SyntaxError: unexpected EOF while parsing"))
+
+
+class TestFallbackChainExecution(unittest.TestCase):
+
+    @patch("run_agent._execute_cli_command")
+    def test_fallback_chain_triggers_on_rate_limit(self, mock_exec):
+        # First call (claude) fails with capacity limit; second call (agy) succeeds
+        mock_exec.side_effect = [
+            BackendExecutionError("claude", 1, "ERROR: Selected model is at capacity."),
+            None,
+        ]
+        output_path = os.path.join(tempfile.gettempdir(), "test-fallback-out.md")
+        run_agent(
+            "/dev/null", "/dev/null", output_path, "Analyze code",
+            cli="claude", fallback_chain="agy",
+        )
+        self.assertEqual(mock_exec.call_count, 2)
+
+    @patch("run_agent._execute_cli_command")
+    def test_fallback_chain_aborts_on_non_rate_limit_error(self, mock_exec):
+        # First call fails with normal task error; fallback should NOT be triggered
+        mock_exec.side_effect = BackendExecutionError("claude", 2, "AssertionError: Expected 42 but got 10")
+        output_path = os.path.join(tempfile.gettempdir(), "test-abort-out.md")
+        with self.assertRaises(SystemExit) as cm:
+            run_agent(
+                "/dev/null", "/dev/null", output_path, "Analyze code",
+                cli="claude", fallback_chain="agy,codex",
+            )
+        self.assertEqual(cm.exception.code, 2)
+        self.assertEqual(mock_exec.call_count, 1)
+
+
+class TestCopilotGovernanceGuard(unittest.TestCase):
+
+    def test_copilot_blocked_by_default_without_allow_copilot(self):
+        output_path = os.path.join(tempfile.gettempdir(), "test-copilot-blocked.md")
+        with self.assertRaisesRegex(ValueError, "Governance Guard"):
+            run_agent(
+                "/dev/null", "/dev/null", output_path, "Review code",
+                cli="copilot", allow_copilot=False,
+            )
+
+    def test_copilot_blocked_in_fallback_chain_without_allow_copilot(self):
+        output_path = os.path.join(tempfile.gettempdir(), "test-copilot-chain-blocked.md")
+        with self.assertRaisesRegex(ValueError, "Governance Guard"):
+            run_agent(
+                "/dev/null", "/dev/null", output_path, "Review code",
+                cli="claude", fallback_chain="agy,copilot", allow_copilot=False,
+            )
+
+    @patch("run_agent._execute_cli_command")
+    def test_copilot_allowed_when_explicitly_authorized(self, mock_exec):
+        output_path = os.path.join(tempfile.gettempdir(), "test-copilot-allowed.md")
+        run_agent(
+            "/dev/null", "/dev/null", output_path, "Review enterprise code",
+            cli="copilot", allow_copilot=True,
+        )
+        mock_exec.assert_called_once()
 
 
 if __name__ == "__main__":

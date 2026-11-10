@@ -1,7 +1,7 @@
 name: Update Ecosystem Index
 
 on:
-  pull_request:
+  push:
     branches:
       - main
     paths:
@@ -16,8 +16,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref || github.ref_name }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -32,4 +30,4 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add README.md
-          git diff --quiet && git diff --staged --quiet || (git commit -m "docs(ecosystem): auto-update plugin/skill counts" && git push)
+          git diff --quiet && git diff --staged --quiet || (git commit -m "docs(ecosystem): auto-update plugin/skill counts [skip ci]" && git push)

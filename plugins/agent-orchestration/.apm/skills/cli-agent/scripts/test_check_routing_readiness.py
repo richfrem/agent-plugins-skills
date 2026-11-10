@@ -1,0 +1,108 @@
+#!/usr/bin/env python3
+"""Tests for check_routing_readiness.py probe script."""
+
+import os
+import sys
+import unittest
+from unittest.mock import patch, MagicMock
+
+sys.path.insert(0, os.path.dirname(__file__))
+
+import check_routing_readiness as crr
+
+
+class TestCheckRoutingReadiness(unittest.TestCase):
+
+    def test_check_env_redirects_default_empty(self):
+        with patch.dict(os.environ, {}, clear=True):
+            res = crr.check_env_redirects()
+            self.assertFalse(res["is_routed"])
+            self.assertEqual(res["ANTHROPIC_BASE_URL"], "Not set (direct cloud API)")
+
+    def test_check_env_redirects_active(self):
+        with patch.dict(os.environ, {"ANTHROPIC_BASE_URL": "http://localhost:4000"}, clear=True):
+            res = crr.check_env_redirects()
+            self.assertTrue(res["is_routed"])
+            self.assertEqual(res["ANTHROPIC_BASE_URL"], "http://localhost:4000")
+
+    def test_check_cli_binaries(self):
+        res = crr.check_cli_binaries()
+        self.assertIn("claude", res)
+        self.assertIn("codex", res)
+        self.assertIn("agy", res)
+        self.assertIn("cursor", res)
+        self.assertIn("copilot", res)
+        self.assertIn("subscription", res["claude"])
+        self.assertIn("status_detail", res["cursor"])
+
+    @patch("check_routing_readiness.probe_http_gateway")
+    @patch("check_routing_readiness.check_cli_binaries")
+    def test_evaluate_routing_readiness_active_proxy(self, mock_binaries, mock_gateway):
+        mock_gateway.return_value = {"port": 4000, "status": "ACTIVE", "details": "mocked active"}
+        mock_binaries.return_value = {
+            "claude": {"installed": True, "path": "/path/claude", "subscription": "Claude Pro"},
+            "codex": {"installed": True, "path": "/path/codex", "subscription": "ChatGPT Plus"},
+            "agy": {"installed": True, "path": "/path/agy", "subscription": "Gemini Pro"},
+            "cursor": {"installed": True, "path": "/path/agent", "subscription": "Cursor", "authenticated": False, "status_detail": "STANDBY"},
+            "copilot": {"installed": False, "path": None, "subscription": "Copilot"}
+        }
+
+        res = crr.evaluate_routing_readiness(port=4000)
+        self.assertEqual(res["posture"], "LOCAL_PROXY_ACTIVE")
+        self.assertEqual(len(res["active_cloud_subscriptions"]), 3)
+        self.assertNotIn("Cursor Pro (agent)", res["active_cloud_subscriptions"])
+        self.assertIn("Apple Silicon (M1/M2/M3) Optimized", res["hardware_profile"])
+
+    @patch("check_routing_readiness.probe_http_gateway")
+    @patch("check_routing_readiness.check_cli_binaries")
+    def test_evaluate_routing_readiness_authenticated_cursor(self, mock_binaries, mock_gateway):
+        mock_gateway.return_value = {"port": 4000, "status": "DOWN", "details": "No daemon"}
+        mock_binaries.return_value = {
+            "claude": {"installed": True, "path": "/path/claude", "subscription": "Claude Pro"},
+            "codex": {"installed": False, "path": None, "subscription": "ChatGPT Plus"},
+            "agy": {"installed": False, "path": None, "subscription": "Gemini Pro"},
+            "cursor": {"installed": True, "path": "/path/agent", "subscription": "Cursor", "authenticated": True, "status_detail": "AUTHENTICATED"},
+            "copilot": {"installed": False, "path": None, "subscription": "Copilot"}
+        }
+
+        res = crr.evaluate_routing_readiness(port=4000)
+        self.assertEqual(res["posture"], "MULTI_CLI_READY")
+        self.assertIn("Cursor Pro (agent)", res["active_cloud_subscriptions"])
+        self.assertEqual(len(res["active_cloud_subscriptions"]), 2)
+
+    @patch("check_routing_readiness.check_cli_binaries")
+    def test_validate_fallback_chain_valid_chain(self, mock_binaries):
+        mock_binaries.return_value = {
+            "claude": {"installed": True, "path": "/path/claude"},
+            "agy": {"installed": True, "path": "/path/agy"},
+            "codex": {"installed": True, "path": "/path/codex"},
+        }
+        res = crr.validate_fallback_chain("claude,agy,codex")
+        self.assertTrue(res["is_valid"])
+        self.assertEqual(res["posture"], "VALID")
+        self.assertEqual(res["ready_count"], 3)
+
+    @patch("check_routing_readiness.check_cli_binaries")
+    def test_validate_fallback_chain_blocks_copilot_without_authorization(self, mock_binaries):
+        mock_binaries.return_value = {
+            "claude": {"installed": True, "path": "/path/claude"},
+            "copilot": {"installed": True, "path": "/path/copilot"},
+        }
+        res = crr.validate_fallback_chain("claude,copilot", allow_copilot=False)
+        self.assertFalse(res["is_valid"])
+        self.assertEqual(res["backend_statuses"]["copilot"]["status"], "BLOCKED")
+        self.assertIn("corporate boundary", res["warnings"][0])
+
+    @patch("check_routing_readiness.check_cli_binaries")
+    def test_validate_fallback_chain_permits_copilot_with_authorization(self, mock_binaries):
+        mock_binaries.return_value = {
+            "claude": {"installed": True, "path": "/path/claude"},
+            "copilot": {"installed": True, "path": "/path/copilot"},
+        }
+        res = crr.validate_fallback_chain("claude,copilot", allow_copilot=True)
+        self.assertTrue(res["is_valid"])
+        self.assertEqual(res["backend_statuses"]["copilot"]["status"], "READY")
+
+
+if __name__ == "__main__":
+    unittest.main()

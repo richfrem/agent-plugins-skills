@@ -2,6 +2,93 @@
 
 Persistent tracking of architectural friction, structural anomalies, and unclosed loops across sessions.
 
+## DEBT-20261110-CLI-AGENT-OPENROUTER-MICRO-TIER (RESOLVED)
+
+- Logged date: 2026-11-10
+- Cycle/Session ID: feat/cli-agent-openrouter-micro-tier
+- Artifact affected: `plugins/agent-orchestration/.apm/skills/cli-agent/*`
+- Friction observed: `cli-agent` lacked reference and model catalog entries for the ultra-low-cost OpenRouter cloud micro-tier (0.5B-3B models like Llama-3.2-1B/3B and Qwen3 Coder Flash, priced at $0.027-$0.20/MTok). Bounded mechanical tasks (JSON formatting, linting, basic triage) were forced either onto heavy local models (consuming finite Mac SSD/RAM) or expensive frontier subscription quotas (Claude, Codex, Gemini).
+- Why not fixed now: Fixed immediately in this change.
+- Recommended fix / fix applied: Added `openrouter`, `openrouter-coder`, `openrouter-reasoning`, and `openrouter-context` entries to `cheapest_models.json` and `cheapest_models.md`. Added `references/openrouter-models.json` full schema-v2 catalog and `references/openrouter-micro-tier-dispatch.md` documenting verified micro-models, live API data grounding constraints, per-token pricing, $10 hard budget caps, and python integration patterns. Live audit of 465 models updated stale assumptions: replaced flash with superior Qwen3-Coder-30B MoE ($0.15/$0.60), Llama-3.1-8B ($0.02/$0.04 with 5x cheaper output), and Qwen-3.7-Flash (1M context). Updated `SKILL.md` table and references.
+- Evidence/repro: Verified live OpenRouter API response across Llama-3.2-1B ($0.000002), Llama-3.2-3B ($0.000004), and Qwen3-Coder-Flash ($0.000016). Validated catalog passes `validate_catalog()`. Skill passes `audit_skill.py`.
+- Severity: M
+- Repeat: NO
+- Status: RESOLVED
+
+## DEBT-20261104-MODEL-CATALOG-REFRESH (RESOLVED; two items OPEN)
+
+- Gap: the `cli-agent` model catalogs (verified 2026-09-09) lacked the models actually in use (`claude-sonnet-5-5`, `claude-haiku-5-5`, `claude-opus-5-5`, `gpt-6-luna` and the GPT-6.1 family, `gemini-4-argon`); `codex-models.json` lacked `gpt-6-luna` although `cheapest_models.json` named it; `select_model` raised `TypeError` on a null-priced model in a tier (already failing for the agy low tier); tier tests pinned a stale picker snapshot.
+- Resolution: refreshed claude/codex/agy catalogs from the official pricing pages plus the live `agy models` picker and the Codex CLI model cache; `select_model` now sorts unknown prices last (2 tests added); snapshot tests updated with dated evidence; cheapest Claude pick moved to `claude-haiku-5-5`.
+- Verification: `test_model_catalog_contract.py` 17/17 pass (includes a check that the Sonnet 5.5 catalog rates price a real Claude Code session within 1%: reported $29.55, computed $29.49; the older `claude-sonnet-5` rates as a stand-in overestimate by 52%). Full `cli-agent/scripts` suite: 146 pass, 1 pre-existing failure (below).
+- OPEN 1: `sync_cheapest_models.py` expects `plugins/agent-orchestration/skills/cli-agent/references` but the repo layout is `.../.apm/skills/...`, so it errors; only the canonical cli-agent copy of `cheapest_models.*` was updated by hand and other plugins' copies are unsynchronised.
+- OPEN 2: `test_run_agent_runtime.py::test_failure_does_not_echo_source_prompt` fails on `main` before this change: a failed dispatch prints argv including the isolated source text. Redact the prompt argument in `run_agent.py`'s error path.
+- Not asserted: context/output limits for the 5.5 Claude models, hosted agy Claude prices, Gemini 3.7 Flash price (absent from the pricing page).
+
+## DEBT-20261103-HF-UPLOAD-NO-CLI (RESOLVED)
+
+- Logged date: 2026-11-03
+- Cycle/Session ID: feat/hf-upload-cli
+- Artifact affected: `plugins/dev-utils/.apm/skills/managing-huggingface-assets/scripts/hf_upload.py`, `SKILL.md`, `references/upload.md`
+- Friction observed: `SKILL.md` and `references/upload.md` documented `hf_upload.py --file <path> --remote-path <repo path>` (and `--folder`), but the script had no command line, only importable functions. Run as documented it exited 0 with no output and uploaded nothing, so an agent could believe a soul-trace or README upload had succeeded. Found by a Project Sanctuary session that had to call `upload_file()` from Python instead.
+- Why not fixed now: Fixed immediately in this change.
+- Recommended fix / fix applied: Added `main()` with `--file`/`--folder` (mutually exclusive, required), `--remote-path` (default: file name or repo root; leading `/` stripped, `..` rejected), `--commit-message` and an offline `--dry-run`; exit 0 on success, 1 on failure with the error on stderr. Documented the options in `references/upload.md`. Added `plugins/dev-utils/tests/test_hf_upload_cli.py`.
+- Evidence/repro: Before: `python3 hf_upload.py --file x.md --remote-path x.md` exits 0 silently (reproduced from origin/main). After: 8 pytest tests pass; `audit_skill.py --mode source` reports PASS for the skill.
+- Severity: M
+- Repeat: NO
+- Status: RESOLVED
+
+## DEBT-20261102-CLI-AGENT-APPLE-SILICON-MLX-LOCAL-INFERENCE (RESOLVED)
+
+- Logged date: 2026-11-02
+- Cycle/Session ID: feat/cli-agent-mlx-apple-silicon-reference
+- Artifact affected: `plugins/agent-orchestration/.apm/skills/cli-agent/*`
+- Friction observed: `cli-agent` local LLM references assumed `llama-server` on port 8089 or heavy CUDA compilation. On Apple Silicon M-series (M1/M2/M3/M4) Macs with unified memory (e.g. 16GB RAM), local MLX (`mlx-lm`) provides superior memory efficiency (~4.43 GB RAM for 4-bit 7B models) with zero swap overhead, native Metal acceleration, and an OpenAI-compatible server on port 8080 (`curl -s http://127.0.0.1:8080/v1/models`). However, these steps and benchmarks were not documented in `cli-agent` references.
+- Why not fixed now: Fixed immediately in this change.
+- Recommended fix / fix applied: Added `references/local-mlx-apple-silicon.md` documenting zero-swap Apple Silicon MLX inference, `mlx_lm.server --port 8080`, `curl http://127.0.0.1:8080/v1/models` health checks, and France capital benchmark tests; updated `local-llm-dispatch.md`, `local-llm-setup-deep-reference.md`, and `SKILL.md`.
+- Evidence/repro: Measured on Apple Silicon M1 (16GB RAM): 14.3 tok/sec generation, 83.7 tok/sec prompt speed, 4.431 GB peak RAM. Pytest passes 143 tests in `cli-agent`.
+- Severity: L
+- Repeat: NO
+- Status: RESOLVED
+
+## DEBT-20261102-CLI-AGENT-SUBSCRIPTION-ROUTER-PROBE (RESOLVED)
+
+- Logged date: 2026-11-02
+- Cycle/Session ID: feat/cli-agent-subscription-router-setup-reference
+- Artifact affected: `plugins/agent-orchestration/.apm/skills/cli-agent/*`
+- Friction observed: `cli-agent` historically assumed local LLM execution via `llama-server` on port 8089 as the fallback mechanism. On Apple Silicon M1 hardware, running local LLMs incurs severe memory pressure, thermal throttling, and slow inference. The user already possesses paid cloud subscriptions (Claude Pro, ChatGPT Plus, Gemini Pro) that sat idle when single-CLI rate windows approached, and lacked an automated pre-flight readiness probe to verify whether routing or multi-CLI fallback was configured.
+- Why not fixed now: Fixed immediately in this change.
+- Recommended fix / fix applied: Created `references/setup-subscription-pooling.md` providing explicit setup and validation for M1-optimized cloud-to-cloud subscription pooling; authored `scripts/check_routing_readiness.py` pre-flight probe and unit tests; updated `SKILL.md` to reference the probe and setup guide.
+- Evidence/repro: `check_routing_readiness.py` executes and correctly audits port 4000, environment variables, CLI binaries, and Copilot isolation; `test_check_routing_readiness.py` passes 4/4 unit tests; `audit_skill.py` passes with 0 errors.
+- Severity: M
+- Repeat: NO
+- Status: RESOLVED
+
+## DEBT-20261102-ORCHESTRATING-BOT-DELEGATION (RESOLVED)
+
+- Logged date: 2026-11-02
+- Cycle/Session ID: feat/orchestrating-agent-work-bot-capabilities
+- Artifact affected: `plugins/agent-orchestration/.apm/skills/orchestrating-agent-work/*`
+- Friction observed: `orchestrating-agent-work` assumed all execution targets were local, synchronous CLI processes running in subshells/worktrees. Autonomous commercial agent platforms (Grok Bot, Claude Duet, OpenAI Dots, Gemini Agent) lack local stdio REPLs, operate asynchronously (via PRs, webhooks, or browser VMs), and feature geo-availability constraints (US-only previews for Duet and Dots).
+- Why not fixed now: Fixed immediately in this change.
+- Recommended fix / fix applied: Added `references/bot-delegation-patterns.md` covering synchronous CLI vs asynchronous remote bot patterns, documented Cursor Premium ($30/mo) bundling of Grok Bot, noted regional availability boundaries, and updated `routing-and-closure.md` and `strategy-selection.md` tables with asynchronous bot routing signals.
+- Evidence/repro: `authoring-skills/scripts/audit_skill.py` passes on `orchestrating-agent-work` (PASS, 0 errors); `test_capability_profile.py` passes (0 exit code).
+- Severity: L
+- Repeat: NO
+- Status: RESOLVED
+
+## DEBT-20261029-CODEX-STOP-METRICS-JSON (RESOLVED)
+
+- Logged date: 2026-10-29
+- Cycle/Session ID: fix/codex-stop-hook-json
+- Artifact affected: `plugins/agent-agentic-os/.apm/hooks/scripts/post_run_metrics.py`
+- Friction observed: Codex reported invalid Stop-hook JSON twice per turn. The metrics hook exited 0 with a plain-text summary; the write-error fallback also printed diagnostics to stdout. Global APM registrations include two command variants for the hook, explaining repeated messages; registration deduplication is a separate installer concern.
+- Why not fixed now: Source output protocol fixed in this change; deployment waits for PR review and merge.
+- Recommended fix / fix applied: Encode the existing summary in the shared Stop-hook `systemMessage` JSON field and route fallback diagnostics to stderr. Preserve event recording, no-context silence, and guard behavior. Repair canonical source and reinstall with APM; never patch deployed copies.
+- Evidence/repro: New subprocess regression tests initially produced 3 failures and 1 pass. After the fix, the four protocol cases plus existing evolution-guard tests passed (15 total). Plugin compliance, structure, hook configuration, hook lint and copy-drift checks passed with existing warnings. New test file has no conventions findings; modified hook retains an existing complexity warning. The workspace audit reports the same seven unrelated files on main and the feature worktree. A broader 1,066-test run was interrupted after failures/errors; the first failure was independently reproduced on unchanged main (`test_actionable_rollback.py`, missing direct-strategy plan artifact). No full-suite pass is claimed.
+- Severity: M
+- Repeat: YES
+- Status: RESOLVED
+
 ## DEBT-20261027-WINDOWS-HOOK-PORTABILITY (RESOLVED)
 
 - Logged date: 2026-10-27
@@ -1920,3 +2007,29 @@ Updated root documentation (AGENTS.md, README.md, START_HERE.md, COMPONENT_RETEN
 - Severity: L
 - Repeat: NO
 - Status: OPEN
+
+## DEBT-20261102-CLI-AGENT-AUTONOMOUS-ROUTING-REFERENCE
+
+- Status: RESOLVED
+- Artifact affected: `cli-agent` skill and its routing references.
+- Gap: `cli-agent` previously lacked an explicit taxonomy distinguishing synchronous terminal coding CLIs from autonomous cloud agent VMs (Grok Bot, Claude Duet, OpenAI Dots/Operator, Gemini Agent), as well as multi-subscription pooling / local proxy fallback contracts.
+- Resolution: Added `references/autonomous-agent-platforms.md` defining execution boundaries and asynchronous Git/webhook handoffs; added `references/provider-fallback-routing.md` defining local proxy gateway failovers; refreshed `references/cheapest_models.md` with explicit work vs personal subscription boundaries.
+- Verification: `authoring-skills/scripts/audit_skill.py` passes with 0 warnings, 0 errors; all unit tests pass (4/4 in 0.10s).
+
+
+## DEBT-20261102-CLI-AGENT-CURSOR-DISPATCH-REFERENCE
+
+- Status: RESOLVED
+- Artifact affected: `cli-agent` skill (`references/cursor-cli-dispatch.md`, `scripts/check_routing_readiness.py`, `scripts/test_check_routing_readiness.py`, `SKILL.md`).
+- Gap: The Cursor Agent CLI (`agent` / `cursor-agent`) was installed on the host macOS M1 environment without an active subscription/account, causing readiness probes to either omit or mischaracterize the standby binary, and leaving automated dispatchers without documentation on Cursor CLI invocation patterns, model parameters (`grok-2`), or cloud background workers (`agent worker`).
+- Resolution: Added `references/cursor-cli-dispatch.md` detailing non-interactive invocation (`-p`, `--output-format json`), Grok/Composer models, `agent worker` cloud loop execution, and fail-closed unauthenticated behavior. Updated `check_routing_readiness.py` to non-destructively probe `agent status` and classify unauthenticated installations as `STANDBY (Not logged in)` without falsely inflating active compute subscription pools. Added regression tests in `test_check_routing_readiness.py`.
+- Verification: 5/5 unit tests pass in `test_check_routing_readiness.py`; `authoring-skills/scripts/audit_skill.py` passes.
+
+
+## DEBT-20261102-CLI-AGENT-NATIVE-FALLBACK-CHAIN
+
+- Status: RESOLVED
+- Artifact affected: `cli-agent` skill (`scripts/run_agent.py`, `scripts/test_run_agent.py`, `scripts/check_routing_readiness.py`, `scripts/test_check_routing_readiness.py`, `references/setup-subscription-pooling.md`, `references/cheapest_models.json`, `SKILL.md`).
+- Gap: `cli-agent` lacked an automated, daemon-less subscription pooling mechanism for macOS M1. When primary CLI providers encountered quota or 429 rate limits, tasks aborted rather than automatically failing over to other paid consumer subscriptions (Claude Pro -> Gemini Pro -> ChatGPT Plus). Furthermore, Copilot risked accidental routing to personal/sovereign research without an explicit user authorization gate.
+- Resolution: Implemented `--fallback-chain` in `run_agent.py` with automatic rate-limit and capacity exhaustion detection (`429`, `ResourceExhausted`, `at capacity`, `resets in`, `Not logged in`), clean partial-output unlinking, and immediate halting on non-quota task errors. Enforced hard governance boundary requiring `--allow-copilot` before Copilot can be used in dispatch or fallback chains. Added `--validate-chain` pre-flight fallback verification and multi-tier auditing to `check_routing_readiness.py`. Documented setup requirements in `setup-subscription-pooling.md`.
+- Verification: 63/63 tests pass in `test_run_agent.py`; 8/8 tests pass in `test_check_routing_readiness.py`; `authoring-skills/scripts/audit_skill.py` passes with 0 errors.

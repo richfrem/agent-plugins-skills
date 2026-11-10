@@ -9,6 +9,7 @@ A framework-agnostic execution and routing suite for AI agents. Combines structu
 | Skill | Role | Description |
 |---|---|---|
 | `orchestrating-agent-work` | Master Orchestrator | Interactive intake and execution planner for DAGs, supervisor/worker loops, and parallel swarms. Analyzes incoming tasks, determines topology, plans artifacts, and coordinates execution. |
+| `evaluating-agent-outcomes` | Shared Evaluator | Repository-independent findings for a work contract: criterion-level acceptance, validity gates, measured cost with unknowns, human-intervention classes, repair recurrence, profile-driven scoring (`scoring.py`), cost tiers and usage-ledger arithmetic (`accounting.py`), zero-token usage measurement (`usage_measure.py`), and specific lessons on an explicit repo-local store. Never grants authority. |
 | `cli-agent` | Multi-LLM Router | Dispatches bounded tasks to six backends (`--cli claude\|codex\|copilot\|agy\|gemini\|llama`) via `run_agent.py`. Manages local llama-server setup, canonical model catalogs, project capability setup, and KV cache optimization. |
 | `agt-security` | Governance & Sandboxing | Microsoft Agent Governance Toolkit (AGT) sandbox validation, boundary verification, and HMAC key rotation. |
 | `maf-adapter` | Framework Adapter | Microsoft Agent Framework (MAF) manifest validation, adapter bindings, and local simulation harness. |
@@ -19,6 +20,8 @@ A framework-agnostic execution and routing suite for AI agents. Combines structu
 
 ### 1. Structural Orchestration (Loops & DAGs)
 ```
+Learning loop (generic, no Sanctuary schema): work contract → retrieve lessons → `cli-agent` guarded dispatch (claim, cwd boundary, timeout, structured result) → `evaluating-agent-outcomes` findings → repair/accept → record lesson → apply and measure. See `orchestrating-agent-work/references/learning-loop.md`.
+
 Task Trigger → orchestrating-agent-work
   ├── Topology: Directed Acyclic Graph (DAG)
   │     └── graph-manifest.json → graph_runner.py (isolated worktrees, receipts, rollback)
@@ -85,6 +88,7 @@ agent-orchestration/
     │   ├── scripts/             # swarm_run.py, agent_orchestrator.py, graph_runner.py, etc.
     │   ├── assets/templates/    # Job, strategy packet, and retrospective templates
     │   └── references/          # Pattern guides, schemas, and architecture diagrams
+    ├── evaluating-agent-outcomes/ # Shared evaluator: contracts, findings, gates, lessons
     ├── cli-agent/               # Multi-LLM task router, local llama-server, and model catalog
     │   ├── SKILL.md             # Central dispatcher across 6 CLI backends
     │   ├── scripts/             # run_agent.py, run_server.py, routing_proxy.py, kv_cache_orchestrator.py
@@ -96,6 +100,8 @@ agent-orchestration/
 ---
 
 ## Testing & Verification
+
+Hook interpreter (`closure_guard.py` Stop hook, needs PyYAML): hooks run `$APM_HOOK_PYTHON` when it is set, otherwise the first of `python3` or `python` on PATH. Each hook runs once, and a failing script is not re-run under a second interpreter. To pin an interpreter (for example a venv that has the dependencies installed), set `APM_HOOK_PYTHON` in the agent's settings `env` block, not in a shell profile.
 
 ```bash
 # Plugin structure audit
@@ -111,3 +117,10 @@ python3 plugins/agent-extension-authoring/skills/authoring-subagents/scripts/aud
 # Unit tests
 python3 -m pytest plugins/agent-orchestration/skills/cli-agent/scripts -v
 ```
+
+## Consumers
+
+Project Sanctuary consumes `orchestrating-agent-work`, `cli-agent` and `evaluating-agent-outcomes` through thin adapters (`evaluating-agent-work/scripts/eval_gate.py`, `sanctuary_adapter.py`). Interface changes need a compatibility shim or same-change caller updates, an `evolution-log.md` entry, and a global `apm update --global` with installed-file verification. `dispatch_guard.py` now lives in `cli-agent/scripts/` (a shim remains in `orchestrating-agent-work/scripts/`).
+
+## Execution and accounting model (summary)
+`orchestrating-agent-work/scripts/work_loop.py run` is the supported single-item loop: claim-first dispatch, atomic per-work-item budget admission, immutable attempt ids and artifacts, bounded lesson briefs, repair within budget. `cli-agent` enforces launch boundaries (process-group timeout with confirmed cleanup, claim tokens, readiness probes) and returns per-backend attempts with usage-or-null. `evaluating-agent-outcomes` owns the arithmetic (attempt ledger folding, budget validation/admission, claim-specific validity). See `orchestrating-agent-work/references/learning-loop.md` for what is enforced and what stays agent-supervised.

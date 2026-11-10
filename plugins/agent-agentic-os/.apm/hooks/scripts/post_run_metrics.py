@@ -26,6 +26,7 @@ Key Input Dependencies:
 
 Output:
     - Emits a 'type: metric' event via kernel.py
+    - Writes the summary as Stop-hook JSON on stdout; diagnostics use stderr
 
 Key Functions:
     _count_events()
@@ -43,6 +44,7 @@ import json
 import os
 import argparse
 import subprocess
+import sys
 from pathlib import Path
 from datetime import datetime, timezone
 
@@ -94,7 +96,7 @@ def emit_event(project_root: Path, event_data: dict) -> None:
             with open(events_log, "a") as f:
                 f.write(json.dumps(event_data) + "\n")
         except Exception as e2:
-            print(f"Failed to record metrics: {e2}")
+            print(f"Failed to record metrics: {e2}", file=sys.stderr)
 
 def count_hook_errors(project_root: Path) -> int:
     """Count error lines written to hook-errors.log this session.
@@ -228,7 +230,7 @@ def _build_metrics_payload(counts: dict, hook_errors: int, correlation_id: "str 
 
 
 def _print_summary(counts: dict, hook_errors: int, correlation_id: "str | None") -> None:
-    """Print the human-readable session metrics summary line."""
+    """Emit the readable summary in the Stop-hook JSON systemMessage field."""
     scope = f"cycle:{correlation_id}" if correlation_id else "full session"
     summary = (
         f"--- AGENTIC OS: SESSION METRICS CAPTURED ({scope}) "
@@ -239,7 +241,7 @@ def _print_summary(counts: dict, hook_errors: int, correlation_id: "str | None")
     if hook_errors > 0:
         summary += f" HOOK_FAILURES:{hook_errors} (check context/memory/hook-errors.log)"
     summary += " ---"
-    print(summary)
+    print(json.dumps({"systemMessage": summary}))
 
 
 def main() -> None:

@@ -49,7 +49,7 @@ python3 scripts/gh_issue_create.py --title "Bug summary" --body "<5 sections>" -
 ## Workflow
 
 1. Pick the mode from the table and read its reference before running anything.
-   For GHAS reports, read the guide, collect evidence and draft the report, then stop; the remaining steps apply to issue operations.
+   For GHAS reports, read the guide, collect evidence and draft the report, then stop by default. If the user authorizes private submission, follow the guide's reviewed GUI/API path; the remaining steps apply to issue operations.
 2. Search for existing issues first; comment on a matching root cause instead of creating a duplicate.
 3. Run the mode's script in dry-run, check redaction and taxonomy, then rerun with `--execute` when authorized.
 4. On any failure follow that mode's section in [fallback-tree.md](references/fallback-tree.md).
@@ -66,5 +66,5 @@ For GHAS reports, verify access limits, pagination, safe metadata and source cit
 
 - Modes: [log.md](references/log.md) • [backlog.md](references/backlog.md) • [prioritize.md](references/prioritize.md) • [propose-refactor.md](references/propose-refactor.md) • [review-resolution.md](references/review-resolution.md)
 - Detail: [operation-catalog.md](references/operation-catalog.md) • [taxonomy-guide.md](references/taxonomy-guide.md) • [issue-taxonomy.md](references/issue-taxonomy.md) • [bridge-guide.md](references/bridge-guide.md) • [priority-matrix.md](references/priority-matrix.md)
-- GHAS reporting: [ghas-reporting-guide.md](references/ghas-reporting-guide.md) — access probes, alert history, configuration review, evidence and report template.
+- GHAS reporting: [ghas-reporting-guide.md](references/ghas-reporting-guide.md) — access probes, evidence, report template, GitHub form fields and authorized private submission through GUI or gh api.
 - Gates: [acceptance-criteria.md](references/acceptance-criteria.md) • [fallback-tree.md](references/fallback-tree.md)

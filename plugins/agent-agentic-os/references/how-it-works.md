@@ -14,7 +14,7 @@ Architecture notes for the plugin as a whole: the learning loop, memory, agent c
 
 The core learning cycle lives in the `improving-skills-in-lab` skill. Its `loop` mode orchestrates multi-iteration improvement runs against a locked eval set, its `score` mode scores each mutation (KEEP or DISCARD), its `setup` mode isolates each run in a sibling repo, and its `backport` mode provides the human review gate before any winning change reaches production.
 
-The execution pattern delegates inner-loop mechanics to the `orchestrating-agent-work` skill of the `agent-orchestration` plugin. That plugin supplies the loop substrate; this plugin adds the eval gate, the experiment log and lab isolation.
+The execution pattern delegates inner-loop mechanics to the `orchestrating-agent-work` skill of the `agent-orchestration` plugin (which also provides the generic learning loop; delivery findings come from `evaluating-agent-outcomes`, launch checks from `cli-agent`). That plugin supplies the loop substrate; this plugin adds the eval gate, the experiment log and lab isolation.
 
 → Full detail: [triple-loop.md](../skills/improving-skills-in-lab/references/triple-loop.md)
 

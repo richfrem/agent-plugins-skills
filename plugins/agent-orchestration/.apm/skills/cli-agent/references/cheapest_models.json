@@ -15,13 +15,38 @@
     "description": "Gemini 3.8 Flash; select Low effort separately for cost-sensitive dispatch."
   },
   "claude": {
-    "model": "claude-haiku-4-5",
+    "model": "claude-haiku-5-5",
     "cost": "Paid (Per-token)",
-    "description": "Cheapest Anthropic model ($1/$5 per MTok input/output)"
+    "description": "Cheapest Anthropic model ($0.10/$0.50 per MTok input/output up to 100K prompt tokens)"
   },
   "codex": {
     "model": "gpt-6-luna",
     "cost": "Paid (Per-token)",
     "description": "Fast and affordable model for easier tasks; current cost-sensitive OpenAI model."
+  },
+  "cursor": {
+    "model": "grok-2",
+    "cost": "Paid (Cursor Pro / Free pool)",
+    "description": "Cursor Agent CLI; defaults to grok-2 or composer."
+  },
+  "openrouter": {
+    "model": "meta-llama/llama-3.2-1b-instruct",
+    "cost": "Paid ($0.027/$0.201 per MTok)",
+    "description": "Ultra-cheap cloud micro-tier (1B general/JSON formatting)"
+  },
+  "openrouter-reasoning": {
+    "model": "meta-llama/llama-3.1-8b-instruct",
+    "cost": "Paid ($0.020/$0.040 per MTok)",
+    "description": "Ultra-cheap cloud micro-tier (8B general reasoning, 5x cheaper output)"
+  },
+  "openrouter-coder": {
+    "model": "qwen/qwen3-coder-30b-a3b-instruct",
+    "cost": "Paid ($0.150/$0.600 per MTok)",
+    "description": "Ultra-cheap cloud micro-tier (30B/3B MoE coding specialist)"
+  },
+  "openrouter-context": {
+    "model": "qwen/qwen3.7-flash",
+    "cost": "Paid ($0.030/$0.130 per MTok)",
+    "description": "Ultra-cheap cloud micro-tier (1M token context ingestion)"
   }
 }

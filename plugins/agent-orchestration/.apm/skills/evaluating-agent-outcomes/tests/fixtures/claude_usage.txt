@@ -1,0 +1,17 @@
+You are currently using your subscription to power your Claude Code usage
+
+Current session: 9% used · resets Nov 4 at 12:09pm (America/Vancouver)
+Current week (all models): 15% used · resets Nov 9 at 8:59pm (America/Vancouver)
+
+What's contributing to your usage?
+Approximate · sessions on this machine only · shares overlap
+
+Last 24h · 383 requests · 1 session
+  95%  Start fresh when you switch tasks · run /clear
+  Top skills: /cli-agent 1%
+
+Last 7d · 990 requests · 29 sessions
+  90%  Start fresh when you switch tasks · run /clear
+  48%  Give simple subagents a cheaper model
+  Top skills: /forensic-code-auditor 2%, /enforcing-coding-conventions 1%, /cli-agent 1%
+  Top MCP servers: claude-in-chrome 2%

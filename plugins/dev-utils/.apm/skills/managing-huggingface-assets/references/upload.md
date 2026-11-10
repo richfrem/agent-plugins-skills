@@ -25,7 +25,12 @@ python3 scripts/hf_upload.py \
 python3 scripts/hf_upload.py \
   --folder ./data \
   --remote-path data/
+
+# Check the plan without uploading (works without credentials)
+python3 scripts/hf_upload.py --file README.md --dry-run
 ```
+
+Options: `--remote-path` (default: the file name, or the repo root for `--folder`; leading `/` is stripped and `..` is rejected), `--commit-message`, `--dry-run`. The command exits 0 on success and 1 on failure, printing the error to stderr. The credentials come from the environment variables named in [init.md](init.md); `HUGGING_FACE_USERNAME` and `HUGGING_FACE_DATASET_PATH` are required in addition to the token.
 
 ## Workflow
 

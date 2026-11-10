@@ -119,6 +119,10 @@ def select_model(catalog: Dict[str, Any], tier: str, preferred_model: Optional[s
 
     def cost_key(model: Dict[str, Any]) -> tuple[float, float, str]:
         pricing = model.get("pricing_usd_per_1m") or {}
-        return (float(pricing.get("input", float("inf"))), float(pricing.get("output", float("inf"))), model["cli_id"])
+        # Unknown (null/absent) prices sort last instead of raising, so a tier with an unpriced model still selects deterministically.
+        def _price(key: str) -> float:
+            value = pricing.get(key)
+            return float("inf") if value is None else float(value)
+        return (_price("input"), _price("output"), model["cli_id"])
 
     return min(candidates, key=cost_key)["cli_id"]
