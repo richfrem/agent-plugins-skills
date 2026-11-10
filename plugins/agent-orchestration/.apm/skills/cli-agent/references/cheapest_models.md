@@ -11,7 +11,9 @@ Update here only — do not hardcode model names or cost claims in SKILL.md or a
 | `claude` | `claude-haiku-5-5` | Paid (Per-token / Pro tier) | $0.10/MTok input, $0.50/MTok output (up to 100K prompt tokens); efficient subtask delegator. |
 | `codex` | `gpt-6-luna` | Paid (Per-token / Plus tier) | Fast, cost-sensitive OpenAI model for mechanical edits. |
 | `cursor` | `cursor-agent` | Included (Cursor Pro) | Headless non-interactive CLI reading root AGENTS.md. |
-| `openrouter` | `meta-llama/llama-3.2-1b-instruct` | Paid ($0.027/$0.20 per MTok) | Ultra-cheap cloud micro-tier; also supports `llama-3.2-3b` and `qwen3-coder-flash` for routine mechanical chores. |
+| `openrouter` | `meta-llama/llama-3.2-1b-instruct` | Paid ($0.027/$0.20 per MTok) | Ultra-cheap cloud micro-tier (1B general/JSON formatting). |
+| `openrouter-reasoning` | `meta-llama/llama-3.2-3b-instruct` | Paid ($0.05/$0.33 per MTok) | Ultra-cheap cloud micro-tier (3B general reasoning & triage). |
+| `openrouter-coder` | `qwen/qwen3-coder-flash` | Paid ($0.195/$0.975 per MTok) | Ultra-cheap cloud micro-tier (coding chores & AST syntax repairs). |
 
 > [!WARNING]
 > Only `llama` (self-hosted Gemma 4) is free. Copilot, Gemini/Agy, and Claude bill per token or consume subscription quota.

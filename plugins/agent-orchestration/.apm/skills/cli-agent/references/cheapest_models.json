@@ -32,6 +32,16 @@
   "openrouter": {
     "model": "meta-llama/llama-3.2-1b-instruct",
     "cost": "Paid ($0.027/$0.20 per MTok)",
-    "description": "Ultra-cheap cloud micro-tier; also supports llama-3.2-3b and qwen3-coder-flash."
+    "description": "Ultra-cheap cloud micro-tier (1B general/JSON)"
+  },
+  "openrouter-coder": {
+    "model": "qwen/qwen3-coder-flash",
+    "cost": "Paid ($0.195/$0.975 per MTok)",
+    "description": "Ultra-cheap cloud micro-tier (coding specialist)"
+  },
+  "openrouter-reasoning": {
+    "model": "meta-llama/llama-3.2-3b-instruct",
+    "cost": "Paid ($0.05/$0.33 per MTok)",
+    "description": "Ultra-cheap cloud micro-tier (3B general reasoning)"
   }
 }
