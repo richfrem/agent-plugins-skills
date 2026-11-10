@@ -92,6 +92,8 @@ python3 plugins/agent-orchestration/.apm/skills/cli-agent/scripts/jev_router.py 
 
 ## Empirical Benchmark Validation (50-Task Matrix)
 
+> **Caveat (2026-11-10):** the router's anchor phrases were tuned on the same 50 tasks, and thresholds and model mapping changed after the design freeze, so these figures are in-sample and not evidence of held-out accuracy. A frozen router against unseen tasks has not been run yet. Treat the numbers below as a smoke result, not a validated claim.
+
 Tested across 50 categorized engineering tasks in Project Sanctuary (20 Mechanical, 15 Coding, 5 Triage, 10 Architectural):
 * **Mean Latency:** `0.252 ms` (p95: 0.640 ms, max: 1.374 ms)
 * **Tokens Burned:** `0` (Strict Zero-Token Guarantee)

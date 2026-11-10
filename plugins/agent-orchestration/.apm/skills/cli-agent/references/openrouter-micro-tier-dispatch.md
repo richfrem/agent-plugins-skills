@@ -29,42 +29,35 @@ This tier acts as a **"Token Shield"** to preserve expensive frontier subscripti
 curl -s -X POST "https://openrouter.ai/api/v1/chat/completions" \
   -H "Authorization: Bearer $OPENROUTER_API_KEY" \
   -H "Content-Type: application/json" \
-  -H "HTTP-Referer: https://project-sanctuary.local" \
-  -H "X-Title: Project Sanctuary" \
-  -d '{
+    -d '{
     "model": "meta-llama/llama-3.2-1b-instruct",
     "messages": [{"role": "user", "content": "Format this JSON payload cleanly."}],
     "max_tokens": 100
   }'
 ```
 
-## Python Integration Pattern
+## Client Script (`scripts/openrouter_client.py`)
+
+Use the bundled client instead of hand-written HTTP calls. It enforces the constraints above:
+
+- **Hard cap**: refuses to spend past `OPENROUTER_MONTHLY_CAP_USD` (default `10.00`) using a local ledger (`OPENROUTER_SPEND_LEDGER`, default `~/.agent/coordination/openrouter_spend.json`). Check with `--spend`.
+- **No black-box routers**: `openrouter/free` and `openrouter/auto` raise `ValueError`; pin a model or take it from `jev_router.py --format cli-flags`.
+- **Local fallback**: missing key, cap reached, or request failure diverts to the local OpenAI-compatible server (`LOCAL_LLM_URL`, default `http://127.0.0.1:8080/v1/chat/completions`) at zero cost; pass `--no-local-fallback` to fail instead.
+- **Live pricing**: per-call cost is computed from `openrouter-models.json`; unknown models are billed at a conservative fallback rate, never free.
+
+```bash
+python3 scripts/openrouter_client.py --model meta-llama/llama-3.2-3b-instruct --format json "Sort these JSON keys alphabetically: {...}"
+python3 scripts/openrouter_client.py --spend
+```
 
 ```python
-import os, urllib.request, json
-
-def query_openrouter_micro(prompt: str, model: str = "meta-llama/llama-3.2-1b-instruct", max_tokens: int = 150) -> str:
-    api_key = os.environ.get("OPENROUTER_API_KEY")
-    if not api_key:
-        raise ValueError("OPENROUTER_API_KEY not set")
-    
-    url = "https://openrouter.ai/api/v1/chat/completions"
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json",
-        "HTTP-Referer": "https://project-sanctuary.local",
-        "X-Title": "Project Sanctuary",
-    }
-    payload = {
-        "model": model,
-        "messages": [{"role": "user", "content": prompt}],
-        "max_tokens": max_tokens,
-    }
-    req = urllib.request.Request(url, data=json.dumps(payload).encode("utf-8"), headers=headers)
-    with urllib.request.urlopen(req) as resp:
-        data = json.loads(resp.read().decode("utf-8"))
-        return data["choices"][0]["message"]["content"].strip()
+import sys; sys.path.insert(0, "<cli-agent>/scripts")
+from openrouter_client import invoke_micro_tier
+res = invoke_micro_tier("Add a trailing comma to this JSON ...", model="meta-llama/llama-3.2-3b-instruct", max_tokens=200)
+print(res.status, res.cost_usd, res.content)
 ```
+
+Tests: `pytest scripts/test_openrouter_client.py` (no network; fallbacks are mocked).
 
 ## Verification & Smoke Test
 

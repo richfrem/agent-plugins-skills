@@ -28,6 +28,10 @@ Unified multi-LLM task router and execution engine for external CLI agents and l
 python3 scripts/jev_router.py --format cli-flags "Format markdown table in README.md"
 # Output: --runtime openrouter --model meta-llama/llama-3.2-3b-instruct
 
+# OpenRouter micro-tier call under the $10/month cap (falls back to the local server)
+python3 scripts/openrouter_client.py --model meta-llama/llama-3.2-3b-instruct "Format this JSON: {...}"
+python3 scripts/openrouter_client.py --spend
+
 # Direct dispatch with automatic multi-subscription fallback
 python3 scripts/run_agent.py <personas>/security-auditor.md <input> <output> "Review supplied source." --cli claude --fallback-chain agy,codex --isolated --require-input
 ```
@@ -42,7 +46,7 @@ python3 scripts/run_agent.py <personas>/security-auditor.md <input> <output> "Re
 | **Antigravity** | `--cli agy` | Google Antigravity / Gemini CLI | [agy-cli-dispatch.md](references/agy-cli-dispatch.md) |
 | **Cursor** | `--cli agent` | Cursor Agent CLI (Grok / Claude / GPT) | [cursor-cli-dispatch.md](references/cursor-cli-dispatch.md) |
 | **Local LLM** | `--cli llama` | Local Gemma 4 12B at localhost:8089 or MLX at localhost:8080 | [local-llm-dispatch.md](references/local-llm-dispatch.md) & [local-mlx-apple-silicon.md](references/local-mlx-apple-silicon.md) |
-| **OpenRouter** | `--cli openrouter` | Cloud Micro-Tier (Llama-3.2 1B/3B, Qwen3 Coder Flash) | [openrouter-micro-tier-dispatch.md](references/openrouter-micro-tier-dispatch.md) |
+| **OpenRouter** | `scripts/openrouter_client.py` (not a `run_agent.py --cli` value) | Cloud Micro-Tier (Llama-3.2 1B/3B, Qwen3 Coder MoE), $10/month cap, local-server fallback | [openrouter-micro-tier-dispatch.md](references/openrouter-micro-tier-dispatch.md) |
 
 ## Workflow
 
