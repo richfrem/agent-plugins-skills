@@ -14,18 +14,23 @@ Usage Examples:
 
 Key Input Dependencies:
     A directory containing manifest.json, Cowork icons, and registered skill folders.
+    Use scaffold_cowork_package.py to create that directory from an APM plugin.
 
 Output:
     A ZIP with manifest.json at its root. Does not provision, publish, or share.
+    Before zipping it also checks manifest metadata, SKILL.md frontmatter, and relative
+    Markdown links, printing anchor warnings and failing on errors (--skip-content-checks
+    turns this off; not recommended).
 
 Key Functions:
     resolve_package_root, resolve_manifest_path, validate_icons,
     validate_skill_entries, validate_companion_limits, collect_package_files,
-    validate_package,
+    validate_companion_extensions, run_content_checks, validate_package,
     validate_archive, publish_archive, package_plugin, create_parser, main.
 
 Script Dependencies:
-    Python standard library only; cowork_package_constants.py in this skill.
+    Python standard library only; cowork_package_constants.py and cowork_content_checks.py
+    in this skill.
 """
 
 from __future__ import annotations
@@ -35,11 +40,18 @@ import json
 import os
 import shutil
 import struct
+import sys
 import tempfile
 import zipfile
 from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
+from cowork_content_checks import (
+    summarize_problems,
+    validate_manifest_fields,
+    validate_markdown_links,
+    validate_skill_frontmatter,
+)
 from cowork_package_constants import (
     AGENT_SKILLS_KEY,
     APP_PACKAGE_DIRECTORY_NAME,
@@ -60,6 +72,7 @@ from cowork_package_constants import (
     SKILL_FILE_NAME,
     SKILL_FOLDER_KEY,
     SKILLS_DIRECTORY_NAME,
+    SUPPORTED_COMPANION_EXTENSIONS,
     TEMP_ARCHIVE_PREFIX,
     ZIP_COMPRESSION_LEVEL,
     ZIP_FILE_SUFFIX,
@@ -223,6 +236,28 @@ def validate_companion_limits(skill_paths: List[Path], package_files: List[Path]
             )
 
 
+# Reject skill files whose extension Microsoft 365 Copilot does not support.
+def validate_companion_extensions(
+    skill_paths: List[Path],
+    package_files: List[Path],
+    allowed: frozenset = SUPPORTED_COMPANION_EXTENSIONS,
+) -> None:
+    """Fail when a skill contains a file type Cowork publish validation rejects (for example .mmd)."""
+    offending = sorted(
+        path.as_posix()
+        for path in package_files
+        if path.suffix.lower() not in allowed
+        and any(skill_path in path.parents for skill_path in skill_paths)
+    )
+    if offending:
+        raise ValueError(
+            "These skill files use extensions Microsoft 365 Copilot does not support: "
+            + ", ".join(offending)
+            + ". Rebuild with scaffold_cowork_package.py or bundle_skill_companions.py, which filter them out, "
+            "remove the files, or pass --allow-extensions if Microsoft has confirmed the type."
+        )
+
+
 # Inventory regular package files and reject links, hidden files, and likely secrets.
 def collect_package_files(package_root: Path) -> Tuple[List[Path], List[Path]]:
     """Return package files and omitted source-only directories."""
@@ -271,8 +306,28 @@ def collect_package_files(package_root: Path) -> Tuple[List[Path], List[Path]]:
     return sorted_files, sorted_omissions
 
 
+# Run manifest, frontmatter and link checks; print warnings and raise on errors.
+def run_content_checks(manifest: Dict[str, Any], skill_paths: List[Path]) -> None:
+    """Fail on content errors that the structural checks cannot see; print warnings."""
+    errors: List[str] = validate_manifest_fields(manifest)
+    warnings: List[str] = []
+    for skill_path in skill_paths:
+        errors.extend(validate_skill_frontmatter(skill_path))
+        link_errors, link_warnings = validate_markdown_links(skill_path)
+        errors.extend(link_errors)
+        warnings.extend(link_warnings)
+    for warning in warnings:
+        print(f"warning: {warning}", file=sys.stderr)
+    if errors:
+        raise ValueError(summarize_problems(errors))
+
+
 # Validate package metadata and ensure every referenced file is in the archive set.
-def validate_package(package_root: Path) -> Tuple[List[Path], List[Path]]:
+def validate_package(
+    package_root: Path,
+    check_content: bool = True,
+    allowed_extensions: frozenset = SUPPORTED_COMPANION_EXTENSIONS,
+) -> Tuple[List[Path], List[Path]]:
     """Validate package essentials and return files plus source-only omissions."""
     manifest_path = package_root / MANIFEST_FILE_NAME
     if manifest_path.is_symlink():
@@ -289,6 +344,9 @@ def validate_package(package_root: Path) -> Tuple[List[Path], List[Path]]:
     skill_paths = validate_skill_entries(package_root, manifest)
     package_files, omitted_directories = collect_package_files(package_root)
     validate_companion_limits(skill_paths, package_files)
+    validate_companion_extensions(skill_paths, package_files, allowed_extensions)
+    if check_content:
+        run_content_checks(manifest, skill_paths)
     included_files = set(package_files)
     required_files = {manifest_path, *icon_paths}
     for skill_path in skill_paths:
@@ -341,10 +399,15 @@ def package_plugin(
     plugin_path: Path,
     output_path: Path,
     overwrite: bool,
+    check_content: bool = True,
+    allow_extensions: Sequence[str] = (),
 ) -> Tuple[Path, List[Path]]:
     """Create a verified ZIP and return source-only directories it omitted."""
     package_root = resolve_package_root(plugin_path)
-    package_files, omitted_directories = validate_package(package_root)
+    allowed = frozenset(
+        SUPPORTED_COMPANION_EXTENSIONS | {("." + e.strip().lstrip(".")).lower() for e in allow_extensions if e.strip()}
+    )
+    package_files, omitted_directories = validate_package(package_root, check_content, allowed)
     if output_path.is_symlink():
         raise ValueError("The output path must not be a symbolic link.")
     resolved_output = output_path.resolve()
@@ -410,6 +473,17 @@ def create_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Replace the destination ZIP after the new archive passes validation.",
     )
+    parser.add_argument(
+        "--skip-content-checks",
+        action="store_true",
+        help="Skip manifest metadata, SKILL.md frontmatter and Markdown link checks (not recommended).",
+    )
+    parser.add_argument(
+        "--allow-extensions",
+        type=lambda value: [v for v in value.split(",") if v],
+        default=[],
+        help="Extra comma-separated skill file extensions to accept beyond the Microsoft 365 Copilot list.",
+    )
     return parser
 
 
@@ -423,6 +497,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             args.plugin_path,
             args.output_path,
             args.overwrite,
+            not args.skip_content_checks,
+            args.allow_extensions,
         )
     except (OSError, ValueError, zipfile.BadZipFile) as exc:
         parser.error(str(exc))

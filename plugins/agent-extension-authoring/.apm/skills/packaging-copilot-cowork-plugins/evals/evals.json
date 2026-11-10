@@ -34,5 +34,21 @@
   {
     "query": "Package my existing Cowork appPackage directory into a ZIP with a local Python command.",
     "should_trigger": true
+  },
+  {
+    "query": "Cowork publish says: File extension '.mmd' is not supported in my skill. How do I fix the package?",
+    "should_trigger": true
+  },
+  {
+    "query": "My skill has 67 reference files and Cowork only allows 20. Package it anyway.",
+    "should_trigger": true
+  },
+  {
+    "query": "Build a Cowork zip from my APM plugin folder; WIQD is not installed.",
+    "should_trigger": true
+  },
+  {
+    "query": "Install my APM plugin globally for Claude and Copilot.",
+    "should_trigger": false
   }
 ]
