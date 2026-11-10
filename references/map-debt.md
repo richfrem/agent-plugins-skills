@@ -1894,3 +1894,29 @@ Updated root documentation (AGENTS.md, README.md, START_HERE.md, COMPONENT_RETEN
 - Verification: Source/installed-mode skill audits, plugin compliance, structure and local-link checks pass.
 - Audit limit: The broader conventions audit still reports seven pre-existing Python files outside this documentation change; see DEBT-20260927-COMPLETION-AUDIT-LIMITS. Its exit code is zero despite those findings.
 - Delivery: User explicitly requested a feature branch, commit with `--no-verify`, push and PR; hooks are skipped for this delivery without changing repository gate configuration.
+
+## DEBT-20261110-COWORK-PACKAGING-SKILL-FRICTION (RESOLVED)
+
+- Logged date: 2026-11-10
+- Cycle/Session ID: feat/packaging-copilot-cowork-plugins
+- Artifact affected: `plugins/agent-extension-authoring/.apm/skills/packaging-copilot-cowork-plugins/` (new), `scripts/package_cowork_plugin.py`
+- Friction observed: (1) `scaffold.py` emits a generic placeholder SKILL.md, flow diagram and a header-only `evals/results.tsv`, all replaced by hand. (2) The first packager draft excluded `scripts/` from the ZIP; Microsoft's companion-file layout includes `scripts/`, so only source-only `evals/` and `tests/` may be excluded. (3) The packager did not enforce Cowork's per-skill companion-file limits (20 files, 5 MB each, 10 MB total). (4) `audit.py` requires `acceptance-criteria.md` under `references/`, not at the skill root.
+- Why not fixed now: Fixed inline in this change.
+- Recommended fix / fix applied: Packager now keeps `references/`, `assets/` and `scripts/`, excludes only `evals/` and `tests/`, and enforces the companion limits (with tests); `acceptance-criteria.md` moved to `references/`. The empty `results.tsv` scaffold stub is left uncommitted.
+- Evidence/repro: 6 pytest cases pass; `audit_skill.py` source and installed modes, `audit.py` and `audit_plugin_structure.py` pass with no findings.
+- Severity: L
+- Repeat: NO
+- Status: RESOLVED
+
+## DEBT-20261110-AUTHORING-PLUGINS-SIBLING-LOOKUP-CP1252 (OPEN)
+
+- Logged date: 2026-11-10
+- Cycle/Session ID: feat/packaging-copilot-cowork-plugins
+- Artifact affected: `plugins/agent-extension-authoring/.apm/skills/authoring-plugins/tests/test_audit_sibling_lookup.py` (`test_sibling_audit_skill_is_used`)
+- Friction observed: The test fails on Windows with `UnicodeDecodeError: 'charmap' codec can't decode byte 0x9d` (cp1252), most likely from reading a UTF-8 file without an explicit `encoding`. It fails identically with this change stashed, so it is pre-existing.
+- Why not fixed now: Unrelated to the Cowork packaging change; out of scope.
+- Recommended fix / fix applied: Pass `encoding="utf-8"` wherever the test or the audited script reads text files, then rerun the authoring-plugins test folder on Windows.
+- Evidence/repro: `python -m pytest plugins/agent-extension-authoring/.apm/skills/authoring-plugins/tests/test_audit_sibling_lookup.py` on Windows Python 3.14.
+- Severity: L
+- Repeat: NO
+- Status: OPEN
