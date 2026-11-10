@@ -2,6 +2,19 @@
 
 Persistent tracking of architectural friction, structural anomalies, and unclosed loops across sessions.
 
+## DEBT-20261110-CLI-AGENT-OPENROUTER-MICRO-TIER (RESOLVED)
+
+- Logged date: 2026-11-10
+- Cycle/Session ID: feat/cli-agent-openrouter-micro-tier
+- Artifact affected: `plugins/agent-orchestration/.apm/skills/cli-agent/*`
+- Friction observed: `cli-agent` lacked reference and model catalog entries for the ultra-low-cost OpenRouter cloud micro-tier (0.5B-3B models like Llama-3.2-1B/3B and Qwen3 Coder Flash, priced at $0.027-$0.20/MTok). Bounded mechanical tasks (JSON formatting, linting, basic triage) were forced either onto heavy local models (consuming finite Mac SSD/RAM) or expensive frontier subscription quotas (Claude, Codex, Gemini).
+- Why not fixed now: Fixed immediately in this change.
+- Recommended fix / fix applied: Added `openrouter` entry to `cheapest_models.json` and `cheapest_models.md`. Added `references/openrouter-micro-tier-dispatch.md` documenting verified micro-models, per-token pricing, $10 hard budget caps, and python integration patterns. Updated `SKILL.md` table and references.
+- Evidence/repro: Verified live OpenRouter API response with `meta-llama/llama-3.2-1b-instruct`: 0.50s latency, $0.000005 cost per invocation. Skill passes `audit_skill.py`.
+- Severity: M
+- Repeat: NO
+- Status: RESOLVED
+
 ## DEBT-20261104-MODEL-CATALOG-REFRESH (RESOLVED; two items OPEN)
 
 - Gap: the `cli-agent` model catalogs (verified 2026-09-09) lacked the models actually in use (`claude-sonnet-5-5`, `claude-haiku-5-5`, `claude-opus-5-5`, `gpt-6-luna` and the GPT-6.1 family, `gemini-4-argon`); `codex-models.json` lacked `gpt-6-luna` although `cheapest_models.json` named it; `select_model` raised `TypeError` on a null-priced model in a tier (already failing for the agy low tier); tier tests pinned a stale picker snapshot.

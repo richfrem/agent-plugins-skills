@@ -28,5 +28,10 @@
     "model": "grok-2",
     "cost": "Paid (Cursor Pro / Free pool)",
     "description": "Cursor Agent CLI; defaults to grok-2 or composer."
+  },
+  "openrouter": {
+    "model": "meta-llama/llama-3.2-1b-instruct",
+    "cost": "Paid ($0.027/$0.20 per MTok)",
+    "description": "Ultra-cheap cloud micro-tier; also supports llama-3.2-3b and qwen3-coder-flash."
   }
 }
