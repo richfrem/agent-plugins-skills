@@ -6,18 +6,22 @@ This tier acts as a **"Token Shield"** to preserve expensive frontier subscripti
 
 ## Constraints & Requirements
 
+- **Live Data Grounding**: **CRITICAL**: Never rely on static training data or cut-off assumptions for OpenRouter model selection or pricing. Model availability and rates shift dynamically. Always query the live endpoint `https://openrouter.ai/api/v1/models` (or `openrouter-models.json`) to verify active availability and per-token rates.
 - **API Key**: Requires `OPENROUTER_API_KEY` exported in environment (`~/.zshrc` or `.env`).
 - **Hard Cost Cap**: Enforce monthly hard limit ($10.00) configured at the OpenRouter key level and client-side ledger.
 - **Allowed Micro-Models**: Strictly restricted to low-cost micro-models and non-LLM encoders. Full-sized general LLMs (e.g., 70B+, frontier models) are barred from this endpoint.
 - **Sub-Agent Isolation**: Bounded tasks wrapped with prompt isolation instructions.
 
-## Verified Micro-Models & Pricing
+## Verified Micro-Models & Live Pricing (Probed 2026-11-10)
 
 | Model Slug | Parameters | Pricing (per 1M tokens) | Ideal Use Case |
 |---|---|---|---|
-| `meta-llama/llama-3.2-1b-instruct` | 1 Billion | **$0.027** input / **$0.20** output | Mechanical JSON formatting, regex, basic triage, lint fixes |
-| `meta-llama/llama-3.2-3b-instruct` | 3 Billion | **$0.05** input / **$0.33** output | Unit test boilerplate, docstring checks, small script edits |
-| `qwen/qwen3-coder-flash` | Micro-Coder | **$0.195** input / **$0.975** output | Fast coding chores, AST-level refactors, syntax repairs |
+| `meta-llama/llama-3.2-1b-instruct` | 1 Billion | **$0.027** input / **$0.201** output | Ultra-cheap mechanical formatting, JSON cleanup, regex, and short classification |
+| `meta-llama/llama-3.1-8b-instruct` | 8 Billion | **$0.020** input / **$0.040** output | General reasoning & triage (output is **5× cheaper** than 1B at $0.04/M) |
+| `qwen/qwen3-coder-30b-a3b-instruct` | 30B (3B active MoE) | **$0.150** input / **$0.600** output | High-capability MoE coding specialist (**40% cheaper output** than flash) |
+| `qwen/qwen3-coder-next` | Dense Coder | **$0.120** input / **$0.800** output | Fast dense coding chores and syntax repair |
+| `qwen/qwen3.7-flash` | Long-Context | **$0.030** input / **$0.130** output | Massive 1M-token context ingestion for large diffs and logs |
+| `cohere/north-mini-code:free` | Free Coder | **$0.000** input / **$0.000** output | Dedicated zero-cost code editing fallback (256k context) |
 
 ## Dispatch Syntax (HTTP API)
 
