@@ -13,8 +13,9 @@ attachments or a model's confident summary. Built from the 2026-11-18 experiment
 
 ## Before each test
 
-1. **New name per build.** Re-uploading under the same name left Cowork on the old files. Use
-   a new skill name and ZIP name, or delete the old skill first.
+1. **New name per build.** Re-uploading under the same name left Cowork on the old files.
+   Give each test build a new skill name and ZIP name. (Deleting the old skill first may also
+   work but is untested.)
 2. **Wait for the sync.** Users reported 2 to 3 minutes before a changed skill was usable.
    Start a new task afterwards.
 3. **Finish uploads first.** Send the message only when the attachment shows as uploaded. One
@@ -42,7 +43,9 @@ RUSTFLAGS="-C linker=rust-lld -C link-self-contained=yes" \
 ```
 
 Use `opt-level = "z"`, `lto`, `strip` and `panic = "abort"` to stay near 0.5 MB. Test under
-WSL. Inside Cowork run it as `cp <copy> /tmp/prog && chmod +x /tmp/prog && /tmp/prog <dir>`.
+WSL. Inside Cowork run it as
+`cp <copy> /tmp/prog && chmod +x /tmp/prog && env -i /tmp/prog <dir>`, so the program does not
+inherit the session's credentials.
 
 For a browser page, build the shared logic as WebAssembly instead:
 

@@ -23,11 +23,15 @@ Cowork app package.
    matches its folder and whose description says what it does and when to use it.
 2. Keep references and assets in the skill folder and use portable relative links.
    Preserve the skill's source representation and tests; don't edit an installed copy.
-3. Do not imply Cowork runs bundled Python, shell scripts, or local executables. Scripts
-   in the skill's `scripts/` folder are packaged with it, but runtime access to APIs or
-   data that must reliably run should be a separately hosted remote MCP connector.
-   Keep references, assets and scripts within Cowork's limits (20 companion files, 5 MB
-   each, 10 MB total per skill); `evals/` and `tests/` are not packaged.
+3. Do not assume Cowork has a skill's bundled scripts or executables on disk. In tests they
+   ran in some sessions and were absent from the command sandbox in others. Have the skill
+   read them with the file viewer and write a copy to `/tmp` (untested), or ask the user to
+   attach the file. Runtime access to APIs or data that must reliably run should be a
+   separately hosted remote MCP connector.
+   Keep references, assets and scripts within this repo's packager limits (20 companion
+   files, 5 MB each, 10 MB total per skill). Cowork's upload rejected more than 20
+   companion files; Microsoft documents larger size limits, but use the stricter ones for
+   portability. `evals/` and `tests/` are not packaged.
 4. Check what Cowork can and cannot run before relying on it: see `packaging-copilot-cowork-plugins`
    references `cowork-capabilities-and-limits.md` and `cowork-deterministic-vs-generative.md`.
 5. Audit the skill with `authoring-skills` before copying it into a Cowork project.
