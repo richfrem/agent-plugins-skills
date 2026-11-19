@@ -28,7 +28,9 @@ Cowork app package.
    data that must reliably run should be a separately hosted remote MCP connector.
    Keep references, assets and scripts within Cowork's limits (20 companion files, 5 MB
    each, 10 MB total per skill); `evals/` and `tests/` are not packaged.
-4. Audit the skill with `authoring-skills` before copying it into a Cowork project.
+4. Check what Cowork can and cannot run before relying on it: see `packaging-copilot-cowork-plugins`
+   references `cowork-capabilities-and-limits.md` and `cowork-deterministic-vs-generative.md`.
+5. Audit the skill with `authoring-skills` before copying it into a Cowork project.
    Check the current Microsoft package rules and skill companion-file limits as part of
    the packaging step.
 
