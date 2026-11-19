@@ -27,10 +27,10 @@ MCP connectors.
 
 - Package the plugin as an M365 App Package `.zip`; do not treat each skill as a
   separate app package.
-- Keep each skill portable and self-contained. In tests, Cowork and Microsoft 365 Copilot
-  Chat ran a packaged Python script and returned its output file; Microsoft does not
-  guarantee this. Prefer scripts that write files (a local server is unreachable) and put
-  must-run functionality behind a remote MCP connector.
+- Keep each skill portable and self-contained. Packaged scripts ran in some Cowork sessions
+  and were absent from the command sandbox in others: give a fallback and put must-run
+  functionality behind a remote MCP connector. See
+  [capabilities and limits](references/cowork-capabilities-and-limits.md).
 - Publish rejects some file types (e.g. `.mmd`) and allows 20 companion files per skill; use the scripts.
 - WIQD is preview software. Check its current official documentation and exact
   installed version, then pin the tested version in repository or CI setup. Do not
@@ -68,7 +68,7 @@ checks the manifest, `SKILL.md` frontmatter, links and file types.
    executables into the app package.
 3. Validate the built ZIP and inspect its contents before delivery. Report the exact
    artifact path, validation result, tool version, and any unperformed tenant actions.
-4. If publish validation rejects something the checks missed, fix the tools here and rebuild.
+4. If publish validation rejects something missed, fix the tools here and rebuild. Other routes: [install routes](references/skill-install-routes.md). What Cowork's sandbox does with scripts and binaries: [sandbox findings](references/cowork-sandbox-findings.md), [test playbook](references/cowork-test-playbook.md), [deterministic or generative](references/cowork-deterministic-vs-generative.md).
 
 ## Verification
 
