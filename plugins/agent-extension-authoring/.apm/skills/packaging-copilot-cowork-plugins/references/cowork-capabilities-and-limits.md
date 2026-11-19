@@ -37,7 +37,7 @@ Details and the reasoning behind each row are in
 | Installing packages (`pip install`, `npm install`) | Observed | There is no network. Use what is present or ship it inside the skill. |
 | PyMuPDF (`fitz`) | Observed | Use pdfplumber and pypdf. |
 | Executable flag in the workspace | Observed | `chmod +x` there reports success but does nothing. Run from `/tmp`. |
-| Skill files on disk in the command sandbox | Observed | Often absent. Read them with the viewer and write copies into `/tmp`, or ask for an attachment. |
+| Skill files on disk in the command sandbox | Observed | Often absent. Reading them with the viewer and writing a copy into `/tmp` is untested (the agent said it could not copy a skill binary); otherwise ask for an attachment. |
 | Agent copying a skill binary into the session itself | Not tested | The agent said it could not. The latest test skills ask it to try every tool and report. |
 | Interactive programs | Observed | Cowork sees command output and files after a command ends. Use a deterministic mode with arguments. |
 | A web page running a Linux binary | Observed | Compile the shared logic to WebAssembly and embed the `.wasm`. |
