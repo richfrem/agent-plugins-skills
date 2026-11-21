@@ -73,26 +73,58 @@ def _database_file_problems(db: Path, anchor: Path) -> List[str]:
 
 
 def _proof_required_edges(conn: sqlite3.Connection) -> set:
-    """Return the set of (from_state, to_state) edges requiring cryptographic proof.
-    Reads from TransitionRegistry when PyYAML is available, otherwise derives from valid_transitions
-    (all edges into APPROVED, VERIFY_EXIT, DONE) so verify_gate_evidence.py runs under stdlib Python."""
+    """Return all active and retired v14 (from_state, to_state) edges requiring cryptographic proof."""
+    from control_plane.constants import RETIRED_V14_EDGES
+
+    retired_proof = {(fs, ts) for fs, ts, proof in RETIRED_V14_EDGES if proof}
     try:
         from control_plane.registry import TransitionRegistry
 
-        return set(TransitionRegistry.load_default().proof_required_edges())
+        return set(TransitionRegistry.load_default().proof_required_edges()) | retired_proof
     except ImportError:
         rows = conn.execute(
-            "SELECT from_state, to_state FROM valid_transitions WHERE to_state IN ('APPROVED', 'VERIFY_EXIT', 'DONE')"
+            "SELECT from_state, to_state FROM valid_transitions WHERE requires_proof = 1 OR to_state IN ('APPROVED', 'VERIFY_EXIT', 'DONE')"
         ).fetchall()
-        return {(r[0], r[1]) for r in rows}
+        return {(r[0], r[1]) for r in rows} | retired_proof
+
+
+def _migration_cutoff_epoch(conn: sqlite3.Connection) -> Optional[float]:
+    """Return the v14->v15 migration started_at timestamp as POSIX epoch seconds, or None if not migrated."""
+    from datetime import datetime, timezone
+
+    try:
+        row = conn.execute(
+            "SELECT started_at FROM schema_migration_runs WHERE to_version = 15 ORDER BY id ASC LIMIT 1"
+        ).fetchone()
+    except sqlite3.OperationalError:
+        return None
+    if not row or not row[0]:
+        return None
+    raw = str(row[0]).strip()
+    try:
+        return float(raw)
+    except ValueError:
+        pass
+    try:
+        dt = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt.timestamp()
+    except ValueError:
+        return None
 
 
 # Read the branch's task and its stored signed-gate evidence (read-only)
 def _evidence_history_problems(conn: sqlite3.Connection, task_id: str, evidence: list) -> List[str]:
-    """Match every proof-bearing history edge to one consumed, content-bound request."""
+    """Match every proof-bearing history edge to one consumed, content-bound request.
+    Enforces G2b legacy signed evidence cut-off: legacy v14 retired proof edge names are
+    accepted ONLY if consumed at or before the v14->v15 migration started_at timestamp."""
+    from control_plane.constants import RETIRED_V14_EDGES
     from control_plane.ssh_signing import ChallengeError, derive_challenge_from_row
 
     proof_edges = _proof_required_edges(conn)
+    retired_proof_edges = {(fs, ts) for fs, ts, proof in RETIRED_V14_EDGES if proof}
+    cutoff_epoch = _migration_cutoff_epoch(conn)
     problems = []
     expected_requests = set()
     by_request = {row[0]: row for row in evidence}
@@ -104,14 +136,26 @@ def _evidence_history_problems(conn: sqlite3.Connection, task_id: str, evidence:
     for transition_id, from_state, to_state in history:
         if (from_state, to_state) in proof_edges:
             requests = conn.execute(
-                "SELECT request_id, jti FROM transition_request WHERE task_id = ? "
+                "SELECT request_id, jti, consumed_at FROM transition_request WHERE task_id = ? "
                 "AND from_state = ? AND to_state = ? AND occupancy_id = ? AND status = 'CONSUMED'",
                 (task_id, from_state, to_state, occupancy),
             ).fetchall()
             if len(requests) != 1:
                 problems.append(f"Transition {transition_id} lacks exactly one consumed signed evidence request.")
             else:
-                request_id, jti = requests[0]
+                request_id, jti, consumed_at = requests[0]
+                if (from_state, to_state) in retired_proof_edges:
+                    if cutoff_epoch is None:
+                        # Fresh v15 DB with no migration run: legacy names are never valid post-v15
+                        ver_row = conn.execute("SELECT version FROM schema_version ORDER BY version DESC LIMIT 1").fetchone()
+                        if ver_row and ver_row[0] >= 15:
+                            problems.append(
+                                f"Evidence {request_id} uses retired legacy edge {from_state} -> {to_state} on a non-migrated v15 database."
+                            )
+                    elif consumed_at is None or float(consumed_at) > cutoff_epoch:
+                        problems.append(
+                            f"Evidence {request_id} uses retired legacy edge {from_state} -> {to_state} consumed after the v14->v15 migration cut-off."
+                        )
                 expected_requests.add(request_id)
                 row = by_request.get(request_id)
                 if row is None:

@@ -11,7 +11,7 @@ if _scripts_dir not in sys.path:
     sys.path.insert(0, _scripts_dir)
 
 from agent_control import ControlPlane, PhaseCapabilityDenied
-from control_plane.constants import STATE_RETROSPECTIVE
+from control_plane.constants import STATE_VERIFY_EXIT
 
 
 ACTION_IDENTITY = "retrospective_capture"
@@ -23,11 +23,11 @@ def record_retrospective(
     follow_ups: Optional[List[Dict[str, Any]]] = None,
     control_plane: Optional[ControlPlane] = None,
 ) -> Dict[str, Any]:
-    """Persist one retrospective record after verifying RETROSPECTIVE occupancy."""
+    """Persist one retrospective record after verifying VERIFY_EXIT occupancy."""
     cp = control_plane or ControlPlane()
     cap = cp.verify_phase_capability(task_id, ACTION_IDENTITY)
-    if cap.current_state != STATE_RETROSPECTIVE:
-        raise PhaseCapabilityDenied(f"Retrospective capture is only authorized in {STATE_RETROSPECTIVE} state.")
+    if cap.current_state != STATE_VERIFY_EXIT:
+        raise PhaseCapabilityDenied(f"Retrospective capture is only authorized in {STATE_VERIFY_EXIT} state.")
     cp.save_retrospective(task_id, entry, follow_ups or [])
     return {
         "status": "RECORDED",

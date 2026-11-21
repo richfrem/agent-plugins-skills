@@ -68,14 +68,18 @@ def prefetch_for_edge(cp: Any, repo_root: Union[str, Path], task_id: str, from_s
         worktree = resolve_worktree(cp, task_id, repo_root)
     except SnapshotError:
         worktree = None
-    summary = cp._persistence.get_retrospective_summary(task_id) if from_state == STATE_RETROSPECTIVE else None
+    summary = (
+        cp._persistence.get_retrospective_summary(task_id)
+        if from_state in (STATE_VERIFY_EXIT, STATE_RETROSPECTIVE)
+        else None
+    )
     return {"worktree": worktree, "retrospective": summary}
 
 
 def _closure_snapshot(cp: Any, repo_root: Union[str, Path], task_id: str, from_state: str, prefetched: Optional[Dict[str, Any]]) -> Tuple[SnapshotEntry, ...]:
     """What a human signs to close a task: the worktree's commit/diff/untracked hashes when a git worktree is
-    registered (else an explicit 'none' marker), plus, for normal completion from RETROSPECTIVE, the recorded
-    retrospective decision and its digest. The entry list is fixed by these inputs, so it is reproducible."""
+    registered (else an explicit 'none' marker), plus, for normal completion from VERIFY_EXIT (or legacy
+    RETROSPECTIVE), the recorded retrospective decision and its digest when present."""
     data = prefetched if prefetched is not None else prefetch_for_edge(cp, repo_root, task_id, from_state, STATE_DONE)
     entries: Tuple[SnapshotEntry, ...]
     try:
@@ -84,9 +88,10 @@ def _closure_snapshot(cp: Any, repo_root: Union[str, Path], task_id: str, from_s
         entries = code_acceptance_snapshot(data["worktree"])
     except SnapshotError:
         entries = (SnapshotEntry("worktree", "none"),)
-    if from_state == STATE_RETROSPECTIVE:
+    if from_state in (STATE_VERIFY_EXIT, STATE_RETROSPECTIVE):
         summary = data.get("retrospective")
-        if summary is None:
+        if summary is not None:
+            entries += (SnapshotEntry("retrospective_decision", summary["decision"]), SnapshotEntry("retrospective", summary["digest"]))
+        elif from_state == STATE_RETROSPECTIVE:
             raise SnapshotError(f"task {task_id} has no recorded retrospective to close on")
-        entries += (SnapshotEntry("retrospective_decision", summary["decision"]), SnapshotEntry("retrospective", summary["digest"]))
     return entries

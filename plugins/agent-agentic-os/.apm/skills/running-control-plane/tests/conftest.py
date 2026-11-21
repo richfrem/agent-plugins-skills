@@ -87,7 +87,7 @@ def _auto_human_signer(request, monkeypatch):
         # writing those files; the stand-in human is shown a minimal pair so their real subject (the gate
         # or hook under test) still runs. Existing files are never overwritten, and tests marked
         # `no_auto_signer` (which assert the refusal to sign missing content) do not get this seam.
-        if (from_state, to_state) == ("AWAITING_APPROVAL", "APPROVED"):
+        if (from_state, to_state) in (("PLAN_REVIEW", "APPROVED"), ("AWAITING_APPROVAL", "APPROVED")):
             from control_plane.snapshot import gate1_artifact_paths
 
             for label, path in gate1_artifact_paths(repo_root, task_id):

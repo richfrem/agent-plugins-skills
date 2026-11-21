@@ -1563,6 +1563,11 @@ def _build_parser() -> argparse.ArgumentParser:
     p_vc.add_argument("--branch", required=True, help="Git branch to verify commit authorization for")
     p_vc.add_argument("--staged-files", nargs="*", default=[], help="List of staged files")
 
+    p_ms = sub.add_parser("migrate-schema", help="Sole owner of schema v14 -> v15 data migration (backup + single transaction)")
+    p_ms.add_argument("--dry-run", action="store_true", help="Preview tasks to map and backup path without modifying the DB")
+    p_ms.add_argument("--yes", action="store_true", help="Back up the DB and execute the atomic v14 -> v15 migration")
+    p_ms.add_argument("--json", action="store_true", help="Machine-readable JSON output")
+
     # Blanket human-confirmation gate (added 2026-09-13): every state-mutating
     # subcommand requires an explicit --human-confirmed flag with no default,
     # regardless of whether the underlying YAML edge is coded as
@@ -1808,6 +1813,25 @@ def main():
         root = Path(args.repo_root).resolve() if args.repo_root else canonical_repo_root(".")
         sys.exit(run_selftest(default_layout(root), Path(args.key).expanduser()))
 
+    if args.subcommand == "migrate-schema":
+        from control_plane.identity_layout import canonical_repo_root, is_inside_skill_folder
+        from control_plane.migration import migrate_schema
+
+        if getattr(args, "db_path", None):
+            db_path = Path(args.db_path)
+        else:
+            root = canonical_repo_root(".")
+            if is_inside_skill_folder(root):
+                print(f"ERROR: Refusing to migrate a DB inside a skill folder ({root}).", file=sys.stderr)
+                sys.exit(2)
+            db_path = root / "context" / "control_plane.db"
+        res = migrate_schema(db_path, dry_run=args.dry_run, yes=args.yes)
+        if args.json:
+            print(json.dumps(res, indent=2))
+        else:
+            print(res.get("message") or json.dumps(res, indent=2))
+        sys.exit(res["exit_code"])
+
     try:
         cp = ControlPlane(db_path=getattr(args, "db_path", None))
         _dispatch_command(cp, args)
@@ -1817,10 +1841,11 @@ def main():
 
 
 def _map_exception_to_exit_code(e: Exception) -> int:
-    """Maps a caught exception to its CLI exit code. ConcurrentModificationError gets its own
-    code (3) since it's the one error that's explicitly retryable — indistinguishable from a
-    generic crash (exit 1) would prevent callers from retrying only on contention."""
-    if isinstance(e, ConcurrentModificationError):
+    """Maps a caught exception to its CLI exit code. ConcurrentModificationError and
+    SchemaMigrationRequired get exit code 3."""
+    from control_plane.constants import SchemaMigrationRequired
+
+    if isinstance(e, (ConcurrentModificationError, SchemaMigrationRequired)):
         return 3
     if isinstance(e, (InvalidStateTransition, VerifierSovereigntyViolation, PersistenceInvariantViolation, PhaseCapabilityDenied, TransitionCoordinatorError)):
         return 2

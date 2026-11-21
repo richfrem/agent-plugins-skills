@@ -48,26 +48,24 @@ from control_plane.constants import (
     STATE_ROLLED_BACK,
     STATE_ESCALATED,
     CANONICAL_STATE_NAMES,
+    ACTIVE_STATES,
+    RETIRED_STATES,
 )
 
 CANONICAL_STATES = list(CANONICAL_STATE_NAMES)
+ACTIVE_STATE_LIST = list(ACTIVE_STATES)
 
 ALLOWED_TRANSITIONS = {
-    STATE_INTAKE: [STATE_INTERVIEW, STATE_DRAFT_PLAN, STATE_PLAN_REVIEW, STATE_ESCALATED, STATE_DONE, STATE_RETROSPECTIVE],
-    STATE_INTERVIEW: [STATE_DRAFT_PLAN, STATE_PLAN_REVIEW, STATE_RETROSPECTIVE, STATE_ESCALATED, STATE_INTAKE, STATE_DONE],
-    STATE_DRAFT_PLAN: [STATE_PLAN_REVIEW, STATE_INTERVIEW, STATE_ESCALATED, STATE_INTAKE, STATE_DONE, STATE_RETROSPECTIVE],
-    STATE_MULTI_AGENT_REVIEW: [STATE_DRAFT_PLAN, STATE_PLAN_REVIEW, STATE_ESCALATED, STATE_INTAKE, STATE_DONE, STATE_RETROSPECTIVE],
-    STATE_PLAN_REVIEW: [STATE_MULTI_AGENT_REVIEW, STATE_AWAITING_APPROVAL, STATE_DRAFT_PLAN, STATE_INTERVIEW, STATE_ESCALATED, STATE_INTAKE, STATE_DONE, STATE_RETROSPECTIVE],
-    STATE_AWAITING_APPROVAL: [STATE_APPROVED, STATE_PLAN_REVIEW, STATE_DRAFT_PLAN, STATE_ESCALATED, STATE_INTAKE, STATE_DONE, STATE_RETROSPECTIVE],
-    STATE_APPROVED: [STATE_IN_WORKTREE, STATE_RETROSPECTIVE, STATE_ESCALATED, STATE_INTAKE, STATE_DONE],
-    STATE_IN_WORKTREE: [STATE_WORKTREE_REVIEW, STATE_ROLLED_BACK, STATE_ESCALATED, STATE_INTAKE, STATE_DONE, STATE_RETROSPECTIVE],
-    STATE_WORKTREE_REVIEW: [STATE_MULTI_AGENT_CODE_REVIEW, STATE_VERIFY_EXIT, STATE_IN_WORKTREE, STATE_ROLLED_BACK, STATE_ESCALATED, STATE_INTAKE, STATE_DONE, STATE_RETROSPECTIVE],
-    STATE_MULTI_AGENT_CODE_REVIEW: [STATE_WORKTREE_REVIEW, STATE_VERIFY_EXIT, STATE_IN_WORKTREE, STATE_ROLLED_BACK, STATE_ESCALATED, STATE_INTAKE, STATE_DONE, STATE_RETROSPECTIVE],
-    STATE_VERIFY_EXIT: [STATE_RETROSPECTIVE, STATE_IN_WORKTREE, STATE_WORKTREE_REVIEW, STATE_ROLLED_BACK, STATE_ESCALATED, STATE_INTAKE, STATE_DONE],
-    STATE_RETROSPECTIVE: [STATE_DONE, STATE_ESCALATED, STATE_INTAKE],
-    STATE_DONE: [STATE_INTAKE, STATE_RETROSPECTIVE],
-    STATE_ROLLED_BACK: [STATE_ESCALATED, STATE_PLAN_REVIEW, STATE_INTAKE, STATE_DONE, STATE_RETROSPECTIVE],
-    STATE_ESCALATED: [STATE_INTAKE, STATE_PLAN_REVIEW, STATE_DONE, STATE_RETROSPECTIVE],
+    STATE_INTAKE: [STATE_DRAFT_PLAN, STATE_ESCALATED, STATE_DONE],
+    STATE_DRAFT_PLAN: [STATE_PLAN_REVIEW, STATE_INTAKE, STATE_DONE],
+    STATE_PLAN_REVIEW: [STATE_APPROVED, STATE_DRAFT_PLAN, STATE_INTAKE, STATE_DONE],
+    STATE_APPROVED: [STATE_IN_WORKTREE, STATE_INTAKE, STATE_DONE],
+    STATE_IN_WORKTREE: [STATE_WORKTREE_REVIEW, STATE_ROLLED_BACK, STATE_INTAKE, STATE_DONE],
+    STATE_WORKTREE_REVIEW: [STATE_VERIFY_EXIT, STATE_IN_WORKTREE, STATE_ROLLED_BACK, STATE_INTAKE, STATE_DONE],
+    STATE_VERIFY_EXIT: [STATE_DONE, STATE_IN_WORKTREE, STATE_WORKTREE_REVIEW, STATE_ROLLED_BACK, STATE_INTAKE],
+    STATE_DONE: [],
+    STATE_ROLLED_BACK: [STATE_PLAN_REVIEW, STATE_ESCALATED, STATE_INTAKE, STATE_DONE],
+    STATE_ESCALATED: [STATE_PLAN_REVIEW, STATE_INTAKE, STATE_DONE],
 }
 
 
@@ -77,17 +75,19 @@ class InvalidStateTransition(Exception):
 
 
 class StateMachine:
-    """Pure domain state-machine validation. Owns CANONICAL_STATES/ALLOWED_TRANSITIONS and
-    the two checks ControlPlane.transition() previously ran inline: is `to_state` even a
-    recognized state, and is the (current_state, to_state) edge legal per the DAG."""
+    """Pure domain state-machine validation over the 10 active states (v15).
+    Retired v14 states remain in CANONICAL_STATES for historical storage only and are
+    refused as transition or recovery targets."""
 
     def validate_known_state(self, to_state: str) -> None:
-        """Raises InvalidStateTransition if `to_state` is not one of CANONICAL_STATES."""
-        if to_state not in CANONICAL_STATES:
+        """Raises InvalidStateTransition if `to_state` is retired or unknown."""
+        if to_state in RETIRED_STATES:
+            raise InvalidStateTransition(f"State '{to_state}' is retired in schema v15 and cannot be targeted.")
+        if to_state not in ACTIVE_STATES:
             raise InvalidStateTransition(f"Unknown state: {to_state}")
 
     def validate_adjacency(self, task_id: str, current_state: str, to_state: str) -> None:
-        """Raises InvalidStateTransition if (current_state, to_state) is not a legal edge."""
+        """Raises InvalidStateTransition if (current_state, to_state) is not a legal active edge."""
         allowed = ALLOWED_TRANSITIONS.get(current_state, [])
         if to_state not in allowed:
             raise InvalidStateTransition(
@@ -95,8 +95,10 @@ class StateMachine:
             )
 
     def validate_recovery_target(self, task_id: str, current_state: str, to_state: str) -> None:
-        """Validate a human-authorized recovery target without changing the normal DAG."""
-        self.validate_known_state(current_state)
+        """Validate a human-authorized recovery target without changing the normal DAG.
+        Retired states are never valid recovery destinations."""
+        if current_state not in CANONICAL_STATES:
+            raise InvalidStateTransition(f"Unknown state: {current_state}")
         self.validate_known_state(to_state)
         if current_state == to_state:
             raise InvalidStateTransition(

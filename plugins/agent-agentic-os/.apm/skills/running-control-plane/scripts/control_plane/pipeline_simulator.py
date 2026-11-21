@@ -224,19 +224,30 @@ class PipelineSimulator:
         }
 
     def run_standard_happy_path(self, task_id: str) -> Dict[str, Any]:
-        """Drive the complete STANDARD path through DONE in a temporary repo root."""
+        """Drive the lean 10-state STANDARD path through DONE in a temporary repo root."""
         repo_root = self.db_path.parent / "simulated-repo"
         repo_root.mkdir(parents=True, exist_ok=True)
         self.control_plane.repo_root = repo_root
-        self.enter_interview(task_id)
-        self.stage_interview_answers(task_id, classification="STANDARD", to_state=STATE_DRAFT_PLAN)
-        self.control_plane.record_plan_mode_entry(task_id, "simulator")
-        self.transition_from_interview(task_id, STATE_DRAFT_PLAN, classification="STANDARD", expect_success=True)
 
-        # Task artifacts live in docs/plans/work-tasks/<task-id>/ (the convention the transition templates require).
+        # INTAKE -> DRAFT_PLAN
+        intake_answers = iter(["1", "YES"])
+        TransitionCoordinator(
+            self.control_plane, review_choices_fn=self.review_choices_fn, human_signer=self.human_signer,
+            registry=self.registry,
+            input_fn=lambda _prompt: next(intake_answers),
+            output_stream=io.StringIO(),
+        ).coordinate_transition(
+            task_id=task_id,
+            to_state=STATE_DRAFT_PLAN,
+            actor="human",
+            reason="simulator confirms intake outline",
+            interactive=True,
+        )
+
+        # Task artifacts live in docs/plans/work-tasks/<task-id>/
         plan_dir = repo_root / "docs" / "plans" / "work-tasks" / task_id
         plan_dir.mkdir(parents=True, exist_ok=True)
-        (plan_dir / f"{task_id}-spec.md").write_text("# simulated specification", encoding="utf-8")
+        (plan_dir / f"{task_id}-spec.md").write_text("# simulated specification\n", encoding="utf-8")
         evidence = repo_root / ".implementation-evidence" / f"{task_id}.txt"
         evidence.parent.mkdir(parents=True, exist_ok=True)
         evidence.write_text("simulated implementation completed\n", encoding="utf-8")
@@ -247,66 +258,28 @@ class PipelineSimulator:
             "evidence": "simulator implementation step",
         }]
         (plan_dir / f"{task_id}-implementation-plan.md").write_text(
-            "# simulated implementation plan\n\n"
+            "# simulated implementation plan\n\n- Strategy: direct\n\n"
             "## Implementation Task Ledger\n```json\n"
             + json.dumps(ledger, indent=2)
             + "\n```\n",
             encoding="utf-8",
         )
 
-        plan_review_answers = iter(["1", "YES"])
+        # DRAFT_PLAN -> PLAN_REVIEW
         TransitionCoordinator(
             self.control_plane, review_choices_fn=self.review_choices_fn, human_signer=self.human_signer,
             registry=self.registry,
-            input_fn=lambda _prompt: next(plan_review_answers),
-            output_stream=io.StringIO(),
-        ).coordinate_transition(
-            task_id=task_id,
-            to_state=STATE_PLAN_REVIEW,
-            actor="human",
-            reason="simulator requests plan review",
-            interactive=True,
-        )
-        review_answers = iter(["1", "3", "claude-cli", "test-model", "medium", "YES"])
-        TransitionCoordinator(
-            self.control_plane, review_choices_fn=self.review_choices_fn, human_signer=self.human_signer,
-            registry=self.registry,
-            input_fn=lambda _prompt: next(review_answers),
-            output_stream=io.StringIO(),
-        ).coordinate_transition(
-            task_id=task_id,
-            to_state=STATE_MULTI_AGENT_REVIEW,
-            actor="human",
-            reason="simulator selects internal plan review",
-            interactive=True,
-        )
-        self.control_plane.record_critic_review(task_id, 1, "simulator", "PASS", "simulated review passed")
-        TransitionCoordinator(
-            self.control_plane, review_choices_fn=self.review_choices_fn, human_signer=self.human_signer,
-            registry=self.registry,
-            input_fn=lambda _prompt: "YES",  # MULTI_AGENT_REVIEW->PLAN_REVIEW has zero own questions
+            input_fn=lambda _prompt: "YES",
             output_stream=io.StringIO(),
         ).coordinate_transition(
             task_id=task_id,
             to_state=STATE_PLAN_REVIEW,
             actor="simulator",
-            reason="simulator review passed",
-            interactive=True,
-        )
-        awaiting_answers = iter(["1", "YES"])
-        TransitionCoordinator(
-            self.control_plane, review_choices_fn=self.review_choices_fn, human_signer=self.human_signer,
-            registry=self.registry,
-            input_fn=lambda _prompt: next(awaiting_answers),
-            output_stream=io.StringIO(),
-        ).coordinate_transition(
-            task_id=task_id,
-            to_state=STATE_AWAITING_APPROVAL,
-            actor="simulator",
-            reason="simulator review passed",
+            reason="simulator submits plan for review",
             interactive=True,
         )
 
+        # PLAN_REVIEW -> APPROVED (Gate 1 signed)
         self._seed_gate1_content(task_id)
         TransitionCoordinator(
             self.control_plane, review_choices_fn=self.review_choices_fn,
@@ -322,12 +295,13 @@ class PipelineSimulator:
         )
         self.control_plane.record_human_approval(task_id, "simulator")
 
+        # APPROVED -> IN_WORKTREE
         worktree = self._init_git_worktree(repo_root / ".worktrees" / task_id)
         self.control_plane.update_worktree(task_id, str(worktree), f"sim/{task_id}", "written_in_worktree")
         TransitionCoordinator(
             self.control_plane, review_choices_fn=self.review_choices_fn, human_signer=self.human_signer,
             registry=self.registry,
-            input_fn=lambda _prompt: "YES",  # APPROVED->IN_WORKTREE has zero own questions
+            input_fn=lambda _prompt: "YES",
             output_stream=io.StringIO(),
         ).coordinate_transition(
             task_id=task_id,
@@ -336,25 +310,28 @@ class PipelineSimulator:
             reason="simulator worktree ready",
             interactive=True,
         )
+
+        # IN_WORKTREE -> WORKTREE_REVIEW
         self.control_plane.record_verification_receipt(task_id, "test_suite", "pytest -q", 0)
-        worktree_review_answers = iter(["1", "1", "YES"])
         TransitionCoordinator(
             self.control_plane, review_choices_fn=self.review_choices_fn, human_signer=self.human_signer,
             registry=self.registry,
-            input_fn=lambda _prompt: next(worktree_review_answers),
+            input_fn=lambda _prompt: "YES",
             output_stream=io.StringIO(),
         ).coordinate_transition(
             task_id=task_id,
             to_state=STATE_WORKTREE_REVIEW,
-            actor="human",
+            actor="simulator",
             reason="simulator worktree review",
             interactive=True,
         )
+
+        # WORKTREE_REVIEW -> VERIFY_EXIT (Gate 3 signed)
         TransitionCoordinator(
             self.control_plane, review_choices_fn=self.review_choices_fn,
             registry=self.registry,
             output_stream=io.StringIO(),
-            human_signer=self.human_signer,  # Gate 3 is a human signature over commit SHA + diff + untracked hashes
+            human_signer=self.human_signer,
         ).coordinate_transition(
             task_id=task_id,
             to_state=STATE_VERIFY_EXIT,
@@ -362,6 +339,7 @@ class PipelineSimulator:
             reason="simulator verification",
             interactive=True,
         )
+
         run_exit_verification(
             task_id,
             verifier_id="pytest_unit_tests",
@@ -389,18 +367,6 @@ class PipelineSimulator:
             "CONFIRMED",
             "standard simulator path evidence",
         )
-        TransitionCoordinator(
-            self.control_plane, review_choices_fn=self.review_choices_fn, human_signer=self.human_signer,
-            registry=self.registry,
-            input_fn=lambda _prompt: "YES",  # VERIFY_EXIT->RETROSPECTIVE has zero own questions
-            output_stream=io.StringIO(),
-        ).coordinate_transition(
-            task_id=task_id,
-            to_state=STATE_RETROSPECTIVE,
-            actor="simulator",
-            reason="simulator verification passed",
-            interactive=True,
-        )
         record_retrospective(
             task_id,
             {
@@ -417,6 +383,8 @@ class PipelineSimulator:
             [],
             control_plane=self.control_plane,
         )
+
+        # VERIFY_EXIT -> DONE (DONE signed)
         done_answers = iter(["1", "YES"])
         TransitionCoordinator(
             self.control_plane, review_choices_fn=self.review_choices_fn, human_signer=self.human_signer,
@@ -433,9 +401,8 @@ class PipelineSimulator:
         return {
             "task_id": task_id,
             "states": [
-                STATE_INTAKE, STATE_INTERVIEW, STATE_DRAFT_PLAN, STATE_PLAN_REVIEW, STATE_MULTI_AGENT_REVIEW,
-                STATE_AWAITING_APPROVAL, STATE_APPROVED, STATE_IN_WORKTREE, STATE_WORKTREE_REVIEW,
-                STATE_VERIFY_EXIT, STATE_RETROSPECTIVE, STATE_DONE,
+                STATE_INTAKE, STATE_DRAFT_PLAN, STATE_PLAN_REVIEW, STATE_APPROVED,
+                STATE_IN_WORKTREE, STATE_WORKTREE_REVIEW, STATE_VERIFY_EXIT, STATE_DONE,
             ],
             "db_path": str(self.db_path),
         }

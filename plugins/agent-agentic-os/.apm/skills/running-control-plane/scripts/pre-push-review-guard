@@ -140,8 +140,9 @@ if [ "$VIOLATIONS_COUNT" -gt 0 ]; then
     exit 1
 fi
 
-# 2. Check all transitions against valid_transitions
-TRANSITIONS_ROWS="$(sqlite3 "$DB_PATH" "SELECT transition_id, from_state, to_state FROM task_transitions WHERE task_id = '$TASK_ID' ORDER BY transition_id ASC;" 2>/dev/null || true)"
+# 2. Check all transitions against valid_transitions (active + retired history),
+#    finished schema migration runs, or exact human recovery approvals.
+TRANSITIONS_ROWS="$(sqlite3 "$DB_PATH" "SELECT transition_id, from_state, to_state, COALESCE(migration_run_id, '') FROM task_transitions WHERE task_id = '$TASK_ID' ORDER BY transition_id ASC;" 2>/dev/null || true)"
 if [ -z "$TRANSITIONS_ROWS" ]; then
     echo ""
     echo "❌ GIT PUSH BLOCKED: No Transition History Found!"
@@ -153,16 +154,18 @@ if [ -z "$TRANSITIONS_ROWS" ]; then
 fi
 
 LAST_TO=""
-while IFS='|' read -r transition_id from_st to_st; do
+while IFS='|' read -r transition_id from_st to_st mig_run_id; do
     [ -z "$from_st" ] && continue
     if [ "$from_st" = "NONE" ] && [ "$to_st" = "INTAKE" ]; then
         LAST_TO="INTAKE"
         continue
     fi
 
-    # Normal edges must be in valid_transitions. A non-DAG edge is valid only when
-    # this exact persisted transition has a consumed, human recovery approval.
+    # Normal/retired edges in valid_transitions, finished migration edges, or human recovery approval.
     IS_VALID="$(sqlite3 "$DB_PATH" "SELECT COUNT(*) FROM valid_transitions WHERE from_state = '$from_st' AND to_state = '$to_st';" 2>/dev/null || echo "0")"
+    if [ "$IS_VALID" -eq 0 ] && [ -n "$mig_run_id" ]; then
+        IS_VALID="$(sqlite3 "$DB_PATH" "SELECT COUNT(*) FROM migration_edges me JOIN schema_migration_runs mr ON mr.id = '$mig_run_id' WHERE me.from_state = '$from_st' AND me.to_state = '$to_st' AND mr.finished_at IS NOT NULL;" 2>/dev/null || echo "0")"
+    fi
     if [ "$IS_VALID" -eq 0 ]; then
         RECOVERY_VALID="$(sqlite3 "$DB_PATH" "SELECT COUNT(*) FROM transition_decisions WHERE task_id = '$TASK_ID' AND bound_transition_id = '$transition_id' AND from_state = '$from_st' AND to_state = '$to_st' AND decision_type = 'APPROVAL' AND actor = 'human' AND question_id LIKE 'recovery_approval_%' AND consumed_at IS NOT NULL;" 2>/dev/null || echo "0")"
         if [ "$RECOVERY_VALID" -eq 0 ]; then
