@@ -34,6 +34,9 @@ Gated engineering workflow: a task is registered in `context/control_plane.db`, 
 4. **One question per turn**, answered from context and the running directives ledger first. Task artifacts live in `docs/plans/work-tasks/<task-id>/`.
 5. **Stop on a blocked gate.** State cause and cost; no workaround commands or direct database edits.
 
+6. **Ask before stopping work.** Never cancel, stop, restart or discard running work without asking the human; never choose or dispatch reviewers yourself.
+7. **Skills are read-only at runtime.** Tests and scripts never write into a skill folder, source or installed; artifacts go to the repository root the control plane resolves, a temp directory or a gitignored folder.
+
 ## Quick start
 
 ```bash

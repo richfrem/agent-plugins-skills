@@ -40,6 +40,18 @@ python3 scripts/validate_manifest.py graph-manifest.json
 
 5. **Validate & Handoff**: Run `validate_manifest.py` (add `--check-approval-none` when the graph will run with `--approval none`). Hand off the manifest path, its SHA256 (`shasum -a 256 graph-manifest.json`), the intended `--approval` mode, and the workspace flag. The human approves that SHA; any later manifest edit requires re-approval.
 
+## Partition analysis (choosing the shape of the graph)
+
+The planner chooses how much of the graph runs in parallel. Decide it from the work, not by habit:
+
+1. List the candidate slices with, for each, the files or folders it edits and what it must read.
+2. Mark two slices **independent** only if their edit areas are disjoint and neither needs the other's output. Independent mutation slices still run one after another inside one worktree. Run them in separate worktrees (one graph each, merged by the caller) only when the saved time exceeds the merge cost.
+3. Fan out **reads** wherever they are independent: one scout per area before a slice, several reviewer lenses side by side after it (architecture, security, test contract), parallel baselines when their commands do not write to the repository.
+4. Set `max_parallel_concurrency` to the widest fan-out, no higher, and keep model cost and the human's rate limits in mind.
+5. Record the shape and the reasons in the manifest under `caller.planning_notes` (which slices were parallelised or chained, and why; worker count; worktree choice).
+
+Never put test suites that write into the repository in parallel read nodes: a read node that dirties the shared worktree fails its siblings' immutability check.
+
 ## Verification
 
 ```bash

@@ -45,3 +45,10 @@ Each toggle backs up the mode file and the dispatcher hooks to `context/control-
    defect and retry the same edge.
 4. After three failed attempts, stop and escalate with all attempt evidence.
 5. Never replace a failed behavioral test with a structural-only pass.
+
+## Any mode: a gate fails, a worker halts or a run is rolled back
+
+1. Report the failing gate's output and what was discarded; do not restart, retry, cancel or roll back anything on your own judgment.
+2. Ask the human how to proceed (retry, change the plan with a plan delta, or stop).
+3. If a change to a signed manifest is needed, ask for approval of the new SHA-256 in chat and record it in `plan-deltas.md`.
+4. Log the cause as a bug with a regression test; if a pre-commit or other repository hook caused it, make the next attempt satisfy that hook instead of bypassing it.

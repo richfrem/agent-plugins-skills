@@ -39,6 +39,10 @@ Normative rules and heuristic validation checks for Directed Acyclic Graphs comp
    - The runner executes every `command_or_eval` with `bash -c`. `tier` is a planning label, not a dispatch mechanism: a `fast_engine` or `frontier_engine` node must invoke its model through a CLI inside the command (for example `claude -p "..." > "$GRAPH_SCRATCH_DIR/out.json"`).
    - `input_bindings` and `output_contract` are declarative. Nodes exchange data through files under `$GRAPH_SCRATCH_DIR/..` (sibling node directories), and enforcement belongs in a verifier or barrier command.
 
+8. **Read nodes that run test suites**:
+   - A `parallel_read` node that runs a test suite must not write into the repository or any skill folder. Test output goes to `$GRAPH_SCRATCH_DIR` or a temp directory.
+   - If the suite cannot guarantee that, run that node alone (as a one-node batch), because the runner fails every sibling read node when any node dirties the shared worktree.
+
 ## 2. Token Economic Principles
 
 1. **Compact Payload Protocol**:

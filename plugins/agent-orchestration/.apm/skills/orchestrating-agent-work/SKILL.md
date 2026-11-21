@@ -34,6 +34,10 @@ Python 3.8+ (standard library only); sibling skills `cli-agent` and `evaluating-
 - **Learning Loop**: `scripts/work_loop.py run` validates the contract and budget, retrieves lessons, dispatches each attempt through `cli-agent` (claim first, atomic admission, immutable attempt ids), assesses with `evaluating-agent-outcomes`, and repairs within the attempt/token budget. Lessons, manual criteria and integration stay agent-supervised ([learning-loop.md](references/learning-loop.md)).
 - **Human Gate Integrity**: Graph runs with `--approval none` require an explicit human-approved manifest SHA; never self-sign manifests you wrote.
 
+- **Ask Before Stopping Work**: Never cancel, stop, restart or retry a running graph, worker or reviewer, and never discard its output, without asking the human first. On any halt or failed gate, report the output and ask.
+- **Make The Run Visible**: Start a graph as a tracked background task, tell the human how to watch it ([graph-execution.md](references/graph-execution.md#observing-a-run)), and report each finished node and failure as it happens.
+- **Choose The Graph Shape From The Work**: Run the partition analysis in [graph-planning.md](references/graph-planning.md) before compiling; record the shape and reasons in `caller.planning_notes`. Reviewer choice (runtime, model, effort) belongs to the human; never pick or dispatch reviewers yourself.
+
 ## Quick Start
 
 ```bash

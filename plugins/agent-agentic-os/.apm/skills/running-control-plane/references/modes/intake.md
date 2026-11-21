@@ -41,6 +41,14 @@ python3 scripts/control_plane/coordinator.py transition-guidance --task-id <task
 4. **Stage Transitions**: Transition through `INTAKE` -> `INTERVIEW` -> `DRAFT_PLAN` -> `PLAN_REVIEW` using `coordinate-transition`.
 5. **Advance to Approval**: In `PLAN_REVIEW`, once the plan is accepted, agent runs `coordinate-transition --to AWAITING_APPROVAL`.
 
+## Plan changes during implementation
+
+A signed plan is not reopened when the work teaches something. Append each change to `docs/plans/work-tasks/<task-id>/plan-deltas.md` (date, reason, what changed) and fix the gap in the slice that found it. Do not send the task back to planning. The deltas are reviewed with the code at the worktree review. The one exception is a change to a graph manifest whose SHA-256 the human approved: ask the human to approve the new SHA in chat, record it in `plan-deltas.md`, and start the run with that approved value.
+
+## Steps only the human can run
+
+Say so up front when a step needs the human's own terminal answer: gate signatures (passphrase), recovery approvals, review skips and the review-method selection. Give one short, verified command per line (it must not wrap when pasted), name the exact prompts and what to answer, and never answer for the human or record their decision for them.
+
 ## Verification
 
 Validate task spec and transition gate evidence deterministically:

@@ -81,3 +81,9 @@ passing the SAME `bundle.md` or context block to consecutive specialist prompts.
 
 Always run the Architect **AFTER** the Security review to catch any security-driven side effects
 that may have artificially inflated the system's complexity.
+
+## Which roles `cli-agent` can host
+
+`run_agent.py` sends text in and writes text out (`--clean-context` for `claude` also removes tools, filesystem and project slash commands). It cannot edit files, so it fits **reviewers, scouts that only answer from supplied text, classifiers and synthesizers**. Roles that edit code need an editing worker (for example `claude -p` with `--allowedTools`), launched by the supervisor. Take the one-owner claim for such a worker with `dispatch_guard.py claim` and release it on exit, so a retry is not refused as a duplicate.
+
+Give a reviewer one input file (spec, binding notes, diff), a persona file with a binary verdict contract (`[LGTM]` or findings tagged P0 to P3), and treat any other output, an empty result or a launch error as **not reviewed**, never as a pass.
