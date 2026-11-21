@@ -2,6 +2,16 @@
 
 Architects, topologically validates, and compiles token-budgeted execution graphs (DAGs) into `graph-manifest.json`.
 
+## Principles
+
+1. **Keep orchestration proportionate to the work.** Use the smallest graph that does the job. The effort of building and running the graph (nodes, pinned scripts, gates, retries) must be less than the effort it saves. Write one line of overhead versus gain in `caller.planning_notes`. If overhead wins, simplify.
+2. **Parallelize what is independent.** Independent reads always fan out: scouts, reviewer lenses, baselines. Independent edits go in separate worktrees only when the time saved clearly beats setup plus merge cost. Parallelism is a tool for efficiency, not a goal in itself.
+3. **A serial chain is not a graph.** If the work is ordered edits with no fan-out and no join barrier, use `direct`, or a supervised loop with one worker per step and a test run after each ([strategy-dual-loop.md](strategy-dual-loop.md)).
+4. **Gates are proportionate.** Run cheap deterministic checks first. Put one independent review on a risky step. Checks a human will review at the end are not per-node gates.
+5. **Every gate must be passable by the step before it.** A gate may not depend on work that a later node does.
+
+Smells that mean the graph is too big: N sequential mutations each with their own gate; pinning every helper script; model reviews after trivial edits; more orchestration files than changed files.
+
 ## Constraints
 
 - **Ingest Before Interview**: Read caller briefs or task specifications first; ask user questions only on unresolved topological gaps.

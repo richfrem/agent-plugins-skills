@@ -41,7 +41,7 @@ Normative rules and heuristic validation checks for Directed Acyclic Graphs comp
 
 8. **Read nodes that run test suites**:
    - A `parallel_read` node that runs a test suite must not write into the repository or any skill folder. Test output goes to `$GRAPH_SCRATCH_DIR` or a temp directory.
-   - If the suite cannot guarantee that, run that node alone (as a one-node batch), because the runner fails every sibling read node when any node dirties the shared worktree.
+   - Running such a node alone does not make it read-only: a node that dirties the worktree still fails the runner's immutability check. Redirect the suite's writes to a temporary location, run it in a disposable test workspace, or classify the side effect as a contained mutation.
 
 ## 2. Token Economic Principles
 

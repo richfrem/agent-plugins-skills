@@ -2,6 +2,10 @@
 
 Interactive front door for choosing an execution topology and compiling a structured decision record before planning begins.
 
+## Principles
+
+Choose the lightest strategy that fits. Orchestration effort (nodes, pinned scripts, gates) must stay below the effort it saves; a serial chain is not a graph; parallelize only what is independent and only when the saving beats setup and merge cost. The full list is in [graph-planning.md](graph-planning.md#principles).
+
 ## Constraints
 
 - **Governance Orthogonal**: Human approvals and worktree confinement wrap all patterns identically. Never ask about approval or rollback (those belong to caller governance).
@@ -33,10 +37,12 @@ python3 scripts/select_strategy.py --out docs/plans/work-tasks/my-task/
 3. **Deterministic Selection**:
    Execute `scripts/select_strategy.py` with gathered answers. The script determines the topology based on explicit rules:
    - Many identical independent units -> `agent-swarm`
-   - Distinct steps + barrier or ordered mutations -> `graph`
+   - Distinct steps with two or more independent branches, a join barrier, or an irreversible step that needs an approval gate -> `graph`
+   - Ordered mutations alone (a serial chain with no fan-out and no barrier) -> `dual-loop` (or `direct` for a small change); a graph would cost more orchestration than it saves
    - One bounded change -> `dual-loop`
    - Minimal direct edit -> `direct`
    - Adversarial assurance -> `red-team-review` (wrapper modifier; [strategy-red-team-review.md](strategy-red-team-review.md))
+   Until `select_strategy.py` implements the graph rule above (planned in the job-scoped-control-plane change set), apply it yourself when you confirm the decision with the human.
    Open-ended research and self-improvement are out of scope here; use agent-agentic-os (`os-lab`).
 
 4. **Confirm & Record Decision**:
