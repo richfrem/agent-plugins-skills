@@ -258,6 +258,25 @@ def validate_graph_topology(manifest: Dict[str, Any], check_approval_none: bool 
                 "by any node's fallback_node_id."
             )
 
+    # S7: optional control_plane block validation & audit-role dependency invariant
+    cp_block = manifest.get("control_plane")
+    if cp_block is not None:
+        if not isinstance(cp_block, dict) or not isinstance(cp_block.get("task_id"), str) or not cp_block["task_id"].strip():
+            errors.append("Invalid 'control_plane' block: must be an object with a non-empty string 'task_id'.")
+        elif "require_approved_signature" in cp_block and not isinstance(cp_block["require_approved_signature"], bool):
+            errors.append("Invalid 'control_plane.require_approved_signature': must be a boolean.")
+
+    audit_nodes = [nid for nid, node in node_map.items() if node.get("role") == "audit"]
+    if audit_nodes:
+        for nid, node in node_map.items():
+            if node.get("type") == "sequential_mutation":
+                anc = collect_ancestors(nid, node_map)
+                missing_audits = [a for a in audit_nodes if a not in anc]
+                if missing_audits:
+                    errors.append(
+                        f"Audit gate violation: mutation node '{nid}' must depend on audit node(s) {missing_audits}."
+                    )
+
     # Invariant: A fallback must have the same type as the node it substitutes for, so that a
     # read's fallback can never mutate (it would run inside the parallel pool) and a mutation's
     # fallback can never silently skip the mutation.
@@ -411,9 +430,13 @@ def advisory_warnings(manifest: Dict[str, Any]) -> List[str]:
     nodes = [n for n in manifest.get("nodes", []) if isinstance(n, dict) and isinstance(n.get("id"), str)]
     node_map = {n["id"]: n for n in nodes}
     mutations = [n for n in nodes if n.get("type") == "sequential_mutation"]
-    if len(mutations) < 3:
-        return []
     warnings: List[str] = []
+    if manifest.get("control_plane") and not mutations:
+        warnings.append(
+            "WARNING: manifest declares a 'control_plane' block but has 0 sequential_mutation nodes."
+        )
+    if len(mutations) < 3:
+        return warnings
     reads = [n["id"] for n in nodes if n.get("type") == "parallel_read"]
     has_fan_out = False
     for i, a in enumerate(reads):

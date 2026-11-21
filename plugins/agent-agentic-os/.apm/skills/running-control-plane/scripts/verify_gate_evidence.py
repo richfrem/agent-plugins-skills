@@ -3,43 +3,70 @@
 verify_gate_evidence.py
 =======================
 
-Purpose:
-    CLI used by the pre-push guard: re-verify, against the repository's human trust anchor, the
-    signed gates behind the DONE of the task registered for a branch. Exits 0 only when the DONE is
-    authenticated (real-work database, human key, one key for every gate); otherwise prints every
-    problem and exits 1. Cross-platform (macOS, Linux, Windows).
+CLI used by the pre-push guard (DONE) and by orchestrating-agent-work's graph_runner.py (APPROVED):
+  - DONE check:     verify_gate_evidence.py --repo-root <repo> --branch <branch>
+  - APPROVED check: verify_gate_evidence.py --repo-root <repo> --task-id <id> --gate APPROVED [--manifest-sha256 <sha>] [--json]
 
-Key Input Dependencies:
-    - control_plane/gate_evidence.py (the checks), control_plane/approver_policy.py, control_plane/ssh_signing.py
-    - <repo>/context/control_plane.db and <repo>/context/identity/allowed_signers
-
-Key Functions:
-    - main() -- parse --repo-root and --branch, run verify_branch_done, report, exit
-
-Usage:
-    python3 verify_gate_evidence.py --repo-root <repo> --branch <branch>
+Exit codes:
+    0 = verified
+    1 = refused (verification failed)
+    2 = usage error
+    3 = DB or identity unreadable / missing
 """
 
 import argparse
+import json
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from control_plane.gate_evidence import verify_branch_done  # noqa: E402
+from control_plane.gate_evidence import verify_branch_done, verify_task_approved  # noqa: E402
 
 
-# Parse arguments, verify, report, exit 0/1
-def main() -> int:
-    """Return 0 when the branch's DONE is authenticated, 1 otherwise."""
-    parser = argparse.ArgumentParser(description="Authenticate a branch's DONE from its signed gate evidence.")
+def main(argv=None) -> int:
+    parser = argparse.ArgumentParser(description="Authenticate signed control-plane gate evidence.")
     parser.add_argument("--repo-root", required=True)
-    parser.add_argument("--branch", required=True)
-    args = parser.parse_args()
-    problems = verify_branch_done(Path(args.repo_root), args.branch)
-    for problem in problems:
-        print(f"   - {problem}")
-    return 1 if problems else 0
+    parser.add_argument("--branch", default=None, help="Branch to verify DONE evidence for")
+    parser.add_argument("--task-id", default=None, help="Task ID to verify Gate 1 APPROVED evidence for")
+    parser.add_argument("--gate", choices=["APPROVED", "DONE"], default=None, help="Gate to verify")
+    parser.add_argument("--manifest-sha256", default=None, help="Manifest SHA-256 to verify binding against")
+    parser.add_argument("--json", action="store_true", help="Machine-readable JSON output")
+    args = parser.parse_args(argv)
+
+    repo_root = Path(args.repo_root)
+
+    if args.task_id and args.gate == "APPROVED":
+        db = repo_root / "context" / "control_plane.db"
+        anchor = repo_root / "context" / "identity" / "allowed_signers"
+        if not db.is_file() or db.is_symlink() or not anchor.is_file():
+            problems = [f"DB ({db}) or trust anchor ({anchor}) is missing, unreadable, or symlinked."]
+            if args.json:
+                print(json.dumps({"verified": False, "problems": problems, "binding": "none"}, indent=2))
+            else:
+                for p in problems:
+                    print(f"   - {p}")
+            return 3
+        problems, binding = verify_task_approved(repo_root, args.task_id, manifest_sha256=args.manifest_sha256)
+        verified = not problems
+        if args.json:
+            print(json.dumps({"verified": verified, "problems": problems, "binding": binding}, indent=2))
+        else:
+            for p in problems:
+                print(f"   - {p}")
+        return 0 if verified else 1
+
+    if args.branch:
+        problems = verify_branch_done(repo_root, args.branch)
+        if args.json:
+            print(json.dumps({"verified": not problems, "problems": problems, "binding": "done"}, indent=2))
+        else:
+            for problem in problems:
+                print(f"   - {problem}")
+        return 1 if problems else 0
+
+    parser.print_help()
+    return 2
 
 
 if __name__ == "__main__":

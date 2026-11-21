@@ -160,7 +160,10 @@ class GraphRunner:
                  run_id: Optional[str] = None, run_dir: Optional[Path] = None,
                  expected_manifest_sha: Optional[str] = None,
                  parsed_manifest: Optional[Tuple[Dict[str, Any], bytes]] = None,
-                 destructive_rollback: bool = True):
+                 destructive_rollback: bool = True,
+                 control_plane_task: Optional[str] = None,
+                 progress_file: Optional[Path] = None,
+                 skills_root: Optional[Path] = None):
         self.manifest_path = manifest_path.resolve()
         if parsed_manifest:
             self.manifest, manifest_bytes = parsed_manifest
@@ -218,6 +221,12 @@ class GraphRunner:
         self.substituted_nodes: Dict[str, str] = {}  # primary_id -> fallback_id that replaced it
         self.has_prompted_mutation = False
         self.prompt_lock = threading.Lock()
+        self.state_lock = threading.Lock()
+        self.active_nodes: Dict[str, Dict[str, Any]] = {}
+        self.progress_file: Optional[Path] = progress_file.resolve() if progress_file else None
+        self.control_plane_task = control_plane_task
+        self.skills_root = skills_root.resolve() if skills_root else Path(__file__).resolve().parents[2]
+        self._last_status = "initializing"
 
         # Identify fallback nodes (only nodes declaring role='fallback')
         self.fallback_nodes: Set[str] = {n["id"] for n in self.nodes_list if n.get("role") == "fallback"}
@@ -280,21 +289,87 @@ class GraphRunner:
         with open(self.receipts_file, "a", encoding="utf-8") as f:
             f.write(json.dumps(entry) + "\n")
 
-    def save_state(self, status: str, error: Optional[str] = None) -> None:
-        """Write current runner state to state.json."""
-        state = {
+    def emit_progress(self, event: str, **fields: Any) -> None:
+        """Append a newline-JSON observability event to --progress-file if configured (L1/A4)."""
+        if not self.progress_file:
+            return
+        payload = {
+            "event": event,
             "graph_id": self.graph_id,
             "run_id": self.run_id,
-            "status": status,
-            "start_sha": self.start_sha,
-            "completed_nodes": sorted(self.completed_nodes),
-            "failed_nodes": sorted(self.failed_nodes),
-            "substituted_nodes": self.substituted_nodes,
-            "error": error,
-            "updated_at": datetime.datetime.now().isoformat()
+            "at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            **fields,
         }
-        with open(self.state_file, "w", encoding="utf-8") as f:
-            json.dump(state, f, indent=2)
+        self.progress_file.parent.mkdir(parents=True, exist_ok=True)
+        with self.state_lock:
+            with open(self.progress_file, "a", encoding="utf-8") as fh:
+                fh.write(json.dumps(payload) + "\n")
+
+    def save_state(self, status: str, error: Optional[str] = None) -> None:
+        """Write current runner state atomically to state.json, including active_nodes (L1/L2/A4)."""
+        with self.state_lock:
+            self._last_status = status
+            state = {
+                "graph_id": self.graph_id,
+                "run_id": self.run_id,
+                "status": status,
+                "start_sha": self.start_sha,
+                "active_nodes": sorted(self.active_nodes.values(), key=lambda x: x["id"]),
+                "completed_nodes": sorted(self.completed_nodes),
+                "failed_nodes": sorted(self.failed_nodes),
+                "substituted_nodes": self.substituted_nodes,
+                "error": error,
+                "updated_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            }
+            tmp = self.state_file.with_name(f".state.{os.getpid()}.tmp")
+            tmp.write_text(json.dumps(state, indent=2), encoding="utf-8")
+            os.replace(tmp, self.state_file)
+
+    def _verify_control_plane_gate(self) -> Optional[str]:
+        """Opt-in S7 hook: if a control-plane task is named (flag or manifest block with
+        require_approved_signature != False), re-verify Gate 1 APPROVED via the sibling
+        running-control-plane verifier before any mutation runs."""
+        cp_block = self.manifest.get("control_plane") if isinstance(self.manifest.get("control_plane"), dict) else None
+        block_task = cp_block.get("task_id") if cp_block else None
+        require_sig = cp_block.get("require_approved_signature", True) if cp_block else True
+
+        task_id = self.control_plane_task or (block_task if require_sig else None)
+        if not task_id:
+            return None
+        if self.control_plane_task and block_task and self.control_plane_task != block_task:
+            print(
+                f"[CONTROL-PLANE] --control-plane-task '{self.control_plane_task}' overrides "
+                f"manifest control_plane.task_id '{block_task}'.",
+                file=sys.stderr,
+            )
+
+        verifier = self.skills_root / "running-control-plane" / "scripts" / "verify_gate_evidence.py"
+        if not verifier.is_file():
+            return (
+                f"Sibling control-plane verifier not found at {verifier}. "
+                "Install agent-agentic-os beside orchestrating-agent-work."
+            )
+
+        git_common = self.find_git_common_dir(self.workdir)
+        repo_root = git_common.parent if git_common else self.workdir
+        cmd = [
+            sys.executable,
+            str(verifier),
+            "--repo-root",
+            str(repo_root),
+            "--task-id",
+            task_id,
+            "--gate",
+            "APPROVED",
+            "--manifest-sha256",
+            self.manifest_sha,
+            "--json",
+        ]
+        rc, out, err = run_cmd(cmd, cwd=repo_root, timeout=60)
+        if rc != 0:
+            detail = (out or err or f"exit {rc}").strip()
+            return f"Control-plane APPROVED gate verification failed (exit {rc}): {detail}"
+        return None
 
     def verify_clean_git(self) -> None:
         """Verify worktree exists, is clean, and capture start SHA."""
@@ -348,9 +423,16 @@ class GraphRunner:
             self.save_state("halted", error=reason)
             return
         if self.is_git_repo and self.start_sha:
+            # Delta 9: preserve failed-node diff BEFORE rollback so work is never silently lost
+            rc_diff, diff_out, _ = run_cmd(["git", "diff", "HEAD"], cwd=self.workdir)
+            if rc_diff == 0 and diff_out:
+                patch_path = self.run_dir / "failed-diff.patch"
+                patch_path.write_text(diff_out, encoding="utf-8")
+                print(f"Saved pre-rollback diff to {patch_path}", file=sys.stderr)
             run_cmd(["git", "reset", "--hard", self.start_sha], cwd=self.workdir)
             run_cmd(["git", "clean", "-fd"], cwd=self.workdir)
             print(f"Worktree rolled back to start commit {self.start_sha[:8]}", file=sys.stderr)
+        self.emit_progress("halt", status="rolled_back", reason=reason)
         self.save_state("rolled_back", error=reason)
 
     def prompt_human(self, prompt_text: str) -> bool:
@@ -480,14 +562,34 @@ class GraphRunner:
 
             # Reset working tree only for sequential mutation nodes (never for concurrent read nodes)
             if attempts > 1 and is_mutation and self.is_git_repo and pre_node_head:
+                self.emit_progress("retry", node_id=node_id, attempt=attempts)
                 run_cmd(["git", "reset", "--hard", pre_node_head], cwd=self.workdir)
                 run_cmd(["git", "clean", "-fd"], cwd=self.workdir)
 
-            rc, stdout, stderr = run_cmd(["bash", "-c", cmd], cwd=self.workdir, env=env, timeout=timeout)
-
-            # Persist stdout and stderr logs to scratch
+            # L1/L2/A4: mark node active in state.json and emit progress event
             stdout_path = scratch_dir / f"attempt_{attempts}_stdout.log"
             stderr_path = scratch_dir / f"attempt_{attempts}_stderr.log"
+            with self.state_lock:
+                self.active_nodes[node_id] = {
+                    "id": node_id,
+                    "type": node_type,
+                    "label": node.get("label") or node_id,
+                    "started_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                    "pid": os.getpid(),
+                    "transcript_path": str(stdout_path),
+                }
+            self.save_state("running")
+            self.emit_progress("node_started", node_id=node_id, label=node.get("label") or node_id, attempt=attempts)
+
+            try:
+                rc, stdout, stderr = run_cmd(["bash", "-c", cmd], cwd=self.workdir, env=env, timeout=timeout)
+            finally:
+                with self.state_lock:
+                    self.active_nodes.pop(node_id, None)
+                self.save_state("running")
+                self.emit_progress("node_finished", node_id=node_id, attempt=attempts)
+
+            # Persist stdout and stderr logs to scratch
             stdout_path.write_text(stdout, encoding="utf-8")
             stderr_path.write_text(stderr, encoding="utf-8")
             stdout_hash = compute_sha256(stdout)
@@ -603,6 +705,13 @@ class GraphRunner:
             self.verify_clean_git()
         except RuntimeError as e:
             print(f"ERROR: {e}", file=sys.stderr)
+            return 1
+
+        cp_err = self._verify_control_plane_gate()
+        if cp_err:
+            print(f"ERROR: {cp_err}", file=sys.stderr)
+            self.emit_progress("halt", status="control_plane_gate_failed", reason=cp_err)
+            self.save_state("control_plane_gate_failed", error=cp_err)
             return 1
 
         self.save_state("running")
@@ -734,7 +843,9 @@ def resolve_workspace(args: argparse.Namespace, has_mutations: bool) -> Tuple[Pa
 def main() -> None:
     """Parse CLI arguments, resolve the workspace, and run the graph."""
     parser = argparse.ArgumentParser(description="Deterministic Graph Manifest Runner")
-    parser.add_argument("manifest", help="Path to graph-manifest.json file")
+    parser.add_argument("manifest", nargs="?", help="Path to graph-manifest.json file")
+    parser.add_argument("--status", metavar="RUN_DIR", help="Print live status and active_nodes of a run directory and exit")
+    parser.add_argument("--json", action="store_true", help="JSON output for --status")
     parser.add_argument("--worktree", help="Path to existing git worktree directory")
     parser.add_argument("--create-worktree", action="store_true", help="Create new git worktree and run in it")
     parser.add_argument("--base", default="HEAD", help="Base git ref for --create-worktree (default: HEAD)")
@@ -744,8 +855,30 @@ def main() -> None:
     parser.add_argument("--expect-manifest-sha256", help="Expected SHA256 hex digest of approved manifest")
     parser.add_argument("--run-dir", help="Directory where graph-run receipt and state records are stored "
                                           "(default: <git-common-dir>/graph-run)")
+    parser.add_argument("--control-plane-task", default=None, help="Opt-in control-plane task ID to verify Gate 1 APPROVED before mutations")
+    parser.add_argument("--progress-file", default=None, help="Optional newline-JSON progress event file")
+    parser.add_argument("--skills-root", default=None, help="Override installed skills root (for sibling verifier lookup)")
 
     args = parser.parse_args()
+    if args.status:
+        run_dir = Path(args.status)
+        state_file = run_dir / "state.json"
+        if not state_file.is_file():
+            print(f"ERROR: state.json not found in {run_dir}", file=sys.stderr)
+            sys.exit(1)
+        state = json.loads(state_file.read_text(encoding="utf-8"))
+        if args.json:
+            print(json.dumps(state, indent=2))
+        else:
+            print(f"Graph: {state.get('graph_id')}  Run: {state.get('run_id')}  Status: {state.get('status')}")
+            active = state.get("active_nodes") or []
+            print(f"Active nodes ({len(active)}): " + (", ".join(f"{n['id']}[{n.get('label', n['id'])}]" for n in active) or "none"))
+            print(f"Completed: {len(state.get('completed_nodes') or [])}  Failed: {len(state.get('failed_nodes') or [])}")
+        sys.exit(0)
+
+    if not args.manifest:
+        parser.print_help()
+        sys.exit(2)
     manifest_path = Path(args.manifest)
     if not manifest_path.is_file():
         print(f"ERROR: Manifest file not found: {manifest_path}", file=sys.stderr)
@@ -774,6 +907,9 @@ def main() -> None:
         expected_manifest_sha=args.expect_manifest_sha256,
         parsed_manifest=(manifest, manifest_bytes),
         destructive_rollback=destructive_rollback,
+        control_plane_task=args.control_plane_task,
+        progress_file=Path(args.progress_file) if args.progress_file else None,
+        skills_root=Path(args.skills_root) if args.skills_root else None,
     )
     exit_code = runner.run()
     sys.exit(exit_code)

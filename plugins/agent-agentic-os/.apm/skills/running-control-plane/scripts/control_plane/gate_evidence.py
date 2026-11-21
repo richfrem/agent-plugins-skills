@@ -249,3 +249,134 @@ def verify_branch_done(repo_root: Path, branch: str) -> List[str]:
     if len(keys) > 1:
         problems.append(f"Task {task_id}'s gates were signed by {len(keys)} different keys; one approver per pipeline is required.")
     return problems
+
+
+def _parse_verified_challenge_content(challenge: bytes) -> dict:
+    """Parse `content:` label -> sha256 entries directly from verified challenge bytes (sec-2-1).
+    Never reads from the unsigned `content_snapshot` column."""
+    content: dict = {}
+    in_content = False
+    for line in challenge.decode("utf-8", "replace").splitlines():
+        if line == "content:":
+            in_content = True
+            continue
+        if in_content:
+            if line.startswith("  ") and ":" in line:
+                label, _, val = line.strip().partition(":")
+                content[label.strip()] = val.strip()
+            else:
+                in_content = False
+    return content
+
+
+def verify_task_approved(
+    repo_root: Path,
+    task_id: str,
+    manifest_sha256: Optional[str] = None,
+) -> Tuple[List[str], str]:
+    """Re-verify Gate 1 (APPROVED) signature and optional manifest binding for `task_id` (S7, sec-2-1/2-2).
+
+    Returns (problems, binding) where `problems` is [] when verified and `binding` is
+    'manifest', 'plan-pin', or 'none'.
+    """
+    import hashlib
+    import re
+    from control_plane.approver_policy import get_binding
+
+    repo_root = Path(repo_root)
+    db = repo_root / "context" / "control_plane.db"
+    anchor = repo_root / "context" / "identity" / "allowed_signers"
+    problems = _database_file_problems(db, anchor)
+    if problems:
+        return problems, "none"
+
+    conn = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
+    try:
+        identity = database_identity(conn)
+        if identity != CONTEXT_REAL:
+            return [f"{db} is stamped '{identity}', not 'real': a simulation database cannot authorize execution."], "none"
+
+        task_row = conn.execute("SELECT state FROM tasks WHERE task_id = ?", (task_id,)).fetchone()
+        if task_row is None:
+            return [f"Task '{task_id}' not found in {db}."], "none"
+        state = task_row[0]
+        if state not in ("APPROVED", "IN_WORKTREE", "WORKTREE_REVIEW", "VERIFY_EXIT", "DONE"):
+            return [f"Task '{task_id}' is in state '{state}', not APPROVED or later."], "none"
+
+        # Binding note sec-2-2: missing approver binding is a refusal
+        binding_row = get_binding(conn, task_id)
+        if not binding_row or not binding_row.get("approver_fingerprint"):
+            return [f"Task '{task_id}' has no enrolled approver binding; refusing."], "none"
+        bound_fp = binding_row["approver_fingerprint"]
+
+        has_sge = conn.execute(
+            "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'signed_gate_evidence'"
+        ).fetchone()
+        if not has_sge:
+            return [f"Task '{task_id}' has no signed_gate_evidence table."], "none"
+
+        ev_row = conn.execute(
+            "SELECT request_id, from_state, to_state, challenge, signature, fingerprint "
+            "FROM signed_gate_evidence WHERE task_id = ? AND to_state = 'APPROVED' "
+            "ORDER BY request_id DESC LIMIT 1",
+            (task_id,),
+        ).fetchone()
+        if ev_row is None:
+            return [f"Task '{task_id}' has no signed Gate 1 (APPROVED) evidence."], "none"
+
+        req_id, from_state, to_state, challenge, signature, fp = ev_row
+        req_row = conn.execute(
+            "SELECT status, consumed_at, jti FROM transition_request WHERE request_id = ?",
+            (req_id,),
+        ).fetchone()
+        if req_row is None or req_row[0] != "CONSUMED":
+            return [f"Gate 1 request {req_id} for task '{task_id}' is not CONSUMED."], "none"
+
+        # G2b legacy cut-off check
+        if from_state == "AWAITING_APPROVAL":
+            cutoff = _migration_cutoff_epoch(conn)
+            consumed_at = req_row[1]
+            if cutoff is not None and (consumed_at is None or float(consumed_at) > cutoff):
+                return [f"Gate 1 request {req_id} uses legacy AWAITING_APPROVAL -> APPROVED after v15 migration cut-off."], "none"
+
+        simulation_keys = registered_simulation_keys(db)
+        prob, verified_fp = _check_evidence_row(ev_row, task_id, anchor, simulation_keys)
+        if prob:
+            return [prob], "none"
+        if verified_fp != bound_fp:
+            return [f"Gate 1 signer {verified_fp} does not match task's bound approver {bound_fp}."], "none"
+
+        # sec-2-1: extract content hashes ONLY from the verified challenge bytes
+        verified_content = _parse_verified_challenge_content(bytes(challenge))
+        if not manifest_sha256:
+            return [], "manifest" if "manifest" in verified_content else "plan-pin"
+
+        if "manifest" in verified_content:
+            if verified_content["manifest"] != manifest_sha256:
+                return [
+                    f"Manifest SHA-256 mismatch: verified Gate 1 challenge binds {verified_content['manifest']}, "
+                    f"got {manifest_sha256}."
+                ], "manifest"
+            return [], "manifest"
+
+        if "plan" in verified_content:
+            plan_path = repo_root / "docs" / "plans" / "work-tasks" / task_id / f"{task_id}-implementation-plan.md"
+            if not plan_path.is_file() or plan_path.is_symlink():
+                return [f"Plan file missing or symlinked for plan-pin verification: {plan_path}"], "plan-pin"
+            plan_bytes = plan_path.read_bytes()
+            live_plan_sha = hashlib.sha256(plan_bytes).hexdigest()
+            if live_plan_sha != verified_content["plan"]:
+                return [
+                    f"Plan file hash mismatch: verified Gate 1 challenge binds {verified_content['plan']}, "
+                    f"live plan is {live_plan_sha}."
+                ], "plan-pin"
+            m = re.search(r"^Manifest SHA-256:\s*([a-f0-9]{64})\s*$", plan_bytes.decode("utf-8", "replace"), re.MULTILINE)
+            if not m or m.group(1) != manifest_sha256:
+                return [
+                    f"Signed plan does not pin Manifest SHA-256: {manifest_sha256}."
+                ], "plan-pin"
+            return [], "plan-pin"
+
+        return ["Verified Gate 1 challenge binds neither 'manifest' nor 'plan'."], "none"
+    finally:
+        conn.close()
