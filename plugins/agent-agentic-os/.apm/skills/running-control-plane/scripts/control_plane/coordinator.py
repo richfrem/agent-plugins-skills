@@ -27,6 +27,7 @@ from typing import Any, Callable, Dict, List, Optional, TextIO, Tuple
 from control_plane.registry import TransitionRegistry, TransitionTemplate, TransitionRegistryError
 from control_plane.policy import evaluate_check, PolicyViolation, PolicyConfigurationError
 from control_plane import review_options as _review_options
+from control_plane import orchestration_registry as _orchestration
 from control_plane.review_selection import condition_holds
 from control_plane.identity_layout import default_layout
 from control_plane.isolation_check import check_isolation
@@ -107,8 +108,12 @@ class TransitionCoordinator:
         repo_root: Optional[Path] = None,
         human_signer: Optional[Callable[..., Any]] = None,
         review_choices_fn: Optional[Callable[..., Any]] = None,
+        skills_root: Optional[Path] = None,
     ):
         self._cp = control_plane
+        # The installed skills folder whose siblings (orchestrating-agent-work, cli-agent) supply the strategy
+        # registry and validators. None = the folder this skill is installed in; tests pass a fixture root.
+        self._skills_root = skills_root
         # Menus for the internal review runtime/model/effort questions (choices_from in the YAML). The default
         # resolves review_options.choices_for at call time; tests inject a fake-CLI resolver here.
         self._review_choices_fn = review_choices_fn or (lambda kind, runtime=None: _review_options.choices_for(kind, runtime=runtime))
@@ -772,16 +777,15 @@ class TransitionCoordinator:
             self._out.write(f"Execution-unit guidance (advisory; unchanged across edges): {units}\n")
             self._out.write(f"  See {CONTROL_SCRIPTS_DIR / 'control_plane' / 'transition_templates.yaml'} for full field contracts.\n")
         if to_state == "DRAFT_PLAN" or current_state == "DRAFT_PLAN":
-            repo_root = self._resolve_repo_root()
-            orch_installed = (repo_root / "plugins" / "agent-orchestration").is_dir()
-            orch_text = ""
-            if orch_installed:
+            try:
+                _orchestration.sibling_skill(_orchestration.ORCHESTRATION_SKILL, self._skills_root)
                 orch_text = (
-                    "\n  If agent-orchestration is installed, evaluate execution topology via\n"
-                    "  `select-loop-strategy` among peer patterns (direct, dual-loop, graph, agent-swarm,\n"
-                    "  red-team-review, learning-loop). When strategy=graph, compile and validate\n"
-                    "  `graph-manifest.json` before submitting to PLAN_REVIEW."
+                    "\n  Choose the execution strategy with the `orchestrating-agent-work` skill\n"
+                    "  (references/strategy-selection.md, then references/graph-planning.md). When\n"
+                    "  strategy=graph, compile and validate the task's graph manifest before PLAN_REVIEW."
                 )
+            except _orchestration.OrchestrationDependencyMissing as exc:
+                orch_text = f"\n  {exc}"
             self._out.write(
                 "- Plan Drafting & Orchestration Advisory:\n"
                 f"  Use host-native plan facilities for authoring.{orch_text}\n"
@@ -808,21 +812,23 @@ class TransitionCoordinator:
                                 break
                 except Exception:
                     pass
+                runner = None
+                runner_missing = None
                 if manifest_sha:
-                    runner_cmd = "scripts/graph_runner.py"
-                    for c in [
-                        repo_root / "plugins" / "agent-orchestration" / "scripts" / "graph_runner.py",
-                        repo_root / ".agents" / "skills" / "graph-execution" / "scripts" / "graph_runner.py",
-                        repo_root / ".claude" / "skills" / "graph-execution" / "scripts" / "graph_runner.py",
-                        Path.home() / ".agents" / "skills" / "graph-execution" / "scripts" / "graph_runner.py",
-                        Path.home() / ".claude" / "skills" / "graph-execution" / "scripts" / "graph_runner.py",
-                    ]:
-                        if c.is_file():
-                            try:
-                                runner_cmd = str(c.relative_to(repo_root))
-                            except ValueError:
-                                runner_cmd = str(c)
-                            break
+                    # The runner ships in the sibling orchestrating-agent-work skill (APM dependency); no folder search.
+                    try:
+                        runner = _orchestration.sibling_skill(_orchestration.ORCHESTRATION_SKILL, self._skills_root) / "scripts" / "graph_runner.py"
+                        if not runner.is_file():
+                            raise _orchestration.OrchestrationDependencyMissing(
+                                f"{_orchestration.ORCHESTRATION_SKILL}/scripts/graph_runner.py",
+                                _orchestration.skills_root(self._skills_root),
+                            )
+                    except _orchestration.OrchestrationDependencyMissing as exc:
+                        runner, runner_missing = None, str(exc)
+                if runner_missing:
+                    self._out.write(f"- Execution Warning (strategy: graph):\n  {runner_missing}\n")
+                elif manifest_sha:
+                    runner_cmd = str(runner)
                     manifest_rel = manifest_file.relative_to(repo_root)
 
                     self._out.write(
@@ -857,14 +863,19 @@ class TransitionCoordinator:
         repo_root = self._resolve_repo_root()
         declared_strategy = resolve_task_strategy(repo_root, task_id, task=task)
 
-        strat_cfg = self._registry.get_strategy_artifact_config(declared_strategy)
-        if strat_cfg is None:
-            raise TransitionCoordinatorError(
-                f"Declared execution strategy '{declared_strategy}' is unknown or not supported by the control plane. "
-                f"Supported strategies: {', '.join(sorted(self._registry.strategy_artifacts.keys()))}"
-            )
+        # One strategy registry: the sibling orchestrating-agent-work skill's patterns.json, plus the YAML's
+        # control-plane-owned strategies. A missing sibling fails closed with the apm install instruction.
+        try:
+            strat_cfg = _orchestration.strategy_config(declared_strategy, self._skills_root, self._registry)
+            if strat_cfg is None:
+                raise TransitionCoordinatorError(
+                    f"Declared execution strategy '{declared_strategy}' is unknown or not supported by the control plane. "
+                    f"Supported strategies: {', '.join(_orchestration.known_strategies(self._skills_root, self._registry))}"
+                )
+        except _orchestration.OrchestrationDependencyMissing as exc:
+            raise TransitionCoordinatorError(str(exc)) from exc
 
-        strat_art_pattern = strat_cfg.get("artifact")
+        strat_art_pattern = strat_cfg.get("plan_artifact")
         is_required = strat_cfg.get("required", False)
         strat_art_path = None
         if strat_art_pattern:
@@ -895,32 +906,15 @@ class TransitionCoordinator:
             if strat_art_path and strat_art_path.is_file():
                 validator_cmd = strat_cfg.get("validator")
                 if validator_cmd:
-                    validator_script_rel = strat_cfg.get("validator_script") or (validator_cmd[1] if len(validator_cmd) > 1 else None)
-                    resolved_script = None
-                    if validator_script_rel:
-                        # Search consumer locations (project harnesses, global profiles, monorepo plugins, repo root)
-                        script_name = Path(validator_script_rel).name
-                        candidates = [
-                            repo_root / ".agents" / validator_script_rel,
-                            repo_root / ".agents" / "skills" / "graph-planner" / "scripts" / script_name,
-                            repo_root / ".claude" / "skills" / "graph-planner" / "scripts" / script_name,
-                            Path.home() / ".agents" / "skills" / "graph-planner" / "scripts" / script_name,
-                            Path.home() / ".claude" / "skills" / "graph-planner" / "scripts" / script_name,
-                            repo_root / ".agents" / "scripts" / script_name,
-                            repo_root / "plugins" / "agent-orchestration" / validator_script_rel,
-                            repo_root / "plugins" / "agent-orchestration" / "scripts" / script_name,
-                            repo_root / validator_script_rel,
-                        ]
-                        for c in candidates:
-                            if c.is_file():
-                                resolved_script = c
-                                break
-
-                        if not resolved_script:
-                            raise TransitionCoordinatorError(
-                                f"Declared strategy '{declared_strategy}' validator '{validator_script_rel}' is not installed; "
-                                "install the required plugin or skill before proceeding."
-                            )
+                    # The validator lives in its owning sibling skill (validator_script is skill-relative).
+                    try:
+                        resolved_script = _orchestration.resolve_validator(strat_cfg, self._skills_root)
+                    except _orchestration.OrchestrationDependencyMissing as exc:
+                        raise TransitionCoordinatorError(str(exc)) from exc
+                    if resolved_script is None and any("{validator_script}" in arg for arg in validator_cmd):
+                        raise TransitionCoordinatorError(
+                            f"Declared strategy '{declared_strategy}' has a validator command but no validator_script."
+                        )
 
                     cmd = []
                     for arg in validator_cmd:

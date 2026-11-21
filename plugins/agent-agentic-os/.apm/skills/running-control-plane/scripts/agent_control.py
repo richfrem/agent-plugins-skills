@@ -43,7 +43,8 @@ Layer:
 
 Key Input Dependencies:
     - SQLite database: context/control_plane.db (auto-initialized with WAL mode)
-    - Optional model catalog references: plugins/agent-orchestration/skills/cli-agent/references/*.json
+    - Optional model catalog references: the sibling cli-agent skill's references/*.json, found through
+      control_plane.orchestration_registry.cli_agent_references() (installed by the agent-orchestration APM dependency)
 
 Key Functions:
     - ControlPlane.init_db() — Initializes tables and WAL mode
@@ -249,7 +250,8 @@ class ControlPlane:
         return create_default_controller(queue_path, dispatch, review, fix, **kwargs)
 
     def resolve_recommended_model(self, runtime_tool: str, tier: str = "low") -> Dict[str, str]:
-        """Resolves model recommendation and model_id from plugins/agent-orchestration/skills/cli-agent/references/.
+        """Resolves model recommendation and model_id from the sibling cli-agent skill's model catalogs
+        (orchestration_registry.cli_agent_references()).
         Full resolution (tool-alias, tier strategy, fallback) is delegated to
         self._model_catalog — this method is a pure delegate (issue-524, post-round-2-review
         correction: tier-selection/strategy logic previously still lived in ControlPlane)."""

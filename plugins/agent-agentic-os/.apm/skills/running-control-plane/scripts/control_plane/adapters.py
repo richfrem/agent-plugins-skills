@@ -98,7 +98,6 @@ from control_plane.constants import (
     FOLLOW_UP_STATUSES,
     DELEGATION_STATUSES,
     DISALLOWED_MODEL_STATUSES, STRATEGY_FALLBACK_KEYS,
-    CLI_AGENT_CATALOG_DIR,
     TOOL_CATALOG_ALIASES,
     sql_in_list,
 )
@@ -2910,15 +2909,26 @@ class ModelCatalogAdapter(ModelCatalogPort):
     ControlPlane helpers (_resolve_tool_catalog/_pick_tier_model) here in full — verbatim
     behavior, just relocated. Any parse/read error is swallowed and treated as "unavailable"
     (returns None from the file-read methods), matching the original bare
-    `except Exception: pass` behavior exactly."""
+    `except Exception: pass` behavior exactly.
+
+    The catalogs are read from the sibling cli-agent skill installed beside this one by the agent-orchestration
+    APM dependency (orchestration_registry.cli_agent_references), never from a repository path. `skills_root`
+    overrides the installed skills folder (tests pass a fixture root)."""
+
+    def __init__(self, skills_root: Optional[Path] = None):
+        self._skills_root = skills_root
 
     def resolve_recommended_model(self, runtime_tool: str, tier: str = "low") -> Dict[str, str]:
         """Resolve a catalog-backed recommendation and fail closed on catalog drift."""
+        from control_plane.orchestration_registry import OrchestrationDependencyMissing, cli_agent_references
+
         tier = tier.lower()
         if tier not in COST_TIERS:
             raise ValueError(f"Unsupported capability tier: {tier}")
-        repo_root = _resolve_repo_root()
-        cli_refs = repo_root.joinpath(*CLI_AGENT_CATALOG_DIR)
+        try:
+            cli_refs = cli_agent_references(self._skills_root)
+        except OrchestrationDependencyMissing as exc:
+            raise ValueError(f"Model catalog is unavailable: {exc}") from exc
         tool_key, catalog_file = self._resolve_tool_catalog(runtime_tool, cli_refs)
 
         cheapest_file = cli_refs / "cheapest_models.json"

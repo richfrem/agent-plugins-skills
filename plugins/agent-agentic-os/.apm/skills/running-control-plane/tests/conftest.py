@@ -20,6 +20,7 @@ Key Input Dependencies:
 
 Key Functions:
     - _legacy_default_proof_policy() -- autouse fixture (function scope)
+    - _orchestration_siblings_by_default() -- autouse fixture (session): default skills root = tmp install-shaped root
 """
 
 import sys
@@ -134,6 +135,23 @@ def _auto_human_signer(request, monkeypatch):
 
     monkeypatch.setattr(agent_control.ControlPlane, "transition", transition)
     yield
+
+
+@pytest.fixture(autouse=True, scope="session")
+def _orchestration_siblings_by_default(tmp_path_factory):
+    """Test-only seam (S1, spec G6): in an APM install, orchestrating-agent-work and cli-agent sit beside this skill.
+    In the source tree they do not (they live in the agent-orchestration package), and the source tree is not a
+    runtime location. Suites that build a coordinator or ControlPlane internally therefore get, as their default
+    skills root, a tmp folder shaped like an install (symlinks to the source siblings). Production code never
+    imports this module; tests that pass `skills_root` explicitly (including empty roots) are unaffected."""
+    from control_plane import orchestration_registry
+    from helpers.orchestration_fixture import make_skills_root
+
+    root = make_skills_root(tmp_path_factory.mktemp("orchestration-siblings"))
+    patch = pytest.MonkeyPatch()
+    patch.setattr(orchestration_registry, "_default_skills_root", lambda: root)
+    yield root
+    patch.undo()
 
 
 @pytest.fixture(autouse=True, scope="session")

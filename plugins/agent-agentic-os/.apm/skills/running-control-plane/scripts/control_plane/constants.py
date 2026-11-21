@@ -189,10 +189,10 @@ DELEGATION_STATUSES = (
 
 # --- ModelCatalogAdapter heuristics --------------------------------------------------
 DISALLOWED_MODEL_STATUSES = frozenset({"withdrawn", "deprecated", "unavailable"})
+# Catalog model statuses never offered in a review-selection model menu (review_options._catalog_models).
+MENU_HIDDEN_MODEL_STATUSES = DISALLOWED_MODEL_STATUSES | frozenset({"retired"})
 STRATEGY_FALLBACK_KEYS = ("complex_reasoning", "architecture", "default")
 
-# Repo-relative directory holding the cli-agent model catalogs (*-models.json and
-# cheapest_models.json), owned by the consolidated cli-agent skill in agent-orchestration.
 # Where the running install keeps its scripts. Agent-facing command hints name the CLI by this
 # absolute path, so they are right under any APM install (project .claude/skills, .agents/skills,
 # a global folder) and in the source tree alike; never a path that exists only in the monorepo.
@@ -214,7 +214,8 @@ SETUP_IDENTITY_CMD = f"python3 {SETUP_SCRIPTS_DIR / 'setup_ciba_identity.py'}"
 ISOLATION_SETUP_DOC = str(SETUP_SCRIPTS_DIR.parent / "references" / "isolation-setup.md")  # lives in the setup skill, which cites it
 REBUILD_RECOVERY_DOC = str(CONTROL_SKILL_DIR / "references" / "control-plane-rebuild-recovery.md")
 
-CLI_AGENT_CATALOG_DIR = ("plugins", "agent-orchestration", "skills", "cli-agent", "references")
+# The cli-agent model catalogs (*-models.json, cheapest_models.json) are read from the sibling cli-agent skill
+# through control_plane.orchestration_registry.cli_agent_references(); there is no repository-relative path.
 
 # Tool key -> (canonical cli_id, catalog filename). Aliases map many recognized spellings
 # of the same runtime tool onto one canonical id; unrecognized/missing tool_key falls back

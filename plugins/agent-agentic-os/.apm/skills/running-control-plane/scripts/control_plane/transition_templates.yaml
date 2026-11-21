@@ -24,29 +24,11 @@ session_change_control:
     failure_recovery: "If the observation cannot be classified or its worktree/ledger/evidence update cannot complete, record the exact blocker and recovery action, preserve the current lifecycle state, and do not silently continue."
   review_gate: "Before any review submission, verify every session-owned change is present and content-matched in the registered worktree; classify generated metadata separately and fail closed on missing, mismatched, or unclassified implementation changes."
 
+# Ownership: the execution strategies (graph, dual-loop, agent-swarm, direct, red-team-review, learning-loop)
+# are owned by the orchestrating-agent-work skill and registered ONLY in its references/patterns.json, read
+# through control_plane/orchestration_registry.py from the sibling skill installed by the agent-orchestration
+# APM dependency. List here only a strategy the orchestration skill does not own; never repeat a patterns.json key.
 strategy_artifacts:
-  graph:
-    artifact: docs/plans/work-tasks/<task-id>/<task-id>-graph-manifest.json
-    required: true
-    validator: ["python3", "{validator_script}", "{artifact}"]
-    validator_script: "skills/graph-planner/scripts/validate_manifest.py"
-  dual-loop:
-    artifact: handoffs/task_packet_<task-id>.md
-    required: true
-    validator: ["python3", "{validator_script}", "packet", "--packet-path", "{artifact}"]
-    validator_script: "plugins/agent-orchestration/skills/orchestrating-agent-work/scripts/agent_orchestrator.py"
-  agent-swarm:
-    artifact: docs/plans/work-tasks/<task-id>/<task-id>.job.md
-    required: true
-  direct:
-    artifact: docs/plans/work-tasks/<task-id>/<task-id>-implementation-plan.md
-    required: true
-  red-team-review:
-    artifact: docs/plans/work-tasks/<task-id>/<task-id>-threat-model.md
-    required: false
-  learning-loop:
-    artifact: docs/plans/work-tasks/<task-id>/<task-id>-eval-brief.md
-    required: false
   triple-loop-learning:
     artifact: docs/plans/work-tasks/<task-id>/<task-id>-learning-contract.md
     required: false
@@ -825,7 +807,7 @@ templates:
   from_state: INTERVIEW
   to_state: DRAFT_PLAN
   purpose: Confirm the interview outline is complete and hand it to DRAFT_PLAN. STANDARD work receives the full plan contract; TRIVIAL work receives a concise implementation plan without the standard-only planning questions.
-  next_steps_hint: "Record the applicable interview answers through the supported interview-question mechanism; each answer updates docs/plans/work-tasks/<task-id>/<task-id>-plan-outline.md. For TRIVIAL, capture only intent, smallest scope, verification and trivial-change evidence. For STANDARD, complete the full acceptance and planning-model questions. Then run: @AGENT_CONTROL_CMD@ coordinate-transition --task-id <task-id> --to DRAFT_PLAN. DRAFT_PLAN compiles the route-appropriate plan using native host plan mode (Claude /plan, Copilot @plan, Antigravity plan mode); for STANDARD tasks, evaluate execution topology via select-loop-strategy among peer patterns."
+  next_steps_hint: "Record the applicable interview answers through the supported interview-question mechanism; each answer updates docs/plans/work-tasks/<task-id>/<task-id>-plan-outline.md. For TRIVIAL, capture only intent, smallest scope, verification and trivial-change evidence. For STANDARD, complete the full acceptance and planning-model questions. Then run: @AGENT_CONTROL_CMD@ coordinate-transition --task-id <task-id> --to DRAFT_PLAN. DRAFT_PLAN compiles the route-appropriate plan using native host plan mode (Claude /plan, Copilot @plan, Antigravity plan mode); for STANDARD tasks, choose the execution strategy with the orchestrating-agent-work skill (references/strategy-selection.md, then references/graph-planning.md)."
   checklist:
   - Current task state is persisted as INTERVIEW
   - The route-appropriate interview questions and evidence are complete
@@ -855,7 +837,7 @@ templates:
   - create implementation worktree
   - push branch to origin
   guidance:
-    success: "TRIVIAL uses the short plan route: direct execution, concise plan, skip external reviewers. STANDARD retains the full planning contract: leverage native host plan mode and assess orchestration options via select-loop-strategy before submitting to PLAN_REVIEW."
+    success: "TRIVIAL uses the short plan route: direct execution, concise plan, skip external reviewers. STANDARD retains the full planning contract: leverage native host plan mode and choose the execution strategy with the orchestrating-agent-work skill (references/strategy-selection.md) before submitting to PLAN_REVIEW."
     denial: "The route-specific interview evidence is incomplete; do not promote TRIVIAL work to implementation until the smallest scope and focused verification are explicit."
   denial_message: 'Transition INTERVIEW -> DRAFT_PLAN denied: preconditions or required decisions not satisfied.'
   authority:

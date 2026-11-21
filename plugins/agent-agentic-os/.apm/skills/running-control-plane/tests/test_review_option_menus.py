@@ -70,7 +70,9 @@ def test_agy_model_and_effort_choices_come_from_the_cli(tmp_path):
 
 
 def test_unknown_runtime_models_fall_back_with_a_warning(tmp_path):
-    result = choices_for("model", runtime="codex", path=str(tmp_path), profile_path=tmp_path / "missing.json")
+    # isolated from the real cli-agent catalogs (empty skills root) as it is from the real profile (S1, B9)
+    result = choices_for("model", runtime="codex", path=str(tmp_path), profile_path=tmp_path / "missing.json",
+                         skills_root=tmp_path / "no-skills")
     assert result.items == [] and "cannot be validated" in result.warning
 
 

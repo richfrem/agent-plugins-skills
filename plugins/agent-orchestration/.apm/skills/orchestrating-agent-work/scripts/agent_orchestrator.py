@@ -16,12 +16,14 @@ Key Input Dependencies:
 
 Key Functions:
   - cmd_packet(): Create strategy packet from parameters
+  - cmd_validate_packet(): Validate an existing strategy packet (exit 0 valid, 1 invalid, 2 usage)
   - cmd_verify(): Check git diff against criteria
   - cmd_correct(): Generate correction/delta packet
   - cmd_retro(): Generate retrospective template
 
 Commands:
   packet    -> Generate strategy packet from inputs
+  validate-packet -> Validate an existing strategy packet (--packet-path)
   verify    -> Check worktree diff against criteria
   correct   -> Generate correction packet (delta)
   retro     -> Generate retrospective template
@@ -164,6 +166,53 @@ def cmd_packet(args: argparse.Namespace) -> None:
     out_file.write_text(packet)
     print(f"Packet generated: {out_file}")
 
+# Sections a strategy packet must carry with a non-empty body (the STRATEGY_TEMPLATE headings a worker needs).
+PACKET_REQUIRED_SECTIONS = ("Objective", "Implementation Tasks", "Acceptance Criteria")
+
+
+def packet_problems(text: str) -> List[str]:
+    """Reasons an existing strategy packet is not usable; empty when it is valid."""
+    lines = text.splitlines()
+    problems: List[str] = []
+    first = next((line.strip() for line in lines if line.strip()), "")
+    if not first.startswith("# Strategy Packet:") or not first[len("# Strategy Packet:"):].strip():
+        problems.append("the first line must be '# Strategy Packet: <id>'")
+    bodies = {}
+    current = None
+    for line in lines:
+        if line.startswith("## "):
+            current = line[3:].strip()
+            bodies.setdefault(current, [])
+        elif current is not None and line.strip():
+            bodies[current].append(line)
+    for section in PACKET_REQUIRED_SECTIONS:
+        if section not in bodies:
+            problems.append(f"missing section '## {section}'")
+        elif not bodies[section]:
+            problems.append(f"section '## {section}' is empty")
+    return problems
+
+
+def cmd_validate_packet(args: argparse.Namespace) -> None:
+    """Validate an existing strategy packet. Exit 0 valid, 1 invalid or unreadable (argparse exits 2 on usage)."""
+    path = Path(args.packet_path)
+    if not path.is_file():
+        print(f"INVALID: packet not found: {path}", file=sys.stderr)
+        sys.exit(1)
+    try:
+        text = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as exc:
+        print(f"INVALID: cannot read {path}: {exc}", file=sys.stderr)
+        sys.exit(1)
+    problems = packet_problems(text)
+    if problems:
+        print(f"INVALID: {path}", file=sys.stderr)
+        for problem in problems:
+            print(f"  - {problem}", file=sys.stderr)
+        sys.exit(1)
+    print(f"VALID: {path}")
+
+
 def cmd_verify(args: argparse.Namespace) -> None:
     """Verify worktree state."""
     print(f"Verifying {args.packet}...")
@@ -227,6 +276,10 @@ def main() -> None:
     p_packet.add_argument("--context", nargs="+", help="Paths to context files")
     p_packet.add_argument("--instructions", required=True, help="Task instructions string or path to markdown file")
     
+    # Validate an existing packet (the dual-loop plan-artifact validator in references/patterns.json)
+    p_validate = subparsers.add_parser("validate-packet", help="Validate an existing strategy packet (exit 0 valid, 1 invalid, 2 usage)")
+    p_validate.add_argument("--packet-path", required=True, help="Path to the strategy packet to validate")
+
     # Verify
     p_verify = subparsers.add_parser("verify")
     p_verify.add_argument("--packet", required=True, help="Path to strategy packet")
@@ -246,6 +299,7 @@ def main() -> None:
     args = parser.parse_args()
     
     if args.command == "packet": cmd_packet(args)
+    elif args.command == "validate-packet": cmd_validate_packet(args)
     elif args.command == "verify": cmd_verify(args)
     elif args.command == "correct": cmd_correct(args)
     elif args.command == "retro": cmd_retro(args)
