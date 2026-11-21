@@ -185,6 +185,61 @@ class ConcurrentModificationError(Exception):
 # longer declares its own gate registry.
 
 
+OUTLINE_MARKER_START = "<!-- control-plane:outline:start -->"
+OUTLINE_MARKER_END = "<!-- control-plane:outline:end -->"
+
+
+class OutlineMarkerError(ValueError):
+    """Raised when plan-outline markers are duplicated, unmatched, out-of-order, or inside a fenced code block (B5)."""
+
+
+def merge_outline_block(existing: str, block: str) -> str:
+    """Safely merge a generated outline block into an existing Markdown file using B5 markers."""
+    lines = existing.splitlines()
+    in_fence = False
+    fence_char = ""
+    start_indices: List[int] = []
+    end_indices: List[int] = []
+
+    for idx, line in enumerate(lines):
+        stripped = line.strip()
+        if stripped.startswith("```") or stripped.startswith("~~~"):
+            ch = stripped[:3]
+            if not in_fence:
+                in_fence = True
+                fence_char = ch
+            elif ch == fence_char:
+                in_fence = False
+                fence_char = ""
+            continue
+        if OUTLINE_MARKER_START in line or OUTLINE_MARKER_END in line:
+            if in_fence:
+                raise OutlineMarkerError(
+                    f"Outline marker found inside a fenced code block at line {idx + 1}; refusing to modify file."
+                )
+            if OUTLINE_MARKER_START in line:
+                start_indices.append(idx)
+            if OUTLINE_MARKER_END in line:
+                end_indices.append(idx)
+
+    if len(start_indices) == 0 and len(end_indices) == 0:
+        marked = f"{OUTLINE_MARKER_START}\n{block.rstrip()}\n{OUTLINE_MARKER_END}\n"
+        if not existing.strip():
+            return marked
+        return existing.rstrip("\n") + "\n\n" + marked
+
+    if len(start_indices) != 1 or len(end_indices) != 1 or start_indices[0] >= end_indices[0]:
+        raise OutlineMarkerError(
+            f"Invalid outline markers (starts={len(start_indices)}, ends={len(end_indices)}); refusing to modify file."
+        )
+
+    s_idx, e_idx = start_indices[0], end_indices[0]
+    before = lines[: s_idx + 1]
+    after = lines[e_idx:]
+    merged = before + block.rstrip("\n").splitlines() + after
+    return "\n".join(merged) + "\n"
+
+
 class ControlPlane:
     """Controller and state machine manager for task lifecycles."""
 
@@ -362,13 +417,14 @@ class ControlPlane:
     def update_interview_plan_outline(
         self, task_id: str, question_id: str, answer: str, actor: str = "interviewer"
     ) -> Dict[str, Any]:
-        """Update the canonical outline and project its Markdown review artifact."""
+        """Update the canonical outline and project its Markdown review artifact (B5: preserves hand-written notes)."""
         task = self.get_task(task_id)
         if not task:
             raise ValueError(f"Task not found: {task_id}")
-        if self._read_current_state_for_update(task_id) != STATE_INTERVIEW:
+        current_state = self._read_current_state_for_update(task_id)
+        if current_state not in (STATE_INTAKE, STATE_INTERVIEW):
             raise PersistenceInvariantViolation(
-                f"Interview outline updates require current state INTERVIEW for task_id='{task_id}'."
+                f"Interview outline updates require current state INTAKE for task_id='{task_id}'."
             )
         if not answer or not answer.strip():
             raise ValueError("Interview outline answers must be non-empty.")
@@ -410,9 +466,12 @@ class ControlPlane:
             f"- **{item['bullet_type']}** (`{item['question_id']}`): {item['text']}"
             for item in bullets
         )
+        block = "\n".join(lines)
+        existing_text = artifact_path.read_text(encoding="utf-8") if artifact_path.is_file() else ""
+        merged_text = merge_outline_block(existing_text, block)
         temporary = artifact_path.with_name(f".{artifact_path.name}.{os.getpid()}.tmp")
         try:
-            temporary.write_text("\n".join(lines) + "\n", encoding="utf-8")
+            temporary.write_text(merged_text, encoding="utf-8")
             os.replace(temporary, artifact_path)
         finally:
             if temporary.exists():
@@ -1427,8 +1486,8 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     p_ct.add_argument("--key", default="~/.ssh/agentic-os_signing", help="Your private signing key (proof edges, interactive terminal)")
 
-    # Compatibility alias: transition routes directly through TransitionCoordinator
-    p_tr = sub.add_parser("transition")
+    # Compatibility alias: transition / go routes directly through TransitionCoordinator
+    p_tr = sub.add_parser("transition", aliases=["go"])
     p_tr.add_argument("--task-id", required=True)
     p_tr.add_argument("--to", required=True)
     p_tr.add_argument("--actor", default="controller")
@@ -1620,7 +1679,7 @@ def _enforce_human_confirmed(args: argparse.Namespace) -> None:
     zero human authorization -- that edge's approval.required=false made it legal per
     the YAML, which is exactly the gap this closes: the YAML's per-edge setting is no
     longer sufficient on its own, this check applies uniformly on top of it."""
-    if args.subcommand in ("coordinate-transition", "transition"):
+    if args.subcommand in ("coordinate-transition", "transition", "go"):
         if getattr(args, "to", None) in _PROOF_TARGET_STATES:
             return  # cryptographic-proof edges: the signature is the only authority; this flag is ignored
         human_confirmed = getattr(args, "human_confirmed", None)
@@ -1654,7 +1713,7 @@ def _dispatch_command(cp: ControlPlane, args: argparse.Namespace):
         print(f"Task {args.task_id} initialized in INTAKE (type={args.task_type}).")
     elif args.subcommand == "recommend-model":
         print(json.dumps(cp.resolve_recommended_model(args.runtime, args.tier), indent=2))
-    elif args.subcommand in ("coordinate-transition", "transition"):
+    elif args.subcommand in ("coordinate-transition", "transition", "go"):
         answers_dict = json.loads(args.answers) if getattr(args, "answers", None) else None
         from control_plane.tty_signer import make_tty_signer, terminal_is_interactive
 

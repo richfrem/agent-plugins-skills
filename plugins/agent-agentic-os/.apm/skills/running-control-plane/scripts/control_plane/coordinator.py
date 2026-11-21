@@ -372,12 +372,22 @@ class TransitionCoordinator:
             self._out.write("\n")
 
             if interactive:
-                # Sequential presentation: prompt 1 question at a time
+                # B21: an empty answer re-prompts instead of aborting the sequence; on a question
+                # with a recommended default, Enter accepts that default.
                 prompt_str = f"{qid}: Select option [Recommended: {default_opt}]: "
-                user_input = self._input_fn(prompt_str).strip()
+                user_input = ""
+                for _attempt in range(5):
+                    user_input = self._input_fn(prompt_str).strip()
+                    if user_input:
+                        break
+                    if default_opt:
+                        user_input = default_opt
+                        self._out.write(f"  (Enter: using the recommended answer '{default_opt}')\n")
+                        break
+                    self._out.write("  An answer is required here: type its number or its text.\n")
                 if not user_input:
                     raise TransitionCoordinatorError(
-                        f"Missing required response for question '{qid}'. Empty input rejected."
+                        f"Missing required response for question '{qid}' after 5 empty answers."
                     )
                 # Match by number or text
                 try:
@@ -508,14 +518,11 @@ class TransitionCoordinator:
                 )
             )
 
-        # 7b. Mandatory per-transition guidance-compliance confirmation (added per explicit
-        # human request, 2026-09-13): every non-proof transition requires an explicit,
-        # separate confirmation that the advisory guidance/checklist/questions above were
-        # actually read and followed -- not inferred from having answered the edge's own
-        # questions. A "no" answer, or no answer at all in interactive mode, blocks ALL
-        # further transitions for this task (guidance_block_reason) until a human explicitly
-        # clears it via clear-guidance-block.
-        if "guidance_compliance_confirmation" in persisted_answers:
+        # 7b. Guidance-compliance confirmation: removed on agent_or_human edges (ceremony where
+        # the agent answered itself, S5 / L11); retained only on human_only non-proof edges.
+        if template.authorized_actor == AUTHORIZED_ACTOR_AGENT_OR_HUMAN:
+            pass
+        elif "guidance_compliance_confirmation" in persisted_answers:
             # Already answered and persisted from an earlier staged decision for this
             # exact occupancy (the same mechanism every other question already honors
             # via persisted_answers/ctx["stage_answers"]) -- consistent with the rest
@@ -983,7 +990,7 @@ class TransitionCoordinator:
                 for helper in edge.get("helper_commands", []):
                     self._out.write(f"  Helper: {helper}\n")
         self._out.write(
-            f"\nFull pipeline reference: {CONTROL_SCRIPTS_DIR.parent / 'references' / 'intake' / 'workflow.md'}\n"
+            f"\nFull pipeline reference: {CONTROL_SCRIPTS_DIR.parent / 'references' / 'modes' / 'intake.md'}\n"
             f"Diagrams: {CONTROL_SCRIPTS_DIR.parent / 'references' / 'diagrams'}/control-plane-architecture.mermaid, "
             "control-plane-pipeline-happy-path.mermaid, control-plane-pipeline.mermaid\n"
         )

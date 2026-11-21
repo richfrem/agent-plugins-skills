@@ -340,22 +340,25 @@ class TransitionRegistry:
 
     @staticmethod
     def _edge_guidance(template: TransitionTemplate, task_id_placeholder: str) -> Dict[str, Any]:
+        # B18 / B19: short `python3 -m control_plane` command form (<= 100 chars after `&&`),
+        # with `--human-confirmed` included only on edges that consume a typed-quote human decision.
+        prefix = f"cd {CONTROL_SCRIPTS_DIR} && python3 -m control_plane"
         if template.requires_cryptographic_proof:
             command = (
-                "" + AGENT_CONTROL_CMD + " "
-                f"coordinate-transition --task-id {task_id_placeholder} --to {template.to_state} "
-                "--interactive --key <path-to-signing-key>"
+                f"{prefix} transition --task-id {task_id_placeholder} --to {template.to_state} --interactive"
             )
         elif template.authorized_actor == AUTHORIZED_ACTOR_HUMAN_ONLY:
             command = (
-                "" + AGENT_CONTROL_CMD + " "
-                f"coordinate-transition --task-id {task_id_placeholder} --to {template.to_state} --interactive"
+                f"{prefix} transition --task-id {task_id_placeholder} --to {template.to_state} --interactive"
+            )
+        elif template.human_questions:
+            command = (
+                f"{prefix} go --task-id {task_id_placeholder} --to {template.to_state} "
+                "--human-confirmed 'HUMAN-CONFIRMED:'"
             )
         else:
             command = (
-                "" + AGENT_CONTROL_CMD + " "
-                f"coordinate-transition --task-id {task_id_placeholder} --to {template.to_state} "
-                "--human-confirmed 'HUMAN-CONFIRMED: <quote>'"
+                f"{prefix} transition --task-id {task_id_placeholder} --to {template.to_state}"
             )
         configured = dict(template.guidance or {})
         helpers = list(configured.get("helper_commands", []))

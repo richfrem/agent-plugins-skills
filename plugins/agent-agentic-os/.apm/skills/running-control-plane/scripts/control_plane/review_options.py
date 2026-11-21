@@ -43,12 +43,21 @@ RUNTIME_PROBES: Dict[str, Optional[List[str]]] = {
 EFFORT_LEVELS = ("low", "medium", "high")
 PROBE_TIMEOUT_SECONDS = 20
 PROFILE_RELATIVE_PATH = "context/agent-capability-profile.json"
-# Effort levels verified from the runtime's own help (`agy --help`: --effort low|medium|high); other
-# runtimes are not listed here because nothing verifies them, so their effort question is free text + warning.
-VERIFIED_EFFORTS: Dict[str, tuple] = {"agy": ("low", "medium", "high")}
+# Effort levels verified from each runtime's own help (`agy --help`, `claude --help`).
+VERIFIED_EFFORTS: Dict[str, tuple] = {
+    "agy": ("low", "medium", "high"),
+    "claude": ("low", "medium", "high", "xhigh", "max"),
+    "host-subagents": ("low", "medium", "high", "xhigh", "max"),
+}
+HOST_SUBAGENTS = "host-subagents"
 # Model catalogs in the sibling cli-agent skill (installed beside this one by APM; no repository paths, B9).
-CATALOG_FILES: Dict[str, str] = {"claude": "claude-models.json", "codex": "codex-models.json",
-                                 "copilot": "copilot-models.json", "agy": "agy-models.json"}
+CATALOG_FILES: Dict[str, str] = {
+    "claude": "claude-models.json",
+    "codex": "codex-models.json",
+    "copilot": "copilot-models.json",
+    "agy": "agy-models.json",
+    HOST_SUBAGENTS: "claude-models.json",
+}
 
 
 def _catalog_models(runtime: str, skills_root: Optional[Path] = None) -> List[str]:
@@ -166,9 +175,12 @@ def choices_for(kind: str, runtime: Optional[str] = None, path: Optional[str] = 
     answer is unchecked. Model order: the CLI's own probe, then the capability profile, then the catalog in the
     sibling cli-agent skill (`skills_root` overrides the installed skills folder; tests pass a fixture root)."""
     if kind == "runtime":
-        items = [{"id": name, "display": name, "installed": shutil.which(name, path=path) is not None} for name in RUNTIME_PROBES]
-        if not any(i["installed"] for i in items):
-            return ChoiceSet([], "no supported CLI (codex, claude, agy, copilot) was found on PATH; the answer cannot be validated")
+        items = [{
+            "id": HOST_SUBAGENTS,
+            "installed": True,
+            "display": f"{HOST_SUBAGENTS} (this session's own fresh-context, read-only subagents; no CLI)",
+        }]
+        items += [{"id": name, "display": name, "installed": shutil.which(name, path=path) is not None} for name in RUNTIME_PROBES]
         return ChoiceSet(items)
     if kind == "model":
         if runtime in RUNTIME_PROBES and RUNTIME_PROBES[runtime] is not None:
@@ -177,8 +189,12 @@ def choices_for(kind: str, runtime: Optional[str] = None, path: Optional[str] = 
                 return ChoiceSet([{"id": m["id"], "display": m["display"], "installed": True} for m in probed["models"]])
         ids = _profile_models(runtime or "", profile_path)
         if ids:
+            if runtime == HOST_SUBAGENTS and "inherit" not in ids:
+                ids = ["inherit"] + ids
             return ChoiceSet([{"id": i, "display": i, "installed": True} for i in ids])
         ids = _catalog_models(runtime or "", skills_root)
+        if runtime == HOST_SUBAGENTS:
+            ids = ["inherit"] + [i for i in ids if i != "inherit"]
         if ids:
             return ChoiceSet([{"id": i, "display": i, "installed": True} for i in ids])
         return ChoiceSet([], f"no model list is available for '{runtime}' (no probe, no capability profile entry, no cli-agent catalog); the answer cannot be validated")
