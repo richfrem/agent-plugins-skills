@@ -74,7 +74,7 @@ Parallel fan-out appears as several `parallel_read` nodes started in one batch (
 
 ## What the runner enforces and what it only instructs
 
-Enforced by code: manifest SHA binding, schema and topology validation, `verifier_hash` of the first file named in a command, clean tree and unchanged HEAD after read batches, `mutation_targets` and `forbidden_paths` as git reports them, ordered mutations, one commit per mutation, rollback to the start commit on failure.
+Enforced by code: manifest SHA binding, schema and topology validation, `verifier_hash` of the first file named in a command, a clean tree and unchanged HEAD after read batches (**limited change detection**: it cannot see ignored files, writes outside the repository, or an already-modified file changing again, and it reports the affected batch, not the offending node), `mutation_targets` and `forbidden_paths` as git reports them, ordered mutations, one commit per mutation, rollback to the start commit on failure.
 
 Only instructed (the worker prompt, not the runner): which tools a model node may use, never running `git`, never writing outside the worktree. Writes to gitignored paths or outside the repository are invisible to the runner. A worker given `python -m pytest` can run arbitrary Python. Treat the human code review as the control for those limits, and give workers the narrowest tool list that works.
 

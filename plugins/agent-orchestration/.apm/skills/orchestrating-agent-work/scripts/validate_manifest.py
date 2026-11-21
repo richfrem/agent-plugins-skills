@@ -401,6 +401,41 @@ def validate_graph_topology(manifest: Dict[str, Any], check_approval_none: bool 
     return errors
 
 
+def advisory_warnings(manifest: Dict[str, Any]) -> List[str]:
+    """Advisory planning warnings (never errors; they do not change the exit code).
+
+    Graph planning principle: orchestration effort must stay proportionate to the work. A chain of
+    three or more ordered mutations with no parallel branch is a serial chain, which a direct run or a
+    supervised dual-loop handles with far less machinery.
+    """
+    nodes = [n for n in manifest.get("nodes", []) if isinstance(n, dict) and isinstance(n.get("id"), str)]
+    node_map = {n["id"]: n for n in nodes}
+    mutations = [n for n in nodes if n.get("type") == "sequential_mutation"]
+    if len(mutations) < 3:
+        return []
+    warnings: List[str] = []
+    reads = [n["id"] for n in nodes if n.get("type") == "parallel_read"]
+    has_fan_out = False
+    for i, a in enumerate(reads):
+        for b in reads[i + 1:]:
+            if a not in collect_ancestors(b, node_map) and b not in collect_ancestors(a, node_map):
+                has_fan_out = True
+                break
+        if has_fan_out:
+            break
+    if not has_fan_out:
+        warnings.append(
+            f"WARNING: {len(mutations)} sequential mutations and 0 parallel branches: graph overhead likely "
+            "exceeds its benefit. Consider direct or dual-loop."
+        )
+    caller = manifest.get("caller")
+    if not (isinstance(caller, dict) and caller.get("planning_notes")):
+        warnings.append(
+            "WARNING: no caller.planning_notes: record the shape of the graph and the overhead-versus-gain reasoning."
+        )
+    return warnings
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Deterministic Graph Manifest Validator")
     parser.add_argument("manifest", help="Path to graph-manifest.json file")
@@ -443,6 +478,8 @@ def main() -> None:
         sys.exit(1)
 
     print(f"PASS: Manifest '{manifest.get('graph_id')}' (v{manifest.get('version')}) is structurally valid.")
+    for warning in advisory_warnings(manifest):
+        print(warning)
     sys.exit(0)
 
 

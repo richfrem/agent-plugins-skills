@@ -9,6 +9,7 @@ Parallel multi-agent execution for batch operations, independent work packages, 
 - **Background stdin**: Append `< /dev/null` to background commands to prevent `SIGTTIN` hangs.
 - **Idempotence**: Post-processing commands must be safe to rerun with `--resume`.
 - **Concurrency caps**: Limit Copilot CLI to `--workers 2` to prevent throttling; Gemini/Claude supports 5-10.
+- **Shared workdir**: Workers share `--workdir`. Declare each unit's read, write and resource sets; run in one workdir only when writes are provably disjoint, otherwise give each writer its own workspace. A swarm does not inherit the graph runner's approval binding or mutation boundaries unless this document says so.
 - **Tool Restrictions**: Worker subprocesses must not execute `git` write commands directly.
 
 ## Quick start
