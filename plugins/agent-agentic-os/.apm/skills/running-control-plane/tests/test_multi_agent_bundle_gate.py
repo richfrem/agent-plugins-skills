@@ -38,7 +38,7 @@ def test_full_intake_to_approval_lifecycle(tmp_path, monkeypatch):
     # Task 1's artifact gate is intentional: provide real test-local artifacts
     # instead of weakening the DRAFT_PLAN review contract.
     plan_dir = tmp_path / "docs" / "plans"
-    plan_dir.mkdir(parents=True)
+    plan_dir.mkdir(parents=True, exist_ok=True)
     (plan_dir / f"{task_id}-spec.md").write_text("# Test specification\n", encoding="utf-8")
     (plan_dir / f"{task_id}-implementation-plan.md").write_text("# Test implementation plan\n", encoding="utf-8")
 
@@ -92,7 +92,7 @@ def test_skip_multi_agent_review_gate(tmp_path, monkeypatch):
     stage_interview_answers(cp, task_id)
     cp.transition(task_id=task_id, to_state=STATE_DRAFT_PLAN, actor="agent", reason="Draft compiled")
     plan_dir = tmp_path / "docs" / "plans"
-    plan_dir.mkdir(parents=True)
+    plan_dir.mkdir(parents=True, exist_ok=True)
     (plan_dir / f"{task_id}-spec.md").write_text("# Test specification\n", encoding="utf-8")
     (plan_dir / f"{task_id}-implementation-plan.md").write_text("# Test implementation plan\n", encoding="utf-8")
 

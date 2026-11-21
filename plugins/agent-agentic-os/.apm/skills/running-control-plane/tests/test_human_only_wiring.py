@@ -457,6 +457,12 @@ def test_piped_or_scripted_answers_cannot_authorize_gate1_in_strict_mode(tmp_pat
 def test_missing_plan_artifacts_give_an_actionable_error_not_a_request(tmp_path):
     task = "gate1-noplan"
     sim = _reach_awaiting_approval(tmp_path, task)
+    # Remove the work-tasks plan artifacts written during DRAFT_PLAN setup so Gate 1 sees them missing.
+    task_dir = sim.control_plane.repo_root / "docs" / "plans" / "work-tasks" / task
+    for name in (f"{task}-spec.md", f"{task}-implementation-plan.md"):
+        p = task_dir / name
+        if p.exists():
+            p.unlink()
     coord = _coord(sim)
     with pytest.raises(TransitionCoordinatorError) as excinfo:
         coord.coordinate_transition(task_id=task, to_state="APPROVED", actor="human", reason="x", interactive=True)

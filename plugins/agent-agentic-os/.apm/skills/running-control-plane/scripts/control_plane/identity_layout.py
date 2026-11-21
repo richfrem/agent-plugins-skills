@@ -72,6 +72,19 @@ def canonical_repo_root(start: Union[str, Path] = ".") -> Path:
     return common_path.parent if common_path.name == ".git" else start
 
 
+def is_inside_skill_folder(path: Union[str, Path]) -> bool:
+    """Return True if path is a skill folder or sits inside one (G14 / B22)."""
+    p = Path(path).resolve()
+    parts = p.parts
+    for idx in range(len(parts) - 1):
+        if parts[idx] == ".apm" and parts[idx + 1] == "skills":
+            return True
+    for candidate in (p, *p.parents):
+        if (candidate / "SKILL.md").is_file():
+            return True
+    return False
+
+
 def default_layout(repo_root: Union[str, Path]) -> IdentityLayout:
     """The standard layout under `<repo_root>/context/identity`."""
     return IdentityLayout(root=Path(repo_root) / "context" / "identity")

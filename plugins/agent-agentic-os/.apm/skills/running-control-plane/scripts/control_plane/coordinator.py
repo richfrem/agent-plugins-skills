@@ -880,11 +880,12 @@ class TransitionCoordinator:
         strat_art_path = None
         if strat_art_pattern:
             strat_art_rel = strat_art_pattern.replace("<task-id>", task_id)
+            art_name = Path(strat_art_rel).name
             candidates = [
                 strat_art_rel,
-                f"docs/plans/work-tasks/{task_id}/{Path(strat_art_rel).name}",
-                f"docs/plans/{task_id}-{Path(strat_art_rel).name}",
-                Path(strat_art_rel).name,
+                f"docs/plans/work-tasks/{task_id}/{art_name}",
+                f"docs/plans/{art_name}" if art_name.startswith(f"{task_id}-") else f"docs/plans/{task_id}-{art_name}",
+                art_name,
             ]
             if declared_strategy == "graph":
                 candidates.extend([

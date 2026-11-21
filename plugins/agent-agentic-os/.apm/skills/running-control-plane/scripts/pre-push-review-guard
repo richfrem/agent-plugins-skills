@@ -216,7 +216,13 @@ for CANDIDATE in \
         break
     fi
 done
-PYTHON_BIN="$(command -v python3 || command -v python || true)"
+PYTHON_BIN="${APM_HOOK_PYTHON:-}"
+if [ -z "$PYTHON_BIN" ] && [ -x "$REPO_ROOT/.venv/bin/python" ]; then
+    PYTHON_BIN="$REPO_ROOT/.venv/bin/python"
+fi
+if [ -z "$PYTHON_BIN" ]; then
+    PYTHON_BIN="$(command -v python3 || command -v python || true)"
+fi
 if [ -z "$VERIFIER" ] || [ -z "$PYTHON_BIN" ]; then
     echo ""
     echo "❌ GIT PUSH BLOCKED: Cannot Authenticate Signed Gates!"

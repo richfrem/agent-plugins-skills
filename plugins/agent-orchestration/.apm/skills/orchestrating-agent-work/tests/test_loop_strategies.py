@@ -43,28 +43,31 @@ def evaluate_loop_strategy(task_description: str, has_dependencies: bool = False
 class TestLoopStrategiesDecisionTree(unittest.TestCase):
 
     def setUp(self):
-        """Point at the real agent-orchestration skills/ directory to audit."""
-        self.skills_dir = PLUGIN_ROOT / "skills"
+        """Point at the consolidated orchestrating-agent-work skill root."""
+        self.skill_root = PLUGIN_ROOT
+        self.references_dir = self.skill_root / "references"
 
     def test_all_expected_skills_exist(self):
-        """Assert all core loop, graph planning, and execution skills exist in the plugin."""
-        expected_skills = [
-            "orchestrator",
-            "select-loop-strategy",
-            "dual-loop",
-            "learning-loop",
-            "co-pilot-loop",
-            "agent-swarm",
-            "red-team-review",
-            "triple-loop-learning",
-            "graph-planner",
-            "graph-execution",
+        """Assert the consolidated skill and all core strategy/graph references exist."""
+        self.assertTrue(
+            (self.skill_root / "SKILL.md").exists(),
+            "Expected consolidated orchestrating-agent-work/SKILL.md does not exist",
+        )
+        expected_references = [
+            "routing-and-closure.md",
+            "strategy-selection.md",
+            "strategy-dual-loop.md",
+            "learning-loop.md",
+            "strategy-agent-swarm.md",
+            "strategy-red-team-review.md",
+            "graph-planning.md",
+            "graph-execution.md",
         ]
-        for skill_name in expected_skills:
-            skill_path = self.skills_dir / skill_name / "SKILL.md"
+        for ref_name in expected_references:
+            ref_path = self.references_dir / ref_name
             self.assertTrue(
-                skill_path.exists(),
-                f"Expected skill {skill_name}/SKILL.md does not exist",
+                ref_path.exists(),
+                f"Expected reference references/{ref_name} does not exist",
             )
 
     def test_routing_decision_tree_patterns(self):
@@ -93,55 +96,50 @@ class TestLoopStrategiesDecisionTree(unittest.TestCase):
         self.assertEqual(pattern, "red-team-review", "Adversarial audit must select pattern = 'red-team-review'")
 
     def test_skill_frontmatter_and_line_budgets(self):
-        """Assert all skills have valid YAML frontmatter and line budget <= 300 lines."""
-        for skill_dir in self.skills_dir.iterdir():
-            if not skill_dir.is_dir():
-                continue
-            skill_md = skill_dir / "SKILL.md"
-            self.assertTrue(skill_md.exists(), f"Missing SKILL.md in {skill_dir}")
-            content = skill_md.read_text(encoding="utf-8")
-            lines = content.splitlines()
-            
-            # Line budget check: must be <= 300 lines for lean context
-            self.assertLessEqual(
-                len(lines), 300,
-                f"Skill {skill_dir.name} has {len(lines)} lines (exceeds 300 lines)",
-            )
+        """Assert the consolidated skill has valid YAML frontmatter and line budget <= 300 lines."""
+        skill_md = self.skill_root / "SKILL.md"
+        self.assertTrue(skill_md.exists(), f"Missing SKILL.md in {self.skill_root}")
+        content = skill_md.read_text(encoding="utf-8")
+        lines = content.splitlines()
 
-            # Frontmatter check
-            self.assertTrue(content.startswith("---\n"), f"Missing frontmatter in {skill_dir.name}")
-            frontmatter_match = re.search(r"^---\n(.*?)\n---", content, re.DOTALL)
-            self.assertIsNotNone(frontmatter_match, f"Malformed frontmatter in {skill_dir.name}")
-            fm_text = frontmatter_match.group(1)
+        # Line budget check: must be <= 300 lines for lean context
+        self.assertLessEqual(
+            len(lines), 300,
+            f"Skill {self.skill_root.name} has {len(lines)} lines (exceeds 300 lines)",
+        )
 
-            # Name match
-            name_match = re.search(r"^name:\s*([a-z0-9-]+)", fm_text, re.MULTILINE)
-            self.assertIsNotNone(name_match, f"Missing or invalid name in {skill_dir.name}")
-            self.assertEqual(name_match.group(1), skill_dir.name, "Skill name does not match directory")
+        # Frontmatter check
+        self.assertTrue(content.startswith("---\n"), f"Missing frontmatter in {self.skill_root.name}")
+        frontmatter_match = re.search(r"^---\n(.*?)\n---", content, re.DOTALL)
+        self.assertIsNotNone(frontmatter_match, f"Malformed frontmatter in {self.skill_root.name}")
+        fm_text = frontmatter_match.group(1)
 
-            # Description check: third-person (no 'I ' or 'My ')
-            desc_match = re.search(r"^description:\s*[\"']?(.*?)[\"']?$", fm_text, re.MULTILINE)
-            self.assertIsNotNone(desc_match, f"Missing description in {skill_dir.name}")
-            desc_text = desc_match.group(1)
-            self.assertFalse(desc_text.lower().startswith("i "), f"Description must be third-person in {skill_dir.name}")
+        # Name match
+        name_match = re.search(r"^name:\s*([a-z0-9-]+)", fm_text, re.MULTILINE)
+        self.assertIsNotNone(name_match, f"Missing or invalid name in {self.skill_root.name}")
+        self.assertEqual(name_match.group(1), "orchestrating-agent-work", "Skill name does not match canonical name")
+
+        # Description check: third-person (no 'I ' or 'My '), supports folded YAML scalar ('>')
+        desc_match = re.search(r"^description:\s*(?:>\s*\n\s*)?[\"']?(.*?)[\"']?$", fm_text, re.MULTILINE)
+        self.assertIsNotNone(desc_match, f"Missing description in {self.skill_root.name}")
+        desc_text = desc_match.group(1).strip()
+        self.assertFalse(desc_text.lower().startswith("i "), f"Description must be third-person in {self.skill_root.name}")
 
     def test_evals_schema_compliance(self):
-        """Assert every skill with evals.json uses the should_trigger boolean schema."""
-        for skill_dir in self.skills_dir.iterdir():
-            if not skill_dir.is_dir():
-                continue
-            evals_file = skill_dir / "evals" / "evals.json"
-            if evals_file.exists():
-                data = json.loads(evals_file.read_text(encoding="utf-8"))
-                self.assertIsInstance(data, list, f"{evals_file} must contain a JSON list")
-                for idx, entry in enumerate(data):
-                    self.assertIn("prompt", entry, f"Entry {idx} missing 'prompt' in {evals_file}")
-                    self.assertIn("should_trigger", entry, f"Entry {idx} missing 'should_trigger' in {evals_file}")
-                    self.assertIsInstance(entry["should_trigger"], bool, f"'should_trigger' must be boolean in {evals_file}")
+        """Assert evals.json uses the should_trigger boolean schema."""
+        evals_file = self.skill_root / "evals" / "evals.json"
+        self.assertTrue(evals_file.exists(), f"Missing {evals_file}")
+        data = json.loads(evals_file.read_text(encoding="utf-8"))
+        self.assertIsInstance(data, list, f"{evals_file} must contain a JSON list")
+        self.assertGreater(len(data), 0, f"{evals_file} must not be empty")
+        for idx, entry in enumerate(data):
+            self.assertIn("prompt", entry, f"Entry {idx} missing 'prompt' in {evals_file}")
+            self.assertIn("should_trigger", entry, f"Entry {idx} missing 'should_trigger' in {evals_file}")
+            self.assertIsInstance(entry["should_trigger"], bool, f"'should_trigger' must be boolean in {evals_file}")
 
     def test_learning_loop_does_not_contain_triple_loop_typo(self):
         """Verify the copy-paste typo in learning-loop Option B is fixed."""
-        learning_loop_md = self.skills_dir / "learning-loop" / "SKILL.md"
+        learning_loop_md = self.references_dir / "learning-loop.md"
         content = learning_loop_md.read_text(encoding="utf-8")
         self.assertNotIn(
             "Open the `triple-loop-learning` SKILL",
@@ -151,10 +149,10 @@ class TestLoopStrategiesDecisionTree(unittest.TestCase):
 
     def test_orchestrator_removes_dead_cli_warnings(self):
         """Verify orchestrator does not advertise unimplemented scan/bundle subcommands."""
-        orch_md = self.skills_dir / "orchestrator" / "SKILL.md"
-        content = orch_md.read_text(encoding="utf-8")
-        self.assertNotIn("A `scan` CLI subcommand is not currently implemented", content)
-        self.assertNotIn("A `bundle` CLI subcommand is not currently implemented", content)
+        for md_file in (self.skill_root / "SKILL.md", self.references_dir / "routing-and-closure.md"):
+            content = md_file.read_text(encoding="utf-8")
+            self.assertNotIn("A `scan` CLI subcommand is not currently implemented", content)
+            self.assertNotIn("A `bundle` CLI subcommand is not currently implemented", content)
 
 
 if __name__ == "__main__":

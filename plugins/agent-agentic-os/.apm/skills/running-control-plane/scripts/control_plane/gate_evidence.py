@@ -72,13 +72,27 @@ def _database_file_problems(db: Path, anchor: Path) -> List[str]:
     return []
 
 
+def _proof_required_edges(conn: sqlite3.Connection) -> set:
+    """Return the set of (from_state, to_state) edges requiring cryptographic proof.
+    Reads from TransitionRegistry when PyYAML is available, otherwise derives from valid_transitions
+    (all edges into APPROVED, VERIFY_EXIT, DONE) so verify_gate_evidence.py runs under stdlib Python."""
+    try:
+        from control_plane.registry import TransitionRegistry
+
+        return set(TransitionRegistry.load_default().proof_required_edges())
+    except ImportError:
+        rows = conn.execute(
+            "SELECT from_state, to_state FROM valid_transitions WHERE to_state IN ('APPROVED', 'VERIFY_EXIT', 'DONE')"
+        ).fetchall()
+        return {(r[0], r[1]) for r in rows}
+
+
 # Read the branch's task and its stored signed-gate evidence (read-only)
 def _evidence_history_problems(conn: sqlite3.Connection, task_id: str, evidence: list) -> List[str]:
     """Match every proof-bearing history edge to one consumed, content-bound request."""
-    from control_plane.registry import TransitionRegistry
     from control_plane.ssh_signing import ChallengeError, derive_challenge_from_row
 
-    registry = TransitionRegistry.load_default()
+    proof_edges = _proof_required_edges(conn)
     problems = []
     expected_requests = set()
     by_request = {row[0]: row for row in evidence}
@@ -88,8 +102,7 @@ def _evidence_history_problems(conn: sqlite3.Connection, task_id: str, evidence:
     ).fetchall()
     occupancy = None
     for transition_id, from_state, to_state in history:
-        template = registry.get_template(from_state, to_state)
-        if template and template.requires_cryptographic_proof:
+        if (from_state, to_state) in proof_edges:
             requests = conn.execute(
                 "SELECT request_id, jti FROM transition_request WHERE task_id = ? "
                 "AND from_state = ? AND to_state = ? AND occupancy_id = ? AND status = 'CONSUMED'",

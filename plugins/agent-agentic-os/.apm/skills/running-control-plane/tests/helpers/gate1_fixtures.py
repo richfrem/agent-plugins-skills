@@ -38,10 +38,10 @@ def reach_awaiting_approval(tmp_path: Path, task_id: str) -> PipelineSimulator:
     sim.stage_interview_answers(task_id, classification="STANDARD", to_state="DRAFT_PLAN")
     sim.control_plane.record_plan_mode_entry(task_id, "simulator")
     sim.transition_from_interview(task_id, "DRAFT_PLAN", classification="STANDARD", expect_success=True)
-    plan_dir = sim.control_plane.repo_root / "docs" / "plans"
+    plan_dir = sim.control_plane.repo_root / "docs" / "plans" / "work-tasks" / task_id
     plan_dir.mkdir(parents=True, exist_ok=True)
-    (plan_dir / f"{task_id}-spec.md").write_text("# spec", encoding="utf-8")
-    (plan_dir / f"{task_id}-implementation-plan.md").write_text("# plan", encoding="utf-8")
+    (plan_dir / f"{task_id}-spec.md").write_text("# spec\n", encoding="utf-8")
+    (plan_dir / f"{task_id}-implementation-plan.md").write_text("# plan\n\n- Strategy: direct\n", encoding="utf-8")
 
     def step(answers, to_state, actor="human"):
         feed = iter(answers)

@@ -35,23 +35,23 @@ def test_rule_mapping_swarm_vs_graph():
         "unit_structure": "many_identical",
         "ordering_convergence": "none",
         "assurance_need": "normal",
-        "task_nature": "build_fix",
     }
     swarm_dec = decide_strategy(swarm_answers)
     assert swarm_dec["status"] == "success"
     assert swarm_dec["pattern"] == "agent-swarm"
-    assert swarm_dec["next_skill"] == "agent-swarm"
+    assert swarm_dec["next_skill"] == "orchestrating-agent-work"
+    assert swarm_dec["next_step"] == "strategy-agent-swarm"
 
     graph_answers = {
         "unit_structure": "distinct_steps",
-        "ordering_convergence": "none",
+        "ordering_convergence": "barrier",
         "assurance_need": "normal",
-        "task_nature": "build_fix",
     }
     graph_dec = decide_strategy(graph_answers)
     assert graph_dec["status"] == "success"
     assert graph_dec["pattern"] == "graph"
-    assert graph_dec["next_skill"] == "graph-planner"
+    assert graph_dec["next_skill"] == "orchestrating-agent-work"
+    assert graph_dec["next_step"] == "graph-planning"
 
 
 def test_rule_mapping_direct_minimal_change():
@@ -82,12 +82,13 @@ def test_rule_mapping_adversarial_is_wrapper():
 
 
 def test_table_driven_all_72_combinations():
+    """All 24 active 3-dimension combinations, plus legacy task_nature compatibility (3x24 = 72)."""
     units = DIMENSION_OPTIONS["unit_structure"]
     orderings = DIMENSION_OPTIONS["ordering_convergence"]
     assurances = DIMENSION_OPTIONS["assurance_need"]
-    natures = DIMENSION_OPTIONS["task_nature"]
+    legacy_natures = [None, "build_fix", "research_learn"]
 
-    combinations = list(itertools.product(units, orderings, assurances, natures))
+    combinations = list(itertools.product(units, orderings, assurances, legacy_natures))
     assert len(combinations) == 72
 
     for u, o, a, n in combinations:
@@ -95,8 +96,10 @@ def test_table_driven_all_72_combinations():
             "unit_structure": u,
             "ordering_convergence": o,
             "assurance_need": a,
-            "task_nature": n,
         }
+        if n is not None:
+            ans["task_nature"] = n
+        assert validate_answers(ans) == [], f"Unexpected validation errors for {ans}"
         dec = decide_strategy(ans)
         assert dec["status"] == "success", f"Failed for {ans}"
         assert dec["pattern"] in VALID_PATTERNS, f"Unknown pattern {dec['pattern']} for {ans}"
@@ -197,37 +200,21 @@ def test_cli_no_out_flag_does_not_dirty_tree():
 
 def test_pattern_catalog_parity():
     """
-    Asserts exact parity across:
-    1. Canonical references/patterns.json (agent-orchestration)
-    2. Symlinked select-loop-strategy/references/patterns.json
-    3. Fallback VALID_PATTERNS in select_strategy.py
+    Asserts exact parity between:
+    1. Canonical references/patterns.json in orchestrating-agent-work
+    2. Fallback VALID_PATTERNS in select_strategy.py
     """
-    repo_root = Path(__file__).resolve().parents[3]
-    patterns_canonical = repo_root / "plugins" / "agent-orchestration" / "references" / "patterns.json"
-    patterns_symlink = (
-        repo_root
-        / "plugins"
-        / "agent-orchestration"
-        / "skills"
-        / "select-loop-strategy"
-        / "references"
-        / "patterns.json"
-    )
+    skill_root = Path(__file__).resolve().parents[1]
+    patterns_canonical = skill_root / "references" / "patterns.json"
 
     assert patterns_canonical.is_file(), f"Missing {patterns_canonical}"
-    assert patterns_symlink.is_file(), f"Missing {patterns_symlink}"
 
     with open(patterns_canonical, "r", encoding="utf-8") as f:
         canon_data = json.load(f)
 
-    with open(patterns_symlink, "r", encoding="utf-8") as f:
-        symlink_data = json.load(f)
-
     canon_keys = set(canon_data.keys())
-    symlink_keys = set(symlink_data.keys())
     valid_keys = set(VALID_PATTERNS)
 
-    assert canon_keys == symlink_keys, "Symlink patterns.json does not match canonical"
     assert canon_keys == valid_keys, "select_strategy.py VALID_PATTERNS does not match patterns.json"
 
 

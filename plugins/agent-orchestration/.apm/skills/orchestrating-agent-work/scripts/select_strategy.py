@@ -37,6 +37,7 @@ VALID_PATTERNS: Set[str] = {
     "graph",
     "agent-swarm",
     "red-team-review",
+    "learning-loop",
 }
 
 SERIAL_CHAIN_HINT = (

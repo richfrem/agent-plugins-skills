@@ -60,10 +60,10 @@ def _plan_review_task(tmp_path):
     sim.stage_interview_answers(TASK, classification="STANDARD", to_state="DRAFT_PLAN")
     sim.control_plane.record_plan_mode_entry(TASK, "simulator")
     sim.transition_from_interview(TASK, "DRAFT_PLAN", classification="STANDARD", expect_success=True)
-    plans = sim.control_plane.repo_root / "docs" / "plans"
+    plans = sim.control_plane.repo_root / "docs" / "plans" / "work-tasks" / TASK
     plans.mkdir(parents=True, exist_ok=True)
-    (plans / f"{TASK}-spec.md").write_text("# spec", encoding="utf-8")
-    (plans / f"{TASK}-implementation-plan.md").write_text("# plan", encoding="utf-8")
+    (plans / f"{TASK}-spec.md").write_text("# spec\n", encoding="utf-8")
+    (plans / f"{TASK}-implementation-plan.md").write_text("# plan\n\n- Strategy: direct\n", encoding="utf-8")
     feed = iter(["1", "YES"])
     TransitionCoordinator(
         sim.control_plane, registry=registry, input_fn=lambda _p: next(feed), output_stream=io.StringIO(),

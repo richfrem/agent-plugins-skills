@@ -244,8 +244,9 @@ class ControlPlane:
         supplied by the active native/portable runtime.
         """
         from control_plane.implementation_loop import create_default_controller
+        from control_plane.identity_layout import canonical_repo_root
 
-        db_path = self.db_path or (Path.cwd() / "context" / "control_plane.db")
+        db_path = self.db_path or (canonical_repo_root(".") / "context" / "control_plane.db")
         queue_path = Path(db_path).parent / "implementation-queue.json"
         return create_default_controller(queue_path, dispatch, review, fix, **kwargs)
 
@@ -510,11 +511,25 @@ class ControlPlane:
         return self._persistence.get_unconsumed_transition_answers(task_id, from_state, to_state)
 
     def _resolve_plan_outline_path(self, artifact_rel: str) -> Path:
-        """Resolve a plan-outline path inside the active repository root."""
+        """Resolve a plan-outline path inside the active repository root (never Path.cwd(), B7/G14)."""
+        from control_plane.identity_layout import is_inside_skill_folder
+
         repo_root = getattr(self, "repo_root", None)
-        if repo_root is None and self.db_path is not None and self.db_path.parent.name == "context":
-            repo_root = self.db_path.parent.parent
-        root = Path(repo_root or Path.cwd()).resolve()
+        if repo_root is None and self.db_path is not None:
+            db_parent = Path(self.db_path).resolve().parent
+            if db_parent.name == "context":
+                repo_root = db_parent.parent
+            elif db_parent.name == "simulation" and db_parent.parent.name == "context":
+                repo_root = db_parent.parent.parent
+            else:
+                repo_root = db_parent
+        if repo_root is None:
+            raise ValueError("Cannot resolve plan outline path without an explicit repo_root or db_path.")
+        root = Path(repo_root).resolve()
+        if is_inside_skill_folder(root):
+            raise PersistenceInvariantViolation(
+                f"Refusing to write plan outline inside a skill folder ({root}). Set repo_root explicitly."
+            )
         path = (root / artifact_rel).resolve()
         path.relative_to(root)
         return path
@@ -1793,8 +1808,8 @@ def main():
         root = Path(args.repo_root).resolve() if args.repo_root else canonical_repo_root(".")
         sys.exit(run_selftest(default_layout(root), Path(args.key).expanduser()))
 
-    cp = ControlPlane(db_path=getattr(args, "db_path", None))
     try:
+        cp = ControlPlane(db_path=getattr(args, "db_path", None))
         _dispatch_command(cp, args)
     except Exception as e:
         print(f"{'CONTROL PLANE ERROR' if isinstance(e, (InvalidStateTransition, VerifierSovereigntyViolation, PersistenceInvariantViolation, ConcurrentModificationError)) else 'ERROR'}: {e}", file=sys.stderr)

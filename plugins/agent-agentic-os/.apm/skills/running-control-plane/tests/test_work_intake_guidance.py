@@ -13,7 +13,7 @@ import sys
 from pathlib import Path
 import pytest
 
-WORKTREE_ROOT = Path(__file__).resolve().parents[5]
+WORKTREE_ROOT = Path(__file__).resolve().parents[6]
 PLUGIN_DIR = Path(__file__).resolve().parents[1]
 SCRIPTS_DIR = PLUGIN_DIR / "scripts"
 if str(SCRIPTS_DIR) not in sys.path:

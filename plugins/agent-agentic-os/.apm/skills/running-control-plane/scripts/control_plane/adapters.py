@@ -769,35 +769,18 @@ class SqlitePersistenceAdapter(PersistencePort):
         self._crypto = crypto_adapter if crypto_adapter is not None else CryptoAdapter()
 
     def _discover_shared_db_path(self) -> Path:
-        """Resolves context/control_plane.db anchored at the repo root shared across
-        ALL git worktrees of the same repo — via `git rev-parse --git-common-dir`,
-        which (unlike a manual walk-up for the nearest `.git`) returns the same
-        physical .git directory whether invoked from the main checkout or any
-        worktree, so they all read/write one control plane instead of each worktree
-        getting its own disconnected DB."""
-        curr = Path(__file__).resolve().parent
-        for p in [curr] + list(curr.parents):
-            if p.name == ".agents":
-                return p.parent / "context" / "control_plane.db"
+        """Resolves context/control_plane.db anchored at the canonical repo root shared across
+        ALL git worktrees of the same repo (B22 / G14: never cwd-relative inside a skill folder)."""
+        from control_plane.identity_layout import canonical_repo_root, is_inside_skill_folder
 
-        try:
-            result = subprocess.run(
-                ["git", "rev-parse", "--git-common-dir"],
-                cwd=str(curr), capture_output=True, text=True, timeout=5
+        cwd = Path.cwd().resolve()
+        root = canonical_repo_root(cwd)
+        if is_inside_skill_folder(root):
+            raise PersistenceInvariantViolation(
+                f"Refusing to use a control-plane database inside a skill folder ({root}). "
+                "Run from a project repository root or pass --db-path explicitly."
             )
-            if result.returncode == 0:
-                common_dir = Path(result.stdout.strip())
-                if not common_dir.is_absolute():
-                    common_dir = (curr / common_dir).resolve()
-                return common_dir.parent / "context" / "control_plane.db"
-        except (subprocess.SubprocessError, OSError):
-            pass
-
-        for p in [curr] + list(curr.parents):
-            if (p / "context").exists() and not (p / "skills").exists():
-                return p / "context" / "control_plane.db"
-
-        return Path.cwd() / "context" / "control_plane.db"
+        return root / "context" / "control_plane.db"
 
     def get_connection(self) -> sqlite3.Connection:
         """Returns a configured sqlite3 connection with WAL mode and foreign keys."""

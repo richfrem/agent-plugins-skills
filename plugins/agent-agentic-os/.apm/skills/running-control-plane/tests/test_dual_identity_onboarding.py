@@ -125,10 +125,26 @@ def test_account_existence_does_not_prove_runtime_isolation(tmp_path, monkeypatc
 
 def test_full_simulation_runs_standalone_from_the_installed_skill(tmp_path):
     """Outside the test suite (no stand-in signer, no fake review menu, real PATH), a simulation runs
-    INTAKE -> DONE from the os-control-simulator skill's own scripts, approved only by its simulation key."""
-    source = Path(__file__).resolve().parents[1] / "skills" / "os-control-simulator"
-    installed = tmp_path / "installed-skill"
-    shutil.copytree(source, installed, symlinks=False)
+    INTAKE -> DONE from the installed running-control-plane skill's own scripts, approved only by its simulation key."""
+    source = Path(__file__).resolve().parents[1]
+    repo_root = Path(__file__).resolve().parents[6]
+    skills_dir = tmp_path / "installed-skills"
+    installed = skills_dir / "running-control-plane"
+    shutil.copytree(
+        source,
+        installed,
+        symlinks=False,
+        ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "tests"),
+    )
+    # Install sibling orchestration skills beside running-control-plane (APM dependency layout, G6)
+    orch_skills = repo_root / "plugins" / "agent-orchestration" / ".apm" / "skills"
+    for sibling in ("orchestrating-agent-work", "cli-agent"):
+        shutil.copytree(
+            orch_skills / sibling,
+            skills_dir / sibling,
+            symlinks=False,
+            ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "tests"),
+        )
     assert not any(path.is_symlink() for path in installed.rglob("*"))
     skill_scripts = installed / "scripts"
     db = tmp_path / "repo" / "context" / "simulation" / ap.SIMULATION_DB_NAME
