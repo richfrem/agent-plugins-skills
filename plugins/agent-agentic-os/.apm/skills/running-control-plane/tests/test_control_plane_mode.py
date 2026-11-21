@@ -122,7 +122,7 @@ def test_a_hand_edited_dispatcher_is_left_untouched_and_reported(repo):
 def test_corrupt_mode_file_is_reported_as_a_problem_not_silently_ignored(repo):
     (repo / "context/control-plane-mode").write_text("maybe\n")
     st = run_mode(repo, "status")
-    assert st.returncode == 1 and "must contain 'enabled' or 'disabled'" in st.stdout
+    assert st.returncode == 1 and "must contain 'enabled', 'on-demand', or 'disabled'" in st.stdout
 
 
 def test_toggle_works_from_a_git_worktree_target(repo, tmp_path):

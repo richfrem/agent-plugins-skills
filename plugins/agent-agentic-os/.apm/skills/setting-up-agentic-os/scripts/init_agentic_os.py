@@ -649,11 +649,17 @@ def _install_control_plane_guards(target: Path, git_hooks_dir: Path, skill_root:
     mode file fails closed: the guards are installed and the problem is announced.
     """
     root = control_plane_hooks.common_repo_root(target)
-    try:
-        mode = control_plane_hooks.read_mode(root)
-    except control_plane_hooks.ModeError as exc:
-        announce(f"WARNING: {exc} Treating the control plane as enabled.", dry_run)
-        mode = control_plane_hooks.MODE_ENABLED
+    if not control_plane_hooks.mode_path(root).is_file():
+        if not dry_run:
+            control_plane_hooks.write_mode(root, control_plane_hooks.MODE_ON_DEMAND, actor="init_agentic_os")
+        announce("Declared default control-plane mode: on-demand (context/control-plane-mode)", dry_run)
+        mode = control_plane_hooks.MODE_ON_DEMAND
+    else:
+        try:
+            mode = control_plane_hooks.read_mode(root)
+        except control_plane_hooks.ModeError as exc:
+            announce(f"WARNING: {exc} Treating the control plane as enabled.", dry_run)
+            mode = control_plane_hooks.MODE_ENABLED
 
     if mode == control_plane_hooks.MODE_DISABLED:
         announce(

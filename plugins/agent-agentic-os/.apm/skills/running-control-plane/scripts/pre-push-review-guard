@@ -27,13 +27,28 @@ SELF_DIR="$(cd "$(dirname "$0")" 2>/dev/null && pwd)"
 case "$AGENT_CONTROL" in "@"*) AGENT_CONTROL="$SELF_DIR/agent_control.py" ;; esac
 case "$VERIFY_GATE_EVIDENCE" in "@"*) VERIFY_GATE_EVIDENCE="$SELF_DIR/verify_gate_evidence.py" ;; esac
 
-# Declared control-plane mode (managed by the os-control-mode skill). The file holds one
-# word. A missing file means "enabled", so installs that predate the mode behave as before.
-# When it says "disabled" the gate is off BY DESIGN: say so visibly, then pass.
+# Declared control-plane mode: enabled (missing file default), on-demand, or disabled.
+# Unknown or unreadable mode files fail closed (exit 1).
 MODE_FILE="$REPO_ROOT/context/control-plane-mode"
-if [ -f "$MODE_FILE" ] && [ "$(tr -d '[:space:]' < "$MODE_FILE" | tr '[:upper:]' '[:lower:]')" = "disabled" ]; then
-    echo "ℹ️  pre-push-review-guard: control plane is DISABLED (context/control-plane-mode) — push is ungated by design." >&2
-    exit 0
+CP_MODE="enabled"
+if [ -e "$MODE_FILE" ]; then
+    if [ ! -r "$MODE_FILE" ]; then
+        echo "❌ GIT PUSH BLOCKED: context/control-plane-mode is unreadable — failing closed." >&2
+        exit 1
+    fi
+    CP_MODE="$(tr -d '[:space:]' < "$MODE_FILE" | tr '[:upper:]' '[:lower:]')"
+    case "$CP_MODE" in
+        disabled)
+            echo "ℹ️  pre-push-review-guard: control plane is DISABLED (context/control-plane-mode) — push is ungated by design." >&2
+            exit 0
+            ;;
+        enabled|on-demand)
+            ;;
+        *)
+            echo "❌ GIT PUSH BLOCKED: unknown control-plane mode '$CP_MODE' in context/control-plane-mode — failing closed." >&2
+            exit 1
+            ;;
+    esac
 fi
 
 DB_PATH="$REPO_ROOT/context/control_plane.db"
@@ -48,10 +63,27 @@ if [ -L "$DB_PATH" ]; then
     exit 1
 fi
 
-# If control plane database does not exist, pass through — but warn visibly
+# If control plane database does not exist: on-demand fails closed (G5); enabled warns and passes.
 if [ ! -f "$DB_PATH" ]; then
+    if [ "$CP_MODE" = "on-demand" ]; then
+        echo "❌ GIT PUSH BLOCKED: control plane ON-DEMAND but its database is missing/unreadable — refusing (fail closed)." >&2
+        exit 1
+    fi
     echo "⚠️  WARNING: pre-push-review-guard found no control_plane.db — push is ungated (no task registered for this repo)." >&2
     exit 0
+fi
+
+# In on-demand mode, verify DB is readable SQLite and stamped 'real' (fail closed otherwise).
+if [ "$CP_MODE" = "on-demand" ]; then
+    if ! sqlite3 "$DB_PATH" "SELECT COUNT(*) FROM tasks;" >/dev/null 2>&1; then
+        echo "❌ GIT PUSH BLOCKED: control plane ON-DEMAND but its database is missing/unreadable — refusing (fail closed)." >&2
+        exit 1
+    fi
+    DB_IDENTITY="$(sqlite3 "$DB_PATH" "SELECT context FROM control_plane_identity WHERE singleton = 1;" 2>/dev/null || true)"
+    if [ "$DB_IDENTITY" != "real" ]; then
+        echo "❌ GIT PUSH BLOCKED: control plane ON-DEMAND requires a real-stamped DB (found '${DB_IDENTITY:-none}') — refusing (fail closed)." >&2
+        exit 1
+    fi
 fi
 
 # Determine current branch
@@ -72,10 +104,14 @@ fi
 QUERY_SQL="SELECT task_id, state FROM tasks WHERE worktree_branch = '$CURRENT_BRANCH' ORDER BY created_at DESC LIMIT 1;"
 TASK_ROW="$(sqlite3 "$DB_PATH" "$QUERY_SQL" 2>/dev/null || true)"
 
-# If no task associated with this branch, DENY. Fail-open here previously let any
-# unregistered branch push regardless of pipeline state (see map-debt entry for
-# this fix). A push on a non-main branch must be traceable to a control-plane task.
+# If no task associated with this branch:
+# - in on-demand mode: pass with info line (unregistered branch is ungated).
+# - in enabled mode: DENY (strict push guard unchanged).
 if [ -z "$TASK_ROW" ]; then
+    if [ "$CP_MODE" = "on-demand" ]; then
+        echo "ℹ️  pre-push-review-guard (on-demand): branch '$CURRENT_BRANCH' is unregistered — push is ungated." >&2
+        exit 0
+    fi
     echo ""
     echo "❌ GIT PUSH BLOCKED: No Task Registered For This Branch!"
     echo ""
@@ -92,6 +128,16 @@ fi
 
 TASK_ID="$(echo "$TASK_ROW" | cut -d'|' -f1)"
 TASK_STATE="$(echo "$TASK_ROW" | cut -d'|' -f2)"
+
+# In on-demand mode, a ROLLED_BACK branch is ungated ONLY if its tip equals rollback_base_sha.
+if [ "$CP_MODE" = "on-demand" ] && [ "$TASK_STATE" = "ROLLED_BACK" ]; then
+    RB_SHA="$(sqlite3 "$DB_PATH" "SELECT COALESCE(rollback_base_sha, '') FROM tasks WHERE task_id = '$TASK_ID';" 2>/dev/null || true)"
+    HEAD_SHA="$(git rev-parse HEAD 2>/dev/null || true)"
+    if [ -n "$RB_SHA" ] && [ "$HEAD_SHA" = "$RB_SHA" ]; then
+        echo "ℹ️  pre-push-review-guard (on-demand): ROLLED_BACK branch '$CURRENT_BRANCH' tip matches rollback_base_sha — push is ungated." >&2
+        exit 0
+    fi
+fi
 
 # Guidance-compliance block: a human answered "no" (or gave no answer) to a
 # transition's mandatory guidance-compliance confirmation. No push may proceed

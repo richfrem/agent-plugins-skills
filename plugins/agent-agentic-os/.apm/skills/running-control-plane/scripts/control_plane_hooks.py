@@ -45,8 +45,10 @@ from pathlib import Path
 from typing import Optional
 
 MODE_ENABLED = "enabled"
+MODE_ON_DEMAND = "on-demand"
 MODE_DISABLED = "disabled"
-VALID_MODES = (MODE_ENABLED, MODE_DISABLED)
+VALID_MODES = (MODE_ENABLED, MODE_ON_DEMAND, MODE_DISABLED)
+TERMINAL_TASK_STATES = ("DONE",)
 MODE_RELATIVE_PATH = Path("context") / "control-plane-mode"
 MODE_LOG_RELATIVE_PATH = Path("context") / "control-plane-mode.log"
 
@@ -101,10 +103,60 @@ def read_mode(root: Path | str) -> str:
     value = path.read_text(encoding="utf-8").strip().lower()
     if value not in VALID_MODES:
         raise ModeError(
-            f"{path} must contain 'enabled' or 'disabled', found {value!r}. "
+            f"{path} must contain 'enabled', 'on-demand', or 'disabled', found {value!r}. "
             "Fix or delete the file (a missing file means enabled)."
         )
     return value
+
+
+def active_jobs(root: Path | str) -> list[dict]:
+    """List registered non-DONE tasks from context/control_plane.db (read-only).
+    ESCALATED counts as active; ROLLED_BACK is classified as rolled_back_clean or rolled_back_dirty."""
+    import sqlite3
+
+    root_path = Path(root)
+    db = root_path / "context" / "control_plane.db"
+    if not db.is_file() or db.is_symlink():
+        return []
+    try:
+        conn = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
+        try:
+            cols = {r[1] for r in conn.execute("PRAGMA table_info(tasks)").fetchall()}
+            sel_rb = "rollback_base_sha" if "rollback_base_sha" in cols else "NULL AS rollback_base_sha"
+            rows = conn.execute(
+                f"SELECT task_id, state, worktree_branch, worktree_path, {sel_rb} "
+                "FROM tasks WHERE state != 'DONE' ORDER BY created_at DESC"
+            ).fetchall()
+        finally:
+            conn.close()
+    except sqlite3.Error:
+        return []
+
+    jobs: list[dict] = []
+    for task_id, state, branch, wt_path, rb_sha in rows:
+        status = "active"
+        if state == "ROLLED_BACK":
+            tip = None
+            if branch:
+                try:
+                    res = subprocess.run(
+                        ["git", "-C", str(root_path), "rev-parse", branch],
+                        capture_output=True, text=True, timeout=5,
+                    )
+                    if res.returncode == 0:
+                        tip = res.stdout.strip()
+                except (subprocess.SubprocessError, OSError):
+                    tip = None
+            status = "rolled_back_clean" if (rb_sha and tip and tip == rb_sha) else "rolled_back_dirty"
+        jobs.append({
+            "task_id": task_id,
+            "state": state,
+            "branch": branch,
+            "worktree_path": wt_path,
+            "rollback_base_sha": rb_sha,
+            "status": status,
+        })
+    return jobs
 
 
 def _git_commit(root: Path) -> Optional[str]:
