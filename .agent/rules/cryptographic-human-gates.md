@@ -11,9 +11,9 @@ The agentic pipeline is only as trustworthy as its human gates. Earlier designs 
 
 | Gate | Transition | What the signature binds |
 |---|---|---|
-| Gate 1 | `AWAITING_APPROVAL -> APPROVED` | Hashes of the reviewed spec and plan |
-| Gate 3 | `WORKTREE_REVIEW` / `MULTI_AGENT_CODE_REVIEW` `-> VERIFY_EXIT` | Commit SHA, tracked-diff hash, untracked-files hash |
-| Closure | Every edge into `DONE` | Worktree hashes plus the retrospective digest |
+| Gate 1 | `PLAN_REVIEW -> APPROVED` | Hashes of the reviewed spec, plan, and audit verdict (if present) |
+| Gate 3 | `WORKTREE_REVIEW -> VERIFY_EXIT` | Commit SHA, tracked-diff hash, untracked-files hash |
+| Closure | Every edge into `DONE` (`VERIFY_EXIT -> DONE` or early close) | Worktree hashes plus the retrospective digest |
 
 Each edge declares `requires_cryptographic_proof` in `transition_templates.yaml`. The coordinator halts with `HUMAN_PROOF_REQUIRED` and a `transition_request`; the human signs it with `ssh-keygen -Y sign` (OpenSSH prompts for the passphrase); the signature is verified against `allowed_signers` and the request is consumed exactly once in the commit transaction. A request expires after 15 minutes and is bound to the content it lists: change the worktree and it must be re-issued.
 

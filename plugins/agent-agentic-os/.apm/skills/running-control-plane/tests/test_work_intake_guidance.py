@@ -125,11 +125,11 @@ def test_claude_md_pointer_exact_invariant():
 
 
 def test_plan_acceptance_advances_without_review_or_skip(tmp_path):
-    """T4b contract test: when the human accepts the plan, PLAN_REVIEW -> AWAITING_APPROVAL
-    advances without requiring a passing critic review or review-skip receipt."""
-    from agent_control import ControlPlane
-    from control_plane.coordinator import TransitionCoordinator
+    """T4b contract test (v15): in the 10-state machine, PLAN_REVIEW -> APPROVED is Gate 1 directly
+    and does not require a separate AWAITING_APPROVAL hop or review-skip receipt before requesting signature."""
+    from control_plane.coordinator import TransitionCoordinator, HumanProofRequired
     import io
+    import pytest
 
     from control_plane.pipeline_simulator import PipelineSimulator
 
@@ -139,42 +139,39 @@ def test_plan_acceptance_advances_without_review_or_skip(tmp_path):
     sim.create_task(task_id, "Test plan acceptance")
     sim.control_plane.repo_root = tmp_path / "repo"
     sim.control_plane.repo_root.mkdir(parents=True, exist_ok=True)
-    sim.enter_interview(task_id)
-    sim.stage_interview_answers(task_id, classification="STANDARD", to_state="DRAFT_PLAN")
-    sim.control_plane.record_plan_mode_entry(task_id, "simulator")
-    sim.transition_from_interview(task_id, "DRAFT_PLAN", classification="STANDARD", expect_success=True)
 
-    plan_dir = sim.control_plane.repo_root / "docs" / "plans" / "work-tasks" / task_id
-    plan_dir.mkdir(parents=True, exist_ok=True)
-    (plan_dir / f"{task_id}-spec.md").write_text("# spec", encoding="utf-8")
-    (plan_dir / f"{task_id}-implementation-plan.md").write_text("# plan", encoding="utf-8")
-
-    # Move DRAFT_PLAN -> PLAN_REVIEW
     def step(answers, to_state, actor="human"):
         feed = iter(answers)
         TransitionCoordinator(
             sim.control_plane, registry=sim.registry, input_fn=lambda _p: next(feed), output_stream=io.StringIO(),
         ).coordinate_transition(task_id=task_id, to_state=to_state, actor=actor, reason="setup", interactive=True)
 
-    step(["1", "YES"], "PLAN_REVIEW")
+    step(["1"], "DRAFT_PLAN")
 
-    # Now in PLAN_REVIEW. Human answers confirm_plan_acceptance = Accept
-    feed = iter(["1", "YES"])  # 1 = Accept plan and proceed to human approval, YES = confirmation
+    plan_dir = sim.control_plane.repo_root / "docs" / "plans" / "work-tasks" / task_id
+    plan_dir.mkdir(parents=True, exist_ok=True)
+    (plan_dir / f"{task_id}-spec.md").write_text("# spec\n", encoding="utf-8")
+    (plan_dir / f"{task_id}-implementation-plan.md").write_text("# plan\n\n- Strategy: direct\n", encoding="utf-8")
+
+    # Move DRAFT_PLAN -> PLAN_REVIEW
+    step([], "PLAN_REVIEW", actor="simulator")
+
+    # In PLAN_REVIEW, requesting Gate 1 (APPROVED) halts cleanly with HUMAN_PROOF_REQUIRED
+    # without requiring a review-skip receipt.
     coordinator = TransitionCoordinator(
         sim.control_plane,
         registry=registry,
-        input_fn=lambda _p: next(feed),
         output_stream=io.StringIO(),
     )
-
-    coordinator.coordinate_transition(
-        task_id=task_id,
-        to_state="AWAITING_APPROVAL",
-        actor="agent",
-        reason="Plan accepted by human in chat",
-        interactive=True,
-    )
+    with pytest.raises(HumanProofRequired):
+        coordinator.coordinate_transition(
+            task_id=task_id,
+            to_state="APPROVED",
+            actor="agent",
+            reason="Plan ready for human Gate 1 signature",
+            interactive=False,
+        )
 
     last_tx = sim.control_plane._persistence.get_last_transition(task_id)
     assert last_tx is not None
-    assert last_tx.to_state == "AWAITING_APPROVAL"
+    assert last_tx.to_state == "PLAN_REVIEW"

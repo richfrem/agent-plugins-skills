@@ -1,6 +1,6 @@
 # Signing workflow overview (Gate 1 human approval)
 
-Gate 1 (`AWAITING_APPROVAL -> APPROVED`) is approved by a signature from an SSH key only the human holds.
+Gate 1 (`PLAN_REVIEW -> APPROVED`) is approved by a signature from an SSH key only the human holds.
 This is the full first-time sequence. Everything except the status check is run by the human, in their own terminal.
 Paths are relative to the skill folder (`scripts/...`) or the plugin (`agent_control.py`).
 
@@ -54,9 +54,9 @@ key (passphrase prompt or touch), verifies it against `allowed_signers_selftest`
    prints them (read them: this text is the approval) and prints the `ssh-keygen -Y sign -f <key> -n control-plane@agentic-os.local <file>`
    command.
 3. You run that command and enter your passphrase (or touch the key). It writes `<file>.sig`.
-4. You run `agent_control.py approve-transition --request-id N`. Expected: `Approved: AWAITING_APPROVAL -> APPROVED (transition ...),
+4. You run `agent_control.py approve-transition --request-id N`. Expected: `Approved: PLAN_REVIEW -> APPROVED (transition ...),
    signature verified.` Signature check, one-time consumption, the human decision rows and the state change happen in one
-   transaction; any failure leaves the task in `AWAITING_APPROVAL`.
+   transaction; any failure leaves the task in `PLAN_REVIEW`.
 
 There is no separate signing script: signing is the standard `ssh-keygen -Y sign` command printed in step 2 of this flow, so the
 signing code path is OpenSSH's, not ours.

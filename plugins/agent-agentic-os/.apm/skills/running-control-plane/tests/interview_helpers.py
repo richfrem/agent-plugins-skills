@@ -67,7 +67,9 @@ def sequential_answers_for_edge(
     assert template is not None, f"No template registered for {from_state} -> {to_state}"
 
     answers = list(own_answers)
-    if not template.requires_cryptographic_proof:
+    # Schema v15 / S5: guidance_compliance_confirmation is no longer asked on agent_or_human edges,
+    # and cryptographic-proof edges halt for SSH signing instead of interactive answers.
+    if not template.requires_cryptographic_proof and template.authorized_actor == "human_only":
         answers.append("YES")
 
     it = iter(answers)
@@ -77,7 +79,7 @@ def sequential_answers_for_edge(
 def stage_interview_answers(
     cp, task_id: str, to_state: str = "DRAFT_PLAN", classification: str = "STANDARD"
 ) -> None:
-    """Stage a complete human-answered interview using registry-derived IDs."""
+    """Stage a complete human-answered intake/scoping set using registry-derived IDs (v15: INTAKE -> DRAFT_PLAN)."""
     answers = {
         "interview_classification": classification,
         "interview_summary": "Implement and verify the requested control-plane change.",
@@ -88,7 +90,7 @@ def stage_interview_answers(
         "interview_trivial_evidence": "The focused tests and diff identify the smallest verified change.",
     }
     registry = TransitionRegistry.load_default()
-    template = registry.get_template("INTERVIEW", to_state)
+    template = registry.get_template("INTAKE", to_state)
     assert template is not None
     question_ids = list(template.stage_question_ids or [])
 
@@ -106,7 +108,7 @@ def stage_interview_answers(
                 INSERT INTO transition_decisions (
                     task_id, source_occupancy_transition_id, from_state, to_state,
                     question_id, answer, decision_type, actor, recorded_at
-                ) VALUES (?, ?, 'INTERVIEW', ?, ?, ?, 'ANSWER', 'human', ?)
+                ) VALUES (?, ?, 'INTAKE', ?, ?, ?, 'ANSWER', 'human', ?)
                 """,
                 (task_id, occupancy[0], to_state, question_id, answers[question_id], now),
             )
@@ -114,6 +116,6 @@ def stage_interview_answers(
     finally:
         conn.close()
 
-    if cp.get_task(task_id)["state"] == "INTERVIEW":
+    if cp.get_task(task_id)["state"] == "INTAKE":
         for question_id in question_ids:
             cp.update_interview_plan_outline(task_id, question_id, answers[question_id], actor="human")

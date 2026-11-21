@@ -38,117 +38,68 @@ SQLite enforcement remain authoritative.
 
 | State | Meaning |
 | --- | --- |
-| INTAKE | Task is registered and awaiting initial classification. |
-| INTERVIEW | The agent is gathering boundaries, intent, classification, and adaptive answers. |
-| DRAFT_PLAN | Plan and specification artifacts are being authored or revised. |
-| MULTI_AGENT_REVIEW | Delegated plan review is in progress. |
-| PLAN_REVIEW | Human-facing plan review and route selection. |
-| AWAITING_APPROVAL | Required human implementation approval is pending. |
-| APPROVED | Human approval has been recorded; worktree creation may begin. |
+| INTAKE | Task is registered, scoping questions are answered, and the outline is confirmed. |
+| DRAFT_PLAN | Plan, specification, and execution strategy artifacts are being authored or revised. |
+| PLAN_REVIEW | Plan review and adversarial plan audit are conducted before Gate 1 signing. |
+| APPROVED | Human Gate 1 SSH signature has been recorded; worktree creation may begin. |
 | IN_WORKTREE | Approved implementation is being performed in the isolated worktree. |
-| WORKTREE_REVIEW | Implementation receipt and changes are presented for review. |
-| MULTI_AGENT_CODE_REVIEW | Delegated code review is in progress. |
-| VERIFY_EXIT | Tests, checks, artifacts, and receipts are being verified. |
-| RETROSPECTIVE | Closeout survey is completed or explicitly skipped with justification. |
-| DONE | Terminal completion state; only an approved reset can reopen the task. |
+| WORKTREE_REVIEW | Implementation diff and optional adversarial code review are presented before Gate 3 signing. |
+| VERIFY_EXIT | Tests, leak/ledger checks, and retrospective are verified before closure signing. |
+| DONE | Terminal completion state; only a human-authorized reset can reopen the task. |
 | ROLLED_BACK | Implementation was rolled back after a failure or review finding. |
 | ESCALATED | A human decision is required before the task can continue. |
+
+*(Retired in schema v15: `INTERVIEW` absorbed into `INTAKE`, `MULTI_AGENT_REVIEW` and `AWAITING_APPROVAL` absorbed into `PLAN_REVIEW`, `MULTI_AGENT_CODE_REVIEW` absorbed into `WORKTREE_REVIEW`, `RETROSPECTIVE` absorbed into `VERIFY_EXIT`.)*
 
 ## Executable transition inventory
 
 The following table is a documentation contract. Its rows must match both
-`ALLOWED_TRANSITIONS` and the expanded transition templates. A row does not grant
+`ALLOWED_TRANSITIONS` and the expanded transition templates (34 active edges). A row does not grant
 permission by itself.
 
 | From | To |
 | --- | --- |
-| INTAKE | INTERVIEW |
 | INTAKE | DRAFT_PLAN |
-| INTAKE | PLAN_REVIEW |
 | INTAKE | DONE |
 | INTAKE | ESCALATED |
-| INTAKE | RETROSPECTIVE |
-| INTERVIEW | DRAFT_PLAN |
-| INTERVIEW | PLAN_REVIEW |
-| INTERVIEW | RETROSPECTIVE |
-| INTERVIEW | DONE |
-| INTERVIEW | ESCALATED |
-| INTERVIEW | INTAKE |
 | DRAFT_PLAN | PLAN_REVIEW |
-| DRAFT_PLAN | INTERVIEW |
+| DRAFT_PLAN | INTAKE |
 | DRAFT_PLAN | DONE |
 | DRAFT_PLAN | ESCALATED |
-| DRAFT_PLAN | INTAKE |
-| DRAFT_PLAN | RETROSPECTIVE |
-| MULTI_AGENT_REVIEW | DRAFT_PLAN |
-| MULTI_AGENT_REVIEW | PLAN_REVIEW |
-| MULTI_AGENT_REVIEW | DONE |
-| MULTI_AGENT_REVIEW | ESCALATED |
-| MULTI_AGENT_REVIEW | INTAKE |
-| MULTI_AGENT_REVIEW | RETROSPECTIVE |
-| PLAN_REVIEW | MULTI_AGENT_REVIEW |
-| PLAN_REVIEW | AWAITING_APPROVAL |
+| PLAN_REVIEW | APPROVED |
 | PLAN_REVIEW | DRAFT_PLAN |
-| PLAN_REVIEW | INTERVIEW |
+| PLAN_REVIEW | INTAKE |
 | PLAN_REVIEW | DONE |
 | PLAN_REVIEW | ESCALATED |
-| PLAN_REVIEW | INTAKE |
-| PLAN_REVIEW | RETROSPECTIVE |
-| AWAITING_APPROVAL | APPROVED |
-| AWAITING_APPROVAL | PLAN_REVIEW |
-| AWAITING_APPROVAL | DRAFT_PLAN |
-| AWAITING_APPROVAL | DONE |
-| AWAITING_APPROVAL | ESCALATED |
-| AWAITING_APPROVAL | INTAKE |
-| AWAITING_APPROVAL | RETROSPECTIVE |
 | APPROVED | IN_WORKTREE |
-| APPROVED | RETROSPECTIVE |
+| APPROVED | INTAKE |
 | APPROVED | DONE |
 | APPROVED | ESCALATED |
-| APPROVED | INTAKE |
 | IN_WORKTREE | WORKTREE_REVIEW |
 | IN_WORKTREE | ROLLED_BACK |
+| IN_WORKTREE | INTAKE |
 | IN_WORKTREE | DONE |
 | IN_WORKTREE | ESCALATED |
-| IN_WORKTREE | INTAKE |
-| IN_WORKTREE | RETROSPECTIVE |
-| WORKTREE_REVIEW | MULTI_AGENT_CODE_REVIEW |
 | WORKTREE_REVIEW | VERIFY_EXIT |
 | WORKTREE_REVIEW | IN_WORKTREE |
 | WORKTREE_REVIEW | ROLLED_BACK |
+| WORKTREE_REVIEW | INTAKE |
 | WORKTREE_REVIEW | DONE |
 | WORKTREE_REVIEW | ESCALATED |
-| WORKTREE_REVIEW | INTAKE |
-| WORKTREE_REVIEW | RETROSPECTIVE |
-| MULTI_AGENT_CODE_REVIEW | WORKTREE_REVIEW |
-| MULTI_AGENT_CODE_REVIEW | VERIFY_EXIT |
-| MULTI_AGENT_CODE_REVIEW | IN_WORKTREE |
-| MULTI_AGENT_CODE_REVIEW | ROLLED_BACK |
-| MULTI_AGENT_CODE_REVIEW | DONE |
-| MULTI_AGENT_CODE_REVIEW | ESCALATED |
-| MULTI_AGENT_CODE_REVIEW | INTAKE |
-| MULTI_AGENT_CODE_REVIEW | RETROSPECTIVE |
-| VERIFY_EXIT | RETROSPECTIVE |
-| VERIFY_EXIT | IN_WORKTREE |
-| VERIFY_EXIT | WORKTREE_REVIEW |
-| VERIFY_EXIT | ROLLED_BACK |
 | VERIFY_EXIT | DONE |
-| VERIFY_EXIT | ESCALATED |
+| VERIFY_EXIT | WORKTREE_REVIEW |
+| VERIFY_EXIT | IN_WORKTREE |
+| VERIFY_EXIT | ROLLED_BACK |
 | VERIFY_EXIT | INTAKE |
-| RETROSPECTIVE | DONE |
-| RETROSPECTIVE | ESCALATED |
-| RETROSPECTIVE | INTAKE |
+| VERIFY_EXIT | ESCALATED |
 | DONE | INTAKE |
-| DONE | RETROSPECTIVE |
-| ROLLED_BACK | DONE |
-| ROLLED_BACK | ESCALATED |
 | ROLLED_BACK | PLAN_REVIEW |
 | ROLLED_BACK | INTAKE |
-| ROLLED_BACK | RETROSPECTIVE |
-| ESCALATED | INTAKE |
+| ROLLED_BACK | DONE |
+| ROLLED_BACK | ESCALATED |
 | ESCALATED | PLAN_REVIEW |
+| ESCALATED | INTAKE |
 | ESCALATED | DONE |
-| ESCALATED | RETROSPECTIVE |
 
 The canonical diagrams provide visual views of this same inventory:
 

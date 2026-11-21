@@ -240,12 +240,12 @@
     "note": "belongs to setting-up-agentic-os"
   },
   {
-    "prompt": "Simulate the INTAKE -> INTERVIEW transition to make sure it's followable and checks pass.",
+    "prompt": "Simulate the INTAKE -> DRAFT_PLAN transition to make sure it's followable and checks pass.",
     "should_trigger": true,
     "note": "from os-control-simulator"
   },
   {
-    "prompt": "Did I break the transition guidance or edge rules for VERIFY_EXIT -> RETROSPECTIVE?",
+    "prompt": "Did I break the transition guidance or edge rules for WORKTREE_REVIEW -> VERIFY_EXIT?",
     "should_trigger": true,
     "note": "from os-control-simulator"
   },

@@ -37,9 +37,9 @@ python3 scripts/control_plane/coordinator.py transition-guidance --task-id <task
 
 1. **Read Guidance & State**: Read `transition_templates.yaml` and SQLite DB enforcement before asking or acting.
 2. **Interview & Spec Synthesis**: Interview for missing requirements. Compile the 4 pillars of `TASK_SPEC.md` (The Job, The Why, Semantic Guardrails, Objective DoD).
-3. **Plan Drafting**: Draft plan via native host facilities. For STANDARD work, choose the execution strategy with the `orchestrating-agent-work` skill (references/strategy-selection.md, then references/graph-planning.md when the strategy is `graph`, which compiles and validates the task's graph manifest) before review. The strategies and their plan artifacts are registered only in that skill's `references/patterns.json`.
-4. **Stage Transitions**: Transition through `INTAKE` -> `INTERVIEW` -> `DRAFT_PLAN` -> `PLAN_REVIEW` using `coordinate-transition`.
-5. **Advance to Approval**: In `PLAN_REVIEW`, once the plan is accepted, agent runs `coordinate-transition --to AWAITING_APPROVAL`.
+3. **Plan Drafting**: Draft plan via native host facilities. For STANDARD work, choose the execution strategy with the `orchestrating-agent-work` skill (`strategy-selection.md`, then `graph-planning.md` when the strategy is `graph`, which compiles and validates the task's graph manifest) before review. The strategies and their plan artifacts are registered only in `orchestrating-agent-work`'s `patterns.json`.
+4. **Stage Transitions**: Transition through `INTAKE` -> `DRAFT_PLAN` -> `PLAN_REVIEW` using `coordinate-transition` (scoping interview and outline happen inside `INTAKE`; adversarial plan audit happens inside `PLAN_REVIEW`).
+5. **Advance to Approval**: In `PLAN_REVIEW`, once the plan and audit are ready, request Gate 1 (`PLAN_REVIEW -> APPROVED`) via `coordinate-transition --to APPROVED`, which halts with `HUMAN_PROOF_REQUIRED` for the human's SSH signature.
 
 ## Plan changes during implementation
 

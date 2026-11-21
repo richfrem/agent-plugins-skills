@@ -8,6 +8,7 @@ avoiding polluting production ControlPlane with test helpers.
 
 from typing import Optional
 from agent_control import ControlPlane
+from control_plane.constants import STATE_ABSORBED_BY
 
 
 def create_task_in_state(
@@ -18,51 +19,46 @@ def create_task_in_state(
     runtime_tool: str = "claude",
     spec_path: Optional[str] = None,
 ) -> None:
-    """Helper to transition a task to target_state for testing."""
+    """Helper to transition a task to target_state (10-state v15 machine) for testing."""
+    # Map legacy v14 retired state names to their absorbing v15 state when callers pass them.
+    resolved = STATE_ABSORBED_BY.get(target_state, target_state)
+
     control_plane.create_task(
         task_id=task_id,
         title=title,
         runtime_tool=runtime_tool,
         spec_path=spec_path,
     )
-    if target_state == "INTAKE":
+    if resolved == "INTAKE":
         return
 
-    # Inbound path to INTERVIEW
-    control_plane.transition(task_id, "INTERVIEW", "tester", "setup interview")
-    if target_state == "INTERVIEW":
-        return
-
-    # To DRAFT_PLAN
+    # INTAKE -> DRAFT_PLAN
     control_plane.record_plan_mode_entry(task_id, "tester")
     control_plane.transition(task_id, "DRAFT_PLAN", "tester", "setup draft plan")
-    if target_state == "DRAFT_PLAN":
+    if resolved == "DRAFT_PLAN":
         return
 
-    if target_state == "MULTI_AGENT_REVIEW":
-        control_plane.transition(task_id, "MULTI_AGENT_REVIEW", "tester", "setup multi agent review")
+    # DRAFT_PLAN -> PLAN_REVIEW
+    control_plane.transition(task_id, "PLAN_REVIEW", "tester", "setup plan review")
+    if resolved == "PLAN_REVIEW":
         return
 
-    if target_state == "PLAN_REVIEW":
-        control_plane.transition(task_id, "PLAN_REVIEW", "tester", "setup plan review")
-        return
-
-    if target_state == "AWAITING_APPROVAL":
-        control_plane.record_review_skip(task_id, "multi_agent_review", "tester", "skip review")
-        control_plane.transition(task_id, "AWAITING_APPROVAL", "tester", "setup awaiting approval")
-        return
-
-    if target_state == "APPROVED":
-        control_plane.record_review_skip(task_id, "multi_agent_review", "tester", "skip review")
-        control_plane.transition(task_id, "AWAITING_APPROVAL", "tester", "setup awaiting approval")
+    if resolved == "APPROVED":
         control_plane.transition(task_id, "APPROVED", "approver", "setup approved")
         return
 
-    if target_state == "IN_WORKTREE":
-        control_plane.record_review_skip(task_id, "multi_agent_review", "tester", "skip review")
-        control_plane.transition(task_id, "AWAITING_APPROVAL", "tester", "setup awaiting approval")
+    if resolved == "IN_WORKTREE":
         control_plane.transition(task_id, "APPROVED", "approver", "setup approved")
         control_plane.record_human_approval(task_id, "approver")
         control_plane.update_worktree(task_id, f".worktrees/{task_id}", f"feature/{task_id}", "written_in_worktree")
         control_plane.transition(task_id, "IN_WORKTREE", "tester", "setup worktree")
+        return
+
+    if resolved == "WORKTREE_REVIEW":
+        control_plane.transition(task_id, "APPROVED", "approver", "setup approved")
+        control_plane.record_human_approval(task_id, "approver")
+        control_plane.update_worktree(task_id, f".worktrees/{task_id}", f"feature/{task_id}", "written_in_worktree")
+        control_plane.transition(task_id, "IN_WORKTREE", "tester", "setup worktree")
+        control_plane.record_verification_receipt(task_id, "test_suite_deferred_to_review", "deferred", 0)
+        control_plane.transition(task_id, "WORKTREE_REVIEW", "tester", "setup worktree review")
         return

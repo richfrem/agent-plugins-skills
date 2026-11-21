@@ -16,7 +16,7 @@ The implementation plan at `docs/plans/work-tasks/<task-id>/<task-id>-implementa
 ```
 ```
 
-The `VERIFY_EXIT -> RETROSPECTIVE` transition fails closed unless:
+The `VERIFY_EXIT -> DONE` transition fails closed unless:
 
 - the ledger exists and is valid JSON;
 - it contains at least one task;

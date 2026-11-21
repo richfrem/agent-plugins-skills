@@ -73,7 +73,7 @@ Check the evidence in the database after the run:
 sqlite3 <dir>/simulation_control_plane.db "select request_id,from_state,to_state,principal,fingerprint from signed_gate_evidence"
 ssh-keygen -lf <dir>/identity/simulation_key.pub     # fingerprint must equal the rows above
 ```
-Expected: three rows (APPROVED, VERIFY_EXIT, DONE), all `test-human@local`, all with the simulation key's fingerprint, and states `INTAKE -> INTERVIEW -> DRAFT_PLAN -> PLAN_REVIEW -> MULTI_AGENT_REVIEW -> AWAITING_APPROVAL -> APPROVED -> IN_WORKTREE -> WORKTREE_REVIEW -> VERIFY_EXIT -> RETROSPECTIVE -> DONE`.
+Expected: three rows (APPROVED, VERIFY_EXIT, DONE), all `test-human@local`, all with the simulation key's fingerprint, and states `INTAKE -> DRAFT_PLAN -> PLAN_REVIEW -> APPROVED -> IN_WORKTREE -> WORKTREE_REVIEW -> VERIFY_EXIT -> DONE`.
 
 How to create and validate the agent's key: the `agent-identity` reference of `setting-up-agentic-os`.
 
