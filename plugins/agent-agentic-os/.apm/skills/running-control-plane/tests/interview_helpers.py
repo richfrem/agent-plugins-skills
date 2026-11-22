@@ -81,6 +81,7 @@ def stage_interview_answers(
 ) -> None:
     """Stage a complete human-answered intake/scoping set using registry-derived IDs (v15: INTAKE -> DRAFT_PLAN)."""
     answers = {
+        "intake_outline_confirmation": "Confirm outline and enter DRAFT_PLAN [Recommended]",
         "interview_classification": classification,
         "interview_summary": "Implement and verify the requested control-plane change.",
         "interview_scope": "The files covered by the current task and its tests.",
@@ -92,7 +93,9 @@ def stage_interview_answers(
     registry = TransitionRegistry.load_default()
     template = registry.get_template("INTAKE", to_state)
     assert template is not None
-    question_ids = list(template.stage_question_ids or [])
+    question_ids = list(template.stage_question_ids or []) or [
+        q["question_id"] for q in (template.human_questions or []) if q.get("question_id")
+    ]
 
     conn = sqlite3.connect(cp.db_path)
     try:

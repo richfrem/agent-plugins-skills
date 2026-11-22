@@ -38,7 +38,7 @@ from control_plane.transition_request import DEFAULT_GATE1_TTL_SECONDS, create_t
 from control_plane.constants import (
     CONTROL_SCRIPTS_DIR, ISOLATION_SETUP_DOC, SETUP_IDENTITY_CMD,
     AGENT_CONTROL_CMD,
-    STATE_INTERVIEW, STATE_DRAFT_PLAN, STATE_MULTI_AGENT_REVIEW, STATE_PLAN_REVIEW, STATE_AWAITING_APPROVAL, STATE_RETROSPECTIVE, STATE_DONE,
+    STATE_INTAKE, STATE_INTERVIEW, STATE_DRAFT_PLAN, STATE_MULTI_AGENT_REVIEW, STATE_PLAN_REVIEW, STATE_AWAITING_APPROVAL, STATE_RETROSPECTIVE, STATE_DONE,
     GUIDANCE_COMPLIANCE_CONFIRM_ANSWER, AUTHORIZED_ACTOR_AGENT_OR_HUMAN,
 )
 from control_plane.ports import (
@@ -437,15 +437,20 @@ class TransitionCoordinator:
             if qid in (template.stage_question_ids or []):
                 stage_answers[qid] = chosen_ans
 
-        if current_state == STATE_INTERVIEW and to_state == STATE_DRAFT_PLAN:
-            # Project each newly-collected interview answer into the plan-outline
+        if current_state in (STATE_INTAKE, STATE_INTERVIEW) and to_state == STATE_DRAFT_PLAN:
+            # Project each newly-collected intake/interview answer into the plan-outline
             # artifact before the commit path's assert_interview_plan_outline_ready
             # check runs -- otherwise every interactive DRAFT_PLAN transition fails
             # with "interview plan outline is missing" despite complete answers.
-            for question_id in (template.stage_question_ids or []):
-                if question_id in stage_answers and question_id not in persisted_answers:
+            outline_qids = list(template.stage_question_ids or []) or [
+                q.get("question_id") for q in (template.human_questions or []) if q.get("question_id")
+            ]
+            collected_by_qid = {d.question_id: d.answer for d in staged_decisions}
+            for question_id in outline_qids:
+                ans_val = stage_answers.get(question_id) or collected_by_qid.get(question_id)
+                if ans_val and question_id not in persisted_answers:
                     self._cp.update_interview_plan_outline(
-                        task_id, question_id, stage_answers[question_id], actor=actor
+                        task_id, question_id, ans_val, actor=actor
                     )
 
         if template.stage_route:

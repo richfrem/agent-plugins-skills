@@ -492,9 +492,9 @@ class ControlPlane:
         task = self.get_task(task_id)
         if not task:
             raise ValueError(f"Task not found: {task_id}")
-        if from_state != STATE_INTERVIEW or self._read_current_state_for_update(task_id) != from_state:
+        if from_state not in (STATE_INTAKE, STATE_INTERVIEW) or self._read_current_state_for_update(task_id) != from_state:
             raise PersistenceInvariantViolation(
-                f"Interview answer updates require current state INTERVIEW for task_id='{task_id}'."
+                f"Interview answer updates require current state INTAKE for task_id='{task_id}'."
             )
         if not answer or not answer.strip():
             raise ValueError("Interview answers must be non-empty.")
@@ -922,7 +922,7 @@ class ControlPlane:
             self.assert_interview_exit_ready(task_id, stage="interview", round_id=None)
         if current_state == STATE_INTERVIEW and to_state != STATE_INTERVIEW:
             self.assert_interview_exit_ready(task_id, stage="interview", round_id=None)
-        if current_state == STATE_INTERVIEW and to_state == STATE_DRAFT_PLAN:
+        if current_state in (STATE_INTAKE, STATE_INTERVIEW) and to_state == STATE_DRAFT_PLAN:
             self.assert_interview_plan_outline_ready(task_id)
 
         # --- Unified gate policy: deterministic checks from authoritative YAML registry ---
@@ -1022,7 +1022,7 @@ class ControlPlane:
                 commit_request.task_id, stage="interview", round_id=None
             )
         if (
-            commit_request.expected_from_state == STATE_INTERVIEW
+            commit_request.expected_from_state in (STATE_INTAKE, STATE_INTERVIEW)
             and commit_request.to_state == STATE_DRAFT_PLAN
         ):
             self.assert_interview_plan_outline_ready(commit_request.task_id)
@@ -1368,8 +1368,9 @@ class ControlPlane:
             self._transition_registry = TransitionRegistry.load_default()
 
         # Fail-closed check: action identity must be known/registered in registry
+        # (in schema v15, 'interview_question' is a built-in INTAKE capability since INTERVIEW was folded into INTAKE)
         releasing_edges = self._transition_registry.get_edges_releasing_capability(action_identity)
-        if not releasing_edges:
+        if not releasing_edges and action_identity != "interview_question":
             raise PhaseCapabilityDenied(f"Unregistered action identity: '{action_identity}'")
 
         # Step 1: read task current state
@@ -1390,6 +1391,21 @@ class ControlPlane:
             raise PhaseCapabilityDenied(
                 f"State tamper detected: latest transition id '{getattr(latest_trans, 'transition_id', None)}' "
                 f"does not match current occupancy transition id '{occupancy_trans.transition_id}'."
+            )
+
+        if action_identity == "interview_question" and not releasing_edges:
+            if current_state != STATE_INTAKE:
+                raise PhaseCapabilityDenied(
+                    f"Action '{action_identity}' not authorized in state '{current_state}' "
+                    f"(only permitted in '{STATE_INTAKE}')."
+                )
+            return PhaseCapability(
+                task_id=task_id,
+                action_identity=action_identity,
+                current_state=current_state,
+                releasing_edge=(occupancy_trans.from_state, occupancy_trans.to_state),
+                transition_id=occupancy_trans.transition_id,
+                authorized_actor="agent_or_human",
             )
 
         # Step 4: resolve its exact (from_state, to_state) template

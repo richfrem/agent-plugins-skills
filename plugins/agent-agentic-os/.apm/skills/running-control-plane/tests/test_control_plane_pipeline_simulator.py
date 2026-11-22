@@ -23,13 +23,15 @@ def test_simulator_runs_trivial_interview_fast_track_against_temporary_sqlite(tm
 
     report = simulator.run_trivial_interview_fast_track(task_id)
 
-    assert report["states"] == [STATE_INTAKE, STATE_INTERVIEW, STATE_RETROSPECTIVE]
+    assert report["states"] == [STATE_INTAKE, STATE_DONE]
     assert report["db_path"] == str((tmp_path / "simulator.db").resolve())
     assert not (Path.cwd() / "context" / "control_plane.db").exists() or simulator.db_path != Path.cwd() / "context" / "control_plane.db"
 
 
 def test_simulator_exercises_standard_interview_enforcement(tmp_path):
     simulator = PipelineSimulator(tmp_path / "standard.db")
+    simulator.control_plane.repo_root = tmp_path / "repo"
+    simulator.control_plane.repo_root.mkdir(parents=True, exist_ok=True)
     task_id = simulator.create_task("standard-001", "Standard simulator path")
     simulator.enter_interview(task_id)
 
@@ -66,12 +68,15 @@ def test_simulator_rejects_illegal_edge_through_production_control_plane(tmp_pat
 
 def test_simulator_exercises_reset_wildcard_with_interactive_approval(tmp_path):
     simulator = PipelineSimulator(tmp_path / "reset.db")
+    simulator.control_plane.repo_root = tmp_path / "repo"
+    simulator.control_plane.repo_root.mkdir(parents=True, exist_ok=True)
     task_id = simulator.create_task("reset-001", "Reset simulator path")
-    simulator.enter_interview(task_id)
+    simulator.stage_interview_answers(task_id, classification="STANDARD", to_state=STATE_DRAFT_PLAN)
+    simulator.transition_from_interview(task_id, STATE_DRAFT_PLAN, classification="STANDARD", expect_success=True)
 
     record = simulator.reset_to_intake(task_id)
 
-    assert record.from_state == STATE_INTERVIEW
+    assert record.from_state == STATE_DRAFT_PLAN
     assert record.to_state == STATE_INTAKE
     assert simulator.control_plane._persistence.read_current_state(task_id) == STATE_INTAKE
 
@@ -88,7 +93,11 @@ def test_simulator_reports_isolation_contract(tmp_path):
 
 @pytest.mark.no_auto_signer  # the illegal_edge round asserts a non-human close is REFUSED; the stand-in signer would sign it
 def test_simulator_can_play_reproducible_adversarial_rounds(tmp_path):
-    simulator = PipelineSimulator(tmp_path / "game.db")
+    from helpers.human_signer import get_test_human
+
+    simulator = PipelineSimulator(tmp_path / "game.db", human_signer=get_test_human().sign_request)
+    simulator.control_plane.repo_root = tmp_path / "repo"
+    simulator.control_plane.repo_root.mkdir(parents=True, exist_ok=True)
 
     rounds = simulator.play_adversarial_rounds("game")
 
@@ -100,7 +109,7 @@ def test_simulator_can_play_reproducible_adversarial_rounds(tmp_path):
         "reset_recovery",
     ]
     assert all(round_["state_preserved"] for round_ in rounds[:3])
-    assert rounds[3]["after_state"] == STATE_RETROSPECTIVE
+    assert rounds[3]["after_state"] == STATE_DONE
     assert rounds[4]["after_state"] == STATE_INTAKE
     assert all(round_["no_orphan_transition"] for round_ in rounds)
 
@@ -111,7 +120,7 @@ def test_simulator_can_play_one_named_round(tmp_path):
     round_ = simulator.play_round("incomplete_interview", "one")
 
     assert round_["result"] == "DENIED_AS_EXPECTED"
-    assert "force_retrospective_reason_category" in round_["error"]
+    assert "intake_outline_confirmation" in round_["error"]
     assert round_["state_preserved"] is True
     assert round_["no_orphan_transition"] is True
     assert round_["no_orphan_decision"] is True

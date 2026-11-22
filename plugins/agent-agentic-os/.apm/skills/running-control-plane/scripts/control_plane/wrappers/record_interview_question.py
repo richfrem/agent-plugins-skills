@@ -24,7 +24,7 @@ from control_plane.registry import TransitionRegistry
 from control_plane.constants import (
     script_cmd,
     AGENT_CONTROL_CMD,
-    STATE_INTERVIEW, STATE_DRAFT_PLAN,
+    STATE_INTAKE, STATE_INTERVIEW, STATE_DRAFT_PLAN,
     ERROR_CODE_CAPABILITY_DENIED, ERROR_CODE_CONTRACT_DENIED, ERROR_CODE_PERSISTENCE_DENIED,
 )
 
@@ -38,7 +38,7 @@ def _denial_response(control_plane: ControlPlane, task_id: str, error: Exception
     state = str(task.get("state", "UNKNOWN")) if task else "UNKNOWN"
     last_transition = control_plane.get_last_transition(task_id) if task else None
     occupancy = int(last_transition.transition_id) if last_transition else 0
-    if state == STATE_INTERVIEW:
+    if state in (STATE_INTAKE, STATE_INTERVIEW):
         recovery = (
             "Correct the failed check and retry record_interview_question.py with the canonical "
             f"question ID, explicit --answer, and --target-state {STATE_DRAFT_PLAN}."
@@ -106,7 +106,10 @@ def record_interview_question(
             f"Requested interview target '{requested_target}' is not a legal target from "
             f"state '{cap.current_state}'."
         )
-    if question not in (template.stage_question_ids or []):
+    allowed_qids = list(template.stage_question_ids or []) or [
+        q["question_id"] for q in (template.human_questions or []) if q.get("question_id")
+    ]
+    if question not in allowed_qids:
         raise ValueError(
             f"Unknown canonical interview question '{question}' for target '{requested_target}'."
         )
@@ -139,7 +142,7 @@ def record_interview_question(
         task_id, cap.current_state, requested_target
     )
     missing = next(
-        (qid for qid in (template.stage_question_ids or []) if qid not in answers),
+        (qid for qid in allowed_qids if qid not in answers),
         None,
     )
     if missing:

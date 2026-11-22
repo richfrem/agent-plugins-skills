@@ -166,10 +166,9 @@ def stage_worktree_metadata(cp, task_id, path=None, branch=None):
 
 
 def complete_retrospective(cp, task_id, actor="human"):
-    """Move from VERIFY_EXIT through the new retrospective gate to DONE."""
+    """Move from VERIFY_EXIT to DONE in schema v15 (VERIFY_EXIT absorbs RETROSPECTIVE)."""
     cp.record_verification_receipt(task_id, "full_test_suite", "pytest -q", 0)
     stage_implementation_ledger(cp, task_id)
-    cp.transition(task_id=task_id, to_state=STATE_RETROSPECTIVE, actor="controller", reason="Enter retrospective")
     cp.save_retrospective(
         task_id,
         {
@@ -185,8 +184,9 @@ def complete_retrospective(cp, task_id, actor="human"):
         },
         [],
     )
-    stage_human_decisions(cp, task_id, STATE_RETROSPECTIVE, STATE_DONE, actor="human", answer="complete")
-    cp.transition(task_id=task_id, to_state=STATE_DONE, actor="controller", reason="Retrospective complete")
+    TransitionCoordinator(cp, input_fn=lambda _p: "1").coordinate_transition(
+        task_id=task_id, to_state=STATE_DONE, actor="human", reason="Retrospective complete", interactive=True
+    )
 
 
 def test_schema_initialization_and_pragmas(control_plane, temp_db_path):

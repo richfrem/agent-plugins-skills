@@ -22,20 +22,13 @@ from control_plane.constants import (
 
 
 def test_interactive_draft_plan_transition_persists_answers_to_outline(tmp_path):
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir(parents=True, exist_ok=True)
     control_plane = ControlPlane(db_path=tmp_path / "control_plane.db")
+    control_plane.repo_root = repo_root
     control_plane.create_task("t1", "Test task", "codex")
-    control_plane.transition("t1", STATE_INTERVIEW, "human", "start interview")
 
-    answers = iter([
-        "STANDARD",
-        "Fix the bug.",
-        "agent_control.py only.",
-        "Tests pass.",
-        "Not applicable; this route is STANDARD, not TRIVIAL.",
-        "Preserve existing gates.",
-        "medium",
-        "YES",
-    ])
+    answers = iter(["1"])
     coordinator = TransitionCoordinator(
         control_plane,
         input_fn=lambda _prompt: next(answers),
@@ -52,7 +45,7 @@ def test_interactive_draft_plan_transition_persists_answers_to_outline(tmp_path)
     assert record.to_state == STATE_DRAFT_PLAN
     outline = control_plane._persistence.get_interview_plan_outline("t1")
     assert outline and outline.get("bullets"), (
-        "Interview answers given interactively were never persisted to the "
+        "Intake answers given interactively were never persisted to the "
         "plan outline before the DRAFT_PLAN transition committed."
     )
     artifact_path = control_plane._resolve_plan_outline_path(outline["artifact_path"])

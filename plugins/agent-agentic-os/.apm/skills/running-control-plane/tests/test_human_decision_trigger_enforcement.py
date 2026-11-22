@@ -32,7 +32,7 @@ from control_plane.state_machine import ALLOWED_TRANSITIONS
 from agent_control import ControlPlane, PersistenceInvariantViolation, ConcurrentModificationError
 from control_plane.coordinator import TransitionCoordinator, TransitionCoordinatorError
 from control_plane.constants import (
-    STATE_INTAKE, STATE_DRAFT_PLAN, STATE_AWAITING_APPROVAL, STATE_APPROVED, STATE_VERIFY_EXIT, STATE_RETROSPECTIVE, STATE_DONE, STATE_ESCALATED,
+    STATE_INTAKE, STATE_DRAFT_PLAN, STATE_PLAN_REVIEW, STATE_APPROVED, STATE_VERIFY_EXIT, STATE_DONE, STATE_ESCALATED,
 )
 
 
@@ -70,10 +70,10 @@ def test_valid_transitions_table_matches_registry(test_env):
     reg = TransitionRegistry.load_default()
     conn = sqlite3.connect(db_path)
 
-    # 1. Compare valid_transitions table
+    # 1. Compare active valid_transitions table (schema v15 retains retired=1 legacy rows for history)
     db_transitions = {
         (r[0], r[1]) for r in conn.execute(
-            "SELECT from_state, to_state FROM valid_transitions WHERE from_state IS NOT NULL"
+            "SELECT from_state, to_state FROM valid_transitions WHERE from_state IS NOT NULL AND retired = 0"
         ).fetchall()
     }
     registry_transitions = set(reg._templates_by_edge.keys())
@@ -88,16 +88,19 @@ def test_valid_transitions_table_matches_registry(test_env):
     expected_questions = {
         (edge[0], edge[1], q["question_id"])
         for edge, tmpl in reg._templates_by_edge.items()
+        if not tmpl.requires_cryptographic_proof
         for q in tmpl.human_questions
         if not q.get("asked_when")  # conditional review-selection questions are enforced by review_selection.py, not the DB
     } | {
         (edge[0], edge[1], question_id)
         for edge, tmpl in reg._templates_by_edge.items()
+        if not tmpl.requires_cryptographic_proof
         for question_id in (tmpl.stage_question_ids or [])
     } | {
         (edge[0], edge[1], f"approval_{tmpl.transition_id}")
         for edge, tmpl in reg._templates_by_edge.items()
-        if tmpl.approval.get("required") and tmpl.approval.get("approver_role", "human") == "human"
+        if not tmpl.requires_cryptographic_proof
+        and tmpl.approval.get("required") and tmpl.approval.get("approver_role", "human") == "human"
     }
     assert db_questions == expected_questions, "required_transition_questions table must match registry questions and approvals"
     conn.close()
@@ -116,6 +119,7 @@ def test_all_deterministic_edges_from_valid_transitions_table(test_env):
         SELECT vt.from_state, vt.to_state
         FROM valid_transitions vt
         WHERE vt.from_state IS NOT NULL
+          AND vt.retired = 0
           AND vt.requires_proof = 0
           AND NOT EXISTS (
               SELECT 1 FROM required_transition_questions rq
@@ -126,8 +130,7 @@ def test_all_deterministic_edges_from_valid_transitions_table(test_env):
     assert len(deterministic_edges) > 0, "Source table empty or unsynced: valid_transitions has 0 deterministic edges"
     # Proof edges (requires_proof = 1: APPROVED, VERIFY_EXIT and DONE inbound) are not "deterministic": they are
     # cryptographic gates, blocked by the trigger without a consumed transition_request (asserted below).
-    # Floor lowered 28 -> 20 (2026-09-20): the closure edges into DONE joined the proof set.
-    assert len(deterministic_edges) >= 20, f"Expected at least 20 deterministic edges in valid_transitions, got {len(deterministic_edges)}"
+    assert len(deterministic_edges) >= 10, f"Expected at least 10 active deterministic edges in valid_transitions, got {len(deterministic_edges)}"
 
     tested_edges = 0
     for idx, (from_s, to_s) in enumerate(deterministic_edges):
@@ -155,7 +158,7 @@ def test_all_deterministic_edges_from_valid_transitions_table(test_env):
 
     conn = sqlite3.connect(db_path)
     proof_edges = conn.execute(
-        "SELECT from_state, to_state FROM valid_transitions WHERE from_state IS NOT NULL AND requires_proof = 1 ORDER BY 1, 2"
+        "SELECT from_state, to_state FROM valid_transitions WHERE from_state IS NOT NULL AND retired = 0 AND requires_proof = 1 ORDER BY 1, 2"
     ).fetchall()
     assert len(proof_edges) > 0
     for idx, (from_s, to_s) in enumerate(proof_edges):
@@ -189,10 +192,12 @@ def test_all_question_edges_from_valid_transitions_table(test_env):
         FROM valid_transitions vt
         JOIN required_transition_questions rq
           ON vt.from_state = rq.from_state AND vt.to_state = rq.to_state
+        WHERE vt.retired = 0
+          AND vt.requires_proof = 0
         ORDER BY vt.from_state, vt.to_state
     """).fetchall()
     assert len(question_edges) > 0, "Source table empty or unsynced: valid_transitions has 0 question edges"
-    assert len(question_edges) >= 15, f"Expected at least 15 question edges in valid_transitions, got {len(question_edges)}"
+    assert len(question_edges) >= 8, f"Expected at least 8 active non-proof question edges in valid_transitions, got {len(question_edges)}"
 
     tested_question_edges = 0
     for from_s, to_s in question_edges:
@@ -230,7 +235,7 @@ def test_all_question_edges_from_valid_transitions_table(test_env):
         conn.commit()
         conn.execute("UPDATE tasks SET state = ? WHERE task_id = ?", (to_s, t2))
         conn.commit()
-        if (from_s, to_s) == (STATE_RETROSPECTIVE, STATE_DONE) and "retrospective_decision" in required_qids:
+        if (from_s, to_s) == (STATE_VERIFY_EXIT, STATE_DONE) and "retrospective_decision" in required_qids:
             assert conn.execute("SELECT state FROM tasks WHERE task_id = ?", (t2,)).fetchone()[0] == to_s
         else:
             assert conn.execute("SELECT state FROM tasks WHERE task_id = ?", (t2,)).fetchone()[0] == from_s
@@ -382,12 +387,12 @@ def test_reproduce_live_self_approval_bypass_rejected(test_env):
     db_path = test_env["db_path"]
     task_id = "task-repro-bypass-001"
 
-    # Setup task at AWAITING_APPROVAL
+    # Setup task at PLAN_REVIEW (Gate 1 source state in v15)
     conn = sqlite3.connect(db_path)
-    _seed_task_at_state(conn, task_id, STATE_AWAITING_APPROVAL)
+    _seed_task_at_state(conn, task_id, STATE_PLAN_REVIEW)
 
     row = conn.execute("SELECT state FROM tasks WHERE task_id = ?", (task_id,)).fetchone()
-    assert row[0] == STATE_AWAITING_APPROVAL
+    assert row[0] == STATE_PLAN_REVIEW
 
     # ATTEMPT 1: Raw SQL UPDATE bypassing coordinator with zero decisions recorded
     conn.execute("UPDATE tasks SET state = 'APPROVED' WHERE task_id = ?", (task_id,))
@@ -395,21 +400,21 @@ def test_reproduce_live_self_approval_bypass_rejected(test_env):
 
     # Verify that database trigger silently reverted state and logged violation
     row_after_raw = conn.execute("SELECT state FROM tasks WHERE task_id = ?", (task_id,)).fetchone()
-    assert row_after_raw[0] == STATE_AWAITING_APPROVAL, "Raw SQL update to APPROVED without decision must be reverted by trigger!"
+    assert row_after_raw[0] == STATE_PLAN_REVIEW, "Raw SQL update to APPROVED without decision must be reverted by trigger!"
 
     violations = conn.execute(
         "SELECT task_id, attempted_from_state, attempted_to_state FROM transition_violations WHERE task_id = ?",
         (task_id,)
     ).fetchall()
     assert len(violations) >= 1
-    assert violations[-1] == (task_id, STATE_AWAITING_APPROVAL, STATE_APPROVED)
+    assert violations[-1] == (task_id, STATE_PLAN_REVIEW, STATE_APPROVED)
 
     # ATTEMPT 2: Programmatic cp.transition call with actor='human' without recorded human decision
     with pytest.raises((PersistenceInvariantViolation, ConcurrentModificationError)):
         cp.transition(task_id, STATE_APPROVED, actor="human", reason="Self-approved without decision row")
 
     row_after_call = conn.execute("SELECT state FROM tasks WHERE task_id = ?", (task_id,)).fetchone()
-    assert row_after_call[0] == STATE_AWAITING_APPROVAL
+    assert row_after_call[0] == STATE_PLAN_REVIEW
 
     # ATTEMPT 3: Non-interactive coordinate_transition passing programmatic answers dict
     reg = TransitionRegistry.load_default()
@@ -434,7 +439,7 @@ def test_reproduce_live_self_approval_bypass_rejected(test_env):
         )
 
     row_after_coord = conn.execute("SELECT state FROM tasks WHERE task_id = ?", (task_id,)).fetchone()
-    assert row_after_coord[0] == STATE_AWAITING_APPROVAL
+    assert row_after_coord[0] == STATE_PLAN_REVIEW
     conn.close()
 
 
@@ -446,7 +451,7 @@ def test_interactive_coordinator_commits_approval_via_a_signed_request_and_write
     db_path = test_env["db_path"]
     task_id = "task-interactive-success-003"
     conn = sqlite3.connect(db_path)
-    _seed_task_at_state(conn, task_id, STATE_AWAITING_APPROVAL)
+    _seed_task_at_state(conn, task_id, STATE_PLAN_REVIEW)
     conn.close()
 
     reg = TransitionRegistry.load_default()
@@ -562,7 +567,7 @@ def test_non_interactive_approval_always_records_actor_agent(test_env):
 
     task_id = "task-non-interactive-approval"
     conn = sqlite3.connect(db_path)
-    _seed_task_at_state(conn, task_id, STATE_AWAITING_APPROVAL)
+    _seed_task_at_state(conn, task_id, STATE_PLAN_REVIEW)
     conn.close()
 
     coord = TransitionCoordinator(control_plane=cp, registry=reg)
@@ -603,8 +608,8 @@ def test_stale_decision_replay_across_occupancies_fails(test_env):
     conn = sqlite3.connect(db_path)
 
     task_id = "task-stale-replay-001"
-    # Seed task at AWAITING_APPROVAL (initial occupancy, e.g. trans_id 1)
-    _seed_task_at_state(conn, task_id, STATE_AWAITING_APPROVAL)
+    # Seed task at PLAN_REVIEW (Gate 1 source state in v15)
+    _seed_task_at_state(conn, task_id, STATE_PLAN_REVIEW)
     conn.close()
 
     # Step (a): Complete valid human-approved transition to APPROVED
@@ -622,23 +627,23 @@ def test_stale_decision_replay_across_occupancies_fails(test_env):
     conn = sqlite3.connect(db_path)
     assert conn.execute("SELECT state FROM tasks WHERE task_id = ?", (task_id,)).fetchone()[0] == STATE_APPROVED
 
-    # Step (b): Task leaves APPROVED and re-enters AWAITING_APPROVAL (occupancy changes)
-    _seed_task_at_state(conn, task_id, STATE_AWAITING_APPROVAL)
-    assert conn.execute("SELECT state FROM tasks WHERE task_id = ?", (task_id,)).fetchone()[0] == STATE_AWAITING_APPROVAL
+    # Step (b): Task leaves APPROVED and re-enters PLAN_REVIEW (occupancy changes)
+    _seed_task_at_state(conn, task_id, STATE_PLAN_REVIEW)
+    assert conn.execute("SELECT state FROM tasks WHERE task_id = ?", (task_id,)).fetchone()[0] == STATE_PLAN_REVIEW
 
-    # Step (c): Attempt transition from AWAITING_APPROVAL -> APPROVED WITHOUT recording new decisions!
+    # Step (c): Attempt transition from PLAN_REVIEW -> APPROVED WITHOUT recording new decisions!
     # 1. Raw SQL UPDATE test
     conn.execute("UPDATE tasks SET state = 'APPROVED' WHERE task_id = ?", (task_id,))
     conn.commit()
 
-    # If trigger permits stale replay, state becomes APPROVED. The test asserts that trigger MUST revert it back to AWAITING_APPROVAL!
+    # If trigger permits stale replay, state becomes APPROVED. The test asserts that trigger MUST revert it back to PLAN_REVIEW!
     state_after_raw = conn.execute("SELECT state FROM tasks WHERE task_id = ?", (task_id,)).fetchone()[0]
-    assert state_after_raw == STATE_AWAITING_APPROVAL, (
+    assert state_after_raw == STATE_PLAN_REVIEW, (
         "CRITICAL VULNERABILITY: Stale decision from prior occupancy satisfied trigger on re-entry! "
         "State was transitioned to APPROVED without fresh human decision."
     )
     violations = conn.execute(
-        "SELECT COUNT(*) FROM transition_violations WHERE task_id = ? AND attempted_from_state = 'AWAITING_APPROVAL' AND attempted_to_state = 'APPROVED'",
+        "SELECT COUNT(*) FROM transition_violations WHERE task_id = ? AND attempted_from_state = 'PLAN_REVIEW' AND attempted_to_state = 'APPROVED'",
         (task_id,)
     ).fetchone()[0]
     assert violations >= 1, "Expected violation to be logged when stale decision is replayed"
@@ -707,8 +712,8 @@ def test_recovery_approval_alignment_and_security_guarantees(test_env):
         (task_id, token1)
     ).fetchall()
     qids = {r[0] for r in decisions}
-    assert "recovery_approval_escalated_to_intake" in qids, "Must contain template human_questions question_id"
-    assert "approval_escalated_to_intake" in qids, "Must contain template approval question_id"
+    assert "reset_justification" in qids, "Must contain template human_questions question_id"
+    assert "approval_reset_to_intake__from_ESCALATED" in qids, "Must contain template approval question_id"
     for r in decisions:
         assert r[1] == token1, "Token must be preserved in answer column"
         assert r[2] == "human", "Recovery approval actor must be human"

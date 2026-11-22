@@ -20,10 +20,9 @@ def _interview_cp(tmp_path: Path):
     (repo_root / "context").mkdir(parents=True)
     cp = ControlPlane(db_path=repo_root / "context" / "control_plane.db")
     cp.init_db()
+    cp.repo_root = repo_root
     cp.create_task("outline-task", "Outline task", "codex")
     cp.log_asymmetric_persistence("outline-task", "references/map-debt.md", "OBSERVED", "prior_art_scan")
-    cp.transition("outline-task", STATE_INTERVIEW, "agent", "begin interview")
-    cp.repo_root = repo_root
     return cp, repo_root
 
 
@@ -32,33 +31,33 @@ def test_recording_interview_answer_persists_outline_and_artifact(tmp_path):
 
     result = record_interview_question(
         task_id="outline-task",
-        question="interview_summary",
+        question="intake_outline_confirmation",
         options={},
         recommended="",
-        answer="Make the pipeline continue after each answer.",
+        answer="Confirm outline and enter DRAFT_PLAN [Recommended]",
         target_state=STATE_DRAFT_PLAN,
         control_plane=cp,
     )
 
     outline = cp._persistence.get_interview_plan_outline("outline-task")
     assert outline["revision"] == 1
-    assert outline["bullets"][0]["question_id"] == "interview_summary"
+    assert outline["bullets"][0]["question_id"] == "intake_outline_confirmation"
     assert outline["artifact_path"] == "docs/plans/work-tasks/outline-task/outline-task-plan-outline.md"
     artifact = repo_root / outline["artifact_path"]
     assert artifact.exists()
-    assert "Make the pipeline continue after each answer." in artifact.read_text(encoding="utf-8")
+    assert "Confirm outline and enter DRAFT_PLAN [Recommended]" in artifact.read_text(encoding="utf-8")
     assert result["outline_artifact"] == "docs/plans/work-tasks/outline-task/outline-task-plan-outline.md"
 
 
 def test_revising_same_outline_question_updates_revision_without_duplicate_decision(tmp_path):
     cp, _ = _interview_cp(tmp_path)
     record_interview_question(
-        task_id="outline-task", question="interview_summary", options={}, recommended="",
-        answer="First wording", target_state=STATE_DRAFT_PLAN, control_plane=cp,
+        task_id="outline-task", question="intake_outline_confirmation", options={}, recommended="",
+        answer="Confirm outline and enter DRAFT_PLAN [Recommended]", target_state=STATE_DRAFT_PLAN, control_plane=cp,
     )
 
     cp.update_interview_plan_outline(
-        "outline-task", "interview_summary", "Revised wording", actor="human"
+        "outline-task", "intake_outline_confirmation", "Revised wording", actor="human"
     )
     outline = cp._persistence.get_interview_plan_outline("outline-task")
     assert outline["revision"] == 2
@@ -67,5 +66,10 @@ def test_revising_same_outline_question_updates_revision_without_duplicate_decis
 
 def test_interview_exit_to_draft_plan_requires_outline_artifact(tmp_path):
     cp, _ = _interview_cp(tmp_path)
+    cap = cp.verify_phase_capability("outline-task", "interview_question")
+    cp.record_decision(
+        "outline-task", cap.transition_id, "INTAKE", STATE_DRAFT_PLAN,
+        "intake_outline_confirmation", "Confirm outline and enter DRAFT_PLAN [Recommended]", actor="human",
+    )
     with __import__("pytest").raises(Exception, match="plan outline"):
         cp.transition("outline-task", STATE_DRAFT_PLAN, "agent", "draft plan")

@@ -40,7 +40,7 @@ if _scripts_dir not in sys.path:
 from control_plane.coordinator import TransitionCoordinator, TransitionCoordinatorError
 from control_plane.pipeline_simulator import PipelineSimulator
 from control_plane.registry import TransitionRegistry
-from control_plane.constants import STATE_AWAITING_APPROVAL
+from control_plane.constants import STATE_PLAN_REVIEW
 from agent_control import ControlPlane
 
 
@@ -50,24 +50,20 @@ def registry():
 
 
 def test_authorized_actor_derived_human_only_for_awaiting_approval(registry):
-    tmpl = registry.get_template("AWAITING_APPROVAL", "APPROVED")
+    tmpl = registry.get_template("PLAN_REVIEW", "APPROVED")
     assert tmpl is not None
     assert tmpl.authorized_actor == "human_only"
 
 
 def test_authorized_actor_derived_agent_or_human_for_routine_edge(registry):
-    tmpl = registry.get_template("INTAKE", "INTERVIEW")
+    tmpl = registry.get_template("DRAFT_PLAN", "PLAN_REVIEW")
     assert tmpl is not None
     assert tmpl.authorized_actor == "agent_or_human"
 
 
 def test_authorized_actor_derived_human_only_for_force_close_family(registry):
-    """The '* -> INTAKE' wildcard fans out into one literal template per
-    canonical state at load time (registry.py's wildcard-expansion logic) --
-    there is no literal ('*', 'INTAKE') key. INTERVIEW -> INTAKE is the exact
-    edge exercised live this session (the real reset used to fix the
-    actor='agent' interview-answer mistake)."""
-    tmpl = registry.get_template("INTERVIEW", "INTAKE")
+    """The '* -> INTAKE' wildcard fans out into one literal template per active non-INTAKE state."""
+    tmpl = registry.get_template("DRAFT_PLAN", "INTAKE")
     assert tmpl is not None
     assert tmpl.approval.get("required") is True
     assert tmpl.approval.get("approver_role") == "human"
@@ -75,13 +71,11 @@ def test_authorized_actor_derived_human_only_for_force_close_family(registry):
 
 
 def test_authorized_actor_derived_human_only_and_proof_gated_for_closure_edges(registry):
-    """auth-ciba-increment-b (2026-09-20): every edge into DONE is human_only AND requires_cryptographic_proof.
-    The earlier 'force-done is agent_or_human, gated only by a FORCE_CLOSE/FORCE_DONE literal' contract is gone:
-    there is no literal to type. INTERVIEW -> DONE is one of the wildcard-expanded closure edges."""
-    tmpl = registry.get_template("INTERVIEW", "DONE")
+    """Every edge into DONE is human_only AND requires_cryptographic_proof."""
+    tmpl = registry.get_template("DRAFT_PLAN", "DONE")
     assert tmpl is not None
     assert tmpl.authorized_actor == "human_only"
-    assert ("INTERVIEW", "DONE") in registry.proof_required_edges()
+    assert ("DRAFT_PLAN", "DONE") in registry.proof_required_edges()
     assert not any(
         {"FORCE_DONE", "FORCE_CLOSE"} & set(q.get("accepted_answers", [])) for q in tmpl.human_questions
     )
@@ -96,101 +90,71 @@ def test_valid_transitions_table_has_authorized_actor_column(tmp_path):
     assert "authorized_actor" in cols
 
     row = conn.execute(
-        "SELECT authorized_actor FROM valid_transitions WHERE from_state = ? AND to_state = ?",
-        ("AWAITING_APPROVAL", "APPROVED"),
+        "SELECT authorized_actor FROM valid_transitions WHERE from_state = ? AND to_state = ? AND retired = 0",
+        ("PLAN_REVIEW", "APPROVED"),
     ).fetchone()
     assert row is not None
     assert row[0] == "human_only"
 
     row2 = conn.execute(
-        "SELECT authorized_actor FROM valid_transitions WHERE from_state = ? AND to_state = ?",
-        ("INTAKE", "INTERVIEW"),
+        "SELECT authorized_actor FROM valid_transitions WHERE from_state = ? AND to_state = ? AND retired = 0",
+        ("DRAFT_PLAN", "PLAN_REVIEW"),
     ).fetchone()
     assert row2 is not None
     assert row2[0] == "agent_or_human"
 
 
 def test_guidance_confirmation_agent_answerable_on_routine_edge(tmp_path, registry):
-    """Case 10: INTAKE -> INTERVIEW is agent_or_human. A non-interactive call
-    supplying guidance_compliance_confirmation via --answers must succeed, and
-    the recorded decision's actor must be 'agent' (never falsely 'human')."""
+    """Case 10: DRAFT_PLAN -> PLAN_REVIEW is agent_or_human and commits non-interactively
+    as actor='agent' without human ceremony (S5 removed guidance_compliance_confirmation)."""
     db_path = tmp_path / "control_plane.db"
     cp = ControlPlane(db_path=db_path)
     cp.init_db()
+    cp.repo_root = tmp_path / "repo"
+    cp.repo_root.mkdir(parents=True, exist_ok=True)
     task_id = "case10-routine-edge"
     cp.create_task(task_id=task_id, title="Case 10", runtime_tool="test")
+    TransitionCoordinator(cp, registry=registry, input_fn=lambda _p: "1", output_stream=io.StringIO()).coordinate_transition(
+        task_id=task_id, to_state="DRAFT_PLAN", actor="human", reason="intake", interactive=True,
+    )
+    cp.record_plan_mode_entry(task_id, "agent")
+    plans = cp.repo_root / "docs" / "plans" / "work-tasks" / task_id
+    plans.mkdir(parents=True, exist_ok=True)
+    (plans / f"{task_id}-spec.md").write_text("# spec\n", encoding="utf-8")
+    (plans / f"{task_id}-implementation-plan.md").write_text("# plan\n\n- Strategy: direct\n", encoding="utf-8")
 
     coord = TransitionCoordinator(cp, registry=registry, output_stream=io.StringIO())
     rec = coord.coordinate_transition(
         task_id=task_id,
-        to_state="INTERVIEW",
+        to_state="PLAN_REVIEW",
         actor="agent",
-        reason="case 10: agent-answerable guidance confirmation on routine edge",
-        provided_answers={"guidance_compliance_confirmation": "YES"},
+        reason="case 10: agent routine edge",
+        interactive=False,
     )
-    assert rec.to_state == "INTERVIEW"
-
-    conn = sqlite3.connect(db_path)
-    row = conn.execute(
-        "SELECT actor, answer FROM transition_decisions WHERE task_id = ? AND question_id = ?",
-        (task_id, "guidance_compliance_confirmation"),
-    ).fetchone()
-    assert row is not None
-    assert row[0] == "agent"
-    assert row[1] == "YES"
+    assert rec.to_state == "PLAN_REVIEW"
 
 
 def _reach_awaiting_approval(tmp_path, registry, task_id: str) -> PipelineSimulator:
-    """Shared setup for case 9 and case 8: walks a fresh task to AWAITING_APPROVAL,
-    faithfully mirroring PipelineSimulator.run_standard_happy_path's own sequence
-    (DRAFT_PLAN -> PLAN_REVIEW only accepts "Proceed with review"; the skip-review
-    disposition lives at PLAN_REVIEW's own outgoing edges, not there)."""
+    """Shared setup for case 9 and case 8: walks a fresh task to PLAN_REVIEW (Gate 1 source state in v15)."""
     db_path = tmp_path / "control_plane.db"
     sim = PipelineSimulator(db_path, registry=registry)
     sim.create_task(task_id, "shared setup")
     sim.control_plane.repo_root = tmp_path / "simulated-repo"
     sim.control_plane.repo_root.mkdir(parents=True, exist_ok=True)
-    sim.enter_interview(task_id)
     sim.stage_interview_answers(task_id, classification="STANDARD", to_state="DRAFT_PLAN")
-    sim.control_plane.record_plan_mode_entry(task_id, "simulator")
     sim.transition_from_interview(task_id, "DRAFT_PLAN", classification="STANDARD", expect_success=True)
+    sim.control_plane.record_plan_mode_entry(task_id, "simulator")
 
-    plan_dir = sim.control_plane.repo_root / "docs" / "plans"
+    plan_dir = sim.control_plane.repo_root / "docs" / "plans" / "work-tasks" / task_id
     plan_dir.mkdir(parents=True, exist_ok=True)
-    (plan_dir / f"{task_id}-spec.md").write_text("# spec", encoding="utf-8")
-    (plan_dir / f"{task_id}-implementation-plan.md").write_text("# plan", encoding="utf-8")
+    (plan_dir / f"{task_id}-spec.md").write_text("# spec\n", encoding="utf-8")
+    (plan_dir / f"{task_id}-implementation-plan.md").write_text("# plan\n\n- Strategy: direct\n", encoding="utf-8")
 
-    plan_review_answers = iter(["1", "YES"])
     TransitionCoordinator(
-        sim.control_plane, registry=sim.registry,
-        input_fn=lambda _p: next(plan_review_answers), output_stream=io.StringIO(),
+        sim.control_plane, registry=sim.registry, output_stream=io.StringIO(),
     ).coordinate_transition(
-        task_id=task_id, to_state="PLAN_REVIEW", actor="human",
-        reason="shared setup", interactive=True,
-    )
-    review_answers = iter(["1", "3", "claude-cli", "test-model", "medium", "YES"])
-    TransitionCoordinator(
-        sim.control_plane, registry=sim.registry,
-        input_fn=lambda _p: next(review_answers), output_stream=io.StringIO(),
-    ).coordinate_transition(
-        task_id=task_id, to_state="MULTI_AGENT_REVIEW", actor="human",
-        reason="shared setup", interactive=True,
-    )
-    sim.control_plane.record_critic_review(task_id, 1, "simulator", "PASS", "simulated review passed")
-    TransitionCoordinator(
-        sim.control_plane, registry=sim.registry,
-        input_fn=lambda _p: "YES", output_stream=io.StringIO(),
-    ).coordinate_transition(
-        task_id=task_id, to_state="PLAN_REVIEW", actor="simulator",
-        reason="shared setup", interactive=True,
-    )
-    accept_answers = iter(["1", "YES"])
-    TransitionCoordinator(
-        sim.control_plane, registry=sim.registry,
-        input_fn=lambda _p: next(accept_answers), output_stream=io.StringIO(),
-    ).coordinate_transition(
-        task_id=task_id, to_state=STATE_AWAITING_APPROVAL, actor="human",
-        reason="shared setup", interactive=True,
+        task_id=task_id, to_state="PLAN_REVIEW", actor="agent",
+        reason="shared setup", interactive=False,
     )
     return sim
 
@@ -256,16 +220,15 @@ def test_direct_instantiation_spoofed_actor_denied(tmp_path, registry):
 
     conn = sqlite3.connect(sim.db_path)
     state = conn.execute("SELECT state FROM tasks WHERE task_id = ?", (task_id,)).fetchone()[0]
-    assert state == STATE_AWAITING_APPROVAL, (
-        "Task must remain in AWAITING_APPROVAL -- the spoofed-actor attempt must "
+    assert state == STATE_PLAN_REVIEW, (
+        "Task must remain in PLAN_REVIEW -- the spoofed-actor attempt must "
         "not have advanced state to APPROVED under any circumstance."
     )
 
 
 def test_phase_capability_exposes_authorized_actor(tmp_path):
     """T5: verify_phase_capability's returned PhaseCapability carries the releasing
-    edge's authorized_actor classification directly, so callers don't need a second
-    registry lookup keyed on releasing_edge to learn it."""
+    edge's authorized_actor classification directly."""
     from control_plane.ports import PhaseCapability
 
     db_path = tmp_path / "control_plane.db"
@@ -273,11 +236,10 @@ def test_phase_capability_exposes_authorized_actor(tmp_path):
     cp.init_db()
     task_id = "phase-cap-actor"
     cp.create_task(task_id=task_id, title="Phase capability actor", runtime_tool="test")
-    cp.transition(task_id, "INTERVIEW", "agent", "begin interview")
 
     cap = cp.verify_phase_capability(task_id, "interview_question")
     assert isinstance(cap, PhaseCapability)
-    assert cap.releasing_edge == ("INTAKE", "INTERVIEW")
+    assert cap.releasing_edge == ("NONE", "INTAKE")
     assert cap.authorized_actor == "agent_or_human"
 
 
@@ -380,8 +342,8 @@ def test_cli_agent_attempt_denied(tmp_path, registry, monkeypatch):
     conn = sqlite3.connect(isolated_db_path)
     state = conn.execute("SELECT state FROM tasks WHERE task_id = ?", (task_id,)).fetchone()[0]
     conn.close()
-    assert state == STATE_AWAITING_APPROVAL, (
-        "Task must remain in AWAITING_APPROVAL -- the CLI-driven agent attempt "
+    assert state == STATE_PLAN_REVIEW, (
+        "Task must remain in PLAN_REVIEW -- the CLI-driven agent attempt "
         "must not have advanced state to APPROVED under any circumstance."
     )
 

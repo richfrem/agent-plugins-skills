@@ -49,25 +49,71 @@ INTERNAL = "Multi-agent review — internal [Recommended]"
 EXTERNAL = "Multi-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)"
 YES = "Yes — continue to review method selection [Recommended]"
 
+# Schema v15 retired MULTI_AGENT_REVIEW / MULTI_AGENT_CODE_REVIEW (plan/code review happen inside
+# PLAN_REVIEW / WORKTREE_REVIEW with signed_decisions). These contract tests verify the conditional
+# review-selection machinery (asked_when, choices_from, review_selection_gaps, coordinator menu validation)
+# by attaching the review-selection questions to the active v15 edge DRAFT_PLAN -> PLAN_REVIEW.
+TEST_EDGE = ("DRAFT_PLAN", "PLAN_REVIEW")
+_CONDITIONAL_REVIEW_QUESTIONS = [
+    {
+        "question_id": "plan_review_agent_review_decision",
+        "prompt": "Run review?",
+        "required": True,
+        "options": [YES, "No"],
+    },
+    {
+        "question_id": "plan_review_method",
+        "prompt": "Which review method?",
+        "required": True,
+        "options": [INTERNAL, EXTERNAL],
+    },
+    {
+        "question_id": "plan_review_internal_runtime",
+        "prompt": "Select runtime",
+        "required": False,
+        "asked_when": {"question_id": "plan_review_method", "answer_contains": "internal"},
+        "choices_from": {"kind": "runtime"},
+    },
+    {
+        "question_id": "plan_review_internal_model",
+        "prompt": "Select model",
+        "required": False,
+        "asked_when": {"question_id": "plan_review_method", "answer_contains": "internal"},
+        "choices_from": {"kind": "model", "runtime_question": "plan_review_internal_runtime"},
+    },
+    {
+        "question_id": "plan_review_internal_effort",
+        "prompt": "Select effort",
+        "required": False,
+        "asked_when": {"question_id": "plan_review_method", "answer_contains": "internal"},
+        "choices_from": {"kind": "effort", "runtime_question": "plan_review_internal_runtime"},
+    },
+]
+
+
+def _registry_with_conditional_review():
+    import copy
+    from dataclasses import replace
+
+    registry = copy.deepcopy(TransitionRegistry.load_default())
+    tpl = registry.get_template(*TEST_EDGE)
+    registry._templates_by_edge[TEST_EDGE] = replace(tpl, human_questions=copy.deepcopy(_CONDITIONAL_REVIEW_QUESTIONS))
+    return registry
+
 
 def _plan_review_task(tmp_path):
-    registry = TransitionRegistry.load_default()
+    registry = _registry_with_conditional_review()
     sim = PipelineSimulator(tmp_path / "control_plane.db", registry=registry)
     sim.create_task(TASK, "review selection")
     sim.control_plane.repo_root = tmp_path / "repo"
     sim.control_plane.repo_root.mkdir(parents=True, exist_ok=True)
-    sim.enter_interview(TASK)
     sim.stage_interview_answers(TASK, classification="STANDARD", to_state="DRAFT_PLAN")
-    sim.control_plane.record_plan_mode_entry(TASK, "simulator")
     sim.transition_from_interview(TASK, "DRAFT_PLAN", classification="STANDARD", expect_success=True)
+    sim.control_plane.record_plan_mode_entry(TASK, "simulator")
     plans = sim.control_plane.repo_root / "docs" / "plans" / "work-tasks" / TASK
     plans.mkdir(parents=True, exist_ok=True)
     (plans / f"{TASK}-spec.md").write_text("# spec\n", encoding="utf-8")
     (plans / f"{TASK}-implementation-plan.md").write_text("# plan\n\n- Strategy: direct\n", encoding="utf-8")
-    feed = iter(["1", "YES"])
-    TransitionCoordinator(
-        sim.control_plane, registry=registry, input_fn=lambda _p: next(feed), output_stream=io.StringIO(),
-    ).coordinate_transition(task_id=TASK, to_state="PLAN_REVIEW", actor="human", reason="setup", interactive=True)
     return sim
 
 
@@ -80,7 +126,7 @@ def _go(sim, answers, **kw):
         return next(feed)
 
     coordinator = TransitionCoordinator(sim.control_plane, registry=sim.registry, input_fn=ask, output_stream=io.StringIO())
-    kwargs = dict(task_id=TASK, to_state="MULTI_AGENT_REVIEW", actor="human", reason="review", interactive=True)
+    kwargs = dict(task_id=TASK, to_state="PLAN_REVIEW", actor="human", reason="review", interactive=True)
     kwargs.update(kw)
     return coordinator.coordinate_transition(**kwargs), prompts
 
@@ -88,33 +134,32 @@ def _go(sim, answers, **kw):
 def _decisions(sim):
     conn = sqlite3.connect(sim.control_plane.db_path)
     return conn.execute(
-        "SELECT question_id, answer, actor FROM transition_decisions WHERE task_id = ? AND to_state = 'MULTI_AGENT_REVIEW' ORDER BY decision_id",
+        "SELECT question_id, answer, actor FROM transition_decisions WHERE task_id = ? AND to_state = 'PLAN_REVIEW' ORDER BY decision_id",
         (TASK,),
     ).fetchall()
 
 
 def test_both_edges_declare_the_three_internal_selections_conditionally():
-    registry = TransitionRegistry.load_default()
-    for from_state, to_state in REVIEW_EDGES:
-        questions = conditional_questions(registry.get_template(from_state, to_state))
-        assert len(questions) == 3
-        assert [q["asked_when"]["question_id"] for q in questions] == [questions[0]["asked_when"]["question_id"]] * 3
+    registry = _registry_with_conditional_review()
+    questions = conditional_questions(registry.get_template(*TEST_EDGE))
+    assert len(questions) == 3
+    assert [q["asked_when"]["question_id"] for q in questions] == [questions[0]["asked_when"]["question_id"]] * 3
 
 
 def test_conditional_questions_are_not_dbrequired(tmp_path):
     sim = _plan_review_task(tmp_path)
     conn = sqlite3.connect(sim.control_plane.db_path)
     required = {r[0] for r in conn.execute(
-        "SELECT question_id FROM required_transition_questions WHERE from_state = 'PLAN_REVIEW' AND to_state = 'MULTI_AGENT_REVIEW'")}
-    conditional = {q["question_id"] for q in conditional_questions(sim.registry.get_template("PLAN_REVIEW", "MULTI_AGENT_REVIEW"))}
+        "SELECT question_id FROM required_transition_questions WHERE from_state = 'DRAFT_PLAN' AND to_state = 'PLAN_REVIEW'")}
+    conditional = {q["question_id"] for q in conditional_questions(sim.registry.get_template(*TEST_EDGE))}
     assert conditional and not (required & conditional)
 
 
 def test_internal_method_asks_runtime_model_effort_in_order_and_records_human_decisions(tmp_path):
     sim = _plan_review_task(tmp_path)
-    _, prompts = _go(sim, [YES, INTERNAL, "claude-cli", "opus-5", "medium", "YES"])
+    _, prompts = _go(sim, [YES, INTERNAL, "claude-cli", "opus-5", "medium"])
     ids = [p.split(":")[0] for p in prompts]
-    conditional = [q["question_id"] for q in conditional_questions(sim.registry.get_template("PLAN_REVIEW", "MULTI_AGENT_REVIEW"))]
+    conditional = [q["question_id"] for q in conditional_questions(sim.registry.get_template(*TEST_EDGE))]
     assert ids[2:5] == conditional
     rows = {r[0]: (r[1], r[2]) for r in _decisions(sim)}
     assert [rows[c] for c in conditional] == [("claude-cli", "human"), ("opus-5", "human"), ("medium", "human")]
@@ -122,47 +167,48 @@ def test_internal_method_asks_runtime_model_effort_in_order_and_records_human_de
 
 def test_external_method_asks_nothing_more(tmp_path):
     sim = _plan_review_task(tmp_path)
-    _, prompts = _go(sim, [YES, EXTERNAL, "YES"])
-    conditional = {q["question_id"] for q in conditional_questions(sim.registry.get_template("PLAN_REVIEW", "MULTI_AGENT_REVIEW"))}
+    _, prompts = _go(sim, [YES, EXTERNAL])
+    conditional = {q["question_id"] for q in conditional_questions(sim.registry.get_template(*TEST_EDGE))}
     assert not ({p.split(":")[0] for p in prompts} & conditional)
     assert not ({r[0] for r in _decisions(sim)} & conditional)
 
 
 def test_provided_answers_cannot_satisfy_an_internal_selection(tmp_path):
     sim = _plan_review_task(tmp_path)
-    conditional = conditional_questions(sim.registry.get_template("PLAN_REVIEW", "MULTI_AGENT_REVIEW"))
+    conditional = conditional_questions(sim.registry.get_template(*TEST_EDGE))
     answers = {"plan_review_agent_review_decision": YES, "plan_review_method": INTERNAL}
     answers.update({q["question_id"]: "x" for q in conditional})
     with pytest.raises(TransitionCoordinatorError):
         _go(sim, [], interactive=False, provided_answers=answers)
-    assert sim.control_plane._persistence.read_current_state(TASK) == "PLAN_REVIEW"
+    assert sim.control_plane._persistence.read_current_state(TASK) == "DRAFT_PLAN"
 
 
 def test_empty_selection_is_rejected(tmp_path):
     sim = _plan_review_task(tmp_path)
-    with pytest.raises(TransitionCoordinatorError):
-        _go(sim, [YES, INTERNAL, "", "opus-5", "medium", "YES"])
-    assert sim.control_plane._persistence.read_current_state(TASK) == "PLAN_REVIEW"
+    # B21: empty selection is rejected and re-prompted; never recorded as an empty decision.
+    _, prompts = _go(sim, [YES, INTERNAL, "", "claude-cli", "opus-5", "medium"])
+    assert sum(1 for p in prompts if p.startswith("plan_review_internal_runtime:")) == 2
+    rows = {r[0]: r[1] for r in _decisions(sim)}
+    assert rows["plan_review_internal_runtime"] == "claude-cli"
 
 
 def test_critic_outcome_is_refused_without_the_selections(tmp_path):
     sim = _plan_review_task(tmp_path)
-    _go(sim, [YES, INTERNAL, "claude-cli", "opus-5", "medium", "YES"])
+    _go(sim, [YES, INTERNAL, "claude-cli", "opus-5", "medium"])
     conn = sqlite3.connect(sim.control_plane.db_path)
     conn.execute("DELETE FROM transition_decisions WHERE task_id = ? AND question_id LIKE '%internal_model'", (TASK,))
     conn.commit()
-    with pytest.raises(Exception) as excinfo:
-        sim.control_plane.record_critic_review(TASK, 1, "opus-5", "PASS", "no selection recorded")
-    assert "selection" in str(excinfo.value).lower()
+    gaps = review_selection_gaps(conn, sim.registry, TASK, *TEST_EDGE)
+    assert len(gaps) == 1 and gaps[0].endswith("internal_model")
 
 
 def test_review_selection_gaps_reports_missing_ids(tmp_path):
     sim = _plan_review_task(tmp_path)
     conn = sqlite3.connect(sim.control_plane.db_path)
-    assert review_selection_gaps(conn, sim.registry, TASK, "PLAN_REVIEW", "MULTI_AGENT_REVIEW") == []
-    _go(sim, [YES, INTERNAL, "claude-cli", "opus-5", "medium", "YES"])
-    assert review_selection_gaps(conn, sim.registry, TASK, "PLAN_REVIEW", "MULTI_AGENT_REVIEW") == []
+    assert review_selection_gaps(conn, sim.registry, TASK, *TEST_EDGE) == []
+    _go(sim, [YES, INTERNAL, "claude-cli", "opus-5", "medium"])
+    assert review_selection_gaps(conn, sim.registry, TASK, *TEST_EDGE) == []
     conn.execute("DELETE FROM transition_decisions WHERE task_id = ? AND question_id LIKE '%internal_effort'", (TASK,))
     conn.commit()
-    gaps = review_selection_gaps(conn, sim.registry, TASK, "PLAN_REVIEW", "MULTI_AGENT_REVIEW")
+    gaps = review_selection_gaps(conn, sim.registry, TASK, *TEST_EDGE)
     assert len(gaps) == 1 and gaps[0].endswith("internal_effort")
