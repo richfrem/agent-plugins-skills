@@ -922,7 +922,7 @@ class ControlPlane:
             self.assert_interview_exit_ready(task_id, stage="interview", round_id=None)
         if current_state == STATE_INTERVIEW and to_state != STATE_INTERVIEW:
             self.assert_interview_exit_ready(task_id, stage="interview", round_id=None)
-        if current_state in (STATE_INTAKE, STATE_INTERVIEW) and to_state == STATE_DRAFT_PLAN:
+        if current_state == STATE_INTERVIEW and to_state == STATE_DRAFT_PLAN:
             self.assert_interview_plan_outline_ready(task_id)
 
         # --- Unified gate policy: deterministic checks from authoritative YAML registry ---
@@ -1022,7 +1022,7 @@ class ControlPlane:
                 commit_request.task_id, stage="interview", round_id=None
             )
         if (
-            commit_request.expected_from_state in (STATE_INTAKE, STATE_INTERVIEW)
+            commit_request.expected_from_state == STATE_INTERVIEW
             and commit_request.to_state == STATE_DRAFT_PLAN
         ):
             self.assert_interview_plan_outline_ready(commit_request.task_id)

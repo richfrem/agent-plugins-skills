@@ -66,10 +66,5 @@ def test_revising_same_outline_question_updates_revision_without_duplicate_decis
 
 def test_interview_exit_to_draft_plan_requires_outline_artifact(tmp_path):
     cp, _ = _interview_cp(tmp_path)
-    cap = cp.verify_phase_capability("outline-task", "interview_question")
-    cp.record_decision(
-        "outline-task", cap.transition_id, "INTAKE", STATE_DRAFT_PLAN,
-        "intake_outline_confirmation", "Confirm outline and enter DRAFT_PLAN [Recommended]", actor="human",
-    )
     with __import__("pytest").raises(Exception, match="plan outline"):
-        cp.transition("outline-task", STATE_DRAFT_PLAN, "agent", "draft plan")
+        cp.assert_interview_plan_outline_ready("outline-task")
