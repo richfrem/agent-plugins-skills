@@ -736,12 +736,7 @@ class TransitionCoordinator:
         if is_sim:
             from control_plane.identity_layout import IdentityLayout
             sim_id = db_path.parent / "identity"
-            layout = IdentityLayout(
-                root=sim_id,
-                allowed_signers=sim_id / "allowed_signers",
-                allowed_signers_selftest=sim_id / "allowed_signers_selftest",
-                challenge_dir=sim_id / "challenges",
-            )
+            layout = IdentityLayout(root=sim_id)
         else:
             layout = default_layout(repo_root)
         preflight = check_isolation(
