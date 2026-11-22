@@ -35,9 +35,10 @@ python3 ../running-control-plane/scripts/control_plane/installation_probe.py --t
 1. **Preflight**: Run `installation_probe.py` to classify target as `FRESH`, `COMPLETE`, or `PARTIAL_OR_DRIFTED`.
 2. **Discovery**: Interview stack, AI platforms, and package manager.
 3. **Synthesize Instructions**: Keep `AGENTS.md` canonical per [instruction-blending.md](../instruction-blending.md).
-4. **Execute Provisioning**:
+4. **Execute Provisioning** (writes `context/control-plane-mode` = `on-demand` by default so everyday unregistered branches pass ungated and only registered jobs are gated; use `control_plane_mode.py enable` for strict always-on gating):
    - Fresh: `python3 scripts/init_agentic_os.py --target <project-path> --sync-instructions`
    - Retrofit: `python3 scripts/init_agentic_os.py --target <project-path> --retrofit`
+   - Human SSH key setup (`signing-setup`) is only needed when you start your first governed job.
 5. **Agent Simulation Identity** (creation, validation and healthcheck: [agent-identity.md](../agent-identity.md)): Ensure agent simulation identity (`context/simulation/identity/`) is initialized so the `simulator` mode of `running-control-plane` can run state validations without human production keys:
    ```bash
    python3 -c "from pathlib import Path; from control_plane.simulation_identity import ensure_simulation_identity; ensure_simulation_identity(Path('.'))"

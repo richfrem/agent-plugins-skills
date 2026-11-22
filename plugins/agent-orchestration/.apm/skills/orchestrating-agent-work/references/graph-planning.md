@@ -31,6 +31,8 @@ Smells that mean the graph is too big: N sequential mutations each with their ow
 ```bash
 # Validate compiled manifest against schema and acyclicity rules
 python3 scripts/validate_manifest.py graph-manifest.json
+# Add --check-approval-none when running autonomously with --approval none (requires a root verifier_gate with role="approval")
+python3 scripts/validate_manifest.py graph-manifest.json --check-approval-none
 ```
 
 ## Workflow
@@ -46,7 +48,7 @@ python3 scripts/validate_manifest.py graph-manifest.json
    - Allocate `fast_engine` for leaf nodes and `frontier_engine` for synthesis.
    - Give each fallback the same `type` as its primary and, for mutations, the same preceding mutations.
 
-4. **Compile Manifest**: Author `graph-manifest.json` adhering to `graph-manifest-schema.json`. For each `verifier_hash`, hash the first file named in the command (`shasum -a 256 scripts/verify.py`), or the command string when it names no file. Write a Mermaid diagram of the DAG next to the manifest (or in the task plan) and show it to the caller.
+4. **Compile Manifest**: Author `graph-manifest.json` adhering to `graph-manifest-schema.json`. For autonomous `--approval none` mutation graphs, include a leading root `verifier_gate` with `role: "approval"` that every mutation depends on. If you embed a `plan_audit.py check` node in the DAG, mark it `role: "audit"` (every mutation node must depend on it). Write a Mermaid diagram of the DAG next to the manifest (or in the task plan) and show it to the caller.
 
 5. **Validate & Handoff**: Run `validate_manifest.py` (add `--check-approval-none` when the graph will run with `--approval none`). Hand off the manifest path, its SHA256 (`shasum -a 256 graph-manifest.json`), the intended `--approval` mode, and the workspace flag. The human approves that SHA; any later manifest edit requires re-approval.
 

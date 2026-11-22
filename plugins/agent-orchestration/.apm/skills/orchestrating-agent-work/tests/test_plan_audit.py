@@ -111,3 +111,20 @@ def test_unsettled_blocker_and_settle_rules(tmp_path):
     # Human accepting settles it -> PASS
     assert _run("settle", "--verdict", str(verdict), "--finding", "F-1", "--as", "accepted", "--by", "human", "--note", "accepted residual").returncode == 0
     assert _run("check", "--verdict", str(verdict), "--artifact", f"spec={spec}").returncode == 0
+
+
+def test_record_accepts_inline_json_findings(tmp_path):
+    spec = tmp_path / "spec.md"
+    spec.write_text("# Spec\n", encoding="utf-8")
+    pkt_dir = tmp_path / "pkt"
+    assert _run("packet", "--artifact", f"spec={spec}", "--reviewer", "arch", "--out", str(pkt_dir)).returncode == 0
+    pkt_json = pkt_dir / "packet.json"
+    verdict = tmp_path / "verdict.json"
+    rep = tmp_path / "rep.md"
+    rep.write_text("[LGTM]\n", encoding="utf-8")
+
+    assert _run("record", "--verdict", str(verdict), "--round", "1", "--reviewer", "arch", "--status", "completed", "--report", str(rep), "--findings", "[]", "--packet", str(pkt_json)).returncode == 0
+    assert _run("record", "--verdict", str(verdict), "--round", "2", "--reviewer", "arch", "--status", "completed", "--report", str(rep), "--findings", "[]", "--packet", str(pkt_json)).returncode == 0
+    chk = _run("check", "--verdict", str(verdict), "--artifact", f"spec={spec}", "--json")
+    assert chk.returncode == 0, chk.stdout
+    assert json.loads(chk.stdout)["ok"] is True

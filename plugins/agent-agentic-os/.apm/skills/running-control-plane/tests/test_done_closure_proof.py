@@ -118,7 +118,7 @@ def test_retrospective_completion_needs_a_signature(tmp_path):
         cp, registry=sim.registry, output_stream=io.StringIO(), human_signer=human.sign_request,
     ).coordinate_transition(task_id=task, to_state="VERIFY_EXIT", actor="human", reason="accept", interactive=True)
     cp.save_retrospective(task, {"decision": "opt_in", "completion_mode": "completed", "actor": "human", "outcome": "ok"}, [])
-    for gate_name in ("test_suite", "full_test_suite"):
+    for gate_name in ("test_suite", "full_test_suite", "leak_check"):
         cp.record_verification_receipt(task, gate_name, "pytest", 0)
     strict = TransitionCoordinator(cp, registry=sim.registry, output_stream=io.StringIO())
     with pytest.raises(HumanProofRequired) as excinfo:

@@ -3,7 +3,7 @@
 
 Subcommands:
     packet  --artifact LABEL=PATH ... --target-path PATH ... --reviewer NAME ... --out DIR
-    record  --verdict FILE --round N --reviewer NAME --status completed|not-run --report FILE --findings FILE [--packet FILE]
+    record  --verdict FILE --round N --reviewer NAME --status completed|not-run --report FILE --findings FILE|JSON [--packet FILE]
     settle  --verdict FILE --finding ID --as fixed|contested|accepted --by human|agent --note TEXT [--evidence FILE]
     check   --verdict FILE --artifact LABEL=PATH ... [--not-before ISO8601] [--json]
 
@@ -149,8 +149,12 @@ def cmd_record(args: argparse.Namespace) -> int:
         report_path = Path(args.report).resolve()
         report_sha = _sha256_file(report_path)
 
-        findings_path = Path(args.findings).resolve()
-        raw_findings = json.loads(findings_path.read_text(encoding="utf-8"))
+        raw_arg = args.findings.strip()
+        if raw_arg.startswith("["):
+            raw_findings = json.loads(raw_arg)
+        else:
+            findings_path = Path(args.findings).resolve()
+            raw_findings = json.loads(findings_path.read_text(encoding="utf-8"))
         if not isinstance(raw_findings, list):
             raise ValueError("--findings must contain a JSON list")
         validated_findings = []

@@ -26,7 +26,7 @@ python3 scripts/plan_audit.py packet \
 
 ## Recording, Settling, and Convergence
 
-1. **Record each reviewer**: `plan_audit.py record --verdict verdict.json --round N --reviewer <name> --status completed|not-run --report <file> --findings <json> --packet <packet.json>`. A failed or empty reviewer MUST be recorded as `not-run` (never treated as clean).
+1. **Record each reviewer**: `plan_audit.py record --verdict verdict.json --round N --reviewer <name> --status completed|not-run --report <file> --findings <findings.json-or-inline-json> --packet <packet.json>`. A failed or empty reviewer MUST be recorded as `not-run` (never treated as clean).
 2. **Settle findings**: `plan_audit.py settle --verdict verdict.json --finding <id> --as fixed|contested|accepted --by human|agent --note <text> [--evidence <file>]`. `contested` and `accepted` count as settled only when `--by human` or accompanied by an `--evidence` file hash.
 3. **Convergence (`plan_audit.py check`)**:
    - Every declared reviewer is `completed` in each of the last **2** consecutive rounds;

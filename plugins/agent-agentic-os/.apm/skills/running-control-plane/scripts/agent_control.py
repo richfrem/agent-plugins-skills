@@ -1522,7 +1522,7 @@ def _build_parser() -> argparse.ArgumentParser:
     p_wt.add_argument("--task-id", required=True)
     p_wt.add_argument("--path", required=True)
     p_wt.add_argument("--branch", required=True)
-    p_wt.add_argument("--state", required=True)
+    p_wt.add_argument("--state", required=True, choices=WORKTREE_STATES)
 
     p_st = sub.add_parser("status")
     p_st.add_argument("--task-id", required=True)

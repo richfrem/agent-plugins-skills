@@ -81,11 +81,11 @@ review_selection_contract:
   user_must_choose_internal_route: true
   human_answer_provenance:
     chat_answer: A user answer received in chat is a human decision. Persist it through coordinate-transition --interactive
-      so SQLite records actor=human.
-    answers_flag: Do not use --answers to represent a human-gated answer; it records agent provenance and will be rejected
-      by the SQLite human-decision trigger.
-    scripted_use: Use --answers only for non-human scripted tests or explicitly agent-authored decisions on edges that permit
-      them.
+      (or --answers paired with --human-confirmed on SOFT edges) so SQLite records actor=human.
+    answers_flag: Do not use bare --answers (without --human-confirmed) to represent a human-gated answer; it records agent
+      provenance and will be rejected by the SQLite human-decision trigger.
+    scripted_use: Use bare --answers only for non-human scripted tests or explicitly agent-authored decisions on edges that
+      permit them.
   internal_selection_rule: After the user selects an internal method, inspect the confirmed environment and current catalogs,
     recommend a proportional runtime/model/effort route, and ask the user to choose or confirm it. Do not dispatch an internal
     reviewer until that explicit user selection is recorded.
@@ -560,9 +560,9 @@ stages:
       - already_resolved_in_current_package
       - bounded_fix_requires_rework_loop
       - larger_follow_up_requires_issue_or_new_work_package
-      bounded_fix_rule: A bounded fix is never applied directly from RETROSPECTIVE -- it requires returning through the rework
+      bounded_fix_rule: A bounded fix is never applied directly from VERIFY_EXIT -- it requires returning through the rework
         loop (IN_WORKTREE/WORKTREE_REVIEW) like any other implementation change.
-      no_legal_return_rule: RETROSPECTIVE has no legal implementation return edge in the canonical DAG -- a genuine bounded
+      no_legal_return_rule: VERIFY_EXIT has no legal implementation return edge in the canonical DAG -- a genuine bounded
         fix requires an explicit human-approved recovery re-entry into IN_WORKTREE, not a silent exception.
       larger_follow_up_rule: Before opening a new issue or work package for a larger follow-up, run a duplicate search against
         existing open issues and map-debt entries covering the same root cause.

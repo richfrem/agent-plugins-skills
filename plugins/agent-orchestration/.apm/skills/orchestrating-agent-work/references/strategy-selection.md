@@ -29,9 +29,9 @@ python3 scripts/select_strategy.py --out docs/plans/work-tasks/my-task/
    Read caller-supplied brief, spec, plan, or diagnostic files. Derive answers for known dimensions from explicit requirements; ask only about unresolved dimensions.
 
 2. **Diagnostic Interview (Max 3 Questions, 1 per turn)**:
-   - **Unit structure**: minimal direct change | one bounded change | distinct steps with dependencies | many identical independent units
-   - **Ordering/convergence**: none | results must merge at a barrier | ordered mutations with gates between them
-   - **Assurance need**: normal | adversarial review required (security/architecture)
+   - **Unit structure (`unit_structure`)**: `minimal_direct` (minimal direct change) | `one_bounded` (one bounded change) | `distinct_steps` (distinct steps with dependencies) | `many_identical` (many identical independent units)
+   - **Ordering/convergence (`ordering_convergence`)**: `none` | `barrier` (results must merge at a barrier) | `ordered_mutations` (ordered mutations with gates between them)
+   - **Assurance need (`assurance_need`)**: `normal` | `adversarial` (adversarial review required: security/architecture)
    Each question presents structured options with a recommended default (`Option A [Recommended]`).
 
 3. **Deterministic Selection**:
@@ -42,8 +42,7 @@ python3 scripts/select_strategy.py --out docs/plans/work-tasks/my-task/
    - One bounded change -> `dual-loop`
    - Minimal direct edit -> `direct`
    - Adversarial assurance -> `red-team-review` (wrapper modifier; [strategy-red-team-review.md](strategy-red-team-review.md))
-   Until `select_strategy.py` implements the graph rule above (planned in the job-scoped-control-plane change set), apply it yourself when you confirm the decision with the human.
-   Open-ended research and self-improvement are out of scope here; use agent-agentic-os (`os-lab`).
+   Open-ended research and self-improvement are out of scope here; use agent-agentic-os (`improving-skills-in-lab`).
 
 4. **Confirm & Record Decision**:
    Write `select-loop-strategy-decision.json` (and `.md`) to the task directory (via `--out docs/plans/work-tasks/<task-id>/`). Present the decision to the human to confirm or override. Record any requested override in the decision artifact.

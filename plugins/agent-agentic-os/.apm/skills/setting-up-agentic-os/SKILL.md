@@ -29,9 +29,10 @@ One-time and occasional setup: bootstrap or retrofit a repository, and help a hu
 
 1. **Read-only preflight.** Probe first to classify the repository; never blindly overwrite existing instructions.
 2. **`AGENTS.md` is canonical.** `CLAUDE.md` is at most a short pointer. Preserve custom user instructions during a retrofit.
-3. **Humans create keys, agents never do.** Never run key enrollment, never read, copy or move a private key, never edit `allowed_signers*`, never pipe a passphrase or fabricate a signature.
-4. **The agent has its own identity.** Init creates the agent's simulation key for the simulator and the setup validation; it never writes the human's production trust file. See [agent-identity.md](references/agent-identity.md).
-5. **Depends on `running-control-plane`.** The scripts import its `control_plane` package from the sibling skill folder and stop with a clear message when it is missing.
+3. **On-demand control plane by default.** `init_agentic_os.py` sets `context/control-plane-mode` to `on-demand` (unregistered branches pass ungated; only jobs registered in `context/control_plane.db` are gated). Switch to strict always-on enforcement with `control_plane_mode.py enable` when desired.
+4. **Humans create keys, agents never do.** Never run key enrollment, never read, copy or move a private key, never edit `allowed_signers*`, never pipe a passphrase or fabricate a signature. Human SSH key setup (`signing-setup`) is only required when you run your first governed job, not for everyday unregistered `on-demand` work.
+5. **The agent has its own identity.** Init creates the agent's simulation key for the simulator and the setup validation; it never writes the human's production trust file. See [agent-identity.md](references/agent-identity.md).
+6. **Depends on `running-control-plane`.** The scripts import its `control_plane` package from the sibling skill folder and stop with a clear message when it is missing.
 
 ## Quick start
 

@@ -26,7 +26,7 @@ Compile the spec and implementation plan under `docs/plans/work-tasks/<task-id>/
 python3 scripts/agent_control.py coordinate-transition --task-id "<task-id>" --to "PLAN_REVIEW" --reason "Draft spec and plan ready for review"
 ```
 
-### TRIVIAL Fast-Track Flow
+### Trivial Changes (On-Demand Mode & Early Closure)
 In `on-demand` mode (default), unregistered trivial branches pass without control-plane gating. For registered tasks, early closure uses the signed `* -> DONE` edge:
 ```bash
 python3 scripts/agent_control.py coordinate-transition --task-id "<task-id>" --to "DONE" --reason "Early closure"
