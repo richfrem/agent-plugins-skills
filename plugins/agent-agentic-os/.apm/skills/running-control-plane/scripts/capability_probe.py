@@ -80,7 +80,7 @@ def probe_runtime(
     """
     values = os.environ if env is None else env
     runtime = (runtime_id or detect_runtime(values)).lower()
-    fallback = "Invoke the issue-worktree-agent skill for the portable .worktrees lifecycle."
+    fallback = "Use the worktree mode of running-control-plane (or resolving-github-issues) for the portable .worktrees lifecycle."
     base = {
         "runtime_id": runtime,
         "available": runtime != "unknown",
@@ -127,3 +127,10 @@ def probe_runtime(
                         "Codex native worktree capability is not confirmed; use the portable fallback."
                     ))
     return RuntimeCapabilities(**base)
+
+
+if __name__ == "__main__":
+    import dataclasses
+    import json
+
+    print(json.dumps(dataclasses.asdict(probe_runtime()), indent=2))

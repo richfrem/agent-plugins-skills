@@ -59,12 +59,12 @@ def test_inspect_decisions_lists_actor_and_answers_in_order(sim):
     assert rows and [r["decision_id"] for r in rows] == sorted(r["decision_id"] for r in rows)
     first = rows[0]
     assert {"decision_id", "edge", "question_id", "actor", "answer", "decision_type", "consumed"} <= set(first)
-    assert any(r["actor"] == "human" and r["question_id"] == "guidance_compliance_confirmation" for r in rows)
+    assert any(r["actor"] == "human" and r["question_id"] == "intake_outline_confirmation" for r in rows)
 
 
 def test_inspect_decisions_filters_by_edge(sim):
-    rows = inspect_decisions(_conn(sim), TASK, to_state="PLAN_REVIEW")
-    assert rows and all(r["edge"].endswith("-> PLAN_REVIEW") for r in rows)
+    rows = inspect_decisions(_conn(sim), TASK, to_state="DRAFT_PLAN")
+    assert rows and all(r["edge"].endswith("-> DRAFT_PLAN") for r in rows)
     assert inspect_decisions(_conn(sim), TASK, to_state="NO_SUCH_STATE") == []
 
 

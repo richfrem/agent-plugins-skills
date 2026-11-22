@@ -21,7 +21,7 @@ Carried over from the description of the former skill, so its trigger phrases an
 1. **Confirm Approver Identity First**: Real work lives in `context/control_plane.db` where only the human operator's signing key approves; simulation runs in `simulation_control_plane.db` with agent test identity (`test-human@local`).
 2. **Read Guidance & DB First**: Read `transition_templates.yaml`, `transition-guidance`, and SQLite DB first; say exactly which parts were read, never more.
 3. **Artifact Location & Running Ledger**: Task artifacts live in `docs/plans/work-tasks/<task-id>/`, never plans root. Maintain a running ledger of every human directive from first message.
-4. **Question Budget & Chat Answers**: Answer from context first; ask only ONE question per turn. Never re-ask what is recorded and never dispute the human's account. Persist chat answers via `coordinate-transition --interactive` (actor=human); never write interview answers as interviewer.
+4. **Question Budget & Chat Answers**: Answer from context first; ask only ONE question per turn. Never re-ask what is recorded and never dispute the human's account. On `SOFT` edges, ask the human in chat first, then persist their explicit answer via `coordinate-transition` with `--answers '<json>' --human-confirmed "HUMAN-CONFIRMED: <summary>"` (records `actor=human`) or `--interactive` in a human terminal; never write interview answers as interviewer or invent answers.
 5. **Pasteable Commands Only**: Every command the human must run is complete and ready to paste, with no back-references, no vague references, and never "see above".
 6. **Stop on Blocked Gate**: On blocked gate, STOP and state cause and cost; no workaround commands (recovery approvals, direct DB edits). Never record a review skip on the human's behalf.
 
@@ -30,8 +30,9 @@ Carried over from the description of the former skill, so its trigger phrases an
 Check advisory guidance for the active task state:
 
 ```bash
-python3 scripts/control_plane/coordinator.py transition-guidance --task-id <task-id>
+cd scripts && python3 -m control_plane transition-guidance --task-id <task-id>
 ```
+*(Pass `--db-path <path>` when targeting a non-default database such as `context/simulation/simulation_control_plane.db`.)*
 
 ## Workflow
 

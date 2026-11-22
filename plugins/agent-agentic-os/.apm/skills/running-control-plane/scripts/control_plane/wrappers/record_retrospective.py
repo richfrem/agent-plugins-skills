@@ -44,13 +44,15 @@ def main() -> None:
     parser.add_argument("--task-id", required=True)
     parser.add_argument("--entry", required=True, help="JSON object containing retrospective fields")
     parser.add_argument("--follow-ups", default="[]", help="JSON array of follow-up objects")
+    parser.add_argument("--db-path", default=None, help="Override control-plane SQLite DB path")
     args = parser.parse_args()
     try:
         entry = json.loads(args.entry)
         follow_ups = json.loads(args.follow_ups)
         if not isinstance(entry, dict) or not isinstance(follow_ups, list):
             raise ValueError("--entry must be a JSON object and --follow-ups must be a JSON array")
-        print(json.dumps(record_retrospective(args.task_id, entry, follow_ups), indent=2))
+        cp = ControlPlane(db_path=Path(args.db_path)) if args.db_path else None
+        print(json.dumps(record_retrospective(args.task_id, entry, follow_ups, control_plane=cp), indent=2))
     except PhaseCapabilityDenied as exc:
         print(f"CAPABILITY DENIED: {exc}", file=sys.stderr)
         sys.exit(2)

@@ -6,7 +6,7 @@ Extracted from SKILL.md per Layer-1 procedural-core line budget (issue #551).
 
 Register the task in `context/control_plane.db`:
 ```bash
-python3 scripts/agent_control.py init --task-id "<task-id>" --title "<title>" --runtime "<runtime>" --spec-path "docs/plans/work-tasks/<task-id>/<task-id>-spec.md"
+python3 scripts/agent_control.py init --task-id "<task-id>" --title "<title>" --runtime "<runtime>" --spec-path "docs/plans/work-tasks/<task-id>/<task-id>-spec.md" --human-confirmed "HUMAN-CONFIRMED: <summary>"
 ```
 
 ## Triage Heuristics & Commands

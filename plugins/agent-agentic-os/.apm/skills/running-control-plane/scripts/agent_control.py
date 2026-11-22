@@ -131,7 +131,7 @@ from control_plane import policy as _policy
 from control_plane.state_machine import StateMachine, CANONICAL_STATES, ALLOWED_TRANSITIONS, InvalidStateTransition
 from control_plane.constants import (
     AGENT_CONTROL_CMD,
-    STATE_INTERVIEW, STATE_DRAFT_PLAN, STATE_APPROVED, STATE_IN_WORKTREE, STATE_RETROSPECTIVE, STATE_DONE,
+    STATE_INTAKE, STATE_INTERVIEW, STATE_DRAFT_PLAN, STATE_APPROVED, STATE_IN_WORKTREE, STATE_RETROSPECTIVE, STATE_DONE,
 )
 
 from control_plane.registry import TransitionRegistry
@@ -828,7 +828,7 @@ class ControlPlane:
                 f"expected docs/plans/work-tasks/{task_id}/{task_id}-implementation-plan.md (or the legacy "
                 f"docs/plans/{task_id}-implementation-plan.md) with a fenced JSON "
                 "Implementation Task Ledger; add COMPLETE entries with evidence and existing "
-                "artifact paths before retrying VERIFY_EXIT -> RETROSPECTIVE."
+                "artifact paths before retrying VERIFY_EXIT -> DONE."
             )
 
         def reconcile_main_into_worktree() -> Dict[str, List[str]]:
@@ -918,6 +918,8 @@ class ControlPlane:
         if not bypass_adjacency:
             self._state_machine.validate_adjacency(task_id, current_state, to_state)
 
+        if current_state in (STATE_INTAKE, STATE_INTERVIEW) and to_state == STATE_DRAFT_PLAN:
+            self.assert_interview_exit_ready(task_id, stage="interview", round_id=None)
         if current_state == STATE_INTERVIEW and to_state != STATE_INTERVIEW:
             self.assert_interview_exit_ready(task_id, stage="interview", round_id=None)
         if current_state == STATE_INTERVIEW and to_state == STATE_DRAFT_PLAN:
@@ -1010,14 +1012,12 @@ class ControlPlane:
             for d in commit_request.staged_decisions
         )
         if (
-            commit_request.expected_from_state == STATE_INTERVIEW
-            and commit_request.to_state != STATE_INTERVIEW
+            commit_request.expected_from_state in (STATE_INTAKE, STATE_INTERVIEW)
+            and commit_request.to_state == STATE_DRAFT_PLAN
             and not force_retrospective
         ):
             # This is deliberately immediately before the atomic persistence call so both
             # deterministic and coordinated transition front-doors share the same gate.
-            # Skipped only for an explicit human-authorized FORCE_RETROSPECTIVE emergency
-            # close, which intentionally bypasses the normal interview-completeness gate.
             self.assert_interview_exit_ready(
                 commit_request.task_id, stage="interview", round_id=None
             )

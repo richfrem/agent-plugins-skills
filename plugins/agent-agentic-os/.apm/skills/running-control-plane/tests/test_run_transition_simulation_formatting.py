@@ -18,9 +18,9 @@ from control_plane.registry import TransitionRegistry
 
 def test_routine_edge_shows_agent_or_human_without_denial_reason():
     registry = TransitionRegistry.load_default()
-    template = registry.get_template("INTAKE", "INTERVIEW")
+    template = registry.get_template("INTAKE", "DRAFT_PLAN")
     case = SimulationCase(
-        from_state="INTAKE", to_state="INTERVIEW", transition_id=template.transition_id,
+        from_state="INTAKE", to_state="DRAFT_PLAN", transition_id=template.transition_id,
         condition="HUMAN_APPROVES",
     )
     line = format_actor_classification_line(case, template)
@@ -30,9 +30,9 @@ def test_routine_edge_shows_agent_or_human_without_denial_reason():
 
 def test_adversarial_case_on_human_only_edge_shows_denial_reason():
     registry = TransitionRegistry.load_default()
-    template = registry.get_template("AWAITING_APPROVAL", "APPROVED")
+    template = registry.get_template("PLAN_REVIEW", "APPROVED")
     case = SimulationCase(
-        from_state="AWAITING_APPROVAL", to_state="APPROVED", transition_id=template.transition_id,
+        from_state="PLAN_REVIEW", to_state="APPROVED", transition_id=template.transition_id,
         condition="AGENT_SPOOF_DENIED",
     )
     line = format_actor_classification_line(case, template)

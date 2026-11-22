@@ -35,6 +35,7 @@ if str(SCRIPTS_DIR) not in sys.path:
 from control_plane.state_machine import StateMachine, CANONICAL_STATES, ALLOWED_TRANSITIONS, InvalidStateTransition
 from control_plane.registry import TransitionRegistry
 from control_plane.constants import (
+    ACTIVE_STATES,
     STATE_INTAKE, STATE_INTERVIEW, STATE_DRAFT_PLAN, STATE_MULTI_AGENT_REVIEW, STATE_PLAN_REVIEW, STATE_AWAITING_APPROVAL, STATE_APPROVED, STATE_IN_WORKTREE, STATE_WORKTREE_REVIEW, STATE_MULTI_AGENT_CODE_REVIEW, STATE_VERIFY_EXIT, STATE_RETROSPECTIVE, STATE_DONE, STATE_ROLLED_BACK, STATE_ESCALATED,
 )
 
@@ -47,7 +48,7 @@ def test_validate_known_state_rejects_unknown_state():
 
 def test_validate_known_state_accepts_every_canonical_state():
     sm = StateMachine()
-    for state in CANONICAL_STATES:
+    for state in ACTIVE_STATES:
         sm.validate_known_state(state)  # must not raise
 
 
@@ -95,7 +96,7 @@ def test_human_recovery_from_done_to_worktree_requires_and_consumes_approval(tmp
     assert cp.get_task("recovery-done-1")["state"] == STATE_IN_WORKTREE
 
 def test_every_non_done_state_has_a_signed_closure_edge():
-    for state in CANONICAL_STATES:
+    for state in ACTIVE_STATES:
         if state != STATE_DONE:
             assert STATE_DONE in ALLOWED_TRANSITIONS[state]
 
@@ -177,11 +178,11 @@ def test_a_signed_close_persists_from_any_state(tmp_path):
 
 
 def test_every_non_done_state_exposes_a_proof_gated_closure_edge():
-    """Closure is legal from every non-terminal state, and every such edge is cryptographic: it declares
+    """Closure is legal from every non-terminal active state, and every such edge is cryptographic: it declares
     requires_cryptographic_proof, authority type cryptographic_proof, and no FORCE_* accepted-answer question."""
     registry = TransitionRegistry.load_default()
     proof_edges = registry.proof_required_edges()
-    for state in CANONICAL_STATES:
+    for state in ACTIVE_STATES:
         if state == STATE_DONE:
             continue
         assert STATE_DONE in ALLOWED_TRANSITIONS[state]
@@ -201,19 +202,14 @@ def test_signed_close_reaches_done_from_every_nonterminal_state(tmp_path):
 
     paths = {
         STATE_INTAKE: [],
-        STATE_INTERVIEW: [STATE_INTERVIEW],
-        STATE_DRAFT_PLAN: [STATE_INTERVIEW, STATE_DRAFT_PLAN],
-        STATE_PLAN_REVIEW: [STATE_INTERVIEW, STATE_DRAFT_PLAN, STATE_PLAN_REVIEW],
-        STATE_MULTI_AGENT_REVIEW: [STATE_INTERVIEW, STATE_DRAFT_PLAN, STATE_PLAN_REVIEW, STATE_MULTI_AGENT_REVIEW],
-        STATE_AWAITING_APPROVAL: [STATE_INTERVIEW, STATE_DRAFT_PLAN, STATE_PLAN_REVIEW, STATE_AWAITING_APPROVAL],
-        STATE_APPROVED: [STATE_INTERVIEW, STATE_DRAFT_PLAN, STATE_PLAN_REVIEW, STATE_AWAITING_APPROVAL, STATE_APPROVED],
-        STATE_IN_WORKTREE: [STATE_INTERVIEW, STATE_DRAFT_PLAN, STATE_PLAN_REVIEW, STATE_AWAITING_APPROVAL, STATE_APPROVED, STATE_IN_WORKTREE],
-        STATE_WORKTREE_REVIEW: [STATE_INTERVIEW, STATE_DRAFT_PLAN, STATE_PLAN_REVIEW, STATE_AWAITING_APPROVAL, STATE_APPROVED, STATE_IN_WORKTREE, STATE_WORKTREE_REVIEW],
-        STATE_MULTI_AGENT_CODE_REVIEW: [STATE_INTERVIEW, STATE_DRAFT_PLAN, STATE_PLAN_REVIEW, STATE_AWAITING_APPROVAL, STATE_APPROVED, STATE_IN_WORKTREE, STATE_WORKTREE_REVIEW, STATE_MULTI_AGENT_CODE_REVIEW],
-        STATE_VERIFY_EXIT: [STATE_INTERVIEW, STATE_DRAFT_PLAN, STATE_PLAN_REVIEW, STATE_AWAITING_APPROVAL, STATE_APPROVED, STATE_IN_WORKTREE, STATE_WORKTREE_REVIEW, STATE_VERIFY_EXIT],
-        # RETROSPECTIVE is closed by retrospective_to_done, which adds retrospective_done_guard and the full-suite
-        # receipt on top of the signature; those guards are covered by test_transition_guidance / test_agent_control.
-        STATE_ROLLED_BACK: [STATE_INTERVIEW, STATE_DRAFT_PLAN, STATE_PLAN_REVIEW, STATE_AWAITING_APPROVAL, STATE_APPROVED, STATE_IN_WORKTREE, STATE_ROLLED_BACK],
+        STATE_DRAFT_PLAN: [STATE_DRAFT_PLAN],
+        STATE_PLAN_REVIEW: [STATE_DRAFT_PLAN, STATE_PLAN_REVIEW],
+        STATE_APPROVED: [STATE_DRAFT_PLAN, STATE_PLAN_REVIEW, STATE_APPROVED],
+        STATE_IN_WORKTREE: [STATE_DRAFT_PLAN, STATE_PLAN_REVIEW, STATE_APPROVED, STATE_IN_WORKTREE],
+        STATE_WORKTREE_REVIEW: [STATE_DRAFT_PLAN, STATE_PLAN_REVIEW, STATE_APPROVED, STATE_IN_WORKTREE, STATE_WORKTREE_REVIEW],
+        # VERIFY_EXIT -> DONE adds done_guard / implementation_completeness / full_test_suite checks;
+        # covered by test_done_closure_proof and test_transition_guidance.
+        STATE_ROLLED_BACK: [STATE_DRAFT_PLAN, STATE_PLAN_REVIEW, STATE_APPROVED, STATE_IN_WORKTREE, STATE_ROLLED_BACK],
         STATE_ESCALATED: [STATE_ESCALATED],
     }
     registry = TransitionRegistry.load_default()
@@ -280,7 +276,7 @@ def test_control_plane_transition_delegates_to_state_machine(tmp_path, monkeypat
 
     cp = ControlPlane(db_path=tmp_path / "control_plane.db")
     cp.create_task(task_id="t1", title="State Machine Delegation Task", runtime_tool="claude")
-    cp.transition(task_id="t1", to_state=STATE_INTERVIEW, actor="user", reason="test")
+    cp.transition(task_id="t1", to_state=STATE_ESCALATED, actor="user", reason="test")
 
-    assert ("validate_known_state", STATE_INTERVIEW) in calls
-    assert ("validate_adjacency", "t1", STATE_INTAKE, STATE_INTERVIEW) in calls
+    assert ("validate_known_state", STATE_ESCALATED) in calls
+    assert ("validate_adjacency", "t1", STATE_INTAKE, STATE_ESCALATED) in calls

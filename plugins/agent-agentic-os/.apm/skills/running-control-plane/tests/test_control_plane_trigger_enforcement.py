@@ -79,7 +79,7 @@ def test_valid_transitions_table_matches_registry(tmp_path):
     try:
         db_edges = {
             (row[0], row[1])
-            for row in conn.execute("SELECT from_state, to_state FROM valid_transitions WHERE from_state IS NOT NULL")
+            for row in conn.execute("SELECT from_state, to_state FROM valid_transitions WHERE from_state IS NOT NULL AND retired = 0")
         }
     finally:
         conn.close()
@@ -119,11 +119,11 @@ def test_legal_transition_via_raw_sql_is_unaffected_and_unlogged(tmp_path):
     try:
         _insert_legal_task(conn, "task-2", STATE_INTAKE)
 
-        conn.execute("UPDATE tasks SET state='INTERVIEW' WHERE task_id='task-2'")
+        conn.execute("UPDATE tasks SET state='ESCALATED' WHERE task_id='task-2'")
         conn.commit()
 
         after = conn.execute("SELECT state FROM tasks WHERE task_id='task-2'").fetchone()
-        assert after[0] == STATE_INTERVIEW
+        assert after[0] == "ESCALATED"
 
         count = conn.execute(
             "SELECT COUNT(*) FROM transition_violations WHERE task_id='task-2'"

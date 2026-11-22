@@ -237,13 +237,16 @@ def main():
     parser.add_argument("--task-id", required=True)
     parser.add_argument("--path", required=True)
     parser.add_argument("--content", required=True)
+    parser.add_argument("--db-path", default=None, help="Override control-plane SQLite DB path")
 
     args = parser.parse_args()
     try:
+        cp = ControlPlane(db_path=Path(args.db_path)) if args.db_path else None
         res = write_plan_document(
             task_id=args.task_id,
             destination_path=args.path,
             content=args.content,
+            control_plane=cp,
         )
         print(json.dumps(res, indent=2))
     except PhaseCapabilityDenied as e:

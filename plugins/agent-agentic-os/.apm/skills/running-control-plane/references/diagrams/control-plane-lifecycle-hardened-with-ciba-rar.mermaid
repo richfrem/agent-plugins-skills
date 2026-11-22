@@ -1,67 +1,103 @@
 flowchart TB
+
     %% Production gates: human key in context/control_plane.db; first signature binds one key.
     %% Simulation: separate context/simulation/simulation_control_plane.db and agent key only.
     %% Complete captured signed evidence is reverified before a production push.
-    %% HARDENED (Schema v15): 10-state canonical lifecycle (8 happy-path + RECOVERING, ROLLED_BACK)
-    %% - Exactly three human authorities are CRYPTOGRAPHIC: APPROVED (Gate 1, from PLAN_REVIEW),
-    %%   VERIFY_EXIT (Gate 3, from WORKTREE_REVIEW) and DONE (closure, from VERIFY_EXIT or early
-    %%   close from any active state). Each edge declares requires_cryptographic_proof in transition_templates.yaml.
-    %% - The only valid authority is an out-of-band OpenSSH signature (ssh-keygen -Y sign, passphrase
-    %%   prompted on a TTY) over a content-bound transition_request, verified against allowed_signers.
-    %% - No prompt, typed word, flag, receipt or actor='human' string can authorize these edges, and
-    %%   no SQLite trigger trusts an actor column for them. (CIBA+RAR push to an IdP was the earlier
-    %%   design; it is superseded by local SSH signing.)
-    %% - The slow work (live snapshot hashing, ssh-keygen verify) runs BEFORE the commit's BEGIN IMMEDIATE;
-    %%   inside the transaction the request is re-checked and consumed exactly once.
-    %% - No direct IN_WORKTREE -> VERIFY_EXIT edge exists: all work passes through WORKTREE_REVIEW
-    %%   so the diff (and optional adversarial code review) is shown first.
-    %% - Review preset selection and waiver decisions use signed_decisions (control-plane-decision/1).
 
-    subgraph Phase1["1. Intake & Plan Drafting"]
-        S1["(1) INTAKE<br/>(includes scoping questions & outline)"] --> S2["(2) DRAFT_PLAN<br/>(spec + plan + strategy)"]
-        S2 --> S3["(3) PLAN_REVIEW<br/>(plan review + adversarial audit)"]
+    %% HARDENED (Schema v15): 10-state canonical lifecycle
+    %% Active states:
+    %% INTAKE, DRAFT_PLAN, PLAN_REVIEW, APPROVED, IN_WORKTREE,
+    %% WORKTREE_REVIEW, VERIFY_EXIT, DONE, ROLLED_BACK, ESCALATED.
+    %%
+    %% Retired states remain history-only:
+    %% INTERVIEW -> INTAKE
+    %% MULTI_AGENT_REVIEW -> PLAN_REVIEW
+    %% AWAITING_APPROVAL -> PLAN_REVIEW
+    %% MULTI_AGENT_CODE_REVIEW -> WORKTREE_REVIEW
+    %% RETROSPECTIVE -> VERIFY_EXIT
+    %%
+    %% Exactly three normal-path human authorities are CRYPTOGRAPHIC:
+    %% APPROVED (Gate 1), VERIFY_EXIT (Gate 3), and DONE (closure).
+    %%
+    %% Gate 1: PLAN_REVIEW -> APPROVED
+    %% Gate 3: WORKTREE_REVIEW -> VERIFY_EXIT
+    %% Closure: VERIFY_EXIT -> DONE
+    %%
+    %% Review selection and execution are ceremonies/evidence within PLAN_REVIEW
+    %% and WORKTREE_REVIEW, not separate lifecycle states.
+    %%
+    %% The retrospective decision is folded into VERIFY_EXIT.
+    %%
+    %% The only valid cryptographic authority is an out-of-band OpenSSH signature
+    %% over a content-bound transition_request, verified against allowed_signers.
+    %%
+    %% No prompt, typed word, flag, receipt or actor='human' string can authorize
+    %% cryptographic edges, and no SQLite trigger trusts an actor column for them.
+    %%
+    %% No direct IN_WORKTREE -> VERIFY_EXIT edge exists.
+    %% All implementation work passes through WORKTREE_REVIEW.
+    %%
+    %% Deterministic gates remain non-HITL.
+
+    subgraph Phase1["1. Planning & Spec"]
+        S1["(1) INTAKE<br/>intake + interview + outline confirmation"]
+        S1 --> S2["(2) DRAFT_PLAN"]
+        S2 --> S3["(3) PLAN_REVIEW"]
     end
 
     subgraph Phase2["2. Plan Review & Human Gate 1 (Cryptographic)"]
-        S3 -->|"revise plan"| S2
-        S3 --> TR1["coordinator halts: HUMAN_PROOF_REQUIRED<br/>transition_request created (not by the agent)<br/>nonce + expiry + spec/plan/verdict snapshot"]
+        S3 --> PR["Review ceremony inside PLAN_REVIEW<br/>signed preset: host subagents / CLI reviewers /<br/>external bundle / skip"]
+        PR -->|"review findings / revisions<br/>remain in PLAN_REVIEW"| S3
+        S3 -->|"plan accepted by human;<br/>Gate 1 evidence required"| TR1["coordinator halts: HUMAN_PROOF_REQUIRED<br/>transition_request created<br/>nonce + expiry + spec/plan snapshot"]
         TR1 --> SIGN1{{"Human: show-challenge, then<br/>ssh-keygen -Y sign on a TTY<br/>(OpenSSH prompts for the passphrase)"}}
-        SIGN1 ==>|"Gate 1: approve-transition verifies the signature<br/>against allowed_signers, then consumes the request<br/>once inside the commit transaction"| S4["(4) APPROVED"]
+        SIGN1 ==>|"Gate 1: signature verified against allowed_signers;<br/>request consumed once inside commit transaction"| S4["(4) APPROVED"]
     end
 
     subgraph Phase3["3. Execution & Human Gate 3 (Cryptographic)"]
         S4 --> S5["(5) IN_WORKTREE"]
-        S5 --> S6["(6) WORKTREE_REVIEW<br/>(diff + optional adversarial code review)"]
-        S6 -->|"fix findings in worktree"| S5
-        S6 --> TR3["transition_request binds: commit SHA,<br/>tracked-diff hash, untracked-files hash"]
+        S5 --> S6["(6) WORKTREE_REVIEW"]
+        S6 --> CR["Code-review ceremony inside WORKTREE_REVIEW<br/>signed preset: host subagents / CLI reviewers /<br/>external bundle / skip"]
+        CR -->|"review findings / fixes<br/>remain in WORKTREE_REVIEW"| S6
+        S6 -->|"Deterministic checks:<br/>tests + worktree leak + code acceptance"| TR3["transition_request binds<br/>commit SHA + tracked-diff hash +<br/>untracked-files hash"]
         TR3 --> SIGN3{{"Human signs with ssh-keygen -Y sign<br/>(same flow; no skip flag exists)"}}
-        SIGN3 ==>|"Gate 3: code & worktree acceptance"| S7["(7) VERIFY_EXIT<br/>(tests + leak/ledger checks + retrospective)"]
+        SIGN3 ==>|"Gate 3: code accepted;<br/>signature verified and request consumed"| S7["(7) VERIFY_EXIT"]
     end
 
-    subgraph Phase4["4. Closure (Cryptographic)"]
-        S7 --> TR4["transition_request also binds<br/>the retrospective digest"]
+    subgraph Phase4["4. Verification, Retrospective & Closure (Cryptographic)"]
+        S7 --> RETRO["Retrospective decision inside VERIFY_EXIT<br/>typed human decision + retrospective evidence"]
+        RETRO --> TR4["transition_request binds<br/>retrospective / closure digest"]
         TR4 --> SIGN4{{"Human signs closure"}}
-        SIGN4 ==>|"Closure gate: signature verified,<br/>request consumed"| S8["(8) DONE"]
+        SIGN4 ==>|"Closure gate: signature verified;<br/>request consumed"| S8["(8) DONE"]
     end
 
-    %% Phase-to-phase vertical layout flow
+    %% Phase-to-phase vertical layout
     Phase1 --> Phase2
     Phase2 --> Phase3
     Phase3 --> Phase4
 
-    %% Early close from any active state uses the SAME signed closure gate (no force-close string or flag)
-    EarlyClose{{"Early close<br/>(any active state)"}} --> TR2["transition_request created<br/>(same mechanics as Gate 1)"]
+    %% Exceptional active states
+    EX["Exceptional outcomes"]
+    EX --> S9["(9) ROLLED_BACK"]
+    EX --> S10["(10) ESCALATED"]
+
+    %% Early close from any eligible active state uses the SAME signed closure gate.
+    %% No force-close string or unsigned bypass.
+    EarlyClose{{"Early close<br/>(any eligible active state)"}} --> TR2["transition_request created<br/>(same signed closure mechanics)"]
     TR2 --> SIGN2{{"Human signs with ssh-keygen -Y sign"}}
-    SIGN2 -.->|"Closure gate: signature verified,<br/>request consumed"| S8
+    SIGN2 -.->|"Closure gate: signature verified;<br/>request consumed"| S8
 
     %% Styling definitions
     classDef hardened fill:#e0ffe0,stroke:#080,stroke-width:2px
     classDef localMechanics fill:#e0e8ff,stroke:#336699,stroke-width:1.5px
     classDef signing fill:#f3e8ff,stroke:#7b2cbf,stroke-width:2px
     classDef gated fill:#d4edda,stroke:#28a745,stroke-width:2px
+    classDef deterministic fill:#f5f5f5,stroke:#999,stroke-width:1px
+    classDef exceptional fill:#fff3cd,stroke:#cc8800,stroke-width:2px
 
     %% Node assignments
     class S4,S7,S8,EarlyClose hardened
     class TR1,TR2,TR3,TR4 localMechanics
     class SIGN1,SIGN2,SIGN3,SIGN4 signing
     class S3,S6 gated
+    class PR,CR,RETRO deterministic
+    class S9,S10,EX exceptional

@@ -729,12 +729,28 @@ class TransitionCoordinator:
 
     def _human_proof_required(self, record, task_id: str, from_state: str, to_state: str, repo_root: Path) -> HumanProofRequired:
         """The structured HUMAN_PROOF_REQUIRED error for an already-created request."""
-        layout = default_layout(repo_root)
+        from control_plane.approver_policy import CONTEXT_SIMULATION, pipeline_context
+
+        db_path = Path(self._cp.db_path).resolve()
+        is_sim = pipeline_context(db_path) == CONTEXT_SIMULATION
+        if is_sim:
+            from control_plane.identity_layout import IdentityLayout
+            sim_id = db_path.parent / "identity"
+            layout = IdentityLayout(
+                root=sim_id,
+                allowed_signers=sim_id / "allowed_signers",
+                allowed_signers_selftest=sim_id / "allowed_signers_selftest",
+                challenge_dir=sim_id / "challenges",
+            )
+        else:
+            layout = default_layout(repo_root)
         preflight = check_isolation(
             allowed_signers=layout.allowed_signers, allowed_signers_selftest=layout.allowed_signers_selftest,
             challenge_dir=layout.challenge_dir,
         )
-        control = "" + AGENT_CONTROL_CMD + ""
+        default_db = (repo_root / "context" / "control_plane.db").resolve()
+        db_flag = f" --db-path {db_path}" if db_path != default_db else ""
+        control = f"{AGENT_CONTROL_CMD}{db_flag}"
         return HumanProofRequired({
             "code": "HUMAN_PROOF_REQUIRED",
             "edge": f"{from_state} -> {to_state}",
@@ -983,7 +999,12 @@ class TransitionCoordinator:
         else:
             for t in sorted(next_templates, key=lambda t: t.to_state):
                 edge = self._registry.get_transition_guidance(current_state, t.to_state)
-                gate = "human question required" if t.human_questions else "deterministic only"
+                if t.requires_cryptographic_proof:
+                    gate = "human signature required"
+                elif t.human_questions:
+                    gate = "human question required"
+                else:
+                    gate = "deterministic only"
                 self._out.write(f"- -> {t.to_state} ({gate}): {edge['command']}\n")
                 self._out.write(f"  Success: {edge['success_guidance']}\n")
                 self._out.write(f"  Denial recovery: {edge['denial_guidance']}\n")

@@ -21,16 +21,14 @@ from control_plane.constants import (
 
 
 def test_retrospective_is_a_first_class_completion_state():
+    """Schema v15: RETROSPECTIVE is absorbed into VERIFY_EXIT; retrospective capture runs in VERIFY_EXIT
+    before the signed VERIFY_EXIT -> DONE closure edge."""
     registry = TransitionRegistry.load_default()
 
-    assert STATE_RETROSPECTIVE in CANONICAL_STATES
-    assert STATE_RETROSPECTIVE in ALLOWED_TRANSITIONS[STATE_VERIFY_EXIT]
-    assert STATE_INTERVIEW in ALLOWED_TRANSITIONS[STATE_INTAKE]
+    assert STATE_VERIFY_EXIT in ALLOWED_TRANSITIONS
     assert STATE_DONE in ALLOWED_TRANSITIONS[STATE_VERIFY_EXIT]
     assert STATE_DONE in ALLOWED_TRANSITIONS[STATE_INTAKE]
-    assert registry.get_template(STATE_VERIFY_EXIT, STATE_RETROSPECTIVE) is not None
-    assert registry.get_template(STATE_INTERVIEW, STATE_RETROSPECTIVE) is not None
-    assert registry.get_template(STATE_RETROSPECTIVE, STATE_DONE) is not None
+    assert registry.get_template(STATE_VERIFY_EXIT, STATE_DONE) is not None
 
 
 def test_retrospective_tables_are_created(tmp_path):
@@ -84,24 +82,17 @@ def test_retrospective_entry_is_unique_per_task(tmp_path):
 
 
 def test_retrospective_capture_wrapper_records_agent_completion(tmp_path):
-    cp = ControlPlane(db_path=tmp_path / "control_plane.db")
-    cp.create_task("task-547-wrapper", "Reflection", "codex")
-    cp.transition("task-547-wrapper", STATE_INTERVIEW, "human", "Begin the interview")
+    from helpers.gate1_fixtures import init_git_worktree, reach_worktree_review
     from control_plane.coordinator import TransitionCoordinator
 
-    interview_answers = iter([
-        "Task is effectively complete/trivial -- this is a planned early close, not a failure",
-        "FORCE_RETROSPECTIVE",
-        "YES",
-    ])
-    TransitionCoordinator(
-        control_plane=cp,
-        input_fn=lambda prompt: next(interview_answers),
-    ).coordinate_transition(
+    worktree = init_git_worktree(tmp_path / "worktree")
+    sim = reach_worktree_review(tmp_path, "task-547-wrapper", worktree)
+    cp = sim.control_plane
+    TransitionCoordinator(control_plane=cp).coordinate_transition(
         task_id="task-547-wrapper",
-        to_state=STATE_RETROSPECTIVE,
+        to_state=STATE_VERIFY_EXIT,
         actor="human",
-        reason="Enter retrospective",
+        reason="Enter verify exit",
         interactive=True,
     )
     result = record_retrospective(

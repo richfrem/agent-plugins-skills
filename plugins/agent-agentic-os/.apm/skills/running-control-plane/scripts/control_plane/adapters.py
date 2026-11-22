@@ -2537,7 +2537,7 @@ class SqlitePersistenceAdapter(PersistencePort):
                     "INSERT INTO verification_receipts (task_id, gate_name, command_executed, exit_code, receipt_token) VALUES (?, ?, ?, ?, ?)",
                     (request.task_id, "human_gate_proof", proof_audit, 0, audit_token),
                 )
-                if edge == ("AWAITING_APPROVAL", "APPROVED"):
+                if edge in (("PLAN_REVIEW", "APPROVED"), ("AWAITING_APPROVAL", "APPROVED")):
                     # The verified Gate 1 signature IS the human approval: record the receipt APPROVED -> IN_WORKTREE
                     # checks in the same transaction, so the human never has to approve twice.
                     approval = f"approved-by:{verified.principal};key={verified.fingerprint};request={proof.request_id}"

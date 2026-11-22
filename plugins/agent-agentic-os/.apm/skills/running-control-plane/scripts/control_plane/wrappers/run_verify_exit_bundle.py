@@ -4,9 +4,8 @@ control_plane/wrappers/run_verify_exit_bundle.py
 =================================================
 
 Purpose:
-    Single-call bundle for the VERIFY_EXIT -> RETROSPECTIVE gate. Runs all 3
-    required exit verifiers (pytest_full_suite, pytest_unit_tests, leak_check)
-    through run_exit_verification() and records the required asymmetric
+    Single-call bundle for the VERIFY_EXIT -> DONE gate. Runs all required
+    exit verifiers (pytest_full_suite, leak_check) through run_exit_verification() and records the required asymmetric
     persistence log entry, so satisfying done_guard/full_test_suite/leak_check
     never again takes multiple manual round-trips of denied coordinate-transition
     attempts (issue: session repeatedly ran bare `pytest` and had to retry the
@@ -70,7 +69,14 @@ def run_verify_exit_bundle(
     cp = control_plane or ControlPlane()
     results: Dict[str, Any] = {"task_id": task_id, "steps": []}
 
-    full_suite_result = run_exit_verification(task_id=task_id, verifier_id="pytest_full_suite", control_plane=cp)
+    # Run pytest inside the task's registered worktree when one exists so we test the branch's code, not main.
+    task_row = cp.get_task(task_id) or {}
+    wt_path = task_row.get("worktree_path")
+    pytest_cwd = wt_path if wt_path and Path(wt_path).is_dir() else None
+
+    full_suite_result = run_exit_verification(
+        task_id=task_id, verifier_id="pytest_full_suite", cwd=pytest_cwd, control_plane=cp
+    )
     results["steps"].append({"verifier_id": "pytest_full_suite", **full_suite_result})
     if full_suite_result["exit_code"] != 0:
         results["status"] = "FAILED"
@@ -115,12 +121,15 @@ def main():
     parser.add_argument("--task-id", required=True)
     parser.add_argument("--details", required=True, help="Asymmetric persistence log details text")
     parser.add_argument("--destination", default="references/map-debt.md")
+    parser.add_argument("--db-path", default=None, help="Override control-plane SQLite DB path (e.g. simulation_control_plane.db)")
     args = parser.parse_args()
 
+    cp = ControlPlane(db_path=Path(args.db_path)) if args.db_path else None
     result = run_verify_exit_bundle(
         task_id=args.task_id,
         asymmetric_persistence_details=args.details,
         asymmetric_persistence_destination=args.destination,
+        control_plane=cp,
     )
     print(json.dumps(result, indent=2))
     if result["status"] != "COMPLETED":

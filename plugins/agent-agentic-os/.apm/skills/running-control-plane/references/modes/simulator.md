@@ -81,9 +81,10 @@ Verified on 2026-10-23 from a copy deployed under `.claude/skills/running-contro
 
 ## Workflow
 
-1. **Select Dimension**:
-   - Deterministic: unit test execution of state graphs without LLMs.
-   - Behavioral: cheap-model CLI runs to verify instructions and prompts.
+1. **Select Simulation Tier**:
+   - **Deterministic**: unit/integration test execution of state graphs and SQLite triggers (`PipelineSimulator`, no LLM calls).
+   - **Single-edge cheap-model behavioral**: cold-read single-edge prompt grading (`run_transition_simulation.py`, see [cheap-agent-transition-simulation.md](../cheap-agent-transition-simulation.md)).
+   - **End-to-end generative roleplay**: parent agent plays the Human Operator (signing all 3 gates with the simulation key) while a fresh cold subagent plays the Orchestrator across every state (`INTAKE -> DONE`) in a disposable `/private/tmp` repo, logging every CLI/doc/YAML friction point (see [generative-pipeline-simulation.md](../generative-pipeline-simulation.md)).
 2. **Execute Simulation**:
    ```bash
    python3 scripts/control_plane/run_transition_simulation.py --behavior --from <FROM> --to <TO>
@@ -108,4 +109,5 @@ pytest -q tests/test_control_plane_pipeline_simulator.py tests/test_edge_matrix.
 
 - [acceptance-criteria.md](../acceptance-criteria.md#mode-simulator) — Acceptance criteria and pass/fail grading scenarios.
 - [fallback-tree.md](../fallback-tree.md#mode-simulator) — Failure escalation and debugging flow for invalid transitions.
-- [cheap-agent-transition-simulation.md](../cheap-agent-transition-simulation.md) — Protocols for cheap-model behavioral runs.
+- [cheap-agent-transition-simulation.md](../cheap-agent-transition-simulation.md) — Protocols for single-edge cheap-model behavioral runs.
+- [generative-pipeline-simulation.md](../generative-pipeline-simulation.md) — End-to-end generative roleplay simulation protocol (parent as Human Operator + simulation key, cold subagent as Orchestrator walking `INTAKE -> DONE` and logging friction).

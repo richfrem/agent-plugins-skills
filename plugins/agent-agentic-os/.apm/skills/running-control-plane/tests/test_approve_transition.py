@@ -200,7 +200,7 @@ def test_approve_refuses_when_guidance_blocked_between_request_and_approve(gate)
     with pytest.raises(GateApprovalError) as excinfo:
         gate.approve()
     assert "guidance" in str(excinfo.value).lower()
-    assert gate.state() == "AWAITING_APPROVAL" and gate.status() == "PENDING"
+    assert gate.state() == "PLAN_REVIEW" and gate.status() == "PENDING"
 
 
 def test_authorization_preflight_reports_a_guidance_block(gate):
@@ -214,7 +214,7 @@ def test_approve_without_a_signature_file_is_refused(gate):
     gate.show()
     with pytest.raises(GateApprovalError):
         gate.approve()
-    assert gate.state() == "AWAITING_APPROVAL" and gate.status() == "PENDING"
+    assert gate.state() == "PLAN_REVIEW" and gate.status() == "PENDING"
 
 
 def test_approve_with_another_keys_signature_is_refused(gate, tmp_path):
@@ -225,7 +225,7 @@ def test_approve_with_another_keys_signature_is_refused(gate, tmp_path):
     gate.sign(path, key=attacker / "id")
     with pytest.raises(GateApprovalError):
         gate.approve()
-    assert gate.state() == "AWAITING_APPROVAL" and gate.status() == "PENDING"
+    assert gate.state() == "PLAN_REVIEW" and gate.status() == "PENDING"
 
 
 def test_approve_refuses_an_expired_request(gate):
@@ -237,18 +237,18 @@ def test_approve_refuses_an_expired_request(gate):
     with pytest.raises(GateApprovalError) as excinfo:
         gate.approve()
     assert "expired" in str(excinfo.value).lower()
-    assert gate.state() == "AWAITING_APPROVAL"
+    assert gate.state() == "PLAN_REVIEW"
 
 
 def test_approve_refuses_a_request_for_an_edge_that_takes_no_proof(gate):
     snapshot = build_snapshot(gate1_artifact_paths(gate.repo, TASK))
     other = create_transition_request(
-        gate.db(), task_id=TASK, from_state="AWAITING_APPROVAL", to_state="DRAFT_PLAN", occupancy_id=1, content_snapshot=snapshot,
+        gate.db(), task_id=TASK, from_state="PLAN_REVIEW", to_state="DRAFT_PLAN", occupancy_id=1, content_snapshot=snapshot,
     )
     gate.request_id = other.request_id
     with pytest.raises(GateApprovalError):
         gate.approve()
-    assert gate.state() == "AWAITING_APPROVAL"
+    assert gate.state() == "PLAN_REVIEW"
 
 
 def test_cli_registers_the_verbs_and_has_no_signature_argument():

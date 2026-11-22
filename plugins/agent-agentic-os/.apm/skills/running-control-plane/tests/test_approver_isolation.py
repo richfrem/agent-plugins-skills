@@ -242,7 +242,7 @@ def test_path_swap_after_connection_open_is_refused(tmp_path, keys, monkeypatch)
         )
     assert swapped
     with sqlite3.connect(real) as conn:
-        assert conn.execute("SELECT state FROM tasks WHERE task_id = ?", (TASK,)).fetchone()[0] == "AWAITING_APPROVAL"
+        assert conn.execute("SELECT state FROM tasks WHERE task_id = ?", (TASK,)).fetchone()[0] == "PLAN_REVIEW"
         assert conn.execute("SELECT status FROM transition_request WHERE request_id = ?", (gate.request_id,)).fetchone()[0] == "PENDING"
 
 

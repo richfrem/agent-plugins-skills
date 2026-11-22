@@ -47,7 +47,7 @@ cd scripts && python3 -m control_plane transition-guidance --task-id <task-id>
 | `intake` | Starting or resuming a governed job | `cd scripts && python3 -m control_plane <verb>` | [intake](references/modes/intake.md) |
 | `mode` | Switching between `enabled`, `on-demand`, `disabled`, or checking status | `scripts/control_plane_mode.py enable \| on-demand \| disable \| status` | [mode](references/modes/mode.md) |
 | `health` | Checking liveness, event bus, locks, memory, os metrics, "system monitor", or whether the signing identity is ready (status check) | `scripts/kernel.py`; signing check: `setup_ciba_identity.py --check` from `setting-up-agentic-os` | [health](references/modes/health.md) |
-| `simulator` | Testing a transition, edge or its guidance without real state ("simulate", "dry run", "did I break the edge rules") | `scripts/control_plane/run_transition_simulation.py` | [simulator](references/modes/simulator.md) |
+| `simulator` | Testing a transition, edge, or full end-to-end generative roleplay simulation without real state ("simulate", "dry run", "did I break the edge rules") | `PipelineSimulator`, `run_transition_simulation.py`, or generative roleplay | [simulator](references/modes/simulator.md) |
 | `worktree` | Choosing or cleaning up a worktree for a task | `scripts/capability_probe.py`, `scripts/worktree_manager.py` | [worktree](references/modes/worktree.md) |
 
 Project setup (`init`) and the human signing key (`signing-setup`) live in the `setting-up-agentic-os` skill, which needs this one installed beside it.
@@ -64,6 +64,6 @@ Detail files, grouped by the mode that uses them. Read the mode workflow first.
 
 - **intake**: [adversarial-plan-audit](references/adversarial-plan-audit.md) • [edge-matrix](references/edge-matrix.md) • [healthy-transcript](references/healthy-transcript.md) • [intake-detailed-reference](references/intake-detailed-reference.md) • [multi-round-external-review-protocol](references/multi-round-external-review-protocol.md)
 - **health**: [health-detailed-reference](references/health-detailed-reference.md)
-- **simulator**: [cheap-agent-transition-simulation](references/cheap-agent-transition-simulation.md)
+- **simulator**: [cheap-agent-transition-simulation](references/cheap-agent-transition-simulation.md) • [generative-pipeline-simulation](references/generative-pipeline-simulation.md)
 - **worktree**: [worktree-reconciliation-and-multi-worktree-practices](references/worktree-reconciliation-and-multi-worktree-practices.md)
 - **shared**: [acceptance-criteria](references/acceptance-criteria.md) • [agentic-os-skill-map](references/agentic-os-skill-map.md) • [control-plane-architecture](references/control-plane-architecture.md) • [control-plane-rebuild-recovery](references/control-plane-rebuild-recovery.md) • [control-plane-simulation-protocol](references/control-plane-simulation-protocol.md) • [fallback-tree](references/fallback-tree.md) • [implementation-ledger-contract](references/implementation-ledger-contract.md) • [architecture](references/architecture/architecture.md) • [context-folder-patterns](references/architecture/context-folder-patterns.md) • [vision](references/architecture/vision.md)

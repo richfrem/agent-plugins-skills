@@ -156,14 +156,17 @@ def main():
     parser.add_argument("--cmd", required=True, help="Command to execute")
     parser.add_argument("--gate", default="exit_verification", help="Gate name")
     parser.add_argument("--cwd", default=None)
+    parser.add_argument("--db-path", default=None, help="Override control-plane SQLite DB path")
 
     args = parser.parse_args()
     try:
+        cp = ControlPlane(db_path=Path(args.db_path)) if args.db_path else None
         res = run_exit_verification(
             task_id=args.task_id,
             command=args.cmd.split(),
             gate_name=args.gate,
             cwd=args.cwd,
+            control_plane=cp,
         )
         print(json.dumps({k: v for k, v in res.items() if k not in ("stdout", "stderr")}, indent=2))
         sys.exit(res["exit_code"])

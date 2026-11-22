@@ -293,9 +293,9 @@ def test_fake_persistence_port_proves_full_delegation():
     assert ("confirm_source_assisted_answer_candidate", candidate_id, "human") in fake.calls
     assert ("has_unconfirmed_source_assisted_answer_candidates", "t1", "interview", "round-1") in fake.calls
 
-    cp.transition(task_id="t1", to_state=STATE_INTERVIEW, actor="user", reason="test")
-    assert ("apply_transition", "t1", STATE_INTAKE, STATE_INTERVIEW, "user", "test") in fake.calls
-    assert fake._tasks["t1"]["state"] == STATE_INTERVIEW
+    cp.transition(task_id="t1", to_state="ESCALATED", actor="user", reason="test")
+    assert ("apply_transition", "t1", STATE_INTAKE, "ESCALATED", "user", "test") in fake.calls
+    assert fake._tasks["t1"]["state"] == "ESCALATED"
 
     token = cp.record_verification_receipt(task_id="t1", gate_name="test_suite", command_executed="pytest", exit_code=0)
     assert any(c[0] == "insert_verification_receipt" and c[1] == "t1" for c in fake.calls)

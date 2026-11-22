@@ -32,7 +32,17 @@ def create_task_in_state(
     if resolved == "INTAKE":
         return
 
-    # INTAKE -> DRAFT_PLAN
+    # INTAKE -> DRAFT_PLAN (requires human intake_outline_confirmation decision in schema v15)
+    occ = control_plane._persistence.get_last_transition(task_id).transition_id
+    control_plane.record_decision(
+        task_id=task_id,
+        source_occupancy_transition_id=occ,
+        from_state="INTAKE",
+        to_state="DRAFT_PLAN",
+        question_id="intake_outline_confirmation",
+        answer="Yes, proceed to DRAFT_PLAN",
+        actor="human",
+    )
     control_plane.record_plan_mode_entry(task_id, "tester")
     control_plane.transition(task_id, "DRAFT_PLAN", "tester", "setup draft plan")
     if resolved == "DRAFT_PLAN":

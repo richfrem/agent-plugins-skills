@@ -293,16 +293,17 @@ stages:
     entry_questions: []
     adaptive_follow_up_rules: []
     exit_requirements:
-    - The human either accepted the plan (proceed to AWAITING_APPROVAL), requested revisions (return to DRAFT_PLAN), or requested
-      independent review (proceed to MULTI_AGENT_REVIEW).
+    - "The human either accepted the plan (request Gate 1: PLAN_REVIEW -> APPROVED), requested revisions (return to DRAFT_PLAN), or requested an adversarial plan audit inside PLAN_REVIEW (plan_audit.py / signed_decisions)."
     guidance:
-      summary: Agent review is optional. When the human accepts the plan, you run coordinate-transition --to AWAITING_APPROVAL.
-        No review or skip receipt is needed.
+      summary: Adversarial plan review runs inside PLAN_REVIEW (no separate state). When the human accepts the plan, request
+        Gate 1 (PLAN_REVIEW -> APPROVED) with coordinate-transition --to APPROVED so it halts on HUMAN_PROOF_REQUIRED for the
+        human's OpenSSH signature.
       next_steps:
-      - Ask the human in chat if they accept the plan, want changes, or want an optional agent review.
-      - If accepted, run coordinate-transition --to AWAITING_APPROVAL.
+      - Ask the human in chat if they accept the plan, want changes, or want an adversarial plan audit (plan_audit.py).
+      - If accepted, run coordinate-transition --to APPROVED (halts on HUMAN_PROOF_REQUIRED; hand the human show-challenge /
+        ssh-keygen -Y sign / approve-transition).
       - If changes requested, run coordinate-transition --to DRAFT_PLAN.
-      - If review requested, run coordinate-transition --to MULTI_AGENT_REVIEW.
+      - If review requested, run the adversarial plan audit inside PLAN_REVIEW and record findings before requesting APPROVED.
   IN_WORKTREE:
     purpose: Execute the approved implementation in the registered isolated worktree.
     question_policy: one_at_a_time
@@ -736,7 +737,7 @@ templates:
   - prior_art_scan
   human_questions:
   - question_id: intake_outline_confirmation
-    prompt: Do you confirm the plan outline drafted from the brief (classification, summary, scope, verification, acceptance)?
+    question: Do you confirm the plan outline drafted from the brief (classification, summary, scope, verification, acceptance)?
     options:
     - Confirm outline and enter DRAFT_PLAN [Recommended]
     - Revise outline before drafting
@@ -747,7 +748,8 @@ templates:
   skip:
     allowed: false
     requires_justification: false
-  capabilities_released: []
+  capabilities_released:
+  - plan_write
   capabilities_prohibited:
   - modify production code
   - create implementation worktree
@@ -834,8 +836,8 @@ templates:
     the human then runs agent_control.py show-challenge --request-id N, signs, and runs approve-transition --request-id N.
     No prompt, typed word, --answers, --human-confirmed or flag can authorize this edge.
   checklist:
-  - Current task state is persisted as AWAITING_APPROVAL
-  - Structural DAG transition from AWAITING_APPROVAL to APPROVED is legal
+  - Current task state is persisted as PLAN_REVIEW
+  - Structural DAG transition from PLAN_REVIEW to APPROVED is legal
   - 'Deterministic check satisfied: main_clean_before_approval'
   required_artifacts: []
   deterministic_checks:
@@ -851,7 +853,7 @@ templates:
   capabilities_prohibited:
   - modify production code
   - push branch to origin
-  denial_message: 'Transition AWAITING_APPROVAL -> APPROVED denied: preconditions or required decisions not satisfied.'
+  denial_message: 'Transition PLAN_REVIEW -> APPROVED denied: preconditions or required decisions not satisfied.'
   authority:
     type: cryptographic_proof
     explanation: Only a verified OpenSSH signature over a content-bound transition_request, consumed in the commit transaction,
@@ -867,8 +869,8 @@ templates:
   - Current task state is persisted as PLAN_REVIEW
   - Structural DAG transition from PLAN_REVIEW to DRAFT_PLAN is legal
   required_artifacts:
-  - docs/plans/<task-id>-spec.md
-  - docs/plans/<task-id>-implementation-plan.md
+  - docs/plans/work-tasks/<task-id>/<task-id>-spec.md
+  - docs/plans/work-tasks/<task-id>/<task-id>-implementation-plan.md
   deterministic_checks: []
   human_questions: []
   approval:
@@ -896,15 +898,15 @@ templates:
       user requests it or the changed surface makes focused verification insufficient. STANDARD follows its approved verification
       scope.
     denial: Do not create a worktree or edit production code before the approved boundary and isolation checks pass.
-  next_steps_hint: 'First record human approval with record-human-approval --task-id <task-id> --approver <approver>. Then
-    create or select an isolated feature worktree and branch, record both with update-worktree, and run: @AGENT_CONTROL_CMD@
-    coordinate-transition --task-id <task-id> --to IN_WORKTREE. The transition itself auto-reconciles any dirty source-checkout
-    changes into the worktree (main_worktree_reconciliation deterministic check) — do not manually claim pre-worktree changes
-    were carried over; the check does this by code and fails closed on any unresolved conflict. After entry, report the required
-    delegation summary: agent count, assignments, runtime, model, effort, scope, status, and start time. State queued until
-    an authorized agent dispatch is observed; then state in_progress. Worktree creation alone is not implementation completion.
-    If the user explicitly authorizes implementation in the existing checkout, record it with record-receipt --gate existing_worktree_exception
-    --cmd approved-existing-checkout:<approver> --exit-code 0 before transitioning.'
+  next_steps_hint: 'Gate 1 approve-transition already recorded human_approval. Create or select an isolated feature worktree
+    and branch, record both with update-worktree, and run: @AGENT_CONTROL_CMD@ coordinate-transition --task-id <task-id> --to
+    IN_WORKTREE. The transition itself auto-reconciles any dirty source-checkout changes into the worktree (main_worktree_reconciliation
+    deterministic check) — do not manually claim pre-worktree changes were carried over; the check does this by code and fails
+    closed on any unresolved conflict. After entry, report the required delegation summary: agent count, assignments, runtime,
+    model, effort, scope, status, and start time. State queued until an authorized agent dispatch is observed; then state
+    in_progress. Worktree creation alone is not implementation completion. If the user explicitly authorizes implementation
+    in the existing checkout, record it with record-receipt --gate existing_worktree_exception --cmd approved-existing-checkout:<approver>
+    --exit-code 0 before transitioning.'
   checklist:
   - Current task state is persisted as APPROVED
   - 'Deterministic check satisfied: human_approval'
@@ -943,7 +945,7 @@ templates:
     it must be satisfied by a receipt recorded BEFORE calling coordinate-transition, not by answering confirm_test_suite_or_defer
     in the same call: run @AGENT_CONTROL_CMD@ record-receipt --task-id <task-id> --gate test_suite --cmd ''<the pytest command
     actually run>'' --exit-code 0 --human-confirmed ''HUMAN-CONFIRMED: <quote>'' if the suite already passed, or the same
-    command with --gate test_suite_deferred_to_review if deferring to the later MULTI_AGENT_CODE_REVIEW/VERIFY_EXIT gate instead.
+    command with --gate test_suite_deferred_to_review if deferring to the later WORKTREE_REVIEW/VERIFY_EXIT gate instead.
     Before integration, create the reconciliation manifest required by the IN_WORKTREE completion contract, classify worktree-only,
     main-only-preexisting, shared-task, and untracked paths, then apply the reviewed worktree patch once. After review and
     final verification, run: @AGENT_CONTROL_CMD@ coordinate-transition --task-id <task-id> --to WORKTREE_REVIEW.'
@@ -951,8 +953,8 @@ templates:
   - Current task state is persisted as IN_WORKTREE
   - 'Deterministic check satisfied: test_suite_or_deferred_to_review'
   required_artifacts:
-  - docs/plans/<task-id>-spec.md
-  - docs/plans/<task-id>-implementation-plan.md
+  - docs/plans/work-tasks/<task-id>/<task-id>-spec.md
+  - docs/plans/work-tasks/<task-id>/<task-id>-implementation-plan.md
   - .worktrees/<task-id>
   deterministic_checks:
   - test_suite_or_deferred_to_review
@@ -1105,7 +1107,7 @@ templates:
     the human then runs show-challenge, signs, and runs approve-transition. There is no force-close word, flag or prompt:
     closure of any task from any state takes the same signature.'
   checklist:
-  - Current task state is persisted as RETROSPECTIVE
+  - Current task state is persisted as VERIFY_EXIT
   - Retrospective survey is complete or explicitly skipped with a reason
   - 'Deterministic check satisfied: full_test_suite'
   required_artifacts: []
@@ -1116,10 +1118,10 @@ templates:
   guidance:
     success: TRIVIAL closes with focused verification and the retrospective; STANDARD closes only after full-suite verification.
       Neither route may skip the user review or retrospective evidence.
-    denial: Remain in RETROSPECTIVE until the route-appropriate verification receipt and retrospective decision are recorded.
+    denial: Remain in VERIFY_EXIT until the route-appropriate verification receipt and retrospective decision are recorded.
   human_questions:
   - question_id: retrospective_decision
-    prompt: Retrospective decision before closing the task (opt_in or skip)?
+    question: Retrospective decision before closing the task (opt_in or skip)?
     options:
     - skip — close without additional retrospective follow-ups [Recommended]
     - opt_in — record retrospective findings and follow-ups
@@ -1132,7 +1134,7 @@ templates:
     requires_justification: false
   capabilities_released: []
   capabilities_prohibited: []
-  denial_message: 'Transition RETROSPECTIVE -> DONE denied: retrospective is incomplete or has unresolved issue follow-ups.'
+  denial_message: 'Transition VERIFY_EXIT -> DONE denied: retrospective is incomplete or has unresolved issue follow-ups.'
   authority:
     type: cryptographic_proof
     explanation: Only a verified OpenSSH signature over a content-bound transition_request, consumed in the commit transaction,
@@ -1142,7 +1144,7 @@ templates:
   to_state: IN_WORKTREE
   purpose: Advance lifecycle state from VERIFY_EXIT to IN_WORKTREE upon satisfying phase requirements and verifications.
   next_steps_hint: 'Recovery edge: a failed full_test_suite (or other exit verification) receipt routes back here to fix the
-    failure -- do not transition to RETROSPECTIVE or DONE with a failing receipt. Use the existing registered worktree for
+    failure -- do not transition to DONE with a failing receipt. Use the existing registered worktree for
     this task; do not create another worktree. Once fixed, submit through WORKTREE_REVIEW again (do not re-enter VERIFY_EXIT
     directly) before retrying exit verification. Complete this edge''s checklist and required gates, then run: @AGENT_CONTROL_CMD@
     coordinate-transition --task-id <task-id> --to IN_WORKTREE.'
@@ -1181,8 +1183,8 @@ templates:
   - Current task state is persisted as VERIFY_EXIT
   - Structural DAG transition from VERIFY_EXIT to WORKTREE_REVIEW is legal
   required_artifacts:
-  - docs/plans/<task-id>-spec.md
-  - docs/plans/<task-id>-implementation-plan.md
+  - docs/plans/work-tasks/<task-id>/<task-id>-spec.md
+  - docs/plans/work-tasks/<task-id>/<task-id>-implementation-plan.md
   - .worktrees/<task-id>
   deterministic_checks: []
   human_questions: []
@@ -1235,8 +1237,8 @@ templates:
   - Current task state is persisted as ROLLED_BACK
   - Structural DAG transition from ROLLED_BACK to PLAN_REVIEW is legal
   required_artifacts:
-  - docs/plans/<task-id>-spec.md
-  - docs/plans/<task-id>-implementation-plan.md
+  - docs/plans/work-tasks/<task-id>/<task-id>-spec.md
+  - docs/plans/work-tasks/<task-id>/<task-id>-implementation-plan.md
   deterministic_checks: []
   human_questions:
   - question_id: recovery_approval_rolled_back_to_plan_review
@@ -1300,8 +1302,8 @@ templates:
   - Current task state is persisted as ESCALATED
   - Structural DAG transition from ESCALATED to PLAN_REVIEW is legal
   required_artifacts:
-  - docs/plans/<task-id>-spec.md
-  - docs/plans/<task-id>-implementation-plan.md
+  - docs/plans/work-tasks/<task-id>/<task-id>-spec.md
+  - docs/plans/work-tasks/<task-id>/<task-id>-implementation-plan.md
   deterministic_checks: []
   human_questions:
   - question_id: recovery_approval_escalated_to_plan_review
