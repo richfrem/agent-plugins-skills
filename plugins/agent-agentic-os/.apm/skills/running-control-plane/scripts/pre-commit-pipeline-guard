@@ -27,13 +27,28 @@ fi
 AGENT_CONTROL="@AGENT_CONTROL@"
 case "$AGENT_CONTROL" in "@"*) AGENT_CONTROL="$(cd "$(dirname "$0")" 2>/dev/null && pwd)/agent_control.py" ;; esac
 
-# Declared control-plane mode (managed by the os-control-mode skill). The file holds one
-# word. A missing file means "enabled", so installs that predate the mode behave as before.
-# When it says "disabled" the gate is off BY DESIGN: say so visibly, then pass.
+# Declared control-plane mode: enabled (missing file default), on-demand, or disabled.
+# Unknown or unreadable mode files fail closed (exit 1).
 MODE_FILE="$REPO_ROOT/context/control-plane-mode"
-if [ -f "$MODE_FILE" ] && [ "$(tr -d '[:space:]' < "$MODE_FILE" | tr '[:upper:]' '[:lower:]')" = "disabled" ]; then
-    echo "ℹ️  pre-commit-pipeline-guard: control plane is DISABLED (context/control-plane-mode) — commit is ungated by design." >&2
-    exit 0
+CP_MODE="enabled"
+if [ -e "$MODE_FILE" ]; then
+    if [ ! -r "$MODE_FILE" ]; then
+        echo "❌ COMMIT BLOCKED: context/control-plane-mode is unreadable — failing closed." >&2
+        exit 1
+    fi
+    CP_MODE="$(tr -d '[:space:]' < "$MODE_FILE" | tr '[:upper:]' '[:lower:]')"
+    case "$CP_MODE" in
+        disabled)
+            echo "ℹ️  pre-commit-pipeline-guard: control plane is DISABLED (context/control-plane-mode) — commit is ungated by design." >&2
+            exit 0
+            ;;
+        enabled|on-demand)
+            ;;
+        *)
+            echo "❌ COMMIT BLOCKED: unknown control-plane mode '$CP_MODE' in context/control-plane-mode — failing closed." >&2
+            exit 1
+            ;;
+    esac
 fi
 
 DB_PATH="$REPO_ROOT/context/control_plane.db"
@@ -47,14 +62,30 @@ if [ -L "$DB_PATH" ]; then
     exit 1
 fi
 
-# If control plane database does not exist, pass through with warning
+# If control plane database does not exist: in on-demand mode fail closed (G5); in enabled mode warn and pass.
 if [ ! -f "$DB_PATH" ]; then
+    if [ "$CP_MODE" = "on-demand" ]; then
+        echo "❌ COMMIT BLOCKED: control plane ON-DEMAND but its database is missing/unreadable — refusing (fail closed)." >&2
+        exit 1
+    fi
     echo "⚠️  WARNING: pre-commit-pipeline-guard found no control_plane.db — commit is ungated (no task registered for this repo)." >&2
     exit 0
 fi
 
+# In on-demand mode, verify the DB is readable SQLite and stamped 'real' (fail closed on corrupt/unreadable DB).
+if [ "$CP_MODE" = "on-demand" ]; then
+    if ! sqlite3 "$DB_PATH" "SELECT COUNT(*) FROM tasks;" >/dev/null 2>&1; then
+        echo "❌ COMMIT BLOCKED: control plane ON-DEMAND but its database is missing/unreadable — refusing (fail closed)." >&2
+        exit 1
+    fi
+fi
+
 # A database stamped as a simulation (copied into the production location) never gates real work
 DB_IDENTITY="$(sqlite3 "$DB_PATH" "SELECT context FROM control_plane_identity WHERE singleton = 1;" 2>/dev/null || true)"
+if [ "$CP_MODE" = "on-demand" ] && [ "$DB_IDENTITY" != "real" ]; then
+    echo "❌ COMMIT BLOCKED: control plane ON-DEMAND requires a real-stamped DB (found '${DB_IDENTITY:-none}') — refusing (fail closed)." >&2
+    exit 1
+fi
 if [ -n "$DB_IDENTITY" ] && [ "$DB_IDENTITY" != "real" ]; then
     echo ""
     echo "❌ COMMIT BLOCKED: context/control_plane.db is stamped '$DB_IDENTITY', not 'real'!"
@@ -81,14 +112,28 @@ fi
 QUERY_SQL="SELECT task_id, state FROM tasks WHERE worktree_branch = '$CURRENT_BRANCH' ORDER BY created_at DESC LIMIT 1;"
 TASK_ROW="$(sqlite3 "$DB_PATH" "$QUERY_SQL" 2>/dev/null || true)"
 
-# If no task associated with this branch, permit commit with warning
+# If no task associated with this branch, permit commit
 if [ -z "$TASK_ROW" ]; then
-    echo "⚠️  WARNING: pre-commit-pipeline-guard found no task registered for branch '$CURRENT_BRANCH' — commit is ungated." >&2
+    if [ "$CP_MODE" = "on-demand" ]; then
+        echo "ℹ️  pre-commit-pipeline-guard (on-demand): branch '$CURRENT_BRANCH' is unregistered — commit is ungated." >&2
+    else
+        echo "⚠️  WARNING: pre-commit-pipeline-guard found no task registered for branch '$CURRENT_BRANCH' — commit is ungated." >&2
+    fi
     exit 0
 fi
 
 TASK_ID="$(echo "$TASK_ROW" | cut -d'|' -f1)"
 TASK_STATE="$(echo "$TASK_ROW" | cut -d'|' -f2)"
+
+# In on-demand mode, a ROLLED_BACK branch is ungated ONLY if HEAD equals rollback_base_sha.
+if [ "$CP_MODE" = "on-demand" ] && [ "$TASK_STATE" = "ROLLED_BACK" ]; then
+    RB_SHA="$(sqlite3 "$DB_PATH" "SELECT COALESCE(rollback_base_sha, '') FROM tasks WHERE task_id = '$TASK_ID';" 2>/dev/null || true)"
+    HEAD_SHA="$(git rev-parse HEAD 2>/dev/null || true)"
+    if [ -n "$RB_SHA" ] && [ "$HEAD_SHA" = "$RB_SHA" ]; then
+        echo "ℹ️  pre-commit-pipeline-guard (on-demand): ROLLED_BACK branch '$CURRENT_BRANCH' tip matches rollback_base_sha — ungated." >&2
+        exit 0
+    fi
+fi
 
 # Guidance-compliance block: a human answered "no" (or gave no answer) to a
 # transition's mandatory guidance-compliance confirmation. No commit may proceed
@@ -195,8 +240,9 @@ case "$TASK_STATE" in
             exit 1
         fi
 
-        # Check all transitions against valid_transitions
-        TRANSITIONS_ROWS="$(sqlite3 "$DB_PATH" "SELECT transition_id, from_state, to_state FROM task_transitions WHERE task_id = '$TASK_ID' ORDER BY transition_id ASC;" 2>/dev/null || true)"
+        # Check all transitions against valid_transitions (active + retired history),
+        # finished schema migration runs, or exact human recovery approvals.
+        TRANSITIONS_ROWS="$(sqlite3 "$DB_PATH" "SELECT transition_id, from_state, to_state, COALESCE(migration_run_id, '') FROM task_transitions WHERE task_id = '$TASK_ID' ORDER BY transition_id ASC;" 2>/dev/null || true)"
         if [ -z "$TRANSITIONS_ROWS" ]; then
             echo ""
             echo "❌ GIT COMMIT BLOCKED: No Transition History Found!"
@@ -208,16 +254,18 @@ case "$TASK_STATE" in
         fi
 
         LAST_TO=""
-        while IFS='|' read -r transition_id from_st to_st; do
+        while IFS='|' read -r transition_id from_st to_st mig_run_id; do
             [ -z "$from_st" ] && continue
             if [ "$from_st" = "NONE" ] && [ "$to_st" = "INTAKE" ]; then
                 LAST_TO="INTAKE"
                 continue
             fi
 
-            # Normal edges must be in valid_transitions. A non-DAG edge is valid only when
-            # this exact persisted transition has a consumed, human recovery approval.
+            # Normal/retired edges in valid_transitions, finished migration edges, or human recovery approval.
             IS_VALID="$(sqlite3 "$DB_PATH" "SELECT COUNT(*) FROM valid_transitions WHERE from_state = '$from_st' AND to_state = '$to_st';" 2>/dev/null || echo "0")"
+            if [ "$IS_VALID" -eq 0 ] && [ -n "$mig_run_id" ]; then
+                IS_VALID="$(sqlite3 "$DB_PATH" "SELECT COUNT(*) FROM migration_edges me JOIN schema_migration_runs mr ON mr.id = '$mig_run_id' WHERE me.from_state = '$from_st' AND me.to_state = '$to_st' AND mr.finished_at IS NOT NULL;" 2>/dev/null || echo "0")"
+            fi
             if [ "$IS_VALID" -eq 0 ]; then
                 RECOVERY_VALID="$(sqlite3 "$DB_PATH" "SELECT COUNT(*) FROM transition_decisions WHERE task_id = '$TASK_ID' AND bound_transition_id = '$transition_id' AND from_state = '$from_st' AND to_state = '$to_st' AND decision_type = 'APPROVAL' AND actor = 'human' AND question_id LIKE 'recovery_approval_%' AND consumed_at IS NOT NULL;" 2>/dev/null || echo "0")"
                 if [ "$RECOVERY_VALID" -eq 0 ]; then

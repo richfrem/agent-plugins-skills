@@ -32,13 +32,13 @@ sequenceDiagram
     participant Tool as ssh-keygen CLI (OpenSSH 8.1+<br/>FIDO -sk needs Win32-OpenSSH 8.9+)
     participant Key as Protected SSH Key (~/.ssh/id_ed25519 or FIDO2 -sk,<br/>readable only by the Human's account)
 
-    Note over Agent,CP: Attempting AWAITING_APPROVAL -> APPROVED<br/>(a real human_only edge - authorized_actor='human_only')
+    Note over Agent,CP: Attempting PLAN_REVIEW -> APPROVED<br/>(a real human_only edge - authorized_actor='human_only')
     Agent->>CP: coordinate_transition(to_state=APPROVED)
     CP->>CP: Check authorized_actor == 'human_only'<br/>(derived from approval.required/approver_role at load time)
 
     Note over CP,DB: Step 1: Create RAR-shaped challenge (Policy-side only)<br/>The agent's OS account has no write access to this table or to allowed_signers
     CP->>DB: INSERT transition_request<br/>(request_id, task_id, from_state, to_state, occupancy_id,<br/>nonce, expiration, revision_hash bound to content snapshot, status='PENDING')
-    CP-->>Agent: Blocks transition call - task remains AWAITING_APPROVAL
+    CP-->>Agent: Blocks transition call - task remains PLAN_REVIEW
     CP->>CP: Begin polling for a per-request signature file<br/>(unique path keyed by request_id, not a fixed /tmp name -<br/>closes the substitution race)
 
     Note over CP,Human: Step 2: The challenge dispatch

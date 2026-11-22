@@ -43,7 +43,8 @@ Layer:
 
 Key Input Dependencies:
     - SQLite database: context/control_plane.db (auto-initialized with WAL mode)
-    - Optional model catalog references: plugins/agent-orchestration/skills/cli-agent/references/*.json
+    - Optional model catalog references: the sibling cli-agent skill's references/*.json, found through
+      control_plane.orchestration_registry.cli_agent_references() (installed by the agent-orchestration APM dependency)
 
 Key Functions:
     - ControlPlane.init_db() — Initializes tables and WAL mode
@@ -130,7 +131,7 @@ from control_plane import policy as _policy
 from control_plane.state_machine import StateMachine, CANONICAL_STATES, ALLOWED_TRANSITIONS, InvalidStateTransition
 from control_plane.constants import (
     AGENT_CONTROL_CMD,
-    STATE_INTERVIEW, STATE_DRAFT_PLAN, STATE_APPROVED, STATE_IN_WORKTREE, STATE_RETROSPECTIVE, STATE_DONE,
+    STATE_INTAKE, STATE_INTERVIEW, STATE_DRAFT_PLAN, STATE_APPROVED, STATE_IN_WORKTREE, STATE_RETROSPECTIVE, STATE_DONE,
 )
 
 from control_plane.registry import TransitionRegistry
@@ -182,6 +183,61 @@ class ConcurrentModificationError(Exception):
 # guards, and the worktree-push operation guard) is unified in control_plane/policy.py's
 # TRANSITION_RULES / TO_STATE_RULES / OPERATION_RULES (issue-524 Step 4). This module no
 # longer declares its own gate registry.
+
+
+OUTLINE_MARKER_START = "<!-- control-plane:outline:start -->"
+OUTLINE_MARKER_END = "<!-- control-plane:outline:end -->"
+
+
+class OutlineMarkerError(ValueError):
+    """Raised when plan-outline markers are duplicated, unmatched, out-of-order, or inside a fenced code block (B5)."""
+
+
+def merge_outline_block(existing: str, block: str) -> str:
+    """Safely merge a generated outline block into an existing Markdown file using B5 markers."""
+    lines = existing.splitlines()
+    in_fence = False
+    fence_char = ""
+    start_indices: List[int] = []
+    end_indices: List[int] = []
+
+    for idx, line in enumerate(lines):
+        stripped = line.strip()
+        if stripped.startswith("```") or stripped.startswith("~~~"):
+            ch = stripped[:3]
+            if not in_fence:
+                in_fence = True
+                fence_char = ch
+            elif ch == fence_char:
+                in_fence = False
+                fence_char = ""
+            continue
+        if OUTLINE_MARKER_START in line or OUTLINE_MARKER_END in line:
+            if in_fence:
+                raise OutlineMarkerError(
+                    f"Outline marker found inside a fenced code block at line {idx + 1}; refusing to modify file."
+                )
+            if OUTLINE_MARKER_START in line:
+                start_indices.append(idx)
+            if OUTLINE_MARKER_END in line:
+                end_indices.append(idx)
+
+    if len(start_indices) == 0 and len(end_indices) == 0:
+        marked = f"{OUTLINE_MARKER_START}\n{block.rstrip()}\n{OUTLINE_MARKER_END}\n"
+        if not existing.strip():
+            return marked
+        return existing.rstrip("\n") + "\n\n" + marked
+
+    if len(start_indices) != 1 or len(end_indices) != 1 or start_indices[0] >= end_indices[0]:
+        raise OutlineMarkerError(
+            f"Invalid outline markers (starts={len(start_indices)}, ends={len(end_indices)}); refusing to modify file."
+        )
+
+    s_idx, e_idx = start_indices[0], end_indices[0]
+    before = lines[: s_idx + 1]
+    after = lines[e_idx:]
+    merged = before + block.rstrip("\n").splitlines() + after
+    return "\n".join(merged) + "\n"
 
 
 class ControlPlane:
@@ -243,13 +299,15 @@ class ControlPlane:
         supplied by the active native/portable runtime.
         """
         from control_plane.implementation_loop import create_default_controller
+        from control_plane.identity_layout import canonical_repo_root
 
-        db_path = self.db_path or (Path.cwd() / "context" / "control_plane.db")
+        db_path = self.db_path or (canonical_repo_root(".") / "context" / "control_plane.db")
         queue_path = Path(db_path).parent / "implementation-queue.json"
         return create_default_controller(queue_path, dispatch, review, fix, **kwargs)
 
     def resolve_recommended_model(self, runtime_tool: str, tier: str = "low") -> Dict[str, str]:
-        """Resolves model recommendation and model_id from plugins/agent-orchestration/skills/cli-agent/references/.
+        """Resolves model recommendation and model_id from the sibling cli-agent skill's model catalogs
+        (orchestration_registry.cli_agent_references()).
         Full resolution (tool-alias, tier strategy, fallback) is delegated to
         self._model_catalog — this method is a pure delegate (issue-524, post-round-2-review
         correction: tier-selection/strategy logic previously still lived in ControlPlane)."""
@@ -359,13 +417,14 @@ class ControlPlane:
     def update_interview_plan_outline(
         self, task_id: str, question_id: str, answer: str, actor: str = "interviewer"
     ) -> Dict[str, Any]:
-        """Update the canonical outline and project its Markdown review artifact."""
+        """Update the canonical outline and project its Markdown review artifact (B5: preserves hand-written notes)."""
         task = self.get_task(task_id)
         if not task:
             raise ValueError(f"Task not found: {task_id}")
-        if self._read_current_state_for_update(task_id) != STATE_INTERVIEW:
+        current_state = self._read_current_state_for_update(task_id)
+        if current_state not in (STATE_INTAKE, STATE_INTERVIEW):
             raise PersistenceInvariantViolation(
-                f"Interview outline updates require current state INTERVIEW for task_id='{task_id}'."
+                f"Interview outline updates require current state INTAKE for task_id='{task_id}'."
             )
         if not answer or not answer.strip():
             raise ValueError("Interview outline answers must be non-empty.")
@@ -407,9 +466,12 @@ class ControlPlane:
             f"- **{item['bullet_type']}** (`{item['question_id']}`): {item['text']}"
             for item in bullets
         )
+        block = "\n".join(lines)
+        existing_text = artifact_path.read_text(encoding="utf-8") if artifact_path.is_file() else ""
+        merged_text = merge_outline_block(existing_text, block)
         temporary = artifact_path.with_name(f".{artifact_path.name}.{os.getpid()}.tmp")
         try:
-            temporary.write_text("\n".join(lines) + "\n", encoding="utf-8")
+            temporary.write_text(merged_text, encoding="utf-8")
             os.replace(temporary, artifact_path)
         finally:
             if temporary.exists():
@@ -430,9 +492,9 @@ class ControlPlane:
         task = self.get_task(task_id)
         if not task:
             raise ValueError(f"Task not found: {task_id}")
-        if from_state != STATE_INTERVIEW or self._read_current_state_for_update(task_id) != from_state:
+        if from_state not in (STATE_INTAKE, STATE_INTERVIEW) or self._read_current_state_for_update(task_id) != from_state:
             raise PersistenceInvariantViolation(
-                f"Interview answer updates require current state INTERVIEW for task_id='{task_id}'."
+                f"Interview answer updates require current state INTAKE for task_id='{task_id}'."
             )
         if not answer or not answer.strip():
             raise ValueError("Interview answers must be non-empty.")
@@ -508,11 +570,25 @@ class ControlPlane:
         return self._persistence.get_unconsumed_transition_answers(task_id, from_state, to_state)
 
     def _resolve_plan_outline_path(self, artifact_rel: str) -> Path:
-        """Resolve a plan-outline path inside the active repository root."""
+        """Resolve a plan-outline path inside the active repository root (never Path.cwd(), B7/G14)."""
+        from control_plane.identity_layout import is_inside_skill_folder
+
         repo_root = getattr(self, "repo_root", None)
-        if repo_root is None and self.db_path is not None and self.db_path.parent.name == "context":
-            repo_root = self.db_path.parent.parent
-        root = Path(repo_root or Path.cwd()).resolve()
+        if repo_root is None and self.db_path is not None:
+            db_parent = Path(self.db_path).resolve().parent
+            if db_parent.name == "context":
+                repo_root = db_parent.parent
+            elif db_parent.name == "simulation" and db_parent.parent.name == "context":
+                repo_root = db_parent.parent.parent
+            else:
+                repo_root = db_parent
+        if repo_root is None:
+            raise ValueError("Cannot resolve plan outline path without an explicit repo_root or db_path.")
+        root = Path(repo_root).resolve()
+        if is_inside_skill_folder(root):
+            raise PersistenceInvariantViolation(
+                f"Refusing to write plan outline inside a skill folder ({root}). Set repo_root explicitly."
+            )
         path = (root / artifact_rel).resolve()
         path.relative_to(root)
         return path
@@ -752,7 +828,7 @@ class ControlPlane:
                 f"expected docs/plans/work-tasks/{task_id}/{task_id}-implementation-plan.md (or the legacy "
                 f"docs/plans/{task_id}-implementation-plan.md) with a fenced JSON "
                 "Implementation Task Ledger; add COMPLETE entries with evidence and existing "
-                "artifact paths before retrying VERIFY_EXIT -> RETROSPECTIVE."
+                "artifact paths before retrying VERIFY_EXIT -> DONE."
             )
 
         def reconcile_main_into_worktree() -> Dict[str, List[str]]:
@@ -842,6 +918,8 @@ class ControlPlane:
         if not bypass_adjacency:
             self._state_machine.validate_adjacency(task_id, current_state, to_state)
 
+        if current_state in (STATE_INTAKE, STATE_INTERVIEW) and to_state == STATE_DRAFT_PLAN:
+            self.assert_interview_exit_ready(task_id, stage="interview", round_id=None)
         if current_state == STATE_INTERVIEW and to_state != STATE_INTERVIEW:
             self.assert_interview_exit_ready(task_id, stage="interview", round_id=None)
         if current_state == STATE_INTERVIEW and to_state == STATE_DRAFT_PLAN:
@@ -934,14 +1012,12 @@ class ControlPlane:
             for d in commit_request.staged_decisions
         )
         if (
-            commit_request.expected_from_state == STATE_INTERVIEW
-            and commit_request.to_state != STATE_INTERVIEW
+            commit_request.expected_from_state in (STATE_INTAKE, STATE_INTERVIEW)
+            and commit_request.to_state == STATE_DRAFT_PLAN
             and not force_retrospective
         ):
             # This is deliberately immediately before the atomic persistence call so both
             # deterministic and coordinated transition front-doors share the same gate.
-            # Skipped only for an explicit human-authorized FORCE_RETROSPECTIVE emergency
-            # close, which intentionally bypasses the normal interview-completeness gate.
             self.assert_interview_exit_ready(
                 commit_request.task_id, stage="interview", round_id=None
             )
@@ -1292,8 +1368,9 @@ class ControlPlane:
             self._transition_registry = TransitionRegistry.load_default()
 
         # Fail-closed check: action identity must be known/registered in registry
+        # (in schema v15, 'interview_question' is a built-in INTAKE capability since INTERVIEW was folded into INTAKE)
         releasing_edges = self._transition_registry.get_edges_releasing_capability(action_identity)
-        if not releasing_edges:
+        if not releasing_edges and action_identity != "interview_question":
             raise PhaseCapabilityDenied(f"Unregistered action identity: '{action_identity}'")
 
         # Step 1: read task current state
@@ -1314,6 +1391,21 @@ class ControlPlane:
             raise PhaseCapabilityDenied(
                 f"State tamper detected: latest transition id '{getattr(latest_trans, 'transition_id', None)}' "
                 f"does not match current occupancy transition id '{occupancy_trans.transition_id}'."
+            )
+
+        if action_identity == "interview_question" and not releasing_edges:
+            if current_state != STATE_INTAKE:
+                raise PhaseCapabilityDenied(
+                    f"Action '{action_identity}' not authorized in state '{current_state}' "
+                    f"(only permitted in '{STATE_INTAKE}')."
+                )
+            return PhaseCapability(
+                task_id=task_id,
+                action_identity=action_identity,
+                current_state=current_state,
+                releasing_edge=(occupancy_trans.from_state, occupancy_trans.to_state),
+                transition_id=occupancy_trans.transition_id,
+                authorized_actor="agent_or_human",
             )
 
         # Step 4: resolve its exact (from_state, to_state) template
@@ -1410,8 +1502,8 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     p_ct.add_argument("--key", default="~/.ssh/agentic-os_signing", help="Your private signing key (proof edges, interactive terminal)")
 
-    # Compatibility alias: transition routes directly through TransitionCoordinator
-    p_tr = sub.add_parser("transition")
+    # Compatibility alias: transition / go routes directly through TransitionCoordinator
+    p_tr = sub.add_parser("transition", aliases=["go"])
     p_tr.add_argument("--task-id", required=True)
     p_tr.add_argument("--to", required=True)
     p_tr.add_argument("--actor", default="controller")
@@ -1446,7 +1538,7 @@ def _build_parser() -> argparse.ArgumentParser:
     p_wt.add_argument("--task-id", required=True)
     p_wt.add_argument("--path", required=True)
     p_wt.add_argument("--branch", required=True)
-    p_wt.add_argument("--state", required=True)
+    p_wt.add_argument("--state", required=True, choices=WORKTREE_STATES)
 
     p_st = sub.add_parser("status")
     p_st.add_argument("--task-id", required=True)
@@ -1546,6 +1638,11 @@ def _build_parser() -> argparse.ArgumentParser:
     p_vc.add_argument("--branch", required=True, help="Git branch to verify commit authorization for")
     p_vc.add_argument("--staged-files", nargs="*", default=[], help="List of staged files")
 
+    p_ms = sub.add_parser("migrate-schema", help="Sole owner of schema v14 -> v15 data migration (backup + single transaction)")
+    p_ms.add_argument("--dry-run", action="store_true", help="Preview tasks to map and backup path without modifying the DB")
+    p_ms.add_argument("--yes", action="store_true", help="Back up the DB and execute the atomic v14 -> v15 migration")
+    p_ms.add_argument("--json", action="store_true", help="Machine-readable JSON output")
+
     # Blanket human-confirmation gate (added 2026-09-13): every state-mutating
     # subcommand requires an explicit --human-confirmed flag with no default,
     # regardless of whether the underlying YAML edge is coded as
@@ -1598,7 +1695,7 @@ def _enforce_human_confirmed(args: argparse.Namespace) -> None:
     zero human authorization -- that edge's approval.required=false made it legal per
     the YAML, which is exactly the gap this closes: the YAML's per-edge setting is no
     longer sufficient on its own, this check applies uniformly on top of it."""
-    if args.subcommand in ("coordinate-transition", "transition"):
+    if args.subcommand in ("coordinate-transition", "transition", "go"):
         if getattr(args, "to", None) in _PROOF_TARGET_STATES:
             return  # cryptographic-proof edges: the signature is the only authority; this flag is ignored
         human_confirmed = getattr(args, "human_confirmed", None)
@@ -1632,7 +1729,7 @@ def _dispatch_command(cp: ControlPlane, args: argparse.Namespace):
         print(f"Task {args.task_id} initialized in INTAKE (type={args.task_type}).")
     elif args.subcommand == "recommend-model":
         print(json.dumps(cp.resolve_recommended_model(args.runtime, args.tier), indent=2))
-    elif args.subcommand in ("coordinate-transition", "transition"):
+    elif args.subcommand in ("coordinate-transition", "transition", "go"):
         answers_dict = json.loads(args.answers) if getattr(args, "answers", None) else None
         from control_plane.tty_signer import make_tty_signer, terminal_is_interactive
 
@@ -1791,8 +1888,27 @@ def main():
         root = Path(args.repo_root).resolve() if args.repo_root else canonical_repo_root(".")
         sys.exit(run_selftest(default_layout(root), Path(args.key).expanduser()))
 
-    cp = ControlPlane(db_path=getattr(args, "db_path", None))
+    if args.subcommand == "migrate-schema":
+        from control_plane.identity_layout import canonical_repo_root, is_inside_skill_folder
+        from control_plane.migration import migrate_schema
+
+        if getattr(args, "db_path", None):
+            db_path = Path(args.db_path)
+        else:
+            root = canonical_repo_root(".")
+            if is_inside_skill_folder(root):
+                print(f"ERROR: Refusing to migrate a DB inside a skill folder ({root}).", file=sys.stderr)
+                sys.exit(2)
+            db_path = root / "context" / "control_plane.db"
+        res = migrate_schema(db_path, dry_run=args.dry_run, yes=args.yes)
+        if args.json:
+            print(json.dumps(res, indent=2))
+        else:
+            print(res.get("message") or json.dumps(res, indent=2))
+        sys.exit(res["exit_code"])
+
     try:
+        cp = ControlPlane(db_path=getattr(args, "db_path", None))
         _dispatch_command(cp, args)
     except Exception as e:
         print(f"{'CONTROL PLANE ERROR' if isinstance(e, (InvalidStateTransition, VerifierSovereigntyViolation, PersistenceInvariantViolation, ConcurrentModificationError)) else 'ERROR'}: {e}", file=sys.stderr)
@@ -1800,10 +1916,11 @@ def main():
 
 
 def _map_exception_to_exit_code(e: Exception) -> int:
-    """Maps a caught exception to its CLI exit code. ConcurrentModificationError gets its own
-    code (3) since it's the one error that's explicitly retryable — indistinguishable from a
-    generic crash (exit 1) would prevent callers from retrying only on contention."""
-    if isinstance(e, ConcurrentModificationError):
+    """Maps a caught exception to its CLI exit code. ConcurrentModificationError and
+    SchemaMigrationRequired get exit code 3."""
+    from control_plane.constants import SchemaMigrationRequired
+
+    if isinstance(e, (ConcurrentModificationError, SchemaMigrationRequired)):
         return 3
     if isinstance(e, (InvalidStateTransition, VerifierSovereigntyViolation, PersistenceInvariantViolation, PhaseCapabilityDenied, TransitionCoordinatorError)):
         return 2

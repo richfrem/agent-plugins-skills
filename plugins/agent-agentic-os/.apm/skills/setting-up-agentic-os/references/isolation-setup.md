@@ -1,6 +1,6 @@
 # Gate 1 signing identity: isolation setup
 
-Gate 1 (`AWAITING_APPROVAL -> APPROVED`) advances only when a human's SSH key signs a challenge and
+Gate 1 (`PLAN_REVIEW -> APPROVED`) advances only when a human's SSH key signs a challenge and
 the signature verifies against `allowed_signers`. This page explains the setup, the modes, and, just as
 important, what this does **not** protect against.
 

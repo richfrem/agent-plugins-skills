@@ -42,7 +42,14 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 import yaml
 
 from control_plane.state_machine import ALLOWED_TRANSITIONS, CANONICAL_STATES
-from control_plane.constants import AGENT_CONTROL_CMD, CONTROL_SCRIPTS_DIR, AUTHORIZED_ACTOR_HUMAN_ONLY, AUTHORIZED_ACTOR_AGENT_OR_HUMAN
+from control_plane.constants import (
+    ACTIVE_STATES,
+    AGENT_CONTROL_CMD,
+    CONTROL_SCRIPTS_DIR,
+    AUTHORIZED_ACTOR_HUMAN_ONLY,
+    AUTHORIZED_ACTOR_AGENT_OR_HUMAN,
+    STATE_DONE,
+)
 
 # load_default() memo: {sha256 of the YAML bytes: parsed registry}; see TransitionRegistry.load_default().
 _DEFAULT_REGISTRY_CACHE: Dict[str, "TransitionRegistry"] = {}
@@ -333,22 +340,25 @@ class TransitionRegistry:
 
     @staticmethod
     def _edge_guidance(template: TransitionTemplate, task_id_placeholder: str) -> Dict[str, Any]:
+        # B18 / B19: short `python3 -m control_plane` command form (<= 100 chars after `&&`),
+        # with `--human-confirmed` included only on edges that consume a typed-quote human decision.
+        prefix = f"cd {CONTROL_SCRIPTS_DIR} && python3 -m control_plane"
         if template.requires_cryptographic_proof:
             command = (
-                "" + AGENT_CONTROL_CMD + " "
-                f"coordinate-transition --task-id {task_id_placeholder} --to {template.to_state} "
-                "--interactive --key <path-to-signing-key>"
+                f"{prefix} transition --task-id {task_id_placeholder} --to {template.to_state} --interactive"
             )
         elif template.authorized_actor == AUTHORIZED_ACTOR_HUMAN_ONLY:
             command = (
-                "" + AGENT_CONTROL_CMD + " "
-                f"coordinate-transition --task-id {task_id_placeholder} --to {template.to_state} --interactive"
+                f"{prefix} transition --task-id {task_id_placeholder} --to {template.to_state} --interactive"
+            )
+        elif template.human_questions:
+            command = (
+                f"{prefix} go --task-id {task_id_placeholder} --to {template.to_state} "
+                "--human-confirmed 'HUMAN-CONFIRMED:'"
             )
         else:
             command = (
-                "" + AGENT_CONTROL_CMD + " "
-                f"coordinate-transition --task-id {task_id_placeholder} --to {template.to_state} "
-                "--human-confirmed 'HUMAN-CONFIRMED: <quote>'"
+                f"{prefix} transition --task-id {task_id_placeholder} --to {template.to_state}"
             )
         configured = dict(template.guidance or {})
         helpers = list(configured.get("helper_commands", []))
@@ -411,8 +421,8 @@ class TransitionRegistry:
 
         stage_contracts: Dict[str, Dict[str, Any]] = {}
         for state, contract in raw_stages.items():
-            if state not in CANONICAL_STATES:
-                raise TransitionRegistryError(f"Unknown stage contract state: {state}")
+            if state not in ACTIVE_STATES:
+                raise TransitionRegistryError(f"Unknown or retired stage contract state: {state}")
             if not isinstance(contract, dict):
                 raise TransitionRegistryError(f"Stage contract for '{state}' must be a mapping")
             for field in ("purpose", "question_policy", "entry_questions", "adaptive_follow_up_rules", "exit_requirements"):
@@ -483,15 +493,15 @@ class TransitionRegistry:
             if not isinstance(raw_item, dict):
                 raise TransitionRegistryError(f"Template at index {idx} must be a mapping")
 
-            # Wildcard expansion fans out into one literal template per canonical state.
-            # The reset-to-INTAKE wildcard excludes INTAKE's no-op self-loop.
+            # Wildcard expansion fans out into one literal template per active non-terminal state
+            # (DONE is terminal in v15 and has no outgoing edges).
             if raw_item.get("from_state") == "*":
                 base_transition_id = raw_item.get("transition_id", f"wildcard_{idx}")
                 wildcard_to_state = raw_item.get("to_state")
                 existing_edges = {(t.from_state, t.to_state) for t in parsed}
                 expanded_items = []
-                for state in CANONICAL_STATES:
-                    if state == wildcard_to_state:
+                for state in ACTIVE_STATES:
+                    if state == wildcard_to_state or state == STATE_DONE:
                         continue
                     if (state, wildcard_to_state) in existing_edges:
                         continue

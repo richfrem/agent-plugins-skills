@@ -63,31 +63,10 @@ def _seed_realistic_data(conn):
         "INSERT INTO tasks (task_id, title, state, runtime_tool) VALUES (?, ?, ?, ?)",
         ("task-b", "Task B", STATE_INTAKE, "claude"),
     )
-    conn.execute("UPDATE tasks SET state = 'INTERVIEW' WHERE task_id = 'task-b';")
+    conn.execute("UPDATE tasks SET state = 'ESCALATED' WHERE task_id = 'task-b';")
     conn.execute(
         "INSERT INTO task_transitions (task_id, from_state, to_state, actor) VALUES (?, ?, ?, ?)",
-        ("task-b", STATE_INTAKE, STATE_INTERVIEW, "test"),
-    )
-    interview_answers = {
-        "force_retrospective_reason_category": (
-            "Task is effectively complete/trivial -- this is a planned early close, not a failure"
-        ),
-        "force_retrospective_authorization": "FORCE_RETROSPECTIVE",
-    }
-    for question_id, answer in interview_answers.items():
-        conn.execute(
-            """
-            INSERT INTO transition_decisions (
-                task_id, source_occupancy_transition_id, from_state, to_state,
-                question_id, answer, decision_type, actor, recorded_at
-            ) VALUES ('task-b', 1, 'INTERVIEW', 'RETROSPECTIVE', ?, ?, 'ANSWER', 'human', 12345.0)
-            """,
-            (question_id, answer),
-        )
-    conn.execute("UPDATE tasks SET state = 'RETROSPECTIVE' WHERE task_id = 'task-b';")
-    conn.execute(
-        "INSERT INTO task_transitions (task_id, from_state, to_state, actor) VALUES (?, ?, ?, ?)",
-        ("task-b", STATE_INTERVIEW, STATE_RETROSPECTIVE, "test"),
+        ("task-b", STATE_INTAKE, "ESCALATED", "test"),
     )
     conn.execute(
         "INSERT INTO critic_reviews (task_id, iteration, model_used, verdict, critique_findings) VALUES (?, ?, ?, ?, ?)",
@@ -163,9 +142,9 @@ def test_rebuild_with_nonempty_data_survives_intact(tmp_path):
     conn = sqlite3.connect(str(db_path))
     try:
         tasks = {r[0]: r[1] for r in conn.execute("SELECT task_id, state FROM tasks")}
-        assert tasks == {"task-a": STATE_INTAKE, "task-b": STATE_RETROSPECTIVE}
+        assert tasks == {"task-a": STATE_INTAKE, "task-b": "ESCALATED"}
         transitions = conn.execute("SELECT COUNT(*) FROM task_transitions").fetchone()[0]
-        assert transitions == 2
+        assert transitions == 1
         orphans = conn.execute(
             "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name LIKE '\\_%\\_migrating' ESCAPE '\\'"
         ).fetchone()[0]
@@ -214,7 +193,7 @@ def test_rebuild_failure_mid_copy_loop_rolls_back_completely(tmp_path, monkeypat
         assert orphans == 0, "orphan _*_migrating tables must not survive a rolled-back rebuild"
 
         tasks = {r[0]: r[1] for r in conn.execute("SELECT task_id, state FROM tasks")}
-        assert tasks == {"task-a": STATE_INTAKE, "task-b": STATE_RETROSPECTIVE}, "data must be unchanged after rollback"
+        assert tasks == {"task-a": STATE_INTAKE, "task-b": "ESCALATED"}, "data must be unchanged after rollback"
 
         post_version = conn.execute("SELECT version FROM schema_version").fetchone()[0]
         assert post_version == pre_version, "schema_version must be unchanged after rollback"

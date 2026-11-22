@@ -7,3 +7,8 @@ description: 'Governed control plane and learning layer above Claude Code: a gat
 author: Richard Fremmerlid
 license: MIT
 repository: https://github.com/richfrem/agent-plugins-skills
+dependencies:
+  apm:
+    # running-control-plane finds orchestrating-agent-work (strategy registry, validators, graph runner) and
+    # cli-agent (model catalogs) only as siblings installed by this package.
+    - richfrem/agent-plugins-skills/plugins/agent-orchestration

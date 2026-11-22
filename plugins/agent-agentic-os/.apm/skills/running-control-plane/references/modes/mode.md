@@ -50,7 +50,8 @@ python3 scripts/control_plane_mode.py status
 | Mode | Order | Rationale |
 |---|---|---|
 | `disable` | declare `disabled` -> unwire the guards | gates go off first; the guard scripts stay for a fast re-enable |
-| `enable` | install and wire the guards -> declare `enabled` | gates only come on once the machinery exists |
+| `on-demand` | install and wire the guards -> declare `on-demand` | unregistered branches pass (requiring a valid, real-stamped DB); registered non-DONE jobs are gated; `status` lists `active_jobs` |
+| `enable` | install and wire the guards -> declare `enabled` | gates only come on once the machinery exists; denies unregistered pushes |
 
 Never touched: `context/control_plane.db` and its task history, the Claude Code plugin hooks, and the evolution guard (a separate feature with its own gate).
 

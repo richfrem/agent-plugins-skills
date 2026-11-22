@@ -86,8 +86,8 @@ def test_human_only_edges_returns_only_human_only_classified_edges():
     registry = TransitionRegistry.load_default()
     edges = human_only_edges(registry)
     assert len(edges) > 0
-    assert ("AWAITING_APPROVAL", "APPROVED") in edges
-    assert ("INTAKE", "INTERVIEW") not in edges
+    assert ("PLAN_REVIEW", "APPROVED") in edges
+    assert ("INTAKE", "DRAFT_PLAN") not in edges
     for from_state, to_state in edges:
         template = registry.get_template(from_state, to_state)
         assert template.authorized_actor == AUTHORIZED_ACTOR_HUMAN_ONLY

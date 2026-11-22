@@ -107,16 +107,20 @@ def test_unconfirmed_source_candidate_blocks_interview_exit_until_human_confirme
 
 
 def test_transition_blocks_pending_source_candidate_on_interview_exit(tmp_path):
+    """Schema v15: interview is absorbed into INTAKE, so unconfirmed source candidates block INTAKE -> DRAFT_PLAN."""
     control_plane = _control_plane_with_task(tmp_path)
-    control_plane.transition("p01-task", STATE_INTERVIEW, "human", "start interview")
-    stage_interview_answers(control_plane, "p01-task")
+    occ = control_plane._persistence.get_last_transition("p01-task").transition_id
+    control_plane.record_decision(
+        task_id="p01-task", source_occupancy_transition_id=occ, from_state="INTAKE", to_state=STATE_DRAFT_PLAN,
+        question_id="intake_outline_confirmation", answer="Yes, proceed to DRAFT_PLAN", actor="human",
+    )
     candidate_id = control_plane.record_source_assisted_answer_candidate(
         "p01-task", "interview", "round-1", "scope", "P01 only", "docs/brief.md"
     )
 
     with pytest.raises(PersistenceInvariantViolation, match="unconfirmed source-assisted"):
         control_plane.transition("p01-task", STATE_DRAFT_PLAN, "agent", REASON_INTERVIEW_COMPLETE)
-    assert control_plane.get_task("p01-task")["state"] == STATE_INTERVIEW
+    assert control_plane.get_task("p01-task")["state"] == "INTAKE"
 
     control_plane.confirm_source_assisted_answer_candidate(candidate_id, actor="human")
     control_plane.transition("p01-task", STATE_DRAFT_PLAN, "agent", REASON_INTERVIEW_COMPLETE)
@@ -125,22 +129,20 @@ def test_transition_blocks_pending_source_candidate_on_interview_exit(tmp_path):
 
 def test_coordinate_transition_blocks_pending_source_candidate_on_interview_exit(tmp_path):
     control_plane = _control_plane_with_task(tmp_path)
-    control_plane.transition("p01-task", STATE_INTERVIEW, "human", "start interview")
-    stage_interview_answers(control_plane, "p01-task")
     candidate_id = control_plane.record_source_assisted_answer_candidate(
         "p01-task", "interview", "round-7", "scope", "P01 only", "docs/brief.md"
     )
 
     from control_plane.coordinator import TransitionCoordinator as _TC
     with pytest.raises(PersistenceInvariantViolation, match="unconfirmed source-assisted"):
-        _TC(control_plane, input_fn=lambda p: "YES").coordinate_transition(
-            "p01-task", STATE_DRAFT_PLAN, "agent", REASON_INTERVIEW_COMPLETE, interactive=True,
+        _TC(control_plane, input_fn=lambda p: "1").coordinate_transition(
+            "p01-task", STATE_DRAFT_PLAN, "human", REASON_INTERVIEW_COMPLETE, interactive=True,
         )
-    assert control_plane.get_task("p01-task")["state"] == STATE_INTERVIEW
+    assert control_plane.get_task("p01-task")["state"] == "INTAKE"
 
     control_plane.confirm_source_assisted_answer_candidate(candidate_id, actor="human")
-    _TC(control_plane, input_fn=lambda p: "YES").coordinate_transition(
-        "p01-task", STATE_DRAFT_PLAN, "agent", REASON_INTERVIEW_COMPLETE, interactive=True,
+    _TC(control_plane, input_fn=lambda p: "1").coordinate_transition(
+        "p01-task", STATE_DRAFT_PLAN, "human", REASON_INTERVIEW_COMPLETE, interactive=True,
     )
     assert control_plane.get_task("p01-task")["state"] == STATE_DRAFT_PLAN
 

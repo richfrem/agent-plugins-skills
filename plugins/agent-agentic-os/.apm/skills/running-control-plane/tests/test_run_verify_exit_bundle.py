@@ -48,90 +48,11 @@ from control_plane.wrappers.run_verify_exit_bundle import run_verify_exit_bundle
 
 
 def _task_at_verify_exit(tmp_path, monkeypatch, task_id: str) -> ControlPlane:
-    """Drives a real task to VERIFY_EXIT via the actual production coordinator
-    path (mirrors PipelineSimulator.run_standard_happy_path up to its own
-    VERIFY_EXIT entry, stopping before its exit-verification calls so this
-    test's own call to run_verify_exit_bundle is the first one)."""
-    sim = PipelineSimulator(tmp_path / "control_plane.db")
-    sim.create_task(task_id, "Bundle test")
-    repo_root = tmp_path / "simulated-repo"
-    repo_root.mkdir(parents=True, exist_ok=True)
-    sim.control_plane.repo_root = repo_root
-    sim.enter_interview(task_id)
-    sim.stage_interview_answers(task_id, classification="STANDARD", to_state=STATE_DRAFT_PLAN)
-    sim.control_plane.record_plan_mode_entry(task_id, "simulator")
-    sim.transition_from_interview(task_id, STATE_DRAFT_PLAN, classification="STANDARD", expect_success=True)
+    """Drives a real task to VERIFY_EXIT via the actual production coordinator (10-state v15)."""
+    from helpers.gate1_fixtures import init_git_worktree, reach_worktree_review
 
-    plan_dir = repo_root / "docs" / "plans"
-    plan_dir.mkdir(parents=True, exist_ok=True)
-    (plan_dir / f"{task_id}-spec.md").write_text("# spec", encoding="utf-8")
-    (plan_dir / f"{task_id}-implementation-plan.md").write_text("# plan", encoding="utf-8")
-
-    plan_review_answers = iter(["1", "YES"])
-    TransitionCoordinator(
-        sim.control_plane, registry=sim.registry,
-        input_fn=lambda _p: next(plan_review_answers), output_stream=io.StringIO(),
-    ).coordinate_transition(
-        task_id=task_id, to_state=STATE_PLAN_REVIEW, actor="human",
-        reason="setup", interactive=True,
-    )
-    review_answers = iter(["1", "3", "claude-cli", "test-model", "medium", "YES"])
-    TransitionCoordinator(
-        sim.control_plane, registry=sim.registry,
-        input_fn=lambda _p: next(review_answers), output_stream=io.StringIO(),
-    ).coordinate_transition(
-        task_id=task_id, to_state=STATE_MULTI_AGENT_REVIEW, actor="human",
-        reason="setup", interactive=True,
-    )
-    sim.control_plane.record_critic_review(task_id, 1, "simulator", "PASS", "setup")
-    TransitionCoordinator(
-        sim.control_plane, registry=sim.registry,
-        input_fn=lambda _p: "YES", output_stream=io.StringIO(),
-    ).coordinate_transition(
-        task_id=task_id, to_state=STATE_PLAN_REVIEW, actor="simulator",
-        reason="setup", interactive=True,
-    )
-    awaiting_answers = iter(["1", "YES"])
-    TransitionCoordinator(
-        sim.control_plane, registry=sim.registry,
-        input_fn=lambda _p: next(awaiting_answers), output_stream=io.StringIO(),
-    ).coordinate_transition(
-        task_id=task_id, to_state=STATE_AWAITING_APPROVAL, actor="simulator",
-        reason="setup", interactive=True,
-    )
-    approval_inputs = iter(["1", "y", "YES"])
-    TransitionCoordinator(
-        sim.control_plane, registry=sim.registry,
-        input_fn=lambda _p: next(approval_inputs), output_stream=io.StringIO(),
-    ).coordinate_transition(
-        task_id=task_id, to_state=STATE_APPROVED, actor="human",
-        reason="setup", interactive=True,
-    )
-    sim.control_plane.record_human_approval(task_id, "simulator")
-
-    worktree = repo_root / ".worktrees" / task_id
-    worktree.mkdir(parents=True, exist_ok=True)
-    sim.control_plane.update_worktree(task_id, str(worktree), f"sim/{task_id}", "written_in_worktree")
-    TransitionCoordinator(
-        sim.control_plane, registry=sim.registry,
-        input_fn=lambda _p: "YES", output_stream=io.StringIO(),
-    ).coordinate_transition(
-        task_id=task_id, to_state=STATE_IN_WORKTREE, actor="simulator",
-        reason="setup", interactive=True,
-    )
-    # test_suite_deferred_to_review, not test_suite -- keeps the later assertion that
-    # run_verify_exit_bundle() itself records the "test_suite" gate meaningful.
-    sim.control_plane.record_verification_receipt(task_id, "test_suite_deferred_to_review", "deferred", 0)
-    worktree_review_answers = iter(["1", "1", "YES"])
-    TransitionCoordinator(
-        sim.control_plane, registry=sim.registry,
-        input_fn=lambda _p: next(worktree_review_answers), output_stream=io.StringIO(),
-    ).coordinate_transition(
-        task_id=task_id, to_state=STATE_WORKTREE_REVIEW, actor="human",
-        reason="setup", interactive=True,
-    )
-    # Gate 3 is a human signature over the worktree's commit/diff/untracked hashes; no skip flag or typed answer exists.
-    # The (test) human signer is supplied by conftest.py and signs the real request with a throwaway key.
+    worktree = init_git_worktree(tmp_path / "worktree")
+    sim = reach_worktree_review(tmp_path, task_id, worktree)
     TransitionCoordinator(
         sim.control_plane, registry=sim.registry, output_stream=io.StringIO(),
     ).coordinate_transition(

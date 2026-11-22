@@ -111,3 +111,6 @@ Interactive front door that diagnoses task characteristics (unit structure, orde
 
 ### When to Use
 Use at the beginning of any non-trivial engineering initiative to determine whether the task requires `dual-loop`, `agent-swarm`, `graph`, `red-team-review`, `learning-loop`, or `triple-loop-learning`. Swarm plan artifact is a job file (`<task-id>.job.md`) plus file list.
+
+### The single strategy registry
+`references/patterns.json` is the only registry of the strategies this skill owns (`graph`, `dual-loop`, `agent-swarm`, `direct`, `red-team-review`, `learning-loop`). Each entry names its plan artifact, whether it is required, the next skill and step, and an optional validator. `validator_script` is relative to this skill folder (for example `scripts/validate_manifest.py`), and `validator` is the argv template using `{validator_script}` and `{artifact}`. The `running-control-plane` skill reads this file from the sibling skill that the `agent-orchestration` APM package installs. It keeps no copy, and it lists only `triple-loop-learning`, which it owns itself. To add or change a strategy, edit `patterns.json`. `tests/test_patterns_registry.py` checks that every `validator_script` exists.

@@ -214,5 +214,17 @@
   {
     "prompt": "Partition the test suite into independent chunks and run them in parallel across worktrees.",
     "should_trigger": true
+  },
+  {
+    "prompt": "I have nine ordered refactor steps that all edit the same files. Should I build a graph manifest for this or keep it simpler?",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Decide which parts of this plan can fan out in parallel (scouts, reviewer lenses) and which must stay serial, and keep the orchestration proportionate to the work.",
+    "should_trigger": true
+  },
+  {
+    "prompt": "Check whether my graph is over-engineered: too many gates and pinned scripts for a simple sequential job.",
+    "should_trigger": true
   }
 ]

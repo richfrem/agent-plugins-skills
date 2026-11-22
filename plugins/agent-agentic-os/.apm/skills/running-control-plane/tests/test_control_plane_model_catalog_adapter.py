@@ -10,7 +10,8 @@ Purpose:
 
 Key Input Dependencies:
     - Temporary JSON files via pytest's tmp_path fixture
-    - Real plugins/agent-orchestration/skills/cli-agent/references/ files (for the genuine end-to-end test)
+    - Real cli-agent/references/ catalogs, reached through a fixture skills root shaped like an APM install
+      (helpers/orchestration_fixture.py) for the genuine end-to-end tests (S1, B9)
 
 Key Functions:
     - test_load_catalog_returns_none_when_missing()
@@ -38,6 +39,7 @@ from control_plane.adapters import ModelCatalogAdapter
 from control_plane.constants import TOOL_CATALOG_ALIASES
 from control_plane.ports import ModelCatalogPort
 from agent_control import ControlPlane
+from helpers.orchestration_fixture import make_skills_root
 
 
 def test_load_catalog_returns_none_when_missing(tmp_path):
@@ -163,12 +165,12 @@ def test_model_catalog_adapter_helper_components_against_temp_files(tmp_path):
     assert picked == "gpt-5.4-nano"
 
 
-def test_model_catalog_adapter_resolve_recommended_model_against_real_repo_files():
+def test_model_catalog_adapter_resolve_recommended_model_against_real_repo_files(tmp_path):
     """Genuine end-to-end call of the PUBLIC resolve_recommended_model() method, against the
-    real plugins/agent-orchestration/skills/cli-agent/references/ files in this repo (the same files
-    ControlPlane.resolve_recommended_model() resolves against in production) — proves the
-    complete, real code path works, not just its individual helper pieces."""
-    adapter = ModelCatalogAdapter()
+    real cli-agent/references/ catalogs in this repo, reached as the sibling cli-agent skill of a
+    fixture skills root (the same lookup ControlPlane.resolve_recommended_model() does in an APM
+    install) — proves the complete, real code path works, not just its individual helper pieces."""
+    adapter = ModelCatalogAdapter(skills_root=make_skills_root(tmp_path))
     result = adapter.resolve_recommended_model(runtime_tool="copilot", tier="low")
     assert result["runtime_tool"] == "copilot"
     assert result["tier"] == "low"
@@ -176,10 +178,10 @@ def test_model_catalog_adapter_resolve_recommended_model_against_real_repo_files
 
 
 @pytest.mark.parametrize("runtime_tool", sorted(TOOL_CATALOG_ALIASES))
-def test_model_catalog_adapter_resolves_every_runtime_alias_against_real_catalogs(runtime_tool):
+def test_model_catalog_adapter_resolves_every_runtime_alias_against_real_catalogs(runtime_tool, tmp_path):
     """Every runtime alias resolves against the cli-agent skill's real catalogs, so a moved or
     deleted catalog directory fails here instead of at review-selection time."""
-    adapter = ModelCatalogAdapter()
+    adapter = ModelCatalogAdapter(skills_root=make_skills_root(tmp_path))
     result = adapter.resolve_recommended_model(runtime_tool=runtime_tool, tier="low")
     assert result["model_id"]
 

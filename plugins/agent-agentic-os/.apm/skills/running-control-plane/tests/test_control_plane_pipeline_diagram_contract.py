@@ -10,11 +10,11 @@ if str(SCRIPTS_DIR) not in sys.path:
 
 from control_plane.state_machine import ALLOWED_TRANSITIONS
 from control_plane.constants import (
-    STATE_INTERVIEW, STATE_DRAFT_PLAN, STATE_RETROSPECTIVE, STATE_DONE,
+    STATE_INTAKE, STATE_DRAFT_PLAN, STATE_VERIFY_EXIT, STATE_DONE,
 )
 
 
-REPO_ROOT = Path(__file__).resolve().parents[5]
+REPO_ROOT = Path(__file__).resolve().parents[6]
 SKILL_DIR = Path(__file__).resolve().parent.parent
 DIAGRAM_DIR = SKILL_DIR / "references" / "diagrams"
 
@@ -41,7 +41,7 @@ def test_happy_path_diagram_is_a_valid_subset_with_required_closeout_path():
     happy_path = DIAGRAM_DIR / "control-plane-pipeline-happy-path.mermaid"
     assert _edges(happy_path) <= expected
     text = happy_path.read_text()
-    for marker in (STATE_INTERVIEW, STATE_DRAFT_PLAN, STATE_RETROSPECTIVE, STATE_DONE):
+    for marker in (STATE_INTAKE, STATE_DRAFT_PLAN, STATE_VERIFY_EXIT, STATE_DONE):
         assert marker in text
 
 
@@ -57,6 +57,6 @@ def test_runtime_skills_expose_final_dispatch_contracts():
         assert marker.lower() in interview.lower()
 
     for skill_name in ("cli-agent",):
-        skill = (REPO_ROOT / f"plugins/agent-orchestration/skills/{skill_name}/SKILL.md").read_text()
+        skill = (REPO_ROOT / f"plugins/agent-orchestration/.apm/skills/{skill_name}/SKILL.md").read_text()
         for marker in ("--require-input", "---SOURCE---", "record-critic-review", "REVISE"):
             assert marker in skill

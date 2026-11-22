@@ -82,8 +82,8 @@ def test_a_bad_gate1_signature_leaves_a_violation_row(tmp_path):
     rows = gate.db().execute(
         "SELECT attempted_from_state, attempted_to_state, detail FROM transition_violations WHERE task_id = ?", (GATE_TASK,)
     ).fetchall()
-    assert rows and rows[-1][0] == "AWAITING_APPROVAL" and rows[-1][1] == "APPROVED"
-    assert gate.state() == "AWAITING_APPROVAL"
+    assert rows and rows[-1][0] == "PLAN_REVIEW" and rows[-1][1] == "APPROVED"
+    assert gate.state() == "PLAN_REVIEW"
 
 
 def test_human_only_receipt_verbs_refuse_the_agent_account(cp):
@@ -135,14 +135,17 @@ def test_a_rejected_attempt_does_not_block_a_later_valid_commit_check(tmp_path):
 
 def test_a_trigger_recorded_illegal_transition_still_blocks(tmp_path):
     """N1: rows written by the enforce_valid_transition trigger keep blocking commit validation."""
-    from test_review_selection import TASK, _plan_review_task
+    from agent_control import ControlPlane
 
-    sim = _plan_review_task(tmp_path)
+    task = "round3-illegal-001"
+    cp = ControlPlane(db_path=tmp_path / "control_plane.db")
+    cp.init_db()
+    cp.create_task(task, "illegal transition test", "claude")
     with pytest.raises(Exception):
-        sim.control_plane.transition(TASK, "MULTI_AGENT_REVIEW", "tester", "no decisions")  # trigger rejects
-    kinds = [r[0] for r in sqlite3.connect(sim.control_plane.db_path).execute("SELECT kind FROM transition_violations WHERE task_id = ?", (TASK,))]
+        cp.transition(task, "DRAFT_PLAN", "tester", "missing intake_outline_confirmation")  # trigger rejects
+    kinds = [r[0] for r in sqlite3.connect(cp.db_path).execute("SELECT kind FROM transition_violations WHERE task_id = ?", (task,))]
     assert kinds == ["ILLEGAL_TRANSITION"]
-    assert "violation" in (sim.control_plane._persistence.validate_task_pipeline_history(TASK, "PLAN_REVIEW") or "").lower()
+    assert "violation" in (cp._persistence.validate_task_pipeline_history(task, "INTAKE") or "").lower()
 
 
 def test_principal_lists_are_split_into_individual_identities(tmp_path):

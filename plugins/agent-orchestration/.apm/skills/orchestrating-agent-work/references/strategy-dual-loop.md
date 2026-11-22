@@ -11,7 +11,7 @@ Splits work between a strategic Outer Loop (Supervisor) and an execution-focused
 
 ## Quick start
 
-Dispatch the inner loop through the `cli-agent` skill (cli-agents plugin), run from that skill's root:
+Dispatch the inner loop through the sibling `cli-agent` skill, run from that skill's root:
 
 ```bash
 python3 scripts/run_agent.py handoffs/task_packet_001.md <target_file> handoffs/result.md \

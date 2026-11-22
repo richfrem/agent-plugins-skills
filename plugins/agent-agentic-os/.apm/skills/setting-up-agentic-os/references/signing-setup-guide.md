@@ -1,7 +1,7 @@
 # the `signing-setup` mode: your approval key, in plain language
 
 ## What this is for
-Approving a plan (**Gate 1**, `AWAITING_APPROVAL -> APPROVED`), accepting the code (**Gate 3**, `-> VERIFY_EXIT`) and closing a task (`-> DONE`) each need proof that a *human* did it.
+Approving a plan (**Gate 1**, `PLAN_REVIEW -> APPROVED`), accepting the code (**Gate 3**, `WORKTREE_REVIEW -> VERIFY_EXIT`) and closing a task (`-> DONE`) each need proof that a *human* did it.
 That proof is a signature made with an **SSH key that only you hold**. An agent, or a script running as
 the agent, cannot produce it. The key's `SHA256:` fingerprint is the thumbprint analogue. This is an SSH key
 (SSHSIG), not an X.509 or self-signed certificate.

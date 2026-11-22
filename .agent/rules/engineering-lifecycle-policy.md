@@ -9,7 +9,7 @@ globs: ["**/*"]
 > **THE SUPREME LAW: CRYPTOGRAPHIC HUMAN GATE**
 > You MUST NOT execute ANY state-changing operation (code writes, commits, external commands) without EXPLICIT signed human authorization.
 > Chat confirmations like "Sounds good", "Looks right", "Proceed", "Go", or "Execute" are NOT parsed by the agent to self-approve Gate 1.
-> Gate 1 is a signed transition (`AWAITING_APPROVAL` -> `APPROVED`). The human signs the content-bound challenge with their enrolled OpenSSH key via `agent_control.py approve-transition --request-id <id>` (or simulation key in simulation mode).
+> Gate 1 is a signed transition (`PLAN_REVIEW` -> `APPROVED`). The human signs the content-bound challenge with their enrolled OpenSSH key via `agent_control.py approve-transition --request-id <id>` (or simulation key in simulation mode).
 > Explicit signed approval advances task state to `APPROVED` in `context/control_plane.db`.
 > **VIOLATION = SYSTEM FAILURE**
 
@@ -35,22 +35,18 @@ Phase 0: Intake & Socratic Gate (agent-exploration-cycle + os-control-intake)
    ├─ TRIVIAL classification (single-file/few-line, no architectural impact):
    │    Verified against the real state machine (see
    │    references/map-debt.md): there is NO dedicated stage-skipping edge for
-   │    TRIVIAL work. The only edges reaching DONE directly from INTAKE or
-   │    INTERVIEW are human_force_done__from_INTAKE/INTERVIEW — the force-close
-   │    family, requiring live interactive human authorization, not a distinct
-   │    trivial shortcut. TRIVIAL still walks every stage of the same pipeline
-   │    (INTERVIEW -> DRAFT_PLAN -> PLAN_REVIEW -> AWAITING_APPROVAL -> APPROVED
-   │    -> IN_WORKTREE -> WORKTREE_REVIEW -> VERIFY_EXIT -> RETROSPECTIVE ->
-   │    DONE); it only LIGHTENS the evidence required at each stage (focused
-   │    verification instead of full-suite, skip external reviewers, concise
-   │    plan instead of the full contract) — it does not skip stages. If a
-   │    change is small enough that even that full-but-lightened sequence is
-   │    disproportionate, the correct choice is NOT a fabricated shortcut
-   │    through this pipeline — it is to skip this control plane entirely
-   │    (direct commit/push, `--no-verify` if the push hook blocks it) with the
-   │    user's explicit authorization. See os-control-intake/SKILL.md and GitHub
-   │    Issue #534 for the original (aspirational, never implemented) design
-   │    this correction supersedes.
+   │    TRIVIAL work. The only edges reaching DONE directly from INTAKE are
+   │    the signed closure edges (`* -> DONE`), requiring live interactive
+   │    cryptographic human authorization, not a distinct trivial shortcut.
+   │    TRIVIAL still walks every stage of the same 10-state pipeline
+   │    (INTAKE -> DRAFT_PLAN -> PLAN_REVIEW -> APPROVED -> IN_WORKTREE ->
+   │    WORKTREE_REVIEW -> VERIFY_EXIT -> DONE); it only LIGHTENS the evidence
+   │    required at each stage (focused verification instead of full-suite,
+   │    waive external reviewers via signed decision, concise plan instead of
+   │    the full contract) — it does not skip stages. In `on-demand` mode
+   │    (the default for new setups), unregistered trivial branches pass
+   │    without control-plane gating; only tasks explicitly registered as jobs
+   │    are gated. See `running-control-plane/SKILL.md` and `references/modes/mode.md`.
    │
    └─ STANDARD classification: continue below.
    │
@@ -91,7 +87,7 @@ rest of this phase and into Phase 1:
      - **2. The Why:** Architectural rationale and user/system impact.
      - **3. Semantic Guardrails & Operational Reasons:** Non-negotiables paired with operational justifications.
      - **4. Definition of Done (DoD):** Programmatic verification commands.
-   - Atomically records task and transitions state in `context/control_plane.db` (`INTAKE` -> `INTERVIEW`).
+   - Atomically records task scoping answers and outline in `context/control_plane.db` during `INTAKE`, then transitions `INTAKE` -> `DRAFT_PLAN`.
 
 ---
 

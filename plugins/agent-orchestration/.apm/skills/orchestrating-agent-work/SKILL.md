@@ -34,6 +34,11 @@ Python 3.8+ (standard library only); sibling skills `cli-agent` and `evaluating-
 - **Learning Loop**: `scripts/work_loop.py run` validates the contract and budget, retrieves lessons, dispatches each attempt through `cli-agent` (claim first, atomic admission, immutable attempt ids), assesses with `evaluating-agent-outcomes`, and repairs within the attempt/token budget. Lessons, manual criteria and integration stay agent-supervised ([learning-loop.md](references/learning-loop.md)).
 - **Human Gate Integrity**: Graph runs with `--approval none` require an explicit human-approved manifest SHA; never self-sign manifests you wrote.
 
+- **Lifecycle Authority & Ask Before Stopping**: Authorized retries and automatic runner containment/rollback inside the approved plan proceed on their own and save diagnostics (`failed-diff.patch`, logs, transcript path) BEFORE rollback. Any discretionary cancel, stop, restart, retry beyond the plan, scope change, or discarding of output asks the human first.
+- **Make The Run Visible**: Start a graph with `--progress-file`, inspect live `active_nodes` with `graph_runner.py --status <run-dir>` ([graph-execution.md](references/graph-execution.md#observing-a-run)), and report each finished node and failure as it happens.
+- **Control Plane (Opt-In)**: `graph_runner.py` runs standalone by default. When a manifest declares `control_plane.task_id` or `--control-plane-task` is passed, it re-verifies Gate 1 APPROVED via the sibling `running-control-plane` verifier before any mutation.
+- **Choose The Graph Shape From The Work**: Run the partition analysis in [graph-planning.md](references/graph-planning.md) before compiling; record the shape and reasons in `caller.planning_notes`. Reviewer choice (runtime, model, effort) belongs to the human; never pick or dispatch reviewers yourself.
+
 ## Quick Start
 
 ```bash
@@ -76,7 +81,7 @@ Consult matching section in [acceptance-criteria.md](references/acceptance-crite
 
 ## References
 
-- Steps: [routing-and-closure.md](references/routing-and-closure.md) • [strategy-selection.md](references/strategy-selection.md) • [graph-planning.md](references/graph-planning.md) • [graph-execution.md](references/graph-execution.md) • [delegated-dag-refactoring-playbook.md](references/delegated-dag-refactoring-playbook.md)
-- Strategies: [strategy-dual-loop.md](references/strategy-dual-loop.md) • [strategy-agent-swarm.md](references/strategy-agent-swarm.md) • [strategy-red-team-review.md](references/strategy-red-team-review.md) • [bot-delegation-patterns.md](references/bot-delegation-patterns.md)
+- Steps: [routing-and-closure.md](references/routing-and-closure.md) • [strategy-selection.md](references/strategy-selection.md) • [graph-planning.md](references/graph-planning.md) • [graph-execution.md](references/graph-execution.md) • [generative-graph-simulation.md](references/generative-graph-simulation.md) • [delegated-dag-refactoring-playbook.md](references/delegated-dag-refactoring-playbook.md)
+- Strategies: [adversarial-plan-audit.md](references/adversarial-plan-audit.md) • [strategy-dual-loop.md](references/strategy-dual-loop.md) • [strategy-agent-swarm.md](references/strategy-agent-swarm.md) • [strategy-red-team-review.md](references/strategy-red-team-review.md) • [bot-delegation-patterns.md](references/bot-delegation-patterns.md)
 - Contracts: [topology-rules.md](references/topology-rules.md) • [graph-manifest-schema.json](references/graph-manifest-schema.json) • [PATTERN_GUIDE.md](references/PATTERN_GUIDE.md) • [patterns.json](references/patterns.json) • [cli-agent-executor.md](references/cli-agent-executor.md) • [learning-loop.md](references/learning-loop.md) • [dispatch-preflight.md](references/dispatch-preflight.md) • [cheapest_models.md](references/cheapest_models.md) • [post_run_survey.md](references/post_run_survey.md)
 - Architecture: [orchestrating_agent_work_architecture.mmd](references/diagrams/orchestrating_agent_work_architecture.mmd) • [acceptance-criteria.md](references/acceptance-criteria.md) • [fallback-tree.md](references/fallback-tree.md)

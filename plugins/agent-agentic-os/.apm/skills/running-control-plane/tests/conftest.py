@@ -20,6 +20,7 @@ Key Input Dependencies:
 
 Key Functions:
     - _legacy_default_proof_policy() -- autouse fixture (function scope)
+    - _orchestration_siblings_by_default() -- autouse fixture (session): default skills root = tmp install-shaped root
 """
 
 import sys
@@ -86,7 +87,7 @@ def _auto_human_signer(request, monkeypatch):
         # writing those files; the stand-in human is shown a minimal pair so their real subject (the gate
         # or hook under test) still runs. Existing files are never overwritten, and tests marked
         # `no_auto_signer` (which assert the refusal to sign missing content) do not get this seam.
-        if (from_state, to_state) == ("AWAITING_APPROVAL", "APPROVED"):
+        if (from_state, to_state) in (("PLAN_REVIEW", "APPROVED"), ("AWAITING_APPROVAL", "APPROVED")):
             from control_plane.snapshot import gate1_artifact_paths
 
             for label, path in gate1_artifact_paths(repo_root, task_id):
@@ -137,6 +138,23 @@ def _auto_human_signer(request, monkeypatch):
 
 
 @pytest.fixture(autouse=True, scope="session")
+def _orchestration_siblings_by_default(tmp_path_factory):
+    """Test-only seam (S1, spec G6): in an APM install, orchestrating-agent-work and cli-agent sit beside this skill.
+    In the source tree they do not (they live in the agent-orchestration package), and the source tree is not a
+    runtime location. Suites that build a coordinator or ControlPlane internally therefore get, as their default
+    skills root, a tmp folder shaped like an install (symlinks to the source siblings). Production code never
+    imports this module; tests that pass `skills_root` explicitly (including empty roots) are unaffected."""
+    from control_plane import orchestration_registry
+    from helpers.orchestration_fixture import make_skills_root
+
+    root = make_skills_root(tmp_path_factory.mktemp("orchestration-siblings"))
+    patch = pytest.MonkeyPatch()
+    patch.setattr(orchestration_registry, "_default_skills_root", lambda: root)
+    yield root
+    patch.undo()
+
+
+@pytest.fixture(autouse=True, scope="session")
 def _no_review_menus_by_default():
     """Test-only seam: pre-existing suites type free-text runtime/model/effort answers for the internal
     review questions. Their default menu resolver returns no menu (free text), so they do not depend on
@@ -149,3 +167,37 @@ def _no_review_menus_by_default():
     patch.setattr(review_options, "choices_for", lambda kind, runtime=None, path=None, profile_path=None: review_options.ChoiceSet([], None))
     yield
     patch.undo()
+
+
+def _snapshot_tree(root: Path) -> set[str]:
+    if not root.exists():
+        return set()
+    return {
+        p.relative_to(root).as_posix()
+        for p in root.rglob("*")
+        if p.is_file() and "__pycache__" not in p.parts and p.suffix != ".pyc"
+    }
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _forbid_skill_folder_pollution():
+    """G14 / B7: fail the test session if any test writes files into the skill folder or repo docs/plans/."""
+    skill_root = Path(__file__).resolve().parent.parent
+    repo_root = skill_root.parents[3] if len(skill_root.parents) >= 4 else skill_root.parent
+    docs_plans = repo_root / "docs" / "plans"
+
+    before_skill = _snapshot_tree(skill_root)
+    before_plans = _snapshot_tree(docs_plans)
+    yield
+    after_skill = _snapshot_tree(skill_root)
+    after_plans = _snapshot_tree(docs_plans)
+
+    new_skill = sorted(after_skill - before_skill)
+    new_plans = sorted(after_plans - before_plans)
+    problems = []
+    if new_skill:
+        problems.append(f"Skill folder gained files during test run: {new_skill}")
+    if new_plans:
+        problems.append(f"Repo docs/plans/ gained files during test run: {new_plans}")
+    if problems:
+        pytest.fail("G14 violation — " + "; ".join(problems))

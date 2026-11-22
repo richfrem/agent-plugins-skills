@@ -74,6 +74,106 @@ CANONICAL_STATE_NAMES = (
     STATE_RETROSPECTIVE, STATE_DONE, STATE_ROLLED_BACK, STATE_ESCALATED,
 )
 
+# --- Lean 10-state machine (schema v15) ------------------------------------------
+ACTIVE_STATES = (
+    STATE_INTAKE,
+    STATE_DRAFT_PLAN,
+    STATE_PLAN_REVIEW,
+    STATE_APPROVED,
+    STATE_IN_WORKTREE,
+    STATE_WORKTREE_REVIEW,
+    STATE_VERIFY_EXIT,
+    STATE_DONE,
+    STATE_ROLLED_BACK,
+    STATE_ESCALATED,
+)
+
+RETIRED_STATES = (
+    STATE_INTERVIEW,
+    STATE_MULTI_AGENT_REVIEW,
+    STATE_AWAITING_APPROVAL,
+    STATE_MULTI_AGENT_CODE_REVIEW,
+    STATE_RETROSPECTIVE,
+)
+
+STATE_ABSORBED_BY = {
+    STATE_INTERVIEW: STATE_INTAKE,
+    STATE_MULTI_AGENT_REVIEW: STATE_PLAN_REVIEW,
+    STATE_AWAITING_APPROVAL: STATE_PLAN_REVIEW,
+    STATE_MULTI_AGENT_CODE_REVIEW: STATE_WORKTREE_REVIEW,
+    STATE_RETROSPECTIVE: STATE_VERIFY_EXIT,
+}
+
+TRANSITION_KIND_NORMAL = "normal"
+TRANSITION_KIND_MIGRATION = "migration"
+SCHEMA_V15 = 15
+
+
+class SchemaMigrationRequired(Exception):
+    """Raised by ensure_schema when a v14 DB contains open tasks in retired states.
+    The human must run `agent_control.py migrate-schema --dry-run` then `--yes`."""
+
+
+# Frozen tuple of (from_state, to_state, requires_proof) for every v14 edge from base commit
+# 289d1e9f not in the 34 active v15 edges. Kept in valid_transitions with retired=1 so historical
+# task_transitions remain verifiable while new transitions along retired edges are refused.
+RETIRED_V14_EDGES = (
+    ("APPROVED", "ESCALATED", 0),
+    ("APPROVED", "RETROSPECTIVE", 0),
+    ("AWAITING_APPROVAL", "APPROVED", 1),
+    ("AWAITING_APPROVAL", "DONE", 1),
+    ("AWAITING_APPROVAL", "DRAFT_PLAN", 0),
+    ("AWAITING_APPROVAL", "ESCALATED", 0),
+    ("AWAITING_APPROVAL", "INTAKE", 0),
+    ("AWAITING_APPROVAL", "PLAN_REVIEW", 0),
+    ("AWAITING_APPROVAL", "RETROSPECTIVE", 0),
+    ("DONE", "INTAKE", 0),
+    ("DONE", "RETROSPECTIVE", 0),
+    ("DRAFT_PLAN", "ESCALATED", 0),
+    ("DRAFT_PLAN", "INTERVIEW", 0),
+    ("DRAFT_PLAN", "RETROSPECTIVE", 0),
+    ("ESCALATED", "RETROSPECTIVE", 0),
+    ("INTAKE", "INTERVIEW", 0),
+    ("INTAKE", "PLAN_REVIEW", 0),
+    ("INTAKE", "RETROSPECTIVE", 0),
+    ("INTERVIEW", "DONE", 1),
+    ("INTERVIEW", "DRAFT_PLAN", 0),
+    ("INTERVIEW", "ESCALATED", 0),
+    ("INTERVIEW", "INTAKE", 0),
+    ("INTERVIEW", "PLAN_REVIEW", 0),
+    ("INTERVIEW", "RETROSPECTIVE", 0),
+    ("IN_WORKTREE", "ESCALATED", 0),
+    ("IN_WORKTREE", "RETROSPECTIVE", 0),
+    ("MULTI_AGENT_CODE_REVIEW", "DONE", 1),
+    ("MULTI_AGENT_CODE_REVIEW", "ESCALATED", 0),
+    ("MULTI_AGENT_CODE_REVIEW", "INTAKE", 0),
+    ("MULTI_AGENT_CODE_REVIEW", "IN_WORKTREE", 0),
+    ("MULTI_AGENT_CODE_REVIEW", "RETROSPECTIVE", 0),
+    ("MULTI_AGENT_CODE_REVIEW", "ROLLED_BACK", 0),
+    ("MULTI_AGENT_CODE_REVIEW", "VERIFY_EXIT", 1),
+    ("MULTI_AGENT_CODE_REVIEW", "WORKTREE_REVIEW", 0),
+    ("MULTI_AGENT_REVIEW", "DONE", 1),
+    ("MULTI_AGENT_REVIEW", "DRAFT_PLAN", 0),
+    ("MULTI_AGENT_REVIEW", "ESCALATED", 0),
+    ("MULTI_AGENT_REVIEW", "INTAKE", 0),
+    ("MULTI_AGENT_REVIEW", "PLAN_REVIEW", 0),
+    ("MULTI_AGENT_REVIEW", "RETROSPECTIVE", 0),
+    ("PLAN_REVIEW", "AWAITING_APPROVAL", 0),
+    ("PLAN_REVIEW", "ESCALATED", 0),
+    ("PLAN_REVIEW", "INTERVIEW", 0),
+    ("PLAN_REVIEW", "MULTI_AGENT_REVIEW", 0),
+    ("PLAN_REVIEW", "RETROSPECTIVE", 0),
+    ("RETROSPECTIVE", "DONE", 1),
+    ("RETROSPECTIVE", "ESCALATED", 0),
+    ("RETROSPECTIVE", "INTAKE", 0),
+    ("ROLLED_BACK", "RETROSPECTIVE", 0),
+    ("VERIFY_EXIT", "ESCALATED", 0),
+    ("VERIFY_EXIT", "RETROSPECTIVE", 0),
+    ("WORKTREE_REVIEW", "ESCALATED", 0),
+    ("WORKTREE_REVIEW", "MULTI_AGENT_CODE_REVIEW", 0),
+    ("WORKTREE_REVIEW", "RETROSPECTIVE", 0),
+)
+
 # --- transition_decisions.decision_type ------------------------------------------
 DECISION_TYPE_ANSWER = "ANSWER"
 DECISION_TYPE_APPROVAL = "APPROVAL"
@@ -81,9 +181,11 @@ DECISION_TYPE_REJECTION = "REJECTION"
 DECISION_TYPE_SKIP = "SKIP"
 DECISION_TYPE_CONFIRMATION = "CONFIRMATION"
 DECISION_TYPE_RESET = "RESET"
+DECISION_TYPE_SIGNED_DECISION = "SIGNED_DECISION"
 DECISION_TYPES = (
     DECISION_TYPE_ANSWER, DECISION_TYPE_APPROVAL, DECISION_TYPE_REJECTION,
     DECISION_TYPE_SKIP, DECISION_TYPE_CONFIRMATION, DECISION_TYPE_RESET,
+    DECISION_TYPE_SIGNED_DECISION,
 )
 
 # --- Actors -----------------------------------------------------------------------
@@ -189,10 +291,10 @@ DELEGATION_STATUSES = (
 
 # --- ModelCatalogAdapter heuristics --------------------------------------------------
 DISALLOWED_MODEL_STATUSES = frozenset({"withdrawn", "deprecated", "unavailable"})
+# Catalog model statuses never offered in a review-selection model menu (review_options._catalog_models).
+MENU_HIDDEN_MODEL_STATUSES = DISALLOWED_MODEL_STATUSES | frozenset({"retired"})
 STRATEGY_FALLBACK_KEYS = ("complex_reasoning", "architecture", "default")
 
-# Repo-relative directory holding the cli-agent model catalogs (*-models.json and
-# cheapest_models.json), owned by the consolidated cli-agent skill in agent-orchestration.
 # Where the running install keeps its scripts. Agent-facing command hints name the CLI by this
 # absolute path, so they are right under any APM install (project .claude/skills, .agents/skills,
 # a global folder) and in the source tree alike; never a path that exists only in the monorepo.
@@ -214,7 +316,8 @@ SETUP_IDENTITY_CMD = f"python3 {SETUP_SCRIPTS_DIR / 'setup_ciba_identity.py'}"
 ISOLATION_SETUP_DOC = str(SETUP_SCRIPTS_DIR.parent / "references" / "isolation-setup.md")  # lives in the setup skill, which cites it
 REBUILD_RECOVERY_DOC = str(CONTROL_SKILL_DIR / "references" / "control-plane-rebuild-recovery.md")
 
-CLI_AGENT_CATALOG_DIR = ("plugins", "agent-orchestration", "skills", "cli-agent", "references")
+# The cli-agent model catalogs (*-models.json, cheapest_models.json) are read from the sibling cli-agent skill
+# through control_plane.orchestration_registry.cli_agent_references(); there is no repository-relative path.
 
 # Tool key -> (canonical cli_id, catalog filename). Aliases map many recognized spellings
 # of the same runtime tool onto one canonical id; unrecognized/missing tool_key falls back

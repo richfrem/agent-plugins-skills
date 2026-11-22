@@ -58,7 +58,7 @@ def registry():
     return TransitionRegistry.load_default()
 
 
-GATE3_EDGES = [("WORKTREE_REVIEW", "VERIFY_EXIT"), ("MULTI_AGENT_CODE_REVIEW", "VERIFY_EXIT")]
+GATE3_EDGES = [("WORKTREE_REVIEW", "VERIFY_EXIT")]
 REMOVED_SOFT_QUESTIONS = ("confirm_worktree_review_accept_implementation", "confirm_multi_agent_code_review_accept_outcome")
 
 

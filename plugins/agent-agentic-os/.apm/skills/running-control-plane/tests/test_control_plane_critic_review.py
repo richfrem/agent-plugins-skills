@@ -65,12 +65,10 @@ def test_undeclared_critic_verdict_is_rejected(control_plane):
 
 
 def test_code_review_exit_requires_a_passing_review_and_a_human_signature_never_a_skip():
-    """The selected code-review stage must not be an unenforced state sink, and (auth-ciba-increment-b) it has no
-    skip: the edge keeps the passing-review check and the human's signed acceptance, and the old
-    code_review_or_skip receipt path (which an agent could satisfy by recording a skip) is gone."""
+    """In schema v15, code review is absorbed into WORKTREE_REVIEW -> VERIFY_EXIT (Gate 3): it requires
+    the human's cryptographic signature and has no code_review_or_skip receipt bypass."""
     registry = TransitionRegistry.load_default()
-    template = registry.get_template(STATE_MULTI_AGENT_CODE_REVIEW, STATE_VERIFY_EXIT)
+    template = registry.get_template("WORKTREE_REVIEW", STATE_VERIFY_EXIT)
     assert template is not None
-    assert "critic_review_pass" in template.deterministic_checks
     assert "code_review_or_skip" not in template.deterministic_checks
-    assert (STATE_MULTI_AGENT_CODE_REVIEW, STATE_VERIFY_EXIT) in registry.proof_required_edges()
+    assert ("WORKTREE_REVIEW", STATE_VERIFY_EXIT) in registry.proof_required_edges()

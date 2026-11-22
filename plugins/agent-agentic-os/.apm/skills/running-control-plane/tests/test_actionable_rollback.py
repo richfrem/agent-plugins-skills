@@ -27,31 +27,38 @@ _scripts_dir = str(Path(__file__).resolve().parent.parent / "scripts")
 if _scripts_dir not in sys.path:
     sys.path.insert(0, _scripts_dir)
 
-from agent_control import ConcurrentModificationError, PersistenceInvariantViolation
-from test_review_selection import TASK, _plan_review_task
+from agent_control import ConcurrentModificationError, ControlPlane, PersistenceInvariantViolation
+
+TASK = "actionable-rollback-001"
+
+
+def _intake_cp(tmp_path):
+    cp = ControlPlane(db_path=tmp_path / "control_plane.db")
+    cp.init_db()
+    cp.create_task(TASK, "Actionable rollback test", "claude")
+    return cp
 
 
 def test_missing_human_decisions_are_named_not_reported_as_concurrency(tmp_path):
-    sim = _plan_review_task(tmp_path)
+    cp = _intake_cp(tmp_path)
     with pytest.raises(PersistenceInvariantViolation) as excinfo:
-        sim.control_plane.transition(TASK, "MULTI_AGENT_REVIEW", "tester", "no decisions recorded")
+        cp.transition(TASK, "DRAFT_PLAN", "tester", "no decisions recorded")
     message = str(excinfo.value)
-    assert "plan_review_agent_review_decision" in message
+    assert "intake_outline_confirmation" in message
     assert "coordinate-transition" in message and "--interactive" in message
     assert "Retry" not in message
 
 
 def test_a_real_concurrent_change_is_still_retryable(tmp_path):
-    sim = _plan_review_task(tmp_path)
-    cp = sim.control_plane
+    cp = _intake_cp(tmp_path)
 
     def stale_read(task_id):
         conn = sqlite3.connect(cp.db_path)
         conn.execute("UPDATE tasks SET state = 'ESCALATED' WHERE task_id = ?", (task_id,))  # a competing writer
         conn.commit()
-        return "PLAN_REVIEW"
+        return "INTAKE"
 
     cp._read_current_state_for_update = stale_read
     with pytest.raises(ConcurrentModificationError) as excinfo:
-        cp.transition(TASK, "MULTI_AGENT_REVIEW", "tester", "race")
+        cp.transition(TASK, "DRAFT_PLAN", "tester", "race")
     assert "Retry" in str(excinfo.value)

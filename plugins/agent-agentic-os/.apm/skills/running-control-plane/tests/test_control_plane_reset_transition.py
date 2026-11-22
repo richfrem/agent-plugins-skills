@@ -47,7 +47,7 @@ from control_plane.state_machine import CANONICAL_STATES, ALLOWED_TRANSITIONS
 from control_plane.coordinator import TransitionCoordinator, TransitionCoordinatorError
 from control_plane.adapters import SCHEMA_SQL, _split_schema_sql_statements
 from control_plane.constants import (
-    STATE_INTAKE, STATE_INTERVIEW, STATE_APPROVED, STATE_IN_WORKTREE, STATE_WORKTREE_REVIEW, STATE_RETROSPECTIVE, STATE_DONE,
+    ACTIVE_STATES, STATE_INTAKE, STATE_APPROVED, STATE_IN_WORKTREE, STATE_WORKTREE_REVIEW, STATE_VERIFY_EXIT, STATE_DONE,
 )
 
 
@@ -63,7 +63,7 @@ def control_plane(temp_db_path):
     return cp
 
 
-NON_INTAKE_STATES = [s for s in CANONICAL_STATES if s != STATE_INTAKE]
+NON_INTAKE_STATES = [s for s in ACTIVE_STATES if s not in (STATE_INTAKE, STATE_DONE)]
 
 # Any state that already has a pre-existing, non-wildcard edge to INTAKE (e.g.
 # escalated_to_intake) is skipped by the wildcard reset_to_intake expansion, to
@@ -261,13 +261,13 @@ def test_reset_then_walk_forward_unblocks_hooks(control_plane):
     task_id = "task-reset-e2e"
     control_plane.create_task(task_id=task_id, title="E2E reset test", runtime_tool="claude")
 
-    # Simulate drift: raw write directly to DONE, bypassing transition().
+    # Simulate drift: raw write directly to VERIFY_EXIT (last non-terminal state in v15), bypassing transition().
     conn = control_plane._persistence.get_connection()
     try:
-        _seed_task_at_state(conn, task_id, STATE_DONE)
+        _seed_task_at_state(conn, task_id, STATE_VERIFY_EXIT)
     finally:
         conn.close()
-    assert control_plane.get_task(task_id)["state"] == STATE_DONE
+    assert control_plane.get_task(task_id)["state"] == STATE_VERIFY_EXIT
 
     # RESET back to INTAKE via the real gate.
     reset_answers = iter([
@@ -277,40 +277,14 @@ def test_reset_then_walk_forward_unblocks_hooks(control_plane):
     ])
     coord = TransitionCoordinator(control_plane=control_plane, input_fn=lambda prompt: next(reset_answers))
     coord.coordinate_transition(
-        task_id=task_id, to_state=STATE_INTAKE, actor="human", reason="Reset drifted DONE record", interactive=True,
+        task_id=task_id, to_state=STATE_INTAKE, actor="human", reason="Reset drifted VERIFY_EXIT record", interactive=True,
     )
     assert control_plane.get_task(task_id)["state"] == STATE_INTAKE
 
-    # Walk forward legitimately: INTAKE -> INTERVIEW -> RETROSPECTIVE -> DONE via
-    # the trivial fast-track, with the interview contract fully answered.
-    coord2 = TransitionCoordinator(
-        control_plane=control_plane,
-        input_fn=lambda prompt: "YES",
-    )
+    # Walk forward legitimately in schema v15: INTAKE -> DONE via signed early closure.
+    coord2 = TransitionCoordinator(control_plane=control_plane)
     coord2.coordinate_transition(
-        task_id=task_id, to_state=STATE_INTERVIEW, actor="human", reason="Begin interview after reset", interactive=True,
-    )
-    interview_answers = iter([
-        "Task is effectively complete/trivial -- this is a planned early close, not a failure",
-        "FORCE_RETROSPECTIVE",
-        "YES",
-    ])
-    coord2 = TransitionCoordinator(control_plane=control_plane, input_fn=lambda prompt: next(interview_answers))
-    coord2.coordinate_transition(
-        task_id=task_id, to_state=STATE_RETROSPECTIVE, actor="human", reason="Trivial fast-track after reset", interactive=True,
-    )
-    control_plane.save_retrospective(
-        task_id,
-        {"decision": "skip", "completion_mode": "skipped", "actor": "human", "skip_reason": "re-verified typo"},
-        [],
-    )
-    control_plane.record_verification_receipt(
-        task_id, "full_test_suite", "pytest -q (test fixture receipt)", 0
-    )
-    done_answers = iter(["skip", "YES"])
-    coord3 = TransitionCoordinator(control_plane=control_plane, input_fn=lambda prompt: next(done_answers))
-    coord3.coordinate_transition(
-        task_id=task_id, to_state=STATE_DONE, actor="human", reason="Retrospective skipped", interactive=True,
+        task_id=task_id, to_state=STATE_DONE, actor="human", reason="Signed early close after reset", interactive=True,
     )
     assert control_plane.get_task(task_id)["state"] == STATE_DONE
 

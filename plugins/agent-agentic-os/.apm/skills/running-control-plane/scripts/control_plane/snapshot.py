@@ -152,6 +152,11 @@ def gate1_artifact_paths(
             )
         paths.append(("manifest", manifest_path))
 
+    # Q2 evidence binding: when a plan-audit verdict exists, bind its hash in Gate 1's snapshot.
+    verdict_path = folder / "plan-audit" / "verdict.json"
+    if verdict_path.is_file():
+        paths.append(("verdict", verdict_path))
+
     return tuple(paths)
 
 

@@ -107,7 +107,7 @@ def collect_status(root: Path) -> dict:
         )
         guards.append(state)
 
-    want_on = mode == cph.MODE_ENABLED
+    want_on = mode in (cph.MODE_ENABLED, cph.MODE_ON_DEMAND)
     if hdir is None:
         warnings.append("no .git/hooks directory: guards cannot be checked")
     for g in guards:
@@ -140,6 +140,29 @@ def collect_status(root: Path) -> dict:
     if not want_on and phase0 == "mandatory":
         warnings.append("AGENTS.md still says Phase 0 intake is mandatory; make it conditional on the control plane")
 
+    # B16 shadow-install warning: project-scope skill install alongside global install
+    project_copies = [
+        p for p in (
+            root / ".claude" / "skills" / "running-control-plane",
+            root / ".agents" / "skills" / "running-control-plane",
+        )
+        if p.exists()
+    ]
+    global_copies = [
+        p for p in (
+            Path.home() / ".claude" / "skills" / "running-control-plane",
+            Path.home() / ".agents" / "skills" / "running-control-plane",
+        )
+        if p.exists()
+    ]
+    if project_copies and global_copies:
+        warnings.append(
+            "Shadow install detected (B16): project-scope running-control-plane exists alongside global install "
+            f"({', '.join(str(p) for p in project_copies)}). Prefer global-only installs."
+        )
+
+    jobs = cph.active_jobs(root)
+
     return {
         "repo": str(root),
         "mode": mode,
@@ -147,6 +170,7 @@ def collect_status(root: Path) -> dict:
         "mode_error": mode_error,
         "guards": guards,
         "control_plane_db_present": db.is_file(),
+        "active_jobs": jobs,
         "agents_md_phase0": phase0,
         "problems": problems,
         "warnings": warnings,
@@ -162,7 +186,12 @@ def format_status(st: dict) -> str:
         flags = [k for k in ("script_present", "script_executable", "wired", "stale") if g[k]]
         out.append(f"  {g['guard']:<28} -> {g['dispatcher']:<10} {', '.join(flags) or 'not installed'}")
     out += ["", f"control_plane.db present: {st['control_plane_db_present']} (never touched by this tool)",
-            f"AGENTS.md Phase 0 section: {st['agents_md_phase0']}", ""]
+            f"AGENTS.md Phase 0 section: {st['agents_md_phase0']}"]
+    jobs = st.get("active_jobs") or []
+    out.append(f"Active jobs: {len(jobs)}")
+    for j in jobs:
+        out.append(f"  - {j['task_id']} [{j['state']}] branch={j.get('branch') or '(none)'} ({j['status']})")
+    out.append("")
     if st["problems"]:
         out.append("PROBLEMS (state does not match the declared mode):")
         out += [f"  - {p}" for p in st["problems"]]
@@ -195,6 +224,10 @@ def plan_text(root: Path, want: str, hdir: Optional[Path]) -> list[str]:
         lines = [f"Plan: ENABLE the control plane in {root}",
                  f"  1. install + wire the guards: {names}",
                  f"  2. declare mode `enabled` in {mode_file}"]
+    elif want == cph.MODE_ON_DEMAND:
+        lines = [f"Plan: SET ON-DEMAND mode for the control plane in {root}",
+                 f"  1. install + wire the guards: {names}",
+                 f"  2. declare mode `on-demand` in {mode_file} (unregistered branches pass; registered jobs gated)"]
     else:
         lines = [f"Plan: DISABLE the control plane in {root}",
                  f"  1. declare mode `disabled` in {mode_file} (guards now exit 0)",
@@ -208,13 +241,13 @@ def plan_text(root: Path, want: str, hdir: Optional[Path]) -> list[str]:
 
 
 def apply_mode(root: Path, want: str, *, actor: Optional[str]) -> list[str]:
-    desired = want == cph.MODE_ENABLED
+    desired = want in (cph.MODE_ENABLED, cph.MODE_ON_DEMAND)
     hdir = hooks_dir(root)
     sources = {g.name: guard_source(g) for g in GUARDS}
     if desired and hdir:
         missing = [n for n, s in sources.items() if s is None]
         if missing:
-            raise ModeToggleError(f"cannot enable: guard script source not found beside this script for {', '.join(missing)}")
+            raise ModeToggleError(f"cannot {want}: guard script source not found beside this script for {', '.join(missing)}")
     log: list[str] = [f"backup: {_backup(root, hdir)}"]
 
     def guards_step() -> None:
@@ -231,8 +264,8 @@ def apply_mode(root: Path, want: str, *, actor: Optional[str]) -> list[str]:
 
     if desired:
         guards_step()
-        cph.write_mode(root, cph.MODE_ENABLED, actor)
-        log.append("mode: enabled")
+        cph.write_mode(root, want, actor)
+        log.append(f"mode: {want}")
     else:
         cph.write_mode(root, cph.MODE_DISABLED, actor)
         log.append("mode: disabled")
@@ -246,7 +279,7 @@ def apply_mode(root: Path, want: str, *, actor: Optional[str]) -> list[str]:
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description=__doc__.split("\n")[1].strip())
     sub = p.add_subparsers(dest="command", required=True)
-    for name in ("status", "enable", "disable"):
+    for name in ("status", "enable", "on-demand", "disable"):
         sp = sub.add_parser(name)
         sp.add_argument("--target", default=".", help="repository (default: current directory)")
         if name == "status":
@@ -268,7 +301,11 @@ def main(argv: Optional[list[str]] = None) -> int:
             print(json.dumps(st, indent=2) if args.json else format_status(st))
             return 0 if st["consistent"] else 1
 
-        want = cph.MODE_ENABLED if args.command == "enable" else cph.MODE_DISABLED
+        want = {
+            "enable": cph.MODE_ENABLED,
+            "on-demand": cph.MODE_ON_DEMAND,
+            "disable": cph.MODE_DISABLED,
+        }[args.command]
         before = collect_status(root)
 
         if args.dry_run or not args.yes:

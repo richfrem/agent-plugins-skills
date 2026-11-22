@@ -61,9 +61,10 @@ def test_guidance_derives_legal_next_states_and_exposes_versioned_snapshot(contr
     assert guidance["current_state"] == STATE_INTAKE
     assert guidance["legal_next_states"] == ALLOWED_TRANSITIONS[STATE_INTAKE]
     assert {edge["to_state"] for edge in guidance["transitions"]} == set(ALLOWED_TRANSITIONS[STATE_INTAKE])
-    assert all(edge["command"].startswith("python3 ") for edge in guidance["transitions"])
-    interview = next(edge for edge in guidance["transitions"] if edge["to_state"] == STATE_INTERVIEW)
-    assert any("log-prior-art" in helper for helper in interview["helper_commands"])
+    assert all("python3 " in edge["command"] for edge in guidance["transitions"])
+    draft = next(edge for edge in guidance["transitions"] if edge["to_state"] == STATE_DRAFT_PLAN)
+    assert draft["transition_id"] == "intake_to_draft_plan"
+    assert "DRAFT_PLAN" in draft["command"]
 
 
 def test_guidance_cannot_authorize_illegal_requested_edge(control_plane):
@@ -87,7 +88,7 @@ def test_done_guidance_names_retrospective_recording_protocol(control_plane):
     task_id = "guidance-retrospective-001"
     control_plane.create_task(task_id=task_id, title="Retrospective guidance", runtime_tool="codex")
     registry = TransitionRegistry.load_default()
-    template = registry.get_template(STATE_RETROSPECTIVE, STATE_DONE)
+    template = registry.get_template(STATE_VERIFY_EXIT, STATE_DONE)
 
     assert template is not None
     hint = template.next_steps_hint.lower()
@@ -120,10 +121,10 @@ def test_done_stage_exposes_git_closeout_contract_and_question(control_plane):
 
 
 def test_retrospective_done_requires_passing_full_suite_and_reports_recovery():
-    template = TransitionRegistry.load_default().get_template(STATE_RETROSPECTIVE, STATE_DONE)
+    template = TransitionRegistry.load_default().get_template(STATE_VERIFY_EXIT, STATE_DONE)
 
     assert template is not None
-    assert "retrospective_done_guard" in template.deterministic_checks
+    assert "done_guard" in template.deterministic_checks
     assert "full_test_suite_or_trivial_focused" in template.deterministic_checks
     hint = template.next_steps_hint.lower()
     assert "repository-wide pytest -q suite" in hint
@@ -135,13 +136,13 @@ def test_retrospective_done_requires_passing_full_suite_and_reports_recovery():
 def test_standard_path_hints_name_each_operational_handoff(control_plane):
     registry = TransitionRegistry.load_default()
     expected = {
-        (STATE_INTERVIEW, STATE_DRAFT_PLAN): ("interview-question", "coordinate-transition"),
-        (STATE_DRAFT_PLAN, STATE_PLAN_REVIEW): ("submit", "coordinate-transition"),
-        (STATE_PLAN_REVIEW, STATE_MULTI_AGENT_REVIEW): ("review-selection-v1", "coordinate-transition"),
-        (STATE_PLAN_REVIEW, STATE_AWAITING_APPROVAL): ("record-critic-review", "record-review-skip"),
-            (STATE_APPROVED, STATE_IN_WORKTREE): ("record-human-approval", "worktree"),
-            (STATE_APPROVED, STATE_RETROSPECTIVE): ("planning_only_completion", STATE_RETROSPECTIVE, "no worktree"),
-        (STATE_VERIFY_EXIT, STATE_RETROSPECTIVE): ("full_test_suite", "test_suite", "leak_check", "references/map-debt.md"),
+        (STATE_INTAKE, STATE_DRAFT_PLAN): ("coordinate-transition", "draft_plan"),
+        (STATE_DRAFT_PLAN, STATE_PLAN_REVIEW): ("plan_review", "coordinate-transition"),
+        (STATE_PLAN_REVIEW, STATE_APPROVED): ("ssh-keygen -y sign", "approved"),
+        (STATE_APPROVED, STATE_IN_WORKTREE): ("human_approval", "worktree"),
+        (STATE_IN_WORKTREE, STATE_WORKTREE_REVIEW): ("test_suite", "worktree_review"),
+        (STATE_WORKTREE_REVIEW, STATE_VERIFY_EXIT): ("ssh-keygen -y sign", "verify_exit"),
+        (STATE_VERIFY_EXIT, STATE_DONE): ("full_test_suite", "record_retrospective", "done"),
     }
     for edge, markers in expected.items():
         template = registry.get_template(*edge)
@@ -158,7 +159,7 @@ def test_failed_verify_exit_routes_to_existing_worktree_without_repetition():
     hint = template.next_steps_hint.lower()
     recovery = template.to_dict()["failure_recovery"].lower()
     assert "full_test_suite" in hint
-    assert "do not transition to retrospective or done" in hint
+    assert "do not transition to done" in hint
     assert "existing registered worktree" in hint
     assert "do not create another worktree" in hint
     assert "submit through worktree_review" in hint
@@ -192,10 +193,7 @@ def test_in_worktree_hands_off_to_uninterrupted_implementation_session():
     assert contract["completion_contract"]["integration_contract"]["preserve_main_only_preexisting_changes"] is True
 
     assert review_edge is not None
-    question = review_edge.human_questions[0]
-    assert question["question"] == "Implementation is complete in the registered worktree. Do you wish to proceed to WORKTREE_REVIEW?"
-    assert question["options"] == ["Proceed to WORKTREE_REVIEW [Recommended]"]
-    assert question["accepted_answers"] == ["Proceed to WORKTREE_REVIEW [Recommended]"]
+    assert review_edge.human_questions == []
     hint = review_edge.next_steps_hint.lower()
     assert "reconciliation manifest" in hint
     assert "worktree-only" in hint
@@ -229,7 +227,9 @@ def test_human_recovery_contract_allows_explicit_reentry_without_dag_bypass():
 
 
 def test_retrospective_closeout_classifies_findings_before_done():
-    stage = TransitionRegistry.load_default().get_stage_contract(STATE_RETROSPECTIVE)
+    source = Path(__file__).resolve().parents[1] / "scripts" / "control_plane" / "transition_templates.yaml"
+    stages = yaml.safe_load(source.read_text(encoding="utf-8"))["stages"]
+    stage = stages.get(STATE_VERIFY_EXIT) or stages.get(STATE_RETROSPECTIVE)
 
     change_control = stage["closeout_change_control"]
     assert change_control["mandatory_before_done"] is True
@@ -238,7 +238,7 @@ def test_retrospective_closeout_classifies_findings_before_done():
         "bounded_fix_requires_rework_loop",
         "larger_follow_up_requires_issue_or_new_work_package",
     ]
-    assert "never applied directly from RETROSPECTIVE" in change_control["bounded_fix_rule"]
+    assert "never applied directly from VERIFY_EXIT" in change_control["bounded_fix_rule"]
     assert "no legal implementation return edge" in change_control["no_legal_return_rule"]
     assert "duplicate search" in change_control["larger_follow_up_rule"]
     self_assessment = change_control["agent_self_assessment"]
@@ -248,115 +248,51 @@ def test_retrospective_closeout_classifies_findings_before_done():
     assert "no_silent_action" in self_assessment
 
 def test_plan_review_selects_review_then_requires_plan_acceptance():
-    """PLAN_REVIEW selects review or skip, then confirms the resulting plan."""
+    """In schema v15, DRAFT_PLAN -> PLAN_REVIEW enters review and PLAN_REVIEW -> APPROVED is Gate 1 (signed)."""
     registry = TransitionRegistry.load_default()
 
-    review_edge = registry.get_template(STATE_PLAN_REVIEW, STATE_MULTI_AGENT_REVIEW)
-    approval_edge = registry.get_template(STATE_PLAN_REVIEW, STATE_AWAITING_APPROVAL)
+    draft_to_review = registry.get_template(STATE_DRAFT_PLAN, STATE_PLAN_REVIEW)
+    approval_edge = registry.get_template(STATE_PLAN_REVIEW, STATE_APPROVED)
 
-    assert review_edge is not None
+    assert draft_to_review is not None
     assert approval_edge is not None
-
-    disposition = {question["question_id"]: question for question in registry.get_template(STATE_DRAFT_PLAN, STATE_PLAN_REVIEW).human_questions}["confirm_review_draft_plan_to_plan_review"]
-    assert disposition["question"] == "Would you like to submit the drafted plan for review?"
-    assert disposition["options"] == [
-        "Proceed with review [Recommended]",
-        "Continue revising prior stage",
-    ]
-
-    review_questions = {question["question_id"]: question for question in review_edge.human_questions}
-    assert "plan_review_method" in review_questions
-    review_options = {
-        option.removesuffix(" [Recommended]")
-        for option in review_questions["plan_review_method"]["options"]
-    }
-    assert review_options >= {
-        "Single-agent review — internal",
-        "Single-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)",
-        "Multi-agent review — internal",
-        "Multi-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)",
-    }
-
-    approval_questions = {question["question_id"]: question for question in approval_edge.human_questions}
-    assert "confirm_plan_acceptance" in approval_questions
-    acceptance_options = {
-        option.removesuffix(" [Recommended]")
-        for option in approval_questions["confirm_plan_acceptance"]["options"]
-    }
-    assert "Accept plan and proceed to human approval" in acceptance_options
-    assert "Require further revisions" in acceptance_options
+    assert approval_edge.requires_cryptographic_proof is True
+    assert approval_edge.authorized_actor == "human_only"
     assert approval_edge.skip["allowed"] is False
-    assert "acceptance" in approval_edge.purpose.lower()
 
 
 def test_implementation_review_offers_other_review_method():
-    """Implementation review must support a user-specified review method."""
+    """In schema v15, WORKTREE_REVIEW absorbs code review and exits to VERIFY_EXIT via Gate 3 signature."""
     registry = TransitionRegistry.load_default()
-    review_edge = registry.get_template(STATE_WORKTREE_REVIEW, STATE_MULTI_AGENT_CODE_REVIEW)
+    exit_edge = registry.get_template(STATE_WORKTREE_REVIEW, STATE_VERIFY_EXIT)
 
-    assert review_edge is not None
-    questions = {question["question_id"]: question for question in review_edge.human_questions}
-    assert "confirm_review_worktree_review_to_multi_agent_code_review" in questions
-    assert questions["confirm_review_worktree_review_to_multi_agent_code_review"]["options"] == [
-        "Yes — continue to review method selection [Recommended]",
-        "No — skip agent review and continue to exit verification",
-    ]
-    assert "implementation_review_method" in questions
-    options = {
-        option.removesuffix(" [Recommended]")
-        for option in questions["implementation_review_method"]["options"]
-    }
-    assert options == {
-        "Single-agent review — internal",
-        "Single-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)",
-        "Multi-agent review — internal",
-        "Multi-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)",
-    }
-    assert "CLI/runtime, model, and effort" in review_edge.next_steps_hint
+    assert exit_edge is not None
+    assert exit_edge.requires_cryptographic_proof is True
+    assert exit_edge.authorized_actor == "human_only"
+    assert "ssh-keygen -y sign" in exit_edge.next_steps_hint.lower()
 
 
 def test_implementation_review_rework_edge_describes_revision_brief_loop():
+    """In schema v15, WORKTREE_REVIEW -> IN_WORKTREE is the implementation rework edge."""
     registry = TransitionRegistry.load_default()
-    rework_edge = registry.get_template(STATE_MULTI_AGENT_CODE_REVIEW, STATE_IN_WORKTREE)
-    resubmit_edge = registry.get_template(STATE_MULTI_AGENT_CODE_REVIEW, STATE_WORKTREE_REVIEW)
+    rework_edge = registry.get_template(STATE_WORKTREE_REVIEW, STATE_IN_WORKTREE)
+    resubmit_edge = registry.get_template(STATE_IN_WORKTREE, STATE_WORKTREE_REVIEW)
 
     assert rework_edge is not None
-    assert "REQUEST_CHANGES" in rework_edge.next_steps_hint
-    assert "do not edit" in rework_edge.next_steps_hint.lower()
-    assert "WORKTREE_REVIEW -> MULTI_AGENT_CODE_REVIEW" in rework_edge.next_steps_hint
-    assert "do not create a new transition type" in rework_edge.next_steps_hint.lower()
-    questions = {question["question_id"]: question for question in rework_edge.human_questions}
-    assert questions["confirm_rework_multi_agent_code_review_to_in_worktree"]["options"] == [
-        "Yes — transition to IN_WORKTREE and begin bounded fixes [Recommended]",
-        "No — remain in MULTI_AGENT_CODE_REVIEW",
-    ]
+    assert "coordinate-transition" in rework_edge.next_steps_hint.lower()
     assert resubmit_edge is not None
-    assert "review outcome" in resubmit_edge.next_steps_hint.lower()
+    assert "worktree_review" in resubmit_edge.next_steps_hint.lower()
 
 
 def test_plan_review_review_method_offers_other_review_method():
-    """The PLAN_REVIEW branch offers an explicit review-method escape hatch."""
+    """In schema v15, PLAN_REVIEW -> DRAFT_PLAN is the plan rework edge and PLAN_REVIEW -> APPROVED is Gate 1."""
     registry = TransitionRegistry.load_default()
-    review_edge = registry.get_template(STATE_PLAN_REVIEW, STATE_MULTI_AGENT_REVIEW)
+    rework_edge = registry.get_template(STATE_PLAN_REVIEW, STATE_DRAFT_PLAN)
+    approve_edge = registry.get_template(STATE_PLAN_REVIEW, STATE_APPROVED)
 
-    assert review_edge is not None
-    questions = {question["question_id"]: question for question in review_edge.human_questions}
-    assert "plan_review_method" in questions
-    options = {
-        option.removesuffix(" [Recommended]")
-        for option in questions["plan_review_method"]["options"]
-    }
-    assert options == {
-        "Single-agent review — internal",
-        "Single-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)",
-        "Multi-agent review — internal",
-        "Multi-agent review — external bundle (agent generates bundle, waits for you to upload to an independent model and report back)",
-    }
-    hint = review_edge.next_steps_hint
-    assert "CLI/runtime, model, and effort" in hint
-    assert "one question at a time" in hint
-    assert "cli-agent model catalog" in hint
-    assert "--interactive" in hint
+    assert rework_edge is not None
+    assert approve_edge is not None
+    assert "ssh-keygen -y sign" in approve_edge.next_steps_hint.lower()
 
 
 def test_plan_and_implementation_reviews_share_environment_and_model_selection_contract():
@@ -395,21 +331,9 @@ def test_plan_and_implementation_reviews_share_environment_and_model_selection_c
     assert "separate plan-review and implementation-review" in isolation["round_numbering"]
     assert "current implementation-review receipt" in isolation["rework_gate"]
 
-    expected_edges = {
-        "plan_review_to_multi_agent_review",
-        "worktree_review_to_multi_agent_code_review",
-    }
-    review_edges = {
-        item["transition_id"]: item
-        for item in document["templates"]
-        if item["transition_id"] in expected_edges
-    }
-    assert set(review_edges) == expected_edges
-    for edge in review_edges.values():
-        assert edge["review_selection_contract"] == "review-selection-v1"
-        assert edge["review_selection"]["user_choice_required_for_internal"] is True
-        assert edge["review_selection"]["recommendation_source"] == "model_effort_guidance.review"
-        assert edge["review_selection"]["catalog_source"] == "review_selection_contract.catalog_resolution"
+    # In schema v15, MULTI_AGENT_REVIEW and MULTI_AGENT_CODE_REVIEW are retired; review happens inside
+    # PLAN_REVIEW and WORKTREE_REVIEW governed by the shared review_selection_contract above.
+    assert contract["catalog_authority_skill"] == "cli-agent"
 
 
 def test_worktree_review_exit_hint_names_the_signature_flow_and_no_skip_branch():
@@ -432,7 +356,7 @@ def test_stale_yaml_next_state_claim_is_ignored_for_guidance_legality(control_pl
     control_plane.create_task(task_id=task_id, title="Guidance", runtime_tool="codex")
     registry = TransitionRegistry.load_default()
     control_plane._transition_registry = registry
-    registry.get_template(STATE_INTAKE, STATE_INTERVIEW).guidance["legal_next_states"] = [STATE_DONE]
+    registry.get_template(STATE_INTAKE, STATE_DRAFT_PLAN).guidance["legal_next_states"] = [STATE_DONE]
 
     guidance = control_plane.get_transition_guidance(task_id)
 
@@ -446,13 +370,13 @@ def test_coordinator_surfaces_advisory_guidance_before_and_after_transition(cont
     output = io.StringIO()
     coordinator = TransitionCoordinator(control_plane, output_stream=output)
 
-    coordinator._write_transition_guidance(STATE_INTAKE, STATE_INTERVIEW, phase="before")
+    coordinator._write_transition_guidance(STATE_INTAKE, STATE_DRAFT_PLAN, phase="before")
     coordinator._write_next_steps_hint(STATE_INTAKE)
 
     rendered = output.getvalue()
     assert "Advisory transition guidance" in rendered
     assert "registry version" in rendered
-    assert "INTAKE -> INTERVIEW" in rendered
+    assert "INTAKE -> DRAFT_PLAN" in rendered
     assert "advisory only" in rendered.lower()
     assert "Next possible transitions from INTAKE" in rendered
 
@@ -462,7 +386,7 @@ def test_coordinator_renders_execution_unit_guidance(control_plane):
     output = io.StringIO()
     coordinator = TransitionCoordinator(control_plane, output_stream=output)
 
-    coordinator._write_transition_guidance(STATE_INTAKE, STATE_INTERVIEW, phase="before")
+    coordinator._write_transition_guidance(STATE_INTAKE, STATE_DRAFT_PLAN, phase="before")
 
     rendered = output.getvalue()
     # 2026-09-07 (DEBT-20260907-08): the full per-transition banner was
@@ -543,11 +467,11 @@ def test_coordinate_transition_subprocess_cp1252_encoding(tmp_path):
             "--task-id",
             "cp1252-test-01",
             "--to",
-            "INTERVIEW",
+            "DRAFT_PLAN",
             "--human-confirmed",
             "HUMAN-CONFIRMED: test cp1252 encoding without crashing",
             "--answers",
-            '{"guidance_compliance_confirmation": "YES"}',
+            '{"intake_outline_confirmation": "Confirm outline and enter DRAFT_PLAN [Recommended]"}',
         ],
         capture_output=True,
         env=env,

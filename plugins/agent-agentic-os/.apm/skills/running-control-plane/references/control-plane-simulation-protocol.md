@@ -83,21 +83,19 @@ decision, receipt, or follow-up may be committed by the failed attempt.
 
 ## First two improvement rounds
 
-### Round 1: incomplete interview
+### Round 1: incomplete intake outline
 
-Attempt `INTERVIEW -> RETROSPECTIVE` without recording the required interview
-classification. Expected result: explicit denial naming
-`interview_classification`, state remains `INTERVIEW`, and no transition is
-appended. If the error only says “missing answer,” improve the YAML or Python
+Attempt `INTAKE -> DRAFT_PLAN` without confirming the intake outline (`intake_outline_confirmed`).
+Expected result: explicit denial naming `intake_outline_confirmed`, state remains `INTAKE`, and no
+transition is appended. If the error only says "missing answer," improve the YAML or Python
 guidance so the missing question and supported recording mechanism are visible.
 
-### Round 2: wrong adaptive route
+### Round 2: unapproved cryptographic gate
 
-Record complete `STANDARD` interview answers, then attempt the trivial
-`INTERVIEW -> RETROSPECTIVE` edge. Expected result: route denial naming the
-required `TRIVIAL` classification, state remains `INTERVIEW`, and staged
-decisions are not committed as a transition. This checks that adaptive routing
-is enforced rather than inferred from the destination requested by the agent.
+Attempt `PLAN_REVIEW -> APPROVED` without a valid SSH signature. Expected result: coordinator halts
+with `HUMAN_PROOF_REQUIRED`, creates a pending `transition_request`, state remains `PLAN_REVIEW`,
+and no state transition is committed. This checks that cryptographic human gates cannot be bypassed
+by non-interactive answers or agent actor claims.
 
 After Round 2, run the focused simulator and guidance tests. Do not expand the
 scope unless the evidence identifies a concrete contract gap.

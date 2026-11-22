@@ -45,9 +45,14 @@ from test_gate3_code_acceptance import DIRECT, POST_REVIEW, TASK, CodeGate
 pytestmark = pytest.mark.no_auto_signer
 
 
-@pytest.fixture(params=[DIRECT, POST_REVIEW], ids=["from-worktree-review", "from-code-review"])
+@pytest.fixture(params=[("from-worktree-review", False), ("from-code-review", True)], ids=["from-worktree-review", "from-code-review"])
 def gate(request, tmp_path):
-    return CodeGate(tmp_path, request.param)
+    _, with_review = request.param
+    g = CodeGate(tmp_path, DIRECT)
+    if with_review:
+        from helpers.gate1_fixtures import reach_multi_agent_code_review
+        reach_multi_agent_code_review(g.sim, TASK)
+    return g
 
 
 def _request_done(gate, **kwargs):
@@ -88,28 +93,38 @@ def test_a_changed_worktree_refuses_a_closure_and_audits(gate):
 
 
 def test_retrospective_completion_needs_a_signature(tmp_path):
-    """Normal completion (RETROSPECTIVE -> DONE) is signed too: an agent cannot complete a task, and the challenge binds
-    the recorded retrospective decision and digest."""
+    """Normal completion (VERIFY_EXIT -> DONE in v15, absorbing RETROSPECTIVE) is signed too: an agent cannot complete
+    a task, and the challenge binds the recorded retrospective decision and digest."""
     from control_plane.gate1_approval import show_challenge
-    from control_plane.pipeline_simulator import PipelineSimulator
+    from helpers.gate1_fixtures import init_git_worktree, reach_worktree_review
     from helpers.human_signer import get_test_human
 
     task = "retro-done-001"
-    sim = PipelineSimulator(tmp_path / "control_plane.db", registry=TransitionRegistry.load_default())
-    sim.create_task(task, "retrospective closure")
-    sim.control_plane.repo_root = (tmp_path / "repo").resolve()
-    sim.control_plane.repo_root.mkdir()
-    sim.run_trivial_interview_fast_track(task)
+    worktree = init_git_worktree(tmp_path / "worktree")
+    sim = reach_worktree_review(tmp_path, task, worktree)
     cp = sim.control_plane
+    # Seed implementation ledger + asymmetric persistence so VERIFY_EXIT -> DONE deterministic checks pass.
+    import json
+    evidence = Path(cp.repo_root) / ".implementation-evidence" / f"{task}.txt"
+    evidence.parent.mkdir(parents=True, exist_ok=True)
+    evidence.write_text("ok\n", encoding="utf-8")
+    plan_file = Path(cp.repo_root) / "docs" / "plans" / "work-tasks" / task / f"{task}-implementation-plan.md"
+    ledger = [{"id": "t1", "status": "COMPLETE", "artifacts": [str(evidence.relative_to(cp.repo_root))], "evidence": "ok"}]
+    plan_file.write_text(f"# plan\n\n- Strategy: direct\n\n## Implementation Task Ledger\n```json\n{json.dumps(ledger)}\n```\n", encoding="utf-8")
+    cp.log_asymmetric_persistence(task_id=task, destination="wiki/decisions/retro-done-001.md", status="CONFIRMED", details="recorded")
+    human = get_test_human()
+    # Advance WORKTREE_REVIEW -> VERIFY_EXIT via Gate 3 signature
+    TransitionCoordinator(
+        cp, registry=sim.registry, output_stream=io.StringIO(), human_signer=human.sign_request,
+    ).coordinate_transition(task_id=task, to_state="VERIFY_EXIT", actor="human", reason="accept", interactive=True)
     cp.save_retrospective(task, {"decision": "opt_in", "completion_mode": "completed", "actor": "human", "outcome": "ok"}, [])
-    for gate_name in ("test_suite", "full_test_suite"):
+    for gate_name in ("test_suite", "full_test_suite", "leak_check"):
         cp.record_verification_receipt(task, gate_name, "pytest", 0)
     strict = TransitionCoordinator(cp, registry=sim.registry, output_stream=io.StringIO())
     with pytest.raises(HumanProofRequired) as excinfo:
         strict.coordinate_transition(task_id=task, to_state="DONE", actor="agent", reason="complete", interactive=False)
     request_id = excinfo.value.remediation["request_id"]
-    assert cp._persistence.read_current_state(task) == "RETROSPECTIVE"
-    human = get_test_human()
+    assert cp._persistence.read_current_state(task) == "VERIFY_EXIT"
     layout = human.ensure_identity(cp.repo_root)
     out = io.StringIO()
     show_challenge(cp, request_id, layout=layout, key_hint=str(human.key), agent_identity=human.agent_identity, out=out)
@@ -119,20 +134,22 @@ def test_retrospective_completion_needs_a_signature(tmp_path):
 
 
 def test_every_edge_into_done_approved_and_verify_exit_is_proof_required():
-    """The YAML is the single source of truth: every edge into DONE, every edge from AWAITING_APPROVAL into APPROVED
-    and both review edges into VERIFY_EXIT declare requires_cryptographic_proof, with no soft question, approval prompt,
-    skip or actor-string surrogate on them."""
+    """The YAML is the single source of truth: every edge into DONE, Gate 1 (PLAN_REVIEW -> APPROVED),
+    and Gate 3 (WORKTREE_REVIEW -> VERIFY_EXIT) declare requires_cryptographic_proof, with no soft confirmation
+    or actor-string surrogate on them."""
     registry = TransitionRegistry.load_default()
     proof_edges = registry.proof_required_edges()
     expected = {
         edge for edge in registry._templates_by_edge
         if edge[1] == "DONE"
-        or edge == ("AWAITING_APPROVAL", "APPROVED")
-        or edge in (("WORKTREE_REVIEW", "VERIFY_EXIT"), ("MULTI_AGENT_CODE_REVIEW", "VERIFY_EXIT"))
+        or edge == ("PLAN_REVIEW", "APPROVED")
+        or edge == ("WORKTREE_REVIEW", "VERIFY_EXIT")
     }
     assert expected and expected == set(proof_edges) & expected and proof_edges == expected
     for edge in proof_edges:
         template = registry.get_template(*edge)
-        assert template.human_questions == [] and not template.stage_question_ids, edge
+        # In schema v15, VERIFY_EXIT -> DONE absorbs RETROSPECTIVE and may carry retrospective_decision metadata.
+        if edge != ("VERIFY_EXIT", "DONE"):
+            assert template.human_questions == [] and not template.stage_question_ids, edge
         assert template.approval.get("required") is False and template.skip.get("allowed") is False, edge
         assert template.authorized_actor == "human_only", edge

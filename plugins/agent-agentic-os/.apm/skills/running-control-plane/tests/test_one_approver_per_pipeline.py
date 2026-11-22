@@ -278,7 +278,7 @@ def test_agent_signature_refused_through_real_commit(tmp_path, monkeypatch):
     with pytest.raises((ap.ApproverPolicyError, GateApprovalError), match="cannot approve real work"):
         sim.run_standard_happy_path("t-real")
     state, b = _state_and_binding(sim, "t-real")
-    assert state == "AWAITING_APPROVAL" and b is None
+    assert state == "PLAN_REVIEW" and b is None
 
 
 def test_human_signature_refused_through_real_commit_in_simulation(tmp_path, monkeypatch):
@@ -293,7 +293,7 @@ def test_human_signature_refused_through_real_commit_in_simulation(tmp_path, mon
     with pytest.raises((ap.ApproverPolicyError, GateApprovalError), match="a human key cannot"):
         sim.run_standard_happy_path("t-sim")
     state, b = _state_and_binding(sim, "t-sim")
-    assert state == "AWAITING_APPROVAL" and b is None
+    assert state == "PLAN_REVIEW" and b is None
 
 
 def test_simulation_name_pointing_at_real_database_is_refused(tmp_path, keys):

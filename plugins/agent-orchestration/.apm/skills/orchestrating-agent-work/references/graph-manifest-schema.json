@@ -28,6 +28,22 @@
         { "type": "object" }
       ]
     },
+    "control_plane": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["task_id"],
+      "description": "Optional opt-in control-plane binding; when present, graph_runner.py re-verifies Gate 1 APPROVED before mutations.",
+      "properties": {
+        "task_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "require_approved_signature": {
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
     "budget": {
       "type": "object",
       "additionalProperties": false,
@@ -65,10 +81,14 @@
             "pattern": "^[a-zA-Z0-9_-]+$",
             "description": "Unique identifier for this node."
           },
+          "label": {
+            "type": "string",
+            "description": "Optional human-readable label (e.g. slice id and role) shown in runner --status and progress events."
+          },
           "role": {
             "type": "string",
-            "enum": ["approval", "worker", "verifier", "barrier", "fallback"],
-            "description": "Functional role of node. 'approval' identifies leading approval verifier_gate."
+            "enum": ["approval", "audit", "worker", "verifier", "barrier", "fallback"],
+            "description": "Functional role of node. 'approval' identifies leading approval verifier_gate; 'audit' identifies plan-audit gate."
           },
           "type": {
             "type": "string",

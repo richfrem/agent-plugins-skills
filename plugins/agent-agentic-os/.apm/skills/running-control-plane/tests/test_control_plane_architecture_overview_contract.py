@@ -8,6 +8,7 @@ SCRIPTS_DIR = Path(__file__).resolve().parent.parent / "scripts"
 if str(SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_DIR))
 
+from control_plane.constants import ACTIVE_STATES
 from control_plane.registry import TransitionRegistry
 from control_plane.state_machine import ALLOWED_TRANSITIONS, CANONICAL_STATES
 
@@ -43,7 +44,7 @@ def test_overview_exists_and_describes_the_runtime_contract():
 def test_overview_states_match_canonical_state_machine():
     text = OVERVIEW.read_text()
     documented_states = set(re.findall(r"^\|\s*([A-Z_]+)\s*\|", text, re.MULTILINE))
-    assert documented_states == set(CANONICAL_STATES)
+    assert documented_states == set(ACTIVE_STATES)
 
 
 def test_overview_edges_match_registry_and_templates():

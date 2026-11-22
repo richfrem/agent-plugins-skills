@@ -26,7 +26,7 @@ For local planning, backlog status, and current task handoffs, consult `docs/pla
 2. **Destructive Action & Skill Deletion Guard**:
    Never delete a skill directory, its `SKILL.md`, or its evals because you believe it is redundant, absorbed, consolidated, or superseded. Skill deletions are hard-gated and require explicit user instructions naming the exact path.
 3. **Cryptographic Human Gates (CIBA/RAR Lineage)**:
-   Three pipeline transitions are cryptographic: spec approval (`Gate 1`), worktree exit review (`Gate 3`), and task closure (`DONE`). Only an out-of-band OpenSSH signature from a human-held key can advance them. Agents must never run signing commands, manipulate keys, or synthesize approval proofs.
+   Three pipeline transitions are cryptographic: spec approval (`Gate 1`: `PLAN_REVIEW -> APPROVED`), worktree exit review (`Gate 3`: `WORKTREE_REVIEW -> VERIFY_EXIT`), and task closure (`DONE`: `VERIFY_EXIT -> DONE` plus force-close). Review presets and review skips are also signed human decisions (`signed_decisions`). Only an out-of-band OpenSSH signature from a human-held key can advance them. Agents must never run signing commands, manipulate keys, or synthesize approval proofs.
 4. **Hub-First Architecture & Loose Coupling**:
    Shared resources reside at plugin roots (`plugins/<plugin>/scripts/`, etc.) as canonical authorities; never create symlinks. There is no copy manifest or build step: skills live in each plugin's `.apm/skills/` and APM installs them directly. Installed skills must be self-contained ([plugin-architecture-policy](.agent/rules/plugin-architecture-policy.md) Section 5).
 5. **Verifier Sovereignty & Proposal Mode**:
@@ -39,9 +39,9 @@ For local planning, backlog status, and current task handoffs, consult `docs/pla
    `plugins/` is source; only what is installed in your active runtime environment can run. Depending on whether installed locally or globally (via APM or legacy):
    - Local project harnesses: `.claude/skills/<name>` (Claude) or `.agents/skills/<name>` (Copilot, Codex, Antigravity)
    - Global workstation profile: `~/.claude/skills/<name>` (Claude) or `~/.agents/skills/<name>` (Copilot, Codex, Antigravity)
-   A skill present in `plugins/` may be disabled or uninstalled to save context. Before recommending, routing to, or writing a handoff to any skill or agent, verify it is installed in your active runtime harness or global profile; never route through an uninstalled one. If the right target is not installed, say so and ask. The `mode` workflow of `running-control-plane` (`control_plane_mode.py enable | disable | status`) switches commit and push gating on or off for one clone, through `context/control-plane-mode` and the two git guards; it does not install or remove any skill, and it says nothing about other skills.
-   Install or update packages with `apm install <pkg> [--global] --target claude,copilot,codex,antigravity`. Never edit installed skill copies by hand.
-   Before working with the Agentic OS, read the [Agentic OS Skill Map](plugins/agent-agentic-os/skills/running-control-plane/references/agentic-os-skill-map.md) (the three skills, their modes and how they relate) and [Two Improvement Paths](plugins/agent-agentic-os/skills/improving-skills-in-lab/references/two-improvement-paths.md) (control plane vs improvement lab).
+   A skill present in `plugins/` may be disabled or uninstalled to save context. Before recommending, routing to, or writing a handoff to any skill or agent, verify it is installed in your active runtime harness or global profile; never route through an uninstalled one. If the right target is not installed, say so and ask. The `mode` workflow of `running-control-plane` (`control_plane_mode.py enable | on-demand | disable | status`) switches commit and push gating for one clone, through `context/control-plane-mode` and the two git guards; it does not install or remove any skill, and it says nothing about other skills.
+   Install or update packages globally (B16: prefer global-only installs so project copies do not shadow them) with `apm install <pkg> --global --target claude,copilot,codex,agy`. Never edit installed skill copies by hand.
+   Before working with the Agentic OS, read the [Agentic OS Skill Map](plugins/agent-agentic-os/.apm/skills/running-control-plane/references/agentic-os-skill-map.md) (the three skills, their modes and how they relate) and [Two Improvement Paths](plugins/agent-agentic-os/.apm/skills/improving-skills-in-lab/references/two-improvement-paths.md) (control plane vs improvement lab).
 
 ---
 
@@ -57,10 +57,10 @@ Run standard deterministic verification scripts to validate compliance:
 
 ```bash
 # Audit individual or repository skills
-python3 plugins/agent-extension-authoring/skills/authoring-skills/scripts/audit_skill.py <skill-path> --mode source
+python3 plugins/agent-extension-authoring/.apm/skills/authoring-skills/scripts/audit_skill.py <skill-path> --mode source
 
 # Audit sub-agent specifications
-python3 plugins/agent-extension-authoring/skills/authoring-subagents/scripts/audit_sub_agent.py plugins --all
+python3 plugins/agent-extension-authoring/.apm/skills/authoring-subagents/scripts/audit_sub_agent.py plugins --all
 
 # Create the Cowork appPackage folder from an APM plugin (bundles over-limit skills, filters unsupported files)
 python3 plugins/agent-extension-authoring/.apm/skills/packaging-copilot-cowork-plugins/scripts/scaffold_cowork_package.py --apm-plugin <plugin> --output <dir>/appPackage --developer-name <name> --website-url <url> --privacy-url <url> --terms-url <url>
@@ -69,7 +69,7 @@ python3 plugins/agent-extension-authoring/.apm/skills/packaging-copilot-cowork-p
 python3 plugins/agent-extension-authoring/.apm/skills/packaging-copilot-cowork-plugins/scripts/package_cowork_plugin.py --plugin-path <project-or-appPackage> --output-path <output.zip>
 
 # Audit rule policy invariants
-python3 plugins/agent-extension-authoring/skills/authoring-instructions/scripts/audit_rule.py plugins --all
+python3 plugins/agent-extension-authoring/.apm/skills/authoring-instructions/scripts/audit_rule.py plugins --all
 
 # Install all plugins globally from the root apm.yml, then check what is installed
 apm install --global "$PWD" --target claude,copilot,codex,agy --parallel-downloads 0

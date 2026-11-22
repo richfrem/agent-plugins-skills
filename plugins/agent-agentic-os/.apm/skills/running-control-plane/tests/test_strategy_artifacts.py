@@ -3,12 +3,16 @@ test_strategy_artifacts.py — Test Data-Driven Strategy Artifacts and Manifest 
 =============================================================================================
 
 Validates:
-1. TransitionRegistry loads strategy_artifacts from transition_templates.yaml.
+1. Strategies come from the sibling orchestrating-agent-work's patterns.json; the YAML strategy_artifacts keeps
+   only the control-plane-owned triple-loop-learning (S1, B11/B12).
 2. TransitionCoordinator detects declared strategy and validates strategy-specific plan artifacts.
 3. If declared strategy is 'graph', graph-manifest.json is required and validated via validate_manifest.py.
 4. If manifest validation fails, transition to PLAN_REVIEW is rejected with clear diagnostics.
 5. If validator script is missing, coordinator fails closed.
 6. Gate 1 content snapshot binds graph-manifest.json when present for the task.
+
+The coordinator is given a fixture skills root (helpers/orchestration_fixture.py) shaped like an APM install;
+the source tree is never a runtime location (spec G6, B9).
 """
 
 import hashlib
@@ -26,6 +30,32 @@ from control_plane.registry import TransitionRegistry, TransitionTemplate
 from control_plane.coordinator import TransitionCoordinator, TransitionCoordinatorError
 from control_plane.snapshot import gate1_artifact_paths, build_snapshot
 from control_plane.ports import FilesystemPort
+from control_plane import orchestration_registry
+from helpers.orchestration_fixture import ORCHESTRATION_SKILLS_SOURCE, make_skills_root
+
+VALID_GRAPH_MANIFEST = {
+    "schema_version": "1.0.0",
+    "graph_id": "test-valid-graph",
+    "version": "1.0.0",
+    "budget": {
+        "token_ceiling_total": 50000,
+        "max_parallel_concurrency": 4,
+        "max_retries_per_node": 2,
+    },
+    "nodes": [
+        {
+            "id": "node-1",
+            "type": "parallel_read",
+            "tier": "deterministic_script",
+            "command_or_eval": "echo read",
+            "timeout_seconds": 30,
+            "depends_on": [],
+            "input_bindings": [],
+            "output_contract": {},
+            "failure_escalation": "rollback_and_halt",
+        }
+    ],
+}
 
 
 class MockFilesystemPort(FilesystemPort):
@@ -87,17 +117,18 @@ class MockControlPlane:
         self._receipts.append(receipt)
 
 
-def test_registry_loads_strategy_artifacts():
+def test_registry_loads_strategy_artifacts(tmp_path):
+    # S1 (B11/B12): graph, dual-loop, agent-swarm and direct moved to the single registry (patterns.json in the
+    # sibling orchestrating-agent-work); the YAML keeps only triple-loop-learning. Same checks, new owner.
     registry = TransitionRegistry.load_default()
-    artifacts = registry.strategy_artifacts
-    assert "graph" in artifacts
-    assert "dual-loop" in artifacts
-    assert "agent-swarm" in artifacts
-    assert "direct" in artifacts
+    assert set(registry.strategy_artifacts) == {"triple-loop-learning"}
+    root = make_skills_root(tmp_path)
+    for name in ("graph", "dual-loop", "agent-swarm", "direct"):
+        assert orchestration_registry.strategy_config(name, root, registry) is not None
 
-    graph_cfg = registry.get_strategy_artifact_config("graph")
+    graph_cfg = orchestration_registry.strategy_config("graph", root, registry)
     assert graph_cfg is not None
-    assert "graph-manifest.json" in graph_cfg["artifact"]
+    assert "graph-manifest.json" in graph_cfg["plan_artifact"]
     assert "validate_manifest.py" in (graph_cfg.get("validator_script") or graph_cfg["validator"][1])
 
 
@@ -131,18 +162,16 @@ def test_gate1_snapshot_binds_manifest_when_present(tmp_path):
     assert snapshot[2].sha256 == hashlib.sha256(manifest_file.read_bytes()).hexdigest()
 
 
-def _setup_test_repo(repo: Path):
-    real_orch = Path(__file__).resolve().parents[3] / "plugins" / "agent-orchestration"
-    plugins_dir = repo / "plugins"
-    plugins_dir.mkdir(parents=True, exist_ok=True)
-    orch_link = plugins_dir / "agent-orchestration"
-    if not orch_link.exists():
-        orch_link.symlink_to(real_orch)
+def _setup_test_repo(repo: Path) -> Path:
+    """Create the repo folder and return a fixture skills root holding the orchestration siblings (B9: the old
+    `plugins/agent-orchestration` symlink pointed at a pre-APM path and dangled)."""
+    repo.mkdir(parents=True, exist_ok=True)
+    return make_skills_root(repo.parent)
 
 
 def test_coordinator_graph_strategy_validates_and_stages_manifest(tmp_path):
     repo = tmp_path / "repo"
-    _setup_test_repo(repo)
+    skills = _setup_test_repo(repo)
     task_id = "task-graph-1"
     task_dir = repo / "docs" / "plans" / "work-tasks" / task_id
     task_dir.mkdir(parents=True, exist_ok=True)
@@ -182,7 +211,7 @@ def test_coordinator_graph_strategy_validates_and_stages_manifest(tmp_path):
     manifest_file.write_text(json.dumps(valid_manifest), encoding="utf-8")
 
     cp = MockControlPlane(repo)
-    coord = TransitionCoordinator(cp, fs=MockFilesystemPort())
+    coord = TransitionCoordinator(cp, fs=MockFilesystemPort(), skills_root=skills)
     coord._resolve_repo_root = lambda: repo
     template = coord._registry.get_template("DRAFT_PLAN", "PLAN_REVIEW")
 
@@ -195,7 +224,7 @@ def test_coordinator_graph_strategy_validates_and_stages_manifest(tmp_path):
 
 def test_coordinator_graph_strategy_missing_manifest_fails_closed(tmp_path):
     repo = tmp_path / "repo"
-    _setup_test_repo(repo)
+    skills = _setup_test_repo(repo)
     task_id = "task-graph-missing"
     task_dir = repo / "docs" / "plans" / "work-tasks" / task_id
     task_dir.mkdir(parents=True, exist_ok=True)
@@ -209,7 +238,7 @@ def test_coordinator_graph_strategy_missing_manifest_fails_closed(tmp_path):
     )
 
     cp = MockControlPlane(repo)
-    coord = TransitionCoordinator(cp, fs=MockFilesystemPort())
+    coord = TransitionCoordinator(cp, fs=MockFilesystemPort(), skills_root=skills)
     coord._resolve_repo_root = lambda: repo
     template = coord._registry.get_template("DRAFT_PLAN", "PLAN_REVIEW")
 
@@ -221,7 +250,7 @@ def test_coordinator_graph_strategy_missing_manifest_fails_closed(tmp_path):
 
 def test_coordinator_graph_strategy_invalid_manifest_fails_closed(tmp_path):
     repo = tmp_path / "repo"
-    _setup_test_repo(repo)
+    skills = _setup_test_repo(repo)
     task_id = "task-graph-invalid"
     task_dir = repo / "docs" / "plans" / "work-tasks" / task_id
     task_dir.mkdir(parents=True, exist_ok=True)
@@ -249,7 +278,7 @@ def test_coordinator_graph_strategy_invalid_manifest_fails_closed(tmp_path):
     manifest_file.write_text(json.dumps(invalid_manifest), encoding="utf-8")
 
     cp = MockControlPlane(repo)
-    coord = TransitionCoordinator(cp, fs=MockFilesystemPort())
+    coord = TransitionCoordinator(cp, fs=MockFilesystemPort(), skills_root=skills)
     coord._resolve_repo_root = lambda: repo
     template = coord._registry.get_template("DRAFT_PLAN", "PLAN_REVIEW")
 
@@ -273,16 +302,24 @@ def test_coordinator_missing_validator_fails_closed(tmp_path):
     manifest_file = task_dir / f"{task_id}-graph-manifest.json"
     manifest_file.write_text('{"schema_version": "1.0.0"}', encoding="utf-8")
 
-    # repo does NOT have plugins/agent-orchestration installed!
+    # The installed orchestrating-agent-work sibling has no validator script (B8: no folder search any more).
+    skills = make_skills_root(tmp_path, skills=())
+    partial = skills / "orchestrating-agent-work"
+    (partial / "references").mkdir(parents=True)
+    (partial / "SKILL.md").write_text("---\nname: orchestrating-agent-work\n---\n", encoding="utf-8")
+    shutil.copy2(ORCHESTRATION_SKILLS_SOURCE / "orchestrating-agent-work" / "references" / "patterns.json",
+                 partial / "references" / "patterns.json")
     cp = MockControlPlane(repo)
-    coord = TransitionCoordinator(cp, fs=MockFilesystemPort())
+    coord = TransitionCoordinator(cp, fs=MockFilesystemPort(), skills_root=skills)
     coord._resolve_repo_root = lambda: repo
     template = coord._registry.get_template("DRAFT_PLAN", "PLAN_REVIEW")
 
     task = {"task_id": task_id}
     with pytest.raises(TransitionCoordinatorError) as exc_info:
         coord._stage_plan_artifact_submission(task_id, task, template)
-    assert "validator" in str(exc_info.value) and "is not installed" in str(exc_info.value)
+    # message text changed with the APM-sibling resolution (S1): it names the missing validator and the install
+    assert "validate_manifest.py is not installed beside running-control-plane" in str(exc_info.value)
+    assert "apm install richfrem/agent-plugins-skills/plugins/agent-orchestration" in str(exc_info.value)
 
 
 def test_coordinator_unknown_strategy_fails_closed(tmp_path):
@@ -296,8 +333,9 @@ def test_coordinator_unknown_strategy_fails_closed(tmp_path):
     spec_file.write_text("# Spec", encoding="utf-8")
     plan_file.write_text("# Plan\n\nstrategy: grahp\n", encoding="utf-8")
 
+    skills = make_skills_root(tmp_path)
     cp = MockControlPlane(repo)
-    coord = TransitionCoordinator(cp, fs=MockFilesystemPort())
+    coord = TransitionCoordinator(cp, fs=MockFilesystemPort(), skills_root=skills)
     coord._resolve_repo_root = lambda: repo
     template = coord._registry.get_template("DRAFT_PLAN", "PLAN_REVIEW")
 
@@ -309,7 +347,7 @@ def test_coordinator_unknown_strategy_fails_closed(tmp_path):
 
 def test_coordinator_rollback_strategy_revert_not_treated_as_strategy(tmp_path):
     repo = tmp_path / "repo"
-    _setup_test_repo(repo)
+    skills = _setup_test_repo(repo)
     task_id = "task-rollback-strat"
     task_dir = repo / "docs" / "plans" / "work-tasks" / task_id
     task_dir.mkdir(parents=True, exist_ok=True)
@@ -329,7 +367,7 @@ def test_coordinator_rollback_strategy_revert_not_treated_as_strategy(tmp_path):
     manifest_file.write_text('{"bad": "manifest"}', encoding="utf-8")
 
     cp = MockControlPlane(repo)
-    coord = TransitionCoordinator(cp, fs=MockFilesystemPort())
+    coord = TransitionCoordinator(cp, fs=MockFilesystemPort(), skills_root=skills)
     coord._resolve_repo_root = lambda: repo
     template = coord._registry.get_template("DRAFT_PLAN", "PLAN_REVIEW")
 
@@ -351,8 +389,9 @@ def test_coordinator_dual_loop_missing_packet_fails_closed(tmp_path):
     spec_file.write_text("# Spec", encoding="utf-8")
     plan_file.write_text("# Plan\n\nstrategy: dual-loop\n", encoding="utf-8")
 
+    skills = make_skills_root(tmp_path)
     cp = MockControlPlane(repo)
-    coord = TransitionCoordinator(cp, fs=MockFilesystemPort())
+    coord = TransitionCoordinator(cp, fs=MockFilesystemPort(), skills_root=skills)
     coord._resolve_repo_root = lambda: repo
     template = coord._registry.get_template("DRAFT_PLAN", "PLAN_REVIEW")
 
@@ -416,20 +455,18 @@ def test_consumer_install_validator_resolution(tmp_path):
     manifest_file = task_dir / f"{task_id}-graph-manifest.json"
     manifest_file.write_text(json.dumps(valid_manifest), encoding="utf-8")
 
-    # Install validator in consumer directory .agents/skills/graph-planner/scripts/validate_manifest.py
-    consumer_script_dir = repo / ".agents" / "skills" / "graph-planner" / "scripts"
-    consumer_script_dir.mkdir(parents=True, exist_ok=True)
-    real_script = Path(__file__).resolve().parents[3] / "plugins" / "agent-orchestration" / "scripts" / "validate_manifest.py"
-    shutil.copy2(real_script, consumer_script_dir / "validate_manifest.py")
-
-    # Install schema in consumer directory .agents/skills/graph-planner/references/graph-manifest-schema.json
-    consumer_ref_dir = repo / ".agents" / "skills" / "graph-planner" / "references"
-    consumer_ref_dir.mkdir(parents=True, exist_ok=True)
-    real_schema = Path(__file__).resolve().parents[3] / "plugins" / "agent-orchestration" / "references" / "graph-manifest-schema.json"
-    shutil.copy2(real_schema, consumer_ref_dir / "graph-manifest-schema.json")
+    # A consumer install (S1, B8): APM copies the orchestrating-agent-work skill beside running-control-plane in the
+    # consumer's skills folder (not the retired .agents/skills/graph-planner layout). Real copies, not symlinks, so the
+    # validator and its schema resolve from the installed copy and never from this source tree.
+    skills = tmp_path / "consumer-home" / ".claude" / "skills"
+    installed = skills / "orchestrating-agent-work"
+    source = ORCHESTRATION_SKILLS_SOURCE / "orchestrating-agent-work"
+    for rel in ("SKILL.md", "references/patterns.json", "references/graph-manifest-schema.json", "scripts/validate_manifest.py"):
+        (installed / rel).parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source / rel, installed / rel)
 
     cp = MockControlPlane(repo)
-    coord = TransitionCoordinator(cp, fs=MockFilesystemPort())
+    coord = TransitionCoordinator(cp, fs=MockFilesystemPort(), skills_root=skills)
     coord._resolve_repo_root = lambda: repo
     template = coord._registry.get_template("DRAFT_PLAN", "PLAN_REVIEW")
 
@@ -442,7 +479,7 @@ def test_consumer_install_validator_resolution(tmp_path):
 def test_coordinator_emits_runner_command_matching_parser_and_refuses_without_snapshot(tmp_path):
     import argparse
     repo = tmp_path / "repo"
-    _setup_test_repo(repo)
+    skills = _setup_test_repo(repo)
     task_id = "task-emitted-cmd"
     task_dir = repo / "docs" / "plans" / "work-tasks" / task_id
     task_dir.mkdir(parents=True, exist_ok=True)
@@ -459,7 +496,7 @@ def test_coordinator_emits_runner_command_matching_parser_and_refuses_without_sn
         (task_id, snapshot_json),
     )
 
-    coord = TransitionCoordinator(cp, fs=MockFilesystemPort())
+    coord = TransitionCoordinator(cp, fs=MockFilesystemPort(), skills_root=skills)
     coord._out = io.StringIO()
     coord._resolve_repo_root = lambda: repo
     coord._write_transition_guidance("APPROVED", "IN_WORKTREE", "post-transition", task_id=task_id)
@@ -495,7 +532,7 @@ def test_coordinator_emits_runner_command_matching_parser_and_refuses_without_sn
 
 def test_coordinator_dual_loop_with_manifest_only_fails_closed(tmp_path):
     repo = tmp_path / "repo"
-    _setup_test_repo(repo)
+    skills = _setup_test_repo(repo)
     task_id = "task-dual-manifest-only"
     task_dir = repo / "docs" / "plans" / "work-tasks" / task_id
     task_dir.mkdir(parents=True, exist_ok=True)
@@ -514,7 +551,7 @@ def test_coordinator_dual_loop_with_manifest_only_fails_closed(tmp_path):
     dec_file.write_text(json.dumps({"pattern": "dual-loop"}), encoding="utf-8")
 
     cp = MockControlPlane(repo)
-    coord = TransitionCoordinator(cp, fs=MockFilesystemPort())
+    coord = TransitionCoordinator(cp, fs=MockFilesystemPort(), skills_root=skills)
     coord._resolve_repo_root = lambda: repo
     template = coord._registry.get_template("DRAFT_PLAN", "PLAN_REVIEW")
 
@@ -526,19 +563,14 @@ def test_coordinator_dual_loop_with_manifest_only_fails_closed(tmp_path):
 
 
 def test_transition_templates_patterns_parity():
-    """Asserts exact pattern key parity between transition_templates.yaml and patterns.json."""
+    """S1 (B11/B12) replaces "two registries with equal keys" by ONE registry: patterns.json owns every
+    orchestration strategy, the YAML owns only triple-loop-learning, no key is in both, and together they cover
+    exactly the strategies the orchestration skill documents (PATTERN_GUIDE.md section 6, plus direct).
+    Paths fixed from the pre-APM layout (B9)."""
     import yaml
 
-    repo_root = Path(__file__).resolve().parents[3]
-    patterns_canonical = repo_root / "plugins" / "agent-orchestration" / "references" / "patterns.json"
-    yaml_path = (
-        repo_root
-        / "plugins"
-        / "agent-agentic-os"
-        / "scripts"
-        / "control_plane"
-        / "transition_templates.yaml"
-    )
+    patterns_canonical = ORCHESTRATION_SKILLS_SOURCE / "orchestrating-agent-work" / "references" / "patterns.json"
+    yaml_path = Path(orchestration_registry.__file__).resolve().parent / "transition_templates.yaml"
 
     assert patterns_canonical.is_file(), f"Missing {patterns_canonical}"
     assert yaml_path.is_file(), f"Missing {yaml_path}"
@@ -550,10 +582,13 @@ def test_transition_templates_patterns_parity():
         y_data = yaml.safe_load(f)
     strat_arts = y_data.get("strategy_artifacts", {})
 
-    assert set(canon_data.keys()) == set(strat_arts.keys()), (
-        f"Mismatch between patterns.json ({set(canon_data.keys())}) "
-        f"and transition_templates.yaml strategy_artifacts ({set(strat_arts.keys())})"
+    assert not set(canon_data) & set(strat_arts), (
+        f"Strategy registered twice: patterns.json and transition_templates.yaml both list {set(canon_data) & set(strat_arts)}"
     )
+    assert set(strat_arts) == {"triple-loop-learning"}
+    assert set(canon_data) | set(strat_arts) == {
+        "direct", "dual-loop", "graph", "agent-swarm", "red-team-review", "learning-loop", "triple-loop-learning",
+    }
 
 
 

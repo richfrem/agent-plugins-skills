@@ -175,9 +175,9 @@ def test_runner_behavior_mode_prints_prompt_without_calling_a_model():
     import subprocess
     runner = SCRIPTS_DIR / "control_plane" / "run_transition_simulation.py"
     proc = subprocess.run(
-        [sys.executable, str(runner), "--behavior", "--print-prompt", "--from", "INTAKE", "--to", "INTERVIEW"],
+        [sys.executable, str(runner), "--behavior", "--print-prompt", "--from", "INTAKE", "--to", "DRAFT_PLAN"],
         capture_output=True, text=True, timeout=30,
     )
     assert proc.returncode == 0, proc.stderr
-    assert "INTAKE" in proc.stdout and "INTERVIEW" in proc.stdout
+    assert "INTAKE" in proc.stdout and "DRAFT_PLAN" in proc.stdout
     assert "WHO_RUNS:" in proc.stdout

@@ -5,7 +5,7 @@
     "plan_artifact": "docs/plans/work-tasks/<task-id>/<task-id>-graph-manifest.json",
     "required": true,
     "next_skill": "orchestrating-agent-work",
-    "validator_script": "skills/orchestrating-agent-work/scripts/validate_manifest.py",
+    "validator_script": "scripts/validate_manifest.py",
     "validator": [
       "python3",
       "{validator_script}",
@@ -19,11 +19,11 @@
     "plan_artifact": "handoffs/task_packet_<task-id>.md",
     "required": true,
     "next_skill": "orchestrating-agent-work",
-    "validator_script": "plugins/agent-orchestration/skills/orchestrating-agent-work/scripts/agent_orchestrator.py",
+    "validator_script": "scripts/agent_orchestrator.py",
     "validator": [
       "python3",
       "{validator_script}",
-      "packet",
+      "validate-packet",
       "--packet-path",
       "{artifact}"
     ],
@@ -52,5 +52,13 @@
     "required": false,
     "next_skill": "orchestrating-agent-work",
     "next_step": "strategy-red-team-review"
+  },
+  "learning-loop": {
+    "pattern": "learning-loop",
+    "description": "Contract-bound repair loop for one work item: attempt, evaluate against criteria, feed unmet criteria back",
+    "plan_artifact": "docs/plans/work-tasks/<task-id>/<task-id>-eval-brief.md",
+    "required": false,
+    "next_skill": "orchestrating-agent-work",
+    "next_step": "learning-loop"
   }
 }

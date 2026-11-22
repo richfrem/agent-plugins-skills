@@ -80,6 +80,8 @@ from control_plane.state_machine import ALLOWED_TRANSITIONS, CANONICAL_STATES
 from control_plane.constants import (
     REBUILD_RECOVERY_DOC,
     STATE_INTAKE, STATE_DONE, STATE_WORKTREE_REVIEW, STATE_VERIFY_EXIT, STATE_APPROVED,
+    ACTIVE_STATES, RETIRED_STATES, STATE_ABSORBED_BY, RETIRED_V14_EDGES,
+    TRANSITION_KIND_NORMAL, TRANSITION_KIND_MIGRATION, SCHEMA_V15, SchemaMigrationRequired,
     DECISION_TYPE_APPROVAL, DECISION_TYPES,
     ACTOR_HUMAN, ACTOR_AGENT, ACTOR_SYSTEM,
     COST_TIER_LOW, COST_TIERS,
@@ -98,7 +100,6 @@ from control_plane.constants import (
     FOLLOW_UP_STATUSES,
     DELEGATION_STATUSES,
     DISALLOWED_MODEL_STATUSES, STRATEGY_FALLBACK_KEYS,
-    CLI_AGENT_CATALOG_DIR,
     TOOL_CATALOG_ALIASES,
     sql_in_list,
 )
@@ -176,8 +177,9 @@ class ClockAdapter(ClockPort):
 # Recovery into these two states remains possible only through their normal gated
 # edges (WORKTREE_REVIEW/MULTI_AGENT_CODE_REVIEW -> VERIFY_EXIT,
 # AWAITING_APPROVAL -> APPROVED), never through this recovery side-channel.
-RECOVERY_FORBIDDEN_DESTINATIONS = (STATE_VERIFY_EXIT, STATE_APPROVED, STATE_DONE)
+RECOVERY_FORBIDDEN_DESTINATIONS = (STATE_VERIFY_EXIT, STATE_APPROVED, STATE_DONE) + RETIRED_STATES
 _RECOVERY_FORBIDDEN_SQL_LIST = ", ".join(f"'{s}'" for s in RECOVERY_FORBIDDEN_DESTINATIONS)
+_RETIRED_STATES_SQL_LIST = sql_in_list(RETIRED_STATES)
 
 # Factored out of SCHEMA_SQL so the identical trigger definition can also be applied
 # as a migration (DROP + CREATE) for databases created before this fix, since
@@ -187,42 +189,61 @@ ENFORCE_VALID_TRANSITION_TRIGGER_SQL = f"""
 CREATE TRIGGER IF NOT EXISTS enforce_valid_transition
 AFTER UPDATE ON tasks
 WHEN NEW.state != OLD.state
- AND (
-    NOT EXISTS (
-        SELECT 1 FROM transition_decisions recovery_td
-        WHERE recovery_td.task_id = OLD.task_id
-          AND recovery_td.source_occupancy_transition_id = (
-              SELECT MAX(current_td.transition_id)
-              FROM task_transitions current_td
-              WHERE current_td.task_id = OLD.task_id
-          )
-          AND recovery_td.from_state = OLD.state
-          AND recovery_td.to_state = NEW.state
-          AND recovery_td.to_state NOT IN ({_RECOVERY_FORBIDDEN_SQL_LIST})
-          AND recovery_td.decision_type = '{DECISION_TYPE_APPROVAL}'
-          AND recovery_td.actor = '{ACTOR_HUMAN}'
-          AND recovery_td.answer IS NOT NULL
-          AND trim(recovery_td.answer) != ''
-          AND recovery_td.consumed_at IS NULL
+ AND NOT (
+    EXISTS (
+        SELECT 1 FROM migration_edges me
+        WHERE me.from_state = OLD.state AND me.to_state = NEW.state
     )
-    AND (
+    AND EXISTS (
+        SELECT 1 FROM schema_migration_runs mr
+        WHERE mr.finished_at IS NULL
+    )
+ )
+ AND (
+    NEW.state IN ({_RETIRED_STATES_SQL_LIST})
+    OR EXISTS (
+        SELECT 1 FROM valid_transitions vt
+        WHERE vt.from_state = OLD.state AND vt.to_state = NEW.state AND vt.retired = 1
+    )
+    OR (
         NOT EXISTS (
-            SELECT 1 FROM valid_transitions WHERE from_state = OLD.state AND to_state = NEW.state
-        )
-        OR EXISTS (
-            SELECT 1 FROM required_transition_questions rq
-            WHERE rq.from_state = OLD.state AND rq.to_state = NEW.state
-              AND NOT EXISTS (
-                  SELECT 1 FROM transition_decisions td
-                  WHERE td.task_id = OLD.task_id
-                    AND td.from_state = OLD.state
-                    AND td.to_state = NEW.state
-                    AND td.question_id = rq.question_id
-                    AND td.answer IS NOT NULL
-                    AND trim(td.answer) != ''
-                    AND td.actor = '{ACTOR_HUMAN}'
-                    AND td.consumed_at IS NULL
+            SELECT 1 FROM transition_decisions recovery_td
+            WHERE recovery_td.task_id = OLD.task_id
+              AND recovery_td.source_occupancy_transition_id = (
+                  SELECT MAX(current_td.transition_id)
+                  FROM task_transitions current_td
+                  WHERE current_td.task_id = OLD.task_id
               )
+              AND recovery_td.from_state = OLD.state
+              AND recovery_td.to_state = NEW.state
+              AND recovery_td.to_state NOT IN ({_RECOVERY_FORBIDDEN_SQL_LIST})
+              AND recovery_td.decision_type = '{DECISION_TYPE_APPROVAL}'
+              AND recovery_td.actor = '{ACTOR_HUMAN}'
+              AND recovery_td.answer IS NOT NULL
+              AND trim(recovery_td.answer) != ''
+              AND recovery_td.consumed_at IS NULL
+        )
+        AND (
+            NOT EXISTS (
+                SELECT 1 FROM valid_transitions
+                WHERE from_state = OLD.state AND to_state = NEW.state
+                  AND retired = 0 AND kind = '{TRANSITION_KIND_NORMAL}'
+            )
+            OR EXISTS (
+                SELECT 1 FROM required_transition_questions rq
+                WHERE rq.from_state = OLD.state AND rq.to_state = NEW.state
+                  AND NOT EXISTS (
+                      SELECT 1 FROM transition_decisions td
+                      WHERE td.task_id = OLD.task_id
+                        AND td.from_state = OLD.state
+                        AND td.to_state = NEW.state
+                        AND td.question_id = rq.question_id
+                        AND td.answer IS NOT NULL
+                        AND trim(td.answer) != ''
+                        AND td.actor = '{ACTOR_HUMAN}'
+                        AND td.consumed_at IS NULL
+                  )
+            )
         )
     )
     OR (
@@ -231,7 +252,8 @@ WHEN NEW.state != OLD.state
         -- string or typed word can substitute; the recovery bypass above cannot reach these destinations.
         EXISTS (
             SELECT 1 FROM valid_transitions vt
-            WHERE vt.from_state = OLD.state AND vt.to_state = NEW.state AND vt.requires_proof = 1
+            WHERE vt.from_state = OLD.state AND vt.to_state = NEW.state
+              AND vt.retired = 0 AND vt.requires_proof = 1
         )
         AND NOT EXISTS (
             SELECT 1 FROM transition_request tr
@@ -276,8 +298,17 @@ CREATE TABLE IF NOT EXISTS tasks (
     model_tier TEXT CHECK (model_tier IS NULL OR model_tier IN ({sql_in_list(COST_TIERS)})),
     model_id TEXT,
     guidance_block_reason TEXT,
+    rollback_base_sha TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS schema_migration_runs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    from_version INTEGER NOT NULL,
+    to_version INTEGER NOT NULL,
+    started_at TEXT NOT NULL,
+    finished_at TEXT
 );
 
 CREATE TABLE IF NOT EXISTS task_transitions (
@@ -287,6 +318,7 @@ CREATE TABLE IF NOT EXISTS task_transitions (
     to_state TEXT NOT NULL,
     actor TEXT NOT NULL,
     reason TEXT,
+    migration_run_id INTEGER REFERENCES schema_migration_runs(id),
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -496,8 +528,34 @@ CREATE TABLE IF NOT EXISTS valid_transitions (
     to_state TEXT NOT NULL,
     authorized_actor TEXT NOT NULL DEFAULT 'agent_or_human',
     requires_proof INTEGER NOT NULL DEFAULT 0,
+    retired INTEGER NOT NULL DEFAULT 0,
+    kind TEXT NOT NULL DEFAULT '{TRANSITION_KIND_NORMAL}',
     PRIMARY KEY (from_state, to_state)
 );
+
+CREATE TABLE IF NOT EXISTS migration_edges (
+    from_state TEXT NOT NULL,
+    to_state TEXT NOT NULL,
+    PRIMARY KEY (from_state, to_state)
+);
+
+CREATE TABLE IF NOT EXISTS signed_decisions (
+    decision_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    task_id TEXT NOT NULL REFERENCES tasks(task_id) ON DELETE CASCADE,
+    occupancy_id INTEGER NOT NULL,
+    from_state TEXT NOT NULL,
+    to_state TEXT NOT NULL,
+    question_id TEXT NOT NULL,
+    decision_text TEXT NOT NULL,
+    request_id INTEGER,
+    nonce TEXT NOT NULL,
+    challenge BLOB NOT NULL,
+    signature BLOB NOT NULL,
+    principal TEXT NOT NULL,
+    fingerprint TEXT NOT NULL,
+    decided_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_signed_decisions_task ON signed_decisions(task_id, occupancy_id);
 
 CREATE TABLE IF NOT EXISTS transition_request (
     request_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -573,7 +631,7 @@ BEGIN
 END;
 """
 
-CURRENT_SCHEMA_VERSION = 14
+CURRENT_SCHEMA_VERSION = SCHEMA_V15
 
 # issue-523: the only state ControlPlane.create_task() ever seeds a new task at. Not derived
 # from TransitionRegistry (which only declares state-to-state edges among existing states, not
@@ -597,6 +655,7 @@ CHILD_TABLES = [
     "source_assisted_answer_candidates",
     "interview_plan_outlines",
     "transition_request",
+    "signed_decisions",
 ]
 ALL_REBUILD_TABLES = ["tasks"] + CHILD_TABLES
 
@@ -710,6 +769,33 @@ SCHEMA_MIGRATIONS = [
     "ALTER TABLE valid_transitions ADD COLUMN requires_proof INTEGER NOT NULL DEFAULT 0;",
     "DROP TRIGGER IF EXISTS enforce_valid_transition;",
     ENFORCE_VALID_TRANSITION_TRIGGER_SQL,
+    # Migration v15 (job-scoped-control-plane): lean 10-state machine, retired edges, migration runs,
+    # rollback_base_sha, and dedicated signed_decisions table.
+    "ALTER TABLE valid_transitions ADD COLUMN retired INTEGER NOT NULL DEFAULT 0;",
+    "ALTER TABLE valid_transitions ADD COLUMN kind TEXT NOT NULL DEFAULT 'normal';",
+    "CREATE TABLE IF NOT EXISTS migration_edges (from_state TEXT NOT NULL, to_state TEXT NOT NULL, PRIMARY KEY (from_state, to_state));",
+    "CREATE TABLE IF NOT EXISTS schema_migration_runs (id INTEGER PRIMARY KEY AUTOINCREMENT, from_version INTEGER NOT NULL, to_version INTEGER NOT NULL, started_at TEXT NOT NULL, finished_at TEXT);",
+    "ALTER TABLE task_transitions ADD COLUMN migration_run_id INTEGER REFERENCES schema_migration_runs(id);",
+    "ALTER TABLE tasks ADD COLUMN rollback_base_sha TEXT;",
+    """CREATE TABLE IF NOT EXISTS signed_decisions (
+        decision_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        task_id TEXT NOT NULL REFERENCES tasks(task_id) ON DELETE CASCADE,
+        occupancy_id INTEGER NOT NULL,
+        from_state TEXT NOT NULL,
+        to_state TEXT NOT NULL,
+        question_id TEXT NOT NULL,
+        decision_text TEXT NOT NULL,
+        request_id INTEGER,
+        nonce TEXT NOT NULL,
+        challenge BLOB NOT NULL,
+        signature BLOB NOT NULL,
+        principal TEXT NOT NULL,
+        fingerprint TEXT NOT NULL,
+        decided_at TEXT NOT NULL
+    );""",
+    "CREATE INDEX IF NOT EXISTS idx_signed_decisions_task ON signed_decisions(task_id, occupancy_id);",
+    "DROP TRIGGER IF EXISTS enforce_valid_transition;",
+    ENFORCE_VALID_TRANSITION_TRIGGER_SQL,
 ]
 
 
@@ -770,35 +856,18 @@ class SqlitePersistenceAdapter(PersistencePort):
         self._crypto = crypto_adapter if crypto_adapter is not None else CryptoAdapter()
 
     def _discover_shared_db_path(self) -> Path:
-        """Resolves context/control_plane.db anchored at the repo root shared across
-        ALL git worktrees of the same repo — via `git rev-parse --git-common-dir`,
-        which (unlike a manual walk-up for the nearest `.git`) returns the same
-        physical .git directory whether invoked from the main checkout or any
-        worktree, so they all read/write one control plane instead of each worktree
-        getting its own disconnected DB."""
-        curr = Path(__file__).resolve().parent
-        for p in [curr] + list(curr.parents):
-            if p.name == ".agents":
-                return p.parent / "context" / "control_plane.db"
+        """Resolves context/control_plane.db anchored at the canonical repo root shared across
+        ALL git worktrees of the same repo (B22 / G14: never cwd-relative inside a skill folder)."""
+        from control_plane.identity_layout import canonical_repo_root, is_inside_skill_folder
 
-        try:
-            result = subprocess.run(
-                ["git", "rev-parse", "--git-common-dir"],
-                cwd=str(curr), capture_output=True, text=True, timeout=5
+        cwd = Path.cwd().resolve()
+        root = canonical_repo_root(cwd)
+        if is_inside_skill_folder(root):
+            raise PersistenceInvariantViolation(
+                f"Refusing to use a control-plane database inside a skill folder ({root}). "
+                "Run from a project repository root or pass --db-path explicitly."
             )
-            if result.returncode == 0:
-                common_dir = Path(result.stdout.strip())
-                if not common_dir.is_absolute():
-                    common_dir = (curr / common_dir).resolve()
-                return common_dir.parent / "context" / "control_plane.db"
-        except (subprocess.SubprocessError, OSError):
-            pass
-
-        for p in [curr] + list(curr.parents):
-            if (p / "context").exists() and not (p / "skills").exists():
-                return p / "context" / "control_plane.db"
-
-        return Path.cwd() / "context" / "control_plane.db"
+        return root / "context" / "control_plane.db"
 
     def get_connection(self) -> sqlite3.Connection:
         """Returns a configured sqlite3 connection with WAL mode and foreign keys."""
@@ -830,11 +899,46 @@ class SqlitePersistenceAdapter(PersistencePort):
                 f"resolved manually — see {REBUILD_RECOVERY_DOC} for the recovery procedure."
             )
 
+    @staticmethod
+    def _check_v14_migration_required(conn: sqlite3.Connection) -> None:
+        """Refuse to auto-migrate a v14 DB that has open tasks in retired states (G3).
+        Runs strictly read-only before any write so the DB file stays byte-identical."""
+        try:
+            row = conn.execute("SELECT version FROM schema_version ORDER BY version DESC LIMIT 1").fetchone()
+        except sqlite3.OperationalError:
+            return
+        if not row or row[0] >= CURRENT_SCHEMA_VERSION:
+            return
+        placeholders = ", ".join("?" for _ in RETIRED_STATES)
+        try:
+            open_retired = conn.execute(
+                f"SELECT task_id, state FROM tasks WHERE state IN ({placeholders})",
+                RETIRED_STATES,
+            ).fetchall()
+        except sqlite3.OperationalError:
+            return
+        if open_retired:
+            details = ", ".join(f"{r[0]} ({r[1]})" for r in open_retired)
+            raise SchemaMigrationRequired(
+                f"Database is at schema v{row[0]} and has {len(open_retired)} open task(s) in retired states: "
+                f"{details}. Run `agent_control.py migrate-schema --dry-run` then `--yes`."
+            )
+
     def ensure_schema(self) -> None:
         """Initializes SQLite tables and WAL mode. Self-heals FK-corrupted or legacy schemas."""
+        # Read-only pre-check: if an existing v14 DB has open retired-state tasks, raise
+        # SchemaMigrationRequired before touching or stamping the file (must remain byte-identical).
+        if self.db_path.is_file() and self.db_path.stat().st_size > 0:
+            ro_conn = sqlite3.connect(f"file:{self.db_path}?mode=ro", uri=True)
+            try:
+                self._check_v14_migration_required(ro_conn)
+            finally:
+                ro_conn.close()
+
         conn = self.get_connection()
         try:
             self._check_no_orphaned_migration_tables(conn)
+            self._check_v14_migration_required(conn)
             # Record once, inside the database itself, whether it is a real-work or simulation database
             stamp_database_identity(conn, self.db_path)
             conn.commit()
@@ -865,60 +969,81 @@ class SqlitePersistenceAdapter(PersistencePort):
         finally:
             conn.close()
 
-    def _sync_valid_transitions(self, conn: sqlite3.Connection) -> None:
-        """issue-523: resyncs valid_transitions from TransitionRegistry.get_all_edges() plus
-        LEGAL_INITIAL_STATES (as from_state IS NULL rows) on every ensure_schema() call —
-        self-maintaining, zero manual migration step per DAG change (spec guardrail table).
-        Uses parameterized INSERTs, not string-formatted SQL (finding #1).
-
-        auth-ciba-poc-transition-mechanics (T1): also populates authorized_actor per edge,
-        derived from TransitionRegistry/TransitionTemplate.authorized_actor (itself derived
-        from each edge's approval block, not a hand-maintained parallel field). Initial-state
-        rows (from_state IS NULL) are not edges with an approval block and default to
-        'agent_or_human', matching the column's schema default."""
+    def _write_derived_rows(self, conn: sqlite3.Connection) -> None:
+        """Write active edges, retired v14 edges, migration edges, required questions, and sync digest
+        into an already-open transaction (no nested BEGIN/COMMIT; arch-2-2)."""
         from control_plane.registry import TransitionRegistry
         registry = TransitionRegistry.load_default()
         edges_with_actor = registry.get_all_edges_with_proof()
 
+        conn.execute("DELETE FROM valid_transitions;")
+        active_rows = [
+            (fs, ts, actor, proof, 0, TRANSITION_KIND_NORMAL)
+            for (fs, ts, actor, proof) in edges_with_actor
+        ]
+        initial_rows = [
+            (None, s, "agent_or_human", 0, 0, TRANSITION_KIND_NORMAL)
+            for s in LEGAL_INITIAL_STATES
+        ]
+        retired_rows = [
+            (fs, ts, "human_only" if proof else "agent_or_human", proof, 1, TRANSITION_KIND_NORMAL)
+            for (fs, ts, proof) in RETIRED_V14_EDGES
+        ]
+        conn.executemany(
+            "INSERT INTO valid_transitions (from_state, to_state, authorized_actor, requires_proof, retired, kind) "
+            "VALUES (?, ?, ?, ?, ?, ?)",
+            active_rows + initial_rows + retired_rows,
+        )
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS migration_edges ("
+            "from_state TEXT NOT NULL, to_state TEXT NOT NULL, PRIMARY KEY (from_state, to_state));"
+        )
+        conn.execute("DELETE FROM migration_edges;")
+        conn.executemany(
+            "INSERT INTO migration_edges (from_state, to_state) VALUES (?, ?)",
+            list(STATE_ABSORBED_BY.items()),
+        )
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS required_transition_questions (
+                from_state TEXT NOT NULL,
+                to_state TEXT NOT NULL,
+                question_id TEXT NOT NULL,
+                PRIMARY KEY (from_state, to_state, question_id)
+            );
+        """)
+        conn.execute("DELETE FROM required_transition_questions;")
+        req_q = []
+        for (from_s, to_s), tmpl in registry._templates_by_edge.items():
+            if tmpl.requires_cryptographic_proof:
+                continue  # proof edges are enforced by vt.requires_proof=1 + CONSUMED transition_request, not transition_decisions
+            for question_id in (tmpl.stage_question_ids or []):
+                req_q.append((from_s, to_s, question_id))
+            for q in tmpl.human_questions:
+                if q.get("asked_when"):
+                    continue  # conditional (review-selection internal runtime/model/effort): enforced by review_selection.py
+                req_q.append((from_s, to_s, q["question_id"]))
+            if tmpl.approval.get("required") and tmpl.approval.get("approver_role", "human") == "human":
+                req_q.append((from_s, to_s, f"approval_{tmpl.transition_id}"))
+        if req_q:
+            conn.executemany(
+                "INSERT INTO required_transition_questions (from_state, to_state, question_id) VALUES (?, ?, ?)",
+                req_q
+            )
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS registry_sync_state ("
+            "id INTEGER PRIMARY KEY CHECK (id = 1), inputs_fingerprint TEXT NOT NULL, tables_digest TEXT NOT NULL);"
+        )
+        conn.execute(
+            "INSERT OR REPLACE INTO registry_sync_state (id, inputs_fingerprint, tables_digest) VALUES (1, ?, ?)",
+            (self._sync_inputs_fingerprint(), self._derived_state_digest(conn)),
+        )
+
+    def _sync_valid_transitions(self, conn: sqlite3.Connection) -> None:
+        """Resyncs valid_transitions (active + retired v14), migration_edges, required_transition_questions,
+        and registry_sync_state atomically in one BEGIN IMMEDIATE transaction."""
         conn.execute("BEGIN IMMEDIATE;")
         try:
-            conn.execute("DELETE FROM valid_transitions;")
-            conn.executemany(
-                "INSERT INTO valid_transitions (from_state, to_state, authorized_actor, requires_proof) VALUES (?, ?, ?, ?)",
-                list(edges_with_actor) + [(None, s, "agent_or_human", 0) for s in LEGAL_INITIAL_STATES]
-            )
-            conn.execute("""
-                CREATE TABLE IF NOT EXISTS required_transition_questions (
-                    from_state TEXT NOT NULL,
-                    to_state TEXT NOT NULL,
-                    question_id TEXT NOT NULL,
-                    PRIMARY KEY (from_state, to_state, question_id)
-                );
-            """)
-            conn.execute("DELETE FROM required_transition_questions;")
-            req_q = []
-            for (from_s, to_s), tmpl in registry._templates_by_edge.items():
-                for question_id in (tmpl.stage_question_ids or []):
-                    req_q.append((from_s, to_s, question_id))
-                for q in tmpl.human_questions:
-                    if q.get("asked_when"):
-                        continue  # conditional (review-selection internal runtime/model/effort): enforced by review_selection.py
-                    req_q.append((from_s, to_s, q["question_id"]))
-                if tmpl.approval.get("required") and tmpl.approval.get("approver_role", "human") == "human":
-                    req_q.append((from_s, to_s, f"approval_{tmpl.transition_id}"))
-            if req_q:
-                conn.executemany(
-                    "INSERT INTO required_transition_questions (from_state, to_state, question_id) VALUES (?, ?, ?)",
-                    req_q
-                )
-            conn.execute(
-                "CREATE TABLE IF NOT EXISTS registry_sync_state ("
-                "id INTEGER PRIMARY KEY CHECK (id = 1), inputs_fingerprint TEXT NOT NULL, tables_digest TEXT NOT NULL);"
-            )
-            conn.execute(
-                "INSERT OR REPLACE INTO registry_sync_state (id, inputs_fingerprint, tables_digest) VALUES (1, ?, ?)",
-                (self._sync_inputs_fingerprint(), self._derived_state_digest(conn)),
-            )
+            self._write_derived_rows(conn)
             conn.execute("COMMIT;")
         except Exception:
             conn.execute("ROLLBACK;")
@@ -927,14 +1052,20 @@ class SqlitePersistenceAdapter(PersistencePort):
     @staticmethod
     def _sync_inputs_fingerprint() -> str:
         """Everything the schema and registry-derived tables are a pure function of: the schema version,
-        the DDL and migration text, the legal initial states, the YAML bytes, and the registry code that
-        interprets them. A change to any input invalidates the fast path and forces a full resync.
-        Reading and hashing files is cheap; only the YAML *parse* was expensive."""
+        the DDL and migration text, the legal initial states, the retired/migration constants, the YAML
+        bytes, and the registry code that interprets them."""
         from control_plane.registry import TransitionRegistry
 
         h = hashlib.sha256()
-        for part in (str(CURRENT_SCHEMA_VERSION), SCHEMA_SQL, "\n".join(SCHEMA_MIGRATIONS), repr(sorted(LEGAL_INITIAL_STATES)),
-                     TransitionRegistry.default_source_digest()):
+        for part in (
+            str(CURRENT_SCHEMA_VERSION),
+            SCHEMA_SQL,
+            "\n".join(SCHEMA_MIGRATIONS),
+            repr(sorted(LEGAL_INITIAL_STATES)),
+            repr(RETIRED_V14_EDGES),
+            repr(sorted(STATE_ABSORBED_BY.items())),
+            TransitionRegistry.default_source_digest(),
+        ):
             h.update(part.encode("utf-8"))
             h.update(b"\x00")
         h.update((Path(__file__).resolve().parent / "registry.py").read_bytes())
@@ -942,12 +1073,12 @@ class SqlitePersistenceAdapter(PersistencePort):
 
     @staticmethod
     def _derived_state_digest(conn: sqlite3.Connection) -> str:
-        """Digest of the registry-derived rows plus the names of the enforcement triggers, so drift
-        (deleted/edited rows, a dropped trigger) still self-heals on the next ensure_schema() exactly as the
-        old resync-on-every-call did, without paying for a write transaction when nothing drifted."""
+        """Digest of all 6 columns of valid_transitions, migration_edges, required_transition_questions,
+        and trigger names so any drift self-heals on ensure_schema()."""
         h = hashlib.sha256()
         for sql in (
-            "SELECT from_state, to_state, authorized_actor, requires_proof FROM valid_transitions ORDER BY 1, 2, 3, 4",
+            "SELECT from_state, to_state, authorized_actor, requires_proof, retired, kind FROM valid_transitions ORDER BY 1, 2, 3, 4, 5, 6",
+            "SELECT from_state, to_state FROM migration_edges ORDER BY 1, 2",
             "SELECT from_state, to_state, question_id FROM required_transition_questions ORDER BY 1, 2, 3",
             "SELECT name FROM sqlite_master WHERE type = 'trigger' ORDER BY name",
         ):
@@ -2406,7 +2537,7 @@ class SqlitePersistenceAdapter(PersistencePort):
                     "INSERT INTO verification_receipts (task_id, gate_name, command_executed, exit_code, receipt_token) VALUES (?, ?, ?, ?, ?)",
                     (request.task_id, "human_gate_proof", proof_audit, 0, audit_token),
                 )
-                if edge == ("AWAITING_APPROVAL", "APPROVED"):
+                if edge in (("PLAN_REVIEW", "APPROVED"), ("AWAITING_APPROVAL", "APPROVED")):
                     # The verified Gate 1 signature IS the human approval: record the receipt APPROVED -> IN_WORKTREE
                     # checks in the same transaction, so the human never has to approve twice.
                     approval = f"approved-by:{verified.principal};key={verified.fingerprint};request={proof.request_id}"
@@ -2910,15 +3041,26 @@ class ModelCatalogAdapter(ModelCatalogPort):
     ControlPlane helpers (_resolve_tool_catalog/_pick_tier_model) here in full — verbatim
     behavior, just relocated. Any parse/read error is swallowed and treated as "unavailable"
     (returns None from the file-read methods), matching the original bare
-    `except Exception: pass` behavior exactly."""
+    `except Exception: pass` behavior exactly.
+
+    The catalogs are read from the sibling cli-agent skill installed beside this one by the agent-orchestration
+    APM dependency (orchestration_registry.cli_agent_references), never from a repository path. `skills_root`
+    overrides the installed skills folder (tests pass a fixture root)."""
+
+    def __init__(self, skills_root: Optional[Path] = None):
+        self._skills_root = skills_root
 
     def resolve_recommended_model(self, runtime_tool: str, tier: str = "low") -> Dict[str, str]:
         """Resolve a catalog-backed recommendation and fail closed on catalog drift."""
+        from control_plane.orchestration_registry import OrchestrationDependencyMissing, cli_agent_references
+
         tier = tier.lower()
         if tier not in COST_TIERS:
             raise ValueError(f"Unsupported capability tier: {tier}")
-        repo_root = _resolve_repo_root()
-        cli_refs = repo_root.joinpath(*CLI_AGENT_CATALOG_DIR)
+        try:
+            cli_refs = cli_agent_references(self._skills_root)
+        except OrchestrationDependencyMissing as exc:
+            raise ValueError(f"Model catalog is unavailable: {exc}") from exc
         tool_key, catalog_file = self._resolve_tool_catalog(runtime_tool, cli_refs)
 
         cheapest_file = cli_refs / "cheapest_models.json"

@@ -18,7 +18,7 @@ Carried over from the description of the former skill, so its trigger phrases an
 
 ## Critical Constraints
 
-1. **Origin Base Invariant**: Before creating any worktree, run `git fetch origin main` and base new branches on `origin/main` — never on local `main`.
+1. **Origin Base Invariant**: Before creating any worktree in a remote-backed repo, run `git fetch origin main` and base new branches on `origin/main` — never on stale local `main`. (In local-only sandboxes without an `origin` remote, branch from local `main`.)
 2. **Path Confinement**: Portable worktrees must reside strictly below `<repo>/.worktrees/<task-id>`.
 3. **Governance Equivalence**: Native worktree execution is an implementation facility, not a governance bypass. Both native and portable execution require identical approval, verification, and review gates.
 4. **Reconciliation & Concurrency**: Never assume pre-worktree dirty state or concurrent branches carry over automatically. `APPROVED -> IN_WORKTREE` requires deterministic reconciliation (`main_worktree_reconciliation`). Rebase onto fresh `origin/main` immediately before merging.
@@ -36,7 +36,7 @@ python3 scripts/capability_probe.py
 1. **Probe Runtime**: Run `capability_probe.py` and treat returned capability as authoritative. Never infer native support from model name or binary presence.
 2. **Select Facility**:
    - If `native_worktree` is true: follow returned activation guidance and retain task control-plane gates.
-   - If portable fallback: generate execution plan via `scripts/worktree_manager.py` and delegate lifecycle management to `issue-worktree-agent`.
+   - If portable fallback: create `<repo>/.worktrees/<task-id>` via `git worktree add` (or `resolving-github-issues`) and register it with `agent_control.py update-worktree`.
 3. **Reconcile Base & State**: Fetch `origin/main` and verify base commit. If migrating uncommitted edits, run deterministic reconciliation.
 4. **Report & Activate**: Report selected strategy, exact path, branch, activation guidance, and cleanup commands before mutating repository.
 

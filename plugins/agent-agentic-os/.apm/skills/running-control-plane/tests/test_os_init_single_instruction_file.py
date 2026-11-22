@@ -166,5 +166,8 @@ def test_install_hooks_installs_current_guards_and_touches_no_instructions(repo)
     assert "control_plane_identity" in (hooks / "pre-commit-pipeline-guard").read_text()
     assert "pre-push-review-guard" in (hooks / "pre-push").read_text()
     assert _digest(repo) == before
-    assert not (repo / "context").exists()  # hooks only: nothing else scaffolded
+    # S6: --install-hooks writes context/control-plane-mode (default: on-demand), nothing else in context/
+    if (repo / "context").exists():
+        assert set(p.name for p in (repo / "context").iterdir()) <= {"control-plane-mode", "control-plane-mode.log"}
+        assert (repo / "context" / "control-plane-mode").read_text().strip() == "on-demand"
     assert not (repo / ".github").exists()

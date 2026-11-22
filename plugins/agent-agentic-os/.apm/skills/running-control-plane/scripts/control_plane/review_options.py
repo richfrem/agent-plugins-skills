@@ -7,8 +7,9 @@ Purpose:
     Read-only helper for the `list-review-options` verb (auth-ciba-increment-b H1, issue #639). The review-
     selection questions take the runtime, model and effort as typed text; this prints the exact identifiers
     an installed CLI reports so the human copies them instead of remembering or mistyping them. Each CLI is
-    probed through ITS OWN `models` command (no runtime dependency on the cli-agents catalog, per the plugin
-    loose-coupling rule). A runtime with no known probe is listed as "installed, no model probe". Nothing is
+    probed through ITS OWN `models` command. A runtime with no known probe is listed as "installed, no model
+    probe". The model menus (choices_for) fall back to the capability profile, then to the model catalog of the
+    sibling cli-agent skill, which the agent-orchestration APM dependency installs beside this one. Nothing is
     written and nothing is inferred: a missing CLI or a failing probe is reported as such.
 
 Key Input Dependencies:
@@ -42,9 +43,42 @@ RUNTIME_PROBES: Dict[str, Optional[List[str]]] = {
 EFFORT_LEVELS = ("low", "medium", "high")
 PROBE_TIMEOUT_SECONDS = 20
 PROFILE_RELATIVE_PATH = "context/agent-capability-profile.json"
-# Effort levels verified from the runtime's own help (`agy --help`: --effort low|medium|high); other
-# runtimes are not listed here because nothing verifies them, so their effort question is free text + warning.
-VERIFIED_EFFORTS: Dict[str, tuple] = {"agy": ("low", "medium", "high")}
+# Effort levels verified from each runtime's own help (`agy --help`, `claude --help`).
+VERIFIED_EFFORTS: Dict[str, tuple] = {
+    "agy": ("low", "medium", "high"),
+    "claude": ("low", "medium", "high", "xhigh", "max"),
+    "host-subagents": ("low", "medium", "high", "xhigh", "max"),
+}
+HOST_SUBAGENTS = "host-subagents"
+# Model catalogs in the sibling cli-agent skill (installed beside this one by APM; no repository paths, B9).
+CATALOG_FILES: Dict[str, str] = {
+    "claude": "claude-models.json",
+    "codex": "codex-models.json",
+    "copilot": "copilot-models.json",
+    "agy": "agy-models.json",
+    HOST_SUBAGENTS: "claude-models.json",
+}
+
+
+def _catalog_models(runtime: str, skills_root: Optional[Path] = None) -> List[str]:
+    """Usable model ids for a runtime from the sibling cli-agent catalog; [] when there is no catalog."""
+    from control_plane.orchestration_registry import OrchestrationDependencyMissing, cli_agent_references
+
+    name = CATALOG_FILES.get(runtime)
+    if not name:
+        return []
+    try:
+        data = json.loads((cli_agent_references(skills_root) / name).read_text(encoding="utf-8"))
+    except (OrchestrationDependencyMissing, OSError, ValueError):
+        return []
+    ids: List[str] = []
+    from control_plane.constants import MENU_HIDDEN_MODEL_STATUSES
+
+    for model in data.get("models", []) if isinstance(data, dict) else []:
+        model_id = model.get("cli_id") if isinstance(model, dict) else None
+        if model_id and str(model.get("status", "GA")).casefold() not in MENU_HIDDEN_MODEL_STATUSES and model_id not in ids:
+            ids.append(model_id)
+    return ids
 
 
 def _parse_models(stdout: str) -> List[Dict[str, str]]:
@@ -135,13 +169,18 @@ def _profile_models(runtime: str, profile_path: Optional[Path]) -> List[str]:
 
 
 def choices_for(kind: str, runtime: Optional[str] = None, path: Optional[str] = None,
-                profile_path: Optional[Path] = None) -> ChoiceSet:
-    """Build the menu for one review-selection question. Never guesses: a runtime or model that no probe
-    or profile confirms yields an empty ChoiceSet with a warning, so the human is told the answer is unchecked."""
+                profile_path: Optional[Path] = None, skills_root: Optional[Path] = None) -> ChoiceSet:
+    """Build the menu for one review-selection question. Never guesses: a runtime or model that no probe,
+    profile or cli-agent catalog confirms yields an empty ChoiceSet with a warning, so the human is told the
+    answer is unchecked. Model order: the CLI's own probe, then the capability profile, then the catalog in the
+    sibling cli-agent skill (`skills_root` overrides the installed skills folder; tests pass a fixture root)."""
     if kind == "runtime":
-        items = [{"id": name, "display": name, "installed": shutil.which(name, path=path) is not None} for name in RUNTIME_PROBES]
-        if not any(i["installed"] for i in items):
-            return ChoiceSet([], "no supported CLI (codex, claude, agy, copilot) was found on PATH; the answer cannot be validated")
+        items = [{
+            "id": HOST_SUBAGENTS,
+            "installed": True,
+            "display": f"{HOST_SUBAGENTS} (this session's own fresh-context, read-only subagents; no CLI)",
+        }]
+        items += [{"id": name, "display": name, "installed": shutil.which(name, path=path) is not None} for name in RUNTIME_PROBES]
         return ChoiceSet(items)
     if kind == "model":
         if runtime in RUNTIME_PROBES and RUNTIME_PROBES[runtime] is not None:
@@ -150,8 +189,15 @@ def choices_for(kind: str, runtime: Optional[str] = None, path: Optional[str] = 
                 return ChoiceSet([{"id": m["id"], "display": m["display"], "installed": True} for m in probed["models"]])
         ids = _profile_models(runtime or "", profile_path)
         if ids:
+            if runtime == HOST_SUBAGENTS and "inherit" not in ids:
+                ids = ["inherit"] + ids
             return ChoiceSet([{"id": i, "display": i, "installed": True} for i in ids])
-        return ChoiceSet([], f"no model list is available for '{runtime}' (no probe, no capability profile entry); the answer cannot be validated")
+        ids = _catalog_models(runtime or "", skills_root)
+        if runtime == HOST_SUBAGENTS:
+            ids = ["inherit"] + [i for i in ids if i != "inherit"]
+        if ids:
+            return ChoiceSet([{"id": i, "display": i, "installed": True} for i in ids])
+        return ChoiceSet([], f"no model list is available for '{runtime}' (no probe, no capability profile entry, no cli-agent catalog); the answer cannot be validated")
     if kind == "effort":
         levels = VERIFIED_EFFORTS.get(runtime or "")
         if levels:

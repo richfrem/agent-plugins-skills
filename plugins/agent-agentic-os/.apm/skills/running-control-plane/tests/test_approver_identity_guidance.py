@@ -35,7 +35,7 @@ PLUGIN_ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_interview_contract_declares_single_human_default_approver():
-    contract = TransitionRegistry.load_default().get_stage_contract("INTERVIEW")
+    contract = TransitionRegistry.load_default().get_stage_contract("INTAKE")
     approver = contract["approver_identity"]
     assert approver["one_approver_per_pipeline"] is True
     assert approver["default"] == "human_operator"
@@ -62,7 +62,7 @@ def test_guidance_describes_the_two_database_split():
     """The rule is enforced by database (approver_policy.py): every guidance surface must say that
     simulations run in the separate simulation_control_plane.db and must not point agents at the
     removed in-database designation command."""
-    contract = TransitionRegistry.load_default().get_stage_contract("INTERVIEW")["approver_identity"]
+    contract = TransitionRegistry.load_default().get_stage_contract("INTAKE")["approver_identity"]
     surfaces = {
         "yaml": " ".join(str(v) for v in contract.values()),
         "os-control-intake": (PLUGIN_ROOT / "references" / "modes" / "intake.md").read_text(encoding="utf-8"),

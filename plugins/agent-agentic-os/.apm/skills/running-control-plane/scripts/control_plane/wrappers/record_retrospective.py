@@ -11,7 +11,7 @@ if _scripts_dir not in sys.path:
     sys.path.insert(0, _scripts_dir)
 
 from agent_control import ControlPlane, PhaseCapabilityDenied
-from control_plane.constants import STATE_RETROSPECTIVE
+from control_plane.constants import STATE_VERIFY_EXIT
 
 
 ACTION_IDENTITY = "retrospective_capture"
@@ -23,11 +23,11 @@ def record_retrospective(
     follow_ups: Optional[List[Dict[str, Any]]] = None,
     control_plane: Optional[ControlPlane] = None,
 ) -> Dict[str, Any]:
-    """Persist one retrospective record after verifying RETROSPECTIVE occupancy."""
+    """Persist one retrospective record after verifying VERIFY_EXIT occupancy."""
     cp = control_plane or ControlPlane()
     cap = cp.verify_phase_capability(task_id, ACTION_IDENTITY)
-    if cap.current_state != STATE_RETROSPECTIVE:
-        raise PhaseCapabilityDenied(f"Retrospective capture is only authorized in {STATE_RETROSPECTIVE} state.")
+    if cap.current_state != STATE_VERIFY_EXIT:
+        raise PhaseCapabilityDenied(f"Retrospective capture is only authorized in {STATE_VERIFY_EXIT} state.")
     cp.save_retrospective(task_id, entry, follow_ups or [])
     return {
         "status": "RECORDED",
@@ -44,13 +44,15 @@ def main() -> None:
     parser.add_argument("--task-id", required=True)
     parser.add_argument("--entry", required=True, help="JSON object containing retrospective fields")
     parser.add_argument("--follow-ups", default="[]", help="JSON array of follow-up objects")
+    parser.add_argument("--db-path", default=None, help="Override control-plane SQLite DB path")
     args = parser.parse_args()
     try:
         entry = json.loads(args.entry)
         follow_ups = json.loads(args.follow_ups)
         if not isinstance(entry, dict) or not isinstance(follow_ups, list):
             raise ValueError("--entry must be a JSON object and --follow-ups must be a JSON array")
-        print(json.dumps(record_retrospective(args.task_id, entry, follow_ups), indent=2))
+        cp = ControlPlane(db_path=Path(args.db_path)) if args.db_path else None
+        print(json.dumps(record_retrospective(args.task_id, entry, follow_ups, control_plane=cp), indent=2))
     except PhaseCapabilityDenied as exc:
         print(f"CAPABILITY DENIED: {exc}", file=sys.stderr)
         sys.exit(2)

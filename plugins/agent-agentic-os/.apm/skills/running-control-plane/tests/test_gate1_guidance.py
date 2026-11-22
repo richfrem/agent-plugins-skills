@@ -27,7 +27,7 @@ from control_plane.registry import TransitionRegistry
 
 
 def _hint() -> str:
-    template = TransitionRegistry.load_default().get_template("AWAITING_APPROVAL", "APPROVED")
+    template = TransitionRegistry.load_default().get_template("PLAN_REVIEW", "APPROVED")
     return template.next_steps_hint or ""
 
 

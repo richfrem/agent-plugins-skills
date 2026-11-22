@@ -46,8 +46,10 @@ from control_plane.measurement import (
 
 
 FIXTURE_PATH = (
-    Path(__file__).resolve().parent.parent.parent
-    / "cli-agents"
+    Path(__file__).resolve().parents[6]
+    / "plugins"
+    / "agent-orchestration"
+    / ".apm"
     / "skills"
     / "cli-agent"
     / "references"

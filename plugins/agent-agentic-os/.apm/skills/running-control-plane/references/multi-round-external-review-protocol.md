@@ -1,7 +1,7 @@
 # Multi-Round External Review Protocol
 
-Applies at both `MULTI_AGENT_REVIEW` (plan) and `MULTI_AGENT_CODE_REVIEW` (implementation) gates
-whenever the user opts into external review rather than skipping it. Builds on
+Applies at both `PLAN_REVIEW` (plan) and `WORKTREE_REVIEW` (implementation) gates
+whenever the user opts into external review rather than waiving it via `signed_decisions`. Builds on
 `bundling-context`'s generic Multi-Persona Fan-Out mechanics (per-persona `responses/` subfolder,
 regenerate-in-place per round) with the review-specific judgment calls those generic mechanics
 deliberately don't encode.
@@ -34,12 +34,11 @@ of re-discovering the same ones.
 
 ## Plan review and implementation review are not interchangeable
 
-Skipping `MULTI_AGENT_REVIEW` (plan) and only running `MULTI_AGENT_CODE_REVIEW` (implementation)
+Skipping plan review inside `PLAN_REVIEW` and only running code review inside `WORKTREE_REVIEW`
 after the fact is not equivalent to running the plan gate — it's post-hoc auditing of already-
 built work, which is more expensive to act on than catching a design flaw before implementation.
-Both gates existing independently in the state machine is deliberate; treat a skip of one as a
-real decision (recorded via `record_review_skip`, per `agent_control.py`'s `GATE_REQUIREMENTS`),
-not a default.
+Both review points are independent; treat a waiver of either as a real human-signed decision
+(recorded via `signed_decisions`), not a default.
 
 ## Reference
 

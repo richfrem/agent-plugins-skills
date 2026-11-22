@@ -58,6 +58,28 @@ See [graph_execution_state_machine.mmd](diagrams/graph_execution_state_machine.m
 - `input_bindings` and `output_contract` are not enforced by the runner. Nodes pass data through `$GRAPH_SCRATCH_DIR` sibling directories.
 - Boundary checks see only what git reports: writes to gitignored paths or outside the repo are not detected or rolled back.
 
+## Observing a run
+
+The runner is a separate program: it launches each node (`bash -c`, model nodes through a CLI such as `claude -p`) as its own process. Claude Code does not know about those processes, so `/tasks` and `/agents` do not list them. The supervisor (the agent that started the run) must therefore say, when it starts a run, how the human can watch it. Do these:
+
+1. Start the runner as a tracked background task (`run_in_background`), never with `nohup &`, so the run itself shows in `/tasks`.
+2. Give the human these commands (replace `<graph_id>` and `<run_id>`):
+   - which nodes finished: `cut -c1-100 "$(git rev-parse --git-common-dir)/graph-run/<graph_id>/<run_id>/receipts.jsonl"`
+   - status and failed nodes: `cat "$(git rev-parse --git-common-dir)/graph-run/<graph_id>/<run_id>/state.json"`
+   - running worker processes: `ps -eo pid,etime,command | grep "claude -p" | grep -v grep | cut -c1-120`
+   - a worker's actions: tail the newest `*.jsonl` under `~/.claude/projects/<worktree path with / replaced by ->/`.
+3. Report each finished node and each failure to the human as it happens; do not wait for the end.
+
+Parallel fan-out appears as several `parallel_read` nodes started in one batch (`[PARALLEL BATCH] Running N parallel read node(s)` in the log, up to `max_parallel_concurrency`). Mutations never overlap.
+
+## What the runner enforces and what it only instructs
+
+Enforced by code: manifest SHA binding, schema and topology validation, `verifier_hash` of the first file named in a command, a clean tree and unchanged HEAD after read batches (**limited change detection**: it cannot see ignored files, writes outside the repository, or an already-modified file changing again, and it reports the affected batch, not the offending node), `mutation_targets` and `forbidden_paths` as git reports them, ordered mutations, one commit per mutation, rollback to the start commit on failure.
+
+Only instructed (the worker prompt, not the runner): which tools a model node may use, never running `git`, never writing outside the worktree. Writes to gitignored paths or outside the repository are invisible to the runner. A worker given `python -m pytest` can run arbitrary Python. Treat the human code review as the control for those limits, and give workers the narrowest tool list that works.
+
+A failed mutation node rolls back the whole worktree, including a worker run that succeeded but whose commit was rejected (for example by a pre-commit hook). Before starting a run, check which commit hooks apply to the files the slices will change, and make each slice satisfy them in its own commit.
+
 ## Verification
 
 ```bash

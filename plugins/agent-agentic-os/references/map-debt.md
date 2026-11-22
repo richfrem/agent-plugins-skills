@@ -170,3 +170,10 @@ merge commit `15cd7592`) and a full real ROLLBACK cycle (`live-rollback-17881549
 - Updated `self-evolution-policy.md` across plugin source and downstream repositories with **Hard Gate 15: Single Source of Truth Verification First**.
 - Mandated that analysis skills (`update-stock-analysis`) query canonical CLI utilities (`portfolio_io.py --ticker {TICKER}`) before assigning lifecycle status or actions, strictly forbidding inline Python/SQL.
 - Added `--ticker`, `--pillars`, and `--json` CLI primitives to `portfolio_io.py` to eliminate inline query workarounds.
+
+### DEBT-20261121-JOB-SCOPED-CONTROL-PLANE (B1-B22)
+- **Date**: 2026-11-21
+- **Task**: `job-scoped-control-plane`
+- **Summary**: Resolved bugs B1-B22 across `running-control-plane`, `setting-up-agentic-os`, `orchestrating-agent-work`, and `AGENTS.md`: single strategy registry via APM dependency (B8, B9, B11-B14), selector override rationale/next_step (B15), green baseline + G14 no-skill-pollution fixture + non-cwd DB/outline paths (B7, B10, B22), lean 10-state machine + schema v15 + atomic `migrate-schema` (G2-G3), one-question-per-decision + ceremony removal + B4 dead link + B5 outline markers + B18/B19 short verified commands + B20/B21 host-subagents/catalog menus/re-prompt, `plan_audit.py` + signed decisions (B17, Q1/Q2), on-demand mode + shadow-install warning (B16, D1-D5), Gate 1 APPROVED re-verification + runner observability/diff-save (S7), read-only reviewer trio + docs/diagrams/AGENTS.md alignment (B3, B6, S8-S9).
+- **Repeat**: NO
+- **Status: RESOLVED**

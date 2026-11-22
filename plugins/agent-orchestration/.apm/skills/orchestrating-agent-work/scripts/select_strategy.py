@@ -37,7 +37,14 @@ VALID_PATTERNS: Set[str] = {
     "graph",
     "agent-swarm",
     "red-team-review",
+    "learning-loop",
 }
+
+SERIAL_CHAIN_HINT = (
+    "Ordered mutations without fan-out or a join barrier: a graph would cost more orchestration than it saves; "
+    "dual-loop chosen. Choose graph only if independent branches or a barrier exist."
+)
+OVERRIDE_TO_GRAPH_HINT = "Override to graph on a serial chain: expect orchestration overhead to exceed benefit."
 
 QUESTIONS: Dict[str, Dict[str, Any]] = {
     "unit_structure": {
@@ -126,6 +133,7 @@ def decide_strategy(answers: Dict[str, str]) -> Dict[str, Any]:
     assurance = answers["assurance_need"]
 
     rejected = []
+    hints: List[str] = []
     pattern = "direct"
     rationale = ""
 
@@ -136,12 +144,23 @@ def decide_strategy(answers: Dict[str, str]) -> Dict[str, Any]:
         rejected.append({"pattern": "graph", "reason": "Identical independent units execute more efficiently under swarm workers without DAG barrier overhead"})
         rejected.append({"pattern": "dual-loop", "reason": "Dual-loop does not provide concurrent batch worker dispatch across bulk files"})
 
-    # Rule 2: Distinct steps with dependencies or ordering barriers -> graph
-    elif unit == "distinct_steps" or order in ("barrier", "ordered_mutations"):
+    # Rule 2: A join barrier means parallel branches converge -> graph
+    elif order == "barrier":
         pattern = "graph"
-        rationale = "Task exhibits distinct dependent phases, parallel fan-out join barriers, or ordered mutations."
+        rationale = "Task has parallel branches that must converge at a join barrier."
         rejected.append({"pattern": "agent-swarm", "reason": "Swarm cannot manage join barriers, topological ordering, or dependency graphs"})
-        rejected.append({"pattern": "dual-loop", "reason": "Dual-loop cannot orchestrate parallel fan-out reads or multi-step mutation sequences"})
+        rejected.append({"pattern": "dual-loop", "reason": "Dual-loop cannot orchestrate parallel fan-out reads joined at a barrier"})
+
+    # Rule 2b: A serial chain (ordered edits, no fan-out, no barrier) is not a graph -> dual-loop
+    elif (unit == "distinct_steps" or order == "ordered_mutations") and unit != "minimal_direct":
+        pattern = "dual-loop"
+        rationale = (
+            "Task is a serial chain of ordered steps with no parallel fan-out and no join barrier; "
+            "a supervised dual-loop (one worker per step, tests after each) fits without graph overhead."
+        )
+        hints.append(SERIAL_CHAIN_HINT)
+        rejected.append({"pattern": "graph", "reason": "A graph would cost more orchestration (nodes, gates, pinned scripts) than a serial chain saves"})
+        rejected.append({"pattern": "agent-swarm", "reason": "Ordered steps are not independent units"})
 
     # Rule 3: One bounded change -> dual-loop
     elif unit == "one_bounded":
@@ -167,6 +186,7 @@ def decide_strategy(answers: Dict[str, str]) -> Dict[str, Any]:
         "next_step": pat_info.get("next_step"),
         "plan_artifact": pat_info.get("plan_artifact"),
         "override_requested": None,
+        "planning_hints": hints,
     }
 
     # Adversarial assurance is a modifier wrapper on the build/fix pattern
@@ -264,7 +284,15 @@ def main() -> None:
         }
         decision["pattern"] = args.override
         decision["next_skill"] = target_info.get("next_skill")
+        decision["next_step"] = target_info.get("next_step")
         decision["plan_artifact"] = target_info.get("plan_artifact")
+        # The recorded rationale must describe the pattern actually chosen, not the one overridden.
+        decision["rationale"] = (
+            f"Caller override from {decision['override_requested']['from']} to {args.override}: "
+            f"{decision['override_requested']['reason']}"
+        )
+        if args.override == "graph" and SERIAL_CHAIN_HINT in decision.get("planning_hints", []):
+            decision["planning_hints"].append(OVERRIDE_TO_GRAPH_HINT)
 
     # 5. Output handling: Only write to disk if --out is explicitly provided
     if args.out:

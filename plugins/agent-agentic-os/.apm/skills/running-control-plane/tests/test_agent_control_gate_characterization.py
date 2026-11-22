@@ -42,7 +42,7 @@ from agent_control import ControlPlane, PersistenceInvariantViolation
 from interview_helpers import stage_interview_answers
 from helpers.implementation_ledger import stage_implementation_ledger
 from control_plane.constants import (
-    STATE_INTERVIEW, STATE_DRAFT_PLAN, STATE_PLAN_REVIEW, STATE_AWAITING_APPROVAL, STATE_APPROVED, STATE_IN_WORKTREE, STATE_WORKTREE_REVIEW, STATE_MULTI_AGENT_CODE_REVIEW, STATE_VERIFY_EXIT, STATE_RETROSPECTIVE, STATE_DONE,
+    STATE_INTAKE, STATE_DRAFT_PLAN, STATE_PLAN_REVIEW, STATE_APPROVED, STATE_IN_WORKTREE, STATE_WORKTREE_REVIEW, STATE_VERIFY_EXIT, STATE_DONE,
 )
 
 
@@ -61,18 +61,15 @@ def control_plane(temp_db_path):
 
 
 def _coordinate_transition(cp: ControlPlane, task_id: str, to_state: str, actor="human", reason="test"):
-    """Coordinates any transition (including human-gated ones) using TransitionCoordinator.
-    Each call gets a fresh TransitionCoordinator/input_fn, so a fixed-length answer sequence
-    doesn't generalize across calls with differing question/approval counts — instead answer
-    based on the prompt's own content: the y/n approval prompt always contains '(y/n)'."""
+    """Coordinates any transition (including human-gated ones) using TransitionCoordinator."""
     from control_plane.coordinator import TransitionCoordinator
     from control_plane.registry import TransitionRegistry
     reg = TransitionRegistry.load_default()
     def _answer(prompt):
-        if "guidance_compliance_confirmation" in prompt:
-            return "YES"
-        if "confirm_review_in_worktree_to_worktree_review" in prompt:
-            return "1"  # The only option is explicit proceed to worktree review.
+        if "intake_outline_confirmation" in prompt:
+            return "1"
+        if "retrospective_decision" in prompt:
+            return "1"
         return "y" if "(y/n)" in prompt else "1"
     coord = TransitionCoordinator(control_plane=cp, registry=reg, input_fn=_answer)
     return coord.coordinate_transition(
@@ -86,7 +83,6 @@ def _coordinate_transition(cp: ControlPlane, task_id: str, to_state: str, actor=
 
 def _complete_retrospective(cp: ControlPlane, task_id: str):
     cp.record_verification_receipt(task_id, "full_test_suite", "pytest -q", 0)
-    cp.transition(task_id, STATE_RETROSPECTIVE, "controller", "Enter retrospective")
     cp.save_retrospective(
         task_id,
         {"decision": "opt_in", "completion_mode": "completed", "actor": "human"},
@@ -96,26 +92,24 @@ def _complete_retrospective(cp: ControlPlane, task_id: str):
 
 
 def _advance_to_in_worktree(cp: ControlPlane, task_id: str, title: str, tmp_path):
-    """Shared setup: drives a fresh task through the canonical DAG to IN_WORKTREE.
-    PLAN_REVIEW's required_artifacts (spec/implementation-plan) are created under
-    tmp_path, with cp.repo_root pointed there, matching the pattern used elsewhere
-    (test_agent_control.py)."""
+    """Shared setup: drives a fresh task through the canonical v15 10-state DAG to IN_WORKTREE."""
+    from helpers.gate1_fixtures import init_git_worktree
+
     cp.repo_root = tmp_path
-    plans_dir = tmp_path / "docs" / "plans"
+    plans_dir = tmp_path / "docs" / "plans" / "work-tasks" / task_id
     plans_dir.mkdir(parents=True, exist_ok=True)
-    (plans_dir / f"{task_id}-spec.md").write_text("# Spec", encoding="utf-8")
-    (plans_dir / f"{task_id}-implementation-plan.md").write_text("# Plan", encoding="utf-8")
-    stage_implementation_ledger(control_plane, task_id, tmp_path)
-    (tmp_path / ".worktrees" / task_id).mkdir(parents=True, exist_ok=True)
+    (plans_dir / f"{task_id}-spec.md").write_text("# Spec\n", encoding="utf-8")
+    (plans_dir / f"{task_id}-implementation-plan.md").write_text("# Plan\n\n- Strategy: direct\n", encoding="utf-8")
+    stage_implementation_ledger(cp, task_id, tmp_path)
+    wt = init_git_worktree(tmp_path / ".worktrees" / task_id)
 
     cp.create_task(task_id=task_id, title=title, runtime_tool="claude")
+    _coordinate_transition(cp, task_id, STATE_DRAFT_PLAN, actor="human", reason="Intake confirmed")
     cp.record_plan_mode_entry(task_id=task_id, actor="controller")
     _coordinate_transition(cp, task_id, STATE_PLAN_REVIEW, actor="controller", reason="Plan ready")
-    cp.record_review_skip(task_id=task_id, phase="multi_agent_review", actor="user", reason="characterization test")
-    _coordinate_transition(cp, task_id, STATE_AWAITING_APPROVAL, actor="controller", reason="Review ready")
-    _coordinate_transition(cp, task_id, STATE_APPROVED, actor="user", reason="Approved")
+    _coordinate_transition(cp, task_id, STATE_APPROVED, actor="human", reason="Approved")
     cp.record_human_approval(task_id=task_id, approver="user")
-    cp.update_worktree(task_id, f".worktrees/{task_id}", f"feature/{task_id}", "written_in_worktree")
+    cp.update_worktree(task_id, str(wt), f"feature/{task_id}", "written_in_worktree")
     cp.transition(task_id=task_id, to_state=STATE_IN_WORKTREE, actor="controller", reason="Worktree created")
 
 
@@ -127,8 +121,7 @@ def test_push_barrier_permits_done(control_plane, tmp_path):
     _advance_to_in_worktree(control_plane, task_id, "Push Barrier: DONE", tmp_path)
     control_plane.record_verification_receipt(task_id=task_id, gate_name="test_suite", command_executed="pytest", exit_code=0)
     _coordinate_transition(control_plane, task_id, STATE_WORKTREE_REVIEW, actor="controller", reason="Implementation done")
-    control_plane.record_review_skip(task_id=task_id, phase="multi_agent_code_review", actor="user", reason="characterization test")
-    _coordinate_transition(control_plane, task_id, STATE_VERIFY_EXIT, actor="controller", reason="Ready to verify exit")
+    _coordinate_transition(control_plane, task_id, STATE_VERIFY_EXIT, actor="human", reason="Ready to verify exit")
     control_plane.record_verification_receipt(task_id=task_id, gate_name="leak_check", command_executed="git status", exit_code=0)
     control_plane.log_asymmetric_persistence(task_id=task_id, destination="references/map-debt.md", status="RESOLVED", details="Resolved")
     _complete_retrospective(control_plane, task_id)
@@ -139,21 +132,17 @@ def test_push_barrier_permits_done(control_plane, tmp_path):
     assert control_plane.get_task(task_id)["worktree_state"] == "pushed_to_origin"
 
 
-@pytest.mark.parametrize("intermediate_state", [STATE_IN_WORKTREE, STATE_WORKTREE_REVIEW, STATE_MULTI_AGENT_CODE_REVIEW, STATE_VERIFY_EXIT])
+@pytest.mark.parametrize("intermediate_state", [STATE_IN_WORKTREE, STATE_WORKTREE_REVIEW, STATE_VERIFY_EXIT])
 def test_push_barrier_blocks_intermediate_states(control_plane, intermediate_state, tmp_path):
     """Characterizes: worktree_state='pushed_to_origin' is rejected when task state is not DONE."""
     task_id = f"char-push-blocked-{intermediate_state.lower()}"
     _advance_to_in_worktree(control_plane, task_id, f"Push Barrier: {intermediate_state}", tmp_path)
-    
-    if intermediate_state in (STATE_WORKTREE_REVIEW, STATE_MULTI_AGENT_CODE_REVIEW, STATE_VERIFY_EXIT):
+
+    if intermediate_state in (STATE_WORKTREE_REVIEW, STATE_VERIFY_EXIT):
         control_plane.record_verification_receipt(task_id=task_id, gate_name="test_suite", command_executed="pytest", exit_code=0)
         _coordinate_transition(control_plane, task_id, STATE_WORKTREE_REVIEW, actor="controller", reason="Implementation done")
-    if intermediate_state in (STATE_MULTI_AGENT_CODE_REVIEW, STATE_VERIFY_EXIT):
-        if intermediate_state == STATE_MULTI_AGENT_CODE_REVIEW:
-            _coordinate_transition(control_plane, task_id, STATE_MULTI_AGENT_CODE_REVIEW, actor="controller", reason="Adversarial code review")
-        else:
-            control_plane.record_review_skip(task_id=task_id, phase="multi_agent_code_review", actor="user", reason="characterization test")
-            _coordinate_transition(control_plane, task_id, STATE_VERIFY_EXIT, actor="controller", reason="Ready to verify exit")
+    if intermediate_state == STATE_VERIFY_EXIT:
+        _coordinate_transition(control_plane, task_id, STATE_VERIFY_EXIT, actor="human", reason="Ready to verify exit")
 
     with pytest.raises(PersistenceInvariantViolation, match="Pushing to origin requires full pipeline completion"):
         control_plane.update_worktree(
@@ -161,41 +150,36 @@ def test_push_barrier_blocks_intermediate_states(control_plane, intermediate_sta
         )
 
 
-
 # --- _check_prior_art_guard: branches not exercised elsewhere ---
 
-def test_prior_art_guard_not_applicable_to_general_task(control_plane):
-    """Characterizes: the prior-art guard is a no-op for task_type='GENERAL' (only EVOLUTION
-    tasks are gated) — already exercised end-to-end in test_agent_control.py's
-    test_general_task_advances_without_prior_art_scan; restated here as part of the
-    consolidated matrix this file exists to be."""
+def test_prior_art_guard_not_applicable_to_general_task(control_plane, tmp_path):
+    """Characterizes: the prior-art guard is a no-op for task_type='GENERAL' (only EVOLUTION tasks are gated)."""
+    control_plane.repo_root = tmp_path
     task_id = "char-priorart-general-001"
     control_plane.create_task(task_id=task_id, title="General", runtime_tool="claude", task_type="GENERAL")
-    control_plane.transition(task_id=task_id, to_state=STATE_INTERVIEW, actor="user", reason="Starting")
-    assert control_plane.get_task(task_id)["state"] == STATE_INTERVIEW
+    _coordinate_transition(control_plane, task_id, STATE_DRAFT_PLAN, actor="human", reason="Starting")
+    assert control_plane.get_task(task_id)["state"] == STATE_DRAFT_PLAN
 
 
-def test_prior_art_guard_does_not_re_fire_on_later_edge_after_intake_satisfied(control_plane):
-    """Characterizes: the prior-art guard only fires on the (INTAKE, INTERVIEW) edge. This test
-    proves the guard does NOT re-run on a later edge (INTERVIEW->DRAFT_PLAN) once the INTAKE
-    gate was already satisfied — it does NOT prove the task has no prior-art log at all (prior
-    art IS logged here, before entering INTERVIEW, to legitimately clear that first gate).
-    Renamed/reworded after external review correctly flagged the original name/docstring
-    ("no prior-art scan logged") as inaccurate — the scan is logged, just not re-logged for the
-    second transition, which is the actual behavior being characterized."""
+def test_prior_art_guard_does_not_re_fire_on_later_edge_after_intake_satisfied(control_plane, tmp_path):
+    """Characterizes: the prior-art guard only fires on the (INTAKE, DRAFT_PLAN) edge and does not re-fire later."""
+    control_plane.repo_root = tmp_path
     task_id = "char-priorart-nonedge-001"
+    plans_dir = tmp_path / "docs" / "plans" / "work-tasks" / task_id
+    plans_dir.mkdir(parents=True, exist_ok=True)
+    (plans_dir / f"{task_id}-spec.md").write_text("# Spec\n", encoding="utf-8")
+    (plans_dir / f"{task_id}-implementation-plan.md").write_text("# Plan\n\n- Strategy: direct\n", encoding="utf-8")
     control_plane.create_task(task_id=task_id, title="Evolution no-scan mid-pipeline", runtime_tool="claude", task_type="EVOLUTION")
     control_plane.log_asymmetric_persistence(
         task_id=task_id, destination="references/map-debt.md", status="OBSERVED",
         details="prior_art_scan: summary=scanned; repeat_yes_entries=none"
     )
-    control_plane.transition(task_id=task_id, to_state=STATE_INTERVIEW, actor="controller", reason="Prior art scanned")
+    _coordinate_transition(control_plane, task_id, STATE_DRAFT_PLAN, actor="human", reason="Prior art scanned")
     control_plane.record_plan_mode_entry(task_id=task_id, actor="controller")
-    stage_interview_answers(control_plane, task_id)
 
     # No further prior-art logging done here — guard must not re-fire on this later edge.
-    control_plane.transition(task_id=task_id, to_state=STATE_DRAFT_PLAN, actor="controller", reason="Compiled spec")
-    assert control_plane.get_task(task_id)["state"] == STATE_DRAFT_PLAN
+    control_plane.transition(task_id=task_id, to_state=STATE_PLAN_REVIEW, actor="controller", reason="Compiled spec")
+    assert control_plane.get_task(task_id)["state"] == STATE_PLAN_REVIEW
 
 
 # --- _check_done_guard: locked-verifier sovereignty sub-branch, intact case ---
@@ -203,35 +187,17 @@ def test_prior_art_guard_does_not_re_fire_on_later_edge_after_intake_satisfied(c
 def test_done_guard_locked_verifier_sovereignty_branch_passes_when_intact(control_plane, tmp_path):
     """Characterizes: when locked_verifier_baselines has rows for this task AND the files are
     still intact (unmutated), the DONE guard's sovereignty sub-check passes silently and DONE
-    succeeds — the positive path through `if locked_count > 0: self.verify_sovereignty(task_id)`
-    that test_agent_control.py only exercises via the mutated/failing branch."""
+    succeeds."""
     task_id = "char-done-sovereignty-intact-001"
-    control_plane.repo_root = tmp_path
-    plans_dir = tmp_path / "docs" / "plans"
-    plans_dir.mkdir(parents=True, exist_ok=True)
-    (plans_dir / f"{task_id}-spec.md").write_text("# Spec", encoding="utf-8")
-    (plans_dir / f"{task_id}-implementation-plan.md").write_text("# Plan", encoding="utf-8")
-    stage_implementation_ledger(control_plane, task_id, tmp_path)
-    (tmp_path / ".worktrees" / task_id).mkdir(parents=True, exist_ok=True)
-
-    control_plane.create_task(task_id=task_id, title="Done sovereignty intact", runtime_tool="claude")
+    _advance_to_in_worktree(control_plane, task_id, "Done sovereignty intact", tmp_path)
 
     verifier_file = tmp_path / "verifier.py"
     verifier_file.write_text("def check(): return True\n", encoding="utf-8")
     control_plane.lock_verifiers(task_id=task_id, file_paths=[verifier_file])
 
-    control_plane.record_plan_mode_entry(task_id=task_id, actor="controller")
-    _coordinate_transition(control_plane, task_id, STATE_PLAN_REVIEW, actor="controller", reason="Plan ready")
-    control_plane.record_review_skip(task_id=task_id, phase="multi_agent_review", actor="user", reason="characterization test")
-    _coordinate_transition(control_plane, task_id, STATE_AWAITING_APPROVAL, actor="controller", reason="Review ready")
-    _coordinate_transition(control_plane, task_id, STATE_APPROVED, actor="user", reason="Approved")
-    control_plane.record_human_approval(task_id=task_id, approver="user")
-    control_plane.update_worktree(task_id, f".worktrees/{task_id}", f"feature/{task_id}", "written_in_worktree")
-    control_plane.transition(task_id=task_id, to_state=STATE_IN_WORKTREE, actor="controller", reason="Worktree created")
     control_plane.record_verification_receipt(task_id=task_id, gate_name="test_suite", command_executed="pytest", exit_code=0)
     _coordinate_transition(control_plane, task_id, STATE_WORKTREE_REVIEW, actor="controller", reason="Implementation done")
-    control_plane.record_review_skip(task_id=task_id, phase="multi_agent_code_review", actor="user", reason="characterization test")
-    _coordinate_transition(control_plane, task_id, STATE_VERIFY_EXIT, actor="controller", reason="Verifying")
+    _coordinate_transition(control_plane, task_id, STATE_VERIFY_EXIT, actor="human", reason="Verifying")
 
     control_plane.record_verification_receipt(task_id=task_id, gate_name="test_suite", command_executed="pytest", exit_code=0)
     control_plane.log_asymmetric_persistence(

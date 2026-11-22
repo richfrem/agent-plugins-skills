@@ -5,7 +5,7 @@ flowchart TB
         Facade["ControlPlane compatibility facade"]
         Coordinator["TransitionCoordinator"]
         Guidance["Transition guidance: versioned advisory snapshot"]
-        Lifecycle["Canonical lifecycle states: 13-stage sequence"]
+        Lifecycle["Canonical lifecycle states: 10-state machine (8 happy-path + RECOVERING, ROLLED_BACK)"]
     end
 
     %% Governance & Gates

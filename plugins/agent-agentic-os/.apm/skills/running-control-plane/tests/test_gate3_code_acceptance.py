@@ -56,7 +56,7 @@ from helpers.gate1_fixtures import init_git_worktree, reach_multi_agent_code_rev
 
 TASK = "gate3-task-001"
 DIRECT = ("WORKTREE_REVIEW", "VERIFY_EXIT")
-POST_REVIEW = ("MULTI_AGENT_CODE_REVIEW", "VERIFY_EXIT")
+POST_REVIEW = ("WORKTREE_REVIEW", "VERIFY_EXIT")  # v15: code review runs inside WORKTREE_REVIEW
 _FOUND = shutil.which("ssh-keygen")
 SSH_KEYGEN = _FOUND or "ssh-keygen"
 pytestmark = [pytest.mark.no_auto_signer, pytest.mark.skipif(_FOUND is None or shutil.which("git") is None, reason="ssh-keygen and git are required")]
@@ -138,9 +138,13 @@ class CodeGate:
         return self.db().execute("SELECT kind, detail FROM transition_violations WHERE task_id = ?", (TASK,)).fetchall()
 
 
-@pytest.fixture(params=[DIRECT, POST_REVIEW], ids=["direct", "post-review"])
+@pytest.fixture(params=[("direct", False), ("post-review", True)], ids=["direct", "post-review"])
 def gate(request, tmp_path):
-    return CodeGate(tmp_path, request.param)
+    _, with_review = request.param
+    g = CodeGate(tmp_path, DIRECT)
+    if with_review:
+        reach_multi_agent_code_review(g.sim, TASK)
+    return g
 
 
 def test_both_edges_halt_for_a_signature_and_change_nothing(gate):
@@ -237,7 +241,7 @@ def test_skip_flags_are_gone_and_skip_is_refused_on_proof_edges(gate):
 
 def test_registry_has_no_skip_semantics_on_the_gate3_edges():
     registry = TransitionRegistry.load_default()
-    for edge in (DIRECT, POST_REVIEW):
+    for edge in (DIRECT,):
         template = registry.get_template(*edge)
         assert template.requires_cryptographic_proof is True
         assert template.skip.get("allowed") is False
